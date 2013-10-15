@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html wicket:id="html">
+<head>
+	<meta wicket:id="viewport">
+	<meta wicket:id="description">
+	<meta wicket:id="author">
+	<meta wicket:id="chrome-frame">
+	<title>Login to TDMX console</title>
+
+<style type="text/css">
+
+</style>
+
+</head>
+
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar">
+	
+	<div class="container">
+		<div class="row">
+        	<div class="span6 offset3">
+        		<h1>Place for your Logo <img alt="brand" src="brand.png" width="20%" height="20%"></h1>
+        		<div wicket:id="loginFeedback"></div>
+				<form wicket:id="loginForm" class="form-horizontal">
+		  	  		<div wicket:id="userNameLabel"><input wicket:id="userName" type="text" value="?" size="16" placeholder="Username"/></div>
+		  	    	<div wicket:id="passwordLabel"><input wicket:id="password" type="password" value="?" size="16" placeholder="Password"/></div>
+		  	    	<div wicket:id="loginButtonGroup"><input type="submit" value="Login" class="btn"/></div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<wicket:container wicket:id="footer-container"/>
+</body>
+</html>
