@@ -1,0 +1,170 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.tdmx.client</groupId>
+	<artifactId>admin-console</artifactId>
+	<packaging>war</packaging>
+	<name>admin-console</name>
+	<version>0.1</version>
+
+	<dependencies>
+		
+		<!-- Wicket framework -->
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-core</artifactId>
+			<version>${wicket.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-extensions</artifactId>
+			<version>${wicket.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-devutils</artifactId>
+			<version>${wicket.version}</version>
+		</dependency>
+		
+		<!-- Wicket bootstrap -->
+		<dependency>
+			<groupId>de.agilecoders.wicket</groupId>
+			<artifactId>wicket-bootstrap-core</artifactId>
+			<version>${wicket.bootstrap.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.agilecoders.wicket</groupId>
+			<artifactId>wicket-bootstrap-extensions</artifactId>
+			<version>${wicket.bootstrap.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.agilecoders.wicket</groupId>
+			<artifactId>wicket-bootstrap-themes</artifactId>
+			<version>${wicket.bootstrap.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.agilecoders.wicket</groupId>
+			<artifactId>wicket-bootstrap-less</artifactId>
+			<version>${wicket.bootstrap.version}</version>
+		</dependency>
+		
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		
+	</dependencies>
+	
+	<build>
+		<finalName>console</finalName>
+		<defaultGoal>package</defaultGoal>
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${java.source.version}</source>
+					<target>${java.source.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<outputDirectory>${basedir}/webapps</outputDirectory>
+					<packagingIncludes>
+						**/*.xml,
+						**/*.properties,
+						**/*.class,
+						**/*.png,
+						**/*.gif,
+						**/*.jpg,
+						**/*.css,
+						**/*.js,
+						**/*.jsp,
+						**/*.html,
+						**/*.xhtml
+					</packagingIncludes>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- 
+					In order to use this jetty plugin you have to execute the following command: 
+						mvn jetty:run
+				-->
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.0.5.v20130815</version>
+				<configuration>
+					<reload>manual</reload>
+					<webApp>
+						<contextPath>/admin</contextPath>
+					</webApp>
+					<connectors>
+						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							<port>8080</port>
+							<maxIdleTime>60000</maxIdleTime>
+						</connector>
+	    			</connectors>
+					<systemProperties>
+						<systemProperty>
+							<name>networkaddress.cache.ttl</name>
+							<value>60</value>
+						</systemProperty>
+						<systemProperty>
+							<name>networkaddress.cache.negative.ttl</name>
+							<value>0</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.source.version>1.7</java.source.version>
+		<wicket.version>6.11.0</wicket.version>
+		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
+	</properties>
+	
+	
+</project>
