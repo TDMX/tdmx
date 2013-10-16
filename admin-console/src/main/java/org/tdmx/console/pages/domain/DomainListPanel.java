@@ -1,6 +1,5 @@
 package org.tdmx.console.pages.domain;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -13,7 +12,9 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.tdmx.console.AdminApplication;
 import org.tdmx.console.domain.Domain;
+import org.tdmx.console.service.SearchService;
 
 import de.agilecoders.wicket.core.markup.html.bootstrap.button.BootstrapBookmarkablePageLink;
 import de.agilecoders.wicket.core.markup.html.bootstrap.button.Buttons.Type;
@@ -22,6 +23,8 @@ import de.agilecoders.wicket.core.markup.html.bootstrap.image.IconType;
 public class DomainListPanel extends Panel {
 
 	private static Log log = LogFactory.getLog(DomainListPanel.class);
+	
+	private transient SearchService searchService = AdminApplication.getSearchService();
 	
 	public DomainListPanel(String id) {
 		super(id);
@@ -33,13 +36,7 @@ public class DomainListPanel extends Panel {
 		IModel<List<Domain>> domainListModel = new LoadableDetachableModel<List<Domain>>() {
 	        @Override
 	        protected List<Domain> load() {
-	        	List<Domain> domainList = new ArrayList<Domain>();
-	        	domainList.add(new Domain("Domain A"));
-	        	domainList.add(new Domain("Domain B"));
-	        	domainList.add(new Domain("Domain C"));
-	        	domainList.add(new Domain("Domain D"));
-	        	
-	        	return domainList;
+	        	return searchService.listDomains();
 	        }
 	    };
 		
