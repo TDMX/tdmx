@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:dao.application.console.tdmx.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:dao.application.console.tdmx.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>TDMX storage schema for admin console</xs:documentation>
+	</xs:annotation>
+	<xs:simpleType name="caseinsensitivetext">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="text">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<!-- ********************************************* -->
+	<!--           GLOBAL CONFIGURATION          -->
+	<!-- ********************************************* -->
+	<xs:element name="configuration" type="ConfigurationStorage"/>
+	<xs:complexType name="ConfigurationStorage">
+		<xs:sequence>
+			<xs:element name="user-configuration" type="UserConfig"/>
+			<xs:element name="serviceprovider-configuration" type="ServiceProviderConfig" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UserConfig">
+		<xs:sequence>
+			<xs:element name="user-password-filename" type="caseinsensitivetext"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ServiceProviderConfig">
+		<xs:sequence>
+			<xs:element name="domainname" type="caseinsensitivetext"/>
+			<xs:element name="storage-filename" type="text"/>
+			<xs:element name="pkcs12-filename" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           USER MANAGEMENT           -->
+	<!-- ********************************************* -->
+	<xs:element name="user-storage" type="UserStorage"/>
+	<xs:complexType name="UserStorage">
+		<xs:sequence>
+			<xs:element name="user" type="AdminConsoleUser" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdminConsoleUser">
+		<xs:annotation>
+			<xs:documentation>A User of the Admin Console</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="username" type="text"/>
+			<xs:element name="password" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           AUDIT LOG STORAGE          -->
+	<!-- ********************************************* -->
+	<xs:element name="audit-log-storage" type="AuditLogStorage"/>
+	<xs:complexType name="AuditLogStorage">
+		<xs:sequence>
+			<xs:element name="entry" type="AuditLog" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AuditLog">
+		<xs:sequence>
+			<xs:element name="timestamp" type="xs:dateTime"/>
+			<xs:element name="username" type="text"/>
+			<xs:element name="operation" type="text"/>
+			<xs:element name="reference" type="text"/>
+			<xs:element name="description" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           SERVICEPROVIDER STORAGE       -->
+	<!-- ********************************************* -->
+	<xs:element name="serviceprovider-storage" type="ServiceProviderStorage"/>
+	<xs:complexType name="ServiceProviderStorage">
+		<xs:annotation>
+			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="domain" type="ServiceProviderDomain" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ServiceProviderDomain">
+		<xs:annotation>
+			<xs:documentation>A ServiceProvider Domain.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="domainname" type="caseinsensitivetext"/>
+			<xs:element name="serviceprovider" type="caseinsensitivetext"/>
+			<xs:element name="certificate" type="Certificate" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="service" type="Service" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="address" type="Address" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="zone" type="IPZone" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="channel" type="Channel" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="EntityState">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE"/>
+			<xs:enumeration value="DELETED"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Address">
+		<xs:annotation>
+			<xs:documentation>A Domain Address.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="text"/>
+			<xs:element name="user" type="User" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IPZone">
+		<xs:annotation>
+			<xs:documentation>A IP-Address list defining a Zone.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="text"/>
+			<xs:element name="ip-address" type="text" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Certificate">
+		<xs:annotation>
+			<xs:documentation>A DomainCertificate.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="alias" type="text"/>
+			<xs:element name="state" type="EntityState"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="User">
+		<xs:annotation>
+			<xs:documentation>A User.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="alias" type="text"/>
+			<xs:element name="state" type="EntityState"/>
+			<xs:element name="ip-zone-name" type="text" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="ip-address" type="text" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Service">
+		<xs:annotation>
+			<xs:documentation>A Service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="text"/>
+			<xs:element name="default-max-concurrency" type="xs:unsignedShort"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Channel">
+		<xs:annotation>
+			<xs:documentation>A Channel.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="origin-domainname" type="caseinsensitivetext"/>
+			<xs:element name="origin-service-provider" type="text"/>
+			<xs:element name="origin-address" type="text"/>
+			<xs:element name="destination-service-provider" type="caseinsensitivetext"/>
+			<xs:element name="destination-domain" type="text"/>
+			<xs:element name="destination-service" type="text"/>
+			<xs:element name="destination-address" type="text"/>
+			<xs:element name="default-flow-limit"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
