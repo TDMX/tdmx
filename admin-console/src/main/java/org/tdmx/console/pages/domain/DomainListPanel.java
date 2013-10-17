@@ -14,7 +14,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.tdmx.console.AdminApplication;
 import org.tdmx.console.domain.Domain;
-import org.tdmx.console.service.SearchService;
+import org.tdmx.console.service.GlobalService;
 
 import de.agilecoders.wicket.core.markup.html.bootstrap.button.BootstrapBookmarkablePageLink;
 import de.agilecoders.wicket.core.markup.html.bootstrap.button.Buttons.Type;
@@ -24,7 +24,7 @@ public class DomainListPanel extends Panel {
 
 	private static Log log = LogFactory.getLog(DomainListPanel.class);
 	
-	private transient SearchService searchService = AdminApplication.getSearchService();
+	private transient GlobalService searchService = AdminApplication.getSearchService();
 	
 	public DomainListPanel(String id) {
 		super(id);

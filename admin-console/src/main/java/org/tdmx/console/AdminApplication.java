@@ -22,8 +22,8 @@ import org.tdmx.console.pages.domain.DomainDetailsPage;
 import org.tdmx.console.pages.domain.DomainPage;
 import org.tdmx.console.pages.login.LoginPage;
 import org.tdmx.console.pages.profile.ProfilePage;
-import org.tdmx.console.service.SearchService;
-import org.tdmx.console.service.SearchServiceImpl;
+import org.tdmx.console.service.GlobalService;
+import org.tdmx.console.service.GlobalServiceImpl;
 
 import de.agilecoders.wicket.core.Bootstrap;
 import de.agilecoders.wicket.core.markup.html.RenderJavaScriptToFooterHeaderResponseDecorator;
@@ -57,8 +57,8 @@ public class AdminApplication extends WebApplication {
 		return (AdminApplication) application;
 	}
 	
-	public static SearchService getSearchService() {
-		SearchServiceImpl impl = new SearchServiceImpl();
+	public static GlobalService getSearchService() {
+		GlobalServiceImpl impl = new GlobalServiceImpl();
 		impl.setObjectRegistry(get().getAdministration().getObjectRegistry());
 		return impl;
 	}

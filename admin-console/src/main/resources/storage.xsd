@@ -11,29 +11,7 @@
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
 	<!-- ********************************************* -->
-	<!--           GLOBAL CONFIGURATION          -->
-	<!-- ********************************************* -->
-	<xs:element name="configuration" type="ConfigurationStorage"/>
-	<xs:complexType name="ConfigurationStorage">
-		<xs:sequence>
-			<xs:element name="user-configuration" type="UserConfig"/>
-			<xs:element name="serviceprovider-configuration" type="ServiceProviderConfig" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="UserConfig">
-		<xs:sequence>
-			<xs:element name="user-password-filename" type="caseinsensitivetext"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="ServiceProviderConfig">
-		<xs:sequence>
-			<xs:element name="domainname" type="caseinsensitivetext"/>
-			<xs:element name="storage-filename" type="text"/>
-			<xs:element name="pkcs12-filename" type="text"/>
-		</xs:sequence>
-	</xs:complexType>
-	<!-- ********************************************* -->
-	<!--           USER MANAGEMENT           -->
+	<!--           USER STORAGE         -->
 	<!-- ********************************************* -->
 	<xs:element name="user-storage" type="UserStorage"/>
 	<xs:complexType name="UserStorage">
@@ -77,16 +55,24 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="domain" type="ServiceProviderDomain" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ServiceProviderDomain">
+	<xs:complexType name="ServiceProvider">
 		<xs:annotation>
-			<xs:documentation>A ServiceProvider Domain.</xs:documentation>
+			<xs:documentation>A ServiceProvider.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="domainname" type="caseinsensitivetext"/>
-			<xs:element name="serviceprovider" type="caseinsensitivetext"/>
+			<xs:element name="domain" type="Domain" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Domain">
+		<xs:annotation>
+			<xs:documentation>A Domain.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="domainname" type="caseinsensitivetext"/>
 			<xs:element name="certificate" type="Certificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="service" type="Service" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="address" type="Address" minOccurs="0" maxOccurs="unbounded"/>
