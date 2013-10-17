@@ -28,6 +28,11 @@ public class GlobalServiceImpl implements GlobalService {
 	}
 
 	@Override
+	public boolean hasProblems() {
+		return getProblemRegistry().getProblems().size() > 0;
+	}
+
+	@Override
 	public void deleteAllProblems() {
 		getProblemRegistry().deleteAllProblems();
 	}

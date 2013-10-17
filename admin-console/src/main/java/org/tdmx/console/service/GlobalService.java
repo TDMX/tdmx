@@ -9,6 +9,7 @@ public interface GlobalService {
 
 	public abstract List<Domain> listDomains();
 
+	public boolean hasProblems();
 	public List<Problem> getProblems();
 	public void deleteAllProblems();
 	public void deleteProblem( int id );
