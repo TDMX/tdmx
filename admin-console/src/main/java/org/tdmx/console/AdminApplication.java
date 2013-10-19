@@ -1,9 +1,5 @@
 package org.tdmx.console;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import org.apache.wicket.Application;
 import org.apache.wicket.Session;
 import org.apache.wicket.WicketRuntimeException;
@@ -14,7 +10,6 @@ import org.apache.wicket.request.Response;
 import org.apache.wicket.response.filter.ServerAndClientTimeFilter;
 import org.apache.wicket.settings.IApplicationSettings;
 import org.tdmx.console.application.Administration;
-import org.tdmx.console.application.AdministrationImpl;
 import org.tdmx.console.base.CustomSession;
 import org.tdmx.console.base.IProtectedPage;
 import org.tdmx.console.base.MountedMapperWithoutPageComponentInfo;
@@ -22,8 +17,8 @@ import org.tdmx.console.pages.domain.DomainDetailsPage;
 import org.tdmx.console.pages.domain.DomainPage;
 import org.tdmx.console.pages.login.LoginPage;
 import org.tdmx.console.pages.profile.ProfilePage;
-import org.tdmx.console.service.GlobalService;
-import org.tdmx.console.service.GlobalServiceImpl;
+import org.tdmx.console.service.UIService;
+import org.tdmx.console.service.UIServiceImpl;
 
 import de.agilecoders.wicket.core.Bootstrap;
 import de.agilecoders.wicket.core.markup.html.RenderJavaScriptToFooterHeaderResponseDecorator;
@@ -43,8 +38,6 @@ import de.agilecoders.wicket.themes.settings.BootswatchThemeProvider;
  */
 public class AdminApplication extends WebApplication {
 
-	public static final String CONFIG_PROPERTY = "org.tdmx.console.config";
-	public static final String PASSPHRASE_PROPERTY = "org.tdmx.console.passphrase";
 	private Administration admin;
 	
 	public static AdminApplication get() {
@@ -57,9 +50,11 @@ public class AdminApplication extends WebApplication {
 		return (AdminApplication) application;
 	}
 	
-	public static GlobalService getSearchService() {
-		GlobalServiceImpl impl = new GlobalServiceImpl();
-		impl.setObjectRegistry(get().getAdministration().getObjectRegistry());
+	public static UIService geUIService() {
+		UIServiceImpl impl = new UIServiceImpl();
+		Administration a = get().getAdministration();
+		impl.setObjectRegistry(a.getObjectRegistry());
+		impl.setProblemRegistry(a.getProblemRegistry());
 		return impl;
 	}
 	
@@ -80,24 +75,6 @@ public class AdminApplication extends WebApplication {
 	@Override
 	protected void init() {
 		super.init();
-		
-		String configFilePath = System.getProperty(CONFIG_PROPERTY);
-		if ( configFilePath == null ) {
-	    	throw new RuntimeException("Missing System property " + CONFIG_PROPERTY);
-		}
-		String passphrase = System.getProperty(PASSPHRASE_PROPERTY);
-		if ( passphrase == null ) {
-			System.out.println("Enter passphrase:");
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			try {
-				passphrase = br.readLine();
-		    } catch (IOException ioe) {
-		    	throw new RuntimeException("Unable to read passphrase from stdin.");
-		    }
-		}
-		AdministrationImpl admin = new AdministrationImpl();
-		admin.initialize(configFilePath, passphrase);
-		this.admin = admin;
 		
 		// dev utilities
 		getDebugSettings().setDevelopmentUtilitiesEnabled(false);
@@ -156,6 +133,12 @@ public class AdminApplication extends WebApplication {
 	public Administration getAdministration() {
 		return this.admin;
 	}
+	
+	public void setAdministration(Administration administration) {
+		this.admin = administration;
+	}
+
+	
 }
 
 

@@ -9,6 +9,7 @@ public interface ProblemRegistry {
 	public void addProblem( Problem problem );
 	public void deleteProblem( int problemId );
 	public void deleteAllProblems();
+	public Problem getLastProblem();
 	public List<Problem> getProblems();
 	
 }

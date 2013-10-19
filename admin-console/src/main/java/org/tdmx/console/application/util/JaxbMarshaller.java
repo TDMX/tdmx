@@ -3,7 +3,6 @@ package org.tdmx.console.application.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -23,17 +22,26 @@ public class JaxbMarshaller<T> {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-    private static final String DEFAULT_ENCODING = "ISO-8859-1";
+    private static final String DEFAULT_ENCODING = "UTF-8";
 	private String encoding=DEFAULT_ENCODING;
 	private String noNamespaceSchemaLocation;
 	private JAXBContext jaxbContext;
 	private QName qName;
 	private Class<T> responseClass;
 	private boolean suppressXMLDeclaration = false;
+	private boolean prettyPrint = true;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
+
+	public boolean isPrettyPrint() {
+		return prettyPrint;
+	}
+
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
+	}
 
 	/**
 	 * Constructor sufficient for Unmarshalling.
@@ -74,6 +82,9 @@ public class JaxbMarshaller<T> {
 		if(isSuppressXMLDeclaration()) {
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 		}
+		if (isPrettyPrint()) {
+			marshaller.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE );			
+		}
 		marshaller.marshal(jaxbElement, new PrintStream(out));
 		return out.toByteArray();
 	}
@@ -83,16 +94,6 @@ public class JaxbMarshaller<T> {
 		return unmarshall(unmarshaller, xml, responseClass);
 	}
 
-    public String getXmlBytesAsString( byte[] bytes ) {
-        String msg = "<Unknown/>";
-        try {
-            msg = new String( bytes, getEncoding());
-        } catch ( UnsupportedEncodingException e ) {
-            msg = new String(bytes);
-        }
-        return msg;
-    }
-    
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

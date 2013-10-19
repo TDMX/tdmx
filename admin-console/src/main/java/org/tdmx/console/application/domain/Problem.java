@@ -12,13 +12,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Problem {
 
-	public static AtomicInteger ID = new AtomicInteger(0);
-	
+	//-------------------------------------------------------------------------
+	//PUBLIC CONSTANTS
+	//-------------------------------------------------------------------------
+
 	public static enum ProblemCode {
-		CONFIGURATION_FILE_IO,
+		CONFIGURATION_FILE_READ_IO,
+		CONFIGURATION_FILE_WRITE_IO,
 		CONFIGURATION_FILE_PARSE,
+		CONFIGURATION_FILE_MARSHAL,
 		;
 	}
+	
+	//-------------------------------------------------------------------------
+	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	//-------------------------------------------------------------------------
+	public static final AtomicInteger ID = new AtomicInteger(0);
 	
 	private int id;
 	private ProblemCode code;
@@ -26,6 +35,10 @@ public class Problem {
 	private Throwable throwable;
 	private String msg;
 	
+	//-------------------------------------------------------------------------
+	//CONSTRUCTORS
+	//-------------------------------------------------------------------------
+
 	public Problem( ProblemCode pc, Throwable t ) {
 		this.timestamp = Calendar.getInstance();
 		this.code = pc;
@@ -38,6 +51,10 @@ public class Problem {
 		this.msg = msg;
 	}
 
+	//-------------------------------------------------------------------------
+	//PUBLIC METHODS
+	//-------------------------------------------------------------------------
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -61,6 +78,18 @@ public class Problem {
 	}
 	
 	
+    //-------------------------------------------------------------------------
+	//PROTECTED METHODS
+	//-------------------------------------------------------------------------
+
+	//-------------------------------------------------------------------------
+	//PRIVATE METHODS
+	//-------------------------------------------------------------------------
+
+	//-------------------------------------------------------------------------
+	//PUBLIC ACCESSORS (GETTERS / SETTERS)
+	//-------------------------------------------------------------------------
+
 	public int getId() {
 		return id;
 	}
