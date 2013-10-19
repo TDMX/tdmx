@@ -12,8 +12,10 @@ import org.apache.wicket.markup.html.form.StatelessForm;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.tdmx.console.AdminApplication;
 import org.tdmx.console.base.CustomSession;
 import org.tdmx.console.domain.User;
+import org.tdmx.console.service.UIService;
 
 import de.agilecoders.wicket.core.markup.html.bootstrap.behavior.BootstrapBaseBehavior;
 import de.agilecoders.wicket.core.markup.html.bootstrap.common.NotificationPanel;
@@ -30,6 +32,8 @@ import de.agilecoders.wicket.core.markup.html.bootstrap.html.OptimizedMobileView
 public final class LoginPage extends GenericWebPage<LoginPage> {
 
 	private static Log log = LogFactory.getLog(LoginPage.class);
+	
+	private transient UIService userService = AdminApplication.getUIService();
 	
 	public CustomSession getCustomSession() {
 		return (CustomSession) getSession();
@@ -90,11 +94,10 @@ public final class LoginPage extends GenericWebPage<LoginPage> {
 				User user = null; // TODO: load user
 				
 				if (user == null) {
-					user = authenticate(loginModel.getUserName(), loginModel.getPassword());
+					user = userService.authenticate(loginModel.getUserName(), loginModel.getPassword());
 				}
 				
 				if (user != null) {
-					user.setLastLogin(new Date());
 					session.setUser(user);
 					continueToOriginalDestination();
 					setResponsePage(getApplication().getHomePage());
@@ -103,21 +106,6 @@ public final class LoginPage extends GenericWebPage<LoginPage> {
 					error(loginError);
 				}
 			}
-		}
-
-		@SuppressWarnings("unchecked")
-		private User authenticate(String login, String password) {
-			User user = new User(); // load user
-			user.setLoginName(login);
-			user.setPassword(password);
-			user.setFirstName("George");
-			user.setLastName("Bush");
-
-			if (user.isValidPassword(password)) {
-				return user;
-			}
-
-			return null;
 		}
 
 	}

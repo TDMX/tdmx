@@ -1,12 +1,14 @@
 package org.tdmx.console.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Problem;
+import org.tdmx.console.domain.User;
 
 public class UIServiceImpl implements UIService {
 
@@ -20,7 +22,8 @@ public class UIServiceImpl implements UIService {
 
 	private ObjectRegistry objectRegistry;
 	private ProblemRegistry problemRegistry;
-
+	private int busyId;
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -69,6 +72,15 @@ public class UIServiceImpl implements UIService {
 		return p != null ? new Problem(p) : null;
 	}
 
+	@Override
+	public User authenticate(String login, String password) {
+		if ("secret".equals(password) ) {
+			User user = new User(login, "George", "Bush", "noreply@mycompany.com", new Date());
+			return user;
+		}
+		return null;
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -95,6 +107,14 @@ public class UIServiceImpl implements UIService {
 
 	public void setProblemRegistry(ProblemRegistry problemRegistry) {
 		this.problemRegistry = problemRegistry;
+	}
+
+	public int getBusyId() {
+		return busyId;
+	}
+
+	public void setBusyId(int busyId) {
+		this.busyId = busyId;
 	}
 
 }

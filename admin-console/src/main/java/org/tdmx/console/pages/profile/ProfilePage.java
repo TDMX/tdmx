@@ -21,7 +21,7 @@ public final class ProfilePage extends BasePage implements IProtectedPage {
 		
 		add(new Label("name", Model.of(user.getFirstName() + " " + user.getLastName())));
 		add(new Label("userName", Model.of(user.getLoginName())));
-		add(new Label("company", Model.of(user.getCompany())));
+		add(new Label("email", Model.of(user.getEmail())));
 	}
 	
 	

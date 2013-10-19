@@ -13,7 +13,6 @@ import javax.xml.bind.JAXBException;
 import org.apache.wicket.Application;
 import org.apache.wicket.IInitializer;
 import org.tdmx.console.AdminApplication;
-import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
 import org.tdmx.console.application.domain.Problem;

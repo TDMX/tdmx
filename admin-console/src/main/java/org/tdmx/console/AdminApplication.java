@@ -50,11 +50,12 @@ public class AdminApplication extends WebApplication {
 		return (AdminApplication) application;
 	}
 	
-	public static UIService geUIService() {
+	public static UIService getUIService() {
 		UIServiceImpl impl = new UIServiceImpl();
 		Administration a = get().getAdministration();
 		impl.setObjectRegistry(a.getObjectRegistry());
 		impl.setProblemRegistry(a.getProblemRegistry());
+		impl.setBusyId(a.getBusyId());
 		return impl;
 	}
 	

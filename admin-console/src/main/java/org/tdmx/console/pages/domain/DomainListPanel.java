@@ -24,7 +24,7 @@ public class DomainListPanel extends Panel {
 
 	private static Log log = LogFactory.getLog(DomainListPanel.class);
 	
-	private transient UIService searchService = AdminApplication.geUIService();
+	private transient UIService searchService = AdminApplication.getUIService();
 	
 	public DomainListPanel(String id) {
 		super(id);

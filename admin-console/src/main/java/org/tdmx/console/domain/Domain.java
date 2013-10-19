@@ -17,6 +17,4 @@ public class Domain implements Serializable {
 	public void setTitle(String name) {
 		this.title = name;
 	}
-
-
 }
