@@ -2,14 +2,14 @@ package org.tdmx.console.application.service;
 
 import java.util.List;
 
-import org.tdmx.console.application.domain.Problem;
+import org.tdmx.console.application.domain.ProblemDO;
 
 public interface ProblemRegistry {
 
-	public void addProblem( Problem problem );
+	public void addProblem( ProblemDO problem );
 	public void deleteProblem( int problemId );
 	public void deleteAllProblems();
-	public Problem getLastProblem();
-	public List<Problem> getProblems();
+	public ProblemDO getLastProblem();
+	public List<ProblemDO> getProblems();
 	
 }

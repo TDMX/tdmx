@@ -1,14 +1,10 @@
-package org.tdmx.console.application.service;
+package org.tdmx.console.application.dao;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import javax.xml.ws.Endpoint;
 
-import org.tdmx.console.application.domain.ProblemDO;
+import org.tdmx.console.application.domain.ServiceProviderDO;
 
-public class ProblemRegistryImpl implements ProblemRegistry {
+public class DomainObjectToStoreMapper {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -18,9 +14,6 @@ public class ProblemRegistryImpl implements ProblemRegistry {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private LinkedList<ProblemDO> problemList = new LinkedList<>();
-	private int maxSize = 1000;
-	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -29,44 +22,35 @@ public class ProblemRegistryImpl implements ProblemRegistry {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	//TODO merge the last 2 problems together if the same - adding # to Problem
-	@Override
-	public void addProblem(ProblemDO problem) {
-		problemList.addLast(problem);
-		if ( problemList.size() > maxSize ) {
-			problemList.removeFirst();
-		}
+	public ServiceProvider map( ServiceProviderDO other ) {
+		ServiceProvider o = new ServiceProvider();
+		o.setSubjectIdentity(other.getSubjectIdentifier());
+		o.setApiVersion(other.getVersion());
+		
+		EndPoint masEp = new EndPoint();
+		masEp.setHostname(other.getMasHostname());
+		masEp.setPort(other.getMasPort());
+		o.setMas(masEp);
+		
+		EndPoint mrsEp = new EndPoint();
+		mrsEp.setHostname(other.getMrsHostname());
+		mrsEp.setPort(other.getMrsPort());
+		o.setMrs(mrsEp);
+		
+		EndPoint mosEp = new EndPoint();
+		mosEp.setHostname(other.getMosHostname());
+		mosEp.setPort(other.getMosPort());
+		o.setMos(mosEp);
+		
+		EndPoint mdsEp = new EndPoint();
+		mdsEp.setHostname(other.getMdsHostname());
+		mdsEp.setPort(other.getMdsPort());
+		o.setMds(mdsEp);
+		
+		//TODO domain
+		return o;
 	}
-
-	@Override
-	public void deleteProblem(int problemId) {
-		Iterator<ProblemDO> it = problemList.iterator();
-		while( it.hasNext() ) {
-			ProblemDO p = it.next();
-			if ( p.getId() == problemId ) {
-				it.remove();
-			}
-		}
-	}
-
-	@Override
-	public void deleteAllProblems() {
-		problemList.clear();
-	}
-
-	@Override
-	public List<ProblemDO> getProblems() {
-		return Collections.unmodifiableList(problemList);
-	}
-
-	@Override
-	public ProblemDO getLastProblem() {
-		try {
-			return problemList.getLast();
-		} catch ( NoSuchElementException e ) {
-			return null;
-		}
-	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -78,4 +62,5 @@ public class ProblemRegistryImpl implements ProblemRegistry {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
 }

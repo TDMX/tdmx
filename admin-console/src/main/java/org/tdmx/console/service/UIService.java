@@ -5,6 +5,7 @@ import java.util.List;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Problem;
 import org.tdmx.console.domain.User;
+import org.tdmx.console.service.command.AddServiceProviderCommand;
 
 public interface UIService {
 
@@ -26,4 +27,7 @@ public interface UIService {
 	// User related calls 
 	//
 	public User authenticate(String login, String password);
+	
+	// Commands
+	public void execute( AddServiceProviderCommand cmd );
 }

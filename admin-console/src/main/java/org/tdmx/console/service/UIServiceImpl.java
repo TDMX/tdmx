@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.tdmx.console.application.executor.AddServiceProviderExecutor;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Problem;
 import org.tdmx.console.domain.User;
+import org.tdmx.console.service.command.AddServiceProviderCommand;
 
 public class UIServiceImpl implements UIService {
 
@@ -40,7 +42,7 @@ public class UIServiceImpl implements UIService {
 	@Override
 	public List<Problem> getProblems() {
 		List<Problem> list = new ArrayList<>();
-		for( org.tdmx.console.application.domain.Problem p : getProblemRegistry().getProblems()) {
+		for( org.tdmx.console.application.domain.ProblemDO p : getProblemRegistry().getProblems()) {
 			list.add(new Problem(p));
 		}
 		return list;
@@ -68,7 +70,7 @@ public class UIServiceImpl implements UIService {
 
 	@Override
 	public Problem getMostRecentProblem() {
-		org.tdmx.console.application.domain.Problem p = problemRegistry.getLastProblem();
+		org.tdmx.console.application.domain.ProblemDO p = problemRegistry.getLastProblem();
 		return p != null ? new Problem(p) : null;
 	}
 
@@ -79,6 +81,12 @@ public class UIServiceImpl implements UIService {
 			return user;
 		}
 		return null;
+	}
+
+	@Override
+	public void execute(AddServiceProviderCommand cmd) {
+		AddServiceProviderExecutor exec = new AddServiceProviderExecutor(getObjectRegistry());
+		exec.execute(cmd);
 	}
 
     //-------------------------------------------------------------------------

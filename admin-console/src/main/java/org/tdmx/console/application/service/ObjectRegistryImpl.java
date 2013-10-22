@@ -1,10 +1,14 @@
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
+import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
+import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.domain.Domain;
 
 public class ObjectRegistryImpl implements ObjectRegistry {
@@ -12,13 +16,21 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-
+	public static enum OBJECT_OPERATION {
+		Add, Modify, Remove
+	};
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private Object syncObj = new Object();
 	private boolean dirty = false;
 	private ObjectRegistryChangeListener changeListener;
+	
+	private DomainObjectFromStoreMapper domMapper = new DomainObjectFromStoreMapper();
+	private DomainObjectToStoreMapper storeMapper = new DomainObjectToStoreMapper();
+	
+	private List<ServiceProviderDO> serviceproviderList = new LinkedList<>();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -30,27 +42,48 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 	
 	public void initContent( ServiceProviderStorage content ) {
 		synchronized( syncObj ) {
-			//TODO
+			serviceproviderList.clear();
+			for( ServiceProvider sp : content.getServiceprovider() ) {
+				ServiceProviderDO s = domMapper.map(sp);
+				serviceproviderList.add(s);
+			}
 			dirty = false;
 		}
-		
 	}
 	
 	public ServiceProviderStorage getContentIfDirty() {
 		synchronized( syncObj ) {
 			if ( dirty ) {
-				//TODO
-				ServiceProviderStorage s = new ServiceProviderStorage();
-				ServiceProvider sp =  new ServiceProvider();
-				sp.setDomainname(""+System.currentTimeMillis());
-				s.getServiceprovider().add(sp);
+				ServiceProviderStorage store = new ServiceProviderStorage();
+				for( ServiceProviderDO sp : serviceproviderList ) {
+					ServiceProvider s = storeMapper.map(sp);
+					store.getServiceprovider().add(s);
+				}
 				dirty = false;
-				return s;
+				return store;
 			}
 			return null;
 		}
 	}
 	
+	public void notifyServiceProvider( OBJECT_OPERATION op, ServiceProviderDO obj ) {
+		synchronized( syncObj ) {
+			switch (op) {
+			case Add:
+				if( !serviceproviderList.contains(obj)) {
+					serviceproviderList.add(obj);
+				}
+				break;
+			case Modify:
+				break;
+			case Remove:
+				serviceproviderList.remove(obj);
+				break;
+			}
+			dirty = true;
+		}
+		notifyChangedListener();
+	}
 	
 	@Override
 	public List<Domain> getDomains() {
@@ -65,7 +98,7 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 		synchronized( syncObj ) {
 			dirty = true;
 		}
-    	notifyChanged();
+    	notifyChangedListener();
 		return domainList; 
 	}
 
@@ -77,7 +110,7 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
-	private void notifyChanged() {
+	private void notifyChangedListener() {
 		ObjectRegistryChangeListener l = getChangeListener();
 		if ( l != null ) {
 			l.notifyObjectRegistryChanged();

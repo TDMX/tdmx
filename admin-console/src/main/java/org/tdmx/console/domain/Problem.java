@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.tdmx.console.application.domain.Problem.ProblemCode;
+import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 
 public class Problem implements Serializable {
 	
@@ -15,7 +15,7 @@ public class Problem implements Serializable {
 	private String text;
 	private String[] causes;
 
-	public Problem( org.tdmx.console.application.domain.Problem p ) {
+	public Problem( org.tdmx.console.application.domain.ProblemDO p ) {
 		this.id = p.getId();
 		this.code = p.getCode();
 		this.timestamp = p.getTimestamp().getTime();

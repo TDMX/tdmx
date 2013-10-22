@@ -58,13 +58,55 @@
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="EndPoint">
+		<xs:annotation>
+			<xs:documentation>An API Endpoint Address</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="hostname" type="caseinsensitivetext"/>
+			<xs:element name="port" type="xs:unsignedShort"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="ServiceProvider">
 		<xs:annotation>
 			<xs:documentation>A ServiceProvider.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="domainname" type="caseinsensitivetext"/>
-			<xs:element name="domain" type="Domain" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="subject-identity" type="text">
+				<xs:annotation>
+					<xs:documentation>the X.509 Subject (identity) of the ServiceProvider. This must be the same for all certificates served by the ServiceProvider's APIs.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="api-version" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>the TDMX version used for all entities and APIs.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="mrs" type="EndPoint">
+				<xs:annotation>
+					<xs:documentation>the hostname and port of the ServiceProvider's Message Relay Service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="mas" type="EndPoint">
+				<xs:annotation>
+					<xs:documentation>the hostname and port of the ServiceProvider's Message Administration Service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="mos" type="EndPoint">
+				<xs:annotation>
+					<xs:documentation>the hostname and port of the ServiceProvider's Message Origination Service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="mds" type="EndPoint">
+				<xs:annotation>
+					<xs:documentation>the hostname and port of the ServiceProvider's Message Destination Service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="domain" type="Domain" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>the own domains managed at the ServiceProvder.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="Domain">

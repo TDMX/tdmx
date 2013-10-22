@@ -15,8 +15,8 @@ import org.apache.wicket.IInitializer;
 import org.tdmx.console.AdminApplication;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
-import org.tdmx.console.application.domain.Problem;
-import org.tdmx.console.application.domain.Problem.ProblemCode;
+import org.tdmx.console.application.domain.ProblemDO;
+import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
@@ -82,10 +82,10 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			ServiceProviderStorage content = store.load();
 			registry.initContent(content);
 		} catch ( IOException e ) {
-			Problem p = new Problem(ProblemCode.CONFIGURATION_FILE_READ_IO, e);
+			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_READ_IO, e);
 			problemRegistry.addProblem(p);
 		} catch ( JAXBException e) {
-			Problem p = new Problem(ProblemCode.CONFIGURATION_FILE_PARSE, e);
+			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_PARSE, e);
 			problemRegistry.addProblem(p);
 		}
 	}
@@ -133,10 +133,10 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 						store.save(s);
 					}
 				} catch (IOException e) {
-					Problem p = new Problem(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
+					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
 					problemRegistry.addProblem(p);
 				} catch (JAXBException e) {
-					Problem p = new Problem(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
+					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
 					problemRegistry.addProblem(p);
 				} finally {
 					busyId = 0;
