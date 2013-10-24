@@ -1,7 +1,5 @@
 package org.tdmx.console.application.dao;
 
-import javax.xml.ws.Endpoint;
-
 import org.tdmx.console.application.domain.ServiceProviderDO;
 
 public class DomainObjectToStoreMapper {

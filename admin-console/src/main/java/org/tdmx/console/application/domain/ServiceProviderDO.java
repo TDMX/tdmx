@@ -13,11 +13,7 @@ public class ServiceProviderDO {
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static final int STATUS_IRRELEVANT = -2;
-	public static final int STATUS_UNCHECKED = -1;
-	public static final int STATUS_OK = 0;
-	public static final int STATUS_UNKNOWN_HOST = 1;
-	public static final int STATUS_UNREACHABLE_HOST = 2;
+	//TODO proxyConfig
 	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -27,19 +23,19 @@ public class ServiceProviderDO {
 	
 	private String mrsHostname;
 	private int mrsPort;
-	private int mrsStatus;
+	private ConnectionTestResultDO mrsStatus;
 	
 	private String masHostname;
 	private int masPort;
-	private int masStatus;
+	private ConnectionTestResultDO masStatus;
 
 	private String mosHostname;
 	private int mosPort;
-	private int mosStatus;
+	private ConnectionTestResultDO mosStatus;
 
 	private String mdsHostname;
 	private int mdsPort;
-	private int mdsStatus;
+	private ConnectionTestResultDO mdsStatus;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -121,11 +117,11 @@ public class ServiceProviderDO {
 		this.mrsPort = mrsPort;
 	}
 
-	public int getMrsStatus() {
+	public ConnectionTestResultDO getMrsStatus() {
 		return mrsStatus;
 	}
 
-	public void setMrsStatus(int mrsStatus) {
+	public void setMrsStatus(ConnectionTestResultDO mrsStatus) {
 		this.mrsStatus = mrsStatus;
 	}
 
@@ -146,11 +142,11 @@ public class ServiceProviderDO {
 	}
 
 
-	public int getMasStatus() {
+	public ConnectionTestResultDO getMasStatus() {
 		return masStatus;
 	}
 
-	public void setMasStatus(int masStatus) {
+	public void setMasStatus(ConnectionTestResultDO masStatus) {
 		this.masStatus = masStatus;
 	}
 
@@ -171,11 +167,11 @@ public class ServiceProviderDO {
 	}
 
 
-	public int getMosStatus() {
+	public ConnectionTestResultDO getMosStatus() {
 		return mosStatus;
 	}
 
-	public void setMosStatus(int mosStatus) {
+	public void setMosStatus(ConnectionTestResultDO mosStatus) {
 		this.mosStatus = mosStatus;
 	}
 
@@ -195,11 +191,11 @@ public class ServiceProviderDO {
 		this.mdsPort = mdsPort;
 	}
 
-	public int getMdsStatus() {
+	public ConnectionTestResultDO getMdsStatus() {
 		return mdsStatus;
 	}
 
-	public void setMdsStatus(int mdsStatus) {
+	public void setMdsStatus(ConnectionTestResultDO mdsStatus) {
 		this.mdsStatus = mdsStatus;
 	}
 

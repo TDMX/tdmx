@@ -1,13 +1,6 @@
 package org.tdmx.console.application.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.tdmx.console.application.dao.EndPoint;
-import org.tdmx.console.application.dao.ServiceProvider;
-import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.domain.Domain;
 
 public class DomainObjectFromStoreMapper {
 
@@ -35,34 +28,26 @@ public class DomainObjectFromStoreMapper {
 		if ( other.getMas() != null) {
 			o.setMasHostname(other.getMas().getHostname());
 			o.setMasPort(other.getMas().getPort());
-			o.setMasStatus(ServiceProviderDO.STATUS_UNCHECKED);
-		} else {
-			o.setMasStatus(ServiceProviderDO.STATUS_IRRELEVANT);
 		}
+		o.setMasStatus(null);
 		
 		if ( other.getMrs() != null) {
 			o.setMrsHostname(other.getMrs().getHostname());
 			o.setMrsPort(other.getMrs().getPort());
-			o.setMrsStatus(ServiceProviderDO.STATUS_UNCHECKED);
-		} else {
-			o.setMrsStatus(ServiceProviderDO.STATUS_IRRELEVANT);
 		}
+		o.setMrsStatus(null);
 		
 		if ( other.getMos() != null) {
 			o.setMosHostname(other.getMos().getHostname());
 			o.setMosPort(other.getMos().getPort());
-			o.setMosStatus(ServiceProviderDO.STATUS_UNCHECKED);
-		} else {
-			o.setMosStatus(ServiceProviderDO.STATUS_IRRELEVANT);
 		}
+		o.setMosStatus(null);
 		
 		if ( other.getMds() != null) {
 			o.setMdsHostname(other.getMds().getHostname());
 			o.setMdsPort(other.getMds().getPort());
-			o.setMdsStatus(ServiceProviderDO.STATUS_UNCHECKED);
-		} else {
-			o.setMdsStatus(ServiceProviderDO.STATUS_IRRELEVANT);
 		}
+		o.setMdsStatus(null);
 		
 		//TODO domain
 		return o;
