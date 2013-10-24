@@ -3,6 +3,7 @@ package org.tdmx.console.service;
 import java.util.List;
 
 import org.tdmx.console.domain.Domain;
+import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
 import org.tdmx.console.domain.User;
 import org.tdmx.console.service.command.AddServiceProviderCommand;
@@ -13,7 +14,7 @@ public interface UIService {
 
 	// Global application calls 
 	//
-	public int getBusyId();
+	public List<Job> getJobs();
 	
 	// Problem related calls 
 	//

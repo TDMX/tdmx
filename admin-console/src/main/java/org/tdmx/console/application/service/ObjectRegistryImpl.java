@@ -11,7 +11,7 @@ import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.domain.Domain;
 
-public class ObjectRegistryImpl implements ObjectRegistry {
+public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -40,6 +40,7 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
 	public void initContent( ServiceProviderStorage content ) {
 		synchronized( syncObj ) {
 			serviceproviderList.clear();
@@ -51,6 +52,7 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 		}
 	}
 	
+	@Override
 	public ServiceProviderStorage getContentIfDirty() {
 		synchronized( syncObj ) {
 			if ( dirty ) {
@@ -121,10 +123,12 @@ public class ObjectRegistryImpl implements ObjectRegistry {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
+	@Override
 	public ObjectRegistryChangeListener getChangeListener() {
 		return changeListener;
 	}
 
+	@Override
 	public void setChangeListener(ObjectRegistryChangeListener changeListener) {
 		this.changeListener = changeListener;
 	}

@@ -9,11 +9,19 @@ import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 
 public class Problem implements Serializable {
 	
+	//-------------------------------------------------------------------------
+	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	//-------------------------------------------------------------------------
+
 	private int id;
 	private ProblemCode code;
 	private Date timestamp;
 	private String text;
 	private String[] causes;
+
+	//-------------------------------------------------------------------------
+	//CONSTRUCTORS
+	//-------------------------------------------------------------------------
 
 	public Problem( org.tdmx.console.application.domain.ProblemDO p ) {
 		this.id = p.getId();
@@ -29,6 +37,10 @@ public class Problem implements Serializable {
 		}
 	}
 	
+	//-------------------------------------------------------------------------
+	//PRIVATE METHODS
+	//-------------------------------------------------------------------------
+
 	private String[] getCauseList( Throwable t ) {
 		List<String> causeList = new ArrayList<>();
 		Throwable cause = t.getCause();
@@ -42,6 +54,10 @@ public class Problem implements Serializable {
 		return causeList.toArray(new String[0]);
 	}
 	
+	//-------------------------------------------------------------------------
+	//PUBLIC ACCESSORS (GETTERS / SETTERS)
+	//-------------------------------------------------------------------------
+
 	public int getId() {
 		return id;
 	}

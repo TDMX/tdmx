@@ -49,17 +49,36 @@
 		</dependency>
 		
 		<!-- Logging -->
+	    <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+	    </dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.4</version>
+			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-		
+		Logging -->
 	</dependencies>
 	
 	<build>
@@ -169,8 +188,39 @@
 							<name>networkaddress.cache.negative.ttl</name>
 							<value>0</value>
 						</systemProperty>
+						<systemProperty>
+							<name>logback.configurationFile</name>
+							<value>logback.xml</value>
+						</systemProperty>
 					</systemProperties>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>jcl-over-slf4j</artifactId>
+						<version>${slf4j.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>log4j-over-slf4j</artifactId>
+						<version>${slf4j.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.slf4j</groupId>
+						<artifactId>jul-to-slf4j</artifactId>
+						<version>${slf4j.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-classic</artifactId>
+						<version>${logback.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-core</artifactId>
+						<version>${logback.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
@@ -180,6 +230,8 @@
 		<java.source.version>1.7</java.source.version>
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
+		<slf4j.version>1.5.8</slf4j.version>
+		<logback.version>1.0.13</logback.version>
 	</properties>
 	
 	

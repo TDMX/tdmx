@@ -53,9 +53,7 @@ public class AdminApplication extends WebApplication {
 	public static UIService getUIService() {
 		UIServiceImpl impl = new UIServiceImpl();
 		Administration a = get().getAdministration();
-		impl.setObjectRegistry(a.getObjectRegistry());
-		impl.setProblemRegistry(a.getProblemRegistry());
-		impl.setBusyId(a.getBusyId());
+		impl.setAdmin(a);
 		return impl;
 	}
 	

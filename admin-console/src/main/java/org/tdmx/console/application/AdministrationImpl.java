@@ -3,10 +3,8 @@ package org.tdmx.console.application;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
@@ -17,6 +15,8 @@ import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
+import org.tdmx.console.application.job.BackgroundJob;
+import org.tdmx.console.application.job.StateStorageJob;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
@@ -39,22 +39,14 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	private String passPhrase = null;
 	
 	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
-	private ProblemRegistryImpl problemRegistry = new ProblemRegistryImpl();
+	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
-	private ScheduledExecutorService scheduler = null;
-	private AtomicInteger processingId = new AtomicInteger();
-	private int busyId = 0;
+	private StateStorageJob storageJob = null;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	@Override
-	public int getBusyId() {
-		return busyId;
-	}
-
-	
 	@Override
 	public void init(Application application) {
 		((AdminApplication)application).setAdministration(this);
@@ -74,7 +66,6 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		    }
 		}
 		
-		scheduler = Executors.newSingleThreadScheduledExecutor();
 		registry.setChangeListener(this);
 		
 		store.setFilename(configFilePath);
@@ -88,26 +79,30 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_PARSE, e);
 			problemRegistry.addProblem(p);
 		}
+		
+		storageJob = new StateStorageJob();
+		storageJob.setName("StateStorage");
+		storageJob.setProblemRegistry(problemRegistry);
+		storageJob.setRegistry(registry);
+		storageJob.setStore(store);
+		storageJob.init();
 	}
 
 	@Override
 	public void destroy(Application application) {
-		if ( scheduler != null ) {
-			scheduler.shutdown();
-			try {
-				scheduler.awaitTermination(60, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				// ignore.
-			}
+		if ( storageJob != null ) {
+			storageJob.shutdown();
 		}
-		scheduler = null;
+		storageJob = null;
 		((AdminApplication)application).setAdministration(null);
 	}
 
 
 	@Override
 	public void notifyObjectRegistryChanged() {
-		flushStorage();
+		if ( storageJob != null ) {
+			storageJob.flushStorage();
+		}
 	}
 
 
@@ -118,36 +113,6 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-
-	private void flushStorage()  {
-		// start a thread off which will periodically save the app state.
-		Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				busyId = processingId.getAndIncrement();
-				
-				try {
-					ServiceProviderStorage s = registry.getContentIfDirty();
-					if ( s != null ) {
-						store.save(s);
-					}
-				} catch (IOException e) {
-					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
-					problemRegistry.addProblem(p);
-				} catch (JAXBException e) {
-					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
-					problemRegistry.addProblem(p);
-				} finally {
-					busyId = 0;
-				}
-			}
-			
-		};
-		if ( scheduler != null && !scheduler.isShutdown()) {
-			scheduler.schedule(r, 10, TimeUnit.SECONDS);
-		}
-	}
 
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -163,5 +128,15 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	public ProblemRegistry getProblemRegistry() {
 		return problemRegistry;
 	}
+
+	@Override
+	public List<BackgroundJob> getBackgroundJobs() {
+		List<BackgroundJob> jobList = new ArrayList<>();
+		if ( storageJob != null ) {
+			jobList.add(storageJob);
+		}
+		return jobList;
+	}
+
 
 }
