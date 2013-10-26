@@ -1,16 +1,17 @@
 package org.tdmx.console.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.tdmx.console.application.Administration;
-import org.tdmx.console.application.executor.AddServiceProviderExecutor;
+import org.tdmx.console.application.service.ProxyService;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
+import org.tdmx.console.domain.Proxy;
 import org.tdmx.console.domain.User;
-import org.tdmx.console.service.command.AddServiceProviderCommand;
 
 public class UIServiceImpl implements UIService {
 
@@ -24,10 +25,18 @@ public class UIServiceImpl implements UIService {
 
 	private Administration admin;
 	
+	private List<String> proxyTypes;
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
+	public UIServiceImpl() {
+		
+		List<String> pt = new ArrayList<>();
+		pt.add("HTTP");
+		pt.add("SOCKS");
+		proxyTypes = Collections.unmodifiableList(pt);
+	}
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
@@ -66,7 +75,7 @@ public class UIServiceImpl implements UIService {
 	}
 
 	@Override
-	public void deleteProblem(int id) {
+	public void deleteProblem(String id) {
 		 getAdmin().getProblemRegistry().deleteProblem(id);
 	}
 
@@ -91,10 +100,46 @@ public class UIServiceImpl implements UIService {
 	}
 
 	@Override
-	public void execute(AddServiceProviderCommand cmd) {
-		AddServiceProviderExecutor exec = new AddServiceProviderExecutor(getAdmin().getObjectRegistry());
-		exec.execute(cmd);
+	public List<String> getProxyTypes() {
+		return proxyTypes;
 	}
+
+	@Override
+	public List<Proxy> getProxies() {
+		List<Proxy> list = new ArrayList<>();
+		for( org.tdmx.console.application.domain.HttpProxyDO p : getAdmin().getObjectRegistry().getHttpProxies()) {
+			list.add(new Proxy(p, getAdmin().getProxyService()));
+		}
+		return list;
+	}
+
+	@Override
+	public Proxy lookupProxy(String id) {
+		org.tdmx.console.application.domain.HttpProxyDO p = getAdmin().getObjectRegistry().getProxy(id);
+		if ( p != null ) {
+			return new Proxy(p, getAdmin().getProxyService());
+		}
+		return null;
+	}
+
+	@Override
+	public List<ProxyService.ERROR> save(Proxy proxy) {
+		org.tdmx.console.application.domain.HttpProxyDO p = getAdmin().getObjectRegistry().getProxy(proxy.getId());
+		if ( p != null ) {
+			return getAdmin().getProxyService().modify(p);
+		}
+		return getAdmin().getProxyService().create(p);
+	}
+
+	@Override
+	public void deleteProxy(String id) {
+		org.tdmx.console.application.domain.HttpProxyDO p = getAdmin().getObjectRegistry().getProxy(id);
+		if ( p != null ) {
+			getAdmin().getProxyService().delete(p);
+		}
+		return;
+	}
+
 
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS

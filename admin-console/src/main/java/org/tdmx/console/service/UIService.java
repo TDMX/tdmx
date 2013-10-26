@@ -2,11 +2,12 @@ package org.tdmx.console.service;
 
 import java.util.List;
 
+import org.tdmx.console.application.service.ProxyService;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
+import org.tdmx.console.domain.Proxy;
 import org.tdmx.console.domain.User;
-import org.tdmx.console.service.command.AddServiceProviderCommand;
 
 public interface UIService {
 
@@ -22,13 +23,19 @@ public interface UIService {
 	public int getNumberOfProblems();
 	public List<Problem> getProblems();
 	public void deleteAllProblems();
-	public void deleteProblem( int id );
+	public void deleteProblem( String id );
 	public Problem getMostRecentProblem();
 	
 	// User related calls 
 	//
 	public User authenticate(String login, String password);
 	
-	// Commands
-	public void execute( AddServiceProviderCommand cmd );
+	// Proxy related calls
+	//
+	public List<String> getProxyTypes();
+	public List<Proxy> getProxies();
+	public Proxy lookupProxy( String id );
+	public List<ProxyService.ERROR> save( Proxy proxy ); // create and update
+	public void deleteProxy( String id );
+	
 }

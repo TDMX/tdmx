@@ -1,51 +1,30 @@
 package org.tdmx.console.application.domain;
 
-import java.util.Calendar;
 
 /**
- * These are severe Problems that indicate that the Application is not
- * working as expected.
+ * An outgoing HTTP proxy.
  * 
  * @author Peter
  *
  */
-public class ProblemDO extends AbstractDO {
+public class HttpProxyDO extends AbstractDO {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static enum ProblemCode {
-		CONFIGURATION_FILE_READ_IO,
-		CONFIGURATION_FILE_WRITE_IO,
-		CONFIGURATION_FILE_PARSE,
-		CONFIGURATION_FILE_MARSHAL,
-		;
-	}
-	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private ProblemCode code;
-	private Calendar timestamp;
-	private Throwable throwable;
-	private String msg;
+	private String hostname;
+	private int port;
+	private String type; //HTTP or SOCKS
+	private String username; // if need Basic ProxyAuthorization
+	private String password;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
-	public ProblemDO( ProblemCode pc, Throwable t ) {
-		this.timestamp = Calendar.getInstance();
-		this.code = pc;
-		this.throwable = t;
-	}
-
-	public ProblemDO( ProblemCode pc, String msg ) {
-		this.timestamp = Calendar.getInstance();
-		this.code = pc;
-		this.msg = msg;
-	}
 
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
@@ -63,20 +42,34 @@ public class ProblemDO extends AbstractDO {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public ProblemCode getCode() {
-		return code;
+	public String getHostname() {
+		return hostname;
 	}
-
-	public Calendar getTimestamp() {
-		return timestamp;
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
 	}
-
-	public Throwable getThrowable() {
-		return throwable;
+	public int getPort() {
+		return port;
 	}
-
-	public String getMsg() {
-		return msg;
+	public void setPort(int port) {
+		this.port = port;
 	}
-
+	public String getType() {
+		return type;
+	}
+	public void setType(String proxyServerType) {
+		this.type = proxyServerType;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
 }

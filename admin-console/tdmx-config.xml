@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service-provider-storage xmlns="urn:dao.application.console.tdmx.org">
+    <serviceprovider>
+        <api-version>0</api-version>
+        <mrs>
+            <port>0</port>
+        </mrs>
+        <mas>
+            <port>0</port>
+        </mas>
+        <mos>
+            <port>0</port>
+        </mos>
+        <mds>
+            <port>0</port>
+        </mds>
+    </serviceprovider>
+</service-provider-storage>

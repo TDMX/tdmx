@@ -55,6 +55,7 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="proxy" type="Proxy" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -65,7 +66,43 @@
 		<xs:sequence>
 			<xs:element name="hostname" type="caseinsensitivetext"/>
 			<xs:element name="port" type="xs:unsignedShort"/>
+			<xs:element name="proxy-id" type="text" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the id of the HTTP proxy to traverse outgoing to the endpoint.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Proxy">
+		<xs:annotation>
+			<xs:documentation>An HTTP Proxy.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="hostname" type="text">
+				<xs:annotation>
+					<xs:documentation>the TCP hostname or IP address of the Proxy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="port" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>the TCP port of the proxy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="type">
+				<xs:annotation>
+					<xs:documentation>the type of Proxy.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="HTTP"/>
+						<xs:enumeration value="SOCKS"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="username" type="text"/>
+			<xs:element name="encrypted-password" type="xs:base64Binary"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="ServiceProvider">
 		<xs:annotation>
@@ -108,6 +145,7 @@
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="Domain">
 		<xs:annotation>

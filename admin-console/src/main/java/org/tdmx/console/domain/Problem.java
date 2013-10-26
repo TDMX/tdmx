@@ -13,7 +13,7 @@ public class Problem implements Serializable {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private int id;
+	private String id;
 	private ProblemCode code;
 	private Date timestamp;
 	private String text;
@@ -58,7 +58,7 @@ public class Problem implements Serializable {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 

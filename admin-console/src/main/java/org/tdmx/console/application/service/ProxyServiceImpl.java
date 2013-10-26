@@ -1,14 +1,11 @@
-package org.tdmx.console.application.executor;
+package org.tdmx.console.application.service;
 
-import org.tdmx.console.application.service.ObjectRegistry;
-import org.tdmx.console.application.service.ProblemRegistry;
+import java.util.List;
+
+import org.tdmx.console.application.domain.HttpProxyDO;
 
 
-/**
- * @author Peter
- *
- */
-public abstract class AbstractExecutor<E> {
+public class ProxyServiceImpl implements ProxyService {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -17,10 +14,8 @@ public abstract class AbstractExecutor<E> {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
+	private ObjectRegistry objectRegistry;
 
-	protected ObjectRegistry objectRegistry;
-	protected ProblemRegistry problemRegistry;
-	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -29,7 +24,29 @@ public abstract class AbstractExecutor<E> {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public abstract void execute( E cmd );
+	@Override
+	public boolean isDeleteable(HttpProxyDO proxy) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public List<ERROR> create(HttpProxyDO proxy) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ERROR> modify(HttpProxyDO proxy) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void delete(HttpProxyDO proxy) {
+		// TODO Auto-generated method stub
+		
+	}
 
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -47,8 +64,8 @@ public abstract class AbstractExecutor<E> {
 		return objectRegistry;
 	}
 
-	public ProblemRegistry getProblemRegistry() {
-		return problemRegistry;
+	public void setObjectRegistry(ObjectRegistry objectRegistry) {
+		this.objectRegistry = objectRegistry;
 	}
 
 }

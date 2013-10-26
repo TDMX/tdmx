@@ -22,6 +22,8 @@ import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.application.service.ProblemRegistryImpl;
+import org.tdmx.console.application.service.ProxyService;
+import org.tdmx.console.application.service.ProxyServiceImpl;
 
 public class AdministrationImpl implements Administration, ObjectRegistryChangeListener, IInitializer {
 
@@ -40,6 +42,8 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	
 	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
+	private ProxyServiceImpl proxyService = new ProxyServiceImpl();
+	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private StateStorageJob storageJob = null;
 	
@@ -67,6 +71,8 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		}
 		
 		registry.setChangeListener(this);
+		
+		proxyService.setObjectRegistry(registry);
 		
 		store.setFilename(configFilePath);
 		try {
@@ -136,6 +142,11 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			jobList.add(storageJob);
 		}
 		return jobList;
+	}
+
+	@Override
+	public ProxyService getProxyService() {
+		return proxyService;
 	}
 
 

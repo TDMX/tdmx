@@ -7,14 +7,12 @@ package org.tdmx.console.application.domain;
  * @author Peter
  *
  */
-public class ServiceProviderDO {
+public class ServiceProviderDO extends AbstractDO {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	//TODO proxyConfig
-	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
@@ -24,18 +22,22 @@ public class ServiceProviderDO {
 	private String mrsHostname;
 	private int mrsPort;
 	private ConnectionTestResultDO mrsStatus;
-	
+	private HttpProxyDO mrsProxy;
+
 	private String masHostname;
 	private int masPort;
 	private ConnectionTestResultDO masStatus;
+	private HttpProxyDO masProxy;
 
 	private String mosHostname;
 	private int mosPort;
 	private ConnectionTestResultDO mosStatus;
+	private HttpProxyDO mosProxy;
 
 	private String mdsHostname;
 	private int mdsPort;
 	private ConnectionTestResultDO mdsStatus;
+	private HttpProxyDO mdsProxy;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -45,34 +47,6 @@ public class ServiceProviderDO {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime
-				* result
-				+ ((subjectIdentifier == null) ? 0 : subjectIdentifier
-						.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ServiceProviderDO other = (ServiceProviderDO) obj;
-		if (subjectIdentifier == null) {
-			if (other.subjectIdentifier != null)
-				return false;
-		} else if (!subjectIdentifier.equals(other.subjectIdentifier))
-			return false;
-		return true;
-	}
-
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -199,4 +173,37 @@ public class ServiceProviderDO {
 		this.mdsStatus = mdsStatus;
 	}
 
+	public HttpProxyDO getMrsProxy() {
+		return mrsProxy;
+	}
+
+	public void setMrsProxy(HttpProxyDO mrsProxy) {
+		this.mrsProxy = mrsProxy;
+	}
+
+	public HttpProxyDO getMasProxy() {
+		return masProxy;
+	}
+
+	public void setMasProxy(HttpProxyDO masProxy) {
+		this.masProxy = masProxy;
+	}
+
+	public HttpProxyDO getMosProxy() {
+		return mosProxy;
+	}
+
+	public void setMosProxy(HttpProxyDO mosProxy) {
+		this.mosProxy = mosProxy;
+	}
+
+	public HttpProxyDO getMdsProxy() {
+		return mdsProxy;
+	}
+
+	public void setMdsProxy(HttpProxyDO mdsProxy) {
+		this.mdsProxy = mdsProxy;
+	}
+
+	
 }

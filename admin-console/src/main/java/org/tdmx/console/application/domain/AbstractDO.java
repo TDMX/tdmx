@@ -1,79 +1,72 @@
-package org.tdmx.console.application.service;
+package org.tdmx.console.application.domain;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.tdmx.console.application.domain.ProblemDO;
 
-public class ProblemRegistryImpl implements ProblemRegistry {
+/**
+ * An outgoing HTTP proxy.
+ * 
+ * @author Peter
+ *
+ */
+public abstract class AbstractDO implements DomainObject {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	
+	public static final AtomicLong ID = new AtomicLong(System.currentTimeMillis()*1000);
+	
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-
-	private LinkedList<ProblemDO> problemList = new LinkedList<>();
-	private int maxSize = 1000;
+	private String id;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
+	public AbstractDO() {
+		id = getNextObjectId();
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	//TODO merge the last 2 problems together if the same - adding # to Problem
 	@Override
-	public void addProblem(ProblemDO problem) {
-		problemList.addLast(problem);
-		if ( problemList.size() > maxSize ) {
-			problemList.removeFirst();
-		}
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractDO other = (AbstractDO) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 
-	@Override
-	public void deleteProblem(String problemId) {
-		if ( problemId == null ) {
-			return;
-		}
-		Iterator<ProblemDO> it = problemList.iterator();
-		while( it.hasNext() ) {
-			ProblemDO p = it.next();
-			if ( problemId.equals(p.getId()) ) {
-				it.remove();
-			}
-		}
-	}
-
-	@Override
-	public void deleteAllProblems() {
-		problemList.clear();
-	}
-
-	@Override
-	public List<ProblemDO> getProblems() {
-		return Collections.unmodifiableList(problemList);
-	}
-
-	@Override
-	public ProblemDO getLastProblem() {
-		try {
-			return problemList.getLast();
-		} catch ( NoSuchElementException e ) {
-			return null;
-		}
-	}
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 
+	protected static String getNextObjectId() {
+		return ""+ID.getAndIncrement();
+	}
+	
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
@@ -81,4 +74,14 @@ public class ProblemRegistryImpl implements ProblemRegistry {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
+	@Override
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 }
