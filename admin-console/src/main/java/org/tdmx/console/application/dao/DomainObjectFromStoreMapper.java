@@ -24,7 +24,9 @@ public class DomainObjectFromStoreMapper {
 	
 	public HttpProxyDO map( Proxy other ) {
 		HttpProxyDO o = new HttpProxyDO();
-		o.setId(other.getId());
+		if ( other.getId() != null ) {
+			o.setId(other.getId());
+		}
 		o.setHostname(other.getHostname());
 		o.setPort(other.getPort());
 		o.setType(other.getType());
@@ -35,7 +37,9 @@ public class DomainObjectFromStoreMapper {
 	
 	public ServiceProviderDO map( ServiceProvider other, ObjectRegistry reg ) {
 		ServiceProviderDO o = new ServiceProviderDO();
-		o.setId(other.getId());
+		if ( other.getId() != null ) {
+			o.setId(other.getId());
+		}
 		
 		o.setSubjectIdentifier(other.getSubjectIdentity());
 		o.setVersion(other.getApiVersion());

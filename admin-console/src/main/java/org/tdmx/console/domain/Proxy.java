@@ -12,7 +12,7 @@ public class Proxy implements Serializable {
 
 	private String id;
 	private String description;
-	private boolean deleteEnabled;
+	private boolean deleteWarning;
 	
 	private String hostname;
 	private int port;
@@ -41,7 +41,7 @@ public class Proxy implements Serializable {
 		sb.append("/").append(type);
 		this.description = sb.toString();
 		
-		this.deleteEnabled = service.isDeleteable(o);
+		this.deleteWarning = service.isDeleteWarning(o);
 	}
 
 	public Proxy() {
@@ -59,8 +59,8 @@ public class Proxy implements Serializable {
 		return description;
 	}
 
-	public boolean isDeleteEnabled() {
-		return deleteEnabled;
+	public boolean isDeleteWarning() {
+		return deleteWarning;
 	}
 
 	public String getHostname() {

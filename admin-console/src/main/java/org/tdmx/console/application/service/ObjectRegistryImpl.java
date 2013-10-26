@@ -1,11 +1,10 @@
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
@@ -36,30 +35,31 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	private DomainObjectFromStoreMapper domMapper = new DomainObjectFromStoreMapper();
 	private DomainObjectToStoreMapper storeMapper = new DomainObjectToStoreMapper();
 	
-	private Map<String, DomainObject> objects = new TreeMap<>();
-	private List<ServiceProviderDO> serviceproviderList = new LinkedList<>();
-	private List<HttpProxyDO> proxyList = new LinkedList<>();
+	private Map<String, DomainObject> objects = new ConcurrentSkipListMap<>();
+	private Map<String, DomainObjectContainer<? extends DomainObject>> classMap = new TreeMap<>();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
+	public ObjectRegistryImpl() {
+		init();
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	
+
 	@Override
 	public void initContent( ServiceProviderStorage content ) {
 		synchronized( syncObj ) {
-			serviceproviderList.clear();
+			init();
 			for( Proxy p : content.getProxy() ) {
 				HttpProxyDO h = domMapper.map(p);
-				proxyList.add(h);
-				objects.put(h.getId(), h);
+				add(h);
 			}
 			for( ServiceProvider sp : content.getServiceprovider() ) {
 				ServiceProviderDO s = domMapper.map(sp, this);
-				serviceproviderList.add(s);
+				add(s);
 			}
 			dirty = false;
 		}
@@ -70,11 +70,11 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		synchronized( syncObj ) {
 			if ( dirty ) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
-				for( HttpProxyDO hp : proxyList ) {
+				for( HttpProxyDO hp : getHttpProxies() ) {
 					Proxy p = storeMapper.map(hp);
 					store.getProxy().add(p);
 				}
-				for( ServiceProviderDO sp : serviceproviderList ) {
+				for( ServiceProviderDO sp : getServiceProviders() ) {
 					ServiceProvider s = storeMapper.map(sp);
 					store.getServiceprovider().add(s);
 				}
@@ -85,18 +85,16 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 	}
 	
-	public void notifyServiceProvider( OBJECT_OPERATION op, ServiceProviderDO obj ) {
+	public <E extends DomainObject> void notifyObject( OBJECT_OPERATION op, E obj ) {
 		synchronized( syncObj ) {
 			switch (op) {
 			case Add:
-				if( !serviceproviderList.contains(obj)) {
-					serviceproviderList.add(obj);
-				}
+				add(obj);
 				break;
 			case Modify:
 				break;
 			case Remove:
-				serviceproviderList.remove(obj);
+				remove(obj);
 				break;
 			}
 			dirty = true;
@@ -113,7 +111,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		if ( dom instanceof HttpProxyDO ) {
 			return (HttpProxyDO)dom;
 		}
-		//TODO warn
 		return null;
 	}
 
@@ -134,9 +131,18 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		return domainList; 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<HttpProxyDO> getHttpProxies() {
-		return Collections.unmodifiableList(proxyList);
+		DomainObjectContainer<? extends DomainObject> c = getContainer(HttpProxyDO.class);
+		return (List<HttpProxyDO>) c.getList();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ServiceProviderDO> getServiceProviders() {
+		DomainObjectContainer<? extends DomainObject> c = getContainer(ServiceProviderDO.class);
+		return (List<ServiceProviderDO>) c.getList();
 	}
 
     //-------------------------------------------------------------------------
@@ -152,6 +158,38 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		if ( l != null ) {
 			l.notifyObjectRegistryChanged();
 		}
+	}
+	
+	private void init() {
+		objects.clear();
+		classMap.clear();
+		classMap.put(HttpProxyDO.class.getName(), new DomainObjectContainer<HttpProxyDO>());
+		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
+	}
+	
+	private DomainObjectContainer<? extends DomainObject> getContainer(Class<?> c) {
+		DomainObjectContainer<? extends DomainObject> l = classMap.get(c.getName());
+		return l;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <E extends DomainObject> void add(E obj) {
+		DomainObjectContainer<? extends DomainObject> l = classMap.get(obj.getClass().getName());
+		DomainObjectContainer<E> cl = (DomainObjectContainer<E>)l;
+		if ( cl.add(obj) ) {
+			objects.put(obj.getId(), obj);
+		}
+		return;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <E extends DomainObject> void remove(E obj) {
+		DomainObjectContainer<? extends DomainObject> l = classMap.get(obj.getClass().getName());
+		DomainObjectContainer<E> cl = (DomainObjectContainer<E>)l;
+		if ( cl.remove(obj) ) {
+			objects.remove(obj.getId());
+		}
+		return;
 	}
 	
 	//-------------------------------------------------------------------------

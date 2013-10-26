@@ -11,7 +11,7 @@ public interface ProxyService {
 		PORT_INVALID
 	}
 	
-	public boolean isDeleteable( HttpProxyDO proxy );
+	public boolean isDeleteWarning( HttpProxyDO proxy );
 	public List<ERROR> create( HttpProxyDO proxy );
 	public List<ERROR> modify( HttpProxyDO proxy );
 	public void delete( HttpProxyDO proxy );
