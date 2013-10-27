@@ -41,37 +41,40 @@ public class ProxyServiceImpl implements ProxyService {
 	
 	@Override
 	public List<ERROR> create(HttpProxyDO proxy) {
-		// TODO field validation
-		
-		objectRegistry.notifyObject(OBJECT_OPERATION.Add, proxy);
-		return null;
+		List<ERROR> validation = proxy.validate();
+		if ( validation.isEmpty() ) {
+			objectRegistry.notifyObject(OBJECT_OPERATION.Add, proxy);
+		}
+		return validation;
 	}
 
 	@Override
-	public List<ERROR> modify(HttpProxyDO proxy) {
-		// TODO field validation
-
-		objectRegistry.notifyObject(OBJECT_OPERATION.Modify, proxy);
-		return null;
+	public List<ERROR> modify(HttpProxyDO proxy, HttpProxyDO existing) {
+		List<ERROR> validation = proxy.validate();
+		if ( validation.isEmpty() ) {
+			existing.merge(proxy);
+			objectRegistry.notifyObject(OBJECT_OPERATION.Modify, existing);
+		}
+		return validation;
 	}
 
 	@Override
-	public void delete(HttpProxyDO proxy) {
+	public void delete(HttpProxyDO existing) {
 		for( ServiceProviderDO sp : objectRegistry.getServiceProviders() ) {
 			boolean changedSp = false;
-			if ( sp.getMasProxy() == proxy ) {
+			if ( sp.getMasProxy() == existing ) {
 				changedSp = true;
 				sp.setMasProxy(null);
 			}
-			if ( sp.getMrsProxy() == proxy ) {
+			if ( sp.getMrsProxy() == existing ) {
 				changedSp = true;
 				sp.setMrsProxy(null);
 			}
-			if ( sp.getMosProxy() == proxy ) {
+			if ( sp.getMosProxy() == existing ) {
 				changedSp = true;
 				sp.setMosProxy(null);
 			}
-			if ( sp.getMdsProxy() == proxy ) {
+			if ( sp.getMdsProxy() == existing ) {
 				changedSp = true;
 				sp.setMdsProxy(null);
 			}
@@ -79,7 +82,12 @@ public class ProxyServiceImpl implements ProxyService {
 				objectRegistry.notifyObject(OBJECT_OPERATION.Modify, sp);
 			}
 		}
-		objectRegistry.notifyObject(OBJECT_OPERATION.Remove, proxy);
+		objectRegistry.notifyObject(OBJECT_OPERATION.Remove, existing);
+	}
+
+	@Override
+	public List<String> getProxyTypes() {
+		return HttpProxyDO.proxyTypes;
 	}
 
     //-------------------------------------------------------------------------

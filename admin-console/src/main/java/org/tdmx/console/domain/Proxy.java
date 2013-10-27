@@ -11,11 +11,12 @@ public class Proxy implements Serializable {
 	//-------------------------------------------------------------------------
 
 	private String id;
+	
 	private String description;
 	private boolean deleteWarning;
 	
 	private String hostname;
-	private int port;
+	private Integer port;
 	private String type;
 	private String username;
 	private String password;
@@ -47,6 +48,17 @@ public class Proxy implements Serializable {
 	public Proxy() {
 	}
 	
+	public org.tdmx.console.application.domain.HttpProxyDO domain() {
+		org.tdmx.console.application.domain.HttpProxyDO o = new org.tdmx.console.application.domain.HttpProxyDO();
+		o.setId(getId());
+		o.setHostname(getHostname());
+		o.setPort(getPort());
+		o.setType(getType());
+		o.setUsername(getUsername());
+		o.setPassword(getPassword());
+		return o;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
@@ -55,12 +67,12 @@ public class Proxy implements Serializable {
 		return id;
 	}
 
-	public String getDescription() {
-		return description;
-	}
-
 	public boolean isDeleteWarning() {
 		return deleteWarning;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 
 	public String getHostname() {
@@ -71,11 +83,11 @@ public class Proxy implements Serializable {
 		this.hostname = hostname;
 	}
 
-	public int getPort() {
+	public Integer getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public void setPort(Integer port) {
 		this.port = port;
 	}
 
