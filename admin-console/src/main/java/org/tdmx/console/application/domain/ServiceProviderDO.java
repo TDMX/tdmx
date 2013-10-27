@@ -17,25 +17,25 @@ public class ServiceProviderDO extends AbstractDO {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private String subjectIdentifier;
-	private int version;
+	private Integer version;
 	
 	private String mrsHostname;
-	private int mrsPort;
+	private Integer mrsPort;
 	private ConnectionTestResultDO mrsStatus;
 	private HttpProxyDO mrsProxy;
 
 	private String masHostname;
-	private int masPort;
+	private Integer masPort;
 	private ConnectionTestResultDO masStatus;
 	private HttpProxyDO masProxy;
 
 	private String mosHostname;
-	private int mosPort;
+	private Integer mosPort;
 	private ConnectionTestResultDO mosStatus;
 	private HttpProxyDO mosProxy;
 
 	private String mdsHostname;
-	private int mdsPort;
+	private Integer mdsPort;
 	private ConnectionTestResultDO mdsStatus;
 	private HttpProxyDO mdsProxy;
 	
@@ -67,11 +67,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.subjectIdentifier = subjectIdentifier;
 	}
 
-	public int getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 
-	public void setVersion(int version) {
+	public void setVersion(Integer version) {
 		this.version = version;
 	}
 
@@ -83,11 +83,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mrsHostname = mrsHostname;
 	}
 
-	public int getMrsPort() {
+	public Integer getMrsPort() {
 		return mrsPort;
 	}
 
-	public void setMrsPort(int mrsPort) {
+	public void setMrsPort(Integer mrsPort) {
 		this.mrsPort = mrsPort;
 	}
 
@@ -107,11 +107,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.masHostname = masHostname;
 	}
 
-	public int getMasPort() {
+	public Integer getMasPort() {
 		return masPort;
 	}
 
-	public void setMasPort(int masPort) {
+	public void setMasPort(Integer masPort) {
 		this.masPort = masPort;
 	}
 
@@ -132,11 +132,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mosHostname = mosHostname;
 	}
 
-	public int getMosPort() {
+	public Integer getMosPort() {
 		return mosPort;
 	}
 
-	public void setMosPort(int mosPort) {
+	public void setMosPort(Integer mosPort) {
 		this.mosPort = mosPort;
 	}
 
@@ -157,11 +157,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mdsHostname = mdsHostname;
 	}
 
-	public int getMdsPort() {
+	public Integer getMdsPort() {
 		return mdsPort;
 	}
 
-	public void setMdsPort(int mdsPort) {
+	public void setMdsPort(Integer mdsPort) {
 		this.mdsPort = mdsPort;
 	}
 

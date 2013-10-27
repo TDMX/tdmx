@@ -4,6 +4,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ValidationUtils {
 
 	//-------------------------------------------------------------------------
@@ -14,6 +17,8 @@ public class ValidationUtils {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
+	private static Logger log = LoggerFactory.getLogger(ValidationUtils.class);
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
@@ -80,14 +85,13 @@ public class ValidationUtils {
 	}
 	
 	private static boolean isValidHostname( String hostname ) {
-		if ( hasText(hostname) ) {
-			try {
-				InetAddress.getByName(hostname);
-			} catch (UnknownHostException e) {
-				return false;
-			}
+		try {
+			InetAddress.getByName(hostname);
+		} catch (UnknownHostException e) {
+			log.info("Invalid hostname "+ hostname, e);
+			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	private static boolean isValidPort( int port ) {
