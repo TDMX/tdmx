@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.tdmx.console.application.domain.DomainObjectField.FieldType;
 import org.tdmx.console.application.service.ProxyService;
 import org.tdmx.console.application.util.ValidationUtils;
+//import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 
 
 /**
@@ -22,6 +24,12 @@ public class HttpProxyDO extends AbstractDO {
 
 	public static List<String> proxyTypes;
 	
+	public static final DomainObjectField F_HOSTNAME 	= new DomainObjectField("hostname", FieldType.String, HttpProxyDO.class.getName());
+	public static final DomainObjectField F_PORT 		= new DomainObjectField("port", FieldType.Number, HttpProxyDO.class.getName());
+	public static final DomainObjectField F_TYPE 		= new DomainObjectField("type", FieldType.Enum, HttpProxyDO.class.getName());
+	public static final DomainObjectField F_USERNAME 	= new DomainObjectField("username", FieldType.String, HttpProxyDO.class.getName());
+	public static final DomainObjectField F_PASSWORD	= new DomainObjectField("password", FieldType.Protected, HttpProxyDO.class.getName());
+
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
@@ -42,17 +50,35 @@ public class HttpProxyDO extends AbstractDO {
 		proxyTypes = Collections.unmodifiableList(pt);
 	}
 	
+	public HttpProxyDO() {
+		super();
+	}
+	
+	private HttpProxyDO( HttpProxyDO original ) {
+		setId(original.getId());
+		setHostname(original.getHostname());
+		setPort(original.getPort());
+		setType(original.getType());
+		setUsername(original.getUsername());
+		setPassword(original.getPassword());
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public void merge( HttpProxyDO other ) {
-		setHostname(other.getHostname());
-		setPort(other.getPort());
-		setType(other.getType());
-		setUsername(other.getUsername());
-		setPassword(other.getPassword());
+	@Override
+	public <F extends DomainObject> DomainObjectFieldChanges merge(F other) {
+		HttpProxyDO o = narrow(other);
+		DomainObjectFieldChanges holder = new DomainObjectFieldChanges(this);
+		setHostname(conditionalSet(getHostname(), o.getHostname(), F_HOSTNAME, holder));
+		setPort(conditionalSet(getPort(), o.getPort(), F_PORT, holder));
+		setType(conditionalSet(getType(), o.getType(), F_TYPE, holder));
+		setUsername(conditionalSet(getUsername(), o.getUsername(), F_USERNAME, holder));
+		setPassword(conditionalSet(getPassword(), o.getPassword(), F_PASSWORD, holder));
+		return holder;
 	}
+
 	
 	public List<ProxyService.ERROR> validate() {
 		List<ProxyService.ERROR> errors = new ArrayList<>();
@@ -69,6 +95,13 @@ public class HttpProxyDO extends AbstractDO {
 
 		return errors;
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <E extends DomainObject> E copy() {
+		return (E) new HttpProxyDO(this);
+	}
+
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -78,6 +111,10 @@ public class HttpProxyDO extends AbstractDO {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
+	private <E extends DomainObject> HttpProxyDO narrow( E other ) {
+		return (HttpProxyDO)other;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
@@ -112,4 +149,16 @@ public class HttpProxyDO extends AbstractDO {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	public String getDescription() {
+		StringBuilder sb = new StringBuilder();
+		if ( username != null ) {
+			sb.append(username).append("@");
+		}
+		sb.append(hostname).append(":").append(port);
+		sb.append("/").append(type);
+		return sb.toString();
+	}
+
+
 }

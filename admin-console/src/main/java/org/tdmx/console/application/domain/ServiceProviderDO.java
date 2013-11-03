@@ -1,6 +1,7 @@
 package org.tdmx.console.application.domain;
 
 
+
 /**
  * A ServiceProvider.
  * 
@@ -16,36 +17,56 @@ public class ServiceProviderDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private String subjectIdentifier;
+	private String subjectIdentifier; // initially unidentified - after connection test we have it.
 	private Integer version;
 	
-	private String mrsHostname;
-	private Integer mrsPort;
-	private ConnectionTestResultDO mrsStatus;
-	private HttpProxyDO mrsProxy;
-
 	private String masHostname;
 	private Integer masPort;
-	private ConnectionTestResultDO masStatus;
+	private ConnectionTestResultVO masStatus;
 	private HttpProxyDO masProxy;
+
+	private String mrsHostname;
+	private Integer mrsPort;
+	private ConnectionTestResultVO mrsStatus;
+	private HttpProxyDO mrsProxy;
 
 	private String mosHostname;
 	private Integer mosPort;
-	private ConnectionTestResultDO mosStatus;
+	private ConnectionTestResultVO mosStatus;
 	private HttpProxyDO mosProxy;
 
 	private String mdsHostname;
 	private Integer mdsPort;
-	private ConnectionTestResultDO mdsStatus;
+	private ConnectionTestResultVO mdsStatus;
 	private HttpProxyDO mdsProxy;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
+	public ServiceProviderDO() {
+		super();
+	}
+	
+	private ServiceProviderDO( ServiceProviderDO original ) {
+		//TODO
+	}
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	
+	@Override
+	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <E extends DomainObject> E copy() {
+		return (E) new ServiceProviderDO(this);
+	}
+
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -55,6 +76,10 @@ public class ServiceProviderDO extends AbstractDO {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
+	private <E extends DomainObject> ServiceProviderDO narrow( E other ) {
+		return (ServiceProviderDO)other;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
@@ -91,11 +116,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mrsPort = mrsPort;
 	}
 
-	public ConnectionTestResultDO getMrsStatus() {
+	public ConnectionTestResultVO getMrsStatus() {
 		return mrsStatus;
 	}
 
-	public void setMrsStatus(ConnectionTestResultDO mrsStatus) {
+	public void setMrsStatus(ConnectionTestResultVO mrsStatus) {
 		this.mrsStatus = mrsStatus;
 	}
 
@@ -116,11 +141,11 @@ public class ServiceProviderDO extends AbstractDO {
 	}
 
 
-	public ConnectionTestResultDO getMasStatus() {
+	public ConnectionTestResultVO getMasStatus() {
 		return masStatus;
 	}
 
-	public void setMasStatus(ConnectionTestResultDO masStatus) {
+	public void setMasStatus(ConnectionTestResultVO masStatus) {
 		this.masStatus = masStatus;
 	}
 
@@ -141,11 +166,11 @@ public class ServiceProviderDO extends AbstractDO {
 	}
 
 
-	public ConnectionTestResultDO getMosStatus() {
+	public ConnectionTestResultVO getMosStatus() {
 		return mosStatus;
 	}
 
-	public void setMosStatus(ConnectionTestResultDO mosStatus) {
+	public void setMosStatus(ConnectionTestResultVO mosStatus) {
 		this.mosStatus = mosStatus;
 	}
 
@@ -165,11 +190,11 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mdsPort = mdsPort;
 	}
 
-	public ConnectionTestResultDO getMdsStatus() {
+	public ConnectionTestResultVO getMdsStatus() {
 		return mdsStatus;
 	}
 
-	public void setMdsStatus(ConnectionTestResultDO mdsStatus) {
+	public void setMdsStatus(ConnectionTestResultVO mdsStatus) {
 		this.mdsStatus = mdsStatus;
 	}
 
@@ -205,5 +230,4 @@ public class ServiceProviderDO extends AbstractDO {
 		this.mdsProxy = mdsProxy;
 	}
 
-	
 }

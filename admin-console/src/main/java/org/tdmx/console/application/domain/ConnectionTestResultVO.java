@@ -5,31 +5,25 @@ import java.util.Date;
 
 
 /**
- * A Result of a ConnectionTest to .
+ * A Result of a ConnectionTest of a ServiceProvider's interface.
  * 
  * @author Peter
  *
  */
-public class ConnectionTestResultDO extends AbstractDO {
+public class ConnectionTestResultVO implements ValueObject {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static final int STATUS_IRRELEVANT = -2;
-	public static final int STATUS_UNCHECKED = -1;
-	public static final int STATUS_OK = 0;
-	public static final int STATUS_UNKNOWN_HOST = 1;
-	public static final int STATUS_UNREACHABLE_HOST = 2;
-	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	
 	private String url;
-	private X509Certificate serverCertificate;
-	private int status;
-	private String subject;
+	private X509Certificate[] serverCertificateChain;
+	private CertificateStatus trustStatus;
+	private ConnectionStatus status;
 	private Date testedDate;
 	
 	//-------------------------------------------------------------------------
@@ -58,23 +52,23 @@ public class ConnectionTestResultDO extends AbstractDO {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	public int getStatus() {
+	public X509Certificate[] getServerCertificateChain() {
+		return serverCertificateChain;
+	}
+	public void setServerCertificateChain(X509Certificate[] serverCertificateChain) {
+		this.serverCertificateChain = serverCertificateChain;
+	}
+	public CertificateStatus getTrustStatus() {
+		return trustStatus;
+	}
+	public void setTrustStatus(CertificateStatus trustStatus) {
+		this.trustStatus = trustStatus;
+	}
+	public ConnectionStatus getStatus() {
 		return status;
 	}
-	public void setStatus(int status) {
+	public void setStatus(ConnectionStatus status) {
 		this.status = status;
-	}
-	public String getSubject() {
-		return subject;
-	}
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-	public X509Certificate getServerCertificate() {
-		return serverCertificate;
-	}
-	public void setServerCertificate(X509Certificate serverCertificate) {
-		this.serverCertificate = serverCertificate;
 	}
 	public Date getTestedDate() {
 		return testedDate;

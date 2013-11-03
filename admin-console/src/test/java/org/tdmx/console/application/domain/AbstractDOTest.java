@@ -9,9 +9,6 @@ public class AbstractDOTest {
 
 	@Test
 	public void testSuperImplicitConstructor() {
-		ConnectionTestResultDO o = new ConnectionTestResultDO();
-		assertNotNull(o.getId());
-
 		ProblemDO p1 = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, "msg");
 		assertNotNull(p1.getId());
 		
@@ -34,20 +31,15 @@ public class AbstractDOTest {
 
 	@Test
 	public void testClassNotEquals() {
-		ConnectionTestResultDO c = new ConnectionTestResultDO();
 		ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, "msg");
 		HttpProxyDO h = new HttpProxyDO();
 		ServiceProviderDO s = new ServiceProviderDO();
 		
 		String id = "1";
-		c.setId(id);
 		p.setId(id);
 		h.setId(id);
 		s.setId(id);
 		
-		assertFalse(c.equals(p));
-		assertFalse(c.equals(h));
-		assertFalse(c.equals(s));
 		assertFalse(p.equals(h));
 		assertFalse(p.equals(s));
 		assertFalse(h.equals(s));

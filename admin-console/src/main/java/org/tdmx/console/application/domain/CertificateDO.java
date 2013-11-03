@@ -1,55 +1,40 @@
 package org.tdmx.console.application.domain;
 
-import java.util.Calendar;
+import java.security.cert.X509Certificate;
+
 
 /**
- * These are severe Problems that indicate that the Application is not
- * working as expected.
+ * An CertificateChain.
  * 
  * @author Peter
  *
  */
-public class ProblemDO extends AbstractDO {
+public class CertificateDO implements DomainObject {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static enum ProblemCode {
-		CONFIGURATION_FILE_READ_IO,
-		CONFIGURATION_FILE_WRITE_IO,
-		CONFIGURATION_FILE_PARSE,
-		CONFIGURATION_FILE_MARSHAL,
-		
-		CERTIFICATE_STORE_ALGORITHM,
-		CERTIFICATE_STORE_EXCEPTION,
-		CERTIFICATE_STORE_KEYSTORE_EXCEPTION,
-		CERTIFICATE_STORE_IO_EXCEPTION,
-		;
-	}
-	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private ProblemCode code;
-	private Calendar timestamp;
-	private Throwable throwable;
-	private String msg;
+	private String id;
 	
+	private X509Certificate[] certificateChain;
+
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
-	public ProblemDO( ProblemCode pc, Throwable t ) {
-		this.timestamp = Calendar.getInstance();
-		this.code = pc;
-		this.throwable = t;
+	
+	public CertificateDO( X509Certificate[] certificateChain ) {
+		//TODO create a HEX of the SHA2 of the combined encoded byte arrays.
+		this.certificateChain = certificateChain;
 	}
-
-	public ProblemDO( ProblemCode pc, String msg ) {
-		this.timestamp = Calendar.getInstance();
-		this.code = pc;
-		this.msg = msg;
+	
+	@Override
+	public <E extends DomainObject> E copy() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	//-------------------------------------------------------------------------
@@ -58,15 +43,41 @@ public class ProblemDO extends AbstractDO {
 	
 	@Override
 	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <E extends DomainObject> E copy() {
-		return null;
+	public String getId() {
+		return id;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CertificateDO other = (CertificateDO) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 
-   //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 
@@ -77,21 +88,5 @@ public class ProblemDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-
-	public ProblemCode getCode() {
-		return code;
-	}
-
-	public Calendar getTimestamp() {
-		return timestamp;
-	}
-
-	public Throwable getThrowable() {
-		return throwable;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
 
 }

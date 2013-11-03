@@ -2,9 +2,13 @@ package org.tdmx.console.application.service;
 
 import java.util.List;
 
+import org.tdmx.console.application.domain.DomainObjectChangesHolder;
+import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.service.ObjectRegistryImpl.OBJECT_OPERATION;
+import org.tdmx.console.application.domain.visit.Traversal;
+import org.tdmx.console.application.domain.visit.TraversalContextHolder;
+import org.tdmx.console.application.domain.visit.TraversalFunction;
 
 
 public class ProxyServiceImpl implements ProxyService {
@@ -17,7 +21,8 @@ public class ProxyServiceImpl implements ProxyService {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private ObjectRegistry objectRegistry;
-
+	//TODO search service
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -27,62 +32,83 @@ public class ProxyServiceImpl implements ProxyService {
 	//-------------------------------------------------------------------------
 	
 	@Override
-	public boolean isDeleteWarning(HttpProxyDO proxy) {
-		boolean found = false;
-		for( ServiceProviderDO sp : objectRegistry.getServiceProviders() ) {
-			if ( sp.getMasProxy() == proxy || sp.getMrsProxy() == proxy || sp.getMosProxy() == proxy || sp.getMdsProxy() == proxy ) {
-				found = true;
-				break;
+	public boolean isDeleteWarning(final HttpProxyDO proxy) {
+		Boolean found = Traversal.traverse( objectRegistry.getServiceProviders(), Boolean.FALSE, new TraversalFunction<ServiceProviderDO, Boolean>() {
+
+			@Override
+			public void visit(ServiceProviderDO object,
+					TraversalContextHolder<Boolean> holder) {
+				if ( object.getMasProxy() == proxy || object.getMrsProxy() == proxy || object.getMosProxy() == proxy || object.getMdsProxy() == proxy ) {
+					holder.setResult(Boolean.TRUE);
+					holder.stop();
+				}					
 			}
-		}
-		
-		return !found;
+		});
+		return found;
 	}
+	
 	
 	@Override
 	public List<ERROR> create(HttpProxyDO proxy) {
+		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
+
 		List<ERROR> validation = proxy.validate();
 		if ( validation.isEmpty() ) {
-			objectRegistry.notifyObject(OBJECT_OPERATION.Add, proxy);
+			objectRegistry.notifyAdd(proxy, holder);
 		}
+		//TODO search update
 		return validation;
 	}
 
 	@Override
 	public List<ERROR> modify(HttpProxyDO proxy, HttpProxyDO existing) {
+		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
+
 		List<ERROR> validation = proxy.validate();
 		if ( validation.isEmpty() ) {
-			existing.merge(proxy);
-			objectRegistry.notifyObject(OBJECT_OPERATION.Modify, existing);
+			DomainObjectFieldChanges changes = existing.merge(proxy);
+			if ( !changes.isEmpty() ) {
+				objectRegistry.notifyModify(changes, holder);
+			}
+			
+			//TODO SearchService # update changes
 		}
 		return validation;
 	}
 
 	@Override
 	public void delete(HttpProxyDO existing) {
+		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
+		//TODO
 		for( ServiceProviderDO sp : objectRegistry.getServiceProviders() ) {
 			boolean changedSp = false;
-			if ( sp.getMasProxy() == existing ) {
+			ServiceProviderDO clonedSP = sp.copy();
+			if ( clonedSP.getMasProxy() == existing ) {
 				changedSp = true;
-				sp.setMasProxy(null);
+				clonedSP.setMasProxy(null);
 			}
-			if ( sp.getMrsProxy() == existing ) {
+			if ( clonedSP.getMrsProxy() == existing ) {
 				changedSp = true;
-				sp.setMrsProxy(null);
+				clonedSP.setMrsProxy(null);
 			}
-			if ( sp.getMosProxy() == existing ) {
+			if ( clonedSP.getMosProxy() == existing ) {
 				changedSp = true;
-				sp.setMosProxy(null);
+				clonedSP.setMosProxy(null);
 			}
-			if ( sp.getMdsProxy() == existing ) {
+			if ( clonedSP.getMdsProxy() == existing ) {
 				changedSp = true;
-				sp.setMdsProxy(null);
+				clonedSP.setMdsProxy(null);
 			}
 			if ( changedSp ) {
-				objectRegistry.notifyObject(OBJECT_OPERATION.Modify, sp);
+				DomainObjectFieldChanges changes = sp.merge(clonedSP);
+				if ( !changes.isEmpty() ) {
+					objectRegistry.notifyModify(changes, holder);
+				}
 			}
 		}
-		objectRegistry.notifyObject(OBJECT_OPERATION.Remove, existing);
+		objectRegistry.notifyRemove(existing, holder);
+
+		//TODO search update(changes)
 	}
 
 	@Override

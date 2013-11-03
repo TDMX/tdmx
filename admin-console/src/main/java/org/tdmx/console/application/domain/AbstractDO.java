@@ -63,6 +63,28 @@ public abstract class AbstractDO implements DomainObject {
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 
+	/**
+	 * Conditionally change the output if the other is different from the current.
+	 * @param current
+	 * @param other
+	 * @param changeList
+	 * @return current if no changes, other if changes and logging the change in the list
+	 */
+	protected <E extends Object> E conditionalSet( E current, E other, DomainObjectField field, DomainObjectFieldChanges holder ) {
+		if ( current == null ) {
+			if ( other != null ) {
+				holder.field(field);
+				return other;
+			}
+		} else {
+			if ( other == null || !other.equals(current)) {
+				holder.field(field);
+				return other;
+			}
+		}
+		return current;
+	}
+	
 	protected static String getNextObjectId() {
 		return ""+ID.getAndIncrement();
 	}

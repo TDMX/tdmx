@@ -1,6 +1,9 @@
 package org.tdmx.console.application.job;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -15,6 +18,7 @@ import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.console.application.dao.CertificateStore;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStore;
 import org.tdmx.console.application.domain.ProblemDO;
@@ -35,6 +39,8 @@ public class StateStorageJob extends AbstractBackgroundJob {
 	private ScheduledExecutorService scheduler = null;
 	
 	private ObjectRegistrySPI registry = null;
+	private CertificateStore certificateStore = null;
+
 	private ServiceProviderStore store = null;
 	private List<ScheduledFuture<?>> futureList = new LinkedList<>();
 	
@@ -93,16 +99,36 @@ public class StateStorageJob extends AbstractBackgroundJob {
 				
 				log.info(getName() + " started " + runNr);
 				try {
-					ServiceProviderStorage s = registry.getContentIfDirty();
-					if ( s != null ) {
-						store.save(s);
+
+					try {
+						certificateStore.save();
+					} catch (NoSuchAlgorithmException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
+						problemRegistry.addProblem(p);
+					} catch (CertificateException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_EXCEPTION, e);
+						problemRegistry.addProblem(p);
+					} catch (KeyStoreException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_KEYSTORE_EXCEPTION, e);
+						problemRegistry.addProblem(p);
+					} catch (IOException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_IO_EXCEPTION, e);
+						problemRegistry.addProblem(p);
 					}
-				} catch (IOException e) {
-					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
-					problemRegistry.addProblem(p);
-				} catch (JAXBException e) {
-					ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
-					problemRegistry.addProblem(p);
+					
+					try {
+						ServiceProviderStorage s = registry.getContentIfDirty();
+						if ( s != null ) {
+							store.save(s);
+						}
+					} catch (IOException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
+						problemRegistry.addProblem(p);
+					} catch (JAXBException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
+						problemRegistry.addProblem(p);
+					}
+					
 				} finally {
 					lastCompletedDate = new Date();
 					startedRunningDate = null;
@@ -155,5 +181,12 @@ public class StateStorageJob extends AbstractBackgroundJob {
 		this.store = store;
 	}
 
+	public CertificateStore getCertificateStore() {
+		return certificateStore;
+	}
+
+	public void setCertificateStore(CertificateStore certificateStore) {
+		this.certificateStore = certificateStore;
+	}
 
 }

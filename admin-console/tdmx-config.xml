@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <service-provider-storage xmlns="urn:dao.application.console.tdmx.org">
-    <serviceprovider>
+    <serviceprovider id="1382816198770000">
         <api-version>0</api-version>
         <mrs>
             <port>0</port>

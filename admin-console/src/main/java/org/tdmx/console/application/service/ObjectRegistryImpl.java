@@ -12,6 +12,8 @@ import org.tdmx.console.application.dao.Proxy;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.DomainObjectChangesHolder;
+import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.domain.Domain;
@@ -21,7 +23,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static enum OBJECT_OPERATION {
+	private static enum OBJECT_OPERATION {
 		Add, Modify, Remove
 	};
 	
@@ -51,6 +53,9 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 
 	@Override
 	public void initContent( ServiceProviderStorage content ) {
+		if ( content == null ) {
+			return;
+		}
 		synchronized( syncObj ) {
 			init();
 			for( Proxy p : content.getProxy() ) {
@@ -85,16 +90,35 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 	}
 	
-	public <E extends DomainObject> void notifyObject( OBJECT_OPERATION op, E obj ) {
+	@Override
+	public void notifyRemove(DomainObject obj, DomainObjectChangesHolder holder) {
+		notifyObject(OBJECT_OPERATION.Remove, obj, null, holder);
+	}
+
+	@Override
+	public void notifyAdd(DomainObject obj, DomainObjectChangesHolder holder) {
+		notifyObject(OBJECT_OPERATION.Add, obj, null, holder);
+	}
+
+	@Override
+	public void notifyModify(DomainObjectFieldChanges changes,
+			DomainObjectChangesHolder holder) {
+		notifyObject(OBJECT_OPERATION.Modify, changes.getObject(), changes, holder);
+	}
+
+	private void notifyObject( OBJECT_OPERATION op, DomainObject obj, DomainObjectFieldChanges changes, DomainObjectChangesHolder holder ) {
 		synchronized( syncObj ) {
 			switch (op) {
 			case Add:
 				add(obj);
+				holder.registerNew(obj);
 				break;
 			case Modify:
+				holder.registerModified(changes);
 				break;
 			case Remove:
 				remove(obj);
+				holder.registerDeleted(obj);
 				break;
 			}
 			dirty = true;

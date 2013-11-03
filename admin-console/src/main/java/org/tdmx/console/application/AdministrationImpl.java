@@ -3,6 +3,9 @@ package org.tdmx.console.application;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,8 @@ import javax.xml.bind.JAXBException;
 import org.apache.wicket.Application;
 import org.apache.wicket.IInitializer;
 import org.tdmx.console.AdminApplication;
+import org.tdmx.console.application.dao.CertificateStore;
+import org.tdmx.console.application.dao.CertificateStoreImpl;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
 import org.tdmx.console.application.domain.ProblemDO;
@@ -31,16 +36,18 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static final String CONFIG_PROPERTY = "org.tdmx.console.config";
+	public static final String CONFIGFILE_PROPERTY = "org.tdmx.console.config";
+	public static final String CERTFILE_PROPERTY = "org.tdmx.console.certfile";
 	public static final String PASSPHRASE_PROPERTY = "org.tdmx.console.passphrase";
 	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private String configFilePath = null;
-	private String passPhrase = null;
+	private String certFilePath = null;
 	
 	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
+	private CertificateStoreImpl certificateStore = new CertificateStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
 	private ProxyServiceImpl proxyService = new ProxyServiceImpl();
 	
@@ -55,11 +62,9 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	public void init(Application application) {
 		((AdminApplication)application).setAdministration(this);
 		
-		configFilePath = System.getProperty(CONFIG_PROPERTY);
-		if ( configFilePath == null ) {
-	    	throw new RuntimeException("Missing System property " + CONFIG_PROPERTY);
-		}
-		passPhrase = System.getProperty(PASSPHRASE_PROPERTY);
+		configFilePath = System.getProperty(CONFIGFILE_PROPERTY,"config.xml");
+		certFilePath = System.getProperty(CERTFILE_PROPERTY,"certs.pkcs12");
+		String passPhrase = System.getProperty(PASSPHRASE_PROPERTY);
 		if ( passPhrase == null ) {
 			System.out.println("Enter passphrase:");
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -70,14 +75,33 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		    }
 		}
 		
+		certificateStore.setFilename(certFilePath);
+		certificateStore.setKeystoreType("pkcs12");
+		certificateStore.setPassphrase(passPhrase);
+		try {
+			certificateStore.load();
+		} catch (NoSuchAlgorithmException e) {
+			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
+			problemRegistry.addProblem(p);
+		} catch (CertificateException e) {
+			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_EXCEPTION, e);
+			problemRegistry.addProblem(p);
+		} catch (KeyStoreException e) {
+			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_KEYSTORE_EXCEPTION, e);
+			problemRegistry.addProblem(p);
+		} catch (IOException e) {
+			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_IO_EXCEPTION, e);
+			problemRegistry.addProblem(p);
+		}
+		
 		registry.setChangeListener(this);
 		
 		proxyService.setObjectRegistry(registry);
 		
 		store.setFilename(configFilePath);
+		ServiceProviderStorage content = null;
 		try {
-			ServiceProviderStorage content = store.load();
-			registry.initContent(content);
+			content = store.load();
 		} catch ( IOException e ) {
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_READ_IO, e);
 			problemRegistry.addProblem(p);
@@ -85,6 +109,7 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_PARSE, e);
 			problemRegistry.addProblem(p);
 		}
+		registry.initContent(content);
 		
 		storageJob = new StateStorageJob();
 		storageJob.setName("StateStorage");
@@ -147,6 +172,11 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	@Override
 	public ProxyService getProxyService() {
 		return proxyService;
+	}
+
+	@Override
+	public CertificateStore getCertificateStore() {
+		return certificateStore;
 	}
 
 

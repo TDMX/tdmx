@@ -12,8 +12,8 @@ public class Proxy implements Serializable {
 
 	private String id;
 	
-	private String description;
-	private boolean deleteWarning;
+	private String description; // a textual representation of the proxy
+	private boolean deleteWarning; // if deleting the proxy will remove the proxy setting from service providers
 	
 	private String hostname;
 	private Integer port;
@@ -34,13 +34,7 @@ public class Proxy implements Serializable {
 		this.username = o.getUsername();
 		this.password = o.getPassword();
 		
-		StringBuilder sb = new StringBuilder();
-		if ( username != null ) {
-			sb.append(username).append("@");
-		}
-		sb.append(hostname).append(":").append(port);
-		sb.append("/").append(type);
-		this.description = sb.toString();
+		this.description = o.getDescription();
 		
 		this.deleteWarning = service.isDeleteWarning(o);
 	}
