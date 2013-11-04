@@ -1,5 +1,6 @@
 package org.tdmx.console.application.search.match;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 
 import org.tdmx.console.application.search.SearchableObjectField;
@@ -33,6 +34,11 @@ public class DateEqualityMatch implements MatchFunction {
 		return date.equals(field.searchValue);
 	}
 
+	@Override
+	public String toString() {
+		return "=D="+DateFormat.getInstance().format(date.getTime());
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

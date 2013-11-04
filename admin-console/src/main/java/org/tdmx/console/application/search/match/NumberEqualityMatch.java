@@ -31,6 +31,11 @@ public class NumberEqualityMatch implements MatchFunction {
 		return number.equals(field.searchValue);
 	}
 
+	@Override
+	public String toString() {
+		return "=N="+number;
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

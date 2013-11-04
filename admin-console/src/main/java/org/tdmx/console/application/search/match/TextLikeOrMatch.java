@@ -1,50 +1,57 @@
-package org.tdmx.console.application.search;
+package org.tdmx.console.application.search.match;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
-import org.tdmx.console.application.search.FieldDescriptor.FieldType;
-import org.tdmx.console.application.search.match.MatchFunction;
+import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
- * SearchExpression := (":"<Type>("."<fieldName>)?" ")?<value>
- *  
+ * Used to match Ranged hi/low values with Text Field's searchValue.
+ * 
+ * The compared values are all converted to lowercase prior to use in the 
+ * match function.
+ * 
  * @author Peter
  *
  */
-public final class SearchExpression {
+public class TextLikeOrMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static enum ValueType {
-		TimeRange, DateTimeRange, DateRange, NumberRange, Time, DateTime, Date, Number, QuotedText, Text
-	}
-	
+
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	public DomainObjectType objectType;
-	public String fieldName;
-	public ValueType valueType;
-	public Map<FieldType,MatchFunction> matchFunctionMap = new HashMap<FieldDescriptor.FieldType, MatchFunction>();
+
+	private String[] texts;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchExpression() {
+	public TextLikeOrMatch( String[] texts ) {
+		this.texts = texts;
+	}
+	
+	@Override
+	public String toString() {
+		return "like-any "+texts;
 	}
 	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public void add( FieldType fieldType, MatchFunction fn ) {
-		matchFunctionMap.put(fieldType, fn);
+	@Override
+	public boolean match(SearchableObjectField field) {
+		for( String text : texts ) {
+			for( String fv : (String[])field.searchValue){
+				if (fv.indexOf(text) != -1 ) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
-	
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -56,5 +63,5 @@ public final class SearchExpression {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-	
+
 }

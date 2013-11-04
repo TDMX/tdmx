@@ -53,6 +53,7 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private StateStorageJob storageJob = null;
+	//TODO search service
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
