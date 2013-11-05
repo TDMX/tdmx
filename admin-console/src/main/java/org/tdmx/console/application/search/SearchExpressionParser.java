@@ -7,8 +7,8 @@ import java.util.Date;
 
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchExpression.ValueType;
-import org.tdmx.console.application.search.match.MatchFunctionHolder;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.CalendarRangeHolder;
+import org.tdmx.console.application.search.match.MatchFunctionHolder.NumberRangeHolder;
 import org.tdmx.console.application.search.match.QuotedTextMatch;
 import org.tdmx.console.application.search.match.TextEqualityMatch;
 import org.tdmx.console.application.search.match.TextLikeMatch;
@@ -53,6 +53,8 @@ public final class SearchExpressionParser {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
+	static final String RANGE = "..";
+	
 	
 	private String input;
 	
@@ -123,28 +125,81 @@ public final class SearchExpressionParser {
 		return exp;
 	}
 	
+	/**
+	 * ValueTypeFormatter uses the system's Locale to format Time,DateTime,Date
+	 * and Number values.
+	 */
 	public static class ValueTypeFormatter {
+		
+		public static String getTimeRange( CalendarRangeHolder range ) {
+			DateFormat timeFormatter = DateFormat.getTimeInstance();
+			return getRange(timeFormatter, range);
+		}
+		
+		public static String getDateTimeRange( CalendarRangeHolder range ) {
+			DateFormat dateTimeFormatter = DateFormat.getDateTimeInstance();
+			return getRange(dateTimeFormatter, range);
+		}
+		
+		public static String getDateRange( CalendarRangeHolder range ) {
+			DateFormat dateFormatter = DateFormat.getDateInstance();
+			return getRange(dateFormatter, range);
+		}
+		
+		private static String getRange( DateFormat formatter, CalendarRangeHolder range ) {
+			String fromTime = "";
+			String toTime = "";
+			if ( range.from != null ) {
+				fromTime = formatter.format(range.from.getTime());
+			}
+			if ( range.to != null ) {
+				toTime = formatter.format(range.to.getTime());
+			}
+			return fromTime + RANGE + toTime;
+		}
+		
 		public static String getTime( Calendar time ) {
-			if ( time == null ) {
+			DateFormat timeFormatter = DateFormat.getTimeInstance();
+			return getCalendar(timeFormatter, time);
+		}
+		
+		public static String getDateTime( Calendar dateTime ) {
+			DateFormat dateTimeFormatter = DateFormat.getDateTimeInstance();
+			return getCalendar(dateTimeFormatter, dateTime);
+		}
+		
+		public static String getDate( Calendar date ) {
+			DateFormat dateFormatter = DateFormat.getDateInstance();
+			return getCalendar(dateFormatter, date);
+		}
+		
+		private static String getCalendar( DateFormat formatter, Calendar date ) {
+			if ( date == null ) {
 				return null;
 			}
-			DateFormat timeFormatter = DateFormat.getTimeInstance();
-			return timeFormatter.format(time.getTime());
+			return formatter.format(date.getTime());
+		}
+		
+		public static String getNumber( Number num ) {
+			if ( num == null ) {
+				return null;
+			}
+			return num.toString();
 		}
 	}
-	
+
+	/**
+	 * Parse Values according to the following rules:
+	 * 
+	 *  RangedText ( contains .. )
+	 *    TimeRange ( Time..Time, ..Time, Time.. )
+	 *    DateTimeRange ( DateTime..DateTime, ..DateTime, DateTime.. )
+	 *    DateRange ( Date..Date, ..Date, Date..  )
+	 *    NumberRange ( Number..Number, ..Number, Number.. )
+	 *    
+	 */
 	public static class ValueTypeParser {
-		/*
-		 *  RangedText ( contains .. )
-		 *    TimeRange ( Time..Time, ..Time, Time.. )
-		 *    DateTimeRange ( DateTime..DateTime, ..DateTime, DateTime.. )
-		 *    DateRange ( Date..Date, ..Date, Date..  )
-		 *    NumberRange ( Number..Number, ..Number, Number.. )
-		*/
 		
-		private static final String RANGE = "..";
-		
-		//TODO parse Number
 		
 		public static Calendar parseTime( String text ) {
 			DateFormat timeFormatter = DateFormat.getTimeInstance();
@@ -159,6 +214,53 @@ public final class SearchExpressionParser {
 		public static Calendar parseDate( String text ) {
 			DateFormat timeFormatter = DateFormat.getDateInstance();
 			return parse( timeFormatter, text );
+		}
+		
+		public static Number parseNumber( String text ) {
+			try {
+				Long number = Long.valueOf(text);
+				return number;
+			} catch ( NumberFormatException nfe ) {
+				return null;
+			}
+		}
+
+		public static NumberRangeHolder parseNumberRange(String text) {
+			if ( text.indexOf(RANGE) == -1 ) {
+				return null;
+			}
+			String fromT = null;
+			Number fromNum = null;
+			String toT = null;
+			Number toNum = null;
+			if ( text.startsWith(RANGE)) {
+				// can only be ..Number
+				fromT = text.substring(RANGE.length());
+			} else if ( text.endsWith(RANGE)) {
+				// can only be Number..
+				toT = text.substring(0,text.length()-RANGE.length());
+			} else {
+				// likely Number..Number
+				int pos = text.indexOf(RANGE);
+				fromT = text.substring(0, pos);
+				toT = text.substring(pos+RANGE.length(), text.length());
+			}
+
+			if ( toT != null ) {
+				try {
+					toNum = Long.valueOf(toT);
+				} catch (NumberFormatException e) {
+					return null;
+				}
+			}
+			if ( fromT != null ) {
+				try {
+					fromNum = Long.valueOf(fromT);
+				} catch (NumberFormatException e) {
+					return null;
+				}
+			}
+			return new NumberRangeHolder(fromNum, toNum);
 		}
 		
 		private static Calendar parse(DateFormat formatter, String text ) {
@@ -188,7 +290,7 @@ public final class SearchExpressionParser {
 		}
 		
 		private static CalendarRangeHolder parseRange(DateFormat formatter, String text ) {
-			if ( text.indexOf("..") == -1 ) {
+			if ( text.indexOf(RANGE) == -1 ) {
 				return null;
 			}
 			String fromT = null;
@@ -239,11 +341,10 @@ public final class SearchExpressionParser {
 	//-------------------------------------------------------------------------
 
 	private void parseValue( String text, SearchExpression exp ) {
-		//TODO other types
-		CalendarRangeHolder timeRange = ValueTypeParser.parseTimeRange(text);
-		if ( timeRange != null ) {
-			exp.valueType = ValueType.TimeRange;
-			//TODO
+		if ( parseCalendarText(text, exp)) {
+			return;
+		}
+		if ( parseNumberText(text, exp)) {
 			return;
 		}
 		exp.valueType = ValueType.Text;
@@ -254,19 +355,79 @@ public final class SearchExpressionParser {
 	}
 	
 	private void parseQuotedValue( String text, SearchExpression exp ) {
+		// remove the quotes from the text
+		if ( text.startsWith("\"") ) {
+			if ( text.endsWith("\"")) {
+				text = text.substring(1, text.length()-1);
+			} else {
+				text = text.substring(1);
+			}
+		}
+		// try to parse any ranged or simple calendar values ( can have SPACES - so need quotes )
+		if ( parseCalendarText(text, exp)) {
+			return;
+		}
 		exp.valueType = ValueType.QuotedText;
 		String matchValue = text.toLowerCase();
 		//Trim the quotes
-		if ( matchValue.startsWith("\"") ) {
-			if ( matchValue.endsWith("\"")) {
-				matchValue = matchValue.substring(1, matchValue.length()-1);
-			} else {
-				matchValue = matchValue.substring(1);
-			}
-		}
 		exp.add(FieldType.Text, new QuotedTextMatch(matchValue));
 	}
 	
+	private boolean parseNumberText( String text, SearchExpression exp ) {
+		NumberRangeHolder numberRange = ValueTypeParser.parseNumberRange(text);
+		if ( numberRange != null ) {
+			exp.valueType = ValueType.NumberRange;
+			//TODO
+			return true;
+		}
+		Number number = ValueTypeParser.parseNumber(text);
+		if ( number != null ) {
+			exp.valueType = ValueType.Number;
+			//TODO
+			return true;
+		}
+		return false;
+	}
+	private boolean parseCalendarText( String text, SearchExpression exp ) {
+		CalendarRangeHolder timeRange = ValueTypeParser.parseTimeRange(text);
+		if ( timeRange != null ) {
+			exp.valueType = ValueType.TimeRange;
+			//TODO
+			return true;
+		}
+		CalendarRangeHolder dateTimeRange = ValueTypeParser.parseDateTimeRange(text);
+		if ( dateTimeRange != null ) {
+			exp.valueType = ValueType.DateTimeRange;
+			//TODO
+			return true;
+		}
+		CalendarRangeHolder dateRange = ValueTypeParser.parseDateRange(text);
+		if ( dateRange != null ) {
+			exp.valueType = ValueType.DateRange;
+			//TODO
+			return true;
+		}
+		Calendar time = ValueTypeParser.parseTime(text);
+		if ( time != null ) {
+			exp.valueType = ValueType.Time;
+			//TODO
+			return true;
+		}
+		Calendar dateTime = ValueTypeParser.parseDateTime(text);
+		if ( dateTime != null ) {
+			exp.valueType = ValueType.DateTime;
+			//TODO
+			return true;
+		}
+		Calendar date = ValueTypeParser.parseDate(text);
+		if ( date != null ) {
+			exp.valueType = ValueType.Date;
+			//TODO
+			return true;
+		}
+		return false;
+	}
+
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------

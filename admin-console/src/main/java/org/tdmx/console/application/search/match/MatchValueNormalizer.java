@@ -1,27 +1,11 @@
-package org.tdmx.console.application.search;
+package org.tdmx.console.application.search.match;
 
-import org.tdmx.console.application.domain.DomainObject;
-import org.tdmx.console.application.search.match.MatchValueNormalizer;
+import java.text.DateFormat;
+import java.util.Calendar;
 
-/**
- * The SearchableObjectField contains a DomainObject's field value.
- * 
- * FieldType
- *             [SearchValue-Type] [OriginalValue-Type]
- *	Text       String[]           String
- *	String     String             String
- *	Token      String             String
- *	Number     Long               Number
- *	Date       Long               Calendar  [seconds since EPOCH]
- *	DateTime   [Long,Integer]     Calendar  [seconds since EPOCH, seconds since 00:00:00]  
-*	Time       Integer            Calendar  [seconds since 00:00:00]
- * 
- * @see MatchValueNormalizer
- * 
- * @author Peter
- *
- */
-public final class SearchableObjectField {
+import org.tdmx.console.application.search.SearchableObjectField;
+
+public class MatchValueNormalizer {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -31,24 +15,32 @@ public final class SearchableObjectField {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public DomainObject object;
-	public FieldDescriptor field; 
-	public Object searchValue; // doesn't count to the identity
-	public Object value; // the original field value 
-
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchableObjectField( DomainObject object, FieldDescriptor field, Object value ) {
-		this.object = object;
-		this.field = field;
-		this.value = value;
-	}
-	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	
+	public static Integer getTime( Calendar cal ) {
+		int hours = cal.get(Calendar.HOUR_OF_DAY);
+		int minutes = cal.get(Calendar.MINUTE);
+		int seconds = cal.get(Calendar.SECOND);
+		return Integer.valueOf(hours*3600+minutes*60+seconds);
+	}
+	
+	public static String getTimeString( Integer time ) {
+		if ( time == null ) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.clear();
+		cal.add(Calendar.SECOND, time);
+		return DateFormat.getTimeInstance().format(cal.getTime());
+	}
+	
+	//TODO other field normalizations
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -61,5 +53,5 @@ public final class SearchableObjectField {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-	
+
 }

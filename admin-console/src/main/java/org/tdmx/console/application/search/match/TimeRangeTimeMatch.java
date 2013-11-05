@@ -1,27 +1,17 @@
-package org.tdmx.console.application.search;
+package org.tdmx.console.application.search.match;
 
-import org.tdmx.console.application.domain.DomainObject;
-import org.tdmx.console.application.search.match.MatchValueNormalizer;
+import java.text.DateFormat;
+import java.util.Calendar;
+
+import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
- * The SearchableObjectField contains a DomainObject's field value.
- * 
- * FieldType
- *             [SearchValue-Type] [OriginalValue-Type]
- *	Text       String[]           String
- *	String     String             String
- *	Token      String             String
- *	Number     Long               Number
- *	Date       Long               Calendar  [seconds since EPOCH]
- *	DateTime   [Long,Integer]     Calendar  [seconds since EPOCH, seconds since 00:00:00]  
-*	Time       Integer            Calendar  [seconds since 00:00:00]
- * 
- * @see MatchValueNormalizer
+ * Matching a TimeRange value against a Time field.
  * 
  * @author Peter
  *
  */
-public final class SearchableObjectField {
+public class TimeRangeTimeMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -31,24 +21,46 @@ public final class SearchableObjectField {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public DomainObject object;
-	public FieldDescriptor field; 
-	public Object searchValue; // doesn't count to the identity
-	public Object value; // the original field value 
-
+	private Integer from; // time from
+	private Integer to; // time to
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchableObjectField( DomainObject object, FieldDescriptor field, Object value ) {
-		this.object = object;
-		this.field = field;
-		this.value = value;
+	public TimeRangeTimeMatch( Integer from, Integer to ) {
+		this.from = from;
+		this.to = to;
 	}
 	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	
+	@Override
+	public boolean match(SearchableObjectField field) {
+		int timeValue = ((Integer)field.searchValue);
+		if ( from != null && timeValue < from ) {
+			return false;
+		}
+		if ( to != null && timeValue > to ) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		String fromT = "";
+		String toT = "";
+		if ( from != null ) {
+			fromT = MatchValueNormalizer.getTimeString(from); 
+		}
+		if ( to != null ) {
+			toT = MatchValueNormalizer.getTimeString(to); 
+		}
+		return fromT+"..TRT.."+toT;
+	}
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -61,5 +73,5 @@ public final class SearchableObjectField {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-	
+
 }
