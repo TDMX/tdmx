@@ -3,8 +3,6 @@ package org.tdmx.console.application.search.match;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-import org.tdmx.console.application.search.SearchableObjectField;
-
 public class MatchValueNormalizer {
 
 	//-------------------------------------------------------------------------
