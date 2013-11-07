@@ -8,9 +8,9 @@ import org.tdmx.console.application.search.match.MatchValueNormalizer;
  * 
  * FieldType
  *             [SearchValue-Type] [OriginalValue-Type]
- *	Text       String[]           String
- *	String     String             String
- *	Token      String             String
+ *	Text       String[](lower)    String
+ *	String     String(lower)      String
+ *	Token      String(lower)      String
  *	Number     Long               Number
  *	Date       Long               Calendar  [seconds since EPOCH]
  *	DateTime   [Long,Integer]     Calendar  [seconds since EPOCH, seconds since 00:00:00]  
@@ -33,17 +33,17 @@ public final class SearchableObjectField {
 
 	public DomainObject object;
 	public FieldDescriptor field; 
-	public Object searchValue; // doesn't count to the identity
-	public Object value; // the original field value 
+	public Object searchValue;
+	public Object originalValue; 
 
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchableObjectField( DomainObject object, FieldDescriptor field, Object value ) {
+	public SearchableObjectField( DomainObject object, FieldDescriptor field, Object originalValue ) {
 		this.object = object;
 		this.field = field;
-		this.value = value;
+		this.originalValue = originalValue;
 	}
 	
 	//-------------------------------------------------------------------------

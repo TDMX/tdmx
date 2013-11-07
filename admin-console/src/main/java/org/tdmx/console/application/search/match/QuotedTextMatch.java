@@ -37,7 +37,7 @@ public class QuotedTextMatch implements MatchFunction {
 	
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return ((String)field.value).indexOf(text) != -1;
+		return ((String)field.originalValue).indexOf(text) != -1;
 	}
 
 	@Override

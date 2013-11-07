@@ -14,10 +14,10 @@ import org.tdmx.console.application.search.match.TextLikeMatch;
 
 public class SearchExpressionFacade {
 
-	public SearchExpression createQuotedTextExpression( String unquotedTextLowercase ) {
+	public SearchExpression createQuotedTextExpression( String unquotedText ) {
 		SearchExpression exp = new SearchExpression();
 		exp.valueType = ValueType.QuotedText;
-		exp.add(FieldType.Text, new QuotedTextMatch(unquotedTextLowercase));
+		exp.add(FieldType.Text, new QuotedTextMatch(unquotedText));
 		return exp;
 	}
 	

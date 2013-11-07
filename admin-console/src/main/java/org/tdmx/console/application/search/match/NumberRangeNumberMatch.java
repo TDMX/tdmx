@@ -2,7 +2,13 @@ package org.tdmx.console.application.search.match;
 
 import org.tdmx.console.application.search.SearchableObjectField;
 
-public class NumberEqualityMatch implements MatchFunction {
+/**
+ * Matching a NumberRange value against a Number field.
+ * 
+ * @author Peter
+ *
+ */
+public class NumberRangeNumberMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -12,14 +18,16 @@ public class NumberEqualityMatch implements MatchFunction {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private Long number;
+	private Long from; // number from
+	private Long to; // number to
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public NumberEqualityMatch( Long number ) {
-		this.number = number;
+	public NumberRangeNumberMatch( Long from, Long to ) {
+		this.from = from;
+		this.to = to;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -28,12 +36,27 @@ public class NumberEqualityMatch implements MatchFunction {
 	
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return number.equals(field.searchValue);
+		Long value = ((Long)field.searchValue);
+		if ( from != null && value < from ) {
+			return false;
+		}
+		if ( to != null && value > to ) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "=N="+number;
+		String fromN = "";
+		String toN = "";
+		if ( from != null ) {
+			fromN = MatchValueNormalizer.getNumberString(from); 
+		}
+		if ( to != null ) {
+			toN = MatchValueNormalizer.getNumberString(to); 
+		}
+		return fromN+"..NRN.."+toN;
 	}
 	
     //-------------------------------------------------------------------------

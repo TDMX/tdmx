@@ -44,7 +44,7 @@ public class SearchExpressionParserTest {
 		SearchExpression e = p.parseNext();
 		assertNotNull(e);
 		
-		SearchExpression expected = facade.createQuotedTextExpression("hello world");
+		SearchExpression expected = facade.createQuotedTextExpression("Hello World");
 		facade.checkEquals(expected, e);
 		
 		assertNull(p.parseNext());
@@ -56,11 +56,11 @@ public class SearchExpressionParserTest {
 		SearchExpression e = p.parseNext();
 		assertNotNull(e);
 		
-		SearchExpression expected = facade.createQuotedTextExpression("hello world");
+		SearchExpression expected = facade.createQuotedTextExpression("Hello World");
 		facade.checkEquals(expected, e);
 		
 		SearchExpression e2 = p.parseNext();
-		SearchExpression expected2 = facade.createQuotedTextExpression(" hello world2 ");
+		SearchExpression expected2 = facade.createQuotedTextExpression(" Hello World2 ");
 		facade.checkEquals(expected2, e2);
 		
 		assertNull(p.parseNext());
@@ -80,65 +80,6 @@ public class SearchExpressionParserTest {
 
 		SearchExpression expected2 = facade.createTextExpression("world");
 		facade.checkEquals(expected2, e2);
-
 	}
 
-	@Test
-	public void testValueTypeParser_TimeRange_NonRange() {
-		assertNull( ValueTypeParser.parseTimeRange("bla.."));
-		assertNull( ValueTypeParser.parseTimeRange("..bla"));
-		assertNull( ValueTypeParser.parseTimeRange("..bla.."));
-		assertNull( ValueTypeParser.parseTimeRange("...bla..."));
-	}
-	
-	@Test
-	public void testValueTypeParser_TimeRange_Both() {
-		String nowTime = getCurrentTime();
-		String text = nowTime+".."+nowTime;
-		CalendarRangeHolder range = ValueTypeParser.parseTimeRange(text);
-		assertNotNull(range);
-		String fromTime = ValueTypeFormatter.getTime(range.from);
-		assertEquals(nowTime, fromTime);
-		String toTime = ValueTypeFormatter.getTime(range.to);
-		assertEquals(nowTime, toTime);
-	}
-	
-	@Test
-	public void testValueTypeParser_TimeRange_From() {
-		String nowTime = getCurrentTime();
-		String text = nowTime+"..";
-		CalendarRangeHolder range = ValueTypeParser.parseTimeRange(text);
-		assertNotNull(range);
-		assertNull(range.from);
-		String toTime = ValueTypeFormatter.getTime(range.to);
-		assertEquals(nowTime, toTime);
-	}
-	
-	@Test
-	public void testValueTypeParser_TimeRange_To() {
-		String nowTime = getCurrentTime();
-		String text = ".."+nowTime;
-		CalendarRangeHolder range = ValueTypeParser.parseTimeRange(text);
-		assertNotNull(range);
-		String fromTime = ValueTypeFormatter.getTime(range.from);
-		assertEquals(nowTime, fromTime);
-		assertNull(range.to);
-	}
-	
-	@Test
-	public void testValueTypeParser_TimeNotLost() {
-		String nowTime = getCurrentTime();
-		Calendar nowCal = ValueTypeParser.parseTime(nowTime);
-		String nowTime2 = ValueTypeFormatter.getTime(nowCal);
-		
-		assertEquals(nowTime2, nowTime);
-	}
-	
-	private String getCurrentTime() {
-		Calendar now = Calendar.getInstance();
-		
-		String nowTime = ValueTypeFormatter.getTime(now);
-		return nowTime;
-	}
-	
 }

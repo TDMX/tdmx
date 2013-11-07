@@ -9,9 +9,14 @@ import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchExpression.ValueType;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.CalendarRangeHolder;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.NumberRangeHolder;
+import org.tdmx.console.application.search.match.MatchValueNormalizer;
+import org.tdmx.console.application.search.match.NumberEqualityMatch;
+import org.tdmx.console.application.search.match.NumberRangeNumberMatch;
 import org.tdmx.console.application.search.match.QuotedTextMatch;
+import org.tdmx.console.application.search.match.StringLikeMatch;
 import org.tdmx.console.application.search.match.TextEqualityMatch;
 import org.tdmx.console.application.search.match.TextLikeMatch;
+import org.tdmx.console.application.search.match.TextLikeOrMatch;
 
 
 /**
@@ -348,14 +353,13 @@ public final class SearchExpressionParser {
 			return;
 		}
 		exp.valueType = ValueType.Text;
-		String matchValue = text.toLowerCase();
-		exp.add(FieldType.Token, new TextEqualityMatch(matchValue));
-		exp.add(FieldType.Text, new TextLikeMatch(matchValue)) ;
+		exp.add(FieldType.Token, new TextEqualityMatch(MatchValueNormalizer.getString(text)));
+		exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getString(text))) ;
 		
 	}
 	
 	private void parseQuotedValue( String text, SearchExpression exp ) {
-		// remove the quotes from the text
+		//Trim the quotes
 		if ( text.startsWith("\"") ) {
 			if ( text.endsWith("\"")) {
 				text = text.substring(1, text.length()-1);
@@ -368,22 +372,23 @@ public final class SearchExpressionParser {
 			return;
 		}
 		exp.valueType = ValueType.QuotedText;
-		String matchValue = text.toLowerCase();
-		//Trim the quotes
-		exp.add(FieldType.Text, new QuotedTextMatch(matchValue));
+		exp.add(FieldType.Text, new QuotedTextMatch(text)); //keep case sensitivity in Quoted Text
 	}
 	
 	private boolean parseNumberText( String text, SearchExpression exp ) {
 		NumberRangeHolder numberRange = ValueTypeParser.parseNumberRange(text);
 		if ( numberRange != null ) {
 			exp.valueType = ValueType.NumberRange;
-			//TODO
+			exp.add(FieldType.Number, new NumberRangeNumberMatch(MatchValueNormalizer.getNumber(numberRange.from), MatchValueNormalizer.getNumber(numberRange.to)));
+			exp.add(FieldType.Text, new TextLikeOrMatch(MatchValueNormalizer.getStringList(numberRange.from, numberRange.to)));
 			return true;
 		}
 		Number number = ValueTypeParser.parseNumber(text);
 		if ( number != null ) {
 			exp.valueType = ValueType.Number;
-			//TODO
+			exp.add(FieldType.Number, new NumberEqualityMatch(MatchValueNormalizer.getNumber(number)));
+			exp.add(FieldType.String, new StringLikeMatch(MatchValueNormalizer.getString(number)));
+			exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getString(number)));
 			return true;
 		}
 		return false;
@@ -393,6 +398,7 @@ public final class SearchExpressionParser {
 		if ( timeRange != null ) {
 			exp.valueType = ValueType.TimeRange;
 			//TODO
+			
 			return true;
 		}
 		CalendarRangeHolder dateTimeRange = ValueTypeParser.parseDateTimeRange(text);
