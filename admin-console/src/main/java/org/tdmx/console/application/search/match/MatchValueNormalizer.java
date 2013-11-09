@@ -1,6 +1,5 @@
 package org.tdmx.console.application.search.match;
 
-import java.text.DateFormat;
 import java.util.Calendar;
 
 public class MatchValueNormalizer {
@@ -21,24 +20,91 @@ public class MatchValueNormalizer {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public static String getString( String string ) {
+	/**
+	 * Get the normalized String from a String field.
+	 * @param string
+	 * @return
+	 */
+	public static String getStringFromString( String string ) {
 		return string.toLowerCase();
 	}
 	
-	public static String getString( Number number ) {
-		if ( number == null ) {
-			return null;
-		}
-		return number.toString();
+	/**
+	 * Get the normalized String from a Number field.
+	 * @param number
+	 * @return
+	 */
+	public static String getStringFromNumber( Number number ) {
+		return MatchValueFormatter.getNumber(getNumber(number));
 	}
 	
-	public static String[] getStringList( Number n1, Number n2 ) {
+	/**
+	 * Get the normalized String from a Time field.
+	 * @param time
+	 * @return
+	 */
+	public static String getStringFromTime( Calendar time ) {
+		return MatchValueFormatter.getTime(getTime(time));
+	}
+	
+	/**
+	 * Get the normalized String from a DateTime field.
+	 * @param time
+	 * @return
+	 */
+	public static String getStringFromDateTime( Calendar time ) {
+		return MatchValueFormatter.getDateTime(getDateTime(time));
+	}
+	
+	/**
+	 * Get the normalized String from a Date field.
+	 * @param time
+	 * @return
+	 */
+	public static String getStringFromDate( Calendar time ) {
+		return MatchValueFormatter.getDate(getDate(time));
+	}
+	
+	public static String[] getStringNumberList( Number n1, Number n2 ) {
 		if ( n1 != null && n2 != null ) {
-			return new String[] { n1.toString(), n2.toString() };
+			return new String[] { getStringFromNumber(n1), getStringFromNumber(n2) };
 		} else if ( n1 != null ) {
-			return new String[] { n1.toString() };
+			return new String[] { getStringFromNumber(n1) };
 		} else if ( n2 != null ) {
-			return new String[] { n2.toString() };
+			return new String[] { getStringFromNumber(n2) };
+		}
+		return null;
+	}
+	
+	public static String[] getStringTimeList( Calendar c1, Calendar c2 ) {
+		if ( c1 != null && c2 != null ) {
+			return new String[] { getStringFromTime(c1), getStringFromTime(c2) };
+		} else if ( c1 != null ) {
+			return new String[] { getStringFromTime(c1) };
+		} else if ( c2 != null ) {
+			return new String[] { getStringFromTime(c2) };
+		}
+		return null;
+	}
+	
+	public static String[] getStringDateTimeList( Calendar c1, Calendar c2 ) {
+		if ( c1 != null && c2 != null ) {
+			return new String[] { getStringFromDateTime(c1), getStringFromDateTime(c2) };
+		} else if ( c1 != null ) {
+			return new String[] { getStringFromDateTime(c1) };
+		} else if ( c2 != null ) {
+			return new String[] { getStringFromDateTime(c2) };
+		}
+		return null;
+	}
+	
+	public static String[] getStringDateList( Calendar c1, Calendar c2 ) {
+		if ( c1 != null && c2 != null ) {
+			return new String[] { getStringFromDate(c1), getStringFromDate(c2) };
+		} else if ( c1 != null ) {
+			return new String[] { getStringFromDate(c1) };
+		} else if ( c2 != null ) {
+			return new String[] { getStringFromDate(c2) };
 		}
 		return null;
 	}
@@ -50,28 +116,40 @@ public class MatchValueNormalizer {
 		return number.longValue();
 	}
 	
-	public static String getNumberString( Long number ) {
-		if ( number == null ) {
+	public static Integer getTime( Calendar cal ) {
+		if ( cal == null ) {
 			return null;
 		}
-		return number.toString();
-	}
-	
-	public static Integer getTime( Calendar cal ) {
 		int hours = cal.get(Calendar.HOUR_OF_DAY);
 		int minutes = cal.get(Calendar.MINUTE);
 		int seconds = cal.get(Calendar.SECOND);
 		return Integer.valueOf(hours*3600+minutes*60+seconds);
 	}
 	
-	public static String getTimeString( Integer time ) {
-		if ( time == null ) {
+	public static Long getDate( Calendar cal ) {
+		if ( cal == null ) {
 			return null;
 		}
-		Calendar cal = Calendar.getInstance();
-		cal.clear();
-		cal.add(Calendar.SECOND, time);
-		return DateFormat.getTimeInstance().format(cal.getTime());
+		Calendar c = Calendar.getInstance();
+		c.setTime(cal.getTime());
+		c.set(Calendar.MILLISECOND, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		return Long.valueOf(c.getTimeInMillis());
+	}
+	
+	public static Long getDateTimeTS( Calendar cal ) {
+		if ( cal == null ) {
+			return null;
+		}
+		return Long.valueOf(cal.getTimeInMillis());
+	}
+	
+	public static Object[] getDateTime( Calendar cal ) {
+		Integer time = getTime(cal);
+		Long date = getDate(cal);
+		return new Object[] { date, time, getDateTimeTS(cal) };
 	}
 	
 	//TODO other field normalizations

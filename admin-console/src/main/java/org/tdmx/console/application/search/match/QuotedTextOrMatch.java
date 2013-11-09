@@ -1,17 +1,14 @@
 package org.tdmx.console.application.search.match;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-
 import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
- * Matching a Date value against a Date field.
+ * Used to match QuotedText search values with Text Field's originalValue.
  * 
  * @author Peter
  *
  */
-public class DateEqualityMatch implements MatchFunction {
+public class QuotedTextOrMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -21,14 +18,14 @@ public class DateEqualityMatch implements MatchFunction {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private Long date;
+	private String[] texts;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DateEqualityMatch( Long date ) {
-		this.date = date;
+	public QuotedTextOrMatch( String[] texts ) {
+		this.texts = texts;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -37,15 +34,26 @@ public class DateEqualityMatch implements MatchFunction {
 	
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return date.equals(field.searchValue);
+		for( String t : texts ) {
+			if ( ((String)field.originalValue).indexOf(t) != -1 ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
 	public String toString() {
-		return "=D="+ MatchValueFormatter.getDate(date);
+		StringBuffer buf = new StringBuffer();
+		buf.append("=[\"");
+		for( String t : texts ) {
+			buf.append(t).append(",");
+		}
+		buf.append("\"]");
+		return buf.toString();
 	}
 	
-    //-------------------------------------------------------------------------
+   //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 

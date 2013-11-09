@@ -1,17 +1,14 @@
 package org.tdmx.console.application.search.match;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-
 import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
- * Matching a Date value against a Date field.
+ * Matching a Time value against a Time field.
  * 
  * @author Peter
  *
  */
-public class DateEqualityMatch implements MatchFunction {
+public class TimeEqualityMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -21,14 +18,14 @@ public class DateEqualityMatch implements MatchFunction {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private Long date;
+	private Integer time;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DateEqualityMatch( Long date ) {
-		this.date = date;
+	public TimeEqualityMatch( Integer time ) {
+		this.time = time;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -37,12 +34,12 @@ public class DateEqualityMatch implements MatchFunction {
 	
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return date.equals(field.searchValue);
+		return time.equals((Integer)field.searchValue);
 	}
 
 	@Override
 	public String toString() {
-		return "=D="+ MatchValueFormatter.getDate(date);
+		return "=T="+MatchValueFormatter.getTime(time);
 	}
 	
     //-------------------------------------------------------------------------

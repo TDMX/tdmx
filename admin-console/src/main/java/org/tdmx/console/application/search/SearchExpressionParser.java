@@ -7,16 +7,25 @@ import java.util.Date;
 
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchExpression.ValueType;
+import org.tdmx.console.application.search.match.DateRangeDateMatch;
+import org.tdmx.console.application.search.match.DateRangeDateTimeMatch;
+import org.tdmx.console.application.search.match.DateTimeRangeDateMatch;
+import org.tdmx.console.application.search.match.DateTimeRangeDateTimeMatch;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.CalendarRangeHolder;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.NumberRangeHolder;
 import org.tdmx.console.application.search.match.MatchValueNormalizer;
 import org.tdmx.console.application.search.match.NumberEqualityMatch;
 import org.tdmx.console.application.search.match.NumberRangeNumberMatch;
 import org.tdmx.console.application.search.match.QuotedTextMatch;
+import org.tdmx.console.application.search.match.QuotedTextOrMatch;
 import org.tdmx.console.application.search.match.StringLikeMatch;
 import org.tdmx.console.application.search.match.TextEqualityMatch;
 import org.tdmx.console.application.search.match.TextLikeMatch;
 import org.tdmx.console.application.search.match.TextLikeOrMatch;
+import org.tdmx.console.application.search.match.TimeDateTimeMatch;
+import org.tdmx.console.application.search.match.TimeEqualityMatch;
+import org.tdmx.console.application.search.match.TimeRangeDateTimeMatch;
+import org.tdmx.console.application.search.match.TimeRangeTimeMatch;
 
 
 /**
@@ -353,8 +362,8 @@ public final class SearchExpressionParser {
 			return;
 		}
 		exp.valueType = ValueType.Text;
-		exp.add(FieldType.Token, new TextEqualityMatch(MatchValueNormalizer.getString(text)));
-		exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getString(text))) ;
+		exp.add(FieldType.Token, new TextEqualityMatch(MatchValueNormalizer.getStringFromString(text)));
+		exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getStringFromString(text))) ;
 		
 	}
 	
@@ -380,43 +389,51 @@ public final class SearchExpressionParser {
 		if ( numberRange != null ) {
 			exp.valueType = ValueType.NumberRange;
 			exp.add(FieldType.Number, new NumberRangeNumberMatch(MatchValueNormalizer.getNumber(numberRange.from), MatchValueNormalizer.getNumber(numberRange.to)));
-			exp.add(FieldType.Text, new TextLikeOrMatch(MatchValueNormalizer.getStringList(numberRange.from, numberRange.to)));
+			exp.add(FieldType.Text, new TextLikeOrMatch(MatchValueNormalizer.getStringNumberList(numberRange.from, numberRange.to)));
 			return true;
 		}
 		Number number = ValueTypeParser.parseNumber(text);
 		if ( number != null ) {
 			exp.valueType = ValueType.Number;
 			exp.add(FieldType.Number, new NumberEqualityMatch(MatchValueNormalizer.getNumber(number)));
-			exp.add(FieldType.String, new StringLikeMatch(MatchValueNormalizer.getString(number)));
-			exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getString(number)));
+			exp.add(FieldType.String, new StringLikeMatch(MatchValueNormalizer.getStringFromNumber(number)));
+			exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getStringFromNumber(number)));
 			return true;
 		}
 		return false;
 	}
+	
 	private boolean parseCalendarText( String text, SearchExpression exp ) {
 		CalendarRangeHolder timeRange = ValueTypeParser.parseTimeRange(text);
 		if ( timeRange != null ) {
 			exp.valueType = ValueType.TimeRange;
-			//TODO
-			
+			exp.add(FieldType.Time, new TimeRangeTimeMatch(MatchValueNormalizer.getTime(timeRange.from), MatchValueNormalizer.getTime(timeRange.to)));
+			exp.add(FieldType.DateTime, new TimeRangeDateTimeMatch(MatchValueNormalizer.getTime(timeRange.from), MatchValueNormalizer.getTime(timeRange.to)));
+			exp.add(FieldType.Text, new QuotedTextOrMatch(MatchValueNormalizer.getStringTimeList(timeRange.from, timeRange.to)));
 			return true;
 		}
 		CalendarRangeHolder dateTimeRange = ValueTypeParser.parseDateTimeRange(text);
 		if ( dateTimeRange != null ) {
 			exp.valueType = ValueType.DateTimeRange;
-			//TODO
+			exp.add(FieldType.DateTime, new DateTimeRangeDateTimeMatch(MatchValueNormalizer.getDateTimeTS(dateTimeRange.from), MatchValueNormalizer.getDateTimeTS(dateTimeRange.to)));
+			exp.add(FieldType.Date, new DateTimeRangeDateMatch(MatchValueNormalizer.getDate(dateTimeRange.from), MatchValueNormalizer.getDate(dateTimeRange.to)));
+			exp.add(FieldType.Text, new QuotedTextOrMatch(MatchValueNormalizer.getStringTimeList(dateTimeRange.from, dateTimeRange.to)));
 			return true;
 		}
 		CalendarRangeHolder dateRange = ValueTypeParser.parseDateRange(text);
 		if ( dateRange != null ) {
 			exp.valueType = ValueType.DateRange;
-			//TODO
+			exp.add(FieldType.DateTime, new DateRangeDateTimeMatch(MatchValueNormalizer.getDate(dateRange.from), MatchValueNormalizer.getDate(dateRange.to)));
+			exp.add(FieldType.Date, new DateRangeDateMatch(MatchValueNormalizer.getDate(dateRange.from), MatchValueNormalizer.getDate(dateRange.to)));
+			exp.add(FieldType.Text, new QuotedTextOrMatch(MatchValueNormalizer.getStringDateList(dateRange.from, dateRange.to)));
 			return true;
 		}
 		Calendar time = ValueTypeParser.parseTime(text);
 		if ( time != null ) {
 			exp.valueType = ValueType.Time;
-			//TODO
+			exp.add(FieldType.Time, new TimeEqualityMatch(MatchValueNormalizer.getTime(time)));
+			exp.add(FieldType.DateTime, new TimeDateTimeMatch(MatchValueNormalizer.getTime(time)));
+			exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getStringFromTime(time)));
 			return true;
 		}
 		Calendar dateTime = ValueTypeParser.parseDateTime(text);

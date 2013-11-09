@@ -51,10 +51,10 @@ public class NumberRangeNumberMatch implements MatchFunction {
 		String fromN = "";
 		String toN = "";
 		if ( from != null ) {
-			fromN = MatchValueNormalizer.getNumberString(from); 
+			fromN = MatchValueFormatter.getNumber(from); 
 		}
 		if ( to != null ) {
-			toN = MatchValueNormalizer.getNumberString(to); 
+			toN = MatchValueFormatter.getNumber(to); 
 		}
 		return fromN+"..NRN.."+toN;
 	}

@@ -1,17 +1,14 @@
 package org.tdmx.console.application.search.match;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-
 import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
- * Matching a Date value against a Date field.
+ * Matching a DateRange value against a DateTime field.
  * 
  * @author Peter
  *
  */
-public class DateEqualityMatch implements MatchFunction {
+public class DateRangeDateTimeMatch implements MatchFunction {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -21,14 +18,16 @@ public class DateEqualityMatch implements MatchFunction {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private Long date;
+	private Long from; // date from
+	private Long to; // date to
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DateEqualityMatch( Long date ) {
-		this.date = date;
+	public DateRangeDateTimeMatch( Long from, Long to ) {
+		this.from = from;
+		this.to = to;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -37,12 +36,28 @@ public class DateEqualityMatch implements MatchFunction {
 	
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return date.equals(field.searchValue);
+		Object[] fieldValue = (Object[])field.searchValue;
+		long dateValue = (Long)fieldValue[0];
+		if ( from != null && dateValue < from ) {
+			return false;
+		}
+		if ( to != null && dateValue > to ) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "=D="+ MatchValueFormatter.getDate(date);
+		String fromT = "";
+		String toT = "";
+		if ( from != null ) {
+			fromT = MatchValueFormatter.getDate(from); 
+		}
+		if ( to != null ) {
+			toT = MatchValueFormatter.getDate(to); 
+		}
+		return fromT+"..DRDT.."+toT;
 	}
 	
     //-------------------------------------------------------------------------

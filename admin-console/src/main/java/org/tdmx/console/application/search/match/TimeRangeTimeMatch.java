@@ -1,8 +1,5 @@
 package org.tdmx.console.application.search.match;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-
 import org.tdmx.console.application.search.SearchableObjectField;
 
 /**
@@ -54,10 +51,10 @@ public class TimeRangeTimeMatch implements MatchFunction {
 		String fromT = "";
 		String toT = "";
 		if ( from != null ) {
-			fromT = MatchValueNormalizer.getTimeString(from); 
+			fromT = MatchValueFormatter.getTime(from); 
 		}
 		if ( to != null ) {
-			toT = MatchValueNormalizer.getTimeString(to); 
+			toT = MatchValueFormatter.getTime(to); 
 		}
 		return fromT+"..TRT.."+toT;
 	}
