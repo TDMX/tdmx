@@ -152,8 +152,6 @@ public class MatchValueNormalizer {
 		return new Object[] { date, time, getDateTimeTS(cal) };
 	}
 	
-	//TODO other field normalizations
-	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

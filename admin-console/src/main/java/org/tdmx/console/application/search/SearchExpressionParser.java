@@ -7,8 +7,11 @@ import java.util.Date;
 
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchExpression.ValueType;
+import org.tdmx.console.application.search.match.DateDateTimeMatch;
+import org.tdmx.console.application.search.match.DateEqualityMatch;
 import org.tdmx.console.application.search.match.DateRangeDateMatch;
 import org.tdmx.console.application.search.match.DateRangeDateTimeMatch;
+import org.tdmx.console.application.search.match.DateTimeEqualityMatch;
 import org.tdmx.console.application.search.match.DateTimeRangeDateMatch;
 import org.tdmx.console.application.search.match.DateTimeRangeDateTimeMatch;
 import org.tdmx.console.application.search.match.MatchFunctionHolder.CalendarRangeHolder;
@@ -433,19 +436,24 @@ public final class SearchExpressionParser {
 			exp.valueType = ValueType.Time;
 			exp.add(FieldType.Time, new TimeEqualityMatch(MatchValueNormalizer.getTime(time)));
 			exp.add(FieldType.DateTime, new TimeDateTimeMatch(MatchValueNormalizer.getTime(time)));
-			exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getStringFromTime(time)));
+			exp.add(FieldType.Text, new QuotedTextMatch(MatchValueNormalizer.getStringFromTime(time)));
 			return true;
 		}
 		Calendar dateTime = ValueTypeParser.parseDateTime(text);
 		if ( dateTime != null ) {
 			exp.valueType = ValueType.DateTime;
-			//TODO
+			exp.add(FieldType.Time, new TimeEqualityMatch(MatchValueNormalizer.getTime(dateTime)));
+			exp.add(FieldType.DateTime, new DateTimeEqualityMatch(MatchValueNormalizer.getDateTimeTS(dateTime)));
+			exp.add(FieldType.Date, new DateEqualityMatch(MatchValueNormalizer.getDate(dateTime)));
+			exp.add(FieldType.Text, new QuotedTextMatch(MatchValueNormalizer.getStringFromDate(dateTime)));
 			return true;
 		}
 		Calendar date = ValueTypeParser.parseDate(text);
 		if ( date != null ) {
 			exp.valueType = ValueType.Date;
-			//TODO
+			exp.add(FieldType.DateTime, new DateDateTimeMatch(MatchValueNormalizer.getDate(date)));
+			exp.add(FieldType.Date, new DateEqualityMatch(MatchValueNormalizer.getDate(date)));
+			exp.add(FieldType.Text, new QuotedTextMatch(MatchValueNormalizer.getStringFromDate(date)));
 			return true;
 		}
 		return false;
