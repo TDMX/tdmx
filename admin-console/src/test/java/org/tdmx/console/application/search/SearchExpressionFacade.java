@@ -17,6 +17,7 @@ public class SearchExpressionFacade {
 	public SearchExpression createQuotedTextExpression( String unquotedText ) {
 		SearchExpression exp = new SearchExpression();
 		exp.valueType = ValueType.QuotedText;
+		exp.add(FieldType.Token, new QuotedTextMatch(unquotedText));
 		exp.add(FieldType.Text, new QuotedTextMatch(unquotedText));
 		return exp;
 	}

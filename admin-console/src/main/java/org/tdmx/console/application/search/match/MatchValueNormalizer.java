@@ -1,6 +1,7 @@
 package org.tdmx.console.application.search.match;
 
 import java.util.Calendar;
+import java.util.StringTokenizer;
 
 public class MatchValueNormalizer {
 
@@ -27,6 +28,20 @@ public class MatchValueNormalizer {
 	 */
 	public static String getStringFromString( String string ) {
 		return string.toLowerCase();
+	}
+	
+	/**
+	 * Get the normalized String[] tokenized from a Text field.
+	 * @param string
+	 * @return
+	 */
+	public static String[] getStringListFromString( String string ) {
+		StringTokenizer tokenizer = new StringTokenizer(string);
+		String[] result = new String[tokenizer.countTokens()];
+		for( int i = 0; i < result.length; i++) {
+			result[i] = tokenizer.nextToken();
+		}
+		return result;
 	}
 	
 	/**

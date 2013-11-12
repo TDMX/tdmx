@@ -384,6 +384,7 @@ public final class SearchExpressionParser {
 			return;
 		}
 		exp.valueType = ValueType.QuotedText;
+		exp.add(FieldType.Token, new QuotedTextMatch(text)); //keep case sensitivity in Quoted Text
 		exp.add(FieldType.Text, new QuotedTextMatch(text)); //keep case sensitivity in Quoted Text
 	}
 	

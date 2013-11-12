@@ -1,6 +1,9 @@
 package org.tdmx.console.application.search;
 
+import java.util.Calendar;
+
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.search.match.MatchFunction;
 import org.tdmx.console.application.search.match.MatchValueNormalizer;
 
 /**
@@ -46,9 +49,75 @@ public final class SearchableObjectField {
 		this.originalValue = originalValue;
 	}
 	
+	public SearchableObjectField( DomainObject object, FieldDescriptor field, Calendar originalValue ) {
+		this.object = object;
+		this.field = field;
+		this.originalValue = originalValue;
+		switch ( field.getFieldType() ) {
+		case Time:
+			searchValue = MatchValueNormalizer.getTime(originalValue);
+			break;
+		case DateTime:
+			searchValue = MatchValueNormalizer.getDateTime(originalValue);
+			break;
+		case Date:
+			searchValue = MatchValueNormalizer.getDate(originalValue);
+			break;
+		default:
+			throw new IllegalStateException("Calendar field " + field.getName() + " with type "+field.getFieldType());
+		}
+	}
+	
+	public SearchableObjectField( DomainObject object, FieldDescriptor field, Number originalValue ) {
+		this.object = object;
+		this.field = field;
+		this.originalValue = originalValue;
+		switch ( field.getFieldType() ) {
+		case Number:
+			searchValue = MatchValueNormalizer.getNumber(originalValue);
+			break;
+		default:
+			throw new IllegalStateException("Number field " + field.getName() + " with type "+field.getFieldType());
+		}
+	}
+	
+	public SearchableObjectField( DomainObject object, FieldDescriptor field, String originalValue ) {
+		this.object = object;
+		this.field = field;
+		this.originalValue = originalValue;
+		switch ( field.getFieldType() ) {
+		case Token:
+			searchValue = MatchValueNormalizer.getStringFromString(originalValue); //TODO missing in searchcriteria?
+			break;
+		case String:
+			searchValue = MatchValueNormalizer.getStringFromString(originalValue);
+			break;
+		case Text:
+			searchValue = MatchValueNormalizer.getStringListFromString(originalValue);
+			break;
+		default:
+			throw new IllegalStateException("String field " + field.getName() + " with type "+field.getFieldType());
+		}
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	
+	/**
+	 * Evaluate the SearchExpression on this field and determine if it matches.
+	 * If there is no MatchFunction defined for the type of field, then there
+	 * cannot be a match.
+	 * 
+	 * @param exp
+	 * @return true if the SearchExpression matches this field, else false.
+	 */
+	public boolean match( SearchExpression exp ) {
+		// get the match function of the expression for this field's type
+		MatchFunction fn = exp.matchFunctionMap.get(field.getFieldType());
+		// if there is a function defined, we evaluate it, else it doesn't match
+		return fn != null ? fn.match(this) : false;
+	}
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -57,7 +126,7 @@ public final class SearchableObjectField {
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------

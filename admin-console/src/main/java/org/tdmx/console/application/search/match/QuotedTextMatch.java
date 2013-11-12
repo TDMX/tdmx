@@ -5,9 +5,6 @@ import org.tdmx.console.application.search.SearchableObjectField;
 /**
  * Used to match QuotedText search values with Text Field's originalValue.
  * 
- * The compared values are all converted to lowercase prior to use in the 
- * match function.
- * 
  * @author Peter
  *
  */

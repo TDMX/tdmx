@@ -1,9 +1,11 @@
 package org.tdmx.console.application.search;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.tdmx.console.application.domain.DomainObject;
@@ -34,11 +36,7 @@ public class SearchServiceImpl implements SearchService {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private ObjectRegistry objectRegistry;
-	
-	private List<SearchableObjectField> allFields = new ArrayList<>();
 	private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
-	
 	//TODO registry
 	private static final class HttpProxySO {
 		public static final FieldDescriptor HOSTNAME	 	= new FieldDescriptor(DomainObjectType.HttpProxy, "hostname", FieldType.String);
@@ -54,7 +52,6 @@ public class SearchServiceImpl implements SearchService {
 		public static final FieldDescriptor MAS_PROXY 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.proxy", FieldType.String);
 	}
 	
-	
 	static {
 		allDescriptors.add(HttpProxySO.HOSTNAME);
 		allDescriptors.add(HttpProxySO.PORT);
@@ -66,6 +63,9 @@ public class SearchServiceImpl implements SearchService {
 		allDescriptors.add(ServiceProviderSO.MAS_PORT);
 		allDescriptors.add(ServiceProviderSO.MAS_PROXY);
 	}
+	
+	private ObjectRegistry objectRegistry;
+	private SearchContext searchContext = new SearchContext();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -88,21 +88,28 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public SearchCriteria parse(String text) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchExpressionParser parser = new SearchExpressionParser(text);
+		List<SearchExpression> expressions = new ArrayList<>();
+		SearchExpression exp = null;
+		while( (exp = parser.parseNext() ) != null ) {
+			expressions.add(exp);
+		}
+
+		return new SearchCriteria(expressions);
 	}
 
 	@Override
 	public Set<DomainObject> search(SearchCriteria criteria) {
-		Set<DomainObject> resultSet = new HashSet<>();
+		SearchResultSet resultSet = new SearchResultSet(criteria);
 		
-		Iterator<SearchableObjectField> fields = allFields.iterator();
+		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap();
 		
-		while( fields.hasNext()) {
-			SearchableObjectField field = fields.next();
-			match(field, criteria, resultSet);
+		Iterator<Entry<DomainObject, List<SearchableObjectField>>> objectFields = objectFieldMaps.entrySet().iterator();
+		while( objectFields.hasNext()) {
+			Entry<DomainObject, List<SearchableObjectField>> object = objectFields.next();
+			resultSet.match(object.getKey(), object.getValue());
 		}
-		return resultSet;
+		return resultSet.getResult();
 	}
 
 	@Override
@@ -111,12 +118,11 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	public void initialize() {
-		List<SearchableObjectField> holder = new ArrayList<>();
-		Traversal.traverse( getObjectRegistry().getHttpProxies(), holder, new TraversalFunction<HttpProxyDO, List<SearchableObjectField>>() {
+		SearchContext ctx = new SearchContext(); 
+		Traversal.traverse( getObjectRegistry().getHttpProxies(), ctx, new TraversalFunction<HttpProxyDO, SearchContext>() {
 
 			@Override
-			public void visit(HttpProxyDO object,
-					TraversalContextHolder<List<SearchableObjectField>> holder) {
+			public void visit(HttpProxyDO object,TraversalContextHolder<SearchContext> holder) {
 				
 				holder.getResult().add(sof(object, HttpProxySO.HOSTNAME, object.getHostname()));
 				holder.getResult().add(sof(object, HttpProxySO.PORT, object.getPort()));
@@ -125,11 +131,10 @@ public class SearchServiceImpl implements SearchService {
 			}
 		});
 		
-		Traversal.traverse( getObjectRegistry().getServiceProviders(), holder, new TraversalFunction<ServiceProviderDO, List<SearchableObjectField>>() {
+		Traversal.traverse( getObjectRegistry().getServiceProviders(), ctx, new TraversalFunction<ServiceProviderDO, SearchContext>() {
 
 			@Override
-			public void visit(ServiceProviderDO object,
-					TraversalContextHolder<List<SearchableObjectField>> holder) {
+			public void visit(ServiceProviderDO object, TraversalContextHolder<SearchContext> holder) {
 				
 				holder.getResult().add(sof(object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname()));
 				holder.getResult().add(sof(object, ServiceProviderSO.MAS_PORT, object.getMasPort()));
@@ -140,7 +145,8 @@ public class SearchServiceImpl implements SearchService {
 			}
 		});
 		
-		allFields = holder;
+		// atomically replace the existing searchContext with the newly constructed one.
+		searchContext=ctx;
 	}
 
     //-------------------------------------------------------------------------
@@ -151,19 +157,43 @@ public class SearchServiceImpl implements SearchService {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
+	private static class SearchContext {
+		private Map<DomainObjectType,List<DomainObject>> objectTypeMap = new HashMap<>();
+		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new HashMap<>();
+		
+		public SearchContext() {
+			objectTypeMap.put(DomainObjectType.HttpProxy, new ArrayList<DomainObject>());
+			objectTypeMap.put(DomainObjectType.ServiceProvider, new ArrayList<DomainObject>());
+		}
+		
+		public void add( SearchableObjectField sof ) {
+			List<DomainObject> list = objectTypeMap.get(sof.field.getObjectType());
+			list.add(sof.object);
+			
+			List<SearchableObjectField> fields = objectFieldMap.get(sof.object);
+			if ( fields == null ) {
+				fields = new ArrayList<SearchableObjectField>();
+				objectFieldMap.put(sof.object, fields);
+			}
+			fields.add(sof);
+		}
+		
+		public Map<DomainObjectType, List<DomainObject>> getObjectTypeMap() {
+			return objectTypeMap;
+		}
+
+		public Map<DomainObject, List<SearchableObjectField>> getObjectFieldMap() {
+			return objectFieldMap;
+		}
+
+	}
+	
 	private SearchableObjectField sof( DomainObject object, FieldDescriptor descriptor, Object value ) {
 		SearchableObjectField result = new SearchableObjectField(object, descriptor, value);
 		
-		//TODO normalize
+		//TODO 2) normalize
 		
 		return result;
-	}
-	
-	private void match( SearchableObjectField field, SearchCriteria criteria, Set<DomainObject> resultSet ) {
-		if ( resultSet.contains(field.object) ) {
-			
-		}
-		//TODO 
 	}
 	
 	//-------------------------------------------------------------------------

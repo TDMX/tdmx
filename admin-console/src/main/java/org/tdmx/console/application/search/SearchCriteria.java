@@ -35,7 +35,7 @@ import java.util.List;
  *  DateTime           T-eq  DT-eq     D-eq  n/a     n/a    n/a     TL
  *  Date               n/a   D-eq      D-eq  n/a     n/a    n/a     TL
  *  Number             n/a   n/a       n/a   NE      n/a    SL      TL
- *  QuotedText         n/a   n/a       n/a   n/a     n/a    n/a     QT
+ *  QuotedText         n/a   n/a       n/a   n/a     QT     n/a     QT
  *  Text               n/a   n/a       n/a   n/a     TE     SL      TL
  *  
  *  
@@ -51,14 +51,14 @@ public final class SearchCriteria {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private List<SearchExpression> expression;
+	private List<SearchExpression> expressions;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchCriteria( List<SearchExpression> expression ) {
-		this.expression = expression;
+	public SearchCriteria( List<SearchExpression> expressions ) {
+		this.expressions = expressions;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -77,4 +77,8 @@ public final class SearchCriteria {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 	
+	public List<SearchExpression> getExpressions() {
+		return expressions;
+	}
+
 }
