@@ -28,6 +28,17 @@ public class MatchValueFormatter {
 		return number.toString();
 	}
 	
+	public static String[] getStringNumberList( Long n1, Long n2 ) {
+		if ( n1 != null && n2 != null ) {
+			return new String[] { getNumber(n1), getNumber(n2) };
+		} else if ( n1 != null ) {
+			return new String[] { getNumber(n1) };
+		} else if ( n2 != null ) {
+			return new String[] { getNumber(n2) };
+		}
+		return null;
+	}
+	
 	public static String getTime( Integer time ) {
 		if ( time == null ) {
 			return null;

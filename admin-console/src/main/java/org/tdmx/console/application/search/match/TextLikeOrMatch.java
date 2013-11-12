@@ -33,7 +33,13 @@ public class TextLikeOrMatch implements MatchFunction {
 	
 	@Override
 	public String toString() {
-		return "like-any "+texts;
+		StringBuffer buf = new StringBuffer();
+		buf.append("like-any [\"");
+		for( String t : texts ) {
+			buf.append(t).append(",");
+		}
+		buf.append("\"]");
+		return buf.toString();
 	}
 	
 	//-------------------------------------------------------------------------

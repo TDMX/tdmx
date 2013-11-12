@@ -252,15 +252,15 @@ public final class SearchExpressionParser {
 			Number toNum = null;
 			if ( text.startsWith(RANGE)) {
 				// can only be ..Number
-				fromT = text.substring(RANGE.length());
+				toT = text.substring(RANGE.length());
 			} else if ( text.endsWith(RANGE)) {
 				// can only be Number..
-				toT = text.substring(0,text.length()-RANGE.length());
+				fromT = text.substring(0,text.length()-RANGE.length());
 			} else {
 				// likely Number..Number
 				int pos = text.indexOf(RANGE);
-				fromT = text.substring(0, pos);
-				toT = text.substring(pos+RANGE.length(), text.length());
+				toT = text.substring(0, pos);
+				fromT = text.substring(pos+RANGE.length(), text.length());
 			}
 
 			if ( toT != null ) {
@@ -316,15 +316,15 @@ public final class SearchExpressionParser {
 			Calendar toCal = null;
 			if ( text.startsWith(RANGE)) {
 				// can only be ..Time
-				fromT = text.substring(RANGE.length());
+				toT = text.substring(RANGE.length());
 			} else if ( text.endsWith(RANGE)) {
 				// can only be Time..
-				toT = text.substring(0,text.length()-RANGE.length());
+				fromT = text.substring(0,text.length()-RANGE.length());
 			} else {
 				// likely Time..Time
 				int pos = text.indexOf(RANGE);
-				fromT = text.substring(0, pos);
-				toT = text.substring(pos+RANGE.length(), text.length());
+				toT = text.substring(0, pos);
+				fromT = text.substring(pos+RANGE.length(), text.length());
 			}
 
 			if ( toT != null ) {
