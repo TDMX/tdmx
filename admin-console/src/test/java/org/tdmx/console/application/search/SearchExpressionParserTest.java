@@ -1,16 +1,10 @@
 package org.tdmx.console.application.search;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.Calendar;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.tdmx.console.application.search.SearchExpressionParser.ValueTypeFormatter;
-import org.tdmx.console.application.search.SearchExpressionParser.ValueTypeParser;
-import org.tdmx.console.application.search.match.MatchFunctionHolder.CalendarRangeHolder;
 
 public class SearchExpressionParserTest {
 
@@ -82,4 +76,56 @@ public class SearchExpressionParserTest {
 		facade.checkEquals(expected2, e2);
 	}
 
+	@Test
+	public void testParseNext_Number() {
+		SearchExpressionParser p = new SearchExpressionParser("123456");
+		SearchExpression e = p.parseNext();
+		assertNotNull(e);
+		
+		SearchExpression expected = facade.createNumberExpression(123456l);
+		facade.checkEquals(expected, e);
+	}
+
+	@Test
+	public void testParseNext_NumberRange_From() {
+		SearchExpressionParser p = new SearchExpressionParser("123456..");
+		SearchExpression e = p.parseNext();
+		assertNotNull(e);
+		
+		SearchExpression expected = facade.createNumberRangeExpression(123456l, null);
+		facade.checkEquals(expected, e);
+	}
+
+	@Test
+	public void testParseNext_NumberRange_To() {
+		SearchExpressionParser p = new SearchExpressionParser("..123456");
+		SearchExpression e = p.parseNext();
+		assertNotNull(e);
+		
+		SearchExpression expected = facade.createNumberRangeExpression(null, 123456l);
+		facade.checkEquals(expected, e);
+	}
+
+	@Test
+	public void testParseNext_NumberRange_Both() {
+		SearchExpressionParser p = new SearchExpressionParser("012345..123456");
+		SearchExpression e = p.parseNext();
+		assertNotNull(e);
+		
+		SearchExpression expected = facade.createNumberRangeExpression(12345l, 123456l);
+		facade.checkEquals(expected, e);
+	}
+	
+	//TODO time
+	
+	//TODO timerange
+	
+	//TODO date
+	
+	//TODO daterange
+	
+	//TODO datetime
+	
+	//TODO datetimerange
+	
 }
