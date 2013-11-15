@@ -65,6 +65,14 @@ public final class SearchCriteria {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public String toString() {
+		if ( expressions != null ) {
+			return expressions.toString();
+		}
+		return "[]";
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

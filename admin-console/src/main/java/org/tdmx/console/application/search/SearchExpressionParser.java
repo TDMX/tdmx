@@ -366,6 +366,7 @@ public final class SearchExpressionParser {
 		}
 		exp.valueType = ValueType.Text;
 		exp.add(FieldType.Token, new TextEqualityMatch(MatchValueNormalizer.getStringFromString(text)));
+		exp.add(FieldType.String, new StringLikeMatch(MatchValueNormalizer.getStringFromString(text)));
 		exp.add(FieldType.Text, new TextLikeMatch(MatchValueNormalizer.getStringFromString(text))) ;
 		
 	}
@@ -385,6 +386,7 @@ public final class SearchExpressionParser {
 		}
 		exp.valueType = ValueType.QuotedText;
 		exp.add(FieldType.Token, new QuotedTextMatch(text)); //keep case sensitivity in Quoted Text
+		exp.add(FieldType.String, new StringLikeMatch(MatchValueNormalizer.getStringFromString(text)));
 		exp.add(FieldType.Text, new QuotedTextMatch(text)); //keep case sensitivity in Quoted Text
 	}
 	

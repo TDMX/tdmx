@@ -1,6 +1,7 @@
 package org.tdmx.console.application.search;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,8 +22,7 @@ import org.tdmx.console.application.service.ObjectRegistry;
 
 
 /**
- * /DomainObjectType:fieldname operator matchValue
- *  
+ * 
  * @author Peter
  *
  */
@@ -124,10 +124,10 @@ public class SearchServiceImpl implements SearchService {
 			@Override
 			public void visit(HttpProxyDO object,TraversalContextHolder<SearchContext> holder) {
 				
-				holder.getResult().add(sof(object, HttpProxySO.HOSTNAME, object.getHostname()));
-				holder.getResult().add(sof(object, HttpProxySO.PORT, object.getPort()));
-				holder.getResult().add(sof(object, HttpProxySO.TYPE, object.getType()));
-				holder.getResult().add(sof(object, HttpProxySO.USERNAME, object.getUsername()));
+				sof(holder.getResult(), object, HttpProxySO.HOSTNAME, object.getHostname());
+				sof(holder.getResult(), object, HttpProxySO.PORT, object.getPort());
+				sof(holder.getResult(), object, HttpProxySO.TYPE, object.getType());
+				sof(holder.getResult(), object, HttpProxySO.USERNAME, object.getUsername());
 			}
 		});
 		
@@ -136,11 +136,11 @@ public class SearchServiceImpl implements SearchService {
 			@Override
 			public void visit(ServiceProviderDO object, TraversalContextHolder<SearchContext> holder) {
 				
-				holder.getResult().add(sof(object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname()));
-				holder.getResult().add(sof(object, ServiceProviderSO.MAS_PORT, object.getMasPort()));
+				sof(holder.getResult(), object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname());
+				sof(holder.getResult(), object, ServiceProviderSO.MAS_PORT, object.getMasPort());
 				if ( object.getMasProxy() != null ) {
-					holder.getResult().add(sof(object, ServiceProviderSO.MAS_PROXY, object.getMasProxy().getDescription()));
-					holder.getResult().add(sof(object.getMasProxy(), HttpProxySO.PROXIES, object.getMasHostname()));
+					sof(holder.getResult(), object, ServiceProviderSO.MAS_PROXY, object.getMasProxy().getDescription());
+					sof(holder.getResult(), object.getMasProxy(), HttpProxySO.PROXIES, object.getMasHostname());
 				}
 			}
 		});
@@ -157,6 +157,24 @@ public class SearchServiceImpl implements SearchService {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
+	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, Calendar cal ) {
+		if ( cal != null ) {
+			ctx.add(new SearchableObjectField(object, field, cal));
+		}
+	}
+	
+	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, Number num ) {
+		if ( num != null ) {
+			ctx.add(new SearchableObjectField(object, field, num));
+		}
+	}
+	
+	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, String str ) {
+		if ( str != null ) {
+			ctx.add(new SearchableObjectField(object, field, str));
+		}
+	}
+	
 	private static class SearchContext {
 		private Map<DomainObjectType,List<DomainObject>> objectTypeMap = new HashMap<>();
 		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new HashMap<>();
@@ -186,14 +204,6 @@ public class SearchServiceImpl implements SearchService {
 			return objectFieldMap;
 		}
 
-	}
-	
-	private SearchableObjectField sof( DomainObject object, FieldDescriptor descriptor, Object value ) {
-		SearchableObjectField result = new SearchableObjectField(object, descriptor, value);
-		
-		//TODO 2) normalize
-		
-		return result;
 	}
 	
 	//-------------------------------------------------------------------------

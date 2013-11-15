@@ -189,6 +189,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		classMap.clear();
 		classMap.put(HttpProxyDO.class.getName(), new DomainObjectContainer<HttpProxyDO>());
 		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
+		//TODO new domain objects
 	}
 	
 	private DomainObjectContainer<? extends DomainObject> getContainer(Class<?> c) {

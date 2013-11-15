@@ -49,9 +49,9 @@ public class ValueTypeFormatterParserTest {
 		String text = nowTime+"..";
 		CalendarRangeHolder range = ValueTypeParser.parseTimeRange(text);
 		assertNotNull(range);
-		assertNull(range.from);
-		String toTime = ValueTypeFormatter.getTime(range.to);
-		assertEquals(nowTime, toTime);
+		assertNull(range.to);
+		String fromTime = ValueTypeFormatter.getTime(range.from);
+		assertEquals(nowTime, fromTime);
 	}
 	
 	@Test
@@ -60,9 +60,9 @@ public class ValueTypeFormatterParserTest {
 		String text = ".."+nowTime;
 		CalendarRangeHolder range = ValueTypeParser.parseTimeRange(text);
 		assertNotNull(range);
-		String fromTime = ValueTypeFormatter.getTime(range.from);
-		assertEquals(nowTime, fromTime);
-		assertNull(range.to);
+		String toTime = ValueTypeFormatter.getTime(range.to);
+		assertEquals(nowTime, toTime);
+		assertNull(range.from);
 	}
 	
 	@Test
@@ -116,9 +116,9 @@ public class ValueTypeFormatterParserTest {
 		String text = n+"..";
 		NumberRangeHolder range = ValueTypeParser.parseNumberRange(text);
 		assertNotNull(range);
-		assertNull(range.from);
-		String toN = ValueTypeFormatter.getNumber(range.to);
-		assertEquals(n, toN);
+		assertNull(range.to);
+		String fromN = ValueTypeFormatter.getNumber(range.from);
+		assertEquals(n, fromN);
 	}
 	
 	@Test
@@ -127,9 +127,9 @@ public class ValueTypeFormatterParserTest {
 		String text = ".."+n;
 		NumberRangeHolder range = ValueTypeParser.parseNumberRange(text);
 		assertNotNull(range);
-		String fromN = ValueTypeFormatter.getNumber(range.from);
-		assertEquals(n, fromN);
-		assertNull(range.to);
+		String toN = ValueTypeFormatter.getNumber(range.to);
+		assertEquals(n, toN);
+		assertNull(range.from);
 	}
 	
 	@Test

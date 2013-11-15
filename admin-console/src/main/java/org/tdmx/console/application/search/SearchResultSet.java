@@ -47,7 +47,7 @@ public final class SearchResultSet {
 	 */
 	public boolean match( DomainObject object, List<SearchableObjectField> fieldList ) {
 		for( SearchExpression exp : expressions ) {
-			// if a search expression does'nt match for any of the object's fields - we don't
+			// if a search expression doesn't match for any of the object's fields - we don't
 			// match since this is a logical AND.
 			boolean matched = false;
 			for( SearchableObjectField field : fieldList ) {
@@ -62,6 +62,7 @@ public final class SearchResultSet {
 				return false;
 			}
 		}
+		result.add(object);
 		return true;
 	}
 	

@@ -45,6 +45,14 @@ public final class SearchExpression {
 		matchFunctionMap.put(fieldType, fn);
 	}
 	
+	@Override
+	public String toString() {
+		String ot = objectType != null ? objectType.name() : "*";
+		String fn = fieldName != null ? fieldName : "*";
+		//TODO
+		return ":"+ot+"."+fn+valueType+" "+matchFunctionMap;
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

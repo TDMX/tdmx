@@ -85,7 +85,7 @@ public abstract class AbstractDO implements DomainObject {
 		return current;
 	}
 	
-	protected static String getNextObjectId() {
+	public static String getNextObjectId() {
 		return ""+ID.getAndIncrement();
 	}
 	
