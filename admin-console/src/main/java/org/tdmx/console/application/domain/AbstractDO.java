@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
- * An outgoing HTTP proxy.
+ * An abstract base class for DomainObjects.
  * 
  * @author Peter
  *
@@ -59,6 +59,11 @@ public abstract class AbstractDO implements DomainObject {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getName() + "@" + id;
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

@@ -40,6 +40,7 @@ public class SearchExpressionFacade {
 	public SearchExpression createQuotedTextExpression( String unquotedText ) {
 		SearchExpression exp = new SearchExpression();
 		exp.valueType = ValueType.QuotedText;
+		exp.add(FieldType.String, new StringLikeMatch(unquotedText.toLowerCase()));
 		exp.add(FieldType.Token, new QuotedTextMatch(unquotedText));
 		exp.add(FieldType.Text, new QuotedTextMatch(unquotedText));
 		return exp;
@@ -48,6 +49,7 @@ public class SearchExpressionFacade {
 	public SearchExpression createTextExpression( String textLowercase ) {
 		SearchExpression exp = new SearchExpression();
 		exp.valueType = ValueType.Text;
+		exp.add(FieldType.String, new StringLikeMatch(textLowercase));
 		exp.add(FieldType.Token, new TextEqualityMatch(textLowercase));
 		exp.add(FieldType.Text, new TextLikeMatch(textLowercase));
 		return exp;

@@ -259,8 +259,8 @@ public final class SearchExpressionParser {
 			} else {
 				// likely Number..Number
 				int pos = text.indexOf(RANGE);
-				toT = text.substring(0, pos);
-				fromT = text.substring(pos+RANGE.length(), text.length());
+				fromT = text.substring(0, pos);
+				toT = text.substring(pos+RANGE.length(), text.length());
 			}
 
 			if ( toT != null ) {

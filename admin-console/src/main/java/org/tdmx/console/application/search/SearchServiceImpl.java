@@ -47,6 +47,7 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	private static final class ServiceProviderSO {
+		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
 		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
 		public static final FieldDescriptor MAS_PORT 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.port", FieldType.Number);
 		public static final FieldDescriptor MAS_PROXY 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.proxy", FieldType.String);
@@ -59,6 +60,7 @@ public class SearchServiceImpl implements SearchService {
 		allDescriptors.add(HttpProxySO.USERNAME);
 		allDescriptors.add(HttpProxySO.PROXIES);
 
+		allDescriptors.add(ServiceProviderSO.SUBJECT);
 		allDescriptors.add(ServiceProviderSO.MAS_HOSTNAME);
 		allDescriptors.add(ServiceProviderSO.MAS_PORT);
 		allDescriptors.add(ServiceProviderSO.MAS_PROXY);
@@ -136,6 +138,7 @@ public class SearchServiceImpl implements SearchService {
 			@Override
 			public void visit(ServiceProviderDO object, TraversalContextHolder<SearchContext> holder) {
 				
+				sof(holder.getResult(), object, ServiceProviderSO.SUBJECT, object.getSubjectIdentifier());
 				sof(holder.getResult(), object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname());
 				sof(holder.getResult(), object, ServiceProviderSO.MAS_PORT, object.getMasPort());
 				if ( object.getMasProxy() != null ) {
@@ -182,6 +185,7 @@ public class SearchServiceImpl implements SearchService {
 		public SearchContext() {
 			objectTypeMap.put(DomainObjectType.HttpProxy, new ArrayList<DomainObject>());
 			objectTypeMap.put(DomainObjectType.ServiceProvider, new ArrayList<DomainObject>());
+			//TODO each objectType
 		}
 		
 		public void add( SearchableObjectField sof ) {

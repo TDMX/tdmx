@@ -1,8 +1,6 @@
 package org.tdmx.console.application.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Set;
 
@@ -45,7 +43,7 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void testSearch() {
+	public void testSearch_ServiceProvider() {
 		SearchCriteria c = service.parse("serviceprovider");
 		Set<DomainObject> objects = service.search(c);
 		
@@ -58,4 +56,33 @@ public class SearchServiceTest {
 		assertEquals( registry.getHttpProxies().size()+registry.getServiceProviders().size(), objects.size() );
 	}
 
+	@Test
+	public void testSearch_ServiceProviderSpecific() {
+		SearchCriteria c = service.parse("serviceprovider0");
+		Set<DomainObject> objects = service.search(c);
+		
+		assertEquals( 2, objects.size()); // SP and it's proxy
+		for( ServiceProviderDO o : registry.getServiceProviders() ) {
+			if ( o.getSubjectIdentifier().indexOf("serviceprovider0") != -1 ) {
+				assertTrue( objects.contains(o) );
+			} else {
+				assertFalse( objects.contains(o));
+			}
+		}
+	}
+
+	@Test
+	public void testSearch_ServiceProvider_ByIdentity() {
+		SearchCriteria c = service.parse("o=company0");
+		Set<DomainObject> objects = service.search(c);
+		
+		assertEquals( 1, objects.size()); // SP
+		for( ServiceProviderDO o : registry.getServiceProviders() ) {
+			if ( o.getSubjectIdentifier().indexOf("o=company0") != -1 ) {
+				assertTrue( objects.contains(o) );
+			} else {
+				assertFalse( objects.contains(o));
+			}
+		}
+	}
 }

@@ -10,6 +10,7 @@ public class ServiceProviderStoreFacade {
 		p.setId(AbstractDO.getNextObjectId());
 		p.setHostname("proxyhost"+num);
 		p.setPort(8080);
+		p.setType("HTTP");
 		p.setUsername("username"+num);
 		p.setEncryptedPassword("pwd".getBytes());
 		return p;
@@ -17,10 +18,11 @@ public class ServiceProviderStoreFacade {
 	
 	public static ServiceProvider getServiceProvider( int num, String proxyId ) {
 		String sp = "serviceprovider"+num+".com";
+		String company = "company"+num;
 		
 		ServiceProvider s = new ServiceProvider();
 		s.setId(AbstractDO.getNextObjectId());
-		s.setSubjectIdentity("cn="+sp+" ou=it o=company c=CH");
+		s.setSubjectIdentity("cn="+sp+" ou=it o="+company+" c=CH");
 		s.setApiVersion(1);
 		EndPoint mas = new EndPoint();
 		mas.setHostname("mas."+sp);

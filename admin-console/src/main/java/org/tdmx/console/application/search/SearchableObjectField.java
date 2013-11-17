@@ -119,6 +119,17 @@ public final class SearchableObjectField {
 		return fn != null ? fn.match(this) : false;
 	}
 	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SOF[");
+		sb.append(object.getId());
+		sb.append(":");
+		sb.append(field);
+		sb.append("=");
+		sb.append(originalValue);
+		sb.append("]");
+		return sb.toString();
+	}
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

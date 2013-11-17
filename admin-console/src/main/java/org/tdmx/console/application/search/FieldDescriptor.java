@@ -44,6 +44,8 @@ public class FieldDescriptor {
 	private DomainObjectType objectType;
 	private String name; 
 	private FieldType fieldType;
+
+	private String description;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -53,12 +55,26 @@ public class FieldDescriptor {
 		this.objectType = objectType;
 		this.name = name.intern();
 		this.fieldType = fieldType;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("FD{");
+		sb.append(objectType);
+		sb.append(".");
+		sb.append(name);
+		sb.append("/");
+		sb.append(fieldType);
+		sb.append("}");
+		description = sb.toString();
 	}
 
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public String toString() {
+		return description;
+	}
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
