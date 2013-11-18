@@ -17,6 +17,7 @@
 	</dependencyManagement>
 
 	<modules>
+		<module>serviceprovider-api</module>
 		<module>admin-console-launcher</module>
 		<module>admin-console</module>
 	</modules>
