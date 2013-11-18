@@ -5,9 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/mas/mas.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/mas/mas.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mas" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mas" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -20,9 +20,9 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/msg.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/msg.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mas.msg" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mas.msg" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -35,9 +35,9 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/tx.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/tx.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mas.tx" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mas.tx" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -50,9 +50,9 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/report.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/report.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mas.report" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mas.report" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -66,9 +66,9 @@
 	</jxb:bindings>
 
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/common.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/common.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mas.common" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mas.common" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">

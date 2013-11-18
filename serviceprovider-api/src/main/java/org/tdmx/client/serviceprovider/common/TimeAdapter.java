@@ -1,4 +1,4 @@
-package smt.foundation.xml.jaxb.adapter;
+package org.tdmx.client.serviceprovider.common;
 
 import java.util.Calendar;
 

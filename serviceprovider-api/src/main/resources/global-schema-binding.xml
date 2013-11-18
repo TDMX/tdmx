@@ -8,13 +8,13 @@
 		<xjc:simple />
 		<xjc:serializable uid="-6026937020915831099"/>
 		<xjc:javaType name="java.util.Calendar" xmlType="xs:date" 
-			adapter="smt.foundation.xml.jaxb.adapter.DateAdapter"
+			adapter="org.tdmx.client.serviceprovider.common.DateAdapter"
 		/>
 		<xjc:javaType name="java.util.Calendar" xmlType="xs:dateTime" 
-			adapter="smt.foundation.xml.jaxb.adapter.DateTimeAdapter"
+			adapter="org.tdmx.client.serviceprovider.common.DateTimeAdapter"
 		/>
 		<xjc:javaType name="java.util.Calendar" xmlType="xs:time" 
-			adapter="smt.foundation.xml.jaxb.adapter.TimeAdapter"
+			adapter="org.tdmx.client.serviceprovider.common.TimeAdapter"
 		/>
 	</jxb:globalBindings>
 

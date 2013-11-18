@@ -5,9 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/mos/mos.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/mos/mos.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mos" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mos" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -20,9 +20,9 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/msg.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/msg.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mos.msg" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mos.msg" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -35,9 +35,9 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/tx.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/tx.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mos.tx" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mos.tx" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -51,9 +51,9 @@
 	</jxb:bindings>
 
 
-	<jxb:bindings schemaLocation="../../../wsdl/smt_v01/sp/common.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/common.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="smt.api.v01.sp.mos.common" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mos.common" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
