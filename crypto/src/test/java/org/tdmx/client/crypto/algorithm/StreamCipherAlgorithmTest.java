@@ -9,12 +9,17 @@ import javax.crypto.spec.SecretKeySpec;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import static org.junit.Assert.assertArrayEquals;
 
 public class StreamCipherAlgorithmTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 	}

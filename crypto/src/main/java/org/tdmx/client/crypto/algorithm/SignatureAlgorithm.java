@@ -20,10 +20,6 @@ public enum SignatureAlgorithm {
 	SHA_512_RSA("SHA512withRSA"),
 	;
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	private String algorithm;
 	
 	private SignatureAlgorithm( String algorithm ) {

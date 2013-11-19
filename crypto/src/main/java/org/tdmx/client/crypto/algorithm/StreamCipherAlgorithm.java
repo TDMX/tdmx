@@ -24,10 +24,6 @@ public enum StreamCipherAlgorithm {
 	Serpent256_CTR("Serpent", "Serpent/CTR/NoPadding", 32, 16), 
 	;
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	private String algorithm;
 	private String transform;
 	private int keyLength;

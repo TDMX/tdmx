@@ -13,10 +13,6 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public class KeyDiversificationFunction {
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	public static byte[] PBKDF2WithHmacSHA1(byte[] password, byte[] salt, int iterations, int derivedKeyLengthBits)
 			throws CryptoException {
 		char[] chars = new char[password.length];

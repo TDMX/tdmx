@@ -5,11 +5,16 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoException;
 
 public class DigestAlgorithmTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Test
 	public void testSHA1() throws CryptoException {
 		byte[] hash = DigestAlgorithm.SHA_1.kdf(EntropySource.getRandomBytes(1000));

@@ -4,12 +4,17 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.converters.StringToUtf8;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoException;
 
 public class KeyDiversificationFunctionTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 	}

@@ -23,10 +23,6 @@ public enum KeyAgreementAlgorithm {
 
 	ECDH384(384, "EC", "ECDH", "secp384r1");
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	private int keyLength;
 	private String keyAlgorithm;
 	private String agreementAlgorithm;

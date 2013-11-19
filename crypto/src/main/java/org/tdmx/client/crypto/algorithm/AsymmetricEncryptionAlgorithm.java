@@ -29,10 +29,6 @@ public enum AsymmetricEncryptionAlgorithm {
 	RSA2048(2048, "RSA", "RSA/ECB/OAEPWithSHA1AndMGF1Padding"),
 	RSA4096(4096, "RSA", "RSA/ECB/OAEPWithSHA1AndMGF1Padding"); 
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	private int keyLength;
 	private String algorithm;
 	private String transformation;

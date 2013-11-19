@@ -14,10 +14,6 @@ public enum DigestAlgorithm {
 	SHA_384("SHA-384"),
 	SHA_512("SHA-512");
 
-	static {
-		JCAProviderInitializer.init();	
-	}
-	
 	private String algorithm;
 	
 	private DigestAlgorithm( String algorithm ) {

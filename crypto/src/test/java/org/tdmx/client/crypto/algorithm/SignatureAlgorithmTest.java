@@ -8,10 +8,15 @@ import java.security.SignatureException;
 
 import org.junit.Test;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.scheme.CryptoException;
 
 public class SignatureAlgorithmTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Test
 	public void testOk2048Signature() throws CryptoException, SignatureException {
 		KeyPair kp = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();

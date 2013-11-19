@@ -10,12 +10,17 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public class AsymmetricEncryptionAlgorithmTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 	}
