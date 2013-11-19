@@ -1,4 +1,4 @@
-package org.tdmx.client.serviceprovider.common;
+package org.tdmx.client.api;
 
 import java.math.BigDecimal;
 
