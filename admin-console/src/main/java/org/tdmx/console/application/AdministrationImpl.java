@@ -22,6 +22,7 @@ import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.job.BackgroundJob;
 import org.tdmx.console.application.job.StateStorageJob;
+import org.tdmx.console.application.search.SearchServiceImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
@@ -53,7 +54,7 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private StateStorageJob storageJob = null;
-	//TODO search service
+	private SearchServiceImpl searchService = new SearchServiceImpl();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -97,8 +98,6 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		
 		registry.setChangeListener(this);
 		
-		proxyService.setObjectRegistry(registry);
-		
 		store.setFilename(configFilePath);
 		ServiceProviderStorage content = null;
 		try {
@@ -111,13 +110,20 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			problemRegistry.addProblem(p);
 		}
 		registry.initContent(content);
-		
+
 		storageJob = new StateStorageJob();
 		storageJob.setName("StateStorage");
 		storageJob.setProblemRegistry(problemRegistry);
 		storageJob.setRegistry(registry);
 		storageJob.setStore(store);
 		storageJob.init();
+
+		searchService.setObjectRegistry(registry);
+		searchService.initialize();
+		
+		proxyService.setObjectRegistry(registry);
+		proxyService.setSearchService(searchService);
+
 	}
 
 	@Override

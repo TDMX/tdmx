@@ -51,7 +51,11 @@ public class CertificateStoreImpl implements CertificateStore {
 	public synchronized void load() throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
 		byte[] contents = FileUtils.getFileContents(getFilename());
 		if  ( contents == null ) {
-			init();
+			keyStore = KeyStore.getInstance(getKeystoreType());
+			keyStore.load(null, getPassphrase().toCharArray());
+			dirty = true;
+			save();
+			contents = FileUtils.getFileContents(getFilename());
 		}
 		keyStore = KeyStore.getInstance(getKeystoreType());
 		ByteArrayInputStream bais = new ByteArrayInputStream(contents);
@@ -145,13 +149,6 @@ public class CertificateStoreImpl implements CertificateStore {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
-	private void init() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-		keyStore = KeyStore.getInstance(getKeystoreType());
-		keyStore.load(null, getPassphrase().toCharArray());
-		dirty = true;
-		save();
-	}
-	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------

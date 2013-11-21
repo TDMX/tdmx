@@ -9,6 +9,7 @@ import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
+import org.tdmx.console.application.search.SearchService;
 
 
 public class ProxyServiceImpl implements ProxyService {
@@ -21,7 +22,7 @@ public class ProxyServiceImpl implements ProxyService {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private ObjectRegistry objectRegistry;
-	//TODO search service
+	private SearchService searchService;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -31,6 +32,7 @@ public class ProxyServiceImpl implements ProxyService {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+
 	@Override
 	public boolean isDeleteWarning(final HttpProxyDO proxy) {
 		Boolean found = Traversal.traverse( objectRegistry.getServiceProviders(), Boolean.FALSE, new TraversalFunction<ServiceProviderDO, Boolean>() {
@@ -55,8 +57,8 @@ public class ProxyServiceImpl implements ProxyService {
 		List<ERROR> validation = proxy.validate();
 		if ( validation.isEmpty() ) {
 			objectRegistry.notifyAdd(proxy, holder);
+			searchService.update(holder);
 		}
-		//TODO search update
 		return validation;
 	}
 
@@ -69,9 +71,8 @@ public class ProxyServiceImpl implements ProxyService {
 			DomainObjectFieldChanges changes = existing.merge(proxy);
 			if ( !changes.isEmpty() ) {
 				objectRegistry.notifyModify(changes, holder);
+				searchService.update(holder);
 			}
-			
-			//TODO SearchService # update changes
 		}
 		return validation;
 	}
@@ -79,7 +80,6 @@ public class ProxyServiceImpl implements ProxyService {
 	@Override
 	public void delete(HttpProxyDO existing) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
-		//TODO
 		for( ServiceProviderDO sp : objectRegistry.getServiceProviders() ) {
 			boolean changedSp = false;
 			ServiceProviderDO clonedSP = sp.copy();
@@ -107,8 +107,7 @@ public class ProxyServiceImpl implements ProxyService {
 			}
 		}
 		objectRegistry.notifyRemove(existing, holder);
-
-		//TODO search update(changes)
+		searchService.update(holder);
 	}
 
 	@Override
@@ -134,6 +133,14 @@ public class ProxyServiceImpl implements ProxyService {
 
 	public void setObjectRegistry(ObjectRegistry objectRegistry) {
 		this.objectRegistry = objectRegistry;
+	}
+
+	public SearchService getSearchService() {
+		return searchService;
+	}
+
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
 	}
 
 }

@@ -141,6 +141,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	@Override
 	public List<Domain> getDomains() {
     	List<Domain> domainList = new ArrayList<Domain>();
+    	//TODO remove
     	domainList.add(new Domain("Domain A"));
     	domainList.add(new Domain("Domain B"));
     	domainList.add(new Domain("Domain C"));
