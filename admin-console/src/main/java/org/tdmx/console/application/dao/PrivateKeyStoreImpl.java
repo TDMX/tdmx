@@ -10,16 +10,11 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.tdmx.console.application.util.FileUtils;
 
-public class CertificateStoreImpl implements CertificateStore {
+public class PrivateKeyStoreImpl implements PrivateKeyStore {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -40,7 +35,7 @@ public class CertificateStoreImpl implements CertificateStore {
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public CertificateStoreImpl() {
+	public PrivateKeyStoreImpl() {
 	}
 	
 	//-------------------------------------------------------------------------
@@ -74,70 +69,25 @@ public class CertificateStoreImpl implements CertificateStore {
 	}
 
 	@Override
-	public synchronized Map<String, EntryType> getAliases() throws KeyStoreException {
-		Enumeration<String> aliases = keyStore.aliases();
-		Map<String,EntryType> entryMap = new HashMap<>();
-		while( aliases.hasMoreElements() ) {
-			String alias = aliases.nextElement();
-			if ( keyStore.isCertificateEntry(alias)){
-				entryMap.put(alias, EntryType.TRUSTED_CERTIFICATE);
-			} else if ( keyStore.isKeyEntry(alias)) {
-				entryMap.put(alias, EntryType.PRIVATE_KEY);
-			}
-		}
-		return entryMap;
+	public synchronized X509Certificate[] getPrivateKeyCertificate(String certId) throws KeyStoreException {
+		return (X509Certificate[]) keyStore.getCertificateChain(certId);
 	}
 
 	@Override
-	public String getAlias(X509Certificate certificate)
-			throws KeyStoreException {
-		return keyStore.getCertificateAlias(certificate);
+	public synchronized PrivateKey getPrivateKey(String certId) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+		return (PrivateKey)keyStore.getKey(certId, getPassphrase().toCharArray());
 	}
 
 	@Override
-	public synchronized X509Certificate[] getPrivateKeyCertificate(String alias) throws KeyStoreException {
-		return (X509Certificate[]) keyStore.getCertificateChain(alias);
-	}
-
-	@Override
-	public synchronized PrivateKey getPrivateKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-		return (PrivateKey)keyStore.getKey(alias, getPassphrase().toCharArray());
-	}
-
-	@Override
-	public synchronized void setPrivateKey(String alias, X509Certificate[] chain,
+	public synchronized void setPrivateKey(String certId, X509Certificate[] chain,
 			PrivateKey privateKey) throws KeyStoreException {
-		keyStore.setKeyEntry(alias, privateKey, getPassphrase().toCharArray(), chain);
+		keyStore.setKeyEntry(certId, privateKey, getPassphrase().toCharArray(), chain);
 		dirty = true;
 	}
 	
 	@Override
-	public synchronized void setTrustedCertificate(String alias, X509Certificate cert) throws KeyStoreException {
-		keyStore.setCertificateEntry(alias, cert);
-		dirty = true;
-	}
-
-	@Override
-	public X509Certificate getTrustedCA(String alias) throws KeyStoreException {
-		return (X509Certificate)keyStore.getCertificate(alias);
-	}
-
-	@Override
-	public synchronized X509Certificate[] getAllTrustedCAs() throws KeyStoreException {
-		Enumeration<String> aliases = keyStore.aliases();
-		List<X509Certificate> list = new ArrayList<>();
-		while( aliases.hasMoreElements() ) {
-			String alias = aliases.nextElement();
-			if ( keyStore.isCertificateEntry(alias)){
-				list.add((X509Certificate)keyStore.getCertificate(alias));
-			}
-		}
-		return list.toArray(new X509Certificate[0]);
-	}
-
-	@Override
-	public synchronized void delete(String alias) throws KeyStoreException {
-		keyStore.deleteEntry(alias);
+	public synchronized void delete(String certId) throws KeyStoreException {
+		keyStore.deleteEntry(certId);
 		dirty = true;
 	}
 

@@ -40,7 +40,7 @@ public class UIServiceImpl implements UIService {
 	@Override
 	public List<Job> getJobs() {
 		List<Job> list = new ArrayList<>();
-		for( org.tdmx.console.application.job.BackgroundJob j : getAdmin().getBackgroundJobs()) {
+		for( org.tdmx.console.application.job.BackgroundJob j : getAdmin().getBackgroundJobRegistry().getJobs()) {
 			list.add(new Job(j));
 		}
 		return list;

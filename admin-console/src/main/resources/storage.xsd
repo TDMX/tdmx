@@ -10,6 +10,12 @@
 	<xs:simpleType name="text">
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
+	<xs:simpleType name="EntityState">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE"/>
+			<xs:enumeration value="DELETED"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<!-- ********************************************* -->
 	<!--           USER STORAGE         -->
 	<!-- ********************************************* -->
@@ -55,8 +61,102 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="proxy" type="Proxy" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="X509Certificate">
+		<xs:annotation>
+			<xs:documentation>A X509 certificate</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="pem-value" type="xs:string"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>the SHA1 fingerprint as HEX.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RootCA-List">
+		<xs:annotation>
+			<xs:documentation>A named trusted and distrusted list of RootCAs.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>the name of the list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="state" type="EntityState" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>a RootCA list can be enabled or not. Only enabled lists are  combined wihout preference into the "effective" RootCA list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="trusted" type="RootCA-ListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>trusted root or intermediate CA certificates.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="distrusted" type="RootCA-ListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>distrusted certificates.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>the id of the RootCA list.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RootCA-ListEntry">
+		<xs:annotation>
+			<xs:documentation>A RootCA list entry.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="x509-certificate-id" type="xs:ID">
+				<xs:annotation>
+					<xs:documentation>the SHA1 hex fingerprint of the X509 certificate.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="friendlyName" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the friendly-name of the certificate.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="state" type="EntityState" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>whether the certificate is currently in the list or not.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="addedDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the date the certificate was added to the list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="addedBy" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the username who added the certificate to the list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="deletedDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the date the certificate is deleted from the list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="deletedBy" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the username who performed the delete.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="comment" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>additional information. Can give extended error information pertaining to the reason a certificate is revoked - fraudulent / untrusted.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="EndPoint">
@@ -160,12 +260,6 @@
 			<xs:element name="channel" type="Channel" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:simpleType name="EntityState">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="ACTIVE"/>
-			<xs:enumeration value="DELETED"/>
-		</xs:restriction>
-	</xs:simpleType>
 	<xs:complexType name="Address">
 		<xs:annotation>
 			<xs:documentation>A Domain Address.</xs:documentation>

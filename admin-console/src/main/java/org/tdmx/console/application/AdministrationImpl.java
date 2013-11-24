@@ -6,32 +6,32 @@ import java.io.InputStreamReader;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.IInitializer;
 import org.tdmx.console.AdminApplication;
-import org.tdmx.console.application.dao.CertificateStore;
-import org.tdmx.console.application.dao.CertificateStoreImpl;
+import org.tdmx.console.application.dao.PrivateKeyStoreImpl;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
+import org.tdmx.console.application.dao.SystemTrustStore;
+import org.tdmx.console.application.dao.SystemTrustStoreImpl;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
-import org.tdmx.console.application.job.BackgroundJob;
+import org.tdmx.console.application.job.BackgroundJobRegistry;
+import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.job.StateStorageJob;
+import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
 import org.tdmx.console.application.search.SearchServiceImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
-import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.application.service.ProblemRegistryImpl;
 import org.tdmx.console.application.service.ProxyService;
 import org.tdmx.console.application.service.ProxyServiceImpl;
 
-public class AdministrationImpl implements Administration, ObjectRegistryChangeListener, IInitializer {
+public class AdministrationImpl implements Administration, IInitializer {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -48,12 +48,13 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	private String certFilePath = null;
 	
 	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
-	private CertificateStoreImpl certificateStore = new CertificateStoreImpl();
+	private BackgroundJobRegistryImpl jobRegistry = new BackgroundJobRegistryImpl();
+	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
+	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
 	private ProxyServiceImpl proxyService = new ProxyServiceImpl();
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
-	private StateStorageJob storageJob = null;
 	private SearchServiceImpl searchService = new SearchServiceImpl();
 	
 	//-------------------------------------------------------------------------
@@ -76,12 +77,14 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		    	throw new RuntimeException("Unable to read passphrase from stdin.");
 		    }
 		}
+
+		trustStore = new SystemTrustStoreImpl();
 		
-		certificateStore.setFilename(certFilePath);
-		certificateStore.setKeystoreType("pkcs12");
-		certificateStore.setPassphrase(passPhrase);
+		keyStore.setFilename(certFilePath);
+		keyStore.setKeystoreType("pkcs12");
+		keyStore.setPassphrase(passPhrase);
 		try {
-			certificateStore.load();
+			keyStore.load();
 		} catch (NoSuchAlgorithmException e) {
 			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
 			problemRegistry.addProblem(p);
@@ -96,8 +99,6 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 			problemRegistry.addProblem(p);
 		}
 		
-		registry.setChangeListener(this);
-		
 		store.setFilename(configFilePath);
 		ServiceProviderStorage content = null;
 		try {
@@ -111,13 +112,22 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 		}
 		registry.initContent(content);
 
-		storageJob = new StateStorageJob();
+		StateStorageJob storageJob = new StateStorageJob();
 		storageJob.setName("StateStorage");
 		storageJob.setProblemRegistry(problemRegistry);
 		storageJob.setRegistry(registry);
 		storageJob.setStore(store);
 		storageJob.init();
-
+		registry.setChangeListener(storageJob);
+		jobRegistry.addBackgroundJob(storageJob);
+		
+		SystemTrustStoreUpdateJob trustStoreJob = new SystemTrustStoreUpdateJob();
+		trustStoreJob.setProblemRegistry(problemRegistry);
+		trustStoreJob.setTrustStore(trustStore);
+		trustStoreJob.setName("TrustStore");
+		trustStoreJob.init();
+		jobRegistry.addBackgroundJob(trustStoreJob);
+		
 		searchService.setObjectRegistry(registry);
 		searchService.initialize();
 		
@@ -128,19 +138,8 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 
 	@Override
 	public void destroy(Application application) {
-		if ( storageJob != null ) {
-			storageJob.shutdown();
-		}
-		storageJob = null;
+		jobRegistry.shutdownAndClear();
 		((AdminApplication)application).setAdministration(null);
-	}
-
-
-	@Override
-	public void notifyObjectRegistryChanged() {
-		if ( storageJob != null ) {
-			storageJob.flushStorage();
-		}
 	}
 
 
@@ -168,22 +167,18 @@ public class AdministrationImpl implements Administration, ObjectRegistryChangeL
 	}
 
 	@Override
-	public List<BackgroundJob> getBackgroundJobs() {
-		List<BackgroundJob> jobList = new ArrayList<>();
-		if ( storageJob != null ) {
-			jobList.add(storageJob);
-		}
-		return jobList;
-	}
-
-	@Override
 	public ProxyService getProxyService() {
 		return proxyService;
 	}
 
 	@Override
-	public CertificateStore getCertificateStore() {
-		return certificateStore;
+	public SystemTrustStore getTrustStore() {
+		return trustStore;
+	}
+
+	@Override
+	public BackgroundJobRegistry getBackgroundJobRegistry() {
+		return jobRegistry;
 	}
 
 

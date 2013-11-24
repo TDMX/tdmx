@@ -18,14 +18,15 @@ import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.console.application.dao.CertificateStore;
+import org.tdmx.console.application.dao.PrivateKeyStore;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStore;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
+import org.tdmx.console.application.service.ObjectRegistryChangeListener;
 import org.tdmx.console.application.service.ObjectRegistrySPI;
 
-public class StateStorageJob extends AbstractBackgroundJob {
+public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegistryChangeListener {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -39,7 +40,7 @@ public class StateStorageJob extends AbstractBackgroundJob {
 	private ScheduledExecutorService scheduler = null;
 	
 	private ObjectRegistrySPI registry = null;
-	private CertificateStore certificateStore = null;
+	private PrivateKeyStore keyStore = null;
 
 	private ServiceProviderStore store = null;
 	private List<ScheduledFuture<?>> futureList = new LinkedList<>();
@@ -86,6 +87,13 @@ public class StateStorageJob extends AbstractBackgroundJob {
 		return null;
 	}
 
+	@Override
+	public void notifyObjectRegistryChanged() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 	public void flushStorage()  {
 		clearCompletedTasks();
 		
@@ -101,7 +109,7 @@ public class StateStorageJob extends AbstractBackgroundJob {
 				try {
 
 					try {
-						certificateStore.save();
+						keyStore.save();
 					} catch (NoSuchAlgorithmException e) {
 						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
 						problemRegistry.addProblem(p);
@@ -181,12 +189,12 @@ public class StateStorageJob extends AbstractBackgroundJob {
 		this.store = store;
 	}
 
-	public CertificateStore getCertificateStore() {
-		return certificateStore;
+	public PrivateKeyStore getPrivateKeyStore() {
+		return keyStore;
 	}
 
-	public void setCertificateStore(CertificateStore certificateStore) {
-		this.certificateStore = certificateStore;
+	public void setCertificateStore(PrivateKeyStore keyStore) {
+		this.keyStore = keyStore;
 	}
 
 }
