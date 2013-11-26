@@ -1,8 +1,11 @@
 package org.tdmx.console.application.dao;
 
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -17,7 +20,8 @@ public class SystemTrustStoreImpl implements SystemTrustStore {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-
+	private String trustStoreAlgorithm = "X509";
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -30,15 +34,26 @@ public class SystemTrustStoreImpl implements SystemTrustStore {
 	//-------------------------------------------------------------------------
 
 	@Override
-	public synchronized X509Certificate[] getAllTrustedCAs() throws NoSuchAlgorithmException {
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance("TLS");
+	public synchronized List<X509Certificate> getAllTrustedCAs() throws NoSuchAlgorithmException, KeyStoreException {
+		List<X509Certificate> caList = new ArrayList<>();
+		
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(getTrustStoreAlgorithm());
+		tmf.init((KeyStore)null);
 		TrustManager[] tmgs = tmf.getTrustManagers();
-		TrustManager tm = tmgs[0];
-		if ( tm instanceof X509TrustManager) {
-			X509TrustManager t = (X509TrustManager)tm;
-			return t.getAcceptedIssuers();
+		if ( tmgs != null ) {
+			for ( TrustManager tm : tmgs ) {
+				if ( tm instanceof X509TrustManager) {
+					X509TrustManager t = (X509TrustManager)tm;
+					X509Certificate[] issuers = t.getAcceptedIssuers();
+					if ( issuers != null ) {
+						for( X509Certificate i : issuers ) {
+							caList.add(i);
+						}
+					}
+				}
+			}
 		}
-		return null;
+		return caList;
 	}
 
     //-------------------------------------------------------------------------
@@ -52,5 +67,13 @@ public class SystemTrustStoreImpl implements SystemTrustStore {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
+	public String getTrustStoreAlgorithm() {
+		return trustStoreAlgorithm;
+	}
+
+	public void setTrustStoreAlgorithm(String trustStoreAlgorithm) {
+		this.trustStoreAlgorithm = trustStoreAlgorithm;
+	}
 
 }

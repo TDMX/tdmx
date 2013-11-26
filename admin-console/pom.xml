@@ -73,6 +73,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.tdmx</groupId>
+			<artifactId>client-crypto</artifactId>
+			<version>${parent.version}</version>
+		</dependency>
 
 
 		<dependency>

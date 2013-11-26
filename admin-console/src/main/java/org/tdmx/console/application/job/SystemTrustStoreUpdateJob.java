@@ -1,5 +1,6 @@
 package org.tdmx.console.application.job;
 
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,7 +59,10 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 						
 						//TODO feed to replaceList
 					} catch (NoSuchAlgorithmException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.TRUST_STORE_ALGORITHM, e);
+						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_ALGORITHM, e);
+						problemRegistry.addProblem(p);
+					} catch (KeyStoreException e) {
+						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_EXCEPTION, e);
 						problemRegistry.addProblem(p);
 					}
 					
