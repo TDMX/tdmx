@@ -1,25 +1,17 @@
 package org.tdmx.client.crypto.certificate;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertPath;
-import java.security.cert.CertPathValidator;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.PKIXCertPathValidatorResult;
-import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
 
 
@@ -28,7 +20,8 @@ public class CertificateIOUtils {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-
+	public static final String ALGORITHM  = "X.509";
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
@@ -41,34 +34,51 @@ public class CertificateIOUtils {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	public static String x509certToPem( X509Certificate cert ) throws CertificateEncodingException, IOException {
-    	byte[] certificate = cert.getEncoded();
-    	
+	public static String x509certToPem( X509Certificate cert ) throws CryptoCertificateException {
     	StringWriter writer = new StringWriter();
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PEMWriter pemWrtCer = new PEMWriter(writer);//new OutputStreamWriter(baos));
-        pemWrtCer.writeObject(cert);
-        pemWrtCer.close();
+        PEMWriter pemWrtCer = new PEMWriter(writer);
+        try {
+            pemWrtCer.writeObject(cert);
+            pemWrtCer.close();
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
+		}
         
         return writer.toString();
 	}
 
-	public boolean validate(X509Certificate[] certs, KeyStore trustStore) throws CertificateException, KeyStoreException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, CertPathValidatorException {
-		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		List<X509Certificate> mylist = new ArrayList<X509Certificate>();
-		for( X509Certificate cert : certs ) {
-			mylist.add(cert);
-		}
-		CertPath cp = cf.generateCertPath(mylist);
+	public static X509Certificate[] pemToX509certs( String input ) throws CryptoCertificateException {
+		StringReader sr = new StringReader(input);
+		PEMParser pp = new PEMParser(sr);
 		
-		PKIXParameters params = new PKIXParameters(trustStore);
-		params.setRevocationEnabled(false);
-		CertPathValidator cpv =
-		      CertPathValidator.getInstance(CertPathValidator.getDefaultType());
-		PKIXCertPathValidatorResult pkixCertPathValidatorResult =
-		      (PKIXCertPathValidatorResult) cpv.validate(cp, params);	
-		return true; //
+		List<X509Certificate> certList = new ArrayList<>();
+		Object o = null;
+        try {
+    		while( (o = pp.readObject()) != null ) {
+    			if ( o instanceof X509CertificateHolder ) {
+    				X509CertificateHolder ch = (X509CertificateHolder)o;
+    				X509Certificate c = decodeCertificate(ch.getEncoded());
+    				certList.add(c);
+    			}
+    		}
+            pp.close();
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
+		}
+		return certList.toArray(new X509Certificate[0]);
 	}
+	
+	public static X509Certificate decodeCertificate( byte[] x509encodedValue ) throws CryptoCertificateException {
+		CertificateFactory certFactory;
+		try {
+			certFactory = CertificateFactory.getInstance(ALGORITHM);
+			X509Certificate cert = (X509Certificate)certFactory.generateCertificate(new ByteArrayInputStream(x509encodedValue));
+			return cert;
+		} catch (CertificateException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		}
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

@@ -1,7 +1,5 @@
 package org.tdmx.console.application.job;
 
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -11,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.dao.SystemTrustStore;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
@@ -58,10 +57,7 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 						trustStore.getAllTrustedCAs();
 						
 						//TODO feed to replaceList
-					} catch (NoSuchAlgorithmException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_ALGORITHM, e);
-						problemRegistry.addProblem(p);
-					} catch (KeyStoreException e) {
+					} catch (CryptoCertificateException e) {
 						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_EXCEPTION, e);
 						problemRegistry.addProblem(p);
 					}
