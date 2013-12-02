@@ -133,8 +133,8 @@ public class TrustStoreCertificateIOUtils {
 		return certList;
 	}
 	
-	public static List<X509Certificate> getAllSystemTrustedCAs() throws CryptoCertificateException {
-		List<X509Certificate> caList = new ArrayList<>();
+	public static List<TrustStoreEntry> getAllSystemTrustedCAs() throws CryptoCertificateException {
+		List<TrustStoreEntry> caList = new ArrayList<>();
 		
 		TrustManagerFactory tmf;
 		try {
@@ -148,7 +148,8 @@ public class TrustStoreCertificateIOUtils {
 						X509Certificate[] issuers = t.getAcceptedIssuers();
 						if ( issuers != null ) {
 							for( X509Certificate i : issuers ) {
-								caList.add(i);
+								TrustStoreEntry e = new TrustStoreEntry(i);
+								caList.add(e);
 							}
 						}
 					}
@@ -160,6 +161,15 @@ public class TrustStoreCertificateIOUtils {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE, e);
 		}
 		return caList;
+	}
+	
+	public static List<TrustStoreEntry> getAllSystemDisrustedCAs() throws CryptoCertificateException {
+		List<TrustStoreEntry> distrustedCaList = new ArrayList<>();
+		
+		for( TrustStoreEntry e : UntrustedCertificates.untrustedCerts.values() ){
+			distrustedCaList.add(e);
+		}
+		return distrustedCaList;
 	}
 	
 	//TODO not used yet.
@@ -174,10 +184,10 @@ public class TrustStoreCertificateIOUtils {
 		PKIXParameters params = new PKIXParameters(trustStore);
 		params.setRevocationEnabled(false);
 		CertPathValidator cpv =
-		      CertPathValidator.getInstance(CertPathValidator.getDefaultType());
+		      CertPathValidator.getInstance("PKIX");
 		PKIXCertPathValidatorResult pkixCertPathValidatorResult =
 		      (PKIXCertPathValidatorResult) cpv.validate(cp, params);	
-		return true; //
+		return true;
 	}
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS

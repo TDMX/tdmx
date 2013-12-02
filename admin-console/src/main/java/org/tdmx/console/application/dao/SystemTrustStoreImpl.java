@@ -1,10 +1,10 @@
 package org.tdmx.console.application.dao;
 
-import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
+import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 
 public class SystemTrustStoreImpl implements SystemTrustStore {
 
@@ -28,8 +28,14 @@ public class SystemTrustStoreImpl implements SystemTrustStore {
 	//-------------------------------------------------------------------------
 
 	@Override
-	public synchronized List<X509Certificate> getAllTrustedCAs() throws CryptoCertificateException {
+	public synchronized List<TrustStoreEntry> getAllTrustedCAs() throws CryptoCertificateException {
 		return TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+	}
+
+	@Override
+	public List<TrustStoreEntry> getAllDistrustedTrustedCAs()
+			throws CryptoCertificateException {
+		return TrustStoreCertificateIOUtils.getAllSystemDisrustedCAs();
 	}
 
     //-------------------------------------------------------------------------
