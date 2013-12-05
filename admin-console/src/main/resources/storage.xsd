@@ -63,9 +63,62 @@
 		<xs:sequence>
 			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="dns-trust" type="DNSTrustSettings" minOccurs="0"/>
+			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="proxy" type="Proxy" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="dnstrustpolicy">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ALL"/>
+			<xs:enumeration value="MAJORITY_WITHOUT_CONFLICT"/>
+			<xs:enumeration value="MAJORITY"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="DNSTrustSettings">
+		<xs:annotation>
+			<xs:documentation>Global configuration inforamation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dns-trust-policy" type="dnstrustpolicy" default="MAJORITY_WITHOUT_CONFLICT">
+				<xs:annotation>
+					<xs:documentation>the DNS trust policy name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dns-cache-duration-sec" type="xs:unsignedInt" default="60">
+				<xs:annotation>
+					<xs:documentation>how long DNS resolvers should cache DNS answers for each domain. Default is 60s.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DNSResolver-List">
+		<xs:annotation>
+			<xs:documentation>A named list of DNS resolvers.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>the name of the list.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="state" type="EntityState" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>a DNSResolver list can be enabled or not. Only DNS answers from enabled lists are combined by a policy to determine trust in the DNS information.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="resolver-ip" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>An ordered list of DNS resolver IP addresses. The DNS resolvers must support TCP. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>the id of the DNSResolver list.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="X509Certificate">
 		<xs:annotation>
