@@ -15,6 +15,8 @@ import org.tdmx.console.AdminApplication;
 import org.tdmx.console.application.dao.PrivateKeyStoreImpl;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
+import org.tdmx.console.application.dao.SystemNetworkingSettings;
+import org.tdmx.console.application.dao.SystemNetworkingSettingsImpl;
 import org.tdmx.console.application.dao.SystemTrustStore;
 import org.tdmx.console.application.dao.SystemTrustStoreImpl;
 import org.tdmx.console.application.domain.ProblemDO;
@@ -22,15 +24,30 @@ import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.job.StateStorageJob;
+import org.tdmx.console.application.job.SystemNetworkingSettingsUpdateJob;
 import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
 import org.tdmx.console.application.search.SearchServiceImpl;
+import org.tdmx.console.application.service.DnsResolverService;
+import org.tdmx.console.application.service.DnsResolverServiceImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.application.service.ProblemRegistryImpl;
+import org.tdmx.console.application.service.SystemProxyService;
+import org.tdmx.console.application.service.SystemProxyServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
+	//TODO - DnsResolverList load/manage
+	//			- insert/update "system" DnsResolverList
+
+	//TODO - Pkix RootCA list load/save to storage
+	
+	//TODO - ProxySettings serialize to from storage
+	
+	//TODO - AuditService
+	
+	//
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
@@ -50,9 +67,13 @@ public class AdministrationImpl implements Administration, IInitializer {
 	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
 	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
+	private SystemNetworkingSettings networkSettings = new SystemNetworkingSettingsImpl();
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private SearchServiceImpl searchService = new SearchServiceImpl();
+	
+	private SystemProxyServiceImpl proxyService = new SystemProxyServiceImpl();
+	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -109,6 +130,16 @@ public class AdministrationImpl implements Administration, IInitializer {
 		}
 		registry.initContent(content);
 
+		// Configure all Services.
+		//
+		proxyService.setObjectRegistry(registry);
+		proxyService.setSearchService(searchService);
+		
+		dnsResolverService.setObjectRegistry(registry);
+		dnsResolverService.setSearchService(searchService);
+		
+		// Configure all Jobs and wire all services they need.
+		//
 		StateStorageJob storageJob = new StateStorageJob();
 		storageJob.setName("StateStorage");
 		storageJob.setProblemRegistry(problemRegistry);
@@ -125,6 +156,15 @@ public class AdministrationImpl implements Administration, IInitializer {
 		trustStoreJob.init();
 		jobRegistry.addBackgroundJob(trustStoreJob);
 		
+		SystemNetworkingSettingsUpdateJob proxyUpdateJob = new SystemNetworkingSettingsUpdateJob();
+		proxyUpdateJob.setProblemRegistry(problemRegistry);
+		proxyUpdateJob.setSystemNetworkingSettings(networkSettings);
+		proxyUpdateJob.setName("Proxy");
+		proxyUpdateJob.init();
+		jobRegistry.addBackgroundJob(proxyUpdateJob);
+
+		// finally initialize the searchService where the jobs may already
+		// have made changes to the objectRegistry
 		searchService.setObjectRegistry(registry);
 		searchService.initialize();
 		
@@ -170,5 +210,14 @@ public class AdministrationImpl implements Administration, IInitializer {
 		return jobRegistry;
 	}
 
+	@Override
+	public SystemProxyService getProxyService() {
+		return proxyService;
+	}
+
+	@Override
+	public DnsResolverService getDnsResolverService() {
+		return dnsResolverService;
+	}
 
 }

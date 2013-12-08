@@ -10,12 +10,6 @@
 	<xs:simpleType name="text">
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
-	<xs:simpleType name="EntityState">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="ACTIVE"/>
-			<xs:enumeration value="DELETED"/>
-		</xs:restriction>
-	</xs:simpleType>
 	<!-- ********************************************* -->
 	<!--           USER STORAGE         -->
 	<!-- ********************************************* -->
@@ -82,32 +76,28 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="system" type="RuntimeSystem" minOccurs="0"/>
+			<xs:element name="proxy" type="ProxySettings" minOccurs="0"/>
 			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="RuntimeSystem">
+	<xs:complexType name="ProxySettings">
 		<xs:sequence>
-			<xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="httpsProxy" type="xs:string" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>system properties affecting networking and security.</xs:documentation>
+					<xs:documentation>the httpsProxyHost:httpsProxyPort</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="Property">
-		<xs:sequence>
-			<xs:element name="name" type="xs:string" default="MAJORITY_WITHOUT_CONFLICT">
+			<xs:element name="httpsNonProxyHosts" type="xs:string" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>property name</xs:documentation>
+					<xs:documentation>the list of hosts excluded from proxying for http and https. comma separated list of hostnames.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="value" type="xs:string">
+			<xs:element name="socksProxy" type="xs:string" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>property value</xs:documentation>
+					<xs:documentation>the socksProxyHost : socksProxyPort.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -122,11 +112,6 @@
 					<xs:documentation>the name of the list.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="state" type="EntityState" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>a DNSResolver list can be enabled or not. Only DNS answers from enabled lists are combined by a policy to determine trust in the DNS information.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="resolver-ip" type="xs:string" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
 					<xs:documentation>An ordered list of DNS resolver IP addresses. The DNS resolvers must support TCP. </xs:documentation>
@@ -136,6 +121,29 @@
 		<xs:attribute name="id" type="xs:ID" use="required">
 			<xs:annotation>
 				<xs:documentation>the id of the DNSResolver list.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="active" type="xs:boolean" use="optional" default="true">
+			<xs:annotation>
+				<xs:documentation>a DNSResolver list can be enabled or not. Only DNS answers from enabled lists are combined by a policy to determine trust in the DNS information.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="X509CertificateChain">
+		<xs:annotation>
+			<xs:documentation>A X509 certificate chain</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="cert" type="X509Certificate" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>the CC||SHA1 fingerprint as HEX of the leaf certificate.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="active" type="xs:boolean" use="optional" default="true">
+			<xs:annotation>
+				<xs:documentation>whether the certificate is enabled for use or not.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -162,11 +170,6 @@
 					<xs:documentation>the name of the list.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="state" type="EntityState" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>a RootCA list can be enabled or not. Only enabled lists are  combined wihout preference into the "effective" RootCA list.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="trusted" type="RootCA-ListEntry" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
 					<xs:documentation>trusted root or intermediate CA certificates.</xs:documentation>
@@ -183,6 +186,11 @@
 				<xs:documentation>the id of the RootCA list.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+		<xs:attribute name="active" type="xs:boolean" use="optional" default="true">
+			<xs:annotation>
+				<xs:documentation>a RootCA list can be enabled or not. Only enabled lists are  combined wihout preference into the "effective" RootCA list.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="RootCA-ListEntry">
 		<xs:annotation>
@@ -197,31 +205,6 @@
 			<xs:element name="friendlyName" type="xs:string" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the friendly-name of the certificate.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="state" type="EntityState" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>whether the certificate is currently in the list or not.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="addedDate" type="xs:dateTime" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the date the certificate was added to the list.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="addedBy" type="xs:string" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the username who added the certificate to the list.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="deletedDate" type="xs:dateTime" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the date the certificate is deleted from the list.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="deletedBy" type="xs:string" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the username who performed the delete.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="comment" type="xs:string" minOccurs="0">
@@ -289,7 +272,7 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="domainname" type="caseinsensitivetext"/>
-			<xs:element name="certificate" type="Certificate" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="certificatechain" type="X509CertificateChain" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="service" type="Service" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="address" type="Address" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="zone" type="IPZone" minOccurs="0" maxOccurs="unbounded"/>
@@ -314,22 +297,12 @@
 			<xs:element name="ip-address" type="text" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="Certificate">
-		<xs:annotation>
-			<xs:documentation>A DomainCertificate.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="alias" type="text"/>
-			<xs:element name="state" type="EntityState"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="User">
 		<xs:annotation>
 			<xs:documentation>A User.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="alias" type="text"/>
-			<xs:element name="state" type="EntityState"/>
+			<xs:element name="certificatechain" type="X509CertificateChain"/>
 			<xs:element name="ip-zone-name" type="text" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="ip-address" type="text" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>

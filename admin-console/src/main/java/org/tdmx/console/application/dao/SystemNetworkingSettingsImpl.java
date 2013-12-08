@@ -1,7 +1,8 @@
-package org.tdmx.console.application.domain;
+package org.tdmx.console.application.dao;
 
+import org.xbill.DNS.ResolverConfig;
 
-public final class DomainObjectField {
+public class SystemNetworkingSettingsImpl implements SystemNetworkingSettings {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -11,25 +12,39 @@ public final class DomainObjectField {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 
-	private String name;
-	private String clazz;
-	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DomainObjectField( String name, String clazz ) {
-		this.name = name;
-		this.clazz = clazz;
+	public SystemNetworkingSettingsImpl() {
 	}
-	
+
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	
+
 	@Override
-	public String toString() {
-		return getClazz()+"#"+getName();
+	public String getHttpsProxy() {
+		// TODO CXF get system proxy.
+		return null;
+	}
+
+	@Override
+	public String getHttpsProxyExclusionList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSocksProxy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getSystemDnsResolverList() {
+		String[] hostnames = ResolverConfig.getCurrentConfig().servers();
+		return hostnames;
 	}
 	
     //-------------------------------------------------------------------------
@@ -43,13 +58,5 @@ public final class DomainObjectField {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-
-	public String getName() {
-		return name;
-	}
-
-	public String getClazz() {
-		return clazz;
-	}
 
 }

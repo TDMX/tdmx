@@ -1,7 +1,12 @@
-package org.tdmx.console.application.domain;
+package org.tdmx.console.application.service;
+
+import org.tdmx.console.application.domain.DomainObjectChangesHolder;
+import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.search.SearchService;
 
 
-public final class DomainObjectField {
+public class SystemProxyServiceImpl implements SystemProxyService {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -10,28 +15,30 @@ public final class DomainObjectField {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-
-	private String name;
-	private String clazz;
+	private ObjectRegistry objectRegistry;
+	private SearchService searchService;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DomainObjectField( String name, String clazz ) {
-		this.name = name;
-		this.clazz = clazz;
-	}
-	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+
 	@Override
-	public String toString() {
-		return getClazz()+"#"+getName();
+	public void update(SystemProxyDO resolverList) {
+		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
+		SystemProxyDO existing = objectRegistry.getSystemProxy();
+		DomainObjectFieldChanges changes = existing.merge(resolverList);
+		if ( !changes.isEmpty() ) {
+			objectRegistry.notifyModify(changes, holder);
+			searchService.update(holder);
+			//TODO - audit log
+		}
 	}
-	
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -44,12 +51,20 @@ public final class DomainObjectField {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public String getName() {
-		return name;
+	public ObjectRegistry getObjectRegistry() {
+		return objectRegistry;
 	}
 
-	public String getClazz() {
-		return clazz;
+	public void setObjectRegistry(ObjectRegistry objectRegistry) {
+		this.objectRegistry = objectRegistry;
+	}
+
+	public SearchService getSearchService() {
+		return searchService;
+	}
+
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
 	}
 
 }

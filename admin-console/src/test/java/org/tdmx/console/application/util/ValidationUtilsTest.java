@@ -1,18 +1,22 @@
 package org.tdmx.console.application.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.tdmx.console.application.domain.DomainObjectField;
+import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.FieldError.ERROR;
 
 public class ValidationUtilsTest {
 
-	private Object error = new Object();
-	private List<Object> errors = new ArrayList<>();
-
+	private ERROR error = ERROR.INVALID;
+	private List<FieldError> errors = new ArrayList<>();
+	private DomainObjectField field = new DomainObjectField("fieldname", "VUT");
+	
 	@Before
 	public void setUp() throws Exception {
 		errors.clear();
@@ -20,118 +24,92 @@ public class ValidationUtilsTest {
 
 	@Test
 	public void testMandatoryTextField_Missing() {
-		ValidationUtils.mandatoryTextField("", error, errors);
+		ValidationUtils.mandatoryTextField("", field, error, errors);
 		assertContainsError();
-		ValidationUtils.mandatoryTextField(null, error, errors);
+		ValidationUtils.mandatoryTextField(null, field, error, errors);
 		assertContainsError();
 	}
 
 	@Test
 	public void testMandatoryTextField_Present() {
-		ValidationUtils.mandatoryTextField("hello", error, errors);
+		ValidationUtils.mandatoryTextField("hello", field, error, errors);
 		assertNoError();
 	}
 
 	@Test
 	public void testMandatoryNumberField_Missing() {
-		ValidationUtils.mandatoryNumberField(null, error, errors);
+		ValidationUtils.mandatoryNumberField(null, field, error, errors);
 		assertContainsError();
 	}
 
 	@Test
 	public void testMandatoryNumberField_Present() {
-		ValidationUtils.mandatoryNumberField(new Integer(1), error, errors);
+		ValidationUtils.mandatoryNumberField(new Integer(1), field, error, errors);
 		assertNoError();
 	}
 
 	@Test
 	public void testOptionalTextFieldGroup_None() {
-		ValidationUtils.optionalTextFieldGroup(new String[]{ null, null }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ null, null }, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "", null }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "", null }, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ null, "" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ null, "" }, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "", "" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "", "" }, field, error, errors);
 		assertNoError();
 	}
 
 	@Test
 	public void testOptionalTextFieldGroup_All() {
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "b" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "b" }, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "b", "c", "d" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "b", "c", "d" }, field, error, errors);
 		assertNoError();
 	}
 
 	@Test
 	public void testOptionalTextFieldGroup_Missing() {
-		ValidationUtils.optionalTextFieldGroup(new String[]{ null, "b" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ null, "b" }, field, error, errors);
 		assertContainsError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "", "b" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "", "b" }, field, error, errors);
 		assertContainsError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", null }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", null }, field, error, errors);
 		assertContainsError();
-		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "" }, error, errors);
+		ValidationUtils.optionalTextFieldGroup(new String[]{ "a", "" }, field, error, errors);
 		assertContainsError();
 	}
 
 	@Test
 	public void testOptionalHostnameField_Valid() {
-		ValidationUtils.optionalHostnameField("", error, errors);
+		ValidationUtils.optionalHostnameField("", field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalHostnameField("google.ch", error, errors);
+		ValidationUtils.optionalHostnameField("google.ch", field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalHostnameField("127.0.0.1", error, errors);
+		ValidationUtils.optionalHostnameField("127.0.0.1", field, error, errors);
 		assertNoError();
 	}
 
 	@Test
 	public void testOptionalHostnameField_Invalid() {
-		ValidationUtils.optionalHostnameField("a.sdf.fwe..vcw", error, errors);
+		ValidationUtils.optionalHostnameField("a.sdf.fwe..vcw", field, error, errors);
 		assertContainsError();
-		ValidationUtils.optionalHostnameField("1.0.2.3.5", error, errors);
+		ValidationUtils.optionalHostnameField("1.0.2.3.5", field, error, errors);
 		assertContainsError();
 	}
 
-	@Test
-	public void testOptionalPortField_Valid() {
-		ValidationUtils.optionalPortField(new Integer(0), error, errors);
-		assertNoError();
-		ValidationUtils.optionalPortField(new Integer(80), error, errors);
-		assertNoError();
-		ValidationUtils.optionalPortField(new Integer(8080), error, errors);
-		assertNoError();
-		ValidationUtils.optionalPortField(new Integer(443), error, errors);
-		assertNoError();
-		ValidationUtils.optionalPortField(new Integer(65536), error, errors);
-		assertNoError();
-	}
-
-	@Test
-	public void testOptionalPortField_Invalid() {
-		ValidationUtils.optionalPortField(new Integer(-1), error, errors);
-		assertContainsError();
-		ValidationUtils.optionalPortField(new Integer(65537), error, errors);
-		assertContainsError();
-		ValidationUtils.optionalPortField(new Integer(Integer.MAX_VALUE), error, errors);
-		assertContainsError();
-		ValidationUtils.optionalPortField(new Integer(Integer.MIN_VALUE), error, errors);
-		assertContainsError();
-	}
-	
 	@Test
 	public void testOptionalEnumeratedTextField_Valid() {
 		List<String> validList = new ArrayList<>();
 		validList.add("a");
 		validList.add("b");
-		ValidationUtils.optionalEnumeratedTextField(null, validList, error, errors);
+		ValidationUtils.optionalEnumeratedTextField(null, validList, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalEnumeratedTextField("", validList, error, errors);
+		ValidationUtils.optionalEnumeratedTextField("", validList, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalEnumeratedTextField("a", validList, error, errors);
+		ValidationUtils.optionalEnumeratedTextField("a", validList, field, error, errors);
 		assertNoError();
-		ValidationUtils.optionalEnumeratedTextField("b", validList, error, errors);
+		ValidationUtils.optionalEnumeratedTextField("b", validList, field, error, errors);
 		assertNoError();
 	}
 
@@ -140,7 +118,7 @@ public class ValidationUtilsTest {
 		List<String> validList = new ArrayList<>();
 		validList.add("a");
 		validList.add("b");
-		ValidationUtils.optionalEnumeratedTextField("c", validList, error, errors);
+		ValidationUtils.optionalEnumeratedTextField("c", validList, field, error, errors);
 		assertContainsError();
 	}
 
@@ -151,7 +129,14 @@ public class ValidationUtilsTest {
 	}
 	
 	private void assertContainsError() {
-		assertTrue( errors.contains(error));
+		boolean found = false;
+		for( FieldError e : errors) {
+			if ( e.getError() == error ) {
+				found = true;
+				break;
+			}
+		}
+		assertTrue( found);
 		errors.clear();
 	}
 }

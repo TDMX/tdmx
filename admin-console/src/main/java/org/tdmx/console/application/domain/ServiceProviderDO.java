@@ -45,8 +45,11 @@ public class ServiceProviderDO extends AbstractDO {
 	}
 	
 	private ServiceProviderDO( ServiceProviderDO original ) {
+		this.setId(original.getId());
+		this.setSubjectIdentifier(original.getSubjectIdentifier());
 		//TODO
 	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------

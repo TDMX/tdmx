@@ -1,7 +1,8 @@
 package org.tdmx.console.application.dao;
 
+import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.service.ObjectRegistry;
+import org.tdmx.console.application.domain.SystemProxyDO;
 
 public class DomainObjectFromStoreMapper {
 
@@ -20,8 +21,27 @@ public class DomainObjectFromStoreMapper {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	public DnsResolverListDO map( DNSResolverList other ) {
+		DnsResolverListDO o = new DnsResolverListDO();
+		if ( other.getId() != null ) {
+			o.setId(other.getId());
+		}
+		
+		o.setName(other.getName());
+		o.setHostnames(other.getResolverIp());
+		o.setActive(other.isActive());
+		return o;
+	}
+
+	public SystemProxyDO map( ProxySettings other ) {
+		SystemProxyDO o = new SystemProxyDO();
+		o.setHttpsProxy(other.getHttpsProxy());
+		o.setHttpsNonProxyHosts(other.getHttpsNonProxyHosts());
+		o.setSocksProxy(other.getSocksProxy());
+		return o;
+	}
 	
-	public ServiceProviderDO map( ServiceProvider other, ObjectRegistry reg ) {
+	public ServiceProviderDO map( ServiceProvider other ) {
 		ServiceProviderDO o = new ServiceProviderDO();
 		if ( other.getId() != null ) {
 			o.setId(other.getId());

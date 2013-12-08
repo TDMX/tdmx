@@ -81,11 +81,22 @@ public abstract class AbstractDO implements DomainObject {
 				holder.field(field);
 				return other;
 			}
-		} else {
-			if ( other == null || !other.equals(current)) {
+		} else if ( current instanceof Object[] && other instanceof Object[]) {
+			Object[] cList = (Object[])current;
+			Object[] oList = (Object[])other;
+			if ( cList.length != oList.length) {
 				holder.field(field);
 				return other;
 			}
+			for( int i = 0; i < cList.length; i++) {
+				if ( !cList[i].equals(oList[i]) ) {
+					holder.field(field);
+					return other;
+				}
+			}
+		} else if ( other == null || !other.equals(current)) {
+			holder.field(field);
+			return other;
 		}
 		return current;
 	}

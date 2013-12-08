@@ -6,14 +6,18 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.tdmx.console.application.dao.DNSResolverList;
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
+import org.tdmx.console.application.dao.ProxySettings;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
+import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
+import org.tdmx.console.application.domain.SystemProxyDO;
 import org.tdmx.console.domain.Domain;
 
 public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
@@ -37,6 +41,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	
 	private Map<String, DomainObject> objects = new ConcurrentSkipListMap<>();
 	private Map<String, DomainObjectContainer<? extends DomainObject>> classMap = new TreeMap<>();
+	private SystemProxyDO proxySettings;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -56,9 +61,18 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 		synchronized( syncObj ) {
 			init();
+			if ( content.getProxy() != null ) {
+				proxySettings = domMapper.map(content.getProxy());
+			} else {
+				proxySettings = new SystemProxyDO();
+			}
 			for( ServiceProvider sp : content.getServiceprovider() ) {
-				ServiceProviderDO s = domMapper.map(sp, this);
+				ServiceProviderDO s = domMapper.map(sp);
 				add(s);
+			}
+			for( DNSResolverList dnslist : content.getDnsresolverList() ) {
+				DnsResolverListDO d = domMapper.map(dnslist);
+				add(d);
 			}
 			dirty = false;
 		}
@@ -69,9 +83,15 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		synchronized( syncObj ) {
 			if ( dirty ) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
+				ProxySettings proxy = storeMapper.map(getSystemProxy());
+				store.setProxy(proxy);
 				for( ServiceProviderDO sp : getServiceProviders() ) {
 					ServiceProvider s = storeMapper.map(sp);
 					store.getServiceprovider().add(s);
+				}
+				for( DnsResolverListDO d : getDnsResolverLists() ) {
+					DNSResolverList rl = storeMapper.map(d);
+					store.getDnsresolverList().add(rl);
 				}
 				dirty = false;
 				return store;
@@ -141,6 +161,30 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		return (List<ServiceProviderDO>) c.getList();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DnsResolverListDO> getDnsResolverLists() {
+		DomainObjectContainer<? extends DomainObject> c = getContainer(DnsResolverListDO.class);
+		return (List<DnsResolverListDO>) c.getList();
+	}
+
+	@Override
+	public DnsResolverListDO getDnsResolverList(String id) {
+		if ( id == null ) {
+			return null;
+		}
+		DomainObject dom = objects.get(id);
+		if ( dom instanceof DnsResolverListDO ) {
+			return (DnsResolverListDO)dom;
+		}
+		return null;
+	}
+	
+	@Override
+	public SystemProxyDO getSystemProxy() {
+		return proxySettings;
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -160,6 +204,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		objects.clear();
 		classMap.clear();
 		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
+		classMap.put(DnsResolverListDO.class.getName(), new DomainObjectContainer<DnsResolverListDO>());
 		//TODO new domain objects
 	}
 	

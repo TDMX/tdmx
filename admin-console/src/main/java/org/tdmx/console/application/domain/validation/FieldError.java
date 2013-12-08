@@ -1,79 +1,60 @@
-package org.tdmx.console.application.search;
+package org.tdmx.console.application.domain.validation;
+
+import org.tdmx.console.application.domain.DomainObjectField;
+
+
 
 
 /**
- * A field descriptor value object.
  * 
  * @author Peter
  *
  */
-public class FieldDescriptor {
+public class FieldError {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-
-	public static enum DomainObjectType {
-		
-		ServiceProvider("Provider"),
-		;
-		private String alias;
-		private DomainObjectType(String alias) {
-			this.alias = alias;
-		}
-		public String getAlias() {
-			return alias;
-		}
+	public static enum ERROR {
+		MISSING, PRESENT, INVALID,
 	}
 	
-	public static enum FieldType {
-		Text, // Free text with length of up to 2k, multiple strings, " " separated.
-		String, // single free string, no spaces
-		Token, // single token, limited range of values
-		Number,
-		Date,
-		DateTime,
-		Time,
-	}
 	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-
-	private DomainObjectType objectType;
-	private String name; 
-	private FieldType fieldType;
-
-	private String description;
+	private DomainObjectField field;
+	private int position = 0;
+	private ERROR error;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-
-	public FieldDescriptor( DomainObjectType objectType, String name, FieldType fieldType ) {
-		this.objectType = objectType;
-		this.name = name.intern();
-		this.fieldType = fieldType;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("FD{");
-		sb.append(objectType);
-		sb.append(".");
-		sb.append(name);
-		sb.append("/");
-		sb.append(fieldType);
-		sb.append("}");
-		description = sb.toString();
+	
+	public FieldError(DomainObjectField field, ERROR errorCode) {
+		this.field = field;
+		this.error = errorCode;
 	}
-
+	
+	public FieldError(DomainObjectField field, int pos, ERROR errorCode) {
+		this.field = field;
+		this.position = pos;
+		this.error = errorCode;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
 	@Override
 	public String toString() {
-		return description;
+		if ( position > 0 ) {
+			return getError()+"["+getField()+"("+getPosition()+")]";
+		} else {
+			return getError()+"["+getField()+"]";
+		}
 	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -86,16 +67,16 @@ public class FieldDescriptor {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public DomainObjectType getObjectType() {
-		return objectType;
+	public DomainObjectField getField() {
+		return field;
 	}
 
-	public String getName() {
-		return name;
+	public int getPosition() {
+		return position;
 	}
 
-	public FieldType getFieldType() {
-		return fieldType;
+	public ERROR getError() {
+		return error;
 	}
 
 }

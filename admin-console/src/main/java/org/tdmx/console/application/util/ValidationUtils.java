@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.console.application.domain.DomainObjectField;
+import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.FieldError.ERROR;
 
 public class ValidationUtils {
 
@@ -23,48 +26,52 @@ public class ValidationUtils {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public static <E extends Object> void mandatoryTextField(String field, E error, List<E> errors ) {
-		if ( !hasText(field)) {
-			errors.add(error);
+	public static void mandatoryBooleanField(Boolean fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+		if ( fieldValue == null ) {
+			errors.add( new FieldError(field, error));
 		}
 	}
 	
-	public static <E extends Object> void mandatoryNumberField(Number field, E error, List<E> errors ) {
-		if ( !hasValue(field)) {
-			errors.add(error);
+	public static void mandatoryTextField(String fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+		if ( !hasText(fieldValue)) {
+			errors.add( new FieldError(field, error));
 		}
 	}
 	
-	public static <E extends Object> void optionalTextFieldGroup(String[] fields, E error, List<E> errors ) {
+	public static void mandatoryNumberField(Number fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+		if ( !hasValue(fieldValue)) {
+			errors.add(new FieldError(field, error));
+		}
+	}
+	
+	public static void optionalTextFieldGroup(String[] fieldValues, DomainObjectField field, ERROR error, List<FieldError> errors ) {
 		boolean all = true;
 		boolean none = true;
-		for( String field : fields ) {
-			if ( hasText(field)) {
+		for( String fieldValue : fieldValues ) {
+			if ( hasText(fieldValue)) {
 				none = false;
 			} else {
 				all = false;
 			}
 		}
 		if ( !all && !none ) {
-			errors.add(error);
+			errors.add(new FieldError(field, error));
 		}
 	}
 	
-	public static <E extends Object> void optionalHostnameField(String hostname, E error, List<E> errors ) {
+	public static void optionalHostnameField(String hostname, DomainObjectField field, int pos,  ERROR error, List<FieldError> errors ) {
 		if ( hasText(hostname) && !isValidHostname(hostname)) {
-			errors.add(error);
+			errors.add( new FieldError(field,pos,error));
 		}
 	}
 	
-	public static <E extends Object> void optionalPortField(Integer port, E error, List<E> errors ) {
-		if ( hasValue(port) && !isValidPort(port)) {
-			errors.add(error);
-		}
+	public static void optionalHostnameField(String hostname, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+		optionalHostnameField(hostname, field, 0, error, errors );
 	}
 	
-	public static <E extends Object> void optionalEnumeratedTextField(String field, List<String> values, E error, List<E> errors ) {
-		if ( hasText(field) && !values.contains(field)) {
-			errors.add(error);
+	public static void optionalEnumeratedTextField(String fieldValue, List<String> values, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+		if ( hasText(fieldValue) && !values.contains(fieldValue)) {
+			errors.add(new FieldError(field, error));
 		}
 	}
 	
@@ -92,10 +99,6 @@ public class ValidationUtils {
 			return false;
 		}
 		return true;
-	}
-	
-	private static boolean isValidPort( int port ) {
-		return port >= 0 && port <= 65536;
 	}
 	
 }

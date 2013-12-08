@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.ServiceProviderDO;
@@ -18,6 +20,7 @@ import org.tdmx.console.application.domain.visit.TraversalFunction;
 import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.service.ObjectRegistry;
+import org.tdmx.console.application.service.SystemProxyServiceImpl;
 
 
 /**
@@ -34,9 +37,17 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
+	private Logger log = LoggerFactory.getLogger(SystemProxyServiceImpl.class);
 
 	private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
 	//TODO registry
+	
+	//TODO DsnResolverList
+	
+	//TODO SystemProxyList
+	
+	//TODO RootCAList
+	
 	private static final class ServiceProviderSO {
 		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
 		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
@@ -105,6 +116,10 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	public void initialize() {
+		if ( objectRegistry == null ) {
+			log.info("Initialization without objectRegistry.");
+			return;
+		}
 		SearchContext ctx = new SearchContext(); 
 		
 		Traversal.traverse( getObjectRegistry().getServiceProviders(), ctx, new TraversalFunction<ServiceProviderDO, SearchContext>() {
@@ -153,7 +168,6 @@ public class SearchServiceImpl implements SearchService {
 		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new HashMap<>();
 		
 		public SearchContext() {
-			objectTypeMap.put(DomainObjectType.HttpProxy, new ArrayList<DomainObject>());
 			objectTypeMap.put(DomainObjectType.ServiceProvider, new ArrayList<DomainObject>());
 			//TODO each objectType
 		}
