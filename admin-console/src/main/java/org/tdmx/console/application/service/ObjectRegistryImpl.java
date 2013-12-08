@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.tdmx.console.application.dao.DNSResolverList;
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
+import org.tdmx.console.application.dao.PKIXCertificate;
 import org.tdmx.console.application.dao.ProxySettings;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
@@ -18,6 +19,7 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.domain.Domain;
 
 public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
@@ -34,6 +36,8 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	//-------------------------------------------------------------------------
 	private Object syncObj = new Object();
 	private boolean dirty = false;
+	private boolean cleanLoad = false;
+
 	private ObjectRegistryChangeListener changeListener;
 	
 	private DomainObjectFromStoreMapper domMapper = new DomainObjectFromStoreMapper();
@@ -55,7 +59,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	//-------------------------------------------------------------------------
 
 	@Override
-	public void initContent( ServiceProviderStorage content ) {
+	public void initContent( ServiceProviderStorage content ) throws Exception {
 		if ( content == null ) {
 			return;
 		}
@@ -66,32 +70,54 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 			} else {
 				proxySettings = new SystemProxyDO();
 			}
-			for( ServiceProvider sp : content.getServiceprovider() ) {
-				ServiceProviderDO s = domMapper.map(sp);
-				add(s);
+			proxySettings.check();
+			for ( PKIXCertificate pkcert : content.getX509Certificate()) {
+				X509CertificateDO cert = domMapper.map(pkcert);
+				cert.check();
+				add(cert);
 			}
+			//TODO rootcalist
+
 			for( DNSResolverList dnslist : content.getDnsresolverList() ) {
 				DnsResolverListDO d = domMapper.map(dnslist);
+				d.check();
 				add(d);
 			}
+			for( ServiceProvider sp : content.getServiceprovider() ) {
+				ServiceProviderDO s = domMapper.map(sp);
+				s.check();
+				add(s);
+			}
 			dirty = false;
+			cleanLoad = true;
 		}
 	}
 	
 	@Override
-	public ServiceProviderStorage getContentIfDirty() {
+	public ServiceProviderStorage getContentIfDirty() throws Exception {
+		if ( !cleanLoad ) {
+			throw new Exception("Storage was not loaded cleanly.");
+		}
 		synchronized( syncObj ) {
 			if ( dirty ) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
 				ProxySettings proxy = storeMapper.map(getSystemProxy());
 				store.setProxy(proxy);
-				for( ServiceProviderDO sp : getServiceProviders() ) {
-					ServiceProvider s = storeMapper.map(sp);
-					store.getServiceprovider().add(s);
+
+				for( X509CertificateDO c : getX509Certificates()) {
+					PKIXCertificate cert = storeMapper.map(c);
+					store.getX509Certificate().add(cert);
 				}
+				
+				//TODO rootcalist
 				for( DnsResolverListDO d : getDnsResolverLists() ) {
 					DNSResolverList rl = storeMapper.map(d);
 					store.getDnsresolverList().add(rl);
+				}
+				
+				for( ServiceProviderDO sp : getServiceProviders() ) {
+					ServiceProvider s = storeMapper.map(sp);
+					store.getServiceprovider().add(s);
 				}
 				dirty = false;
 				return store;
@@ -185,6 +211,25 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		return proxySettings;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<X509CertificateDO> getX509Certificates() {
+		DomainObjectContainer<? extends DomainObject> c = getContainer(X509CertificateDO.class);
+		return (List<X509CertificateDO>) c.getList();
+	}
+
+	@Override
+	public X509CertificateDO getX509Certificate(String id) {
+		if ( id == null ) {
+			return null;
+		}
+		DomainObject dom = objects.get(id);
+		if ( dom instanceof X509CertificateDO ) {
+			return (X509CertificateDO)dom;
+		}
+		return null;
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -203,8 +248,9 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	private void init() {
 		objects.clear();
 		classMap.clear();
-		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
+		classMap.put(X509CertificateDO.class.getName(), new DomainObjectContainer<X509CertificateDO>());
 		classMap.put(DnsResolverListDO.class.getName(), new DomainObjectContainer<DnsResolverListDO>());
+		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
 		//TODO new domain objects
 	}
 	
@@ -247,4 +293,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		this.changeListener = changeListener;
 	}
 
+	public boolean isCleanLoad() {
+		return cleanLoad;
+	}
 }

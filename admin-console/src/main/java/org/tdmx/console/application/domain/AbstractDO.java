@@ -1,6 +1,11 @@
 package org.tdmx.console.application.domain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.FieldValidationException;
 
 
 /**
@@ -64,6 +69,30 @@ public abstract class AbstractDO implements DomainObject {
 		return getClass().getName() + "@" + id;
 	}
 	
+	@Override
+	public <E extends DomainObject> E copy() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<FieldError> validate() {
+		List<FieldError> errors = new ArrayList<>();
+		return errors;
+	}
+
+	@Override
+	public void check() throws FieldValidationException {
+		List<FieldError> errors = validate();
+		if ( errors != null && !errors.isEmpty() ) {
+			throw new FieldValidationException(this, errors);
+		}
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

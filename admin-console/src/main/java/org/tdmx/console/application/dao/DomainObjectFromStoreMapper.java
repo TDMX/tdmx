@@ -1,8 +1,14 @@
 package org.tdmx.console.application.dao;
 
+import java.security.cert.X509Certificate;
+
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CertificateResultCode;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.X509CertificateDO;
 
 public class DomainObjectFromStoreMapper {
 
@@ -21,6 +27,19 @@ public class DomainObjectFromStoreMapper {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	public X509CertificateDO map( PKIXCertificate other ) throws CryptoCertificateException {
+		String id = other.getId();
+		
+		X509Certificate cert = CertificateIOUtils.pemToX509cert(other.getPemValue());
+		
+		X509CertificateDO o = new X509CertificateDO(cert);
+		if ( !o.getId().equals(id)) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_FINGERPRINT_TAMPERING);
+		}
+		return o;
+	}
+
+
 	public DnsResolverListDO map( DNSResolverList other ) {
 		DnsResolverListDO o = new DnsResolverListDO();
 		if ( other.getId() != null ) {

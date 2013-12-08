@@ -20,7 +20,6 @@ import org.tdmx.console.application.domain.visit.TraversalFunction;
 import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.service.ObjectRegistry;
-import org.tdmx.console.application.service.SystemProxyServiceImpl;
 
 
 /**
@@ -37,10 +36,11 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(SystemProxyServiceImpl.class);
+	private Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
 	private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
-	//TODO registry
+
+	//TODO X509Certificates
 	
 	//TODO DsnResolverList
 	

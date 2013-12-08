@@ -26,7 +26,7 @@ public class ValidationUtils {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public static void mandatoryBooleanField(Boolean fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void mandatoryField(Object fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
 		if ( fieldValue == null ) {
 			errors.add( new FieldError(field, error));
 		}

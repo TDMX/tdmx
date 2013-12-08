@@ -1,8 +1,11 @@
 package org.tdmx.console.application.dao;
 
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.X509CertificateDO;
 
 public class DomainObjectToStoreMapper {
 
@@ -22,6 +25,13 @@ public class DomainObjectToStoreMapper {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 
+	public PKIXCertificate map( X509CertificateDO other ) throws CryptoCertificateException {
+		PKIXCertificate o = new PKIXCertificate();
+		o.setId(other.getId());
+		o.setPemValue(CertificateIOUtils.x509certToPem(other.getCertificate()));
+		return o;
+	}
+	
 	public ProxySettings map( SystemProxyDO other ) {
 		ProxySettings o = new ProxySettings();
 		o.setHttpsProxy(other.getHttpsProxy());

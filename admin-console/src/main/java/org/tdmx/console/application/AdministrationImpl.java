@@ -104,16 +104,16 @@ public class AdministrationImpl implements Administration, IInitializer {
 		try {
 			keyStore.load();
 		} catch (NoSuchAlgorithmException e) {
-			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
+			ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_ALGORITHM, e);
 			problemRegistry.addProblem(p);
 		} catch (CertificateException e) {
-			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_EXCEPTION, e);
+			ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_EXCEPTION, e);
 			problemRegistry.addProblem(p);
 		} catch (KeyStoreException e) {
-			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_KEYSTORE_EXCEPTION, e);
+			ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_KEYSTORE_EXCEPTION, e);
 			problemRegistry.addProblem(p);
 		} catch (IOException e) {
-			ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_IO_EXCEPTION, e);
+			ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_IO_EXCEPTION, e);
 			problemRegistry.addProblem(p);
 		}
 		
@@ -128,7 +128,12 @@ public class AdministrationImpl implements Administration, IInitializer {
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_PARSE, e);
 			problemRegistry.addProblem(p);
 		}
-		registry.initContent(content);
+		try {
+			registry.initContent(content);
+		} catch (Exception e) {
+			ProblemDO p = new ProblemDO(ProblemCode.OBJECT_REGISTRY_LOAD, e);
+			problemRegistry.addProblem(p);
+		}
 
 		// Configure all Services.
 		//
@@ -145,6 +150,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		storageJob.setProblemRegistry(problemRegistry);
 		storageJob.setRegistry(registry);
 		storageJob.setStore(store);
+		storageJob.setPrivateKeyStore(keyStore);
 		storageJob.init();
 		registry.setChangeListener(storageJob);
 		jobRegistry.addBackgroundJob(storageJob);
@@ -159,6 +165,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		SystemNetworkingSettingsUpdateJob proxyUpdateJob = new SystemNetworkingSettingsUpdateJob();
 		proxyUpdateJob.setProblemRegistry(problemRegistry);
 		proxyUpdateJob.setSystemNetworkingSettings(networkSettings);
+		proxyUpdateJob.setProxyService(proxyService);
 		proxyUpdateJob.setName("Proxy");
 		proxyUpdateJob.init();
 		jobRegistry.addBackgroundJob(proxyUpdateJob);

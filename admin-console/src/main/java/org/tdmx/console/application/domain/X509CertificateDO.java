@@ -1,82 +1,52 @@
 package org.tdmx.console.application.domain;
 
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.FieldError.ERROR;
+import org.tdmx.console.application.search.SearchServiceImpl;
+import org.tdmx.console.application.util.ValidationUtils;
 
 
 /**
- * An CertificateChain.
+ * An X509Certificate.
  * 
  * @author Peter
  *
  */
-public class CertificateDO implements DomainObject {
+public class X509CertificateDO extends AbstractDO {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	public static final DomainObjectField F_CERTIFICATE	= new DomainObjectField("certificate", X509CertificateDO.class.getName());
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private String id;
-	
-	private X509Certificate[] certificateChain;
+	private Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
+
+	private X509Certificate certificate;
 
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public CertificateDO( X509Certificate[] certificateChain ) {
-		//TODO create a HEX of the SHA2 of the combined encoded byte arrays.
-		this.certificateChain = certificateChain;
+	public X509CertificateDO( X509Certificate certificate ) throws CryptoCertificateException {
+		setId(CertificateIOUtils.getSha1FingerprintAsHex(certificate));
+		this.certificate = certificate;
 	}
 	
-	@Override
-	public <E extends DomainObject> E copy() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	@Override
-	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CertificateDO other = (CertificateDO) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -88,5 +58,9 @@ public class CertificateDO implements DomainObject {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
+	public X509Certificate getCertificate() {
+		return certificate;
+	}
 
 }

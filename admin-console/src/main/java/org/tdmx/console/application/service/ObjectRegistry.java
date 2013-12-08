@@ -8,6 +8,7 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.domain.Domain;
 
 public interface ObjectRegistry {
@@ -67,4 +68,15 @@ public interface ObjectRegistry {
 	 */
 	public SystemProxyDO getSystemProxy();
 	
+	/**
+	 * @return the list of all X509Certificate DomainObjects.
+	 */
+	public List<X509CertificateDO> getX509Certificates();
+
+	/**
+	 * @param id
+	 * @return the X509CertificateDO DomainObject with the id, or null if none exists.
+	 */
+	public X509CertificateDO getX509Certificate( String id );
+
 }

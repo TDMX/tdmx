@@ -54,12 +54,6 @@ public class ServiceProviderDO extends AbstractDO {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	@Override
-	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E extends DomainObject> E copy() {

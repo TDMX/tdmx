@@ -4,9 +4,9 @@ import org.tdmx.console.application.dao.ServiceProviderStorage;
 
 public interface ObjectRegistrySPI {
 
-	public void initContent( ServiceProviderStorage content );
+	public void initContent( ServiceProviderStorage content ) throws Exception;
 
-	public ServiceProviderStorage getContentIfDirty();
+	public ServiceProviderStorage getContentIfDirty() throws Exception;
 
 	public ObjectRegistryChangeListener getChangeListener();
 

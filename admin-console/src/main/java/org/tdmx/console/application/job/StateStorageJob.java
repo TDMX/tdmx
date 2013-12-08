@@ -89,8 +89,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 
 	@Override
 	public void notifyObjectRegistryChanged() {
-		// TODO Auto-generated method stub
-		
+		flushStorage();
 	}
 
 	
@@ -109,25 +108,44 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 				try {
 
 					try {
-						keyStore.save();
+						if ( keyStore == null ) {
+							log.warn("keyStore missing.");
+						} else {
+							keyStore.save();
+						}
 					} catch (NoSuchAlgorithmException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_ALGORITHM, e);
+						ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_ALGORITHM, e);
 						problemRegistry.addProblem(p);
 					} catch (CertificateException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_EXCEPTION, e);
+						ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_EXCEPTION, e);
 						problemRegistry.addProblem(p);
 					} catch (KeyStoreException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_KEYSTORE_EXCEPTION, e);
+						ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_KEYSTORE_EXCEPTION, e);
 						problemRegistry.addProblem(p);
 					} catch (IOException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CERTIFICATE_STORE_IO_EXCEPTION, e);
+						ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_IO_EXCEPTION, e);
+						problemRegistry.addProblem(p);
+					}
+
+					ServiceProviderStorage s = null;
+					try {
+						if ( registry == null ) {
+							log.warn("registry missing.");
+						} else {
+							s = registry.getContentIfDirty();
+						}
+					} catch (Exception c) {
+						ProblemDO p = new ProblemDO(ProblemCode.OBJECT_REGISTRY_WRITE, c);
 						problemRegistry.addProblem(p);
 					}
 					
 					try {
-						ServiceProviderStorage s = registry.getContentIfDirty();
-						if ( s != null ) {
-							store.save(s);
+						if ( store == null ) {
+							log.warn("store missing.");
+						} else {
+							if ( s != null ) {
+								store.save(s);
+							}
 						}
 					} catch (IOException e) {
 						ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
@@ -193,7 +211,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 		return keyStore;
 	}
 
-	public void setCertificateStore(PrivateKeyStore keyStore) {
+	public void setPrivateKeyStore(PrivateKeyStore keyStore) {
 		this.keyStore = keyStore;
 	}
 

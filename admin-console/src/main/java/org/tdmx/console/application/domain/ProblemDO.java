@@ -1,6 +1,9 @@
 package org.tdmx.console.application.domain;
 
 import java.util.Calendar;
+import java.util.List;
+
+import org.tdmx.console.application.domain.validation.FieldError;
 
 /**
  * These are severe Problems that indicate that the Application is not
@@ -20,13 +23,17 @@ public class ProblemDO extends AbstractDO {
 		CONFIGURATION_FILE_WRITE_IO,
 		CONFIGURATION_FILE_PARSE,
 		CONFIGURATION_FILE_MARSHAL,
-		
+
+		OBJECT_REGISTRY_STALE,
+		OBJECT_REGISTRY_LOAD,
+		OBJECT_REGISTRY_WRITE,
+
 		SYSTEM_TRUST_STORE_EXCEPTION,
 
-		CERTIFICATE_STORE_ALGORITHM,
-		CERTIFICATE_STORE_EXCEPTION,
-		CERTIFICATE_STORE_KEYSTORE_EXCEPTION,
-		CERTIFICATE_STORE_IO_EXCEPTION,
+		KEY_STORE_ALGORITHM,
+		KEY_STORE_EXCEPTION,
+		KEY_STORE_KEYSTORE_EXCEPTION,
+		KEY_STORE_IO_EXCEPTION,
 		;
 	}
 	
@@ -58,16 +65,6 @@ public class ProblemDO extends AbstractDO {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	@Override
-	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
-		return null;
-	}
-
-	@Override
-	public <E extends DomainObject> E copy() {
-		return null;
-	}
-
    //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
