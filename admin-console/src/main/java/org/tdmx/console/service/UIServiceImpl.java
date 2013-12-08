@@ -5,11 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.tdmx.console.application.Administration;
-import org.tdmx.console.application.service.ProxyService;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
-import org.tdmx.console.domain.Proxy;
 import org.tdmx.console.domain.User;
 
 public class UIServiceImpl implements UIService {
@@ -89,48 +87,6 @@ public class UIServiceImpl implements UIService {
 		}
 		return null;
 	}
-
-	@Override
-	public List<String> getProxyTypes() {
-		return getAdmin().getProxyService().getProxyTypes();
-	}
-
-	@Override
-	public List<Proxy> getProxies() {
-		List<Proxy> list = new ArrayList<>();
-		for( org.tdmx.console.application.domain.HttpProxyDO p : getAdmin().getObjectRegistry().getHttpProxies()) {
-			list.add(new Proxy(p, getAdmin().getProxyService()));
-		}
-		return list;
-	}
-
-	@Override
-	public Proxy lookupProxy(String id) {
-		org.tdmx.console.application.domain.HttpProxyDO existing = getAdmin().getObjectRegistry().getProxy(id);
-		if ( existing != null ) {
-			return new Proxy(existing, getAdmin().getProxyService());
-		}
-		return null;
-	}
-
-	@Override
-	public List<ProxyService.ERROR> save(Proxy proxy) {
-		org.tdmx.console.application.domain.HttpProxyDO existing = getAdmin().getObjectRegistry().getProxy(proxy.getId());
-		if ( existing != null ) {
-			return getAdmin().getProxyService().modify(proxy.domain(), existing);
-		}
-		return getAdmin().getProxyService().create(proxy.domain());
-	}
-
-	@Override
-	public void deleteProxy(String id) {
-		org.tdmx.console.application.domain.HttpProxyDO existing = getAdmin().getObjectRegistry().getProxy(id);
-		if ( existing != null ) {
-			getAdmin().getProxyService().delete(existing);
-		}
-		return;
-	}
-
 
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS

@@ -23,22 +23,18 @@ public class ServiceProviderDO extends AbstractDO {
 	private String masHostname;
 	private Integer masPort;
 	private ConnectionTestResultVO masStatus;
-	private HttpProxyDO masProxy;
 
 	private String mrsHostname;
 	private Integer mrsPort;
 	private ConnectionTestResultVO mrsStatus;
-	private HttpProxyDO mrsProxy;
 
 	private String mosHostname;
 	private Integer mosPort;
 	private ConnectionTestResultVO mosStatus;
-	private HttpProxyDO mosProxy;
 
 	private String mdsHostname;
 	private Integer mdsPort;
 	private ConnectionTestResultVO mdsStatus;
-	private HttpProxyDO mdsProxy;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -196,38 +192,6 @@ public class ServiceProviderDO extends AbstractDO {
 
 	public void setMdsStatus(ConnectionTestResultVO mdsStatus) {
 		this.mdsStatus = mdsStatus;
-	}
-
-	public HttpProxyDO getMrsProxy() {
-		return mrsProxy;
-	}
-
-	public void setMrsProxy(HttpProxyDO mrsProxy) {
-		this.mrsProxy = mrsProxy;
-	}
-
-	public HttpProxyDO getMasProxy() {
-		return masProxy;
-	}
-
-	public void setMasProxy(HttpProxyDO masProxy) {
-		this.masProxy = masProxy;
-	}
-
-	public HttpProxyDO getMosProxy() {
-		return mosProxy;
-	}
-
-	public void setMosProxy(HttpProxyDO mosProxy) {
-		this.mosProxy = mosProxy;
-	}
-
-	public HttpProxyDO getMdsProxy() {
-		return mdsProxy;
-	}
-
-	public void setMdsProxy(HttpProxyDO mdsProxy) {
-		this.mdsProxy = mdsProxy;
 	}
 
 }

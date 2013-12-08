@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
-import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
@@ -38,14 +37,6 @@ public class SearchServiceImpl implements SearchService {
 
 	private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
 	//TODO registry
-	private static final class HttpProxySO {
-		public static final FieldDescriptor HOSTNAME	 	= new FieldDescriptor(DomainObjectType.HttpProxy, "hostname", FieldType.String);
-		public static final FieldDescriptor PORT 			= new FieldDescriptor(DomainObjectType.HttpProxy, "port", FieldType.Number);
-		public static final FieldDescriptor TYPE 			= new FieldDescriptor(DomainObjectType.HttpProxy, "type", FieldType.Token);
-		public static final FieldDescriptor USERNAME		= new FieldDescriptor(DomainObjectType.HttpProxy, "username", FieldType.String);
-		public static final FieldDescriptor PROXIES			= new FieldDescriptor(DomainObjectType.HttpProxy, "proxies", FieldType.String);
-	}
-	
 	private static final class ServiceProviderSO {
 		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
 		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
@@ -54,12 +45,6 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	static {
-		allDescriptors.add(HttpProxySO.HOSTNAME);
-		allDescriptors.add(HttpProxySO.PORT);
-		allDescriptors.add(HttpProxySO.TYPE);
-		allDescriptors.add(HttpProxySO.USERNAME);
-		allDescriptors.add(HttpProxySO.PROXIES);
-
 		allDescriptors.add(ServiceProviderSO.SUBJECT);
 		allDescriptors.add(ServiceProviderSO.MAS_HOSTNAME);
 		allDescriptors.add(ServiceProviderSO.MAS_PORT);
@@ -121,17 +106,6 @@ public class SearchServiceImpl implements SearchService {
 
 	public void initialize() {
 		SearchContext ctx = new SearchContext(); 
-		Traversal.traverse( getObjectRegistry().getHttpProxies(), ctx, new TraversalFunction<HttpProxyDO, SearchContext>() {
-
-			@Override
-			public void visit(HttpProxyDO object,TraversalContextHolder<SearchContext> holder) {
-				
-				sof(holder.getResult(), object, HttpProxySO.HOSTNAME, object.getHostname());
-				sof(holder.getResult(), object, HttpProxySO.PORT, object.getPort());
-				sof(holder.getResult(), object, HttpProxySO.TYPE, object.getType());
-				sof(holder.getResult(), object, HttpProxySO.USERNAME, object.getUsername());
-			}
-		});
 		
 		Traversal.traverse( getObjectRegistry().getServiceProviders(), ctx, new TraversalFunction<ServiceProviderDO, SearchContext>() {
 
@@ -141,10 +115,6 @@ public class SearchServiceImpl implements SearchService {
 				sof(holder.getResult(), object, ServiceProviderSO.SUBJECT, object.getSubjectIdentifier());
 				sof(holder.getResult(), object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname());
 				sof(holder.getResult(), object, ServiceProviderSO.MAS_PORT, object.getMasPort());
-				if ( object.getMasProxy() != null ) {
-					sof(holder.getResult(), object, ServiceProviderSO.MAS_PROXY, object.getMasProxy().getDescription());
-					sof(holder.getResult(), object.getMasProxy(), HttpProxySO.PROXIES, object.getMasHostname());
-				}
 			}
 		});
 		

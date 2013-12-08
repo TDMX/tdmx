@@ -8,13 +8,11 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
-import org.tdmx.console.application.dao.Proxy;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
-import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.domain.Domain;
 
@@ -58,10 +56,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 		synchronized( syncObj ) {
 			init();
-			for( Proxy p : content.getProxy() ) {
-				HttpProxyDO h = domMapper.map(p);
-				add(h);
-			}
 			for( ServiceProvider sp : content.getServiceprovider() ) {
 				ServiceProviderDO s = domMapper.map(sp, this);
 				add(s);
@@ -75,10 +69,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		synchronized( syncObj ) {
 			if ( dirty ) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
-				for( HttpProxyDO hp : getHttpProxies() ) {
-					Proxy p = storeMapper.map(hp);
-					store.getProxy().add(p);
-				}
 				for( ServiceProviderDO sp : getServiceProviders() ) {
 					ServiceProvider s = storeMapper.map(sp);
 					store.getServiceprovider().add(s);
@@ -127,18 +117,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	}
 	
 	@Override
-	public HttpProxyDO getProxy(String id) {
-		if ( id == null ) {
-			return null;
-		}
-		DomainObject dom = objects.get(id);
-		if ( dom instanceof HttpProxyDO ) {
-			return (HttpProxyDO)dom;
-		}
-		return null;
-	}
-
-	@Override
 	public List<Domain> getDomains() {
     	List<Domain> domainList = new ArrayList<Domain>();
     	//TODO remove
@@ -154,13 +132,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
     	notifyChangedListener();
 		return domainList; 
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<HttpProxyDO> getHttpProxies() {
-		DomainObjectContainer<? extends DomainObject> c = getContainer(HttpProxyDO.class);
-		return (List<HttpProxyDO>) c.getList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -188,7 +159,6 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	private void init() {
 		objects.clear();
 		classMap.clear();
-		classMap.put(HttpProxyDO.class.getName(), new DomainObjectContainer<HttpProxyDO>());
 		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
 		//TODO new domain objects
 	}

@@ -5,7 +5,6 @@ import java.util.List;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
-import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.domain.Domain;
 
@@ -48,16 +47,5 @@ public interface ObjectRegistry {
 	 * @return the list of all ServiceProvider DomainObjects.
 	 */
 	public List<ServiceProviderDO> getServiceProviders();
-	
-	/**
-	 * @return the list of all HttpProxy DomainObjects.
-	 */
-	public List<HttpProxyDO> getHttpProxies();
-	
-	/**
-	 * @param id
-	 * @return the HttpProxy DomainObject with the id, or null if none exists.
-	 */
-	public HttpProxyDO getProxy( String id );
 	
 }

@@ -40,7 +40,13 @@
 	<xs:element name="audit-log-storage" type="AuditLogStorage"/>
 	<xs:complexType name="AuditLogStorage">
 		<xs:sequence>
-			<xs:element name="entry" type="AuditLog" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="AuditLog"/>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="AuditLog">
@@ -51,6 +57,21 @@
 			<xs:element name="reference" type="text"/>
 			<xs:element name="description" type="text"/>
 		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>id of ths entry.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="prevId" use="required">
+			<xs:annotation>
+				<xs:documentation>previous log entry id. On startup prevId == id. </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="mac" use="required">
+			<xs:annotation>
+				<xs:documentation>hmac or mac of the id+prevId+log entries</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--           SERVICEPROVIDER STORAGE       -->
@@ -61,34 +82,32 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="system" type="RuntimeSystem" minOccurs="0"/>
 			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="dns-trust" type="DNSTrustSettings" minOccurs="0"/>
 			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="proxy" type="Proxy" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:simpleType name="dnstrustpolicy">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="ALL"/>
-			<xs:enumeration value="MAJORITY_WITHOUT_CONFLICT"/>
-			<xs:enumeration value="MAJORITY"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:complexType name="DNSTrustSettings">
-		<xs:annotation>
-			<xs:documentation>Global configuration inforamation.</xs:documentation>
-		</xs:annotation>
+	<xs:complexType name="RuntimeSystem">
 		<xs:sequence>
-			<xs:element name="dns-trust-policy" type="dnstrustpolicy" default="MAJORITY_WITHOUT_CONFLICT">
+			<xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
-					<xs:documentation>the DNS trust policy name.</xs:documentation>
+					<xs:documentation>system properties affecting networking and security.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="dns-cache-duration-sec" type="xs:unsignedInt" default="60">
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Property">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" default="MAJORITY_WITHOUT_CONFLICT">
 				<xs:annotation>
-					<xs:documentation>how long DNS resolvers should cache DNS answers for each domain. Default is 60s.</xs:documentation>
+					<xs:documentation>property name</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="value" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>property value</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -219,43 +238,7 @@
 		<xs:sequence>
 			<xs:element name="hostname" type="caseinsensitivetext"/>
 			<xs:element name="port" type="xs:unsignedShort"/>
-			<xs:element name="proxy-id" type="text" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the id of the HTTP proxy to traverse outgoing to the endpoint.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="Proxy">
-		<xs:annotation>
-			<xs:documentation>An HTTP Proxy.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="hostname" type="text">
-				<xs:annotation>
-					<xs:documentation>the TCP hostname or IP address of the Proxy.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="port" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>the TCP port of the proxy.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="type">
-				<xs:annotation>
-					<xs:documentation>the type of Proxy.</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:string">
-						<xs:enumeration value="HTTP"/>
-						<xs:enumeration value="SOCKS"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="username" type="text" minOccurs="0"/>
-			<xs:element name="encrypted-password" type="xs:base64Binary" minOccurs="0"/>
-		</xs:sequence>
-		<xs:attribute name="id" type="xs:ID" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="ServiceProvider">
 		<xs:annotation>

@@ -28,8 +28,6 @@ import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.application.service.ProblemRegistryImpl;
-import org.tdmx.console.application.service.ProxyService;
-import org.tdmx.console.application.service.ProxyServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
@@ -52,7 +50,6 @@ public class AdministrationImpl implements Administration, IInitializer {
 	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
 	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
-	private ProxyServiceImpl proxyService = new ProxyServiceImpl();
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private SearchServiceImpl searchService = new SearchServiceImpl();
@@ -131,9 +128,6 @@ public class AdministrationImpl implements Administration, IInitializer {
 		searchService.setObjectRegistry(registry);
 		searchService.initialize();
 		
-		proxyService.setObjectRegistry(registry);
-		proxyService.setSearchService(searchService);
-
 	}
 
 	@Override
@@ -164,11 +158,6 @@ public class AdministrationImpl implements Administration, IInitializer {
 	@Override
 	public ProblemRegistry getProblemRegistry() {
 		return problemRegistry;
-	}
-
-	@Override
-	public ProxyService getProxyService() {
-		return proxyService;
 	}
 
 	@Override

@@ -14,11 +14,7 @@ public class ServiceProviderStoreMockImpl implements ServiceProviderStore {
 
 		ServiceProviderStorage s = new ServiceProviderStorage();
 		for( int i = 0; i < scale; i++ ) {
-			s.getProxy().add(ServiceProviderStoreFacade.getProxy(i));
-		}
-		for( int i = 0; i < scale; i++ ) {
-			String proxyId =  s.getProxy().get(i).getId();
-			s.getServiceprovider().add(ServiceProviderStoreFacade.getServiceProvider(i,proxyId));
+			s.getServiceprovider().add(ServiceProviderStoreFacade.getServiceProvider(i));
 		}
 		state = s;
 	}

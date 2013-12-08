@@ -1,6 +1,9 @@
 package org.tdmx.console.application.search;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Set;
 
@@ -8,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.console.application.dao.ServiceProviderStoreMockImpl;
 import org.tdmx.console.application.domain.DomainObject;
-import org.tdmx.console.application.domain.HttpProxyDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
@@ -50,10 +52,6 @@ public class SearchServiceTest {
 		for( ServiceProviderDO o : registry.getServiceProviders() ) {
 			assertTrue( objects.contains(o) );
 		}
-		for( HttpProxyDO o : registry.getHttpProxies() ) {
-			assertTrue( objects.contains(o) );
-		}
-		assertEquals( registry.getHttpProxies().size()+registry.getServiceProviders().size(), objects.size() );
 	}
 
 	@Test

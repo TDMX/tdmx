@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>org.tdmx</groupId>
 			<artifactId>client-crypto</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 
