@@ -1,13 +1,26 @@
 package org.tdmx.client.crypto.certificate;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 
 public class CertificateIOUtilsTest {
 
@@ -63,11 +76,11 @@ public class CertificateIOUtilsTest {
 	@Test
 	public void testX509ToPemConversion() throws Exception {
 		
-		List<X509Certificate> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+		List<TrustStoreEntry> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
 		assertNotNull(rootCAs);
 		
-		for( X509Certificate rootCA : rootCAs ) {
-			String s = CertificateIOUtils.x509certToPem(rootCA);
+		for( TrustStoreEntry rootCA : rootCAs ) {
+			String s = CertificateIOUtils.x509certToPem(rootCA.getCertificate());
 			assertNotNull(s);
 		}
 	}
@@ -75,12 +88,12 @@ public class CertificateIOUtilsTest {
 	@Test
 	public void testPemToX509ListConversion() throws Exception {
 		
-		List<X509Certificate> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+		List<TrustStoreEntry> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
 		assertNotNull(rootCAs);
 		
 		StringBuffer sb = new StringBuffer();
-		for( X509Certificate rootCA : rootCAs ) {
-			String s = CertificateIOUtils.x509certToPem(rootCA);
+		for( TrustStoreEntry rootCA : rootCAs ) {
+			String s = CertificateIOUtils.x509certToPem(rootCA.getCertificate());
 			assertNotNull(s);
 			sb.append(s);
 			sb.append("\n");
@@ -92,4 +105,59 @@ public class CertificateIOUtilsTest {
 		assertEquals(certs.length, rootCAs.size());
 	}
 
+	
+	@Test
+	public void testPemToUnencryptedPrivateKey() throws Exception {
+		byte[] bytes = getFileContents("xip-t01.swi.srse.net.key");
+		KeyPair kp = PrivateKeyIOUtils.pemToRSAPrivateKeyPair(new String(bytes));
+		assertNotNull(kp);
+		assertNotNull(kp.getPublic());
+		assertNotNull(kp.getPrivate());
+	}
+	
+		
+	@Test
+	public void testPemToX509() throws Exception {
+		byte[] bytes = getFileContents("xip-t01.swi.srse.net.crt");
+		X509Certificate[] serverchain = CertificateIOUtils.pemToX509certs(new String(bytes));
+		assertEquals(1,serverchain.length);
+		
+		byte[] bytes2 = getFileContents("sunrise_issueing_ca_1_bundle_2012.crt");
+		X509Certificate[] trustedcerts = CertificateIOUtils.pemToX509certs(new String(bytes2));
+		assertEquals(2,trustedcerts.length);
+		
+		CertificateFactory cf = CertificateFactory.getInstance("X509");
+		CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+		List<X509Certificate> servercerts = new ArrayList<>();
+		for (X509Certificate sc : serverchain) {
+			servercerts.add(sc);
+		}
+		servercerts.add(trustedcerts[0]);
+		;
+		CertPath cp = cf.generateCertPath(servercerts);
+		PKIXParameters pkixParameters;
+		Set<TrustAnchor> tas = new HashSet<>();
+		/*
+		for (X509Certificate c : trustedcerts) {
+			TrustAnchor ta = new TrustAnchor(c, null);
+			tas.add(ta);
+		}
+		*/
+		TrustAnchor ta = new TrustAnchor(trustedcerts[1], null);
+		tas.add(ta);
+		;
+		pkixParameters = new PKIXParameters(tas);
+		pkixParameters.setRevocationEnabled(false);
+		validator.validate(cp, pkixParameters);
+		
+	}
+		
+	private static byte[] getFileContents( String filePath ) throws IOException {
+		Path path = Paths.get(filePath);
+		if ( !Files.exists(path) ) {
+			return null;
+		}
+		byte[] data = Files.readAllBytes(path);	
+		return data;
+	}
 }

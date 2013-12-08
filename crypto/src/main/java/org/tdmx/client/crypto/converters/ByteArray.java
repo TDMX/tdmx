@@ -1,9 +1,15 @@
 package org.tdmx.client.crypto.converters;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.Arrays;
 
 public class ByteArray {
 
+	public static boolean equals( byte[] a, byte[] b ) {
+		return Arrays.areEqual(a, b);
+	}
+	
 	public static byte[] clone( byte[] b ) {
 		byte[] copy = new byte[b.length];
 		System.arraycopy(b, 0, copy, 0, b.length);
@@ -68,5 +74,13 @@ public class ByteArray {
 	
 	public static String asHex( byte[] b ) {
 		return new String(Hex.encodeHex(b));
+	}
+	
+	public static byte[] fromHex( char[] h ) {
+		try {
+			return Hex.decodeHex(h);
+		} catch (DecoderException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

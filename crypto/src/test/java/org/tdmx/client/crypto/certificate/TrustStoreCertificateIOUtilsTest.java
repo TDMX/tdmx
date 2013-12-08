@@ -3,7 +3,6 @@ package org.tdmx.client.crypto.certificate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +18,11 @@ public class TrustStoreCertificateIOUtilsTest {
 	@Test
 	public void testGetAllTrustedCAs() throws Exception {
 		
-		List<X509Certificate> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+		List<TrustStoreEntry> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
 		assertNotNull(rootCAs);
 		
-		for( X509Certificate rootCA : rootCAs ) {
-			TrustStoreEntry e = new TrustStoreEntry(rootCA);
+		for( TrustStoreEntry rootCA : rootCAs ) {
+			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
 			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
 			e.addComment("this is a comment1 "+e.getSha1fingerprint());
 			e.addComment("this is a comment2 "+e.getSha1fingerprint());
@@ -35,11 +34,11 @@ public class TrustStoreCertificateIOUtilsTest {
 	@Test
 	public void testTrustEntryToPemConversion() throws Exception {
 		
-		List<X509Certificate> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+		List<TrustStoreEntry> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
 		assertNotNull(rootCAs);
 
-		for( X509Certificate rootCA : rootCAs ) {
-			TrustStoreEntry e = new TrustStoreEntry(rootCA);
+		for( TrustStoreEntry rootCA : rootCAs ) {
+			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
 			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
 			e.addComment("this is a comment1 "+e.getSha1fingerprint());
 			e.addComment("this is a comment2 "+e.getSha1fingerprint());
@@ -51,14 +50,14 @@ public class TrustStoreCertificateIOUtilsTest {
 	@Test
 	public void testPemToX509ListConversion() throws Exception {
 		
-		List<X509Certificate> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+		List<TrustStoreEntry> rootCAs = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
 		assertNotNull(rootCAs);
 
 		List<TrustStoreEntry> trustEntries = new ArrayList<>();
 		
 		StringBuffer sb = new StringBuffer();
-		for( X509Certificate rootCA : rootCAs ) {
-			TrustStoreEntry e = new TrustStoreEntry(rootCA);
+		for( TrustStoreEntry rootCA : rootCAs ) {
+			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
 			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
 			e.addComment("this is a comment1 "+e.getSha1fingerprint());
 			e.addComment("this is a comment2 "+e.getSha1fingerprint());
