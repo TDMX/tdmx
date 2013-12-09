@@ -9,6 +9,7 @@ import org.tdmx.console.domain.User;
 
 public interface UIService {
 
+	//TODO JUCI - change to "search(input)"->List<Object> (ui domain object)
 	public List<Domain> listDomains();
 
 	// Global application calls 
