@@ -175,6 +175,11 @@ public class AdministrationImpl implements Administration, IInitializer {
 		searchService.setObjectRegistry(registry);
 		searchService.initialize();
 		
+		//TODO startup with tdmx-config.xml
+		
+		//TODO expose DNSResolverList to UI
+		
+		//TODO expose RootCAList to UI
 	}
 
 	@Override
