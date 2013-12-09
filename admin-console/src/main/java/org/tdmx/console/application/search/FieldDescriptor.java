@@ -15,6 +15,7 @@ public class FieldDescriptor {
 
 	public static enum DomainObjectType {
 		
+		X509Certificate("Certificate"),
 		ServiceProvider("Provider"),
 		;
 		private String alias;

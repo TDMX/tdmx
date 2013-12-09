@@ -57,6 +57,9 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 						trustStore.getAllTrustedCAs();
 						
 						//TODO feed to replaceList
+						
+						//TODO getSystem RootCA-List from RootCAService replaceList(System)
+						
 					} catch (CryptoCertificateException e) {
 						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_EXCEPTION, e);
 						problemRegistry.addProblem(p);

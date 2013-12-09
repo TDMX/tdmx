@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.ServiceProviderDO;
+import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
@@ -48,6 +49,13 @@ public class SearchServiceImpl implements SearchService {
 	
 	//TODO RootCAList
 	
+	private static final class X509CertificateSO {
+		public static final FieldDescriptor FINGERPRINT 	= new FieldDescriptor(DomainObjectType.X509Certificate, "fingerprint", FieldType.String);
+		public static final FieldDescriptor INFO	 		= new FieldDescriptor(DomainObjectType.X509Certificate, "info", FieldType.Text);
+		public static final FieldDescriptor FROM	 		= new FieldDescriptor(DomainObjectType.X509Certificate, "from", FieldType.Date);
+		public static final FieldDescriptor TO		 		= new FieldDescriptor(DomainObjectType.X509Certificate, "to", FieldType.Date);
+	}
+	
 	private static final class ServiceProviderSO {
 		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
 		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
@@ -56,6 +64,11 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	static {
+		allDescriptors.add(X509CertificateSO.FINGERPRINT);
+		allDescriptors.add(X509CertificateSO.INFO);
+		allDescriptors.add(X509CertificateSO.FROM);
+		allDescriptors.add(X509CertificateSO.TO);
+		
 		allDescriptors.add(ServiceProviderSO.SUBJECT);
 		allDescriptors.add(ServiceProviderSO.MAS_HOSTNAME);
 		allDescriptors.add(ServiceProviderSO.MAS_PORT);
@@ -121,6 +134,18 @@ public class SearchServiceImpl implements SearchService {
 			return;
 		}
 		SearchContext ctx = new SearchContext(); 
+		
+		Traversal.traverse( getObjectRegistry().getX509Certificates(), ctx, new TraversalFunction<X509CertificateDO, SearchContext>() {
+
+			@Override
+			public void visit(X509CertificateDO object, TraversalContextHolder<SearchContext> holder) {
+				
+				sof(holder.getResult(), object, X509CertificateSO.FINGERPRINT, object.getId());
+				sof(holder.getResult(), object, X509CertificateSO.FROM, object.getValidFrom());
+				sof(holder.getResult(), object, X509CertificateSO.TO, object.getValidTo());
+				sof(holder.getResult(), object, X509CertificateSO.INFO, object.getInfo());
+			}
+		});
 		
 		Traversal.traverse( getObjectRegistry().getServiceProviders(), ctx, new TraversalFunction<ServiceProviderDO, SearchContext>() {
 
