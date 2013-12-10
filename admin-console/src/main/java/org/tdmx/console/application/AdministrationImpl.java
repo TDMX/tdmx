@@ -176,6 +176,12 @@ public class AdministrationImpl implements Administration, IInitializer {
 		searchService.setJobRegistry(jobRegistry);
 		searchService.initialize();
 		
+		//TODO remove job registry from search service
+		//TODO add searchservice to abstract bk job
+		//TODO add start-method and finish-method to absract bkjob
+		//TODO each job call them on start/finish
+		//TODO add last problem code to abstract bk job
+		
 		//TODO expose DNSResolverList to UI
 		
 		//TODO expose RootCAList to UI
