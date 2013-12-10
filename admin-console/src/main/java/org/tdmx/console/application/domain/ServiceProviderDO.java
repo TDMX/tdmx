@@ -1,5 +1,12 @@
 package org.tdmx.console.application.domain;
 
+import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
+import org.tdmx.console.application.search.FieldDescriptor;
+import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
+import org.tdmx.console.application.search.FieldDescriptor.FieldType;
+import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.service.ObjectRegistry;
+
 
 
 /**
@@ -13,6 +20,13 @@ public class ServiceProviderDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	public static final class ServiceProviderSO {
+		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
+		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
+		public static final FieldDescriptor MAS_PORT 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.port", FieldType.Number);
+		public static final FieldDescriptor MAS_PROXY 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.proxy", FieldType.String);
+	}
+	
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -58,6 +72,15 @@ public class ServiceProviderDO extends AbstractDO {
 	@Override
 	public <E extends DomainObject> E copy() {
 		return (E) new ServiceProviderDO(this);
+	}
+
+	@Override
+	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+		ctx.sof(this, X509CertificateSO.FINGERPRINT, getId());
+		ctx.sof(this, ServiceProviderSO.SUBJECT, getSubjectIdentifier());
+		ctx.sof(this, ServiceProviderSO.MAS_HOSTNAME, getMasHostname());
+		ctx.sof(this, ServiceProviderSO.MAS_PORT, getMasPort());
+
 	}
 
 	

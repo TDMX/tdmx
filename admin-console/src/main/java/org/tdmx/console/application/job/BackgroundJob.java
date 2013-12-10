@@ -2,8 +2,17 @@ package org.tdmx.console.application.job;
 
 import java.util.Date;
 
-public interface BackgroundJob {
+import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.search.FieldDescriptor;
+import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
+import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 
+public interface BackgroundJob extends DomainObject {
+
+	public static final class BackgroundJobSO {
+		public static final FieldDescriptor NAME = new FieldDescriptor(DomainObjectType.BackgroundJob, "name", FieldType.String);
+	}
+	
 	/**
 	 * @return the name of the BackgroundJob.
 	 */

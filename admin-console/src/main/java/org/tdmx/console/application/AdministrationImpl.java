@@ -173,9 +173,8 @@ public class AdministrationImpl implements Administration, IInitializer {
 		// finally initialize the searchService where the jobs may already
 		// have made changes to the objectRegistry
 		searchService.setObjectRegistry(registry);
+		searchService.setJobRegistry(jobRegistry);
 		searchService.initialize();
-		
-		//TODO startup with tdmx-config.xml
 		
 		//TODO expose DNSResolverList to UI
 		

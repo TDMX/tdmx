@@ -3,7 +3,6 @@ package org.tdmx.console.application.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Set;
 
@@ -12,6 +11,7 @@ import org.junit.Test;
 import org.tdmx.console.application.dao.ServiceProviderStoreMockImpl;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.ServiceProviderDO;
+import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 
@@ -27,8 +27,11 @@ public class SearchServiceTest {
 		
 		ObjectRegistryImpl r = new ObjectRegistryImpl();
 		r.initContent(store.load());
+		BackgroundJobRegistryImpl jr = new BackgroundJobRegistryImpl();
+		
 		SearchServiceImpl s = new SearchServiceImpl();
 		s.setObjectRegistry(r);
+		s.setJobRegistry(jr);
 		s.initialize();
 		service = s;
 		registry = r;

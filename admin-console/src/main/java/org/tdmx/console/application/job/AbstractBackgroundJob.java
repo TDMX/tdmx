@@ -1,8 +1,16 @@
 package org.tdmx.console.application.job;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.DomainObjectField;
+import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.FieldValidationException;
+import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
 
 public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
@@ -10,6 +18,7 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	public static final DomainObjectField F_NAME	= new DomainObjectField("name", BackgroundJob.class.getName());
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -83,7 +92,37 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 		return true;
 	}
 
-   //-------------------------------------------------------------------------
+	@Override
+	public String getId() {
+		return getName();
+	}
+
+	@Override
+	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+		ctx.sof(this, BackgroundJobSO.NAME, getName());
+	}
+
+	@Override
+	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <E extends DomainObject> E copy() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<FieldError> validate() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void check() throws FieldValidationException {
+		throw new UnsupportedOperationException();
+	}
+
+    //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 

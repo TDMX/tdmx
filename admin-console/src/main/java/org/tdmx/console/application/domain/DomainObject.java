@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldValidationException;
+import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.service.ObjectRegistry;
 
 
 
@@ -30,4 +32,7 @@ public interface DomainObject {
 	public List<FieldError> validate();
 
 	public void check() throws FieldValidationException;
+	
+	public void gatherSearchFields( ObjectSearchContext ctx, ObjectRegistry registry );
+	
 }

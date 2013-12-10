@@ -2,24 +2,28 @@ package org.tdmx.console.application.search;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
+import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
+import org.tdmx.console.application.domain.ServiceProviderDO.ServiceProviderSO;
 import org.tdmx.console.application.domain.X509CertificateDO;
+import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
-import org.tdmx.console.application.search.FieldDescriptor.FieldType;
+import org.tdmx.console.application.job.BackgroundJob;
+import org.tdmx.console.application.job.BackgroundJob.BackgroundJobSO;
+import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.service.ObjectRegistry;
 
 
@@ -49,21 +53,9 @@ public class SearchServiceImpl implements SearchService {
 	
 	//TODO RootCAList
 	
-	private static final class X509CertificateSO {
-		public static final FieldDescriptor FINGERPRINT 	= new FieldDescriptor(DomainObjectType.X509Certificate, "fingerprint", FieldType.String);
-		public static final FieldDescriptor INFO	 		= new FieldDescriptor(DomainObjectType.X509Certificate, "info", FieldType.Text);
-		public static final FieldDescriptor FROM	 		= new FieldDescriptor(DomainObjectType.X509Certificate, "from", FieldType.Date);
-		public static final FieldDescriptor TO		 		= new FieldDescriptor(DomainObjectType.X509Certificate, "to", FieldType.Date);
-	}
-	
-	private static final class ServiceProviderSO {
-		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
-		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
-		public static final FieldDescriptor MAS_PORT 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.port", FieldType.Number);
-		public static final FieldDescriptor MAS_PROXY 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.proxy", FieldType.String);
-	}
-	
 	static {
+		allDescriptors.add(BackgroundJobSO.NAME);
+		
 		allDescriptors.add(X509CertificateSO.FINGERPRINT);
 		allDescriptors.add(X509CertificateSO.INFO);
 		allDescriptors.add(X509CertificateSO.FROM);
@@ -76,6 +68,8 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	private ObjectRegistry objectRegistry;
+	private BackgroundJobRegistry jobRegistry;
+	
 	private SearchContext searchContext = new SearchContext();
 	
 	//-------------------------------------------------------------------------
@@ -125,7 +119,24 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public void update( DomainObjectChangesHolder objects ) {
-		initialize();
+		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap();
+		//TODO keep stack of changed objects of updateObject
+
+		for( DomainObject deletedObject : objects.deletedObjects ) {
+			objectFieldMaps.remove(deletedObject);
+		}
+		for( DomainObject newObject : objects.newObjects ) {
+			ObjectSearchContext osc = new ObjectSearchContext();
+			newObject.gatherSearchFields(osc, objectRegistry);
+			objectFieldMaps.put(newObject, osc.getSearchFields());
+		}
+		for( Entry<DomainObject,DomainObjectFieldChanges> entry : objects.changedMap.entrySet() ) {
+			DomainObject updatedObject = entry.getKey();
+			
+			ObjectSearchContext osc = new ObjectSearchContext();
+			updatedObject.gatherSearchFields(osc, objectRegistry);
+			objectFieldMaps.put(updatedObject, osc.getSearchFields());
+		}
 	}
 
 	public void initialize() {
@@ -133,33 +144,38 @@ public class SearchServiceImpl implements SearchService {
 			log.info("Initialization without objectRegistry.");
 			return;
 		}
-		SearchContext ctx = new SearchContext(); 
+		if ( jobRegistry == null ) {
+			log.info("Initialization without jobRegistry.");
+			return;
+		}
+		DomainObjectChangesHolder ch = new DomainObjectChangesHolder();
 		
-		Traversal.traverse( getObjectRegistry().getX509Certificates(), ctx, new TraversalFunction<X509CertificateDO, SearchContext>() {
+		Traversal.traverse( getJobRegistry().getJobs(), ch, new TraversalFunction<BackgroundJob, DomainObjectChangesHolder>() {
 
 			@Override
-			public void visit(X509CertificateDO object, TraversalContextHolder<SearchContext> holder) {
-				
-				sof(holder.getResult(), object, X509CertificateSO.FINGERPRINT, object.getId());
-				sof(holder.getResult(), object, X509CertificateSO.FROM, object.getValidFrom());
-				sof(holder.getResult(), object, X509CertificateSO.TO, object.getValidTo());
-				sof(holder.getResult(), object, X509CertificateSO.INFO, object.getInfo());
+			public void visit(BackgroundJob object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+				holder.getResult().registerNew(object);
 			}
 		});
 		
-		Traversal.traverse( getObjectRegistry().getServiceProviders(), ctx, new TraversalFunction<ServiceProviderDO, SearchContext>() {
+		Traversal.traverse( getObjectRegistry().getX509Certificates(), ch, new TraversalFunction<X509CertificateDO, DomainObjectChangesHolder>() {
 
 			@Override
-			public void visit(ServiceProviderDO object, TraversalContextHolder<SearchContext> holder) {
-				
-				sof(holder.getResult(), object, ServiceProviderSO.SUBJECT, object.getSubjectIdentifier());
-				sof(holder.getResult(), object, ServiceProviderSO.MAS_HOSTNAME, object.getMasHostname());
-				sof(holder.getResult(), object, ServiceProviderSO.MAS_PORT, object.getMasPort());
+			public void visit(X509CertificateDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+				holder.getResult().registerNew(object);
 			}
 		});
 		
-		// atomically replace the existing searchContext with the newly constructed one.
-		searchContext=ctx;
+		Traversal.traverse( getObjectRegistry().getServiceProviders(), ch, new TraversalFunction<ServiceProviderDO, DomainObjectChangesHolder>() {
+
+			@Override
+			public void visit(ServiceProviderDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+				holder.getResult().registerNew(object);
+			}
+		});
+		
+		// do the initial insert of all objects.
+		update(ch);
 	}
 
     //-------------------------------------------------------------------------
@@ -170,51 +186,45 @@ public class SearchServiceImpl implements SearchService {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
-	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, Calendar cal ) {
-		if ( cal != null ) {
-			ctx.add(new SearchableObjectField(object, field, cal));
-		}
-	}
-	
-	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, Number num ) {
-		if ( num != null ) {
-			ctx.add(new SearchableObjectField(object, field, num));
-		}
-	}
-	
-	private void sof( SearchContext ctx, DomainObject object, FieldDescriptor field, String str ) {
-		if ( str != null ) {
-			ctx.add(new SearchableObjectField(object, field, str));
-		}
-	}
-	
-	private static class SearchContext {
-		private Map<DomainObjectType,List<DomainObject>> objectTypeMap = new HashMap<>();
-		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new HashMap<>();
-		
-		public SearchContext() {
-			objectTypeMap.put(DomainObjectType.ServiceProvider, new ArrayList<DomainObject>());
-			//TODO each objectType
-		}
-		
-		public void add( SearchableObjectField sof ) {
-			List<DomainObject> list = objectTypeMap.get(sof.field.getObjectType());
-			list.add(sof.object);
-			
-			List<SearchableObjectField> fields = objectFieldMap.get(sof.object);
-			if ( fields == null ) {
-				fields = new ArrayList<SearchableObjectField>();
-				objectFieldMap.put(sof.object, fields);
-			}
-			fields.add(sof);
-		}
-		
-		public Map<DomainObjectType, List<DomainObject>> getObjectTypeMap() {
-			return objectTypeMap;
-		}
+	public static class SearchContext {
+		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new ConcurrentHashMap<>();
 
 		public Map<DomainObject, List<SearchableObjectField>> getObjectFieldMap() {
 			return objectFieldMap;
+		}
+	}
+	
+	public static class ObjectSearchContext {
+		//TODO allow register of "affected" other objects
+		List<SearchableObjectField> searchFields = new ArrayList<>();
+		
+		public ObjectSearchContext() {
+		}
+		
+		public void sof( DomainObject object, FieldDescriptor field, Calendar cal ) {
+			if ( cal != null ) {
+				add(new SearchableObjectField(object, field, cal));
+			}
+		}
+		
+		public void sof( DomainObject object, FieldDescriptor field, Number num ) {
+			if ( num != null ) {
+				add(new SearchableObjectField(object, field, num));
+			}
+		}
+		
+		public void sof( DomainObject object, FieldDescriptor field, String str ) {
+			if ( str != null ) {
+				add(new SearchableObjectField(object, field, str));
+			}
+		}
+		
+		private void add( SearchableObjectField sof ) {
+			searchFields.add(sof);
+		}
+		
+		public List<SearchableObjectField> getSearchFields() {
+			return searchFields;
 		}
 
 	}
@@ -229,6 +239,14 @@ public class SearchServiceImpl implements SearchService {
 
 	public void setObjectRegistry(ObjectRegistry objectRegistry) {
 		this.objectRegistry = objectRegistry;
+	}
+
+	public BackgroundJobRegistry getJobRegistry() {
+		return jobRegistry;
+	}
+
+	public void setJobRegistry(BackgroundJobRegistry jobRegistry) {
+		this.jobRegistry = jobRegistry;
 	}
 
 }

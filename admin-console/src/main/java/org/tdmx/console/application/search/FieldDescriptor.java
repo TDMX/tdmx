@@ -15,6 +15,7 @@ public class FieldDescriptor {
 
 	public static enum DomainObjectType {
 		
+		BackgroundJob("Job"),
 		X509Certificate("Certificate"),
 		ServiceProvider("Provider"),
 		;

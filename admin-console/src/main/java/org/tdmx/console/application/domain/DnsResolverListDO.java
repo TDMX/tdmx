@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldError.ERROR;
+import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
 
 
@@ -81,6 +83,11 @@ public class DnsResolverListDO extends AbstractDO {
 		return errors;
 	}
 
+	@Override
+	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+		//TODO
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

@@ -27,7 +27,7 @@ public class Problem implements Serializable {
 		this.id = p.getId();
 		this.code = p.getCode();
 		this.timestamp = p.getTimestamp().getTime();
-		Throwable t =  p.getThrowable();
+		Throwable t =  p.getCause();
 		if ( t != null ) {
 			this.text = t.getLocalizedMessage();
 			this.causes = getCauseList(t);

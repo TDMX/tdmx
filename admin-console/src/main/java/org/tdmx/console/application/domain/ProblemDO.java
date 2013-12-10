@@ -1,9 +1,9 @@
 package org.tdmx.console.application.domain;
 
 import java.util.Calendar;
-import java.util.List;
 
-import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.service.ObjectRegistry;
 
 /**
  * These are severe Problems that indicate that the Application is not
@@ -42,7 +42,7 @@ public class ProblemDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	private ProblemCode code;
 	private Calendar timestamp;
-	private Throwable throwable;
+	private Throwable cause;
 	private String msg;
 	
 	//-------------------------------------------------------------------------
@@ -52,7 +52,7 @@ public class ProblemDO extends AbstractDO {
 	public ProblemDO( ProblemCode pc, Throwable t ) {
 		this.timestamp = Calendar.getInstance();
 		this.code = pc;
-		this.throwable = t;
+		this.cause = t;
 	}
 
 	public ProblemDO( ProblemCode pc, String msg ) {
@@ -64,6 +64,11 @@ public class ProblemDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	
+	@Override
+	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+		//TODO
+	}
 	
    //-------------------------------------------------------------------------
 	//PROTECTED METHODS
@@ -85,8 +90,8 @@ public class ProblemDO extends AbstractDO {
 		return timestamp;
 	}
 
-	public Throwable getThrowable() {
-		return throwable;
+	public Throwable getCause() {
+		return cause;
 	}
 
 	public String getMsg() {
