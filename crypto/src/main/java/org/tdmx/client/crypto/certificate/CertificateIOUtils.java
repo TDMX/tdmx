@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -13,6 +14,9 @@ import java.util.List;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.scheme.CryptoException;
 
 
 public class CertificateIOUtils {
@@ -34,6 +38,18 @@ public class CertificateIOUtils {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
+	public static String getSha1FingerprintAsHex( X509Certificate cert ) throws CryptoCertificateException {
+		try {
+			byte[] tbsCert = cert.getTBSCertificate();
+			byte[] sha1 = DigestAlgorithm.SHA_1.kdf(tbsCert);
+			return ByteArray.asHex(sha1);
+		} catch ( CryptoException e ) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		} catch (CertificateEncodingException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_ENCODING, e);
+		}
+	}
+
 	public static String x509certToPem( X509Certificate cert ) throws CryptoCertificateException {
     	StringWriter writer = new StringWriter();
         PEMWriter pemWrtCer = new PEMWriter(writer);
@@ -47,6 +63,17 @@ public class CertificateIOUtils {
         return writer.toString();
 	}
 
+	public static X509Certificate pemToX509cert( String input ) throws CryptoCertificateException {
+		X509Certificate[] certs = pemToX509certs( input );
+		if( certs == null ) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_CERTS);
+		}
+		if ( certs.length != 1 ) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_TOO_MANY_CERTS);
+		}
+		return certs[0];
+	}
+	
 	public static X509Certificate[] pemToX509certs( String input ) throws CryptoCertificateException {
 		StringReader sr = new StringReader(input);
 		PEMParser pp = new PEMParser(sr);
