@@ -57,6 +57,11 @@ public class SystemProxyDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	
 	@Override
+	public DomainObjectType getType() {
+		return DomainObjectType.SystemProxy;
+	}
+
+	@Override
 	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
 		SystemProxyDO o = narrow(other);
 		DomainObjectFieldChanges holder = new DomainObjectFieldChanges(this);

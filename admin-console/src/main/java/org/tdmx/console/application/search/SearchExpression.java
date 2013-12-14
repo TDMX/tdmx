@@ -3,12 +3,12 @@ package org.tdmx.console.application.search;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.match.MatchFunction;
 
 /**
- * SearchExpression := (":"<Type>("."<fieldName>)?" ")?<value>
+ * SearchExpression := (":"<fieldName>" ")?<value>
  *  
  * @author Peter
  *

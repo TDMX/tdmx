@@ -66,6 +66,12 @@ public class ProblemDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	
 	@Override
+	public DomainObjectType getType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
 		//TODO
 	}

@@ -8,6 +8,7 @@ import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectField;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldValidationException;
@@ -105,6 +106,11 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	@Override
 	public String getId() {
 		return getName();
+	}
+
+	@Override
+	public DomainObjectType getType() {
+		return DomainObjectType.BackgroundJob;
 	}
 
 	@Override

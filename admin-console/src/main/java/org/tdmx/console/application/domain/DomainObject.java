@@ -19,6 +19,8 @@ public interface DomainObject {
 
 	public String getId();
 
+	public DomainObjectType getType();
+	
 	/**
 	 * Merge another DomainObject of the same type and declare in the result 
 	 * which fields' values have changed.

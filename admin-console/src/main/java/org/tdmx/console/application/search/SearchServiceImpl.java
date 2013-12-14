@@ -2,6 +2,7 @@ package org.tdmx.console.application.search;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.ServiceProviderDO.ServiceProviderSO;
 import org.tdmx.console.application.domain.X509CertificateDO;
@@ -22,7 +24,6 @@ import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
 import org.tdmx.console.application.job.BackgroundJob.BackgroundJobSO;
-import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.service.ObjectRegistry;
 
 
@@ -77,20 +78,9 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	@Override
-	public List<String> suggestion(String text) {
-		// ":" => set of allDescriptor's objectType.alias 
-		// ":"<token> => set of allDescriptor's objectType.alias matching token 
-		
-		// ":"<valid-alias>. => list of objectType.alias descriptors   
-		// ":"<valid-alias>.<token> => list of objectType.alias descriptors with fieldName matching token  
-		
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
-	public SearchCriteria parse(String text) {
+	public SearchCriteria parse( DomainObjectType type, String text) {
 		SearchExpressionParser parser = new SearchExpressionParser(text);
 		List<SearchExpression> expressions = new ArrayList<>();
 		SearchExpression exp = null;
@@ -98,14 +88,14 @@ public class SearchServiceImpl implements SearchService {
 			expressions.add(exp);
 		}
 
-		return new SearchCriteria(expressions);
+		return new SearchCriteria(type, expressions);
 	}
 
 	@Override
 	public Set<DomainObject> search(SearchCriteria criteria) {
 		SearchResultSet resultSet = new SearchResultSet(criteria);
 		
-		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap();
+		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap(criteria.getType());
 		
 		Iterator<Entry<DomainObject, List<SearchableObjectField>>> objectFields = objectFieldMaps.entrySet().iterator();
 		while( objectFields.hasNext()) {
@@ -117,22 +107,20 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public void update( DomainObjectChangesHolder objects ) {
-		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap();
-		//TODO keep stack of changed objects of updateObject
 
 		for( DomainObject deletedObject : objects.deletedObjects ) {
-			objectFieldMaps.remove(deletedObject);
+			searchContext.removeObject(deletedObject);
 		}
 		for( DomainObject newObject : objects.newObjects ) {
 			ObjectSearchContext osc = new ObjectSearchContext();
 			newObject.gatherSearchFields(osc, objectRegistry);
-			objectFieldMaps.put(newObject, osc.getSearchFields());
+			searchContext.addOrUpdateObject(newObject, osc.getSearchFields());
 		}
 		for( Entry<DomainObject,DomainObjectFieldChanges> entry : objects.changedMap.entrySet() ) {
 			DomainObject updatedObject = entry.getKey();
 			ObjectSearchContext osc = new ObjectSearchContext();
 			updatedObject.gatherSearchFields(osc, objectRegistry);
-			objectFieldMaps.put(updatedObject, osc.getSearchFields());
+			searchContext.addOrUpdateObject(updatedObject, osc.getSearchFields());
 		}
 	}
 
@@ -172,10 +160,27 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 
 	public static class SearchContext {
-		private Map<DomainObject, List<SearchableObjectField>> objectFieldMap = new ConcurrentHashMap<>();
-
-		public Map<DomainObject, List<SearchableObjectField>> getObjectFieldMap() {
-			return objectFieldMap;
+		private Map<DomainObjectType, Map<DomainObject, List<SearchableObjectField>>> objectTypeMap = new HashMap<>();
+		
+		public Map<DomainObject, List<SearchableObjectField>> getObjectFieldMap(DomainObjectType type) {
+			return objectTypeMap.get(type);
+		}
+		
+		public SearchContext() {
+			objectTypeMap.put(DomainObjectType.ServiceProvider, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.X509Certificate, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.BackgroundJob, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.SystemProxy, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.RootCAList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.DnsResolverList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+		}
+		
+		public void removeObject( DomainObject object ) {
+			objectTypeMap.get(object.getType()).remove(object);
+		}
+		
+		public void addOrUpdateObject( DomainObject object,  List<SearchableObjectField> fields ) {
+			objectTypeMap.get(object.getType()).put(object, fields);
 		}
 	}
 	

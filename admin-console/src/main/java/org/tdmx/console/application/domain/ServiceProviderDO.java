@@ -2,7 +2,6 @@ package org.tdmx.console.application.domain;
 
 import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
 import org.tdmx.console.application.search.FieldDescriptor;
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -68,6 +67,11 @@ public class ServiceProviderDO extends AbstractDO {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public DomainObjectType getType() {
+		return DomainObjectType.ServiceProvider;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E extends DomainObject> E copy() {

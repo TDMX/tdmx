@@ -59,6 +59,11 @@ public class RootCAListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	
 	@Override
+	public DomainObjectType getType() {
+		return DomainObjectType.RootCAList;
+	}
+
+	@Override
 	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
 		RootCAListDO o = narrow(other);
 		DomainObjectFieldChanges holder = new DomainObjectFieldChanges(this);

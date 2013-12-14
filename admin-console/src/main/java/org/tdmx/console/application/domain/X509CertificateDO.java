@@ -6,7 +6,6 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.search.FieldDescriptor;
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -51,6 +50,11 @@ public class X509CertificateDO extends AbstractDO {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public DomainObjectType getType() {
+		return DomainObjectType.X509Certificate;
+	}
+
 	public String getInfo() {
 		return certificate.toString();
 	}

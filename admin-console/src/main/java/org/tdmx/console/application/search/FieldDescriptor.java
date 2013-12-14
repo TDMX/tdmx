@@ -1,5 +1,7 @@
 package org.tdmx.console.application.search;
 
+import org.tdmx.console.application.domain.DomainObjectType;
+
 
 /**
  * A field descriptor value object.
@@ -13,21 +15,6 @@ public class FieldDescriptor {
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	public static enum DomainObjectType {
-		
-		BackgroundJob("Job"),
-		X509Certificate("Certificate"),
-		ServiceProvider("Provider"),
-		;
-		private String alias;
-		private DomainObjectType(String alias) {
-			this.alias = alias;
-		}
-		public String getAlias() {
-			return alias;
-		}
-	}
-	
 	public static enum FieldType {
 		Text, // Free text with length of up to 2k, multiple strings, " " separated.
 		String, // single free string, no spaces

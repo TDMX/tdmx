@@ -32,12 +32,12 @@ import org.tdmx.console.application.search.match.TimeRangeTimeMatch;
 
 
 /**
- * SearchExpression := (":"<Type>("."<fieldName>)?" ")?<value>
+ * SearchExpression := (":"<fieldName>" ")?<value>
  * 
  * Parses SearchExpressions one by one from a input string.
  * 
  * Start by identifying if the optional part 
- *  (":"<Type>("."<fieldName>)?" ")? 
+ *  (":<fieldName>" ")? 
  * exists by identifying ":" to a WHITESPACE, and parsing it to identify the
  * Type and optional fieldName. 
  * 

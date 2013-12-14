@@ -2,6 +2,8 @@ package org.tdmx.console.application.search;
 
 import java.util.List;
 
+import org.tdmx.console.application.domain.DomainObjectType;
+
 /**
  * A SearchCriteria is a logically ANDed set of SearchExpression.
  * 
@@ -52,12 +54,14 @@ public final class SearchCriteria {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private List<SearchExpression> expressions;
+	private DomainObjectType type;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public SearchCriteria( List<SearchExpression> expressions ) {
+	public SearchCriteria( DomainObjectType type, List<SearchExpression> expressions ) {
+		this.type = type;
 		this.expressions = expressions;
 	}
 	
@@ -68,9 +72,9 @@ public final class SearchCriteria {
 	@Override
 	public String toString() {
 		if ( expressions != null ) {
-			return expressions.toString();
+			return type + " " + expressions.toString();
 		}
-		return "[]";
+		return type + " []";
 	}
 	
     //-------------------------------------------------------------------------
@@ -87,6 +91,10 @@ public final class SearchCriteria {
 	
 	public List<SearchExpression> getExpressions() {
 		return expressions;
+	}
+
+	public DomainObjectType getType() {
+		return type;
 	}
 
 }

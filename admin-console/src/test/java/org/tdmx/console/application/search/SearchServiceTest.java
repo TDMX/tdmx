@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.console.application.dao.ServiceProviderStoreMockImpl;
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -36,18 +37,13 @@ public class SearchServiceTest {
 	}
 
 	@Test
-	public void testSuggestion() {
-		//TODO
-	}
-
-	@Test
 	public void testParse() {
 		//TODO
 	}
 
 	@Test
 	public void testSearch_ServiceProvider() {
-		SearchCriteria c = service.parse("serviceprovider");
+		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "serviceprovider");
 		Set<DomainObject> objects = service.search(c);
 		
 		for( ServiceProviderDO o : registry.getServiceProviders() ) {
@@ -57,7 +53,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void testSearch_ServiceProviderSpecific() {
-		SearchCriteria c = service.parse("serviceprovider0");
+		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "serviceprovider0");
 		Set<DomainObject> objects = service.search(c);
 		
 		assertEquals( 1, objects.size()); // SP and it's proxy
@@ -72,7 +68,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void testSearch_ServiceProvider_ByIdentity() {
-		SearchCriteria c = service.parse("o=company0");
+		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "o=company0");
 		Set<DomainObject> objects = service.search(c);
 		
 		assertEquals( 1, objects.size()); // SP

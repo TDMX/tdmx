@@ -60,6 +60,12 @@ public class DnsResolverListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	
 	@Override
+	public DomainObjectType getType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
 		DnsResolverListDO o = narrow(other);
 		DomainObjectFieldChanges holder = new DomainObjectFieldChanges(this);

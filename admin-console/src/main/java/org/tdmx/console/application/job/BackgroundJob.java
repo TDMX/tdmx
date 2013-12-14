@@ -3,9 +3,9 @@ package org.tdmx.console.application.job;
 import java.util.Date;
 
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.search.FieldDescriptor;
-import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 
 public interface BackgroundJob extends DomainObject {
