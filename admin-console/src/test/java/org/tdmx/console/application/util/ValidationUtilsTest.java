@@ -16,7 +16,7 @@ public class ValidationUtilsTest {
 
 	private ERROR error = ERROR.INVALID;
 	private List<FieldError> errors = new ArrayList<>();
-	private DomainObjectField field = new DomainObjectField("fieldname", DomainObjectType.SystemProxy);
+	private DomainObjectField field = new DomainObjectField("fieldname", DomainObjectType.SystemPropertyList);
 	
 	@Before
 	public void setUp() throws Exception {

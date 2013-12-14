@@ -10,15 +10,15 @@ import org.tdmx.console.application.dao.DNSResolverList;
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
 import org.tdmx.console.application.dao.PKIXCertificate;
-import org.tdmx.console.application.dao.ProxySettings;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
+import org.tdmx.console.application.dao.SystemPropertyList;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.SystemPropertiesVO;
 import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.domain.Domain;
 
@@ -45,7 +45,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	
 	private Map<String, DomainObject> objects = new ConcurrentSkipListMap<>();
 	private Map<String, DomainObjectContainer<? extends DomainObject>> classMap = new TreeMap<>();
-	private SystemProxyDO proxySettings;
+	private SystemPropertiesVO systemSettings;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -65,12 +65,11 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 		synchronized( syncObj ) {
 			init();
-			if ( content.getProxy() != null ) {
-				proxySettings = domMapper.map(content.getProxy());
+			if ( content.getSystemPropertyList() != null ) {
+				systemSettings = domMapper.map(content.getSystemPropertyList());
 			} else {
-				proxySettings = new SystemProxyDO();
+				systemSettings = new SystemPropertiesVO();
 			}
-			proxySettings.check();
 			for ( PKIXCertificate pkcert : content.getX509Certificate()) {
 				X509CertificateDO cert = domMapper.map(pkcert);
 				cert.check();
@@ -101,8 +100,8 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		synchronized( syncObj ) {
 			if ( dirty ) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
-				ProxySettings proxy = storeMapper.map(getSystemProxy());
-				store.setProxy(proxy);
+				SystemPropertyList systemProps = storeMapper.map(getSystemProperties());
+				store.setSystemPropertyList(systemProps);
 
 				for( X509CertificateDO c : getX509Certificates()) {
 					PKIXCertificate cert = storeMapper.map(c);
@@ -207,10 +206,15 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	}
 	
 	@Override
-	public SystemProxyDO getSystemProxy() {
-		return proxySettings;
+	public SystemPropertiesVO getSystemProperties() {
+		return systemSettings;
 	}
 
+	@Override
+	public void setSystemProperties(SystemPropertiesVO systemProperties) {
+		this.systemSettings = systemProperties;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<X509CertificateDO> getX509Certificates() {
@@ -296,4 +300,5 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	public boolean isCleanLoad() {
 		return cleanLoad;
 	}
+
 }

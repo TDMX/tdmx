@@ -15,8 +15,6 @@ import org.tdmx.console.AdminApplication;
 import org.tdmx.console.application.dao.PrivateKeyStoreImpl;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.ServiceProviderStoreImpl;
-import org.tdmx.console.application.dao.SystemNetworkingSettings;
-import org.tdmx.console.application.dao.SystemNetworkingSettingsImpl;
 import org.tdmx.console.application.dao.SystemTrustStore;
 import org.tdmx.console.application.dao.SystemTrustStoreImpl;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
@@ -25,7 +23,7 @@ import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.job.StateStorageJob;
-import org.tdmx.console.application.job.SystemNetworkingSettingsUpdateJob;
+import org.tdmx.console.application.job.SystemPropertySettingsUpdateJob;
 import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
 import org.tdmx.console.application.search.SearchServiceImpl;
 import org.tdmx.console.application.service.DnsResolverService;
@@ -34,17 +32,17 @@ import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ObjectRegistryImpl;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.application.service.ProblemRegistryImpl;
-import org.tdmx.console.application.service.SystemProxyService;
-import org.tdmx.console.application.service.SystemProxyServiceImpl;
+import org.tdmx.console.application.service.SystemSettingsService;
+import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
+	//TODO - SystemTrustStoreUpdateJob merge into system setting job
+	
 	//TODO - DnsResolverList load/manage
 	//			- insert/update "system" DnsResolverList
 
 	//TODO - Pkix RootCA list load/save to storage
-	
-	//TODO - ProxySettings serialize to from storage
 	
 	//TODO - AuditService
 	
@@ -68,12 +66,11 @@ public class AdministrationImpl implements Administration, IInitializer {
 	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
 	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
-	private SystemNetworkingSettings networkSettings = new SystemNetworkingSettingsImpl();
 	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
 	private SearchServiceImpl searchService = new SearchServiceImpl();
 	
-	private SystemProxyServiceImpl proxyService = new SystemProxyServiceImpl();
+	private SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
 	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
 	
 	//-------------------------------------------------------------------------
@@ -138,8 +135,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 
 		// Configure all Services.
 		//
-		proxyService.setObjectRegistry(registry);
-		proxyService.setSearchService(searchService);
+		systemSettingService.setObjectRegistry(registry);
 		
 		dnsResolverService.setObjectRegistry(registry);
 		dnsResolverService.setSearchService(searchService);
@@ -165,14 +161,14 @@ public class AdministrationImpl implements Administration, IInitializer {
 		trustStoreJob.init();
 		jobRegistry.addBackgroundJob(trustStoreJob);
 		
-		SystemNetworkingSettingsUpdateJob proxyUpdateJob = new SystemNetworkingSettingsUpdateJob();
-		proxyUpdateJob.setProblemRegistry(problemRegistry);
-		proxyUpdateJob.setSearchService(searchService);
-		proxyUpdateJob.setSystemNetworkingSettings(networkSettings);
-		proxyUpdateJob.setProxyService(proxyService);
-		proxyUpdateJob.setName("Proxy");
-		proxyUpdateJob.init();
-		jobRegistry.addBackgroundJob(proxyUpdateJob);
+		SystemPropertySettingsUpdateJob systemUpdateJob = new SystemPropertySettingsUpdateJob();
+		systemUpdateJob.setProblemRegistry(problemRegistry);
+		systemUpdateJob.setSearchService(searchService);
+		systemUpdateJob.setSystemSettingService(systemSettingService);
+		systemUpdateJob.setDnsResolverService(dnsResolverService);
+		systemUpdateJob.setName("System");
+		systemUpdateJob.init();
+		jobRegistry.addBackgroundJob(systemUpdateJob);
 
 		// finally initialize the searchService where the jobs may already
 		// have made changes to the objectRegistry
@@ -182,7 +178,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		DomainObjectChangesHolder jobChanges = new DomainObjectChangesHolder();
 		jobChanges.registerNew(storageJob);
 		jobChanges.registerNew(trustStoreJob);
-		jobChanges.registerNew(proxyUpdateJob);
+		jobChanges.registerNew(systemUpdateJob);
 		searchService.update(jobChanges);
 		
 		//TODO expose DNSResolverList to UI
@@ -231,8 +227,8 @@ public class AdministrationImpl implements Administration, IInitializer {
 	}
 
 	@Override
-	public SystemProxyService getProxyService() {
-		return proxyService;
+	public SystemSettingsService getSystemSettingService() {
+		return systemSettingService;
 	}
 
 	@Override

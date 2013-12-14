@@ -1,10 +1,13 @@
 package org.tdmx.console.application.dao;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.SystemPropertiesVO;
 import org.tdmx.console.application.domain.X509CertificateDO;
 
 public class DomainObjectToStoreMapper {
@@ -32,11 +35,15 @@ public class DomainObjectToStoreMapper {
 		return o;
 	}
 	
-	public ProxySettings map( SystemProxyDO other ) {
-		ProxySettings o = new ProxySettings();
-		o.setHttpsProxy(other.getHttpsProxy());
-		o.setHttpsNonProxyHosts(other.getHttpsNonProxyHosts());
-		o.setSocksProxy(other.getSocksProxy());
+	public SystemPropertyList map( SystemPropertiesVO other ) {
+		SystemPropertyList o = new SystemPropertyList();
+		Map<String,String> m = other.getProperties();
+		for( Entry<String,String> e : m.entrySet()) {
+			Property p = new Property();
+			p.setName(e.getKey());
+			p.setValue(e.getValue());
+			o.getProperty().add(p);
+		}
 		return o;
 	}
 	

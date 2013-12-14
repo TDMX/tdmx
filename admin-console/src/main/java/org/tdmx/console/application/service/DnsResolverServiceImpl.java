@@ -1,5 +1,7 @@
 package org.tdmx.console.application.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.tdmx.console.application.domain.DnsResolverListDO;
@@ -7,6 +9,7 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.search.SearchService;
+import org.xbill.DNS.ResolverConfig;
 
 
 public class DnsResolverServiceImpl implements DnsResolverService {
@@ -18,6 +21,9 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
+	public static final String SYSTEM_DNS_RESOLVER_LIST_ID = "system-dns-resolver-list";
+	public static final String SYSTEM_DNS_RESOLVER_LIST_NAME = "system";
+	
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
 	
@@ -29,6 +35,25 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public void updateSystemResolverList() {
+		// TODO Auto-generated method stub
+		DnsResolverListDO systemList = objectRegistry.getDnsResolverList(SYSTEM_DNS_RESOLVER_LIST_ID);
+		if ( systemList == null ) {
+			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
+			systemList = new DnsResolverListDO();
+			systemList.setId(SYSTEM_DNS_RESOLVER_LIST_ID);
+			systemList.setActive(Boolean.TRUE);
+			systemList.setName(SYSTEM_DNS_RESOLVER_LIST_NAME);
+			systemList.setHostnames(getSystemDnsHostnames());
+			objectRegistry.notifyAdd(systemList, h);
+			searchService.update(h);
+		} else {
+			DnsResolverListDO systemListCopy = new DnsResolverListDO(systemList);
+			systemListCopy.setHostnames(getSystemDnsHostnames());
+			createOrUpdate(systemListCopy);
+		}
+	}
 
 	@Override
 	public List<FieldError> createOrUpdate(DnsResolverListDO resolverList) {
@@ -46,6 +71,8 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 			if ( !changes.isEmpty() ) {
 				objectRegistry.notifyModify(changes, holder);
 				searchService.update(holder);
+				
+				//TODO if system's hostnames change then issue audit warning
 			}
 		}
 		return validation;
@@ -65,7 +92,19 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-
+	
+	private List<String> getSystemDnsHostnames() {
+		List<String> hosts= new ArrayList<>();
+		
+		String[] list = ResolverConfig.getCurrentConfig().servers();
+		if ( list != null ) {
+			for( String h : list ) {
+				hosts.add(h);
+			}
+		}
+		return Collections.unmodifiableList(hosts);
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------

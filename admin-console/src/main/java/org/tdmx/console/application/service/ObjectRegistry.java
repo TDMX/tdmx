@@ -7,7 +7,7 @@ import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.SystemPropertiesVO;
 import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.domain.Domain;
 
@@ -63,10 +63,15 @@ public interface ObjectRegistry {
 	public DnsResolverListDO getDnsResolverList( String id );
 
 	/**
-	 * Get the SystemProxy settings of this runtime.
+	 * Get the SystemPropertyList settings of this runtime.
 	 * @return
 	 */
-	public SystemProxyDO getSystemProxy();
+	public SystemPropertiesVO getSystemProperties();
+	
+	/**
+	 * Set the SystemPropertyList of this runtime.
+	 */
+	public void setSystemProperties(SystemPropertiesVO systemProperties);
 	
 	/**
 	 * @return the list of all X509Certificate DomainObjects.

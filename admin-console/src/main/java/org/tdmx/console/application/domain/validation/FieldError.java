@@ -16,7 +16,7 @@ public class FieldError {
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 	public static enum ERROR {
-		MISSING, PRESENT, INVALID,
+		MISSING, PRESENT, INVALID, IMMUTABLE
 	}
 	
 	

@@ -7,7 +7,7 @@ import org.tdmx.client.crypto.certificate.CertificateResultCode;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.domain.SystemProxyDO;
+import org.tdmx.console.application.domain.SystemPropertiesVO;
 import org.tdmx.console.application.domain.X509CertificateDO;
 
 public class DomainObjectFromStoreMapper {
@@ -52,11 +52,14 @@ public class DomainObjectFromStoreMapper {
 		return o;
 	}
 
-	public SystemProxyDO map( ProxySettings other ) {
-		SystemProxyDO o = new SystemProxyDO();
-		o.setHttpsProxy(other.getHttpsProxy());
-		o.setHttpsNonProxyHosts(other.getHttpsNonProxyHosts());
-		o.setSocksProxy(other.getSocksProxy());
+	public SystemPropertiesVO map( SystemPropertyList other ) {
+		if ( other == null ) {
+			return null;
+		}
+		SystemPropertiesVO o = new SystemPropertiesVO();
+		for( Property p : other.getProperty()) {
+			o.add(p.getName(), p.getValue());
+		}
 		return o;
 	}
 	

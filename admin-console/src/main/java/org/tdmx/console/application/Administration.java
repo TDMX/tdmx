@@ -5,7 +5,7 @@ import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.service.DnsResolverService;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
-import org.tdmx.console.application.service.SystemProxyService;
+import org.tdmx.console.application.service.SystemSettingsService;
 
 public interface Administration {
 
@@ -13,7 +13,7 @@ public interface Administration {
 	public ObjectRegistry getObjectRegistry();
 	public SystemTrustStore getTrustStore();
 	public BackgroundJobRegistry getBackgroundJobRegistry();
-	public SystemProxyService getProxyService();
+	public SystemSettingsService getSystemSettingService();
 	public DnsResolverService getDnsResolverService();
 	
 }

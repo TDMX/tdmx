@@ -76,31 +76,24 @@
 			<xs:documentation>Top Level Container for ServiceProvider Storage.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="proxy" type="ProxySettings" minOccurs="0"/>
+			<xs:element name="system-property-list" type="SystemProperty-List" minOccurs="0"/>
 			<xs:element name="x509-certificate" type="PKIXCertificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ProxySettings">
+	<xs:complexType name="SystemProperty-List">
 		<xs:sequence>
-			<xs:element name="httpsProxy" type="xs:string" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the httpsProxyHost:httpsProxyPort</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="httpsNonProxyHosts" type="xs:string" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the list of hosts excluded from proxying for http and https. comma separated list of hostnames.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="socksProxy" type="xs:string" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the socksProxyHost : socksProxyPort.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
+			<xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Property">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="name" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
 	</xs:complexType>
 	<xs:complexType name="DNSResolver-List">
 		<xs:annotation>

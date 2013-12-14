@@ -3,7 +3,7 @@ package org.tdmx.console.application.domain;
 public enum DomainObjectType {
 	DnsResolverList,
 	RootCAList,
-	SystemProxy,
+	SystemPropertyList,
 	BackgroundJob,
 	X509Certificate,
 	ServiceProvider,

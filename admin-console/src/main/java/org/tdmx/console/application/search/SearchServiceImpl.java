@@ -170,7 +170,7 @@ public class SearchServiceImpl implements SearchService {
 			objectTypeMap.put(DomainObjectType.ServiceProvider, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 			objectTypeMap.put(DomainObjectType.X509Certificate, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 			objectTypeMap.put(DomainObjectType.BackgroundJob, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.SystemProxy, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			objectTypeMap.put(DomainObjectType.SystemPropertyList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 			objectTypeMap.put(DomainObjectType.RootCAList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 			objectTypeMap.put(DomainObjectType.DnsResolverList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 		}

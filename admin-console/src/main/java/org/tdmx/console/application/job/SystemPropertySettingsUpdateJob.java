@@ -9,11 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.console.application.dao.SystemNetworkingSettings;
-import org.tdmx.console.application.domain.SystemProxyDO;
-import org.tdmx.console.application.service.SystemProxyService;
+import org.tdmx.console.application.service.DnsResolverService;
+import org.tdmx.console.application.service.SystemSettingsService;
 
-public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
+public class SystemPropertySettingsUpdateJob extends AbstractBackgroundJob {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -22,13 +21,12 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(SystemNetworkingSettingsUpdateJob.class);
-	
+	private Logger log = LoggerFactory.getLogger(SystemPropertySettingsUpdateJob.class);
+
 	private ScheduledExecutorService scheduler = null;
 	
-	private SystemNetworkingSettings systemNetworkingSettings = null;
-	private SystemProxyService proxyService = null;
-	
+	private SystemSettingsService systemSettingService = null;
+	private DnsResolverService dnsResolverService = null;
 	private ScheduledFuture<?> future = null;
 	
 	//-------------------------------------------------------------------------
@@ -50,20 +48,17 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
 				initRun();
 				try {
 
-					if ( systemNetworkingSettings == null ) {
-						log.warn("systemNetworkingSettings missing.");
-						return;
+					if ( systemSettingService == null ) {
+						log.warn("systemSettingService missing.");
+					} else {
+						systemSettingService.updateSystemProperties();
 					}
-					if ( proxyService == null ) {
-						log.warn("proxyService missing.");
-						return;
-					}
-					SystemProxyDO updatedProxySettings = new SystemProxyDO();
-					updatedProxySettings.setHttpsProxy(systemNetworkingSettings.getHttpsProxy());
-					updatedProxySettings.setHttpsNonProxyHosts(systemNetworkingSettings.getHttpsProxyExclusionList());
-					updatedProxySettings.setSocksProxy(systemNetworkingSettings.getSocksProxy());
 						
-					proxyService.update(updatedProxySettings);
+					if ( dnsResolverService == null) {
+						log.warn("dnsResolverService missing.");
+					} else {
+						dnsResolverService.updateSystemResolverList();
+					}
 					
 				} finally {
 					finishRun();
@@ -121,21 +116,20 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public SystemNetworkingSettings getSystemNetworkingSettings() {
-		return systemNetworkingSettings;
+	public SystemSettingsService getSystemSettingService() {
+		return systemSettingService;
 	}
 
-	public void setSystemNetworkingSettings(
-			SystemNetworkingSettings systemNetworkingSettings) {
-		this.systemNetworkingSettings = systemNetworkingSettings;
+	public void setSystemSettingService(SystemSettingsService systemSettingService) {
+		this.systemSettingService = systemSettingService;
 	}
 
-	public SystemProxyService getProxyService() {
-		return proxyService;
+	public DnsResolverService getDnsResolverService() {
+		return dnsResolverService;
 	}
 
-	public void setProxyService(SystemProxyService proxyService) {
-		this.proxyService = proxyService;
+	public void setDnsResolverService(DnsResolverService dnsResolverService) {
+		this.dnsResolverService = dnsResolverService;
 	}
 
 
