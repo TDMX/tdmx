@@ -47,10 +47,7 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 
 			@Override
 			public void run() {
-				startedRunningDate = new Date();
-				int runNr = processingId.getAndIncrement();
-				
-				log.info(getName() + " started " + runNr);
+				initRun();
 				try {
 
 					try {
@@ -66,15 +63,14 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 					}
 					
 				} finally {
-					lastCompletedDate = new Date();
-					startedRunningDate = null;
-					log.info(getName() + " completed " + runNr);
+					finishRun();
 				}
 			}
 			
 		};
 		
 		future = scheduler.scheduleWithFixedDelay(r, 0, 3600, TimeUnit.SECONDS);
+		updateSearch();
 	}
 
 	@Override
@@ -108,6 +104,11 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
+
+	@Override
+	protected void logInfo(String msg) {
+		log.info(msg);
+	}
 
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS

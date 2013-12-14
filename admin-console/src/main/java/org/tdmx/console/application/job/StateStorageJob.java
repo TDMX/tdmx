@@ -101,10 +101,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 
 			@Override
 			public void run() {
-				startedRunningDate = new Date();
-				int runNr = processingId.getAndIncrement();
-				
-				log.info(getName() + " started " + runNr);
+				initRun();
 				try {
 
 					try {
@@ -148,17 +145,15 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 							}
 						}
 					} catch (IOException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
-						problemRegistry.addProblem(p);
+						lastProblem = new ProblemDO(ProblemCode.CONFIGURATION_FILE_WRITE_IO, e);
+						problemRegistry.addProblem(lastProblem);
 					} catch (JAXBException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
-						problemRegistry.addProblem(p);
+						lastProblem = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
+						problemRegistry.addProblem(lastProblem);
 					}
 					
 				} finally {
-					lastCompletedDate = new Date();
-					startedRunningDate = null;
-					log.info(getName() + " completed " + runNr);
+					finishRun();
 				}
 			}
 			
@@ -167,6 +162,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 			ScheduledFuture<?> future = scheduler.schedule(r, 10, TimeUnit.SECONDS);
 			futureList.add(future);
 			log.info(getName() + " scheduled.");
+			updateSearch();
 		}
 	}
 
@@ -174,6 +170,11 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
+
+	@Override
+	protected void logInfo(String msg) {
+		log.info(msg);
+	}
 
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
@@ -187,6 +188,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 			}
 		}
 	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------

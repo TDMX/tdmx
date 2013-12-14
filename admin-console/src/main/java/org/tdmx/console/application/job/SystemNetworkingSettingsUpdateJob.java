@@ -47,10 +47,7 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
 
 			@Override
 			public void run() {
-				startedRunningDate = new Date();
-				int runNr = processingId.getAndIncrement();
-				
-				log.info(getName() + " started " + runNr);
+				initRun();
 				try {
 
 					if ( systemNetworkingSettings == null ) {
@@ -69,15 +66,14 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
 					proxyService.update(updatedProxySettings);
 					
 				} finally {
-					lastCompletedDate = new Date();
-					startedRunningDate = null;
-					log.info(getName() + " completed " + runNr);
+					finishRun();
 				}
 			}
 			
 		};
 		
 		future = scheduler.scheduleWithFixedDelay(r, 0, 3600, TimeUnit.SECONDS);
+		updateSearch();
 	}
 
 	@Override
@@ -111,6 +107,11 @@ public class SystemNetworkingSettingsUpdateJob extends AbstractBackgroundJob {
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
+
+	@Override
+	protected void logInfo(String msg) {
+		log.info(msg);
+	}
 
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS

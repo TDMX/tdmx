@@ -21,7 +21,6 @@ import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
-import org.tdmx.console.application.job.BackgroundJob;
 import org.tdmx.console.application.job.BackgroundJob.BackgroundJobSO;
 import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -68,7 +67,6 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	private ObjectRegistry objectRegistry;
-	private BackgroundJobRegistry jobRegistry;
 	
 	private SearchContext searchContext = new SearchContext();
 	
@@ -132,7 +130,6 @@ public class SearchServiceImpl implements SearchService {
 		}
 		for( Entry<DomainObject,DomainObjectFieldChanges> entry : objects.changedMap.entrySet() ) {
 			DomainObject updatedObject = entry.getKey();
-			
 			ObjectSearchContext osc = new ObjectSearchContext();
 			updatedObject.gatherSearchFields(osc, objectRegistry);
 			objectFieldMaps.put(updatedObject, osc.getSearchFields());
@@ -144,19 +141,7 @@ public class SearchServiceImpl implements SearchService {
 			log.info("Initialization without objectRegistry.");
 			return;
 		}
-		if ( jobRegistry == null ) {
-			log.info("Initialization without jobRegistry.");
-			return;
-		}
 		DomainObjectChangesHolder ch = new DomainObjectChangesHolder();
-		
-		Traversal.traverse( getJobRegistry().getJobs(), ch, new TraversalFunction<BackgroundJob, DomainObjectChangesHolder>() {
-
-			@Override
-			public void visit(BackgroundJob object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
-				holder.getResult().registerNew(object);
-			}
-		});
 		
 		Traversal.traverse( getObjectRegistry().getX509Certificates(), ch, new TraversalFunction<X509CertificateDO, DomainObjectChangesHolder>() {
 
@@ -239,14 +224,6 @@ public class SearchServiceImpl implements SearchService {
 
 	public void setObjectRegistry(ObjectRegistry objectRegistry) {
 		this.objectRegistry = objectRegistry;
-	}
-
-	public BackgroundJobRegistry getJobRegistry() {
-		return jobRegistry;
-	}
-
-	public void setJobRegistry(BackgroundJobRegistry jobRegistry) {
-		this.jobRegistry = jobRegistry;
 	}
 
 }

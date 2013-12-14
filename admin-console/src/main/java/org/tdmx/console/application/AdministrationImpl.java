@@ -19,6 +19,7 @@ import org.tdmx.console.application.dao.SystemNetworkingSettings;
 import org.tdmx.console.application.dao.SystemNetworkingSettingsImpl;
 import org.tdmx.console.application.dao.SystemTrustStore;
 import org.tdmx.console.application.dao.SystemTrustStoreImpl;
+import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.job.BackgroundJobRegistry;
@@ -148,6 +149,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		StateStorageJob storageJob = new StateStorageJob();
 		storageJob.setName("StateStorage");
 		storageJob.setProblemRegistry(problemRegistry);
+		storageJob.setSearchService(searchService);
 		storageJob.setRegistry(registry);
 		storageJob.setStore(store);
 		storageJob.setPrivateKeyStore(keyStore);
@@ -157,6 +159,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		
 		SystemTrustStoreUpdateJob trustStoreJob = new SystemTrustStoreUpdateJob();
 		trustStoreJob.setProblemRegistry(problemRegistry);
+		trustStoreJob.setSearchService(searchService);
 		trustStoreJob.setTrustStore(trustStore);
 		trustStoreJob.setName("TrustStore");
 		trustStoreJob.init();
@@ -164,6 +167,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		
 		SystemNetworkingSettingsUpdateJob proxyUpdateJob = new SystemNetworkingSettingsUpdateJob();
 		proxyUpdateJob.setProblemRegistry(problemRegistry);
+		proxyUpdateJob.setSearchService(searchService);
 		proxyUpdateJob.setSystemNetworkingSettings(networkSettings);
 		proxyUpdateJob.setProxyService(proxyService);
 		proxyUpdateJob.setName("Proxy");
@@ -173,14 +177,13 @@ public class AdministrationImpl implements Administration, IInitializer {
 		// finally initialize the searchService where the jobs may already
 		// have made changes to the objectRegistry
 		searchService.setObjectRegistry(registry);
-		searchService.setJobRegistry(jobRegistry);
 		searchService.initialize();
 		
-		//TODO remove job registry from search service
-		//TODO add searchservice to abstract bk job
-		//TODO add start-method and finish-method to absract bkjob
-		//TODO each job call them on start/finish
-		//TODO add last problem code to abstract bk job
+		DomainObjectChangesHolder jobChanges = new DomainObjectChangesHolder();
+		jobChanges.registerNew(storageJob);
+		jobChanges.registerNew(trustStoreJob);
+		jobChanges.registerNew(proxyUpdateJob);
+		searchService.update(jobChanges);
 		
 		//TODO expose DNSResolverList to UI
 		

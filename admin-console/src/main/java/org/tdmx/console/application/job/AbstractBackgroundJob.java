@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectField;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldValidationException;
+import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
@@ -26,10 +29,12 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 
 	protected String name;
 	protected ProblemRegistry problemRegistry;
+	protected SearchService searchService;
+
 	protected AtomicInteger processingId = new AtomicInteger(0);
 	protected Date lastCompletedDate;
 	protected Date startedRunningDate;
-	
+	protected ProblemDO lastProblem;
 
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -67,6 +72,11 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 		return lastCompletedDate;
 	}
 	
+	@Override
+	public ProblemDO getLastProblem() {
+		return lastProblem;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -126,6 +136,32 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
 
+	protected void updateSearch() {
+		if ( getSearchService() != null ) {
+			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
+			DomainObjectFieldChanges dofc = new DomainObjectFieldChanges(this);
+			h.registerModified(dofc);
+			getSearchService().update(h);
+		}
+	}
+	
+	protected void initRun() {
+		startedRunningDate = new Date();
+		int runNr = processingId.getAndIncrement();
+		lastProblem = null;
+		logInfo(getName() + " started " + runNr);
+		updateSearch();
+	}
+	
+	protected void finishRun() {
+		lastCompletedDate = new Date();
+		startedRunningDate = null;
+		logInfo(getName() + " completed " + processingId.get());
+		updateSearch();
+	}
+	
+	protected abstract void logInfo( String msg );
+	
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
@@ -151,4 +187,11 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 		this.problemRegistry = problemRegistry;
 	}
 
+	public SearchService getSearchService() {
+		return searchService;
+	}
+
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
+	}
 }

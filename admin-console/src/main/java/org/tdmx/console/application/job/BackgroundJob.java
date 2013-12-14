@@ -3,6 +3,7 @@ package org.tdmx.console.application.job;
 import java.util.Date;
 
 import org.tdmx.console.application.domain.DomainObject;
+import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.DomainObjectType;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
@@ -40,4 +41,10 @@ public interface BackgroundJob extends DomainObject {
 	 * @return the number of executions of the Job.
 	 */
 	public int getExecutions();
+	
+	/**
+	 * @return the last Problem encountered by the Job, or null if there has been no problem in the last run.
+	 */
+	public ProblemDO getLastProblem();
+
 }

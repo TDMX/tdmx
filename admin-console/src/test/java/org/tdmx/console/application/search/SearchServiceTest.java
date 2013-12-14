@@ -27,11 +27,9 @@ public class SearchServiceTest {
 		
 		ObjectRegistryImpl r = new ObjectRegistryImpl();
 		r.initContent(store.load());
-		BackgroundJobRegistryImpl jr = new BackgroundJobRegistryImpl();
 		
 		SearchServiceImpl s = new SearchServiceImpl();
 		s.setObjectRegistry(r);
-		s.setJobRegistry(jr);
 		s.initialize();
 		service = s;
 		registry = r;
