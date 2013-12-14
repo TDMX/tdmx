@@ -23,9 +23,9 @@ public class DnsResolverListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DnsResolverListDO.class.getName());
-	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", DnsResolverListDO.class.getName());
-	public static final DomainObjectField F_HOSTNAMES 	= new DomainObjectField("hostnames", DnsResolverListDO.class.getName());
+	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DomainObjectType.DnsResolverList);
+	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", DomainObjectType.DnsResolverList);
+	public static final DomainObjectField F_HOSTNAMES 	= new DomainObjectField("hostnames", DomainObjectType.DnsResolverList);
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

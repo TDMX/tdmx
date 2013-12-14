@@ -20,9 +20,9 @@ public class SystemProxyDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_HTTPSPROXY 			= new DomainObjectField("httpsProxy", SystemProxyDO.class.getName());
-	public static final DomainObjectField F_HTTPSNONPROXYHOSTS 	= new DomainObjectField("httpsNonProxyHosts", SystemProxyDO.class.getName());
-	public static final DomainObjectField F_SOCKSPROXY	 		= new DomainObjectField("socksProxy", SystemProxyDO.class.getName());
+	public static final DomainObjectField F_HTTPSPROXY 			= new DomainObjectField("httpsProxy", DomainObjectType.SystemProxy);
+	public static final DomainObjectField F_HTTPSNONPROXYHOSTS 	= new DomainObjectField("httpsNonProxyHosts", DomainObjectType.SystemProxy);
+	public static final DomainObjectField F_SOCKSPROXY	 		= new DomainObjectField("socksProxy", DomainObjectType.SystemProxy);
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

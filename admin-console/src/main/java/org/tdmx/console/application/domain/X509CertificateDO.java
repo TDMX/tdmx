@@ -23,7 +23,7 @@ public class X509CertificateDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_CERTIFICATE	= new DomainObjectField("certificate", X509CertificateDO.class.getName());
+	public static final DomainObjectField F_CERTIFICATE	= new DomainObjectField("certificate", DomainObjectType.X509Certificate);
 
 	public static final class X509CertificateSO {
 		public static final FieldDescriptor FINGERPRINT 	= new FieldDescriptor(DomainObjectType.X509Certificate, "fingerprint", FieldType.String);

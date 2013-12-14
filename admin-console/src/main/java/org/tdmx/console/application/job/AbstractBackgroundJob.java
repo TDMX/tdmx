@@ -22,7 +22,7 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_NAME	= new DomainObjectField("name", BackgroundJob.class.getName());
+	public static final DomainObjectField F_NAME	= new DomainObjectField("name", DomainObjectType.BackgroundJob);
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

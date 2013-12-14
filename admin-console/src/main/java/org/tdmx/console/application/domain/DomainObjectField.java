@@ -12,15 +12,15 @@ public final class DomainObjectField {
 	//-------------------------------------------------------------------------
 
 	private String name;
-	private String clazz;
+	private DomainObjectType type;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public DomainObjectField( String name, String clazz ) {
+	public DomainObjectField( String name, DomainObjectType type ) {
 		this.name = name;
-		this.clazz = clazz;
+		this.type = type;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public final class DomainObjectField {
 	
 	@Override
 	public String toString() {
-		return getClazz()+"#"+getName();
+		return ""+type+"#"+getName();
 	}
 	
     //-------------------------------------------------------------------------
@@ -48,8 +48,8 @@ public final class DomainObjectField {
 		return name;
 	}
 
-	public String getClazz() {
-		return clazz;
+	public DomainObjectType getType() {
+		return type;
 	}
 
 }

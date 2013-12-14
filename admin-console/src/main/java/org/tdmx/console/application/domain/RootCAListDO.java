@@ -24,8 +24,8 @@ public class RootCAListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", RootCAListDO.class.getName());
-	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", RootCAListDO.class.getName());
+	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DomainObjectType.RootCAList);
+	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", DomainObjectType.RootCAList);
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

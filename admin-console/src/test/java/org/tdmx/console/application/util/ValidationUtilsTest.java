@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.console.application.domain.DomainObjectField;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldError.ERROR;
 
@@ -15,7 +16,7 @@ public class ValidationUtilsTest {
 
 	private ERROR error = ERROR.INVALID;
 	private List<FieldError> errors = new ArrayList<>();
-	private DomainObjectField field = new DomainObjectField("fieldname", "VUT");
+	private DomainObjectField field = new DomainObjectField("fieldname", DomainObjectType.SystemProxy);
 	
 	@Before
 	public void setUp() throws Exception {
