@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.tdmx.console.application.Administration;
 import org.tdmx.console.application.domain.DnsResolverListDO;
+import org.tdmx.console.application.domain.validation.OperationError;
 import org.tdmx.console.domain.DnsResolverList;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
@@ -104,6 +105,17 @@ public class UIServiceImpl implements UIService {
 			list.add(new DnsResolverList(dom));
 		}
 		return list;
+	}
+
+	@Override
+	public OperationError deleteDnsResolverList(String id) {
+		return getAdmin().getDnsResolverService().delete(id);
+	}
+	
+	@Override
+	public OperationError createOrUpdateDnsResolverList(DnsResolverList object) {
+		DnsResolverListDO d = object.domain();
+		return getAdmin().getDnsResolverService().createOrUpdate(d);
 	}
 
     //-------------------------------------------------------------------------

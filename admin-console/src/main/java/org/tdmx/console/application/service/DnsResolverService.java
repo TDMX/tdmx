@@ -12,5 +12,5 @@ public interface DnsResolverService {
 	
 	public void updateSystemResolverList();
 	public OperationError createOrUpdate( DnsResolverListDO resolverList );
-	public OperationError delete( DnsResolverListDO resolverList );
+	public OperationError delete( String id );
 }

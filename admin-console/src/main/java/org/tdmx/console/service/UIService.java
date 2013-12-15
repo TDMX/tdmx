@@ -2,6 +2,7 @@ package org.tdmx.console.service;
 
 import java.util.List;
 
+import org.tdmx.console.application.domain.validation.OperationError;
 import org.tdmx.console.domain.DnsResolverList;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
@@ -31,6 +32,8 @@ public interface UIService {
 	public User authenticate(String login, String password);
 	
 	// DNS resolver list
+	public OperationError deleteDnsResolverList( String id );
+	public OperationError createOrUpdateDnsResolverList( DnsResolverList object );
 	public DnsResolverList getDnsResolverList( String id );
 	public List<DnsResolverList> searchDnsResolverList( String criteria );
 }

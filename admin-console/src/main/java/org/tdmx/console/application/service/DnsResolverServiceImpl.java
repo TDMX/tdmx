@@ -12,6 +12,7 @@ import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.OperationError;
+import org.tdmx.console.application.domain.validation.OperationError.ERROR;
 import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.util.StringUtils;
 import org.xbill.DNS.ResolverConfig;
@@ -102,8 +103,15 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	}
 
 	@Override
-	public OperationError delete(DnsResolverListDO existing) {
+	public OperationError delete(String id) {
 		// not allowed to delete the "system" DNS resolver list.
+		if ( SYSTEM_DNS_RESOLVER_LIST_ID.equals(id)) {
+			return new OperationError(ERROR.IMMUTABLE);
+		}
+		DnsResolverListDO existing = objectRegistry.getDnsResolverList(id);
+		if ( existing == null ) {
+			return new OperationError(ERROR.MISSING);
+		}
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		objectRegistry.notifyRemove(existing, holder);
 		searchService.update(holder);
