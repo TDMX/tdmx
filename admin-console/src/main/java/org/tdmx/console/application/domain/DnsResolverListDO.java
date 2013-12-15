@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.domain.validation.FieldError.ERROR;
+import org.tdmx.console.application.search.FieldDescriptor;
+import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
@@ -23,10 +25,16 @@ public class DnsResolverListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DomainObjectType.DnsResolverList);
 	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", DomainObjectType.DnsResolverList);
+	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DomainObjectType.DnsResolverList);
 	public static final DomainObjectField F_HOSTNAMES 	= new DomainObjectField("hostnames", DomainObjectType.DnsResolverList);
-
+	
+	public static final class DnsResolverListSO {
+		public static final FieldDescriptor NAME		= new FieldDescriptor(DomainObjectType.DnsResolverList, "subject", FieldType.Text);
+		public static final FieldDescriptor STATE		= new FieldDescriptor(DomainObjectType.DnsResolverList, "state", FieldType.Token);
+		public static final FieldDescriptor HOSTNAME 	= new FieldDescriptor(DomainObjectType.DnsResolverList, "hostname", FieldType.String);
+	}
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
@@ -61,8 +69,7 @@ public class DnsResolverListDO extends AbstractDO {
 	
 	@Override
 	public DomainObjectType getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return DomainObjectType.DnsResolverList;
 	}
 
 	@Override
@@ -91,7 +98,13 @@ public class DnsResolverListDO extends AbstractDO {
 
 	@Override
 	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
-		//TODO
+		ctx.sof(this, DnsResolverListSO.NAME, getName());
+		ctx.sof(this, DnsResolverListSO.STATE, isActive());
+		if ( getHostnames() != null ) {
+			for( String hostname : getHostnames()) {
+				ctx.sof(this, DnsResolverListSO.HOSTNAME, hostname);
+			}
+		}
 	}
 	
     //-------------------------------------------------------------------------

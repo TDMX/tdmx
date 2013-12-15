@@ -17,13 +17,10 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ServiceProviderDO;
-import org.tdmx.console.application.domain.ServiceProviderDO.ServiceProviderSO;
 import org.tdmx.console.application.domain.X509CertificateDO;
-import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
 import org.tdmx.console.application.domain.visit.Traversal;
 import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
-import org.tdmx.console.application.job.BackgroundJob.BackgroundJobSO;
 import org.tdmx.console.application.service.ObjectRegistry;
 
 
@@ -43,7 +40,7 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 	private Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
-	private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
+	//private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
 
 	//TODO X509Certificates
 	
@@ -52,7 +49,7 @@ public class SearchServiceImpl implements SearchService {
 	//TODO SystemProxyList
 	
 	//TODO RootCAList
-	
+	/*
 	static {
 		allDescriptors.add(BackgroundJobSO.NAME);
 		
@@ -66,7 +63,7 @@ public class SearchServiceImpl implements SearchService {
 		allDescriptors.add(ServiceProviderSO.MAS_PORT);
 		allDescriptors.add(ServiceProviderSO.MAS_PROXY);
 	}
-	
+	*/
 	private ObjectRegistry objectRegistry;
 	
 	private SearchContext searchContext = new SearchContext();
@@ -80,19 +77,8 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 
 	@Override
-	public SearchCriteria parse( DomainObjectType type, String text) {
-		SearchExpressionParser parser = new SearchExpressionParser(text);
-		List<SearchExpression> expressions = new ArrayList<>();
-		SearchExpression exp = null;
-		while( (exp = parser.parseNext() ) != null ) {
-			expressions.add(exp);
-		}
-
-		return new SearchCriteria(type, expressions);
-	}
-
-	@Override
-	public Set<DomainObject> search(SearchCriteria criteria) {
+	public Set<DomainObject> search( DomainObjectType type, String text) {
+		SearchCriteria criteria = parse(type,text);
 		SearchResultSet resultSet = new SearchResultSet(criteria);
 		
 		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap(criteria.getType());
@@ -159,6 +145,17 @@ public class SearchServiceImpl implements SearchService {
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
 
+	private SearchCriteria parse( DomainObjectType type, String text) {
+		SearchExpressionParser parser = new SearchExpressionParser(text);
+		List<SearchExpression> expressions = new ArrayList<>();
+		SearchExpression exp = null;
+		while( (exp = parser.parseNext() ) != null ) {
+			expressions.add(exp);
+		}
+
+		return new SearchCriteria(type, expressions);
+	}
+
 	public static class SearchContext {
 		private Map<DomainObjectType, Map<DomainObject, List<SearchableObjectField>>> objectTypeMap = new HashMap<>();
 		
@@ -206,6 +203,12 @@ public class SearchServiceImpl implements SearchService {
 		public void sof( DomainObject object, FieldDescriptor field, String str ) {
 			if ( str != null ) {
 				add(new SearchableObjectField(object, field, str));
+			}
+		}
+		
+		public void sof( DomainObject object, FieldDescriptor field, Boolean bool ) {
+			if ( bool != null ) {
+				add(new SearchableObjectField(object, field, bool));
 			}
 		}
 		

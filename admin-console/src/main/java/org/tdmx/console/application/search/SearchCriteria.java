@@ -9,7 +9,7 @@ import org.tdmx.console.application.domain.DomainObjectType;
  * 
  * SearchCriteria := SearchExpression {" " SearchExpression }*
  * where 
- * SearchExpression := (":"<Type>("."<fieldName>)?" ")?<value>
+ * SearchExpression := (":"<fieldName>" ")?<value>
  * 
  * 
  * ValueType Parsing

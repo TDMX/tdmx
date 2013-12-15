@@ -62,13 +62,13 @@ public class AdministrationImpl implements Administration, IInitializer {
 	private String certFilePath = null;
 	
 	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
+	private SearchServiceImpl searchService = new SearchServiceImpl();
 	private BackgroundJobRegistryImpl jobRegistry = new BackgroundJobRegistryImpl();
+
 	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
 	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
 	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
-	
 	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
-	private SearchServiceImpl searchService = new SearchServiceImpl();
 	
 	private SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
 	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();

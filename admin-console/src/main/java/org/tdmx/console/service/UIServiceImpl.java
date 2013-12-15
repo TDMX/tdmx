@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.tdmx.console.application.Administration;
+import org.tdmx.console.application.domain.DnsResolverListDO;
+import org.tdmx.console.domain.DnsResolverList;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
@@ -88,6 +90,22 @@ public class UIServiceImpl implements UIService {
 		return null;
 	}
 	
+	@Override
+	public DnsResolverList getDnsResolverList(String id) {
+		DnsResolverListDO dom = getAdmin().getDnsResolverService().lookup(id);
+		return dom != null ? new DnsResolverList(dom) : null;
+	}
+
+	@Override
+	public List<DnsResolverList> searchDnsResolverList(String criteria) {
+		List<DnsResolverList> list = new ArrayList<>();
+		List<DnsResolverListDO> domList = getAdmin().getDnsResolverService().search(criteria);
+		for( DnsResolverListDO dom : domList ) {
+			list.add(new DnsResolverList(dom));
+		}
+		return list;
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

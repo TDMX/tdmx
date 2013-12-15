@@ -11,7 +11,5 @@ public interface SearchService {
 
 	public void update( DomainObjectChangesHolder holder );
 
-	public SearchCriteria parse( DomainObjectType type, String text );
-	
-	public Set<DomainObject> search( SearchCriteria criteria );
+	public <E extends DomainObject> Set<E> search( DomainObjectType type, String text );
 }

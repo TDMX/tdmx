@@ -3,12 +3,16 @@ package org.tdmx.console.application.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.tdmx.console.application.domain.DnsResolverListDO;
+import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
+import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.search.SearchService;
+import org.tdmx.console.application.util.StringUtils;
 import org.xbill.DNS.ResolverConfig;
 
 
@@ -22,7 +26,7 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	public static final String SYSTEM_DNS_RESOLVER_LIST_ID = "system-dns-resolver-list";
-	public static final String SYSTEM_DNS_RESOLVER_LIST_NAME = "system";
+	public static final String SYSTEM_DNS_RESOLVER_LIST_NAME = "System";
 	
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
@@ -36,8 +40,25 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	
 	@Override
+	public DnsResolverListDO lookup(String id) {
+		return objectRegistry.getDnsResolverList(id);
+	}
+
+	@Override
+	public List<DnsResolverListDO> search(String criteria) {
+		if ( StringUtils.hasText(criteria)) {
+			List<DnsResolverListDO> result = new ArrayList<>();
+			Set<DnsResolverListDO> found = searchService.search(DomainObjectType.DnsResolverList, criteria);
+			for( DomainObject o : found ) {
+				result.add((DnsResolverListDO)o );
+			}
+			return result;
+		}
+		return objectRegistry.getDnsResolverLists();
+	}
+
+	@Override
 	public void updateSystemResolverList() {
-		// TODO Auto-generated method stub
 		DnsResolverListDO systemList = objectRegistry.getDnsResolverList(SYSTEM_DNS_RESOLVER_LIST_ID);
 		if ( systemList == null ) {
 			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
@@ -48,6 +69,7 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 			systemList.setHostnames(getSystemDnsHostnames());
 			objectRegistry.notifyAdd(systemList, h);
 			searchService.update(h);
+			// TODO audit log 
 		} else {
 			DnsResolverListDO systemListCopy = new DnsResolverListDO(systemList);
 			systemListCopy.setHostnames(getSystemDnsHostnames());

@@ -2,6 +2,7 @@ package org.tdmx.console.service;
 
 import java.util.List;
 
+import org.tdmx.console.domain.DnsResolverList;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
@@ -29,4 +30,7 @@ public interface UIService {
 	//
 	public User authenticate(String login, String password);
 	
+	// DNS resolver list
+	public DnsResolverList getDnsResolverList( String id );
+	public List<DnsResolverList> searchDnsResolverList( String criteria );
 }

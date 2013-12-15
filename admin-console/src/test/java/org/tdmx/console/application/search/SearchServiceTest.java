@@ -43,8 +43,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void testSearch_ServiceProvider() {
-		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "serviceprovider");
-		Set<DomainObject> objects = service.search(c);
+		Set<DomainObject> objects = service.search( DomainObjectType.ServiceProvider, "serviceprovider");
 		
 		for( ServiceProviderDO o : registry.getServiceProviders() ) {
 			assertTrue( objects.contains(o) );
@@ -53,8 +52,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void testSearch_ServiceProviderSpecific() {
-		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "serviceprovider0");
-		Set<DomainObject> objects = service.search(c);
+		Set<DomainObject> objects = service.search( DomainObjectType.ServiceProvider, "serviceprovider0");
 		
 		assertEquals( 1, objects.size()); // SP and it's proxy
 		for( ServiceProviderDO o : registry.getServiceProviders() ) {
@@ -68,8 +66,7 @@ public class SearchServiceTest {
 
 	@Test
 	public void testSearch_ServiceProvider_ByIdentity() {
-		SearchCriteria c = service.parse( DomainObjectType.ServiceProvider, "o=company0");
-		Set<DomainObject> objects = service.search(c);
+		Set<DomainObject> objects = service.search( DomainObjectType.ServiceProvider, "o=company0");
 		
 		assertEquals( 1, objects.size()); // SP
 		for( ServiceProviderDO o : registry.getServiceProviders() ) {

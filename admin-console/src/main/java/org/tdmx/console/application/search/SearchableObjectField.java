@@ -100,6 +100,19 @@ public final class SearchableObjectField {
 		}
 	}
 	
+	public SearchableObjectField( DomainObject object, FieldDescriptor field, Boolean originalValue ) {
+		this.object = object;
+		this.field = field;
+		this.originalValue = originalValue;
+		switch ( field.getFieldType() ) {
+		case Token:
+			searchValue = MatchValueNormalizer.getStringFromString(originalValue.toString());
+			break;
+		default:
+			throw new IllegalStateException("Boolean field " + field.getName() + " with type "+field.getFieldType());
+		}
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
