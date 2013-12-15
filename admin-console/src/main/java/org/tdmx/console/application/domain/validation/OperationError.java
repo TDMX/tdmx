@@ -1,42 +1,43 @@
 package org.tdmx.console.application.domain.validation;
 
-import org.tdmx.console.application.domain.DomainObjectField;
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
+import java.util.List;
 
 
 
 
 /**
+ * An error result of an operation. An operation can fail due to field errors
+ * or global errors.
  * 
  * @author Peter
  *
  */
-public class FieldError {
+public class OperationError {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	public static enum ERROR {
+		MISSING, PRESENT, INVALID, IMMUTABLE
+	}
+	
 	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private DomainObjectField field;
-	private int position = 0;
+	private List<FieldError> fieldErrors;
 	private ERROR error;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public FieldError(DomainObjectField field, ERROR errorCode) {
-		this.field = field;
-		this.error = errorCode;
+	public OperationError(List<FieldError> fieldErrors) {
+		this.fieldErrors = fieldErrors;
 	}
 	
-	public FieldError(DomainObjectField field, int pos, ERROR errorCode) {
-		this.field = field;
-		this.position = pos;
-		this.error = errorCode;
+	public OperationError(ERROR error) {
+		this.error = error;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -45,11 +46,14 @@ public class FieldError {
 	
 	@Override
 	public String toString() {
-		if ( position > 0 ) {
-			return getError()+"["+getField()+"("+getPosition()+")]";
-		} else {
-			return getError()+"["+getField()+"]";
+		String s = "";
+		if ( error != null ) {
+			s += error;
 		}
+		if ( fieldErrors != null ) {
+			s += fieldErrors;
+		}
+		return s;
 	}
 	
     //-------------------------------------------------------------------------
@@ -64,12 +68,8 @@ public class FieldError {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public DomainObjectField getField() {
-		return field;
-	}
-
-	public int getPosition() {
-		return position;
+	public List<FieldError> getFieldErrors() {
+		return fieldErrors;
 	}
 
 	public ERROR getError() {

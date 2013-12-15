@@ -3,7 +3,7 @@ package org.tdmx.console.application.service;
 import java.util.List;
 
 import org.tdmx.console.application.domain.DnsResolverListDO;
-import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.OperationError;
 
 public interface DnsResolverService {
 
@@ -11,6 +11,6 @@ public interface DnsResolverService {
 	public List<DnsResolverListDO> search( String criteria );
 	
 	public void updateSystemResolverList();
-	public List<FieldError> createOrUpdate( DnsResolverListDO resolverList );
-	public void delete( DnsResolverListDO resolverList );
+	public OperationError createOrUpdate( DnsResolverListDO resolverList );
+	public OperationError delete( DnsResolverListDO resolverList );
 }

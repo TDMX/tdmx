@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.tdmx.console.application.domain.DomainObjectField;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldError.ERROR;
+import org.tdmx.console.application.domain.validation.OperationError.ERROR;
 
 public class ValidationUtilsTest {
 

@@ -7,8 +7,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.DomainObjectField;
+import org.tdmx.console.application.domain.validation.OperationError.ERROR;
 import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldError.ERROR;
 
 public class ValidationUtils {
 

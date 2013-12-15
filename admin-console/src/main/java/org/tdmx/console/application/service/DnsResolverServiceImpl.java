@@ -11,6 +11,7 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.application.domain.validation.OperationError;
 import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.util.StringUtils;
 import org.xbill.DNS.ResolverConfig;
@@ -78,11 +79,11 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	}
 
 	@Override
-	public List<FieldError> createOrUpdate(DnsResolverListDO resolverList) {
+	public OperationError createOrUpdate(DnsResolverListDO resolverList) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		List<FieldError> validation = resolverList.validate();
 		if ( !validation.isEmpty() ) {
-			return validation;
+			return new OperationError(validation);
 		}
 		DnsResolverListDO existing = objectRegistry.getDnsResolverList(resolverList.getId());
 		if ( existing == null ) {
@@ -97,14 +98,16 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 				//TODO if system's hostnames change then issue audit warning
 			}
 		}
-		return validation;
+		return null;
 	}
 
 	@Override
-	public void delete(DnsResolverListDO existing) {
+	public OperationError delete(DnsResolverListDO existing) {
+		// not allowed to delete the "system" DNS resolver list.
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		objectRegistry.notifyRemove(existing, holder);
 		searchService.update(holder);
+		return null;
 	}
 
     //-------------------------------------------------------------------------

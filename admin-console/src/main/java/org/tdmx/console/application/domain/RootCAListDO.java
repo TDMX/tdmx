@@ -3,8 +3,8 @@ package org.tdmx.console.application.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.tdmx.console.application.domain.validation.OperationError.ERROR;
 import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldError.ERROR;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
