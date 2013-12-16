@@ -29,7 +29,9 @@ public final class SearchableObjectField {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
-
+	public static final String TOKEN_ON = "on";
+	public static final String TOKEN_OFF = "off";
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------

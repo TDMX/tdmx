@@ -8,6 +8,7 @@ import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
 
@@ -30,7 +31,7 @@ public class DnsResolverListDO extends AbstractDO {
 	public static final DomainObjectField F_HOSTNAMES 	= new DomainObjectField("hostnames", DomainObjectType.DnsResolverList);
 	
 	public static final class DnsResolverListSO {
-		public static final FieldDescriptor NAME		= new FieldDescriptor(DomainObjectType.DnsResolverList, "subject", FieldType.Text);
+		public static final FieldDescriptor NAME		= new FieldDescriptor(DomainObjectType.DnsResolverList, "name", FieldType.String);
 		public static final FieldDescriptor STATE		= new FieldDescriptor(DomainObjectType.DnsResolverList, "state", FieldType.Token);
 		public static final FieldDescriptor HOSTNAME 	= new FieldDescriptor(DomainObjectType.DnsResolverList, "hostname", FieldType.String);
 	}
@@ -99,7 +100,7 @@ public class DnsResolverListDO extends AbstractDO {
 	@Override
 	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
 		ctx.sof(this, DnsResolverListSO.NAME, getName());
-		ctx.sof(this, DnsResolverListSO.STATE, isActive());
+		ctx.sof(this, DnsResolverListSO.STATE, isActive() ? SearchableObjectField.TOKEN_ON : SearchableObjectField.TOKEN_OFF);
 		if ( getHostnames() != null ) {
 			for( String hostname : getHostnames()) {
 				ctx.sof(this, DnsResolverListSO.HOSTNAME, hostname);
