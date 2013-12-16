@@ -79,12 +79,6 @@ public class SystemSettingsServiceImpl implements SystemSettingsService {
 		objectRegistry.setSystemProperties(newProps);
 	}
 
-	@Override
-	public void updateSystemDnsResolverList() {
-		// TODO dns-revolver-list service - modify
-		
-	}
-
    //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

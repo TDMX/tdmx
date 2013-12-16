@@ -8,9 +8,4 @@ public interface SystemSettingsService {
 	 */
 	public void updateSystemProperties();
 	
-	/**
-	 * Update the System's DnsResolverList
-	 */
-	public void updateSystemDnsResolverList();
-	
 }

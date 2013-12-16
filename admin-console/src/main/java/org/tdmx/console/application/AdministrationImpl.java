@@ -37,14 +37,14 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
-	//TODO - SystemTrustStoreUpdateJob merge into system setting job
-	
-	//TODO - DnsResolverList load/manage
-	//			- insert/update "system" DnsResolverList
+	//TODO - DnsResolverList DNS functional test result TXT, IP
 
 	//TODO - Pkix RootCA list load/save to storage
 	
 	//TODO - AuditService
+	// file backing 1000 records in memory, filename listing
+	
+	//TODO - SystemTrustStoreUpdateJob merge into system setting job
 	
 	//
 	//-------------------------------------------------------------------------
