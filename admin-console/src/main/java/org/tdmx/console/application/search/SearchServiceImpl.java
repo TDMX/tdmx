@@ -49,21 +49,9 @@ public class SearchServiceImpl implements SearchService {
 	//TODO SystemProxyList
 	
 	//TODO RootCAList
-	/*
-	static {
-		allDescriptors.add(BackgroundJobSO.NAME);
-		
-		allDescriptors.add(X509CertificateSO.FINGERPRINT);
-		allDescriptors.add(X509CertificateSO.INFO);
-		allDescriptors.add(X509CertificateSO.FROM);
-		allDescriptors.add(X509CertificateSO.TO);
-		
-		allDescriptors.add(ServiceProviderSO.SUBJECT);
-		allDescriptors.add(ServiceProviderSO.MAS_HOSTNAME);
-		allDescriptors.add(ServiceProviderSO.MAS_PORT);
-		allDescriptors.add(ServiceProviderSO.MAS_PROXY);
-	}
-	*/
+
+	//TODO search: text
+	
 	private ObjectRegistry objectRegistry;
 	
 	private SearchContext searchContext = new SearchContext();
@@ -182,7 +170,6 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	public static class ObjectSearchContext {
-		//TODO allow register of "affected" other objects
 		List<SearchableObjectField> searchFields = new ArrayList<>();
 		
 		public ObjectSearchContext() {
