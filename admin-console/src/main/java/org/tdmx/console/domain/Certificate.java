@@ -1,11 +1,8 @@
 package org.tdmx.console.domain;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.util.CalendarUtils;
 
 public class Certificate implements Serializable {
@@ -25,9 +22,9 @@ public class Certificate implements Serializable {
 
 	public Certificate( org.tdmx.console.application.domain.X509CertificateDO p ) {
 		this.id = p.getId();
-		this.text = p.getInfo();
-		this.validFrom = CalendarUtils.getDate(p.getValidFrom());
-		this.validTo = CalendarUtils.getDate(p.getValidTo());
+		this.text = p.getCertificate().getInfo();
+		this.validFrom = CalendarUtils.getDate(p.getCertificate().getNotBefore());
+		this.validTo = CalendarUtils.getDate(p.getCertificate().getNotAfter());
 	}
 	
 	//-------------------------------------------------------------------------

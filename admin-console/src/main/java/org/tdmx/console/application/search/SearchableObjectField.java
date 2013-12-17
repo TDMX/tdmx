@@ -32,6 +32,9 @@ public final class SearchableObjectField {
 	public static final String TOKEN_ON = "on";
 	public static final String TOKEN_OFF = "off";
 	
+	public static final String TOKEN_TRUSTED = "trusted";
+	public static final String TOKEN_REVOKED = "revoked";
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------

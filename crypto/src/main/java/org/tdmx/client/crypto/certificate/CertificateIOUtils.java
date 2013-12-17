@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -14,9 +13,6 @@ import java.util.List;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
-import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
-import org.tdmx.client.crypto.converters.ByteArray;
-import org.tdmx.client.crypto.scheme.CryptoException;
 
 
 public class CertificateIOUtils {
@@ -38,23 +34,19 @@ public class CertificateIOUtils {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	public static String getSha1FingerprintAsHex( X509Certificate cert ) throws CryptoCertificateException {
-		try {
-			byte[] tbsCert = cert.getTBSCertificate();
-			byte[] sha1 = DigestAlgorithm.SHA_1.kdf(tbsCert);
-			return ByteArray.asHex(sha1);
-		} catch ( CryptoException e ) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
-		} catch (CertificateEncodingException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_ENCODING, e);
+	public static List<X509Certificate> convert( List<PKIXCertificate> certs ) {
+		List<X509Certificate> xs = new ArrayList<>();
+		for( PKIXCertificate p : certs ) {
+			xs.add(p.getCertificate());
 		}
+		return xs;
 	}
-
-	public static String x509certToPem( X509Certificate cert ) throws CryptoCertificateException {
+	
+	public static String x509certToPem( PKIXCertificate cert ) throws CryptoCertificateException {
     	StringWriter writer = new StringWriter();
         PEMWriter pemWrtCer = new PEMWriter(writer);
         try {
-            pemWrtCer.writeObject(cert);
+            pemWrtCer.writeObject(cert.getCertificate());
             pemWrtCer.close();
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
@@ -63,8 +55,8 @@ public class CertificateIOUtils {
         return writer.toString();
 	}
 
-	public static X509Certificate pemToX509cert( String input ) throws CryptoCertificateException {
-		X509Certificate[] certs = pemToX509certs( input );
+	public static PKIXCertificate pemToX509cert( String input ) throws CryptoCertificateException {
+		PKIXCertificate[] certs = pemToX509certs( input );
 		if( certs == null ) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_CERTS);
 		}
@@ -74,17 +66,17 @@ public class CertificateIOUtils {
 		return certs[0];
 	}
 	
-	public static X509Certificate[] pemToX509certs( String input ) throws CryptoCertificateException {
+	public static PKIXCertificate[] pemToX509certs( String input ) throws CryptoCertificateException {
 		StringReader sr = new StringReader(input);
 		PEMParser pp = new PEMParser(sr);
 		
-		List<X509Certificate> certList = new ArrayList<>();
+		List<PKIXCertificate> certList = new ArrayList<>();
 		Object o = null;
         try {
     		while( (o = pp.readObject()) != null ) {
     			if ( o instanceof X509CertificateHolder ) {
     				X509CertificateHolder ch = (X509CertificateHolder)o;
-    				X509Certificate c = decodeCertificate(ch.getEncoded());
+    				PKIXCertificate c = decodeCertificate(ch.getEncoded());
     				certList.add(c);
     			}
     		}
@@ -96,15 +88,15 @@ public class CertificateIOUtils {
 			} catch (IOException e) {
 			}
 		}
-		return certList.toArray(new X509Certificate[0]);
+		return certList.toArray(new PKIXCertificate[0]);
 	}
 	
-	public static X509Certificate decodeCertificate( byte[] x509encodedValue ) throws CryptoCertificateException {
+	public static PKIXCertificate decodeCertificate( byte[] x509encodedValue ) throws CryptoCertificateException {
 		CertificateFactory certFactory;
 		try {
 			certFactory = CertificateFactory.getInstance(ALGORITHM);
 			X509Certificate cert = (X509Certificate)certFactory.generateCertificate(new ByteArrayInputStream(x509encodedValue));
-			return cert;
+			return new PKIXCertificate(cert);
 		} catch (CertificateException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
 		}

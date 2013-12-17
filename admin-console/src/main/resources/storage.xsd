@@ -77,7 +77,7 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="system-property-list" type="SystemProperty-List" minOccurs="0"/>
-			<xs:element name="x509-certificate" type="PKIXCertificate" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
@@ -122,12 +122,12 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
-	<xs:complexType name="PKIXCertificateChain">
+	<xs:complexType name="X509CertificateChain">
 		<xs:annotation>
 			<xs:documentation>A X509 certificate chain</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="cert" type="PKIXCertificate" maxOccurs="unbounded"/>
+			<xs:element name="cert" type="X509Certificate" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="id" type="xs:ID" use="required">
 			<xs:annotation>
@@ -140,7 +140,7 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
-	<xs:complexType name="PKIXCertificate">
+	<xs:complexType name="X509Certificate">
 		<xs:annotation>
 			<xs:documentation>A X509 certificate</xs:documentation>
 		</xs:annotation>
@@ -265,7 +265,6 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="domainname" type="caseinsensitivetext"/>
-			<xs:element name="certificatechain" type="PKIXCertificateChain" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="service" type="Service" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="address" type="Address" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="zone" type="IPZone" minOccurs="0" maxOccurs="unbounded"/>
@@ -295,7 +294,7 @@
 			<xs:documentation>A User.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="certificatechain" type="PKIXCertificateChain"/>
+			<xs:element name="certificatechain" type="X509CertificateChain"/>
 			<xs:element name="ip-zone-name" type="text" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="ip-address" type="text" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>

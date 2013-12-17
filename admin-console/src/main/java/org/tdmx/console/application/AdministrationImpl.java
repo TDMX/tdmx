@@ -37,6 +37,12 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
+	//TODO CertificateAuthority service
+	//	- create CA ( cn, o, c , from, to ) > certs+pk
+	//  - import CA as pkcs12 + passphrase
+	//	- modify status
+	// certificateDO - search fields
+	
 	//TODO - DnsResolverList DNS functional test result TXT, IP
 
 	//TODO - Pkix RootCA list load/save to storage

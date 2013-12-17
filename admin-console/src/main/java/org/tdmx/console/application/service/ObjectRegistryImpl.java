@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.tdmx.console.application.dao.DNSResolverList;
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
-import org.tdmx.console.application.dao.PKIXCertificate;
+import org.tdmx.console.application.dao.X509Certificate;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.SystemPropertyList;
@@ -70,7 +70,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 			} else {
 				systemSettings = new SystemPropertiesVO();
 			}
-			for ( PKIXCertificate pkcert : content.getX509Certificate()) {
+			for ( X509Certificate pkcert : content.getX509Certificate()) {
 				X509CertificateDO cert = domMapper.map(pkcert);
 				cert.check();
 				add(cert);
@@ -104,7 +104,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 				store.setSystemPropertyList(systemProps);
 
 				for( X509CertificateDO c : getX509Certificates()) {
-					PKIXCertificate cert = storeMapper.map(c);
+					X509Certificate cert = storeMapper.map(c);
 					store.getX509Certificate().add(cert);
 				}
 				

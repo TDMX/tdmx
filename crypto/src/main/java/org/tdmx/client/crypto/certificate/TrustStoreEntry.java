@@ -20,22 +20,15 @@ public class TrustStoreEntry {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private String sha1fingerprint;
 	private String comment;
 	private String friendlyName;
-	private X509Certificate certificate;
+	private PKIXCertificate certificate;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public TrustStoreEntry( X509Certificate cert ) {
-		try {
-			byte[] tbsCert = cert.getTBSCertificate();
-			sha1fingerprint = ByteArray.asHex(DigestAlgorithm.SHA_1.kdf(tbsCert));
-		} catch (CertificateEncodingException | CryptoException e) {
-			sha1fingerprint = "<UNKNOWN>";
-		}
+	public TrustStoreEntry( PKIXCertificate cert ) {
 		certificate = cert;
 	}
 	
@@ -76,10 +69,7 @@ public class TrustStoreEntry {
 	public void setFriendlyName(String friendlyName) {
 		this.friendlyName = friendlyName;
 	}
-	public X509Certificate getCertificate() {
+	public PKIXCertificate getCertificate() {
 		return certificate;
-	}
-	public String getSha1fingerprint() {
-		return sha1fingerprint;
 	}
 }

@@ -47,16 +47,17 @@ public class TrustStoreCertificateIOUtils {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	public static String trustStoreEntryToPem( TrustStoreEntry entry ) throws CryptoCertificateException {
+		String fingerprint = entry.getCertificate().getFingerprint();
     	StringWriter writer = new StringWriter();
     	if ( entry.getFriendlyName() != null ) {
-    		writer.write(TrustStoreEntry.FRIENDLY_NAME+entry.getSha1fingerprint()+" "+entry.getFriendlyName()+TrustStoreEntry.NL);
+    		writer.write(TrustStoreEntry.FRIENDLY_NAME+fingerprint+" "+entry.getFriendlyName()+TrustStoreEntry.NL);
     	}
     	if ( entry.getComment() != null ) {
             BufferedReader br = new BufferedReader(new StringReader(entry.getComment()));
             String commentLine;
             try {
     			while((commentLine = br.readLine())!= null) {
-    		    	writer.write(TrustStoreEntry.COMMENT_LINE+entry.getSha1fingerprint()+" "+commentLine+TrustStoreEntry.NL);
+    		    	writer.write(TrustStoreEntry.COMMENT_LINE+fingerprint+" "+commentLine+TrustStoreEntry.NL);
     			}
             } catch ( IOException e ) {
     			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
@@ -65,7 +66,7 @@ public class TrustStoreCertificateIOUtils {
     	}
         PEMWriter pemWrtCer = new PEMWriter(writer);
         try {
-            pemWrtCer.writeObject(entry.getCertificate());
+            pemWrtCer.writeObject(entry.getCertificate().getCertificate());
             pemWrtCer.close();
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
@@ -84,7 +85,7 @@ public class TrustStoreCertificateIOUtils {
     		while( (o = pp.readObject()) != null ) {
     			if ( o instanceof X509CertificateHolder ) {
     				X509CertificateHolder ch = (X509CertificateHolder)o;
-    				X509Certificate c = CertificateIOUtils.decodeCertificate(ch.getEncoded());
+    				PKIXCertificate c = CertificateIOUtils.decodeCertificate(ch.getEncoded());
     				certList.add(new TrustStoreEntry(c));
     			}
     		}
@@ -105,7 +106,8 @@ public class TrustStoreCertificateIOUtils {
 						String text = restofLine.substring(separator+1);
 						
 						for( TrustStoreEntry e : certList ) {
-							if ( e.getSha1fingerprint().equals(fingerprint)) {
+							
+							if ( fingerprint.equals(e.getCertificate().getFingerprint())) {
 								e.setFriendlyName(text);
 							}
 						}
@@ -119,7 +121,7 @@ public class TrustStoreCertificateIOUtils {
 						String text = restofLine.substring(separator+1);
 						
 						for( TrustStoreEntry e : certList ) {
-							if ( e.getSha1fingerprint().equals(fingerprint)) {
+							if ( fingerprint.equals(e.getCertificate().getFingerprint())) {
 								e.addComment(text);
 							}
 						}
@@ -148,7 +150,8 @@ public class TrustStoreCertificateIOUtils {
 						X509Certificate[] issuers = t.getAcceptedIssuers();
 						if ( issuers != null ) {
 							for( X509Certificate i : issuers ) {
-								TrustStoreEntry e = new TrustStoreEntry(i);
+								PKIXCertificate pk = new PKIXCertificate(i);
+								TrustStoreEntry e = new TrustStoreEntry(pk);
 								caList.add(e);
 							}
 						}

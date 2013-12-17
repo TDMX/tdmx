@@ -5,6 +5,7 @@ import java.util.Calendar;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
@@ -35,14 +36,14 @@ public class X509CertificateDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private X509Certificate certificate;
+	private PKIXCertificate certificate;
 
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public X509CertificateDO( X509Certificate certificate ) throws CryptoCertificateException {
-		setId(CertificateIOUtils.getSha1FingerprintAsHex(certificate));
+	public X509CertificateDO( PKIXCertificate certificate ) throws CryptoCertificateException {
+		setId(certificate.getFingerprint());
 		this.certificate = certificate;
 	}
 	
@@ -55,24 +56,12 @@ public class X509CertificateDO extends AbstractDO {
 		return DomainObjectType.X509Certificate;
 	}
 
-	public String getInfo() {
-		return certificate.toString();
-	}
-	
-	public Calendar getValidFrom() {
-		return CalendarUtils.getDate(certificate.getNotBefore());
-	}
-	
-	public Calendar getValidTo() {
-		return CalendarUtils.getDate(certificate.getNotAfter());
-	}
-	
 	@Override
 	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
 		ctx.sof(this, X509CertificateSO.FINGERPRINT, getId());
-		ctx.sof(this, X509CertificateSO.FROM, getValidFrom());
-		ctx.sof(this, X509CertificateSO.TO, getValidTo());
-		ctx.sof(this, X509CertificateSO.INFO, getInfo());
+		ctx.sof(this, X509CertificateSO.FROM, certificate.getNotBefore());
+		ctx.sof(this, X509CertificateSO.TO, certificate.getNotAfter());
+		ctx.sof(this, X509CertificateSO.INFO, certificate.getInfo());
 	}
 	
     //-------------------------------------------------------------------------
@@ -87,7 +76,7 @@ public class X509CertificateDO extends AbstractDO {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public X509Certificate getCertificate() {
+	public PKIXCertificate getCertificate() {
 		return certificate; 
 	}
 

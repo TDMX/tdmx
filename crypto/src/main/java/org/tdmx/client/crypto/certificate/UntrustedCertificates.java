@@ -52,15 +52,15 @@ public final class UntrustedCertificates {
                 new ByteArrayInputStream(pemCert.getBytes())) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate cert = (X509Certificate)cf.generateCertificate(is);
-
+            PKIXCertificate pk = new PKIXCertificate(cert);
             //@PJK
-            TrustStoreEntry e = new TrustStoreEntry(cert);
+            TrustStoreEntry e = new TrustStoreEntry(pk);
             e.setFriendlyName(alias);
-            if (untrustedCerts.put(e.getSha1fingerprint(),e) != null) {
+            if (untrustedCerts.put(pk.getFingerprint(),e) != null) {
                 throw new RuntimeException("Duplicate untrusted certificate: " +
                     cert.getSubjectX500Principal());
             }
-        } catch (CertificateException | IOException e) {
+        } catch (CertificateException | IOException | CryptoCertificateException e) {
             throw new RuntimeException(
                         "Incorrect untrusted certificate: " + alias, e);
         }

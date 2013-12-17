@@ -23,9 +23,9 @@ public class TrustStoreCertificateIOUtilsTest {
 		
 		for( TrustStoreEntry rootCA : rootCAs ) {
 			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
-			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
-			e.addComment("this is a comment1 "+e.getSha1fingerprint());
-			e.addComment("this is a comment2 "+e.getSha1fingerprint());
+			e.setFriendlyName("friendlyname="+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment1 "+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment2 "+e.getCertificate().getFingerprint());
 			System.out.println(TrustStoreCertificateIOUtils.trustStoreEntryToPem(e));
 			System.out.println();
 		}
@@ -39,9 +39,9 @@ public class TrustStoreCertificateIOUtilsTest {
 
 		for( TrustStoreEntry rootCA : rootCAs ) {
 			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
-			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
-			e.addComment("this is a comment1 "+e.getSha1fingerprint());
-			e.addComment("this is a comment2 "+e.getSha1fingerprint());
+			e.setFriendlyName("friendlyname="+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment1 "+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment2 "+e.getCertificate().getFingerprint());
 			String s = TrustStoreCertificateIOUtils.trustStoreEntryToPem(e);
 			assertNotNull(s);
 		}
@@ -58,9 +58,9 @@ public class TrustStoreCertificateIOUtilsTest {
 		StringBuffer sb = new StringBuffer();
 		for( TrustStoreEntry rootCA : rootCAs ) {
 			TrustStoreEntry e = new TrustStoreEntry(rootCA.getCertificate());
-			e.setFriendlyName("friendlyname="+e.getSha1fingerprint());
-			e.addComment("this is a comment1 "+e.getSha1fingerprint());
-			e.addComment("this is a comment2 "+e.getSha1fingerprint());
+			e.setFriendlyName("friendlyname="+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment1 "+e.getCertificate().getFingerprint());
+			e.addComment("this is a comment2 "+e.getCertificate().getFingerprint());
 			trustEntries.add(e);
 
 			String s = TrustStoreCertificateIOUtils.trustStoreEntryToPem(e);
@@ -73,8 +73,8 @@ public class TrustStoreCertificateIOUtilsTest {
 		assertNotNull(readTrustEntries);
 		assertEquals(readTrustEntries.size(), trustEntries.size());
 		for( TrustStoreEntry e : readTrustEntries) {
-			assertEquals("friendlyname="+e.getSha1fingerprint(), e.getFriendlyName());
-			assertEquals("this is a comment1 "+e.getSha1fingerprint()+TrustStoreEntry.NL+"this is a comment2 "+e.getSha1fingerprint(), e.getComment());
+			assertEquals("friendlyname="+e.getCertificate().getFingerprint(), e.getFriendlyName());
+			assertEquals("this is a comment1 "+e.getCertificate().getFingerprint()+TrustStoreEntry.NL+"this is a comment2 "+e.getCertificate().getFingerprint(), e.getComment());
 		}
 	}
 }

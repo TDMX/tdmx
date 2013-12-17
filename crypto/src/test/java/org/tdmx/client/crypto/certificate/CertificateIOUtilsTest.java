@@ -66,7 +66,7 @@ public class CertificateIOUtilsTest {
 	@Test
 	public void testPemToX509Conversion() throws Exception {
 		
-		X509Certificate[] certs = CertificateIOUtils.pemToX509certs(cert);
+		PKIXCertificate[] certs = CertificateIOUtils.pemToX509certs(cert);
 		assertNotNull(certs);
 		assertEquals(certs.length, 1);
 		String c = CertificateIOUtils.x509certToPem(certs[0]);
@@ -100,7 +100,7 @@ public class CertificateIOUtilsTest {
 		}
 		
 		String pemList = sb.toString();
-		X509Certificate[] certs = CertificateIOUtils.pemToX509certs(pemList);
+		PKIXCertificate[] certs = CertificateIOUtils.pemToX509certs(pemList);
 		assertNotNull(certs);
 		assertEquals(certs.length, rootCAs.size());
 	}
@@ -119,22 +119,22 @@ public class CertificateIOUtilsTest {
 	@Test
 	public void testPemToX509() throws Exception {
 		byte[] bytes = getFileContents("xip-t01.swi.srse.net.crt");
-		X509Certificate[] serverchain = CertificateIOUtils.pemToX509certs(new String(bytes));
+		PKIXCertificate[] serverchain = CertificateIOUtils.pemToX509certs(new String(bytes));
 		assertEquals(1,serverchain.length);
 		
 		byte[] bytes2 = getFileContents("sunrise_issueing_ca_1_bundle_2012.crt");
-		X509Certificate[] trustedcerts = CertificateIOUtils.pemToX509certs(new String(bytes2));
+		PKIXCertificate[] trustedcerts = CertificateIOUtils.pemToX509certs(new String(bytes2));
 		assertEquals(2,trustedcerts.length);
 		
 		CertificateFactory cf = CertificateFactory.getInstance("X509");
 		CertPathValidator validator = CertPathValidator.getInstance("PKIX");
-		List<X509Certificate> servercerts = new ArrayList<>();
-		for (X509Certificate sc : serverchain) {
+		List<PKIXCertificate> servercerts = new ArrayList<>();
+		for (PKIXCertificate sc : serverchain) {
 			servercerts.add(sc);
 		}
 		servercerts.add(trustedcerts[0]);
 		;
-		CertPath cp = cf.generateCertPath(servercerts);
+		CertPath cp = cf.generateCertPath(CertificateIOUtils.convert(servercerts));
 		PKIXParameters pkixParameters;
 		Set<TrustAnchor> tas = new HashSet<>();
 		/*
@@ -143,7 +143,7 @@ public class CertificateIOUtilsTest {
 			tas.add(ta);
 		}
 		*/
-		TrustAnchor ta = new TrustAnchor(trustedcerts[1], null);
+		TrustAnchor ta = new TrustAnchor(trustedcerts[1].getCertificate(), null);
 		tas.add(ta);
 		;
 		pkixParameters = new PKIXParameters(tas);

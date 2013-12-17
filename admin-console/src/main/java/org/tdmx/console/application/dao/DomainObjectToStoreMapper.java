@@ -28,8 +28,8 @@ public class DomainObjectToStoreMapper {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 
-	public PKIXCertificate map( X509CertificateDO other ) throws CryptoCertificateException {
-		PKIXCertificate o = new PKIXCertificate();
+	public X509Certificate map( X509CertificateDO other ) throws CryptoCertificateException {
+		X509Certificate o = new X509Certificate();
 		o.setId(other.getId());
 		o.setPemValue(CertificateIOUtils.x509certToPem(other.getCertificate()));
 		return o;

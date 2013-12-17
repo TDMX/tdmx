@@ -1,10 +1,9 @@
 package org.tdmx.console.application.dao;
 
-import java.security.cert.X509Certificate;
-
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CertificateResultCode;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemPropertiesVO;
@@ -27,10 +26,10 @@ public class DomainObjectFromStoreMapper {
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
-	public X509CertificateDO map( PKIXCertificate other ) throws CryptoCertificateException {
+	public X509CertificateDO map( X509Certificate other ) throws CryptoCertificateException {
 		String id = other.getId();
 		
-		X509Certificate cert = CertificateIOUtils.pemToX509cert(other.getPemValue());
+		PKIXCertificate cert = CertificateIOUtils.pemToX509cert(other.getPemValue());
 		
 		X509CertificateDO o = new X509CertificateDO(cert);
 		if ( !o.getId().equals(id)) {
