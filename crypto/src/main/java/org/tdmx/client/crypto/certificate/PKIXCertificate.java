@@ -33,6 +33,11 @@ public class PKIXCertificate {
 	private String signatureAlgorithm;
 	private String signature;
 	private String info;
+	//TODO public key - type + leyken ie RSA(2048bit) AsymmetricEncryptionAlgorithm
+	//TODO basic constraints - CA? certificate chain length
+	//TODO issuer
+	//TODO subject key identifier
+	//TODO issuer key identifier
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
