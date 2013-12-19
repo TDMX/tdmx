@@ -28,8 +28,8 @@ import org.tdmx.console.application.util.ValidationUtils;
  * X509 fields:
  * Subject { CN = "name", O = "organization", C = "country" } == Issuer
  * Validity <= 10yrs
- * BasicConstraints: { Subject Type=CA, Path Length Constraint=0 or 1 }
- * KeyUage {Certificate Signing}
+ * BasicConstraints: { Subject Type=CA, Path Length Constraint=none(0) or 1 }
+ * KeyUage {Certificate Signing, Digital Signature }
  * SubjectKeyIdentifier { }, AuthorityKeyIdentifier { KeyID=... }
  * 
  * NOTE: no crl list is used - the "revocation" takes place by removal from DNS

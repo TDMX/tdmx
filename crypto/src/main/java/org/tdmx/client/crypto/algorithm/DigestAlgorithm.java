@@ -3,7 +3,6 @@ package org.tdmx.client.crypto.algorithm;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.CryptoResultCode;
 

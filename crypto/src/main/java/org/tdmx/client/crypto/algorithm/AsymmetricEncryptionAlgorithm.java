@@ -19,7 +19,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.CryptoResultCode;

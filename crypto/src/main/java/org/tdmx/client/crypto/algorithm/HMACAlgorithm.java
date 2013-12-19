@@ -7,22 +7,26 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public enum HMACAlgorithm {
 
-	HMAC_SHA_1("HmacSHA1"),
-	HMAC_SHA_256("HmacSHA256"),
-	HMAC_SHA_384("HmacSHA384"),
-	HMAC_SHA_512("HmacSHA512"),
+	HMAC_SHA_1("HmacSHA1", PKCSObjectIdentifiers.id_hmacWithSHA1),
+	HMAC_SHA_256("HmacSHA256", PKCSObjectIdentifiers.id_hmacWithSHA256),
+	HMAC_SHA_384("HmacSHA384", PKCSObjectIdentifiers.id_hmacWithSHA384),
+	HMAC_SHA_512("HmacSHA512", PKCSObjectIdentifiers.id_hmacWithSHA512),
 	;
 	
 	private String algorithm;
-
-	private HMACAlgorithm(String algorithm) {
+	private ASN1ObjectIdentifier asn1oid;
+	
+	private HMACAlgorithm(String algorithm, ASN1ObjectIdentifier asn1oid) {
 		this.algorithm = algorithm;
+		this.asn1oid = asn1oid;
 	}
 
 	public String getAlgorithm() {
@@ -43,6 +47,10 @@ public enum HMACAlgorithm {
 		return ByteArray.equals(result,expected);
 	}
 	
+	public ASN1ObjectIdentifier getAsn1oid() {
+		return asn1oid;
+	}
+
 	public byte[] hmac(byte[] data, byte[] key) throws CryptoException {
 		try {
 			// get an hmac_sha256 key from the raw key bytes
@@ -64,4 +72,5 @@ public enum HMACAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_HMAC_KEY_INVALID, e);
 		}
 	}
+	
 }
