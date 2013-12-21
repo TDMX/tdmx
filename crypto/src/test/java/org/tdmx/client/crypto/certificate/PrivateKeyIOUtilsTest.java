@@ -1,14 +1,10 @@
 package org.tdmx.client.crypto.certificate;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
@@ -66,12 +62,4 @@ public class PrivateKeyIOUtilsTest {
 	}
 	
 		
-	private static byte[] getFileContents( String filePath ) throws IOException {
-		Path path = Paths.get(filePath);
-		if ( !Files.exists(path) ) {
-			return null;
-		}
-		byte[] data = Files.readAllBytes(path);	
-		return data;
-	}
 }

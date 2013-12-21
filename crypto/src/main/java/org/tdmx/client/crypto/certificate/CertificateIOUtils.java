@@ -102,6 +102,17 @@ public class CertificateIOUtils {
 		}
 	}
 	
+	public static byte[] encodeCertificate( PKIXCertificate cert ) throws CryptoCertificateException {
+		try {
+			if ( cert != null && cert.getCertificate() != null ) {
+				return cert.getCertificate().getEncoded();
+			}
+		} catch (CertificateException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		}
+		return null;
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

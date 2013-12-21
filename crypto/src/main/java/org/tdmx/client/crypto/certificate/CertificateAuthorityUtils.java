@@ -6,15 +6,16 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Calendar;
 
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -54,15 +55,14 @@ public class CertificateAuthorityUtils {
 		} catch (CryptoException e1) {
 			// TODO 
 		}
-		//TODO keyUsage
 		
 		PublicKey publicKey = kp.getPublic();
 		PrivateKey privateKey = kp.getPrivate();
 		
 		X500NameBuilder subjectBuilder = new X500NameBuilder();
-		subjectBuilder.addRDN(BCStyle.CN, req.getCn());
-		subjectBuilder.addRDN(BCStyle.O, req.getOrg());
 		subjectBuilder.addRDN(BCStyle.C, req.getCountry());
+		subjectBuilder.addRDN(BCStyle.O, req.getOrg());
+		subjectBuilder.addRDN(BCStyle.CN, req.getCn());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
 		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
@@ -73,13 +73,24 @@ public class CertificateAuthorityUtils {
 				subject, 
 				publicKey);
 
-		BasicConstraints cA = new BasicConstraints(1);
 		try {
+			BasicConstraints cA = new BasicConstraints(0);
+			certBuilder.addExtension(Extension.basicConstraints, true, cA);
+
 			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 			certBuilder.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(publicKey));
 			certBuilder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
 
-			certBuilder.addExtension(Extension.basicConstraints, true, cA);
+			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature|KeyUsage.keyCertSign);
+			certBuilder.addExtension(Extension.keyUsage, false, ku);
+			
+			//TODO name contraints into req.
+			GeneralName gn = new GeneralName(GeneralName.dNSName, "domain.com");
+			GeneralSubtree gs = new GeneralSubtree(gn,new BigInteger("0"),null); //RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
+			GeneralSubtree[] permitted = new GeneralSubtree[]{gs};
+			
+			NameConstraints nc = new NameConstraints(permitted, null);
+			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, SignatureAlgorithm.SHA_256_RSA);
 			byte[] certBytes = certBuilder.build(signer).getEncoded();

@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.util.FileUtils;
 
 public class CertificateAuthorityUtilsTest {
 
@@ -50,6 +51,8 @@ public class CertificateAuthorityUtilsTest {
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
 		
+		byte[] bs = CertificateIOUtils.encodeCertificate(c);
+		FileUtils.storeFileContents("ca.crt", bs, ".tmp");
 	}
 
 }

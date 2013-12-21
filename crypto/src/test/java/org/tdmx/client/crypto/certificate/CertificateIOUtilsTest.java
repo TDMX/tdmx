@@ -3,17 +3,12 @@ package org.tdmx.client.crypto.certificate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertificateFactory;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +16,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.tdmx.client.crypto.util.FileUtils;
 
 public class CertificateIOUtilsTest {
 
@@ -108,7 +104,7 @@ public class CertificateIOUtilsTest {
 	
 	@Test
 	public void testPemToUnencryptedPrivateKey() throws Exception {
-		byte[] bytes = getFileContents("xip-t01.swi.srse.net.key");
+		byte[] bytes = FileUtils.getFileContents("xip-t01.swi.srse.net.key");
 		KeyPair kp = PrivateKeyIOUtils.pemToRSAPrivateKeyPair(new String(bytes));
 		assertNotNull(kp);
 		assertNotNull(kp.getPublic());
@@ -118,11 +114,11 @@ public class CertificateIOUtilsTest {
 		
 	@Test
 	public void testPemToX509() throws Exception {
-		byte[] bytes = getFileContents("xip-t01.swi.srse.net.crt");
+		byte[] bytes = FileUtils.getFileContents("xip-t01.swi.srse.net.crt");
 		PKIXCertificate[] serverchain = CertificateIOUtils.pemToX509certs(new String(bytes));
 		assertEquals(1,serverchain.length);
 		
-		byte[] bytes2 = getFileContents("sunrise_issueing_ca_1_bundle_2012.crt");
+		byte[] bytes2 = FileUtils.getFileContents("sunrise_issueing_ca_1_bundle_2012.crt");
 		PKIXCertificate[] trustedcerts = CertificateIOUtils.pemToX509certs(new String(bytes2));
 		assertEquals(2,trustedcerts.length);
 		
@@ -152,12 +148,4 @@ public class CertificateIOUtilsTest {
 		
 	}
 		
-	private static byte[] getFileContents( String filePath ) throws IOException {
-		Path path = Paths.get(filePath);
-		if ( !Files.exists(path) ) {
-			return null;
-		}
-		byte[] data = Files.readAllBytes(path);	
-		return data;
-	}
 }
