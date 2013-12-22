@@ -2,13 +2,14 @@ package org.tdmx.console.application.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.console.application.domain.DomainObjectField;
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
-import org.tdmx.console.application.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 public class ValidationUtils {
 
@@ -26,25 +27,42 @@ public class ValidationUtils {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public static void mandatoryField(Object fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void mandatoryField(Object fieldValue, String fieldName, ERROR error, List<FieldError> errors ) {
 		if ( fieldValue == null ) {
-			errors.add( new FieldError(field, error));
+			errors.add( new FieldError(fieldName, error));
 		}
 	}
 	
-	public static void mandatoryTextField(String fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void mandatoryTextField(String fieldValue, String fieldName, ERROR error, List<FieldError> errors ) {
 		if ( !hasText(fieldValue)) {
-			errors.add( new FieldError(field, error));
+			errors.add( new FieldError(fieldName, error));
 		}
 	}
 	
-	public static void mandatoryNumberField(Number fieldValue, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void mandatoryDateField(Date fieldValue, String fieldName, ERROR error, List<FieldError> errors ) {
+		if ( fieldValue == null ) {
+			errors.add( new FieldError(fieldName, error));
+		}
+	}
+	
+	public static void futureDateField(Date fieldValue, String fieldName, ERROR error, List<FieldError> errors ) {
+		if ( fieldValue != null ) {
+			Calendar fieldDate = CalendarUtils.getDate(fieldValue);
+			Calendar todayMidnight = CalendarUtils.getDate(new Date());
+			
+			if ( todayMidnight.after(fieldDate)) {
+				errors.add( new FieldError(fieldName, error));
+			}
+		}
+	}
+	
+	public static void mandatoryNumberField(Number fieldValue, String fieldName, ERROR error, List<FieldError> errors ) {
 		if ( !hasValue(fieldValue)) {
-			errors.add(new FieldError(field, error));
+			errors.add(new FieldError(fieldName, error));
 		}
 	}
 	
-	public static void optionalTextFieldGroup(String[] fieldValues, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void optionalTextFieldGroup(String[] fieldValues, String fieldName, ERROR error, List<FieldError> errors ) {
 		boolean all = true;
 		boolean none = true;
 		for( String fieldValue : fieldValues ) {
@@ -55,23 +73,23 @@ public class ValidationUtils {
 			}
 		}
 		if ( !all && !none ) {
-			errors.add(new FieldError(field, error));
+			errors.add(new FieldError(fieldName, error));
 		}
 	}
 	
-	public static void optionalHostnameField(String hostname, DomainObjectField field, int pos,  ERROR error, List<FieldError> errors ) {
+	public static void optionalHostnameField(String hostname, String fieldName, int pos,  ERROR error, List<FieldError> errors ) {
 		if ( hasText(hostname) && !isValidHostname(hostname)) {
-			errors.add( new FieldError(field,pos,error));
+			errors.add( new FieldError(fieldName,pos,error));
 		}
 	}
 	
-	public static void optionalHostnameField(String hostname, DomainObjectField field, ERROR error, List<FieldError> errors ) {
-		optionalHostnameField(hostname, field, 0, error, errors );
+	public static void optionalHostnameField(String hostname, String fieldName, ERROR error, List<FieldError> errors ) {
+		optionalHostnameField(hostname, fieldName, 0, error, errors );
 	}
 	
-	public static void optionalEnumeratedTextField(String fieldValue, List<String> values, DomainObjectField field, ERROR error, List<FieldError> errors ) {
+	public static void optionalEnumeratedTextField(String fieldValue, List<String> values, String fieldName, ERROR error, List<FieldError> errors ) {
 		if ( hasText(fieldValue) && !values.contains(fieldValue)) {
-			errors.add(new FieldError(field, error));
+			errors.add(new FieldError(fieldName, error));
 		}
 	}
 	

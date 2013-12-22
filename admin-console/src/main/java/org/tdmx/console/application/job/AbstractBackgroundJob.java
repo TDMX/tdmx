@@ -10,12 +10,12 @@ import org.tdmx.console.application.domain.DomainObjectField;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ProblemDO;
-import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldValidationException;
 import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.FieldValidationException;
 
 public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 

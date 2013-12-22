@@ -1,7 +1,6 @@
-package org.tdmx.console.application.domain.validation;
+package org.tdmx.console.domain.validation;
 
-import org.tdmx.console.application.domain.DomainObjectField;
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 
 
@@ -20,7 +19,7 @@ public class FieldError {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private DomainObjectField field;
+	private String field;
 	private int position = 0;
 	private ERROR error;
 	
@@ -28,12 +27,12 @@ public class FieldError {
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public FieldError(DomainObjectField field, ERROR errorCode) {
+	public FieldError(String field, ERROR errorCode) {
 		this.field = field;
 		this.error = errorCode;
 	}
 	
-	public FieldError(DomainObjectField field, int pos, ERROR errorCode) {
+	public FieldError(String field, int pos, ERROR errorCode) {
 		this.field = field;
 		this.position = pos;
 		this.error = errorCode;
@@ -64,7 +63,7 @@ public class FieldError {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public DomainObjectField getField() {
+	public String getField() {
 		return field;
 	}
 

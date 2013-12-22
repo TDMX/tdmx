@@ -1,11 +1,13 @@
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.tdmx.console.application.domain.DnsResolverListDO;
+import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
@@ -15,10 +17,9 @@ import org.tdmx.console.application.util.StringUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
-import org.xbill.DNS.ResolverConfig;
 
 
-public class DnsResolverServiceImpl implements DnsResolverService {
+public class CertificateAuthorityServiceImpl implements CertificateAuthorityService {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -27,8 +28,8 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	public static final String SYSTEM_DNS_RESOLVER_LIST_ID = "system-dns-resolver-list";
-	public static final String SYSTEM_DNS_RESOLVER_LIST_NAME = "System";
+	public static final String SYSTEM_ROOTCA_TRUSTED_LIST_ID = "tdmx-ca-trusted";
+	public static final String SYSTEM_ROOTCA_DISTRUSTED_LIST_ID = "tdmx-ca-revoked";
 	
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
@@ -42,61 +43,65 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	
 	@Override
-	public DnsResolverListDO lookup(String id) {
-		return objectRegistry.getDnsResolverList(id);
+	public CertificateAuthorityDO lookup(String id) {
+		return objectRegistry.getCertificateAuthority(id);
 	}
 
 	@Override
-	public List<DnsResolverListDO> search(String criteria) {
+	public List<CertificateAuthorityDO> search(String criteria) {
 		if ( StringUtils.hasText(criteria)) {
-			List<DnsResolverListDO> result = new ArrayList<>();
-			Set<DnsResolverListDO> found = searchService.search(DomainObjectType.DnsResolverList, criteria);
+			List<CertificateAuthorityDO> result = new ArrayList<>();
+			Set<CertificateAuthorityDO> found = searchService.search(DomainObjectType.CertificateAuthority, criteria);
 			for( DomainObject o : found ) {
-				result.add((DnsResolverListDO)o );
+				result.add((CertificateAuthorityDO)o );
 			}
 			return result;
 		}
-		return objectRegistry.getDnsResolverLists();
+		return objectRegistry.getCertificateAutorities();
 	}
 
 	@Override
-	public void updateSystemResolverList() {
-		DnsResolverListDO systemList = objectRegistry.getDnsResolverList(SYSTEM_DNS_RESOLVER_LIST_ID);
-		if ( systemList == null ) {
-			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
-			systemList = new DnsResolverListDO();
-			systemList.setId(SYSTEM_DNS_RESOLVER_LIST_ID);
-			systemList.setActive(Boolean.TRUE);
-			systemList.setName(SYSTEM_DNS_RESOLVER_LIST_NAME);
-			systemList.setHostnames(getSystemDnsHostnames());
-			objectRegistry.notifyAdd(systemList, h);
-			searchService.update(h);
-			// TODO audit log 
-		} else {
-			DnsResolverListDO systemListCopy = new DnsResolverListDO(systemList);
-			systemListCopy.setHostnames(getSystemDnsHostnames());
-			createOrUpdate(systemListCopy);
-		}
+	public List<AsymmetricEncryptionAlgorithm> getKeyTypes() {
+		List<AsymmetricEncryptionAlgorithm> keyAlgTypes = new ArrayList<>();
+		keyAlgTypes.add(AsymmetricEncryptionAlgorithm.RSA2048);
+		keyAlgTypes.add(AsymmetricEncryptionAlgorithm.RSA4096);
+		return keyAlgTypes;
 	}
 
 	@Override
-	public OperationError createOrUpdate(DnsResolverListDO resolverList) {
+	public List<SignatureAlgorithm> getSignatureTypes(AsymmetricEncryptionAlgorithm keyType) {
+		List<SignatureAlgorithm> algs = new ArrayList<>();
+		algs.add(SignatureAlgorithm.SHA_256_RSA);
+		algs.add(SignatureAlgorithm.SHA_384_RSA);
+		algs.add(SignatureAlgorithm.SHA_512_RSA);
+		return algs;
+	}
+
+	@Override
+	public OperationError create(CertificateAuthoritySpecifier request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public OperationError modify(CertificateAuthorityDO ca) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
-		List<FieldError> validation = resolverList.validate();
+		List<FieldError> validation = ca.validate();
 		if ( !validation.isEmpty() ) {
 			return new OperationError(validation);
 		}
-		DnsResolverListDO existing = objectRegistry.getDnsResolverList(resolverList.getId());
+		CertificateAuthorityDO existing = objectRegistry.getCertificateAuthority(ca.getId());
 		if ( existing == null ) {
-			objectRegistry.notifyAdd(resolverList, holder);
-			searchService.update(holder);
+			return new OperationError(ERROR.INVALID);
 		} else {
-			DomainObjectFieldChanges changes = existing.merge(resolverList);
+			DomainObjectFieldChanges changes = existing.merge(ca);
 			if ( !changes.isEmpty() ) {
 				objectRegistry.notifyModify(changes, holder);
 				searchService.update(holder);
+
+				//TODO switch tdmx-ca-trusted/distrusted ROOTCA lists
 				
-				//TODO if system's hostnames change then issue audit warning
+				//TODO audit
 			}
 		}
 		return null;
@@ -104,14 +109,12 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 
 	@Override
 	public OperationError delete(String id) {
-		// not allowed to delete the "system" DNS resolver list.
-		if ( SYSTEM_DNS_RESOLVER_LIST_ID.equals(id)) {
-			return new OperationError(ERROR.IMMUTABLE);
-		}
-		DnsResolverListDO existing = objectRegistry.getDnsResolverList(id);
+		CertificateAuthorityDO existing = objectRegistry.getCertificateAuthority(id);
 		if ( existing == null ) {
 			return new OperationError(ERROR.MISSING);
 		}
+		// TODO not allowed to delete the root ca if there are any domain certificates not deleted
+		// still issued using it.
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		objectRegistry.notifyRemove(existing, holder);
 		searchService.update(holder);
@@ -125,18 +128,6 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-	
-	private List<String> getSystemDnsHostnames() {
-		List<String> hosts= new ArrayList<>();
-		
-		String[] list = ResolverConfig.getCurrentConfig().servers();
-		if ( list != null ) {
-			for( String h : list ) {
-				hosts.add(h);
-			}
-		}
-		return Collections.unmodifiableList(hosts);
-	}
 	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -4,14 +4,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.console.application.Administration;
 import org.tdmx.console.application.domain.DnsResolverListDO;
-import org.tdmx.console.application.domain.validation.OperationError;
+import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.domain.CertificateAuthority;
+import org.tdmx.console.domain.CertificateAuthorityRequest;
 import org.tdmx.console.domain.DnsResolverList;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.domain.Job;
 import org.tdmx.console.domain.Problem;
 import org.tdmx.console.domain.User;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.OperationError;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 public class UIServiceImpl implements UIService {
 
@@ -116,6 +123,54 @@ public class UIServiceImpl implements UIService {
 	public OperationError createOrUpdateDnsResolverList(DnsResolverList object) {
 		DnsResolverListDO d = object.domain();
 		return getAdmin().getDnsResolverService().createOrUpdate(d);
+	}
+
+	@Override
+	public List<AsymmetricEncryptionAlgorithm> getValidCSRKeyAlgorithms() {
+		return getAdmin().getCertificateAuthorityService().getKeyTypes();
+	}
+
+	@Override
+	public List<SignatureAlgorithm> getValidCSRSignatureAlgorithms(
+			AsymmetricEncryptionAlgorithm keyAlgorithm) {
+		return getAdmin().getCertificateAuthorityService().getSignatureTypes(keyAlgorithm);
+	}
+
+	@Override
+	public OperationError createCertificateAuthority(
+			CertificateAuthorityRequest request) {
+		List<FieldError> errors = request.validate();
+		if ( errors.size() > 0 ) {
+			return new OperationError(errors);
+		}
+		
+		//TODO call 
+		// on success, the request's certificateAuthorityId is set. 
+		return null;
+	}
+
+	@Override
+	public OperationError deleteCertificateAuthority(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public OperationError updateCertificateAuthority(CertificateAuthority object) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CertificateAuthority getCertificateAuthority(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CertificateAuthority> searchCertificateAuthority(String criteria) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
     //-------------------------------------------------------------------------

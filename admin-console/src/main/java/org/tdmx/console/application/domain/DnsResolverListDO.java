@@ -3,14 +3,14 @@ package org.tdmx.console.application.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
-import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 
 
@@ -87,11 +87,11 @@ public class DnsResolverListDO extends AbstractDO {
 	public List<FieldError> validate() {
 		List<FieldError> errors = new ArrayList<>();
 		
-		ValidationUtils.mandatoryField(isActive(), F_ACTIVE, ERROR.MISSING, errors);
-		ValidationUtils.mandatoryTextField(getName(), F_NAME, ERROR.MISSING, errors);
+		ValidationUtils.mandatoryField(isActive(), F_ACTIVE.getName(), ERROR.MISSING, errors);
+		ValidationUtils.mandatoryTextField(getName(), F_NAME.getName(), ERROR.MISSING, errors);
 		if ( getHostnames() != null ) {
 			for( String hostname : getHostnames()) {
-				ValidationUtils.optionalHostnameField(hostname, F_HOSTNAMES, ERROR.INVALID, errors);
+				ValidationUtils.optionalHostnameField(hostname, F_HOSTNAMES.getName(), ERROR.INVALID, errors);
 			}
 		}
 		return errors;

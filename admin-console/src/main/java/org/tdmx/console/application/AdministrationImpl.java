@@ -26,6 +26,8 @@ import org.tdmx.console.application.job.StateStorageJob;
 import org.tdmx.console.application.job.SystemPropertySettingsUpdateJob;
 import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
 import org.tdmx.console.application.search.SearchServiceImpl;
+import org.tdmx.console.application.service.CertificateAuthorityService;
+import org.tdmx.console.application.service.CertificateAuthorityServiceImpl;
 import org.tdmx.console.application.service.DnsResolverService;
 import org.tdmx.console.application.service.DnsResolverServiceImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -78,6 +80,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 	
 	private SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
 	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
+	private CertificateAuthorityServiceImpl certificateAuthorityService = new CertificateAuthorityServiceImpl();
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -145,6 +148,9 @@ public class AdministrationImpl implements Administration, IInitializer {
 		
 		dnsResolverService.setObjectRegistry(registry);
 		dnsResolverService.setSearchService(searchService);
+		
+		certificateAuthorityService.setObjectRegistry(registry);
+		certificateAuthorityService.setSearchService(searchService);
 		
 		// Configure all Jobs and wire all services they need.
 		//
@@ -240,6 +246,11 @@ public class AdministrationImpl implements Administration, IInitializer {
 	@Override
 	public DnsResolverService getDnsResolverService() {
 		return dnsResolverService;
+	}
+
+	@Override
+	public CertificateAuthorityService getCertificateAuthorityService() {
+		return certificateAuthorityService;
 	}
 
 }

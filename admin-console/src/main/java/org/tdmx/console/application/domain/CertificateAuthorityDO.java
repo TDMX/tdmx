@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 
 
@@ -28,7 +28,7 @@ import org.tdmx.console.application.util.ValidationUtils;
  * X509 fields:
  * Subject { CN = "name", O = "organization", C = "country" } == Issuer
  * Validity <= 10yrs
- * BasicConstraints: { Subject Type=CA, Path Length Constraint=none(0) or 1 }
+ * BasicConstraints: { Subject Type=CA, Path Length Constraint=1 }
  * KeyUage {Certificate Signing, Digital Signature }
  * SubjectKeyIdentifier { }, AuthorityKeyIdentifier { KeyID=... }
  * 
@@ -59,7 +59,6 @@ public class CertificateAuthorityDO extends AbstractDO {
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private Boolean active = Boolean.TRUE;
-	private String name;
 	private String x509certificateId;
 	
 	//-------------------------------------------------------------------------
@@ -73,8 +72,6 @@ public class CertificateAuthorityDO extends AbstractDO {
 	public CertificateAuthorityDO( CertificateAuthorityDO original ) {
 		setId(original.getId());
 		setActive(original.isActive());
-		setName(original.getName());
-		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -89,7 +86,7 @@ public class CertificateAuthorityDO extends AbstractDO {
 	
 	@Override
 	public DomainObjectType getType() {
-		return DomainObjectType.DnsResolverList;
+		return DomainObjectType.CertificateAuthority;
 	}
 
 	@Override
@@ -105,8 +102,8 @@ public class CertificateAuthorityDO extends AbstractDO {
 	public List<FieldError> validate() {
 		List<FieldError> errors = new ArrayList<>();
 		
-		ValidationUtils.mandatoryField(isActive(), F_ACTIVE, ERROR.MISSING, errors);
-		ValidationUtils.mandatoryTextField(getX509certificateId(), F_CERTIFICATE_ID, ERROR.MISSING, errors);
+		ValidationUtils.mandatoryField(isActive(), F_ACTIVE.getName(), ERROR.MISSING, errors);
+		ValidationUtils.mandatoryTextField(getX509certificateId(), F_CERTIFICATE_ID.getName(), ERROR.MISSING, errors);
 		return errors;
 	}
 
@@ -139,14 +136,6 @@ public class CertificateAuthorityDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public Boolean isActive() {
 		return active;

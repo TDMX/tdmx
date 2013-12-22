@@ -13,6 +13,7 @@ import org.tdmx.console.application.dao.X509Certificate;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.SystemPropertyList;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
@@ -76,6 +77,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 				add(cert);
 			}
 			//TODO rootcalist
+			//TODO certificate authority
 
 			for( DNSResolverList dnslist : content.getDnsresolverList() ) {
 				DnsResolverListDO d = domMapper.map(dnslist);
@@ -107,6 +109,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 					X509Certificate cert = storeMapper.map(c);
 					store.getX509Certificate().add(cert);
 				}
+				//TODO certificate authority
 				
 				//TODO rootcalist
 				for( DnsResolverListDO d : getDnsResolverLists() ) {
@@ -234,6 +237,25 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		return null;
 	}
 
+	@Override
+	public CertificateAuthorityDO getCertificateAuthority(String id) {
+		if ( id == null ) {
+			return null;
+		}
+		DomainObject dom = objects.get(id);
+		if ( dom instanceof CertificateAuthorityDO ) {
+			return (CertificateAuthorityDO)dom;
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CertificateAuthorityDO> getCertificateAutorities() {
+		DomainObjectContainer<? extends DomainObject> c = getContainer(CertificateAuthorityDO.class);
+		return (List<CertificateAuthorityDO>) c.getList();
+	}
+
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -252,6 +274,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	private void init() {
 		objects.clear();
 		classMap.clear();
+		classMap.put(CertificateAuthorityDO.class.getName(), new DomainObjectContainer<CertificateAuthorityDO>());
 		classMap.put(X509CertificateDO.class.getName(), new DomainObjectContainer<X509CertificateDO>());
 		classMap.put(DnsResolverListDO.class.getName(), new DomainObjectContainer<DnsResolverListDO>());
 		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());

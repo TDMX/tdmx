@@ -3,7 +3,7 @@ package org.tdmx.console.application.service;
 import java.util.List;
 
 import org.tdmx.console.application.domain.DnsResolverListDO;
-import org.tdmx.console.application.domain.validation.OperationError;
+import org.tdmx.console.domain.validation.OperationError;
 
 public interface DnsResolverService {
 

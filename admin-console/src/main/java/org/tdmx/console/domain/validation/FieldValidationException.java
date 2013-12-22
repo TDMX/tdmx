@@ -1,4 +1,4 @@
-package org.tdmx.console.application.domain.validation;
+package org.tdmx.console.domain.validation;
 
 import java.util.List;
 

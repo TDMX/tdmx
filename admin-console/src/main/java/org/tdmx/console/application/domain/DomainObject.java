@@ -2,10 +2,10 @@ package org.tdmx.console.application.domain;
 
 import java.util.List;
 
-import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldValidationException;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.FieldValidationException;
 
 
 

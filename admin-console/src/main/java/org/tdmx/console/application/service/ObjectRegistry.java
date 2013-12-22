@@ -2,6 +2,7 @@ package org.tdmx.console.application.service;
 
 import java.util.List;
 
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
@@ -84,4 +85,14 @@ public interface ObjectRegistry {
 	 */
 	public X509CertificateDO getX509Certificate( String id );
 
+	/**
+	 * @param id
+	 * @return the CertificateAuthorityDO DomainObject with the id, or null if none exists.
+	 */
+	public CertificateAuthorityDO getCertificateAuthority( String id );
+	
+	/**
+	 * @return the list of all CertificateAuthority DomainObjects.
+	 */
+	public List<CertificateAuthorityDO> getCertificateAutorities();
 }

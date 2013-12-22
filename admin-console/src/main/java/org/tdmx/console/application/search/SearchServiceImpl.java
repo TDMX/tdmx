@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
@@ -42,6 +43,8 @@ public class SearchServiceImpl implements SearchService {
 
 	//private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
 
+	//TODO CertificateAuthorities
+	
 	//TODO X509Certificates
 	
 	//TODO DsnResolverList
@@ -80,6 +83,16 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	@Override
+	public List<SearchableObjectField> getSearchableFields(DomainObject object) {
+		if ( object == null ) {
+			return null;
+		}
+		DomainObjectType type = object.getType();
+		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap(type);
+		return objectFieldMaps.get(object);
+	}
+
+	@Override
 	public void update( DomainObjectChangesHolder objects ) {
 
 		for( DomainObject deletedObject : objects.deletedObjects ) {
@@ -109,6 +122,14 @@ public class SearchServiceImpl implements SearchService {
 
 			@Override
 			public void visit(X509CertificateDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+				holder.getResult().registerNew(object);
+			}
+		});
+		
+		Traversal.traverse( getObjectRegistry().getCertificateAutorities(), ch, new TraversalFunction<CertificateAuthorityDO, DomainObjectChangesHolder>() {
+
+			@Override
+			public void visit(CertificateAuthorityDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
 				holder.getResult().registerNew(object);
 			}
 		});

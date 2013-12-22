@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.tdmx.console.application.domain.validation.FieldError;
-import org.tdmx.console.application.domain.validation.FieldValidationException;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.FieldValidationException;
 
 
 /**

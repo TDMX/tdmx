@@ -3,11 +3,11 @@ package org.tdmx.console.application.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tdmx.console.application.domain.validation.OperationError.ERROR;
-import org.tdmx.console.application.domain.validation.FieldError;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.domain.validation.FieldError;
+import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 
 
@@ -72,11 +72,12 @@ public class RootCAListDO extends AbstractDO {
 		return holder;
 	}
 
+	@Override
 	public List<FieldError> validate() {
 		List<FieldError> errors = new ArrayList<>();
 		
-		ValidationUtils.mandatoryField(isActive(), F_ACTIVE, ERROR.MISSING, errors);
-		ValidationUtils.mandatoryTextField(getName(), F_NAME, ERROR.MISSING, errors);
+		ValidationUtils.mandatoryField(isActive(), F_ACTIVE.getName(), ERROR.MISSING, errors);
+		ValidationUtils.mandatoryTextField(getName(), F_NAME.getName(), ERROR.MISSING, errors);
 		return errors;
 	}
 
