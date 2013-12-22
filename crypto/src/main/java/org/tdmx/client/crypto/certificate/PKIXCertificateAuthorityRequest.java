@@ -1,6 +1,7 @@
 package org.tdmx.client.crypto.certificate;
 
 import java.util.Calendar;
+import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
@@ -19,6 +20,8 @@ public class PKIXCertificateAuthorityRequest {
 	private String country;
 	private Calendar notBefore;
 	private Calendar notAfter;
+	private boolean subjectNameContraint;
+	private List<String> dnsNameConstraints;
 	private SignatureAlgorithm signatureAlgorithm;
 	
 	//-------------------------------------------------------------------------
@@ -89,6 +92,22 @@ public class PKIXCertificateAuthorityRequest {
 
 	public void setNotAfter(Calendar notAfter) {
 		this.notAfter = notAfter;
+	}
+
+	public boolean isSubjectNameContraint() {
+		return subjectNameContraint;
+	}
+
+	public void setSubjectNameContraint(boolean subjectNameContraint) {
+		this.subjectNameContraint = subjectNameContraint;
+	}
+
+	public List<String> getDnsNameConstraints() {
+		return dnsNameConstraints;
+	}
+
+	public void setDnsNameConstraints(List<String> dnsNameConstraints) {
+		this.dnsNameConstraints = dnsNameConstraints;
 	}
 
 	public SignatureAlgorithm getSignatureAlgorithm() {

@@ -3,8 +3,10 @@ package org.tdmx.client.crypto.certificate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +37,11 @@ public class CertificateAuthorityUtilsTest {
 		req.setOrg("mycompany");
 		req.setNotBefore(now);
 		req.setNotAfter(later);
+		List<String> dnsNameConstraints = new ArrayList<>();
+		dnsNameConstraints.add("d.com");
+		dnsNameConstraints.add("f.com");
+		req.setDnsNameConstraints(dnsNameConstraints);
+		req.setSubjectNameContraint(true);
 		req.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CertificateAuthorityUtils.createCertificateAuthority(req);

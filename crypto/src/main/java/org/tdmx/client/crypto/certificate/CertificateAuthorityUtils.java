@@ -6,6 +6,8 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -84,13 +86,26 @@ public class CertificateAuthorityUtils {
 			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature|KeyUsage.keyCertSign);
 			certBuilder.addExtension(Extension.keyUsage, false, ku);
 			
-			//TODO name contraints into req.
-			GeneralName gn = new GeneralName(GeneralName.dNSName, "domain.com");
-			GeneralSubtree gs = new GeneralSubtree(gn,new BigInteger("0"),null); //RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
-			GeneralSubtree[] permitted = new GeneralSubtree[]{gs};
-			
-			NameConstraints nc = new NameConstraints(permitted, null);
-			certBuilder.addExtension(Extension.nameConstraints, true, nc);
+			//RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
+			List<GeneralSubtree> nameConstraints = new ArrayList<>();
+			if ( req.isSubjectNameContraint() ) {
+				GeneralName snc = new GeneralName(GeneralName.directoryName, subject);
+				GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
+				nameConstraints.add(snSubtree);
+			}
+			if ( req.getDnsNameConstraints() != null ) {
+				for( int i = 0; i < req.getDnsNameConstraints().size(); i++) {
+					String dnsName = req.getDnsNameConstraints().get(i);
+					GeneralName gn = new GeneralName(GeneralName.dNSName, dnsName);
+					GeneralSubtree domainSubtree = new GeneralSubtree(gn,new BigInteger("0"),null); 
+					nameConstraints.add(domainSubtree);
+				}
+			}
+			if ( nameConstraints.size() > 0) {
+				GeneralSubtree[] ncs = nameConstraints.toArray(new GeneralSubtree[0]);
+				NameConstraints nc = new NameConstraints(ncs, null);
+				certBuilder.addExtension(Extension.nameConstraints, true, nc);
+			}
 			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, SignatureAlgorithm.SHA_256_RSA);
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
