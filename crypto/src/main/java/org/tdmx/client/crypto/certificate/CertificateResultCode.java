@@ -3,7 +3,10 @@ package org.tdmx.client.crypto.certificate;
 public enum CertificateResultCode {
 
 	OK,
-	
+
+	ERROR_CA_KEYPAIR_GENERATION,
+	ERROR_CA_CERT_GENERATION,
+
 	ERROR_MISSING_CERTS,
 	ERROR_TOO_MANY_CERTS,
 	ERROR_FINGERPRINT_TAMPERING,

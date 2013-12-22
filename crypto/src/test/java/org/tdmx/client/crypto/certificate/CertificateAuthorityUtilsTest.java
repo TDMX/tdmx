@@ -40,8 +40,7 @@ public class CertificateAuthorityUtilsTest {
 		List<String> dnsNameConstraints = new ArrayList<>();
 		dnsNameConstraints.add("d.com");
 		dnsNameConstraints.add("f.com");
-		req.setDnsNameConstraints(dnsNameConstraints);
-		req.setSubjectNameContraint(true);
+		req.setOuNameContraint("tdmx-domain");
 		req.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CertificateAuthorityUtils.createCertificateAuthority(req);

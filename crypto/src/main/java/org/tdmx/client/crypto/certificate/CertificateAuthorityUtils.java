@@ -6,8 +6,6 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -54,8 +52,8 @@ public class CertificateAuthorityUtils {
 		KeyPair kp = null;
 		try {
 			kp = req.getKeyAlgorithm().generateNewKeyPair();
-		} catch (CryptoException e1) {
-			// TODO 
+		} catch (CryptoException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_KEYPAIR_GENERATION, e);
 		}
 		
 		PublicKey publicKey = kp.getPublic();
@@ -76,7 +74,7 @@ public class CertificateAuthorityUtils {
 				publicKey);
 
 		try {
-			BasicConstraints cA = new BasicConstraints(0);
+			BasicConstraints cA = new BasicConstraints(1);
 			certBuilder.addExtension(Extension.basicConstraints, true, cA);
 
 			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
@@ -87,23 +85,18 @@ public class CertificateAuthorityUtils {
 			certBuilder.addExtension(Extension.keyUsage, false, ku);
 			
 			//RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
-			List<GeneralSubtree> nameConstraints = new ArrayList<>();
-			if ( req.isSubjectNameContraint() ) {
-				GeneralName snc = new GeneralName(GeneralName.directoryName, subject);
+			//The CA has a CN which is not part of the name constraint - but we can constrain
+			//any domain certificate issued to be limited to some OU under the O.
+			if ( req.getOuNameContraint() != null ) {
+				X500NameBuilder subjectConstraintBuilder = new X500NameBuilder();
+				subjectConstraintBuilder.addRDN(BCStyle.C, req.getCountry());
+				subjectConstraintBuilder.addRDN(BCStyle.O, req.getOrg());
+				subjectConstraintBuilder.addRDN(BCStyle.OU, req.getOuNameContraint());
+				X500Name nameConstraint = subjectConstraintBuilder.build();
+				
+				GeneralName snc = new GeneralName(GeneralName.directoryName, nameConstraint);
 				GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
-				nameConstraints.add(snSubtree);
-			}
-			if ( req.getDnsNameConstraints() != null ) {
-				for( int i = 0; i < req.getDnsNameConstraints().size(); i++) {
-					String dnsName = req.getDnsNameConstraints().get(i);
-					GeneralName gn = new GeneralName(GeneralName.dNSName, dnsName);
-					GeneralSubtree domainSubtree = new GeneralSubtree(gn,new BigInteger("0"),null); 
-					nameConstraints.add(domainSubtree);
-				}
-			}
-			if ( nameConstraints.size() > 0) {
-				GeneralSubtree[] ncs = nameConstraints.toArray(new GeneralSubtree[0]);
-				NameConstraints nc = new NameConstraints(ncs, null);
+				NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
 				certBuilder.addExtension(Extension.nameConstraints, true, nc);
 			}
 			
@@ -114,14 +107,12 @@ public class CertificateAuthorityUtils {
 			
 			return new PKIXCredential(c, privateKey);
 		} catch (CertIOException e) {
-			//TODO
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		} catch (NoSuchAlgorithmException e) {
-			//TODO
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		} catch (IOException e) {
-			//TODO
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		}
-		
-		return null;
 	}
 	
     //-------------------------------------------------------------------------
