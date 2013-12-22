@@ -1,5 +1,6 @@
 package org.tdmx.client.crypto.certificate;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -31,7 +32,7 @@ public class CertificateAuthorityUtilsTest {
 		later.add(Calendar.YEAR, 10);
 		later.set(Calendar.MILLISECOND, 0);
 
-		PKIXCertificateAuthorityRequest req = new PKIXCertificateAuthorityRequest();
+		CertificateAuthoritySpecifier req = new CertificateAuthoritySpecifier();
 		req.setCn("name");
 		req.setCountry("CH");
 		req.setOrg("mycompany");
@@ -40,7 +41,6 @@ public class CertificateAuthorityUtilsTest {
 		List<String> dnsNameConstraints = new ArrayList<>();
 		dnsNameConstraints.add("d.com");
 		dnsNameConstraints.add("f.com");
-		req.setOuNameContraint("tdmx-domain");
 		req.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CertificateAuthorityUtils.createCertificateAuthority(req);
@@ -51,11 +51,12 @@ public class CertificateAuthorityUtilsTest {
 		assertEquals(1, cred.getCertificateChain().length);
 		
 		PKIXCertificate c = cred.getCertificateChain()[0];
-		assertEquals(req.getCn(), c.getCn());
+		assertEquals(req.getCn(), c.getCommonName());
 		assertEquals(req.getCountry(), c.getCountry());
-		assertEquals(req.getOrg(), c.getOrg());
+		assertEquals(req.getOrg(), c.getOrganization());
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
+		assertTrue(c.isTdmxDomainCA());
 		
 		byte[] bs = CertificateIOUtils.encodeCertificate(c);
 		FileUtils.storeFileContents("ca.crt", bs, ".tmp");

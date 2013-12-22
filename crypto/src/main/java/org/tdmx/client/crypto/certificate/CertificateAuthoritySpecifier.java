@@ -5,7 +5,7 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
-public class PKIXCertificateAuthorityRequest {
+public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
@@ -19,13 +19,12 @@ public class PKIXCertificateAuthorityRequest {
 	private String country;
 	private Calendar notBefore;
 	private Calendar notAfter;
-	private String ouNameContraint;
 	private SignatureAlgorithm signatureAlgorithm;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-	public PKIXCertificateAuthorityRequest(){
+	public CertificateAuthoritySpecifier(){
 	}
 	
 	//-------------------------------------------------------------------------
@@ -90,14 +89,6 @@ public class PKIXCertificateAuthorityRequest {
 
 	public void setNotAfter(Calendar notAfter) {
 		this.notAfter = notAfter;
-	}
-
-	public String getOuNameContraint() {
-		return ouNameContraint;
-	}
-
-	public void setOuNameContraint(String ouNameContraint) {
-		this.ouNameContraint = ouNameContraint;
 	}
 
 	public SignatureAlgorithm getSignatureAlgorithm() {

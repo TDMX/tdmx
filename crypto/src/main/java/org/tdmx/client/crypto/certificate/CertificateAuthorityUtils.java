@@ -29,6 +29,7 @@ public class CertificateAuthorityUtils {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
+	public static final String TDMX_DOMAIN_CA_OU="tdmx-domain";
 	
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -48,7 +49,7 @@ public class CertificateAuthorityUtils {
 	 * @return
 	 * @throws CryptoCertificateException 
 	 */
-	public static PKIXCredential createCertificateAuthority( PKIXCertificateAuthorityRequest req ) throws CryptoCertificateException {
+	public static PKIXCredential createCertificateAuthority( CertificateAuthoritySpecifier req ) throws CryptoCertificateException {
 		KeyPair kp = null;
 		try {
 			kp = req.getKeyAlgorithm().generateNewKeyPair();
@@ -87,18 +88,16 @@ public class CertificateAuthorityUtils {
 			//RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
 			//The CA has a CN which is not part of the name constraint - but we can constrain
 			//any domain certificate issued to be limited to some OU under the O.
-			if ( req.getOuNameContraint() != null ) {
-				X500NameBuilder subjectConstraintBuilder = new X500NameBuilder();
-				subjectConstraintBuilder.addRDN(BCStyle.C, req.getCountry());
-				subjectConstraintBuilder.addRDN(BCStyle.O, req.getOrg());
-				subjectConstraintBuilder.addRDN(BCStyle.OU, req.getOuNameContraint());
-				X500Name nameConstraint = subjectConstraintBuilder.build();
-				
-				GeneralName snc = new GeneralName(GeneralName.directoryName, nameConstraint);
-				GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
-				NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
-				certBuilder.addExtension(Extension.nameConstraints, true, nc);
-			}
+			X500NameBuilder subjectConstraintBuilder = new X500NameBuilder();
+			subjectConstraintBuilder.addRDN(BCStyle.C, req.getCountry());
+			subjectConstraintBuilder.addRDN(BCStyle.O, req.getOrg());
+			subjectConstraintBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
+			X500Name nameConstraint = subjectConstraintBuilder.build();
+			
+			GeneralName snc = new GeneralName(GeneralName.directoryName, nameConstraint);
+			GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
+			NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
+			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, SignatureAlgorithm.SHA_256_RSA);
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
