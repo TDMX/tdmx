@@ -25,6 +25,7 @@ import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
 import org.tdmx.console.application.job.StateStorageJob;
 import org.tdmx.console.application.job.SystemPropertySettingsUpdateJob;
 import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
+import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.search.SearchServiceImpl;
 import org.tdmx.console.application.service.CertificateAuthorityService;
 import org.tdmx.console.application.service.CertificateAuthorityServiceImpl;
@@ -39,6 +40,8 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
+	//TODO getSearchableFields() in DomainObject interface
+	
 	//TODO CertificateAuthority service
 	//	- create CA ( cn, o, c , from, to ) > certs+pk
 	//  - import CA as pkcs12 + passphrase
@@ -221,6 +224,11 @@ public class AdministrationImpl implements Administration, IInitializer {
 	@Override
 	public ObjectRegistry getObjectRegistry() {
 		return registry;
+	}
+
+	@Override
+	public SearchService getSearchService() {
+		return searchService;
 	}
 
 	@Override

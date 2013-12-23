@@ -2,12 +2,12 @@ package org.tdmx.console.domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
 import org.tdmx.console.application.util.ValidationUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
@@ -78,6 +78,11 @@ public class CertificateAuthorityRequest implements Serializable {
 		return errors;
 	}
 
+	public CertificateAuthoritySpecifier domain() {
+		CertificateAuthoritySpecifier o = new CertificateAuthoritySpecifier();
+		//TODO map fields
+		return o;
+	}
 	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS

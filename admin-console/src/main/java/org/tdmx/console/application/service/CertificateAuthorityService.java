@@ -17,6 +17,6 @@ public interface CertificateAuthorityService {
 	public List<SignatureAlgorithm> getSignatureTypes( AsymmetricEncryptionAlgorithm keyType );
 	
 	public OperationError create( CertificateAuthoritySpecifier request );
-	public OperationError modify( CertificateAuthorityDO ca );
+	public OperationError update( CertificateAuthorityDO ca );
 	public OperationError delete( String id );
 }

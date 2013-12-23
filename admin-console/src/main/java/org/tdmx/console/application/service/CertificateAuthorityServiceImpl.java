@@ -84,7 +84,7 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	}
 
 	@Override
-	public OperationError modify(CertificateAuthorityDO ca) {
+	public OperationError update(CertificateAuthorityDO ca) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		List<FieldError> validation = ca.validate();
 		if ( !validation.isEmpty() ) {

@@ -6,9 +6,11 @@ import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
 import org.tdmx.console.application.Administration;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
-import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.domain.CertificateAuthority;
 import org.tdmx.console.domain.CertificateAuthorityRequest;
 import org.tdmx.console.domain.DnsResolverList;
@@ -18,7 +20,6 @@ import org.tdmx.console.domain.Problem;
 import org.tdmx.console.domain.User;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError;
-import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 public class UIServiceImpl implements UIService {
 
@@ -143,34 +144,39 @@ public class UIServiceImpl implements UIService {
 		if ( errors.size() > 0 ) {
 			return new OperationError(errors);
 		}
-		
-		//TODO call 
+		CertificateAuthoritySpecifier csr = request.domain();
 		// on success, the request's certificateAuthorityId is set. 
-		return null;
+		return getAdmin().getCertificateAuthorityService().create(csr);
 	}
 
 	@Override
 	public OperationError deleteCertificateAuthority(String id) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return getAdmin().getCertificateAuthorityService().delete(id);
 	}
 
 	@Override
 	public OperationError updateCertificateAuthority(CertificateAuthority object) {
-		// TODO Auto-generated method stub
-		return null;
+		CertificateAuthorityDO d = object.domain();
+		return getAdmin().getCertificateAuthorityService().update(d);
 	}
 
 	@Override
 	public CertificateAuthority getCertificateAuthority(String id) {
-		// TODO Auto-generated method stub
-		return null;
+		CertificateAuthorityDO dom = getAdmin().getCertificateAuthorityService().lookup(id);
+		List<SearchableObjectField> fields = getAdmin().getSearchService().getSearchableFields(dom);
+		return dom != null ? new CertificateAuthority(dom, fields) : null;
 	}
 
 	@Override
 	public List<CertificateAuthority> searchCertificateAuthority(String criteria) {
-		// TODO Auto-generated method stub
-		return null;
+		List<CertificateAuthority> list = new ArrayList<>();
+		List<CertificateAuthorityDO> domList = getAdmin().getCertificateAuthorityService().search(criteria);
+		for( CertificateAuthorityDO dom : domList ) {
+			List<SearchableObjectField> fields = getAdmin().getSearchService().getSearchableFields(dom);
+			list.add(new CertificateAuthority(dom, fields));
+		}
+		return list;
 	}
 
     //-------------------------------------------------------------------------
