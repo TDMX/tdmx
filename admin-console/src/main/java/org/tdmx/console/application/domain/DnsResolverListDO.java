@@ -98,7 +98,8 @@ public class DnsResolverListDO extends AbstractDO {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
 		ctx.sof(this, DnsResolverListSO.NAME, getName());
 		ctx.sof(this, DnsResolverListSO.STATE, isActive() ? SearchableObjectField.TOKEN_ON : SearchableObjectField.TOKEN_OFF);
 		if ( getHostnames() != null ) {
@@ -106,6 +107,7 @@ public class DnsResolverListDO extends AbstractDO {
 				ctx.sof(this, DnsResolverListSO.HOSTNAME, hostname);
 			}
 		}
+		setSearchFields(ctx.getSearchFields());
 	}
 	
     //-------------------------------------------------------------------------

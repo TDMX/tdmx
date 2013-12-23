@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.FieldValidationException;
 
@@ -22,11 +23,11 @@ public abstract class AbstractDO implements DomainObject {
 	
 	public static final AtomicLong ID = new AtomicLong(System.currentTimeMillis()*1000);
 	
-
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private String id;
+	private List<SearchableObjectField> searchFields = NO_SEARCH_FIELDS;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -91,6 +92,15 @@ public abstract class AbstractDO implements DomainObject {
 		if ( errors != null && !errors.isEmpty() ) {
 			throw new FieldValidationException(this, errors);
 		}
+	}
+
+	@Override
+	public List<SearchableObjectField> getSearchFields() {
+		return searchFields;
+	}
+
+	public void setSearchFields(List<SearchableObjectField> searchFields) {
+		this.searchFields = searchFields;
 	}
 
     //-------------------------------------------------------------------------

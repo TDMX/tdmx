@@ -99,15 +99,13 @@ public class SearchServiceImpl implements SearchService {
 			searchContext.removeObject(deletedObject);
 		}
 		for( DomainObject newObject : objects.newObjects ) {
-			ObjectSearchContext osc = new ObjectSearchContext();
-			newObject.gatherSearchFields(osc, objectRegistry);
-			searchContext.addOrUpdateObject(newObject, osc.getSearchFields());
+			newObject.updateSearchFields(objectRegistry);
+			searchContext.addOrUpdateObject(newObject);
 		}
 		for( Entry<DomainObject,DomainObjectFieldChanges> entry : objects.changedMap.entrySet() ) {
 			DomainObject updatedObject = entry.getKey();
-			ObjectSearchContext osc = new ObjectSearchContext();
-			updatedObject.gatherSearchFields(osc, objectRegistry);
-			searchContext.addOrUpdateObject(updatedObject, osc.getSearchFields());
+			updatedObject.updateSearchFields(objectRegistry);
+			searchContext.addOrUpdateObject(updatedObject);
 		}
 	}
 
@@ -185,8 +183,8 @@ public class SearchServiceImpl implements SearchService {
 			objectTypeMap.get(object.getType()).remove(object);
 		}
 		
-		public void addOrUpdateObject( DomainObject object,  List<SearchableObjectField> fields ) {
-			objectTypeMap.get(object.getType()).put(object, fields);
+		public void addOrUpdateObject( DomainObject object ) {
+			objectTypeMap.get(object.getType()).put(object, object.getSearchFields());
 		}
 	}
 	

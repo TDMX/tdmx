@@ -82,7 +82,9 @@ public class RootCAListDO extends AbstractDO {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
+		setSearchFields(ctx.getSearchFields());
 		//TODO
 	}
 	

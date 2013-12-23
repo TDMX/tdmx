@@ -108,7 +108,8 @@ public class CertificateAuthorityDO extends AbstractDO {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
 		ctx.sof(this, CertificateAuthoritySO.STATE, isActive() ? SearchableObjectField.TOKEN_TRUSTED : SearchableObjectField.TOKEN_REVOKED);
 
 		X509CertificateDO cert = registry.getX509Certificate(getX509certificateId());
@@ -119,6 +120,7 @@ public class CertificateAuthorityDO extends AbstractDO {
 			ctx.sof(this, CertificateAuthoritySO.TO, c.getNotAfter());
 			ctx.sof(this, CertificateAuthoritySO.INFO, c.getInfo());
 		}
+		setSearchFields(ctx.getSearchFields());
 	}
 	
     //-------------------------------------------------------------------------

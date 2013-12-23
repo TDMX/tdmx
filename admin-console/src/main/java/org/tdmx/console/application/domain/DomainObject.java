@@ -1,8 +1,10 @@
 package org.tdmx.console.application.domain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.FieldValidationException;
@@ -17,6 +19,8 @@ import org.tdmx.console.domain.validation.FieldValidationException;
  */
 public interface DomainObject {
 
+	public static final List<SearchableObjectField> NO_SEARCH_FIELDS = Collections.unmodifiableList(new ArrayList<SearchableObjectField>());
+	
 	public String getId();
 
 	public DomainObjectType getType();
@@ -35,6 +39,7 @@ public interface DomainObject {
 
 	public void check() throws FieldValidationException;
 	
-	public void gatherSearchFields( ObjectSearchContext ctx, ObjectRegistry registry );
+	public void updateSearchFields( ObjectRegistry registry );
 	
+	public List<SearchableObjectField> getSearchFields();
 }

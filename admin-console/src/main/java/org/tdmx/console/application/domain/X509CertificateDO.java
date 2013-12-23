@@ -57,11 +57,13 @@ public class X509CertificateDO extends AbstractDO {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
 		ctx.sof(this, X509CertificateSO.FINGERPRINT, getId());
 		ctx.sof(this, X509CertificateSO.FROM, certificate.getNotBefore());
 		ctx.sof(this, X509CertificateSO.TO, certificate.getNotAfter());
 		ctx.sof(this, X509CertificateSO.INFO, certificate.getInfo());
+		setSearchFields(ctx.getSearchFields());
 	}
 	
     //-------------------------------------------------------------------------

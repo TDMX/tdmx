@@ -79,12 +79,13 @@ public class ServiceProviderDO extends AbstractDO {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
 		ctx.sof(this, X509CertificateSO.FINGERPRINT, getId());
 		ctx.sof(this, ServiceProviderSO.SUBJECT, getSubjectIdentifier());
 		ctx.sof(this, ServiceProviderSO.MAS_HOSTNAME, getMasHostname());
 		ctx.sof(this, ServiceProviderSO.MAS_PORT, getMasPort());
-
+		setSearchFields(ctx.getSearchFields());
 	}
 
 	

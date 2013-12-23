@@ -40,9 +40,8 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
-	//TODO getSearchableFields() in DomainObject interface
-	
 	//TODO CertificateAuthority service
+	// email, telno, L
 	//	- create CA ( cn, o, c , from, to ) > certs+pk
 	//  - import CA as pkcs12 + passphrase
 	//	- modify status

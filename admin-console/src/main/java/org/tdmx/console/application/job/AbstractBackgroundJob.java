@@ -12,6 +12,7 @@ import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
+import org.tdmx.console.application.search.SearchableObjectField;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.service.ProblemRegistry;
 import org.tdmx.console.domain.validation.FieldError;
@@ -36,7 +37,8 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	protected Date lastCompletedDate;
 	protected Date startedRunningDate;
 	protected ProblemDO lastProblem;
-
+	protected List<SearchableObjectField> searchFields = NO_SEARCH_FIELDS;
+	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
@@ -114,8 +116,15 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	}
 
 	@Override
-	public void gatherSearchFields(ObjectSearchContext ctx, ObjectRegistry registry) {
+	public void updateSearchFields(ObjectRegistry registry) {
+		ObjectSearchContext ctx = new ObjectSearchContext();
 		ctx.sof(this, BackgroundJobSO.NAME, getName());
+		searchFields = ctx.getSearchFields();
+	}
+
+	@Override
+	public List<SearchableObjectField> getSearchFields() {
+		return searchFields;
 	}
 
 	@Override
