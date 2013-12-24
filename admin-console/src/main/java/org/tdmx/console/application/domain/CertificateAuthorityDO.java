@@ -72,14 +72,9 @@ public class CertificateAuthorityDO extends AbstractDO {
 	public CertificateAuthorityDO( CertificateAuthorityDO original ) {
 		setId(original.getId());
 		setActive(original.isActive());
+		setX509certificateId(original.getX509certificateId());
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <E extends DomainObject> E copy() {
-		return (E) new CertificateAuthorityDO(this);
-	}
-
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------

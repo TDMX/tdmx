@@ -33,6 +33,7 @@ public class ServiceProviderDO extends AbstractDO {
 	private String subjectIdentifier; // initially unidentified - after connection test we have it.
 	private Integer version;
 	
+	//TODO rethink
 	private String masHostname;
 	private Integer masPort;
 	private ConnectionTestResultVO masStatus;
@@ -70,12 +71,6 @@ public class ServiceProviderDO extends AbstractDO {
 	@Override
 	public DomainObjectType getType() {
 		return DomainObjectType.ServiceProvider;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <E extends DomainObject> E copy() {
-		return (E) new ServiceProviderDO(this);
 	}
 
 	@Override

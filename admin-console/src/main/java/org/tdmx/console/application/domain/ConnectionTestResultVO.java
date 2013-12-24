@@ -34,6 +34,12 @@ public class ConnectionTestResultVO implements ValueObject {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	@Override
+	public <E extends ValueObject> E copy() {
+		//TODO 
+		return null;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------

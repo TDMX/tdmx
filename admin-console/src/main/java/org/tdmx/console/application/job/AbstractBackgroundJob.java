@@ -133,11 +133,6 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	}
 
 	@Override
-	public <E extends DomainObject> E copy() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public List<FieldError> validate() {
 		throw new UnsupportedOperationException();
 	}

@@ -12,12 +12,12 @@ import org.tdmx.console.application.util.StringUtils;
 
 
 /**
- * An object representing the System's properties.
+ * An object representing the a certificate in a RootCA list.
  * 
  * @author Peter
  *
  */
-public class SystemPropertiesVO implements ValueObject {
+public class TrustStoreEntryVO implements ValueObject {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -26,70 +26,31 @@ public class SystemPropertiesVO implements ValueObject {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private Map<String,String> properties = new HashMap<>();
+	private String friendlyName;
+	private String x509certificateId;
+	private String comment;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public SystemPropertiesVO() {
+	public TrustStoreEntryVO() {
 	}
 	
-	public SystemPropertiesVO( List<String> propertyNames ) {
-		if ( propertyNames != null ) {
-			for( String name : propertyNames ) {
-				try {
-					String value = System.getProperty(name);
-					if ( StringUtils.hasText(value) ) {
-						add(name,value);
-					}
-				} catch ( SecurityException e ) {
-					add(name,"<unknown>");
-				}
-			}
-		}
-	}
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
-	public void add( String key, String value) {
-		properties.put(key,value);
-	}
-	
-	public String get( String key ) {
-		return properties.get(key);
-	}
-	
-	public Map<String,String> getProperties() {
-		return Collections.unmodifiableMap(properties);
-	}
-	
-	public Set<String> getDeletedKeys( Map<String,String> other ) {
-		Set<String> deletes = new HashSet<>();
-		
-		//TODO
-		return deletes;
-	}
-	
-	public Set<String> getNewKeys( Map<String,String> other ) {
-		Set<String> added = new HashSet<>();
-		//TODO
-		return added;
-	}
-	
-	public Set<String> getModifiedKeys( Map<String,String> other ) {
-		Set<String> modified = new HashSet<>();
-		//TODO
-		return modified;
+	@SuppressWarnings("unchecked")
+	@Override
+	public TrustStoreEntryVO copy() {
+		TrustStoreEntryVO o = new TrustStoreEntryVO();
+		o.setComment(getComment());
+		o.setFriendlyName(getFriendlyName());
+		o.setX509certificateId(getX509certificateId());
+		return o;
 	}
 
-	@Override
-	public <E extends ValueObject> E copy() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
@@ -101,5 +62,29 @@ public class SystemPropertiesVO implements ValueObject {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
+	public String getFriendlyName() {
+		return friendlyName;
+	}
+
+	public void setFriendlyName(String friendlyName) {
+		this.friendlyName = friendlyName;
+	}
+
+	public String getX509certificateId() {
+		return x509certificateId;
+	}
+
+	public void setX509certificateId(String x509certificateId) {
+		this.x509certificateId = x509certificateId;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 
 }

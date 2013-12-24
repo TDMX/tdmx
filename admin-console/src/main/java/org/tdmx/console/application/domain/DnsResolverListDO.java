@@ -58,12 +58,6 @@ public class DnsResolverListDO extends AbstractDO {
 		setHostnames(original.getHostnames());
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <E extends DomainObject> E copy() {
-		return (E) new DnsResolverListDO(this);
-	}
-
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------

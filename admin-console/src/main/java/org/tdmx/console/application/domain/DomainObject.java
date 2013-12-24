@@ -33,8 +33,6 @@ public interface DomainObject {
 	 */
 	public <E extends DomainObject> DomainObjectFieldChanges merge( E other );
 	
-	public <E extends DomainObject> E copy();
-	
 	public List<FieldError> validate();
 
 	public void check() throws FieldValidationException;

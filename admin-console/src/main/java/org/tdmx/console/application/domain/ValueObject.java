@@ -9,4 +9,6 @@ package org.tdmx.console.application.domain;
  */
 public interface ValueObject {
 
+	public <E extends ValueObject> E copy();
+	
 }

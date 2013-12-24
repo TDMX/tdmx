@@ -6,15 +6,14 @@ import java.util.List;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 import org.tdmx.console.application.util.ValidationUtils;
+import org.tdmx.console.application.util.ValueObjectUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
 
 
 
 /**
- * A RootCAList is consists of two unordered lists of TrustStoreEntries.
- * 
- * One list is the trusted RootCA certificates, the other of the distrusted RootCA certificates.
+ * A RootCAList is consists of a list of Trusted or Distrusted TrustStoreEntries.
  * 
  * @author Peter
  *
@@ -26,13 +25,16 @@ public class RootCAListDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 	public static final DomainObjectField F_ACTIVE 		= new DomainObjectField("active", DomainObjectType.RootCAList);
 	public static final DomainObjectField F_NAME 		= new DomainObjectField("name", DomainObjectType.RootCAList);
+	public static final DomainObjectField F_TYPE		= new DomainObjectField("type", DomainObjectType.RootCAList);
+	public static final DomainObjectField F_ENTRIES		= new DomainObjectField("entries", DomainObjectType.RootCAList);
 
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
 	private Boolean active = Boolean.TRUE;
 	private String name;
-	//TODO other fields
+	private RootCAListType listType;
+	private List<TrustStoreEntryVO> entries;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -46,14 +48,9 @@ public class RootCAListDO extends AbstractDO {
 		setId(original.getId());
 		setActive(original.isActive());
 		setName(original.getName());
+		setEntries(ValueObjectUtils.cloneList(original.getEntries()));
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <E extends DomainObject> E copy() {
-		return (E) new RootCAListDO(this);
-	}
-
 	//-------------------------------------------------------------------------
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
@@ -69,6 +66,7 @@ public class RootCAListDO extends AbstractDO {
 		DomainObjectFieldChanges holder = new DomainObjectFieldChanges(this);
 		setActive(conditionalSet(isActive(), o.isActive(), F_ACTIVE,holder));
 		setName(conditionalSet(getName(), o.getName(), F_NAME, holder));
+		setEntries(conditionalSet(getEntries(), o.getEntries(), F_ENTRIES, holder));
 		return holder;
 	}
 
@@ -84,8 +82,8 @@ public class RootCAListDO extends AbstractDO {
 	@Override
 	public void updateSearchFields(ObjectRegistry registry) {
 		ObjectSearchContext ctx = new ObjectSearchContext();
-		setSearchFields(ctx.getSearchFields());
 		//TODO
+		setSearchFields(ctx.getSearchFields());
 	}
 	
     //-------------------------------------------------------------------------
@@ -118,6 +116,22 @@ public class RootCAListDO extends AbstractDO {
 
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+
+	public RootCAListType getListType() {
+		return listType;
+	}
+
+	public void setListType(RootCAListType listType) {
+		this.listType = listType;
+	}
+
+	public List<TrustStoreEntryVO> getEntries() {
+		return entries;
+	}
+
+	public void setEntries(List<TrustStoreEntryVO> entries) {
+		this.entries = entries;
 	}
 
 }

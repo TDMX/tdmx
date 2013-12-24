@@ -71,11 +71,6 @@ public abstract class AbstractDO implements DomainObject {
 	}
 	
 	@Override
-	public <E extends DomainObject> E copy() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public <E extends DomainObject> DomainObjectFieldChanges merge(E other) {
 		throw new UnsupportedOperationException();
 	}
