@@ -47,4 +47,13 @@ public class CalendarUtils {
 		cal.setTime(date);
 		return cal;
 	}
+	
+	public static Date getDateWithOffset( Date base, int units, int offsetInUnits ) {
+		Calendar cal = getDate(base);
+		if ( cal != null ) {
+			cal.add(units, offsetInUnits);
+			return cal.getTime();
+		}
+		return null;
+	}
 }

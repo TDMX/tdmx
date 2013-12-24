@@ -20,7 +20,7 @@ public class CertificateAuthority implements Serializable {
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 
-	public CertificateAuthority( CertificateAuthorityDO o, List<SearchableObjectField> searchFields) {
+	public CertificateAuthority( CertificateAuthorityDO o) {
 		setId(o.getId());
 		//TODO name mapped from searchFields
 		setActive(o.isActive());

@@ -19,6 +19,9 @@ public class ProblemDO extends AbstractDO {
 	//-------------------------------------------------------------------------
 
 	public static enum ProblemCode {
+		RUNTIME_EXCEPTION,
+		DEVELOPMENT_INITIALIZATION,
+		
 		CONFIGURATION_FILE_READ_IO,
 		CONFIGURATION_FILE_WRITE_IO,
 		CONFIGURATION_FILE_PARSE,

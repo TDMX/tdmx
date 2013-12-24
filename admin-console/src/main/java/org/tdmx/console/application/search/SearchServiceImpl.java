@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
+import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
@@ -41,19 +42,7 @@ public class SearchServiceImpl implements SearchService {
 	//-------------------------------------------------------------------------
 	private Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
-	//private static List<FieldDescriptor> allDescriptors = new ArrayList<>();
-
-	//TODO CertificateAuthorities
-	
-	//TODO X509Certificates
-	
-	//TODO DsnResolverList
-	
-	//TODO SystemProxyList
-	
-	//TODO RootCAList
-
-	//TODO search: text
+	//TODO search: text - reverse syntax
 	
 	private ObjectRegistry objectRegistry;
 	
@@ -117,7 +106,6 @@ public class SearchServiceImpl implements SearchService {
 		DomainObjectChangesHolder ch = new DomainObjectChangesHolder();
 		
 		Traversal.traverse( getObjectRegistry().getX509Certificates(), ch, new TraversalFunction<X509CertificateDO, DomainObjectChangesHolder>() {
-
 			@Override
 			public void visit(X509CertificateDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
 				holder.getResult().registerNew(object);
@@ -125,21 +113,28 @@ public class SearchServiceImpl implements SearchService {
 		});
 		
 		Traversal.traverse( getObjectRegistry().getCertificateAutorities(), ch, new TraversalFunction<CertificateAuthorityDO, DomainObjectChangesHolder>() {
-
 			@Override
 			public void visit(CertificateAuthorityDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
 				holder.getResult().registerNew(object);
 			}
 		});
 		
+		Traversal.traverse( getObjectRegistry().getDnsResolverLists(), ch, new TraversalFunction<DnsResolverListDO, DomainObjectChangesHolder>() {
+			@Override
+			public void visit(DnsResolverListDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+				holder.getResult().registerNew(object);
+			}
+		});
+		
 		Traversal.traverse( getObjectRegistry().getServiceProviders(), ch, new TraversalFunction<ServiceProviderDO, DomainObjectChangesHolder>() {
-
 			@Override
 			public void visit(ServiceProviderDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
 				holder.getResult().registerNew(object);
 			}
 		});
 		
+		//TODO RootCAList
+
 		// do the initial insert of all objects.
 		update(ch);
 	}
@@ -171,12 +166,9 @@ public class SearchServiceImpl implements SearchService {
 		}
 		
 		public SearchContext() {
-			objectTypeMap.put(DomainObjectType.ServiceProvider, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.X509Certificate, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.BackgroundJob, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.SystemPropertyList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.RootCAList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
-			objectTypeMap.put(DomainObjectType.DnsResolverList, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			for( DomainObjectType dot : DomainObjectType.values() ) {
+				objectTypeMap.put(dot, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
+			}
 		}
 		
 		public void removeObject( DomainObject object ) {

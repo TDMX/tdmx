@@ -22,6 +22,7 @@ import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.job.BackgroundJobRegistry;
 import org.tdmx.console.application.job.BackgroundJobRegistryImpl;
+import org.tdmx.console.application.job.DevelopmentInitializationJob;
 import org.tdmx.console.application.job.StateStorageJob;
 import org.tdmx.console.application.job.SystemPropertySettingsUpdateJob;
 import org.tdmx.console.application.job.SystemTrustStoreUpdateJob;
@@ -29,6 +30,7 @@ import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.search.SearchServiceImpl;
 import org.tdmx.console.application.service.CertificateAuthorityService;
 import org.tdmx.console.application.service.CertificateAuthorityServiceImpl;
+import org.tdmx.console.application.service.CertificateServiceImpl;
 import org.tdmx.console.application.service.DnsResolverService;
 import org.tdmx.console.application.service.DnsResolverServiceImpl;
 import org.tdmx.console.application.service.ObjectRegistry;
@@ -40,8 +42,9 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
+	//TODO use cleaner toString-stringBuilder / equals/EqualsBuilder / hashcode/HashcodeBuilder
+	
 	//TODO CertificateAuthority service
-	// email, telno, L
 	//	- create CA ( cn, o, c , from, to ) > certs+pk
 	//  - import CA as pkcs12 + passphrase
 	//	- modify status
@@ -50,6 +53,12 @@ public class AdministrationImpl implements Administration, IInitializer {
 	//TODO - DnsResolverList DNS functional test result TXT, IP
 
 	//TODO - Pkix RootCA list load/save to storage
+	
+	
+	//TODO expose DNSResolverList to UI
+	
+	//TODO expose RootCAList to UI
+	
 	
 	//TODO - AuditService
 	// file backing 1000 records in memory, filename listing
@@ -82,6 +91,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 	
 	private SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
 	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
+	private CertificateServiceImpl certificateService = new CertificateServiceImpl();
 	private CertificateAuthorityServiceImpl certificateAuthorityService = new CertificateAuthorityServiceImpl();
 	
 	//-------------------------------------------------------------------------
@@ -151,8 +161,12 @@ public class AdministrationImpl implements Administration, IInitializer {
 		dnsResolverService.setObjectRegistry(registry);
 		dnsResolverService.setSearchService(searchService);
 		
+		certificateService.setObjectRegistry(registry);
+		certificateService.setSearchService(searchService);
+		
 		certificateAuthorityService.setObjectRegistry(registry);
 		certificateAuthorityService.setSearchService(searchService);
+		certificateAuthorityService.setCertificateService(certificateService);
 		
 		// Configure all Jobs and wire all services they need.
 		//
@@ -184,6 +198,16 @@ public class AdministrationImpl implements Administration, IInitializer {
 		systemUpdateJob.init();
 		jobRegistry.addBackgroundJob(systemUpdateJob);
 
+		//TODO make dependent on system property
+		DevelopmentInitializationJob devInitJob = new DevelopmentInitializationJob();
+		devInitJob.setProblemRegistry(problemRegistry);
+		devInitJob.setObjectRegistry(registry);
+		devInitJob.setCertificateAuthorityService(certificateAuthorityService);
+		devInitJob.setName("Development");
+		devInitJob.init();
+		// we don't add the systemInitJob to the jobRegistry
+		// so it is not exposed to the search / object registry
+		
 		// finally initialize the searchService where the jobs may already
 		// have made changes to the objectRegistry
 		searchService.setObjectRegistry(registry);
@@ -195,9 +219,6 @@ public class AdministrationImpl implements Administration, IInitializer {
 		jobChanges.registerNew(systemUpdateJob);
 		searchService.update(jobChanges);
 		
-		//TODO expose DNSResolverList to UI
-		
-		//TODO expose RootCAList to UI
 	}
 
 	@Override
@@ -258,6 +279,11 @@ public class AdministrationImpl implements Administration, IInitializer {
 	@Override
 	public CertificateAuthorityService getCertificateAuthorityService() {
 		return certificateAuthorityService;
+	}
+
+	@Override
+	public CertificateServiceImpl getCertificateService() {
+		return certificateService;
 	}
 
 }

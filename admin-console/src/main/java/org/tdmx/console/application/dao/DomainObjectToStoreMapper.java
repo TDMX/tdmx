@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemPropertiesVO;
@@ -32,6 +33,14 @@ public class DomainObjectToStoreMapper {
 		X509Certificate o = new X509Certificate();
 		o.setId(other.getId());
 		o.setPemValue(CertificateIOUtils.x509certToPem(other.getCertificate()));
+		return o;
+	}
+
+	public ClientCA map( CertificateAuthorityDO other ) {
+		ClientCA o = new ClientCA();
+		o.setId(other.getId());
+		o.setActive(other.isActive());
+		o.setX509CertificateId(other.getX509certificateId());
 		return o;
 	}
 	

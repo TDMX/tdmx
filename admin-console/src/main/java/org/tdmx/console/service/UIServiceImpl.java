@@ -10,7 +10,9 @@ import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
 import org.tdmx.console.application.Administration;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
-import org.tdmx.console.application.search.SearchableObjectField;
+import org.tdmx.console.application.domain.X509CertificateDO;
+import org.tdmx.console.application.service.OperationResultHolder;
+import org.tdmx.console.domain.Certificate;
 import org.tdmx.console.domain.CertificateAuthority;
 import org.tdmx.console.domain.CertificateAuthorityRequest;
 import org.tdmx.console.domain.DnsResolverList;
@@ -145,13 +147,18 @@ public class UIServiceImpl implements UIService {
 			return new OperationError(errors);
 		}
 		CertificateAuthoritySpecifier csr = request.domain();
-		// on success, the request's certificateAuthorityId is set. 
-		return getAdmin().getCertificateAuthorityService().create(csr);
+		// on success, the request's certificateAuthorityId is set.
+		OperationResultHolder<String> result = new OperationResultHolder<>();
+		getAdmin().getCertificateAuthorityService().create(csr, result);
+		if  ( result.getError() != null ) {
+			return result.getError();
+		}
+		request.setCertificateAuthorityId(result.getResult());
+		return null;
 	}
 
 	@Override
 	public OperationError deleteCertificateAuthority(String id) {
-		
 		return getAdmin().getCertificateAuthorityService().delete(id);
 	}
 
@@ -164,8 +171,7 @@ public class UIServiceImpl implements UIService {
 	@Override
 	public CertificateAuthority getCertificateAuthority(String id) {
 		CertificateAuthorityDO dom = getAdmin().getCertificateAuthorityService().lookup(id);
-		List<SearchableObjectField> fields = getAdmin().getSearchService().getSearchableFields(dom);
-		return dom != null ? new CertificateAuthority(dom, fields) : null;
+		return dom != null ? new CertificateAuthority(dom) : null;
 	}
 
 	@Override
@@ -173,8 +179,23 @@ public class UIServiceImpl implements UIService {
 		List<CertificateAuthority> list = new ArrayList<>();
 		List<CertificateAuthorityDO> domList = getAdmin().getCertificateAuthorityService().search(criteria);
 		for( CertificateAuthorityDO dom : domList ) {
-			List<SearchableObjectField> fields = getAdmin().getSearchService().getSearchableFields(dom);
-			list.add(new CertificateAuthority(dom, fields));
+			list.add(new CertificateAuthority(dom));
+		}
+		return list;
+	}
+
+	@Override
+	public Certificate getCertificate(String id) {
+		X509CertificateDO dom = getAdmin().getCertificateService().lookup(id);
+		return dom != null ? new Certificate(dom) : null;
+	}
+
+	@Override
+	public List<Certificate> searchCertificate(String criteria) {
+		List<Certificate> list = new ArrayList<>();
+		List<X509CertificateDO> domList = getAdmin().getCertificateService().search(criteria);
+		for( X509CertificateDO dom : domList ) {
+			list.add(new Certificate(dom));
 		}
 		return list;
 	}

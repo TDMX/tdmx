@@ -78,7 +78,8 @@
 		<xs:sequence>
 			<xs:element name="system-property-list" type="SystemProperty-List" minOccurs="0"/>
 			<xs:element name="x509-certificate" type="X509Certificate" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="tdmx-ca" type="Client-CA" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="pkix-rootca-list" type="RootCA-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="dnsresolver-list" type="DNSResolver-List" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="serviceprovider" type="ServiceProvider" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
@@ -150,6 +151,24 @@
 		<xs:attribute name="id" type="xs:ID" use="required">
 			<xs:annotation>
 				<xs:documentation>the SHA1 fingerprint as HEX.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="Client-CA">
+		<xs:annotation>
+			<xs:documentation>A client certificate authority.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="x509-certificate-id" type="xs:ID"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:ID" use="required">
+			<xs:annotation>
+				<xs:documentation>the id of the X509 public certificate of this CA.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="active" type="xs:boolean" use="optional" default="true">
+			<xs:annotation>
+				<xs:documentation>a CA can be active or not. Only active CAs can be used to create domain certificates.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>

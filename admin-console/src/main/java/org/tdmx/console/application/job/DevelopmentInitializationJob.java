@@ -9,12 +9,17 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.console.application.dao.SystemTrustStore;
+import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
+import org.tdmx.console.application.service.CertificateAuthorityService;
+import org.tdmx.console.application.service.ObjectRegistry;
+import org.tdmx.console.application.service.OperationResultHolder;
+import org.tdmx.console.application.util.CalendarUtils;
+import org.tdmx.console.domain.CertificateAuthorityRequest;
 
-public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
+public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -23,12 +28,13 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(SystemTrustStoreUpdateJob.class);
+	private Logger log = LoggerFactory.getLogger(DevelopmentInitializationJob.class);
 	
 	private ScheduledExecutorService scheduler = null;
 	
-	private SystemTrustStore trustStore = null;
-
+	private ObjectRegistry objectRegistry = null;
+	private CertificateAuthorityService certificateAuthorityService = null;
+	
 	private ScheduledFuture<?> future = null;
 	
 	//-------------------------------------------------------------------------
@@ -42,7 +48,6 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 	@Override
 	public void init() {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
-		// start a thread off which will periodically save the app state.
 		Runnable r = new Runnable() {
 
 			@Override
@@ -50,18 +55,31 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 				initRun();
 				try {
 
-					try {
-						trustStore.getAllTrustedCAs();
+					// do something
+					if ( getCertificateAuthorityService().search("").size() == 0 ) {
+						CertificateAuthorityRequest csr = new CertificateAuthorityRequest();
+						csr.setCommonName("Peter Klauser");
+						csr.setEmailAddress("pjk@gmail.com");
+						csr.setTelephoneNumber("0417100000");
+						csr.setOrganization("mycompany.com");
+						csr.setCountry("CH");
 						
-						//TODO feed to replaceList
+						csr.setNotBefore(new Date());
+						csr.setNotAfter(CalendarUtils.getDateWithOffset(new Date(), Calendar.YEAR, 1));
 						
-						//TODO getSystem RootCA-List from RootCAService replaceList(System)
+						csr.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA4096);
+						csr.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
 						
-					} catch (CryptoCertificateException e) {
-						ProblemDO p = new ProblemDO(ProblemCode.SYSTEM_TRUST_STORE_EXCEPTION, e);
-						problemRegistry.addProblem(p);
+						OperationResultHolder<String> result = new OperationResultHolder<>();
+						
+						getCertificateAuthorityService().create(csr.domain(),result);
+						if ( result.getError() != null ) {
+							ProblemDO p = new ProblemDO(ProblemCode.DEVELOPMENT_INITIALIZATION, result.getError().toString());
+							problemRegistry.addProblem(p);							
+						} else {
+							log.info("Created own CA " + csr.getCertificateAuthorityId());
+						}
 					}
-					
 				} catch ( Throwable t ) {
 					log.warn("Unexpected RuntimeException.", t);
 					ProblemDO p = new ProblemDO(ProblemCode.RUNTIME_EXCEPTION, t);
@@ -73,9 +91,9 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 			}
 			
 		};
-		
-		future = scheduler.scheduleWithFixedDelay(r, 0, 3600, TimeUnit.SECONDS);
-		updateSearch();
+		// we run 10s to give other jobs a chance to finish, so
+		// some objects will be available for us to build on.
+		future = scheduler.schedule(r, 10, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -118,17 +136,26 @@ public class SystemTrustStoreUpdateJob extends AbstractBackgroundJob {
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public SystemTrustStore getTrustStore() {
-		return trustStore;
+	public ObjectRegistry getObjectRegistry() {
+		return objectRegistry;
 	}
 
-	public void setTrustStore(SystemTrustStore trustStore) {
-		this.trustStore = trustStore;
+	public void setObjectRegistry(ObjectRegistry objectRegistry) {
+		this.objectRegistry = objectRegistry;
+	}
+
+	public CertificateAuthorityService getCertificateAuthorityService() {
+		return certificateAuthorityService;
+	}
+
+	public void setCertificateAuthorityService(
+			CertificateAuthorityService certificateAuthorityService) {
+		this.certificateAuthorityService = certificateAuthorityService;
 	}
 
 }

@@ -71,7 +71,7 @@
 		<jetty.javax.serverlet.version>3.0.0.v201112011016</jetty.javax.serverlet.version>
 		<cxf.version>2.7.7</cxf.version>
 		<dnsjava.version>2.1.1</dnsjava.version>
-		<bc.version>1.49</bc.version>
+		<bc.version>1.50</bc.version>
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
 		<slf4j.version>1.6.4</slf4j.version>

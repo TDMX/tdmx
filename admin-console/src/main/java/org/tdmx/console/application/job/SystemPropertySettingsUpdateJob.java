@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.console.application.domain.ProblemDO;
+import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
 import org.tdmx.console.application.service.DnsResolverService;
 import org.tdmx.console.application.service.SystemSettingsService;
 
@@ -60,6 +62,11 @@ public class SystemPropertySettingsUpdateJob extends AbstractBackgroundJob {
 						dnsResolverService.updateSystemResolverList();
 					}
 					
+				} catch ( Throwable t ) {
+					log.warn("Unexpected RuntimeException.", t);
+					ProblemDO p = new ProblemDO(ProblemCode.RUNTIME_EXCEPTION, t);
+					problemRegistry.addProblem(p);							
+					throw t;
 				} finally {
 					finishRun();
 				}

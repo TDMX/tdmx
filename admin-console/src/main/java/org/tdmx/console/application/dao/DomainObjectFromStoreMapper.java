@@ -4,6 +4,7 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CertificateResultCode;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.ServiceProviderDO;
 import org.tdmx.console.application.domain.SystemPropertiesVO;
@@ -38,7 +39,14 @@ public class DomainObjectFromStoreMapper {
 		return o;
 	}
 
-
+	public CertificateAuthorityDO map( ClientCA other ) {
+		CertificateAuthorityDO o = new CertificateAuthorityDO();
+		o.setId(other.getId());
+		o.setActive(other.isActive());
+		o.setX509certificateId(other.getX509CertificateId());
+		return o;
+	}
+	
 	public DnsResolverListDO map( DNSResolverList other ) {
 		DnsResolverListDO o = new DnsResolverListDO();
 		if ( other.getId() != null ) {

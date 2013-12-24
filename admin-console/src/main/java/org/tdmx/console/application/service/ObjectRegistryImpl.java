@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.tdmx.console.application.dao.ClientCA;
 import org.tdmx.console.application.dao.DNSResolverList;
 import org.tdmx.console.application.dao.DomainObjectFromStoreMapper;
 import org.tdmx.console.application.dao.DomainObjectToStoreMapper;
-import org.tdmx.console.application.dao.X509Certificate;
 import org.tdmx.console.application.dao.ServiceProvider;
 import org.tdmx.console.application.dao.ServiceProviderStorage;
 import org.tdmx.console.application.dao.SystemPropertyList;
+import org.tdmx.console.application.dao.X509Certificate;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
 import org.tdmx.console.application.domain.DomainObject;
@@ -76,8 +77,12 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 				cert.check();
 				add(cert);
 			}
+			for( ClientCA cas : content.getTdmxCa()) {
+				CertificateAuthorityDO ca = domMapper.map(cas);
+				ca.check();
+				add(ca);
+			}
 			//TODO rootcalist
-			//TODO certificate authority
 
 			for( DNSResolverList dnslist : content.getDnsresolverList() ) {
 				DnsResolverListDO d = domMapper.map(dnslist);
@@ -109,7 +114,10 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 					X509Certificate cert = storeMapper.map(c);
 					store.getX509Certificate().add(cert);
 				}
-				//TODO certificate authority
+				for( CertificateAuthorityDO ca : getCertificateAutorities() ) {
+					ClientCA cca = storeMapper.map(ca);
+					store.getTdmxCa().add(cca);
+				}
 				
 				//TODO rootcalist
 				for( DnsResolverListDO d : getDnsResolverLists() ) {

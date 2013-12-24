@@ -4,14 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.client.crypto.certificate.CertificateAuthorityUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
+import org.tdmx.console.application.domain.X509CertificateDO;
 import org.tdmx.console.application.search.SearchService;
 import org.tdmx.console.application.util.StringUtils;
 import org.tdmx.console.domain.validation.FieldError;
@@ -25,14 +32,17 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
 	public static final String SYSTEM_ROOTCA_TRUSTED_LIST_ID = "tdmx-ca-trusted";
 	public static final String SYSTEM_ROOTCA_DISTRUSTED_LIST_ID = "tdmx-ca-revoked";
 	
+	//-------------------------------------------------------------------------
+	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	//-------------------------------------------------------------------------
+	private static Logger log = LoggerFactory.getLogger(CertificateAuthorityServiceImpl.class);
+
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
+	private CertificateService certificateService;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
@@ -78,9 +88,56 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	}
 
 	@Override
-	public OperationError create(CertificateAuthoritySpecifier request) {
-		// TODO Auto-generated method stub
-		return null;
+	public void create(CertificateAuthoritySpecifier request, OperationResultHolder<String> result) {
+		//create self signed CA credentials from CSR
+		PKIXCredential credential = null;
+		try {
+			credential = CertificateAuthorityUtils.createCertificateAuthority(request);
+		} catch (CryptoCertificateException e) {
+			log.warn("Unable to create CA.", e);
+			result.setError(new OperationError(ERROR.SYSTEM));
+			return;
+		}
+		
+		PKIXCertificate caPublicCert = credential.getCertificateChain()[0];
+		X509CertificateDO publicCert = new X509CertificateDO(caPublicCert);
+
+		//check if new fingerprint is "unique" under all known certs - if not error
+		if ( getCertificateService().lookup(publicCert.getId()) != null ) {
+			log.warn("Fingerprint clash " + publicCert);
+			result.setError(new OperationError(ERROR.SYSTEM));
+			return;
+		}
+		
+		CertificateAuthorityDO ca = new CertificateAuthorityDO();
+		ca.setX509certificateId(publicCert.getId());
+		ca.setActive(true);
+
+		List<FieldError> validation = ca.validate();
+		if ( !validation.isEmpty() ) {
+			result.setError(new OperationError(validation));
+			return;
+		}
+
+		//store CA publicCert in certificates
+		OperationError certError = getCertificateService().create(publicCert);
+		if ( certError != null ) {
+			result.setError(certError);
+			return;
+		}
+
+		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
+		objectRegistry.notifyAdd(ca, holder);
+		searchService.update(holder);
+
+		//TODO store CA privateKey in privateKeystore
+		
+		//TODO add tdmx-ca-trusted ROOTCA lists
+		
+		//TODO audit
+		
+		result.setResult(ca.getId());
+		return;
 	}
 
 	@Override
@@ -147,6 +204,14 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 
 	public void setSearchService(SearchService searchService) {
 		this.searchService = searchService;
+	}
+
+	public CertificateService getCertificateService() {
+		return certificateService;
+	}
+
+	public void setCertificateService(CertificateService certificateService) {
+		this.certificateService = certificateService;
 	}
 
 }

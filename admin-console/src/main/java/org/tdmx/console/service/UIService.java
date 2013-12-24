@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.console.domain.Certificate;
 import org.tdmx.console.domain.CertificateAuthority;
 import org.tdmx.console.domain.CertificateAuthorityRequest;
 import org.tdmx.console.domain.DnsResolverList;
@@ -49,5 +50,9 @@ public interface UIService {
 	public OperationError updateCertificateAuthority( CertificateAuthority object );
 	public CertificateAuthority getCertificateAuthority( String id );
 	public List<CertificateAuthority> searchCertificateAuthority( String criteria );
+	
+	// Certificate operations
+	public Certificate getCertificate( String id );
+	public List<Certificate> searchCertificate( String criteria );
 	
 }

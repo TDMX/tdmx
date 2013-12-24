@@ -152,6 +152,11 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 						problemRegistry.addProblem(lastProblem);
 					}
 					
+				} catch ( Throwable t ) {
+					log.warn("Unexpected RuntimeException.", t);
+					ProblemDO p = new ProblemDO(ProblemCode.RUNTIME_EXCEPTION, t);
+					problemRegistry.addProblem(p);							
+					throw t;
 				} finally {
 					finishRun();
 				}

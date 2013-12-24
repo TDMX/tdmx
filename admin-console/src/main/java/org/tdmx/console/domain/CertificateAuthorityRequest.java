@@ -8,6 +8,7 @@ import java.util.List;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.console.application.util.CalendarUtils;
 import org.tdmx.console.application.util.ValidationUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
@@ -19,6 +20,8 @@ public class CertificateAuthorityRequest implements Serializable {
 	private static enum FieldNames {
 		keyAlgorithm,
 		commonName,
+		telephoneNumber,
+		emailAddress,
 		organization,
 		country,
 		notBefore,
@@ -32,6 +35,8 @@ public class CertificateAuthorityRequest implements Serializable {
 	//-------------------------------------------------------------------------
 	private AsymmetricEncryptionAlgorithm keyAlgorithm;
 	private String commonName;
+	private String telephoneNumber;
+	private String emailAddress;
 	private String organization;
 	private String country;
 	private Date notBefore;
@@ -54,6 +59,8 @@ public class CertificateAuthorityRequest implements Serializable {
 		List<FieldError> errors = new ArrayList<>();
 		
 		ValidationUtils.mandatoryTextField(getCommonName(), FieldNames.commonName.name(), ERROR.MISSING, errors);
+		ValidationUtils.mandatoryTextField(getTelephoneNumber(), FieldNames.telephoneNumber.name(), ERROR.MISSING, errors);
+		ValidationUtils.mandatoryTextField(getEmailAddress(), FieldNames.emailAddress.name(), ERROR.MISSING, errors);
 		ValidationUtils.mandatoryTextField(getOrganization(), FieldNames.organization.name(), ERROR.MISSING, errors);
 		ValidationUtils.mandatoryTextField(getCountry(), FieldNames.country.name(), ERROR.MISSING, errors);
 		
@@ -80,7 +87,15 @@ public class CertificateAuthorityRequest implements Serializable {
 
 	public CertificateAuthoritySpecifier domain() {
 		CertificateAuthoritySpecifier o = new CertificateAuthoritySpecifier();
-		//TODO map fields
+		o.setCn(getCommonName());
+		o.setTelephoneNumber(getTelephoneNumber());
+		o.setEmailAddress(getEmailAddress());
+		o.setOrg(getOrganization());
+		o.setCountry(getCountry());
+		o.setNotBefore(CalendarUtils.getDate(getNotBefore()));
+		o.setNotAfter(CalendarUtils.getDate(getNotAfter()));
+		o.setKeyAlgorithm(getKeyAlgorithm());
+		o.setSignatureAlgorithm(getSignatureAlgorithm());
 		return o;
 	}
 	
@@ -110,6 +125,22 @@ public class CertificateAuthorityRequest implements Serializable {
 
 	public void setCommonName(String cn) {
 		this.commonName = cn;
+	}
+
+	public String getTelephoneNumber() {
+		return telephoneNumber;
+	}
+
+	public void setTelephoneNumber(String telephoneNumber) {
+		this.telephoneNumber = telephoneNumber;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
 	}
 
 	public String getOrganization() {

@@ -1,16 +1,10 @@
 package org.tdmx.console.application.domain;
 
-import java.security.cert.X509Certificate;
-import java.util.Calendar;
-
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.console.application.search.FieldDescriptor;
 import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
-import org.tdmx.console.application.util.CalendarUtils;
 
 
 /**
@@ -42,7 +36,7 @@ public class X509CertificateDO extends AbstractDO {
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
 	
-	public X509CertificateDO( PKIXCertificate certificate ) throws CryptoCertificateException {
+	public X509CertificateDO( PKIXCertificate certificate ) {
 		setId(certificate.getFingerprint());
 		this.certificate = certificate;
 	}

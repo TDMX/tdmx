@@ -18,7 +18,11 @@ public class OperationError {
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 	public static enum ERROR {
-		MISSING, PRESENT, INVALID, IMMUTABLE
+		MISSING, // when an object or object field is missing when it should be present.
+		PRESENT, // when an object or object field is present but this is not allowed. 
+		INVALID, // when an object or object field is not correct syntax 
+		IMMUTABLE, // when an object is tried to be modified but it should not be 
+		SYSTEM, // when unexpected system errors occur - must be logged as WARN in log
 	}
 	
 	
