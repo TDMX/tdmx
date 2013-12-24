@@ -34,8 +34,10 @@ public class CertificateAuthorityUtilsTest {
 
 		CertificateAuthoritySpecifier req = new CertificateAuthoritySpecifier();
 		req.setCn("name");
-		req.setCountry("CH");
+		req.setTelephoneNumber("0417100000");
+		req.setEmailAddress("pjk@gmail.com");
 		req.setOrg("mycompany");
+		req.setCountry("CH");
 		req.setNotBefore(now);
 		req.setNotAfter(later);
 		List<String> dnsNameConstraints = new ArrayList<>();
@@ -57,7 +59,8 @@ public class CertificateAuthorityUtilsTest {
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
 		assertTrue(c.isTdmxDomainCA());
-		
+		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,O=mycompany,C=CH", c.getSubject());
+		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,O=mycompany,C=CH", c.getIssuer());
 		byte[] bs = CertificateIOUtils.encodeCertificate(c);
 		FileUtils.storeFileContents("ca.crt", bs, ".tmp");
 	}

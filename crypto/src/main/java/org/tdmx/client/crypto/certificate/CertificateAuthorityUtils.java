@@ -63,6 +63,8 @@ public class CertificateAuthorityUtils {
 		X500NameBuilder subjectBuilder = new X500NameBuilder();
 		subjectBuilder.addRDN(BCStyle.C, req.getCountry());
 		subjectBuilder.addRDN(BCStyle.O, req.getOrg());
+		subjectBuilder.addRDN(BCStyle.E, req.getEmailAddress());
+		subjectBuilder.addRDN(BCStyle.TELEPHONE_NUMBER, req.getTelephoneNumber());
 		subjectBuilder.addRDN(BCStyle.CN, req.getCn());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
@@ -99,7 +101,7 @@ public class CertificateAuthorityUtils {
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 			
-			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, SignatureAlgorithm.SHA_256_RSA);
+			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 			
 			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);

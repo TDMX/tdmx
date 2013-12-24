@@ -3,6 +3,10 @@ package org.tdmx.client.crypto.certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.RDN;
@@ -33,9 +37,13 @@ public class PKIXCertificate {
 	
 	private String fingerprint;
 	
+	private static Map<String,String> oidMap = new HashMap<>();
+	static {
+		oidMap.put(BCStyle.E.getId(), "EMAIL");
+		oidMap.put(BCStyle.TELEPHONE_NUMBER.getId(), "TEL");
+	}
+	
 	//TODO public key - type + leyken ie RSA(2048bit) AsymmetricEncryptionAlgorithm
-	//TODO basic constraints - CA? certificate chain length
-	//TODO issuer
 	//TODO subject key identifier
 	//TODO issuer key identifier
 	
@@ -124,20 +132,29 @@ public class PKIXCertificate {
 
 	public String getIssuer() {
 		if ( certificate.getIssuerX500Principal() != null ) {
-			return certificate.getIssuerX500Principal().getName();
+			return certificate.getIssuerX500Principal().getName(X500Principal.RFC2253,oidMap);
 		}
 		return null;
 	}
 
 	public String getSubject() {
+
 		if ( certificate.getSubjectX500Principal() != null ) {
-			return certificate.getSubjectX500Principal().getName();
+			return certificate.getSubjectX500Principal().getName(X500Principal.RFC2253,oidMap);
 		}
 		return null;
 	}
 
 	public String getCommonName() {
 		return getFirstRDN(holder.getSubject(), BCStyle.CN);
+	}
+
+	public String getTelephoneNumber() {
+		return getFirstRDN(holder.getSubject(), BCStyle.TELEPHONE_NUMBER);
+	}
+
+	public String getEmailAddress() {
+		return getFirstRDN(holder.getSubject(), BCStyle.E);
 	}
 
 	public String getOrganization() {
@@ -183,6 +200,14 @@ public class PKIXCertificate {
 		if ( ! ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
 			return false;
 		}
+		
+		// is self signed, ie. subject == issuer
+		String subjectName = getSubject();
+		String issuerName = getIssuer();
+		if ( subjectName == null || issuerName == null || !subjectName.equals(issuerName)  ) {
+			return false;
+		}
+		//TODO subjectKey == issuerKey identifiers
 		
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();

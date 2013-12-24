@@ -15,6 +15,8 @@ public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	private AsymmetricEncryptionAlgorithm keyAlgorithm;
 	private String cn;
+	private String telephoneNumber;
+	private String emailAddress;
 	private String org;
 	private String country;
 	private Calendar notBefore;
@@ -57,6 +59,22 @@ public class CertificateAuthoritySpecifier {
 
 	public void setCn(String cn) {
 		this.cn = cn;
+	}
+
+	public String getTelephoneNumber() {
+		return telephoneNumber;
+	}
+
+	public void setTelephoneNumber(String telephoneNumber) {
+		this.telephoneNumber = telephoneNumber;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
 	}
 
 	public String getOrg() {
