@@ -133,15 +133,22 @@ public class SignatureVerifyingInputStream extends InputStream {
 				signature.update(length);
 			}
 			if ( signatureAppended ) {
-				int signatureSize = SignatureAlgorithm.signatureSizeBytes(signature, publicKey);
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(signatureSize);
-				SizeConstrainedOutputStream os = new SizeConstrainedOutputStream(signatureSize, baos);
-				os.write(signatureValuePrefix); // signature bytes read previously from the underlying input stream
-				int b = -1;
-				while( ( b = input.read() ) != -1 ) { // all signature bytes left on underlying input stream.
-					os.write(b);
+				int maxSignatureSize = SignatureAlgorithm.getMaxSignatureSizeBytes(signature, publicKey);
+				ByteArrayOutputStream baos = new ByteArrayOutputStream(maxSignatureSize);
+				SizeConstrainedOutputStream os = new SizeConstrainedOutputStream(maxSignatureSize, baos);
+				try {
+					os.write(signatureValuePrefix); // signature bytes read previously from the underlying input stream
+					int b = -1;
+					while( ( b = input.read() ) != -1 ) { // all signature bytes left on underlying input stream.
+						os.write(b);
+					}
+					signatureValue = baos.toByteArray();
+					
+				} finally {
+					if( os != null ) {
+						os.close();
+					}
 				}
-				signatureValue = baos.toByteArray();
 			} else {
 				if ( signatureValuePrefix.length != 0 ) {
 					throw new IOException("Signature bytes appended.");

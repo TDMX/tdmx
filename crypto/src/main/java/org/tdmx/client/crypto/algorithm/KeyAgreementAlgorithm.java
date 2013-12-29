@@ -20,8 +20,9 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public enum KeyAgreementAlgorithm {
 
+	ECDH256(256, "EC", "ECDH", "secp256r1"),
 	ECDH384(384, "EC", "ECDH", "secp384r1");
-
+	
 	private int keyLength;
 	private String keyAlgorithm;
 	private String agreementAlgorithm;

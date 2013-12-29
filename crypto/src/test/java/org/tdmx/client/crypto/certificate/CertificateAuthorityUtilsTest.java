@@ -1,8 +1,8 @@
 package org.tdmx.client.crypto.certificate;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.util.FileUtils;
 
@@ -43,7 +43,7 @@ public class CertificateAuthorityUtilsTest {
 		List<String> dnsNameConstraints = new ArrayList<>();
 		dnsNameConstraints.add("d.com");
 		dnsNameConstraints.add("f.com");
-		req.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA2048);
+		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CertificateAuthorityUtils.createCertificateAuthority(req);
 		

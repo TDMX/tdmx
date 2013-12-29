@@ -2,7 +2,7 @@ package org.tdmx.client.crypto.certificate;
 
 import java.util.Calendar;
 
-import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
 public class CertificateAuthoritySpecifier {
@@ -13,11 +13,12 @@ public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private AsymmetricEncryptionAlgorithm keyAlgorithm;
+	private PublicKeyAlgorithm keyAlgorithm;
 	private String cn;
 	private String telephoneNumber;
 	private String emailAddress;
 	private String org;
+	//TODO add L  - rename to client certificate/admin certificate/user certificate
 	private String country;
 	private Calendar notBefore;
 	private Calendar notAfter;
@@ -45,11 +46,11 @@ public class CertificateAuthoritySpecifier {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public AsymmetricEncryptionAlgorithm getKeyAlgorithm() {
+	public PublicKeyAlgorithm getKeyAlgorithm() {
 		return keyAlgorithm;
 	}
 
-	public void setKeyAlgorithm(AsymmetricEncryptionAlgorithm keyAlgorithm) {
+	public void setKeyAlgorithm(PublicKeyAlgorithm keyAlgorithm) {
 		this.keyAlgorithm = keyAlgorithm;
 	}
 

@@ -18,8 +18,8 @@ public class SignatureAlgorithmTest {
 	}
 	
 	@Test
-	public void testOk2048Signature() throws CryptoException, SignatureException {
-		KeyPair kp = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
+	public void testOkRsa2048Signature() throws CryptoException, SignatureException {
+		KeyPair kp = PublicKeyAlgorithm.RSA2048.generateNewKeyPair();
 		testSignature(kp,SignatureAlgorithm.SHA_1_RSA);
 		testSignature(kp,SignatureAlgorithm.SHA_256_RSA);
 		testSignature(kp,SignatureAlgorithm.SHA_384_RSA);
@@ -27,12 +27,30 @@ public class SignatureAlgorithmTest {
 	}
 	
 	@Test
-	public void testOk4096Signature() throws CryptoException, SignatureException {
-		KeyPair kp = AsymmetricEncryptionAlgorithm.RSA4096.generateNewKeyPair();
+	public void testOkRsa4096Signature() throws CryptoException, SignatureException {
+		KeyPair kp = PublicKeyAlgorithm.RSA4096.generateNewKeyPair();
 		testSignature(kp,SignatureAlgorithm.SHA_1_RSA);
 		testSignature(kp,SignatureAlgorithm.SHA_256_RSA);
 		testSignature(kp,SignatureAlgorithm.SHA_384_RSA);
 		testSignature(kp,SignatureAlgorithm.SHA_512_RSA);
+	}
+	
+	@Test
+	public void testOkEcdsa384Signature() throws CryptoException, SignatureException {
+		KeyPair kp = PublicKeyAlgorithm.ECDSA384.generateNewKeyPair();
+		testSignature(kp,SignatureAlgorithm.SHA_1_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_256_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_384_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_512_ECDSA);
+	}
+	
+	@Test
+	public void testOkEcdsa256Signature() throws CryptoException, SignatureException {
+		KeyPair kp = PublicKeyAlgorithm.ECDSA256.generateNewKeyPair();
+		testSignature(kp,SignatureAlgorithm.SHA_1_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_256_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_384_ECDSA);
+		testSignature(kp,SignatureAlgorithm.SHA_512_ECDSA);
 	}
 	
 	private void testSignature(KeyPair kp, SignatureAlgorithm alg) throws CryptoException, SignatureException {
@@ -62,7 +80,7 @@ public class SignatureAlgorithmTest {
         Signature verifier = alg.getVerifier(kp.getPublic());
         verifier.update(dataInBytes);
         assertTrue( verifier.verify(signedInfo) );
-        assertEquals( SignatureAlgorithm.signatureSizeBytes(signature, kp.getPublic()), signedInfo.length);
+        assertTrue( signedInfo.length <= SignatureAlgorithm.getMaxSignatureSizeBytes(signature, kp.getPublic()) );
 	}
 
 	
