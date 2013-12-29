@@ -5,9 +5,9 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	>
 
-	<jxb:bindings schemaLocation="../../../../../tdmx_v01/mas/mas.xsd" node="/xs:schema">
+	<jxb:bindings schemaLocation="../../../../../tdmx_v01/mrs/mrs.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.client.api.v01.sp.mas" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mrs" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -22,7 +22,7 @@
 
 	<jxb:bindings schemaLocation="../../../../../tdmx_v01/msg.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.client.api.v01.sp.mas.msg" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mrs.msg" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -37,7 +37,7 @@
 
 	<jxb:bindings schemaLocation="../../../../../tdmx_v01/tx.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.client.api.v01.sp.mas.tx" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mrs.tx" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -49,26 +49,10 @@
         
          -->
 	</jxb:bindings>
-
-	<jxb:bindings schemaLocation="../../../../../tdmx_v01/report.xsd" node="/xs:schema">
-		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.client.api.v01.sp.mas.report" />
-		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
-	</jxb:bindings>
-
-
+	
 	<jxb:bindings schemaLocation="../../../../../tdmx_v01/common.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.client.api.v01.sp.mas.common" />
+			<jxb:package name="org.tdmx.client.api.v01.sp.mrs.common" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">

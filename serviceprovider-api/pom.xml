@@ -73,7 +73,7 @@
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>
-                                        ${basedir}/../../tdmx_v01/mas/mas.wsdl
+                                        ${basedir}/../../tdmx_v01/mrs/mrs.wsdl
                                     </wsdl>
                                     <extraargs>
                                         <extraarg>-verbose</extraarg>
@@ -84,11 +84,32 @@
                                         </extraarg>
                                         <extraarg>-b</extraarg>
                                         <extraarg>
-                                            ${basedir}/src/main/resources/mas-schema-binding.xml
+                                            ${basedir}/src/main/resources/mrs-schema-binding.xml
                                         </extraarg> 
                                         <extraarg>-b</extraarg>
                                         <extraarg>
-                                            ${basedir}/src/main/resources/mas-definitions-binding.xml
+                                            ${basedir}/src/main/resources/mrs-definitions-binding.xml
+                                        </extraarg>
+                                    </extraargs>
+                                </wsdlOption>
+                                <wsdlOption>
+                                    <wsdl>
+                                        ${basedir}/../../tdmx_v01/zas/zas.wsdl
+                                    </wsdl>
+                                    <extraargs>
+                                        <extraarg>-verbose</extraarg>
+                                        <extraarg>-validate</extraarg>
+                                        <extraarg>-b</extraarg>
+                                        <extraarg>
+                                            ${basedir}/src/main/resources/global-schema-binding.xml
+                                        </extraarg>
+                                        <extraarg>-b</extraarg>
+                                        <extraarg>
+                                            ${basedir}/src/main/resources/zas-schema-binding.xml
+                                        </extraarg> 
+                                        <extraarg>-b</extraarg>
+                                        <extraarg>
+                                            ${basedir}/src/main/resources/zas-definitions-binding.xml
                                         </extraarg>
                                     </extraargs>
                                 </wsdlOption>
@@ -103,6 +124,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>add-source</id>

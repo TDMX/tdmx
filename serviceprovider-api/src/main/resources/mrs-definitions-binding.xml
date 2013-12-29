@@ -1,4 +1,4 @@
-<jaxws:bindings wsdlLocation="../../../../../tdmx_v01/mas/mas.wsdl"
+<jaxws:bindings wsdlLocation="../../../../../tdmx_v01/mrs/mrs.wsdl"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
 	xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
@@ -9,7 +9,7 @@
  @see https://jax-ws.dev.java.net/nonav/guide/customizations/
 	 -->
 
-	<jaxws:package name="org.tdmx.client.api.v01.mas.ws" />
+	<jaxws:package name="org.tdmx.client.api.v01.sp.mrs.ws" />
 
 </jaxws:bindings>
 
