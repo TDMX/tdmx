@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.console.application.domain.ProblemDO;
 import org.tdmx.console.application.domain.ProblemDO.ProblemCode;
@@ -67,7 +67,7 @@ public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 						csr.setNotBefore(new Date());
 						csr.setNotAfter(CalendarUtils.getDateWithOffset(new Date(), Calendar.YEAR, 1));
 						
-						csr.setKeyAlgorithm(AsymmetricEncryptionAlgorithm.RSA4096);
+						csr.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
 						csr.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
 						
 						OperationResultHolder<String> result = new OperationResultHolder<>();

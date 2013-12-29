@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
 import org.tdmx.console.application.util.CalendarUtils;
@@ -33,7 +33,7 @@ public class CertificateAuthorityRequest implements Serializable {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private AsymmetricEncryptionAlgorithm keyAlgorithm;
+	private PublicKeyAlgorithm keyAlgorithm;
 	private String commonName;
 	private String telephoneNumber;
 	private String emailAddress;
@@ -111,11 +111,11 @@ public class CertificateAuthorityRequest implements Serializable {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public AsymmetricEncryptionAlgorithm getKeyAlgorithm() {
+	public PublicKeyAlgorithm getKeyAlgorithm() {
 		return keyAlgorithm;
 	}
 
-	public void setKeyAlgorithm(AsymmetricEncryptionAlgorithm keyAlgorithm) {
+	public void setKeyAlgorithm(PublicKeyAlgorithm keyAlgorithm) {
 		this.keyAlgorithm = keyAlgorithm;
 	}
 
