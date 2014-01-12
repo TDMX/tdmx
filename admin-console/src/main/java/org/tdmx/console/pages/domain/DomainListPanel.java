@@ -2,8 +2,6 @@ package org.tdmx.console.pages.domain;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -12,6 +10,8 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.console.AdminApplication;
 import org.tdmx.console.domain.Domain;
 import org.tdmx.console.service.UIService;
@@ -22,8 +22,8 @@ import de.agilecoders.wicket.core.markup.html.bootstrap.image.IconType;
 
 public class DomainListPanel extends Panel {
 
-	private static Log log = LogFactory.getLog(DomainListPanel.class);
-	
+	private static Logger log = LoggerFactory.getLogger(DomainListPanel.class);
+		
 	private transient UIService searchService = AdminApplication.getUIService();
 	
 	public DomainListPanel(String id) {

@@ -1,9 +1,5 @@
 package org.tdmx.console.pages.login;
 
-import java.util.Date;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.RestartResponseAtInterceptPageException;
 import org.apache.wicket.markup.head.filter.HeaderResponseContainer;
 import org.apache.wicket.markup.html.GenericWebPage;
@@ -12,6 +8,8 @@ import org.apache.wicket.markup.html.form.StatelessForm;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.console.AdminApplication;
 import org.tdmx.console.base.CustomSession;
 import org.tdmx.console.domain.User;
@@ -31,7 +29,7 @@ import de.agilecoders.wicket.core.markup.html.bootstrap.html.OptimizedMobileView
  */
 public final class LoginPage extends GenericWebPage<LoginPage> {
 
-	private static Log log = LogFactory.getLog(LoginPage.class);
+	private static Logger log = LoggerFactory.getLogger(LoginPage.class);
 	
 	private transient UIService userService = AdminApplication.getUIService();
 	
