@@ -118,6 +118,15 @@ public class PKIXCertificate {
 		return null;
 	}
 	
+	private TdmxZoneInfo getTdmxZoneInfo() {
+		Extension e = holder.getExtension(TdmxZoneInfo.tdmxZoneInfo);
+		if ( e != null ) {
+			TdmxZoneInfo ku = TdmxZoneInfo.getInstance(e.getParsedValue());
+			return ku;
+		}
+		return null;
+	}
+	
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
@@ -208,6 +217,11 @@ public class PKIXCertificate {
 			return false;
 		}
 		//TODO subjectKey == issuerKey identifiers
+		
+		TdmxZoneInfo zi = getTdmxZoneInfo();
+		if ( zi == null ) {
+			return false;
+		}
 		
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();

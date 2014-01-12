@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -30,7 +32,7 @@ public class CertificateAuthorityUtils {
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
 	public static final String TDMX_DOMAIN_CA_OU="tdmx-domain";
-	
+
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
@@ -100,6 +102,10 @@ public class CertificateAuthorityUtils {
 			GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
+			
+			//new
+			TdmxZoneInfo zi = new TdmxZoneInfo(1, "zoneroot.domain.name", "mrs.hostname.org" );
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, zi);
 			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
