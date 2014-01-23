@@ -1,5 +1,7 @@
 package org.tdmx.client.dns;
 
+import java.net.InetAddress;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,9 +16,9 @@ public class SystemReverseDnsResolverTest {
 		SystemReverseDnsResolver r = new SystemReverseDnsResolver("173.194.116.63");
 		String ip = r.reverseDns();
 		System.out.println(ip);
-		SystemReverseDnsResolver r2 = new SystemReverseDnsResolver("2a00:1450:400a:806::1018");
-		String ip2 = r2.reverseDns();
-		System.out.println(ip2);
+		
+		InetAddress addr = InetAddress.getByName("173.194.116.63");
+		System.out.println(addr.getHostName());
 	}
 
 }
