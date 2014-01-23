@@ -143,13 +143,6 @@ public class JettyLauncher {
         context.setServer(server);
         context.setWar(warUrl.toExternalForm());
         
-        LoginService loginService =  new HashLoginService("defaultLoginService");
-        context.getSecurityHandler().setLoginService(loginService);
-
-        // This is used by Windows Service Installer 
-        System.out.println("War - " + warUrl.getPath());
-        System.setProperty("executable-war", warUrl.getPath());
-
         server.setHandler(context);
         server.setStopAtShutdown(true);
 

@@ -25,6 +25,12 @@
 			<version>${dnsjava.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
+
 		<!-- Apache CXF framework -->
 
 		<!-- Wicket framework -->
@@ -163,7 +169,7 @@
 					<archive>
 						<!-- Main bootstrap Class to make war executable -->
 						<manifest>
-							<mainClass>org.tdmx.console.launch.Executable</mainClass>
+							<mainClass>org.tdmx.console.launcher.Executable</mainClass>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>

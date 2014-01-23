@@ -21,20 +21,21 @@ import java.util.jar.Manifest;
 public class Executable {
 
     private final String[] jettyJars = {
-        "libs/jetty.jar",
-        "libs/jetty-web-app.jar",
-        "libs/jetty-continuation.jar",
-        "libs/jetty-util.jar",
-        "libs/jetty-http.jar",
-        "libs/jetty-io.jar",
-        "libs/jetty-security.jar",
-        "libs/jetty-servlet.jar",
-        "libs/jetty-servlet-api.jar",
-        "libs/jetty-xml.jar",
-        "libs/admin-console-launcher.jar"
+        "lib/jetty.jar",
+        "lib/jetty-web-app.jar",
+        "lib/jetty-continuation.jar",
+        "lib/jetty-util.jar",
+        "lib/jetty-http.jar",
+        "lib/jetty-io.jar",
+        "lib/jetty-security.jar",
+        "lib/jetty-servlet.jar",
+        "lib/jetty-servlet-api.jar",
+        "lib/jetty-xml.jar",
+        "lib/admin-console-launcher.jar"
     };
     private List<String> arguments;
-
+    private String warPath;
+    
     public static void main(String[] args) throws Exception {
 
         String javaVersion = System.getProperty("java.version");
@@ -44,11 +45,10 @@ public class Executable {
         int majorVersion = Integer.parseInt(tokens.nextToken());
         int minorVersion = Integer.parseInt(tokens.nextToken());
 
-        //TODO java1.7
-        // Make sure Java version is 1.6 or later
+        // Make sure Java version is 1.7 or later
         if (majorVersion < 2) {
-            if (minorVersion < 6) {
-                System.err.println("Hudson requires Java 6 or later.");
+            if (minorVersion < 7) {
+                System.err.println("Hudson requires Java 7 or later.");
                 System.err.println("Your java version is " + javaVersion);
                 System.err.println("Java Home:  " + System.getProperty("java.home"));
                 System.exit(0);
@@ -63,17 +63,19 @@ public class Executable {
 
     private boolean parseArguments(String[] args) throws Exception {
         arguments = Arrays.asList(args);
-
+        boolean matched = false;
         String cmd = null;
         for (String arg : arguments) {
             if (arg.startsWith("--version")) {
                 System.out.println("TDMX Administration Console Server " + getConsoleVersion());
-            } else if (arg.startsWith("--usage")) {
-                printUsage();
+                matched = true;
+            } else if (arg.startsWith("--war=")) {
+                warPath = arg.substring("--war=".length());
             } else if (arg.startsWith("--cmd=")) {
                 cmd = arg.substring("--cmd=".length());
                 if ( cmd.equals("stop" ) ){
                 	stopJetty();
+                    matched = true;
                 }
           } else if (arg.startsWith("--logfile=")) {
                 String logFile = arg.substring("--logfile=".length());
@@ -82,10 +84,13 @@ public class Executable {
                 PrintStream ps = new PrintStream(fos);
                 System.setOut(ps);
                 System.setErr(ps);
+                matched = true;
             }
         }
-        if ( cmd.equals("start" )) {
+        if ( "start".equals(cmd) ) {
         	return true;
+        } else if ( !matched ) {
+        	printUsage();
         }
         return false;
     }
@@ -97,6 +102,7 @@ public class Executable {
                 + "\n"
                 + "Options:\n"
                 + "   --version                        Show version and quit\n"
+                + "   --usage                          Prints this usage info.\n"
                 + "   --cmd=start|stop                 Command to execute.\n"
                 + "   --logfile=<filename>             Send the output log to this file\n"
                 + "   --prefix=<prefix-string>         Add this prefix to all URLs (eg http://localhost:8080/prefix/resource). Default is none\n\n"
@@ -110,13 +116,16 @@ public class Executable {
     }
 
     private void startJetty() throws Exception {
-        ProtectionDomain protectionDomain = Executable.class.getProtectionDomain();
-        URL warUrl = protectionDomain.getCodeSource().getLocation();
+    	URL warUrl = null;
+    	// we either explicitly say which war to start, or the war is provided.
+    	if ( warPath != null ) {
+            File file = new File(warPath);
+            warUrl = file.toURI().toURL();
+    	} else {
+            ProtectionDomain protectionDomain = Executable.class.getProtectionDomain();
+            warUrl = protectionDomain.getCodeSource().getLocation();
+    	}
         
-        // For Testing purpose
-//        File file = new File("...war");
-//        URL warUrl = file.toURI().toURL();
-
         //TODO remove
         System.out.println(warUrl.getPath());
 
