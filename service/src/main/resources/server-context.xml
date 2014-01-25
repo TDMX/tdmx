@@ -17,6 +17,9 @@
 	<!-- LIBRARY SPRING CONFIG -->
 	<import resource="classpath:/plugon/lib/configuration/local/configuration-service.xml"/>
 
+	<!-- LIBRARY CONTROL DB -->
+	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
+
 	<!-- WS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ws/jaxws/server-context.xml"/>
 

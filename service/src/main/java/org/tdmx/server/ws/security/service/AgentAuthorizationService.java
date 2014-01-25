@@ -1,4 +1,4 @@
-package org.tdmx.lib.control.service;
+package org.tdmx.server.ws.security.service;
 
 import java.security.cert.X509Certificate;
 
