@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>server</artifactId>
+	<artifactId>service</artifactId>
 	<packaging>jar</packaging>
-	<name>server</name>
+	<name>service</name>
 
 	<parent>
-		<artifactId>tdmx-server</artifactId>
+		<artifactId>tdmx</artifactId>
 		<groupId>org.tdmx</groupId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>..</relativePath>
@@ -164,10 +164,9 @@
 		</pluginManagement>
 	</build>
 	<dependencies>
-
 		<dependency>
 			<groupId>org.tdmx</groupId>
-			<artifactId>server-serviceprovider-api</artifactId>
+			<artifactId>core</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>

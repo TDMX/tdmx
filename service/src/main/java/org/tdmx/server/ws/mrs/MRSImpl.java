@@ -4,11 +4,11 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 
-import org.tdmx.server.api.v01.sp.mrs.CreateSession;
-import org.tdmx.server.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.server.api.v01.sp.mrs.Relay;
-import org.tdmx.server.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.server.api.v01.sp.mrs.ws.MRS;
+import org.tdmx.core.api.v01.sp.mrs.CreateSession;
+import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
+import org.tdmx.core.api.v01.sp.mrs.Relay;
+import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
+import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
 
 public class MRSImpl implements MRS {
 
