@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:tx" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:tx" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="msg.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Transaction types for TDMX ServiceProvider API</xs:documentation>
+	</xs:annotation>
+	<xs:complexType name="TransactionSpecification">
+		<xs:sequence>
+			<xs:element ref="xid"/>
+			<xs:element ref="txtimeout" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--             OPERATION TYPES                       -->
+	<!-- ********************************************* -->
+	<xs:complexType name="prepareRequestType">
+		<xs:annotation>
+			<xs:documentation>delivery report included by transactional destinations when twoPhase commit is used.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="xid"/>
+			<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="prepareResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="commitRequestType">
+		<xs:annotation>
+			<xs:documentation>delivery receipt is only possible for transactional destinations on onePhase commit.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="xid"/>
+			<xs:element name="onePhase" type="xs:boolean"/>
+			<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="commitResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="rollbackRequestType">
+		<xs:sequence>
+			<xs:element ref="xid"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="rollbackResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="recoverRequestType">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="recoverResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="forgetRequestType">
+		<xs:sequence>
+			<xs:element ref="xid"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="forgetResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--             SIMPLE TYPES                      -->
+	<!-- ********************************************* -->
+	<xs:simpleType name="txid">
+		<xs:annotation>
+			<xs:documentation>URI of transactionID := jta-xid:formatId:globalTransactionId:branchQualifier</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:anyURI"/>
+	</xs:simpleType>
+	<!-- ********************************************* -->
+	<!--             ELEMENTS                          -->
+	<!-- ********************************************* -->
+	<xs:element name="onephase" type="xs:boolean">
+		<xs:annotation>
+			<xs:documentation>A one phase commit.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="txtimeout" type="xs:dateTime">
+		<xs:annotation>
+			<xs:documentation>A transaction timeout.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="xid" type="txid">
+		<xs:annotation>
+			<xs:documentation>A transaction identifier.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="transaction" type="TransactionSpecification">
+		<xs:annotation>
+			<xs:documentation>A transaction identifier with optional timeout.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- ********************************************* -->
+	<!--        OPERATION ELEMENTS                          -->
+	<!-- ********************************************* -->
+	<xs:element name="prepare" type="prepareRequestType"/>
+	<xs:element name="prepareResponse" type="prepareResponseType"/>
+	<xs:element name="commit" type="commitRequestType"/>
+	<xs:element name="commitResponse" type="commitResponseType"/>
+	<xs:element name="rollback" type="rollbackRequestType"/>
+	<xs:element name="rollbackResponse" type="rollbackResponseType"/>
+	<xs:element name="recover" type="recoverRequestType"/>
+	<xs:element name="recoverResponse" type="recoverResponseType"/>
+	<xs:element name="forget" type="forgetRequestType"/>
+	<xs:element name="forgetResponse" type="forgetResponseType"/>
+</xs:schema>

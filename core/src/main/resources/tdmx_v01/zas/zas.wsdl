@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:zas-definition" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:zas="urn:tdmx:api:v1.0:sp:zas" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" xmlns:report="urn:tdmx:api:v1.0:sp:report" targetNamespace="urn:tdmx:api:v1.0:sp:zas-definition" name="ZAS">
+	<wsdl:documentation>
+		Bla Bla...
+	</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:common" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:common">
+			<xsd:include schemaLocation="../common.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:msg">
+			<xsd:include schemaLocation="../msg.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:tx" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:tx">
+			<xsd:include schemaLocation="../tx.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:report" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:zas="urn:tdmx:api:v1.0:sp:report">
+			<xsd:include schemaLocation="../report.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:zas" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:zas="urn:tdmx:api:v1.0:sp:zas">
+			<xsd:include schemaLocation="zas.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="incidentRequest">
+		<wsdl:part name="parameters" element="report:incident"/>
+	</wsdl:message>
+	<wsdl:message name="incidentResponse">
+		<wsdl:part name="parameters" element="report:incidentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="reportRequest">
+		<wsdl:part name="parameters" element="report:report"/>
+	</wsdl:message>
+	<wsdl:message name="reportResponse">
+		<wsdl:part name="parameters" element="report:reportResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchDomainRequest">
+		<wsdl:part name="parameters" element="zas:searchDomain"/>
+	</wsdl:message>
+	<wsdl:message name="searchDomainResponse">
+		<wsdl:part name="parameters" element="zas:searchDomainResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createDomainRequest">
+		<wsdl:part name="parameters" element="zas:createDomain"/>
+	</wsdl:message>
+	<wsdl:message name="createDomainResponse">
+		<wsdl:part name="parameters" element="zas:createDomainResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteDomainRequest">
+		<wsdl:part name="parameters" element="zas:deleteDomain"/>
+	</wsdl:message>
+	<wsdl:message name="deleteDomainResponse">
+		<wsdl:part name="parameters" element="zas:deleteDomainResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchAdministratorRequest">
+		<wsdl:part name="parameters" element="zas:searchAdministrator"/>
+	</wsdl:message>
+	<wsdl:message name="searchAdministratorResponse">
+		<wsdl:part name="parameters" element="zas:searchAdministratorResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createAdministratorRequest">
+		<wsdl:part name="parameters" element="zas:createAdministrator"/>
+	</wsdl:message>
+	<wsdl:message name="createAdministratorResponse">
+		<wsdl:part name="parameters" element="zas:createAdministratorResponse"/>
+	</wsdl:message>
+	<wsdl:message name="modifyAdministratorRequest">
+		<wsdl:part name="parameters" element="zas:modifyAdministrator"/>
+	</wsdl:message>
+	<wsdl:message name="modifyAdministratorResponse">
+		<wsdl:part name="parameters" element="zas:modifyAdministratorResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteAdministratorRequest">
+		<wsdl:part name="parameters" element="zas:deleteAdministrator"/>
+	</wsdl:message>
+	<wsdl:message name="deleteAdministratorResponse">
+		<wsdl:part name="parameters" element="zas:deleteAdministratorResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchAddressRequest">
+		<wsdl:part name="parameters" element="zas:searchAddress"/>
+	</wsdl:message>
+	<wsdl:message name="searchAddressResponse">
+		<wsdl:part name="parameters" element="zas:searchAddressResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createAddressRequest">
+		<wsdl:part name="parameters" element="zas:createAddress"/>
+	</wsdl:message>
+	<wsdl:message name="createAddressResponse">
+		<wsdl:part name="parameters" element="zas:createAddressResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteAddressRequest">
+		<wsdl:part name="parameters" element="zas:deleteAddress"/>
+	</wsdl:message>
+	<wsdl:message name="deleteAddressResponse">
+		<wsdl:part name="parameters" element="zas:deleteAddressResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchIpZoneRequest">
+		<wsdl:part name="parameters" element="zas:searchIpZone"/>
+	</wsdl:message>
+	<wsdl:message name="searchIpZoneResponse">
+		<wsdl:part name="parameters" element="zas:searchIpZoneResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createIpZoneRequest">
+		<wsdl:part name="parameters" element="zas:createIpZone"/>
+	</wsdl:message>
+	<wsdl:message name="createIpZoneResponse">
+		<wsdl:part name="parameters" element="zas:createIpZoneResponse"/>
+	</wsdl:message>
+	<wsdl:message name="modifyIpZoneRequest">
+		<wsdl:part name="parameters" element="zas:modifyIpZone"/>
+	</wsdl:message>
+	<wsdl:message name="modifyIpZoneResponse">
+		<wsdl:part name="parameters" element="zas:modifyIpZoneResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteIpZoneRequest">
+		<wsdl:part name="parameters" element="zas:deleteIpZone"/>
+	</wsdl:message>
+	<wsdl:message name="deleteIpZoneResponse">
+		<wsdl:part name="parameters" element="zas:deleteIpZoneResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchUserRequest">
+		<wsdl:part name="parameters" element="zas:searchUser"/>
+	</wsdl:message>
+	<wsdl:message name="searchUserResponse">
+		<wsdl:part name="parameters" element="zas:searchUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createUserRequest">
+		<wsdl:part name="parameters" element="zas:createUser"/>
+	</wsdl:message>
+	<wsdl:message name="createUserResponse">
+		<wsdl:part name="parameters" element="zas:createUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="modifyUserRequest">
+		<wsdl:part name="parameters" element="zas:modifyUser"/>
+	</wsdl:message>
+	<wsdl:message name="modifyUserResponse">
+		<wsdl:part name="parameters" element="zas:modifyUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteUserRequest">
+		<wsdl:part name="parameters" element="zas:deleteUser"/>
+	</wsdl:message>
+	<wsdl:message name="deleteUserResponse">
+		<wsdl:part name="parameters" element="zas:deleteUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchServiceRequest">
+		<wsdl:part name="parameters" element="zas:searchService"/>
+	</wsdl:message>
+	<wsdl:message name="searchServiceResponse">
+		<wsdl:part name="parameters" element="zas:searchServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="createServiceRequest">
+		<wsdl:part name="parameters" element="zas:createService"/>
+	</wsdl:message>
+	<wsdl:message name="createServiceResponse">
+		<wsdl:part name="parameters" element="zas:createServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="modifyServiceRequest">
+		<wsdl:part name="parameters" element="zas:modifyService"/>
+	</wsdl:message>
+	<wsdl:message name="modifyServiceResponse">
+		<wsdl:part name="parameters" element="zas:modifyServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteServiceRequest">
+		<wsdl:part name="parameters" element="zas:deleteService"/>
+	</wsdl:message>
+	<wsdl:message name="deleteServiceResponse">
+		<wsdl:part name="parameters" element="zas:deleteServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchChannelAuthorizationRequest">
+		<wsdl:part name="parameters" element="zas:searchChannelAuthorization"/>
+	</wsdl:message>
+	<wsdl:message name="searchChannelAuthorizationResponse">
+		<wsdl:part name="parameters" element="zas:searchChannelAuthorizationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getChannelAuthorizationRequest">
+		<wsdl:part name="parameters" element="zas:getChannelAuthorization"/>
+	</wsdl:message>
+	<wsdl:message name="getChannelAuthorizationResponse">
+		<wsdl:part name="parameters" element="zas:getChannelAuthorizationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="setChannelAuthorizationRequest">
+		<wsdl:part name="parameters" element="zas:setChannelAuthorization"/>
+	</wsdl:message>
+	<wsdl:message name="setChannelAuthorizationResponse">
+		<wsdl:part name="parameters" element="zas:setChannelAuthorizationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="deleteChannelAuthorizationRequest">
+		<wsdl:part name="parameters" element="zas:deleteChannelAuthorization"/>
+	</wsdl:message>
+	<wsdl:message name="deleteChannelAuthorizationResponse">
+		<wsdl:part name="parameters" element="zas:deleteChannelAuthorizationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchFlowTargetStateRequest">
+		<wsdl:part name="parameters" element="zas:searchFlowTargetState"/>
+	</wsdl:message>
+	<wsdl:message name="searchFlowTargetStateResponse">
+		<wsdl:part name="parameters" element="zas:searchFlowTargetStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getFlowTargetStateRequest">
+		<wsdl:part name="parameters" element="zas:getFlowTargetState"/>
+	</wsdl:message>
+	<wsdl:message name="getFlowTargetStateResponse">
+		<wsdl:part name="parameters" element="zas:getFlowTargetStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="modifyFlowTargetStateRequest">
+		<wsdl:part name="parameters" element="zas:modifyFlowTargetState"/>
+	</wsdl:message>
+	<wsdl:message name="modifyFlowTargetStateResponse">
+		<wsdl:part name="parameters" element="zas:modifyFlowTargetStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="searchFlowStateRequest">
+		<wsdl:part name="parameters" element="zas:searchFlowState"/>
+	</wsdl:message>
+	<wsdl:message name="searchFlowStateResponse">
+		<wsdl:part name="parameters" element="zas:searchFlowStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getFlowStateRequest">
+		<wsdl:part name="parameters" element="zas:getFlowState"/>
+	</wsdl:message>
+	<wsdl:message name="getFlowStateResponse">
+		<wsdl:part name="parameters" element="zas:getFlowStateResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="ZAS">
+		<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+		<wsdl:operation name="incident">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:incidentRequest"/>
+			<wsdl:output message="tns:incidentResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="report">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:reportRequest"/>
+			<wsdl:output message="tns:reportResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchDomain">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchDomainRequest"/>
+			<wsdl:output message="tns:searchDomainResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createDomain">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createDomainRequest"/>
+			<wsdl:output message="tns:createDomainResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteDomain">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteDomainRequest"/>
+			<wsdl:output message="tns:deleteDomainResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchAdministrator">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchAdministratorRequest"/>
+			<wsdl:output message="tns:searchAdministratorResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createAdministrator">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createAdministratorRequest"/>
+			<wsdl:output message="tns:createAdministratorResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="modifyAdministrator">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:modifyAdministratorRequest"/>
+			<wsdl:output message="tns:modifyAdministratorResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteAdministrator">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteAdministratorRequest"/>
+			<wsdl:output message="tns:deleteAdministratorResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchAddress">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchAddressRequest"/>
+			<wsdl:output message="tns:searchAddressResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createAddress">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createAddressRequest"/>
+			<wsdl:output message="tns:createAddressResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteAddress">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteAddressRequest"/>
+			<wsdl:output message="tns:deleteAddressResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchIpZone">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchIpZoneRequest"/>
+			<wsdl:output message="tns:searchIpZoneResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createIpZone">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createIpZoneRequest"/>
+			<wsdl:output message="tns:createIpZoneResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="modifyIpZone">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:modifyIpZoneRequest"/>
+			<wsdl:output message="tns:modifyIpZoneResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteIpZone">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteIpZoneRequest"/>
+			<wsdl:output message="tns:deleteIpZoneResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchUser">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchUserRequest"/>
+			<wsdl:output message="tns:searchUserResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createUser">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createUserRequest"/>
+			<wsdl:output message="tns:createUserResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="modifyUser">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:modifyUserRequest"/>
+			<wsdl:output message="tns:modifyUserResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteUser">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteUserRequest"/>
+			<wsdl:output message="tns:deleteUserResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchService">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchServiceRequest"/>
+			<wsdl:output message="tns:searchServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="createService">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createServiceRequest"/>
+			<wsdl:output message="tns:createServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="modifyService">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:modifyServiceRequest"/>
+			<wsdl:output message="tns:modifyServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteService">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteServiceRequest"/>
+			<wsdl:output message="tns:deleteServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchChannelAuthorization">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchChannelAuthorizationRequest"/>
+			<wsdl:output message="tns:searchChannelAuthorizationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getChannelAuthorization">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getChannelAuthorizationRequest"/>
+			<wsdl:output message="tns:getChannelAuthorizationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="setChannelAuthorization">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:setChannelAuthorizationRequest"/>
+			<wsdl:output message="tns:setChannelAuthorizationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="deleteChannelAuthorization">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:deleteChannelAuthorizationRequest"/>
+			<wsdl:output message="tns:deleteChannelAuthorizationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchFlowTargetState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchFlowTargetStateRequest"/>
+			<wsdl:output message="tns:searchFlowTargetStateResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getFlowTargetState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getFlowTargetStateRequest"/>
+			<wsdl:output message="tns:getFlowTargetStateResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="modifyFlowTargetState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:modifyFlowTargetStateRequest"/>
+			<wsdl:output message="tns:modifyFlowTargetStateResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchFlowState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchFlowStateRequest"/>
+			<wsdl:output message="tns:searchFlowStateResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getFlowState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getFlowStateRequest"/>
+			<wsdl:output message="tns:getFlowStateResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="ZASBinding" type="tns:ZAS">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="incident">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/incident"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="report">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/report"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchDomain">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchDomain"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createDomain">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createDomain"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteDomain">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteDomain"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchAdministrator">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchAdministrator"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createAdministrator">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createAdministrator"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="modifyAdministrator">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyAdministrator"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteAdministrator">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteAdministrator"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchAddress"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createAddress"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteAddress"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchIpZone">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchIpZone"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createIpZone">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createIpZone"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="modifyIpZone">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyIpZone"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteIpZone">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteIpZone"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchUser">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createUser">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="modifyUser">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteUser">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchService"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="createService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/createService"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="modifyService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyService"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteService"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchChannelAuthorization">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchChannelAuthorization"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getChannelAuthorization">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getChannelAuthorization"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="setChannelAuthorization">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="deleteChannelAuthorization">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteChannelAuthorization"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchFlowTargetState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTargetState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getFlowTargetState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowTargetState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="modifyFlowTargetState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTargetState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchFlowState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getFlowState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="ZoneAdministrationService">
+		<wsdl:port name="ZAS" binding="tns:ZASBinding">
+			<soap:address location="http://serviceprovider.com/api/v1.0/sp/zas"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

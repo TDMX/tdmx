@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:report" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:report" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="msg.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Report types for TDMX ServiceProvider API</xs:documentation>
+	</xs:annotation>
+	<xs:complexType name="ReportObject">
+		<xs:sequence>
+			<xs:choice>
+				<xs:element ref="msg:domain"/>
+				<xs:element ref="msg:address"/>
+				<xs:element ref="msg:service"/>
+				<xs:element ref="msg:channel"/>
+				<xs:element ref="msg:user"/>
+				<xs:element ref="msg:flowtarget"/>
+				<xs:element ref="msg:flow"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Timeframe">
+		<xs:sequence>
+			<xs:element name="fromTime" type="xs:dateTime"/>
+			<xs:element name="toTime" type="xs:dateTime"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="GroupedValues">
+		<xs:sequence>
+			<xs:element name="value" type="AggregatedNumericValue" maxOccurs="3"/>
+		</xs:sequence>
+		<xs:attribute name="group" type="groupname" use="required"/>
+		<xs:attribute name="category" type="common:text"/>
+		<xs:attribute name="subcategory" type="common:text"/>
+	</xs:complexType>
+	<xs:complexType name="AggregatedNumericValue">
+		<xs:simpleContent>
+			<xs:extension base="xs:decimal">
+				<xs:attribute name="name" type="aggregatename" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="IncidentReport">
+		<xs:sequence>
+			<xs:element name="timestamp" type="xs:dateTime"/>
+			<xs:element name="type" type="incidentType"/>
+			<xs:element name="severity" type="incidentSeverity"/>
+			<xs:element name="description" type="common:longtext"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--             OPERATION TYPES-->
+	<!-- ********************************************* -->
+	<xs:complexType name="reportRequestType">
+		<xs:sequence>
+			<xs:element name="objectType" type="reportObjectType"/>
+			<xs:element name="timeframe" type="Timeframe"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reportResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence>
+					<xs:element name="objectType" type="reportObjectType" minOccurs="0"/>
+					<xs:element name="timeframe" type="Timeframe" minOccurs="0"/>
+					<xs:element name="result" type="GroupedValues" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="incidentRequestType">
+		<xs:sequence>
+			<xs:element name="timeframe" type="Timeframe"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="incidentResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence>
+					<xs:element name="incident" type="IncidentReport" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--             SIMPLE TYPES                      -->
+	<!-- ********************************************* -->
+	<xs:simpleType name="reportObjectType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="DOMAIN"/>
+			<xs:enumeration value="ADDRESS"/>
+			<xs:enumeration value="SERVICE"/>
+			<xs:enumeration value="CHANNEL"/>
+			<xs:enumeration value="USER"/>
+			<xs:enumeration value="FLOWTARGET"/>
+			<xs:enumeration value="FLOW"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="groupname">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SECURITY_INCIDENT"/>
+			<xs:enumeration value="OPERATION_INCIDENT"/>
+			<xs:enumeration value="TASK"/>
+			<xs:enumeration value="API"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="aggregatename">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="BYTES_IN"/>
+			<xs:enumeration value="BYTES_OUT"/>
+			<xs:enumeration value="NUMBER"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="incidentType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SECURITY"/>
+			<xs:enumeration value="OPERATION"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="incidentSeverity">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ERROR"/>
+			<xs:enumeration value="WARN"/>
+			<xs:enumeration value="INFO"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- ********************************************* -->
+	<!--        OPERATION ELEMENTS                          -->
+	<!-- ********************************************* -->
+	<xs:element name="report" type="reportRequestType"/>
+	<xs:element name="reportResponse" type="reportResponseType"/>
+	<xs:element name="incident" type="incidentRequestType"/>
+	<xs:element name="incidentResponse" type="incidentResponseType"/>
+</xs:schema>

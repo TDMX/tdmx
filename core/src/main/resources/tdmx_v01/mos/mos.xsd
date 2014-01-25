@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:mos" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:mos" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>This schema defines the request entities.</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="../common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="../tx.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="../msg.xsd"/>
+	<!-- ********************************************* -->
+	<!--   MOS CONTROL OPERATION TYPES                               -->
+	<!--                  -->
+	<!-- ********************************************* -->
+	<xs:complexType name="getAddressRequestType">
+		<xs:annotation>
+			<xs:documentation>get the address associated with the source credential.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="getAddressResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:address"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>list the services associated with the source credential through authorized channels.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="destination" type="msg:ServiceFilter">
+				<xs:annotation>
+					<xs:documentation>a filter of the destination service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:service" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listAuthorizedChannelDestinationRequestType">
+		<xs:annotation>
+			<xs:documentation>list the authorized channels associated with the source credential.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="destination" type="msg:ServiceAddressFilter">
+				<xs:annotation>
+					<xs:documentation>a filter criteria of the channel destination.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listAuthorizedChannelDestinationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:channelauthorization" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listFlowStateRequestType">
+		<xs:annotation>
+			<xs:documentation>list the flow state of every flow of a channel.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:destination"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listFlowStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:flowstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getFlowTargetSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>get the session of a flow target.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:flowtarget"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getFlowTargetSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:targetsession"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getMessageDeliveryStatusRequestType">
+		<xs:annotation>
+			<xs:documentation>get the delivery status of a submitted Message.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:msgId" maxOccurs="256"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getMessageDeliveryStatusResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:dr" maxOccurs="256"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--    MOS SEND OPERATION TYPES                                                     -->
+	<!--                                        -->
+	<!-- ********************************************* -->
+	<xs:complexType name="submitRequestType">
+		<xs:sequence>
+			<xs:element ref="tx:transaction" minOccurs="0"/>
+			<xs:element ref="msg:msg"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="submitResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="uploadRequestType">
+		<xs:sequence>
+			<xs:element ref="common:continuation" minOccurs="0"/>
+			<xs:element ref="msg:chunk"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="uploadResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--    REQUEST AND RESPONSE ELEMENTS                                              -->
+	<!--                                               -->
+	<!-- ********************************************* -->
+	<xs:element name="getAddress" type="getAddressRequestType"/>
+	<xs:element name="getAddressResponse" type="getAddressResponseType"/>
+	<xs:element name="listService" type="listServiceRequestType"/>
+	<xs:element name="listServiceResponse" type="listServiceResponseType"/>
+	<xs:element name="listAuthorizedChannelDestination" type="listAuthorizedChannelDestinationRequestType"/>
+	<xs:element name="listAuthorizedChannelDestinationResponse" type="listAuthorizedChannelDestinationResponseType"/>
+	<xs:element name="listFlowState" type="listFlowStateRequestType"/>
+	<xs:element name="listFlowStateResponse" type="listFlowStateResponseType"/>
+	<xs:element name="getFlowTargetSession" type="getFlowTargetSessionRequestType"/>
+	<xs:element name="getFlowTargetSessionResponse" type="getFlowTargetSessionResponseType"/>
+	<xs:element name="getMessageDeliveryStatus" type="getMessageDeliveryStatusRequestType"/>
+	<xs:element name="getMessageDeliveryStatusResponse" type="getMessageDeliveryStatusResponseType"/>
+	<xs:element name="submit" type="submitRequestType"/>
+	<xs:element name="submitResponse" type="submitResponseType"/>
+	<xs:element name="upload" type="uploadRequestType"/>
+	<xs:element name="uploadResponse" type="uploadResponseType"/>
+</xs:schema>

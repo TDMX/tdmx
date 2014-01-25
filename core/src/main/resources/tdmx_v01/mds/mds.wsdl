@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:mds-definition" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:mds="urn:tdmx:api:v1.0:sp:mds" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:mds-definition" name="MDS">
+	<wsdl:documentation>
+		Bla Bla...
+	</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:common" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:common="urn:tdmx:api:v1.0:sp:common">
+			<xsd:include schemaLocation="../common.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:tx" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:tx">
+			<xsd:include schemaLocation="../tx.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:msg="urn:tdmx:api:v1.0:sp:msg">
+			<xsd:include schemaLocation="../msg.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:mds" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:mds="urn:tdmx:api:v1.0:sp:mds">
+			<xsd:include schemaLocation="mds.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="getAddressRequest">
+		<wsdl:part name="parameters" element="mds:getAddress"/>
+	</wsdl:message>
+	<wsdl:message name="getAddressResponse">
+		<wsdl:part name="parameters" element="mds:getAddressResponse"/>
+	</wsdl:message>
+	<wsdl:message name="listServiceRequest">
+		<wsdl:part name="parameters" element="mds:listService"/>
+	</wsdl:message>
+	<wsdl:message name="listServiceResponse">
+		<wsdl:part name="parameters" element="mds:listServiceResponse"/>
+	</wsdl:message>
+	<wsdl:message name="listAuthorizedChannelOriginRequest">
+		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOrigin"/>
+	</wsdl:message>
+	<wsdl:message name="listAuthorizedChannelOriginResponse">
+		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOriginResponse"/>
+	</wsdl:message>
+	<wsdl:message name="listFlowStateRequest">
+		<wsdl:part name="parameters" element="mds:listFlowState"/>
+	</wsdl:message>
+	<wsdl:message name="listFlowStateResponse">
+		<wsdl:part name="parameters" element="mds:listFlowStateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getTargetSessionRequest">
+		<wsdl:part name="parameters" element="mds:getTargetSession"/>
+	</wsdl:message>
+	<wsdl:message name="getTargetSessionResponse">
+		<wsdl:part name="parameters" element="mds:getTargetSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="setTargetSessionRequest">
+		<wsdl:part name="parameters" element="mds:setTargetSession"/>
+	</wsdl:message>
+	<wsdl:message name="setTargetSessionResponse">
+		<wsdl:part name="parameters" element="mds:setTargetSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="receiveRequest">
+		<wsdl:part name="parameters" element="mds:receive"/>
+	</wsdl:message>
+	<wsdl:message name="receiveResponse">
+		<wsdl:part name="parameters" element="mds:receiveResponse"/>
+	</wsdl:message>
+	<wsdl:message name="downloadRequest">
+		<wsdl:part name="parameters" element="mds:download"/>
+	</wsdl:message>
+	<wsdl:message name="downloadResponse">
+		<wsdl:part name="parameters" element="mds:downloadResponse"/>
+	</wsdl:message>
+	<wsdl:message name="prepareRequest">
+		<wsdl:part name="parameters" element="tx:prepare"/>
+	</wsdl:message>
+	<wsdl:message name="prepareResponse">
+		<wsdl:part name="parameters" element="tx:prepareResponse"/>
+	</wsdl:message>
+	<wsdl:message name="commitRequest">
+		<wsdl:part name="parameters" element="tx:commit"/>
+	</wsdl:message>
+	<wsdl:message name="commitResponse">
+		<wsdl:part name="parameters" element="tx:commitResponse"/>
+	</wsdl:message>
+	<wsdl:message name="rollbackRequest">
+		<wsdl:part name="parameters" element="tx:rollback"/>
+	</wsdl:message>
+	<wsdl:message name="rollbackResponse">
+		<wsdl:part name="parameters" element="tx:rollbackResponse"/>
+	</wsdl:message>
+	<wsdl:message name="recoverRequest">
+		<wsdl:part name="parameters" element="tx:recover"/>
+	</wsdl:message>
+	<wsdl:message name="recoverResponse">
+		<wsdl:part name="parameters" element="tx:recoverResponse"/>
+	</wsdl:message>
+	<wsdl:message name="forgetRequest">
+		<wsdl:part name="parameters" element="tx:forget"/>
+	</wsdl:message>
+	<wsdl:message name="forgetResponse">
+		<wsdl:part name="parameters" element="tx:forgetResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="MDS">
+		<wsdl:documentation>
+				Bla Bla
+		</wsdl:documentation>
+		<wsdl:operation name="getAddress">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getAddressRequest"/>
+			<wsdl:output message="tns:getAddressResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="listService">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:listServiceRequest"/>
+			<wsdl:output message="tns:listServiceResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="listAuthorizedChannelOrigin">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:listAuthorizedChannelOriginRequest"/>
+			<wsdl:output message="tns:listAuthorizedChannelOriginResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="listFlowState">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:listFlowStateRequest"/>
+			<wsdl:output message="tns:listFlowStateResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getTargetSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getTargetSessionRequest"/>
+			<wsdl:output message="tns:getTargetSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="setTargetSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:setTargetSessionRequest"/>
+			<wsdl:output message="tns:setTargetSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="receive">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:receiveRequest"/>
+			<wsdl:output message="tns:receiveResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="download">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:downloadRequest"/>
+			<wsdl:output message="tns:downloadResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="prepare">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:prepareRequest"/>
+			<wsdl:output message="tns:prepareResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="commit">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:commitRequest"/>
+			<wsdl:output message="tns:commitResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="rollback">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:rollbackRequest"/>
+			<wsdl:output message="tns:rollbackResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="recover">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:recoverRequest"/>
+			<wsdl:output message="tns:recoverResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="forget">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:forgetRequest"/>
+			<wsdl:output message="tns:forgetResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="MDSBinding" type="tns:MDS">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="getAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getAddress"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="listService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listService"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="listAuthorizedChannelOrigin">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listAuthorizedChannelOrigin"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="listFlowState">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listFlowState"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getTargetSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getTargetSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="setTargetSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/setTargetSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="receive">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/receive"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="download">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/download"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="prepare">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/prepare"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="commit">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/commit"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="rollback">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/rollback"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="recover">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/recover"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="forget">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/forget"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="MessageDestinationService">
+		<wsdl:port name="MDS" binding="tns:MDSBinding">
+			<soap:address location="http://serviceprovider.com/api/v1.0/sp/mds"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

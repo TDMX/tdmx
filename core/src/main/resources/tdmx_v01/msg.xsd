@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:msg" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="common.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Message related types for TDMX ServiceProvider API</xs:documentation>
+	</xs:annotation>
+	<!-- ********************************************* -->
+	<!--           TYPES            -->
+	<!-- ********************************************* -->
+	<xs:complexType name="DomainFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Domains</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="domain" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdministratorFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Administrators.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="administrator" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
+			<xs:element name="whitelist" type="IpAddressList" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Address">
+		<xs:annotation>
+			<xs:documentation>An Address.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="localname"/>
+			<xs:element ref="domain"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AddressFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Addresses.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="localname" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Service">
+		<xs:annotation>
+			<xs:documentation>A Service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="servicename"/>
+			<xs:element ref="domain"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ServiceState">
+		<xs:annotation>
+			<xs:documentation>State information related to a Service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="service"/>
+			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>the default receive concurrency limit per target.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ServiceFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Services.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="servicename" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ServiceAddress">
+		<xs:complexContent>
+			<xs:extension base="Service">
+				<xs:sequence>
+					<xs:element ref="localname"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ServiceAddressFilter">
+		<xs:sequence>
+			<xs:element ref="localname" minOccurs="0"/>
+			<xs:element ref="servicename" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IpZone">
+		<xs:sequence>
+			<xs:element name="name" type="ipzonename"/>
+			<xs:element name="ipaddress" type="ipaddress" maxOccurs="256"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IpAddressList">
+		<xs:sequence>
+			<xs:element ref="ipaddress" minOccurs="0" maxOccurs="255"/>
+			<xs:element ref="ipzone" minOccurs="0" maxOccurs="64"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Administrator">
+		<xs:sequence>
+			<xs:element ref="domaincertificate"/>
+			<xs:element ref="rootcertificate"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AdministratorState">
+		<xs:sequence>
+			<xs:element ref="administrator"/>
+			<xs:element name="status" type="credentialStatus"/>
+			<xs:element name="whitelist" type="IpAddressList"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="User">
+		<xs:sequence>
+			<xs:element ref="usercertificate"/>
+			<xs:element ref="domaincertificate"/>
+			<xs:element ref="rootcertificate"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UserState">
+		<xs:sequence>
+			<xs:element ref="user"/>
+			<xs:element name="status" type="credentialStatus"/>
+			<xs:element name="whitelist" type="IpAddressList"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UserFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Users.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="user" minOccurs="0"/>
+			<xs:element ref="localname" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelOrigin">
+		<xs:complexContent>
+			<xs:extension base="Address">
+				<xs:sequence>
+					<xs:element ref="serviceprovider"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChannelOriginFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Channel Origins.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="localname" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+			<xs:element ref="serviceprovider" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelDestination">
+		<xs:complexContent>
+			<xs:extension base="ServiceAddress">
+				<xs:sequence>
+					<xs:element ref="serviceprovider"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChannelDestinationFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Channel Destinations.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="localname" minOccurs="0"/>
+			<xs:element ref="servicename" minOccurs="0"/>
+			<xs:element ref="domain" minOccurs="0"/>
+			<xs:element ref="serviceprovider" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Channel">
+		<xs:annotation>
+			<xs:documentation>A directed communication path for messages between two Addresses via a Service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="origin"/>
+			<xs:element ref="destination"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelFilter">
+		<xs:annotation>
+			<xs:documentation>A filter criteria for searching for Channels.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="origin" type="ChannelOriginFilter" minOccurs="0"/>
+			<xs:element name="destination" type="ChannelDestinationFilter" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelEndpointAuthorization">
+		<xs:sequence>
+			<xs:element ref="channel"/>
+			<xs:element name="permission" type="permission"/>
+			<xs:element name="maxPlaintextSize" type="xs:unsignedInt"/>
+			<xs:element name="notValidAfter" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>the time at which the authorization is revoked. An authorization is valid for at most 1 year duration, which is required to handle DNS ownership changes (and whois expiration info not authoritative), whilst having long validity durations of clients.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="administratorsignature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RequestedChannelAuthorization">
+		<xs:sequence>
+			<xs:element name="origin" type="ChannelEndpointAuthorization" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the authorization of the origin.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="destination" type="ChannelEndpointAuthorization" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the authorization of the destination. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelAuthorization">
+		<xs:sequence>
+			<xs:element name="origin" type="ChannelEndpointAuthorization" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the authorization of the origin.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="destination" type="ChannelEndpointAuthorization" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the authorization of the destination. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="limit" type="FlowControlLimit">
+				<xs:annotation>
+					<xs:documentation>the default flow control limit which is initially applied to all flows created in the channel.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="administratorsignature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelAuthorizationState">
+		<xs:sequence>
+			<xs:element name="current" type="ChannelAuthorization">
+				<xs:annotation>
+					<xs:documentation>the current authorization of the channel.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="unconfirmed" type="RequestedChannelAuthorization">
+				<xs:annotation>
+					<xs:documentation>the yet to be confirmed authorization of the channel.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="common:processingstatus" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelAuthorizationFilter">
+		<xs:complexContent>
+			<xs:extension base="ChannelFilter">
+				<xs:sequence>
+					<xs:element name="unconfirmedFlag" type="xs:boolean" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>whether the channel has unconfirmed authorization changes.   TODO --- maybe enum of "use cases"?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FlowTarget">
+		<xs:annotation>
+			<xs:documentation>The delivery endpoint of messages destined for a Destination Agent at a ServiceAddress.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="target"/>
+			<xs:element ref="servicename"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowTargetFilter">
+		<xs:sequence>
+			<xs:element name="target" type="UserFilter" minOccurs="0"/>
+			<xs:element ref="servicename" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Flow">
+		<xs:complexContent>
+			<xs:extension base="FlowTarget">
+				<xs:sequence>
+					<xs:element ref="source"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FlowFilter">
+		<xs:sequence>
+			<xs:element name="source" type="UserFilter" minOccurs="0"/>
+			<xs:element name="target" type="UserFilter" minOccurs="0"/>
+			<xs:element ref="servicename" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowControlPolicy">
+		<xs:sequence>
+			<xs:element name="flow" type="Flow"/>
+			<xs:element name="limit" type="FlowControlLimit"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowControlLimit">
+		<xs:sequence>
+			<xs:element name="unsentBuffer" type="Limit" minOccurs="0"/>
+			<xs:element name="undeliveredBuffer" type="Limit" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowControlLevel">
+		<xs:sequence>
+			<xs:element name="unsentBuffer" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="undeliveredBuffer" type="xs:unsignedInt" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowState">
+		<xs:complexContent>
+			<xs:extension base="Flow">
+				<xs:sequence>
+					<xs:element ref="flowcontrolstatus"/>
+					<xs:element name="level" type="FlowControlLevel">
+						<xs:annotation>
+							<xs:documentation>the current flow control levels.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="limit" type="FlowControlLimit">
+						<xs:annotation>
+							<xs:documentation>the flow control limits for high mark and low mark set by channel authorization affects all flows.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FlowTargetSession">
+		<xs:sequence>
+			<xs:element ref="service"/>
+			<xs:element ref="flowsession" maxOccurs="2"/>
+			<xs:element ref="usersignature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowTargetState">
+		<xs:complexContent>
+			<xs:extension base="FlowTarget">
+				<xs:sequence>
+					<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+						<xs:annotation>
+							<xs:documentation>the limit of the number of concurrent receives of the target credential for the service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="concurrencyLevel" type="xs:unsignedShort">
+						<xs:annotation>
+							<xs:documentation>the current number of concurrent receivers of the target credential.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FlowSession">
+		<xs:annotation>
+			<xs:documentation>FlowSession is a public (encryption) session key which is signed by the flow's destination credential and has a fixed validity period.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="sessionKey" type="xs:base64Binary"/>
+			<xs:element name="validFrom" type="timestamp"/>
+			<xs:element name="scheme" type="cryptoscheme"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UserSignature">
+		<xs:sequence>
+			<xs:element ref="user"/>
+			<xs:element name="timestamp" type="timestamp"/>
+			<xs:element name="signature" type="signature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="usersignature" type="UserSignature">
+		<xs:annotation>
+			<xs:documentation>digital signature of all Header fields.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="AdministratorSignature">
+		<xs:sequence>
+			<xs:element ref="administrator"/>
+			<xs:element name="timestamp" type="timestamp"/>
+			<xs:element name="signature" type="signature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="administratorsignature" type="AdministratorSignature">
+		<xs:annotation>
+			<xs:documentation>digital signature created by a domain administrator.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="Limit">
+		<xs:annotation>
+			<xs:documentation>A directed communication path for messages between two Addresses via a Service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="high" type="xs:unsignedShort"/>
+			<xs:element name="low" type="xs:unsignedShort"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="localname">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:simpleType name="domainname">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:simpleType name="servicename">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:simpleType name="ipzonename">
+		<xs:restriction base="xs:short"/>
+	</xs:simpleType>
+	<xs:simpleType name="ipaddress">
+		<xs:annotation>
+			<xs:documentation>an IPv4 or IPv6 address range in CIDR format.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:short"/>
+	</xs:simpleType>
+	<xs:simpleType name="cryptoscheme">
+		<xs:restriction base="xs:short"/>
+	</xs:simpleType>
+	<xs:simpleType name="x509certificate">
+		<xs:restriction base="xs:base64Binary"/>
+	</xs:simpleType>
+	<xs:simpleType name="credentialStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE"/>
+			<xs:enumeration value="SUSPENDED"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="signature">
+		<xs:annotation>
+			<xs:documentation>DigitalSignature value.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:base64Binary"/>
+	</xs:simpleType>
+	<xs:simpleType name="timestamp">
+		<xs:restriction base="xs:dateTime"/>
+	</xs:simpleType>
+	<xs:simpleType name="flowcontrolstatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="OPEN"/>
+			<xs:enumeration value="CLOSED"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="localname" type="localname"/>
+	<xs:element name="domain" type="domainname"/>
+	<xs:element name="address" type="Address"/>
+	<xs:element name="origin" type="ChannelOrigin"/>
+	<xs:element name="destination" type="ChannelDestination"/>
+	<xs:element name="serviceprovider" type="domainname"/>
+	<xs:element name="servicename" type="servicename"/>
+	<xs:element name="service" type="Service"/>
+	<xs:element name="servicestate" type="ServiceState"/>
+	<xs:element name="ipaddress" type="ipaddress">
+		<xs:annotation>
+			<xs:documentation>a whitelisted IP address range, either IPv4 or IPv6 in CIDR notation.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ipzone" type="ipzonename"/>
+	<xs:element name="channel" type="Channel"/>
+	<xs:element name="rootcertificate" type="x509certificate"/>
+	<xs:element name="domaincertificate" type="x509certificate"/>
+	<xs:element name="usercertificate" type="x509certificate"/>
+	<xs:element name="administrator" type="Administrator"/>
+	<xs:element name="administratorstate" type="AdministratorState"/>
+	<xs:element name="user" type="User"/>
+	<xs:element name="userstate" type="UserState"/>
+	<xs:element name="source" type="User">
+		<xs:annotation>
+			<xs:documentation>the source user agent's identity.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="target" type="User">
+		<xs:annotation>
+			<xs:documentation>the destination agent's identity.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="flow" type="Flow"/>
+	<xs:element name="flowsession" type="FlowSession"/>
+	<xs:element name="flowstate" type="FlowState"/>
+	<xs:element name="flowcontrolstatus" type="flowcontrolstatus">
+		<xs:annotation>
+			<xs:documentation>whether flow control is active - meaning the flow is CLOSED, or inactive meaning the flow is OPEN. When CLOSED, message relay is blocked by destination-SP, and the originating-SP will prohibit new messages being sent.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="flowtarget" type="FlowTarget"/>
+	<xs:element name="targetsession" type="FlowTargetSession">
+		<xs:annotation>
+			<xs:documentation>the destination credential can maintain up to 2 "transient" session public keys. Message originators must sent using a sessionKey which is valid for the sendTimestamp of the message. If there is no flow session set by the destination then sending is not possible. Allowing >1 session at a time helps pre-propagate the "next" session prior to it's validity time to the sources.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="channelauthorization" type="ChannelAuthorization">
+		<xs:annotation>
+			<xs:documentation>a channel authorization.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="authorization" type="ChannelEndpointAuthorization">
+		<xs:annotation>
+			<xs:documentation>a channel endpoint authorization.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- ********************************************* -->
+	<!--           DESTINATION TYPES              -->
+	<!-- ********************************************* -->
+	<xs:complexType name="NonTransactionalSession">
+		<xs:sequence>
+			<xs:element ref="sessionid"/>
+			<xs:element name="timeout" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>the time after which unacknowledged previously received messages are freed to be delivered again.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="receiptsignature" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="sessionId">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:element name="sessionid" type="sessionId">
+		<xs:annotation>
+			<xs:documentation>Session Identifier.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="session" type="NonTransactionalSession">
+		<xs:annotation>
+			<xs:documentation>A receiver which does not use distributed transactionality uses an auto acknowledging session. If it is not the first call of the session, the delivery receipt of the previously received message must be provided. A delivery receipt can be provided also separately without risking receiving a new message if the timeout is -1.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="waitTimeout" type="xs:unsignedShort">
+		<xs:annotation>
+			<xs:documentation>the maximum time which the call will block in seconds at the ServiceProvider waiting for messages ready to deliver.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="retryCount" type="xs:unsignedShort">
+		<xs:annotation>
+			<xs:documentation>the number of times the message delivery was retried due to rollback.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- ********************************************* -->
+	<!--           MESSAGING TYPES              -->
+	<!-- ********************************************* -->
+	<xs:complexType name="Header">
+		<xs:sequence>
+			<xs:element ref="msgId"/>
+			<xs:element name="timestamp" type="timestamp">
+				<xs:annotation>
+					<xs:documentation>timestamp that the message was created by the originator.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ttl" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="flow" type="Flow">
+				<xs:annotation>
+					<xs:documentation>source </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="externalReference" type="common:longtext">
+				<xs:annotation>
+					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="sendAuthorizationSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the signature of the authorization under which this message is claimed sendable.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="recvAuthorizationSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the signature of the authorization under which this message is claimed receivable.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="sessionSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the signature of the flowtargetsession under which this message is sent.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="payloadSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the signature value of the Message's payload element fields, including a CRC of all the chunks of the ciphertext. Note that there is a cryptographically secure digital signature of the message payload typically in the encryption scheme ( on the payload plaintext ). The payloadSignature issuer is the that of the header signature issuer.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="headerSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the signature value for all header elements, issued by the flow source.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Payload">
+		<xs:sequence>
+			<xs:element name="chunkSizeFactor" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>chunk size in bytes is 2^chunkSizeFactor.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="length" type="xs:unsignedInt">
+				<xs:annotation>
+					<xs:documentation>the total bytes of the payload - ( encrypted, zipped ) - equal to the sum of all payload chunk lengths.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="encryptionContext" type="xs:base64Binary">
+				<xs:annotation>
+					<xs:documentation>supplementary data supplied by the encrypting crypto scheme. Used to facilitate the crypto scheme's decryption primitive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="plaintextLength" type="xs:unsignedInt">
+				<xs:annotation>
+					<xs:documentation>the size of the plaiintext ( decrypted, uncompressed ) - known in advance so as to allow safe decompression.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="chunksCRC" type="crc32concatenation">
+				<xs:annotation>
+					<xs:documentation>CRC32 checksum concatenation of each chunk's checksum. This is used as a simple ( non cryptograhic MAC ) of the entire payload, with each 4bytes representing one chunk.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Message">
+		<xs:sequence>
+			<xs:element ref="header"/>
+			<xs:element ref="payload"/>
+			<xs:element ref="chunk"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Chunk">
+		<xs:complexContent>
+			<xs:extension base="ChunkReference">
+				<xs:sequence>
+					<xs:element ref="data"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ChunkReference">
+		<xs:annotation>
+			<xs:documentation>The reference to a chunk.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="msgId" type="messageId" use="required"/>
+		<xs:attribute name="pos" type="xs:unsignedShort" use="required"/>
+		<xs:attribute name="mac" type="mac" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="DeliveryStatus">
+		<xs:sequence>
+			<xs:element ref="header"/>
+			<xs:element ref="receiptsignature" minOccurs="0"/>
+			<xs:element ref="common:processingstatus" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="mac">
+		<xs:annotation>
+			<xs:documentation>Message Authentication Code - SHA1.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:base64Binary"/>
+	</xs:simpleType>
+	<xs:simpleType name="crc32">
+		<xs:restriction base="xs:string">
+			<xs:length value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="crc32concatenation">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="8"/>
+			<xs:maxLength value="8000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="messageId">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:simpleType name="permission">
+		<xs:annotation>
+			<xs:documentation>Permission ALLOW or DENY.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ALLOW"/>
+			<xs:enumeration value="DENY"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="msg" type="Message">
+		<xs:annotation>
+			<xs:documentation>A message.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="header" type="Header"/>
+	<xs:element name="msgId" type="messageId">
+		<xs:annotation>
+			<xs:documentation>the SHA-1 thumbprint of timestamp+source.credential+target.credential+send/+recvAuthorizationSignature+payloadSignature </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="payload" type="Payload"/>
+	<xs:element name="chunk" type="Chunk">
+		<xs:annotation>
+			<xs:documentation>A message payload chunk.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="chunkref" type="ChunkReference">
+		<xs:annotation>
+			<xs:documentation>A message payload chunk.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="data" type="xs:base64Binary"/>
+	<xs:element name="receiptsignature" type="UserSignature">
+		<xs:annotation>
+			<xs:documentation>The signature of receipt by the target user. All the message header fields are signed by the receiptsignature.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="dr" type="DeliveryStatus">
+		<xs:annotation>
+			<xs:documentation>The message delivery status.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:mds" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:mds" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>This schema defines the request entities.</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="../common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="../tx.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="../msg.xsd"/>
+	<!-- ********************************************* -->
+	<!--   MDS CONTROL OPERATION TYPES                               -->
+	<!--                                        , mds - remove receipt,-->
+	<!-- ********************************************* -->
+	<xs:complexType name="getAddressRequestType">
+		<xs:annotation>
+			<xs:documentation>get the address associated with the target credential.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="getAddressResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:address"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>list the services associated with the target credential through authorized channels.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:service" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listAuthorizedChannelOriginRequestType">
+		<xs:annotation>
+			<xs:documentation>list the authorized channel origins associated with the target credential and service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listAuthorizedChannelOriginResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:channelauthorization" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="listFlowStateRequestType">
+		<xs:annotation>
+			<xs:documentation>list the flow state of all the flows associated with a service or channel.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+			<xs:element name="origin" type="msg:AddressFilter" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>optional restriction of listed flows to a channel by specifying the channel origin.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listFlowStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:flowstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getTargetSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>get the current target session associated with this target credential for a service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getTargetSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence>
+					<xs:element ref="msg:targetsession" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="setTargetSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>set the session of this target credential for a service.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:targetsession"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="setTargetSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--    MDS RECEIVE OPERATION TYPES                                                     -->
+	<!--                                        -->
+	<!-- ********************************************* -->
+	<xs:complexType name="receiveRequestType">
+		<xs:annotation>
+			<xs:documentation>receive a message either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice>
+				<xs:element ref="tx:transaction"/>
+				<xs:element ref="msg:session"/>
+			</xs:choice>
+			<xs:element ref="msg:service"/>
+			<xs:element ref="msg:waitTimeout"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="receiveResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge">
+				<xs:choice minOccurs="0">
+					<xs:sequence>
+						<xs:element ref="msg:msg"/>
+						<xs:element ref="msg:retryCount"/>
+					</xs:sequence>
+				</xs:choice>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="downloadRequestType">
+		<xs:annotation>
+			<xs:documentation>download a message chunk.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="common:continuation" minOccurs="0"/>
+			<xs:element ref="msg:chunkref"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="downloadResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge">
+				<xs:sequence>
+					<xs:element ref="msg:chunk"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--    REQUEST AND RESPONSE ELEMENTS                                              -->
+	<!--                                               -->
+	<!-- ********************************************* -->
+	<xs:element name="getAddress" type="getAddressRequestType"/>
+	<xs:element name="getAddressResponse" type="getAddressResponseType"/>
+	<xs:element name="listService" type="listServiceRequestType"/>
+	<xs:element name="listServiceResponse" type="listServiceResponseType"/>
+	<xs:element name="listAuthorizedChannelOrigin" type="listAuthorizedChannelOriginRequestType"/>
+	<xs:element name="listAuthorizedChannelOriginResponse" type="listAuthorizedChannelOriginResponseType"/>
+	<xs:element name="listFlowState" type="listFlowStateRequestType"/>
+	<xs:element name="listFlowStateResponse" type="listFlowStateResponseType"/>
+	<xs:element name="getTargetSession" type="getTargetSessionRequestType"/>
+	<xs:element name="getTargetSessionResponse" type="getTargetSessionResponseType"/>
+	<xs:element name="setTargetSession" type="setTargetSessionRequestType"/>
+	<xs:element name="setTargetSessionResponse" type="setTargetSessionResponseType"/>
+	<xs:element name="receive" type="receiveRequestType"/>
+	<xs:element name="receiveResponse" type="receiveResponseType"/>
+	<xs:element name="download" type="downloadRequestType"/>
+	<xs:element name="downloadResponse" type="downloadResponseType"/>
+</xs:schema>

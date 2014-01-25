@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:zas" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:zas" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>This schema defines the request entities.</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="../common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="../tx.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="../msg.xsd"/>
+	<!-- ********************************************* -->
+	<!--   REQUEST AND RESPONSE TYPES                               -->
+	<!---->
+	<!-- ********************************************* -->
+	<xs:complexType name="searchDomainRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:DomainFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchDomainResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:domain" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createDomainRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:domain"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createDomainResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteDomainRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:domain"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteDomainResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchAdministratorRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:AdministratorFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchAdministratorResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:administratorstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createAdministratorRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:administrator"/>
+			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the status of the administrator shall be set.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createAdministratorResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:administratorstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="modifyAdministratorRequestType">
+		<xs:annotation>
+			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:administrator"/>
+			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="modifyAdministratorResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:administratorstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteAdministratorRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:administrator"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteAdministratorResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:administratorstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchAddressRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:AddressFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchAddressResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:address" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createAddressRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:address"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createAddressResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteAddressRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:address"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteAddressResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchIpZoneRequestType">
+		<xs:sequence>
+			<xs:element name="name" type="msg:ipzonename" minOccurs="0"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchIpZoneResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element name="ipzone" type="msg:IpZone" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createIpZoneRequestType">
+		<xs:annotation>
+			<xs:documentation>IpZones created by the Client are visible but not editable by all Administrators.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ipzone" type="msg:IpZone"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createIpZoneResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="modifyIpZoneRequestType">
+		<xs:annotation>
+			<xs:documentation>modify the ipaddresses belonging to a zone.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ipzone" type="msg:IpZone"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="modifyIpZoneResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteIpZoneRequestType">
+		<xs:sequence>
+			<xs:element name="name" type="msg:ipzonename"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteIpZoneResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchUserRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:UserFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchUserResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:userstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createUserRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:user"/>
+			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createUserResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:userstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="modifyUserRequestType">
+		<xs:annotation>
+			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:user"/>
+			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="modifyUserResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:userstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteUserRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:user"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteUserResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:userstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchServiceRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:ServiceFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:servicestate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="createServiceRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>the default maximum receive concurrency for flow targets of this service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="createServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="modifyServiceRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>the default receive concurrency limit per target.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="modifyServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteServiceRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:service"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteServiceResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchChannelAuthorizationRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:ChannelAuthorizationFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchChannelAuthorizationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element name="authorizationstate" type="msg:ChannelAuthorizationState" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getChannelAuthorizationRequestType">
+		<xs:sequence>
+			<xs:element name="channel" type="msg:Channel"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getChannelAuthorizationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element name="authorizationstate" type="msg:ChannelAuthorizationState"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="setChannelAuthorizationRequestType">
+		<xs:sequence>
+			<xs:element ref="msg:channelauthorization"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="setChannelAuthorizationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="deleteChannelAuthorizationRequestType">
+		<xs:sequence>
+			<xs:element name="channel" type="msg:Channel"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deleteChannelAuthorizationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchFlowTargetStateRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:FlowTargetFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchFlowTargetStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element name="flowtarget" type="msg:FlowTargetState" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getFlowTargetStateRequestType">
+		<xs:sequence>
+			<xs:element name="flowtarget" type="msg:FlowTarget"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getFlowTargetStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element name="flowtargetstate" type="msg:FlowTargetState"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="modifyFlowTargetStateRequestType">
+		<xs:sequence>
+			<xs:element name="flowtarget">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="msg:FlowTarget">
+							<xs:sequence>
+								<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+									<xs:annotation>
+										<xs:documentation>new maximum concurrency limit for the flow target.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="modifyFlowTargetStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="searchFlowStateRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:FlowFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchFlowStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:flowstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getFlowStateRequestType">
+		<xs:sequence>
+			<xs:element name="flow" type="msg:Flow"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getFlowStateResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:flowstate"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--   REQUEST AND RESPONSE ELEMENTS                                   -->
+	<!--                                               -->
+	<!-- ********************************************* -->
+	<xs:element name="searchDomain" type="searchDomainRequestType"/>
+	<xs:element name="searchDomainResponse" type="searchDomainResponseType"/>
+	<xs:element name="createDomain" type="createDomainRequestType"/>
+	<xs:element name="createDomainResponse" type="createDomainResponseType"/>
+	<xs:element name="deleteDomain" type="deleteDomainRequestType"/>
+	<xs:element name="deleteDomainResponse" type="deleteDomainResponseType"/>
+	<xs:element name="searchAdministrator" type="searchAdministratorRequestType"/>
+	<xs:element name="searchAdministratorResponse" type="searchAdministratorResponseType"/>
+	<xs:element name="createAdministrator" type="createAdministratorRequestType"/>
+	<xs:element name="createAdministratorResponse" type="createAdministratorResponseType"/>
+	<xs:element name="modifyAdministrator" type="modifyAdministratorRequestType"/>
+	<xs:element name="modifyAdministratorResponse" type="modifyAdministratorResponseType"/>
+	<xs:element name="deleteAdministrator" type="deleteAdministratorRequestType"/>
+	<xs:element name="deleteAdministratorResponse" type="deleteAdministratorResponseType"/>
+	<xs:element name="searchAddress" type="searchAddressRequestType"/>
+	<xs:element name="searchAddressResponse" type="searchAddressResponseType"/>
+	<xs:element name="createAddress" type="createAddressRequestType"/>
+	<xs:element name="createAddressResponse" type="createAddressResponseType"/>
+	<xs:element name="deleteAddress" type="deleteAddressRequestType"/>
+	<xs:element name="deleteAddressResponse" type="deleteAddressResponseType"/>
+	<xs:element name="searchIpZone" type="searchIpZoneRequestType"/>
+	<xs:element name="searchIpZoneResponse" type="searchIpZoneResponseType"/>
+	<xs:element name="createIpZone" type="createIpZoneRequestType"/>
+	<xs:element name="createIpZoneResponse" type="createIpZoneResponseType"/>
+	<xs:element name="modifyIpZone" type="modifyIpZoneRequestType"/>
+	<xs:element name="modifyIpZoneResponse" type="modifyIpZoneResponseType"/>
+	<xs:element name="deleteIpZone" type="deleteIpZoneRequestType"/>
+	<xs:element name="deleteIpZoneResponse" type="deleteIpZoneResponseType"/>
+	<xs:element name="searchUser" type="searchUserRequestType"/>
+	<xs:element name="searchUserResponse" type="searchUserResponseType"/>
+	<xs:element name="createUser" type="createUserRequestType"/>
+	<xs:element name="createUserResponse" type="createUserResponseType"/>
+	<xs:element name="modifyUser" type="modifyUserRequestType"/>
+	<xs:element name="modifyUserResponse" type="modifyUserResponseType"/>
+	<xs:element name="deleteUser" type="deleteUserRequestType"/>
+	<xs:element name="deleteUserResponse" type="deleteUserResponseType"/>
+	<xs:element name="searchService" type="searchServiceRequestType"/>
+	<xs:element name="searchServiceResponse" type="searchServiceResponseType"/>
+	<xs:element name="createService" type="createServiceRequestType"/>
+	<xs:element name="createServiceResponse" type="createServiceResponseType"/>
+	<xs:element name="modifyService" type="modifyServiceRequestType"/>
+	<xs:element name="modifyServiceResponse" type="modifyServiceResponseType"/>
+	<xs:element name="deleteService" type="deleteServiceRequestType"/>
+	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>
+	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType"/>
+	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
+	<xs:element name="getChannelAuthorization" type="getChannelAuthorizationRequestType"/>
+	<xs:element name="getChannelAuthorizationResponse" type="getChannelAuthorizationResponseType"/>
+	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType"/>
+	<xs:element name="setChannelAuthorizationResponse" type="setChannelAuthorizationResponseType"/>
+	<xs:element name="deleteChannelAuthorization" type="deleteChannelAuthorizationRequestType"/>
+	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
+	<xs:element name="searchFlowTargetState" type="searchFlowTargetStateRequestType"/>
+	<xs:element name="searchFlowTargetStateResponse" type="searchFlowTargetStateResponseType"/>
+	<xs:element name="getFlowTargetState" type="getFlowTargetStateRequestType"/>
+	<xs:element name="getFlowTargetStateResponse" type="getFlowTargetStateResponseType"/>
+	<xs:element name="modifyFlowTargetState" type="modifyFlowTargetStateRequestType"/>
+	<xs:element name="modifyFlowTargetStateResponse" type="modifyFlowTargetStateResponseType"/>
+	<xs:element name="searchFlowState" type="searchFlowStateRequestType"/>
+	<xs:element name="searchFlowStateResponse" type="searchFlowStateResponseType"/>
+	<xs:element name="getFlowState" type="getFlowStateRequestType"/>
+	<xs:element name="getFlowStateResponse" type="getFlowStateResponseType"/>
+</xs:schema>

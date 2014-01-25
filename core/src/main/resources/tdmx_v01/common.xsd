@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:common" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:tdmx:api:v1.0:sp:common" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>Common types for TDMX ServiceProvider API</xs:documentation>
+	</xs:annotation>
+	<!-- ********************************************* -->
+	<!--           COMPLEX TYPES-->
+	<!-- ********************************************* -->
+	<xs:complexType name="Acknowledge">
+		<xs:sequence>
+			<xs:element ref="error" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="success" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>true if the operation succeeded, else false and an error element is provided below.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ContinuedAcknowledge">
+		<xs:sequence>
+			<xs:element ref="error" minOccurs="0"/>
+			<xs:element ref="continuation" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="success" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>true if the operation succeeded, else false and an error element is provided below.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="Error">
+		<xs:sequence>
+			<xs:element name="description" type="longtext"/>
+		</xs:sequence>
+		<xs:attribute name="code" type="errorcode" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="Page">
+		<xs:attribute name="size" type="xs:unsignedInt" use="required"/>
+		<xs:attribute name="number" type="xs:unsignedInt" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="ProcessingStatus">
+		<xs:sequence>
+			<xs:element name="status" type="taskstatus">
+				<xs:annotation>
+					<xs:documentation>if status is DEFERED or FAILED, the error information shall be included below.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="timestamp" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>if a task is pending for a future date, or if a task has failed but can be retried later, then this future time is incidated here. This is for informational purposes only, a ServiceProvider can retry earlier or later is required.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="error" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--             SIMPLE TYPES                      -->
+	<!-- ********************************************* -->
+	<xs:simpleType name="text">
+		<xs:annotation>
+			<xs:documentation>Free text limited to 256 characters.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="256"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="longtext">
+		<xs:annotation>
+			<xs:documentation>Free text limited to 2048 characters.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="2048"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="authorization">
+		<xs:restriction base="xs:anyURI"/>
+	</xs:simpleType>
+	<xs:simpleType name="errorcode">
+		<xs:restriction base="xs:int"/>
+	</xs:simpleType>
+	<xs:simpleType name="taskstatus">
+		<xs:annotation>
+			<xs:documentation>The status of an asynchronously processing Task at the ServiceProvider.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PENDING"/>
+			<xs:enumeration value="SUCCESS"/>
+			<xs:enumeration value="DEFERRED"/>
+			<xs:enumeration value="FAILURE"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- ********************************************* -->
+	<!--             ELEMENTS                          -->
+	<!-- ********************************************* -->
+	<xs:element name="error" type="Error">
+		<xs:annotation>
+			<xs:documentation>operations which have failed.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="continuation" type="xs:anyURI">
+		<xs:annotation>
+			<xs:documentation>operations which are not complete, this provides back the caller an authorization code for subsequent call. This provides the ServiceProvider with a mechanism to sequentialize calls from a calling agent.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="processingstatus" type="ProcessingStatus">
+		<xs:annotation>
+			<xs:documentation>task processing information.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="page" type="Page"/>
+</xs:schema>

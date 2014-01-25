@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:mrs-definition" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:mrs="urn:tdmx:api:v1.0:sp:mrs" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:mrs-definition" name="MRS">
+	<wsdl:documentation>
+		Bla Bla...
+	</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:common" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:common="urn:tdmx:api:v1.0:sp:common">
+			<xsd:include schemaLocation="../common.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:tx" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:tx">
+			<xsd:include schemaLocation="../tx.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:msg="urn:tdmx:api:v1.0:sp:msg">
+			<xsd:include schemaLocation="../msg.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:mrs" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:mrs="urn:tdmx:api:v1.0:sp:mrs">
+			<xsd:include schemaLocation="mrs.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="createSessionRequest">
+		<wsdl:part name="parameters" element="mrs:createSession"/>
+	</wsdl:message>
+	<wsdl:message name="createSessionResponse">
+		<wsdl:part name="parameters" element="mrs:createSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="relayRequest">
+		<wsdl:part name="parameters" element="mrs:relay"/>
+	</wsdl:message>
+	<wsdl:message name="relayResponse">
+		<wsdl:part name="parameters" element="mrs:relayResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="MRS">
+		<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+		<wsdl:operation name="createSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:createSessionRequest"/>
+			<wsdl:output message="tns:createSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="relay">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:relayRequest"/>
+			<wsdl:output message="tns:relayResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="MRSBinding" type="tns:MRS">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="createSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mrs-definition/createSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="relay">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mrs-definition/relay"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="MessageRelayService">
+		<wsdl:port name="MRS" binding="tns:MRSBinding">
+			<soap:address location="http://serviceprovider.com/api/v1.0/sp/mrs"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
