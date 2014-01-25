@@ -1,0 +1,9 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	version="1.0">
+
+	<persistence-unit name="ConfigurationRepository" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>plugon.lib.configuration.local.domain.ConfigurationValue</class>
+	</persistence-unit>
+
+</persistence>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<bean id="plugon.properties.factory"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass">
+			<value>plugon.lib.system.PropertySupport</value>
+		</property>
+		<property name="targetMethod">
+			<value>getInstance</value>
+		</property>
+	</bean>
+
+	<bean id="plugon.properties"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="plugon.properties.factory"/>
+		<property name="targetMethod">
+			<value>getProperties</value>
+		</property>
+	</bean>
+
+	<bean id="plugon.system.propertyconfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="properties" ref="plugon.properties" />
+		<property name="searchSystemEnvironment">
+			<value>false</value>
+		</property>
+	</bean> 
+
+</beans>
