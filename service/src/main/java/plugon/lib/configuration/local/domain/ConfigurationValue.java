@@ -12,10 +12,9 @@ import javax.persistence.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.util.StringUtils;
+import org.tdmx.core.system.lang.StringUtils;
 
 import plugon.lib.configuration.ConfigurationApi;
-import plugon.lib.configuration.ConfigurationServiceProxyImpl;
 
 /**
  * A ConfigurationValue which belongs to a virtual property "file".

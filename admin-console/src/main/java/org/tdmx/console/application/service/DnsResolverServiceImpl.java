@@ -11,10 +11,10 @@ import org.tdmx.console.application.domain.DomainObjectChangesHolder;
 import org.tdmx.console.application.domain.DomainObjectFieldChanges;
 import org.tdmx.console.application.domain.DomainObjectType;
 import org.tdmx.console.application.search.SearchService;
-import org.tdmx.console.application.util.StringUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
+import org.tdmx.core.system.lang.StringUtils;
 import org.xbill.DNS.ResolverConfig;
 
 

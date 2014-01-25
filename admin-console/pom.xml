@@ -157,12 +157,6 @@
 						<resource>
 							<directory>${project.build.directory}/classes</directory>
 						</resource>
-                        <resource>
-                            <directory>${project.build.directory}/included-classes</directory>
-                        </resource>
-						<resource>
-							<directory>${project.build.directory}/included-libs</directory>
-						</resource>
 					</webResources>
 				</configuration>
 			</plugin>

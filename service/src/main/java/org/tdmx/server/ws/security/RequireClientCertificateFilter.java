@@ -35,7 +35,7 @@ public class RequireClientCertificateFilter implements Filter {
 	    if ( certs != null && certs.length > 0 ) {
 			chain.doFilter(request, response);
 	    } else {
-	    	res.sendError(HttpServletResponse.SC_UNAUTHORIZED,"A client certificate must be provided to access this path.");
+	    	res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "A client certificate must be provided to access this path.");
 	    }
 	}
 

@@ -11,12 +11,17 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.util.FileUtils;
 
 public class CertificateAuthorityUtilsTest {
 
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 	}

@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
-import org.tdmx.console.application.util.FileUtils;
-import org.tdmx.console.application.util.JaxbMarshaller;
+import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.JaxbMarshaller;
 
 public class ServiceProviderStoreImpl implements ServiceProviderStore {
 

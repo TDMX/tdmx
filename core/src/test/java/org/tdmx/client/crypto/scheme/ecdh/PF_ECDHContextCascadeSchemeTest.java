@@ -11,6 +11,7 @@ import java.security.KeyPair;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryBufferFactory;
@@ -25,6 +26,11 @@ import org.tdmx.client.crypto.scheme.Encrypter;
 import org.tdmx.client.crypto.scheme.SchemeTester;
 
 public class PF_ECDHContextCascadeSchemeTest {
+
+	static {
+		JCAProviderInitializer.init();	
+	}
+	
 
 	private CryptoSchemeFactory ownFactory;
 	private CryptoSchemeFactory otherFactory;

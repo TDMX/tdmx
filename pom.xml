@@ -15,7 +15,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>3.0</version>
 				<configuration>
 					<source>${java.source.version}</source>
 					<target>${java.source.version}</target>
@@ -43,6 +43,7 @@
 					<testFailureIgnore>false</testFailureIgnore>
 					<includes>
 						<include>**/*Test.java</include>
+						<excludes>**/*LongRunningTest.java</excludes>
 					</includes>
 				</configuration>
 			</plugin>
@@ -59,6 +60,7 @@
 
 	<modules>
 		<module>core</module>
+		<module>service</module>
 		<module>jetty-war-launcher</module>
 		<module>admin-console</module>
 	</modules>

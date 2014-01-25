@@ -3,7 +3,7 @@ package org.tdmx.console.domain;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.tdmx.console.application.util.CalendarUtils;
+import org.tdmx.core.system.lang.CalendarUtils;
 
 public class Certificate implements Serializable {
 	

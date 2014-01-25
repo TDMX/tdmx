@@ -12,7 +12,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.tdmx.console.application.util.FileUtils;
+import org.tdmx.core.system.lang.FileUtils;
 
 public class PrivateKeyStoreImpl implements PrivateKeyStore {
 

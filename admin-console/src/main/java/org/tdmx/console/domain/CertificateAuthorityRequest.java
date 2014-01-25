@@ -8,10 +8,10 @@ import java.util.List;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
-import org.tdmx.console.application.util.CalendarUtils;
 import org.tdmx.console.application.util.ValidationUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
+import org.tdmx.core.system.lang.CalendarUtils;
 
 public class CertificateAuthorityRequest implements Serializable {
 	//-------------------------------------------------------------------------

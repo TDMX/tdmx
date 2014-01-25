@@ -12,13 +12,13 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 	<!-- TEST CONFIG ONLY -->
-	<import resource="classpath:/plugon/lib/system/config-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
 	
 	<!-- LIBRARY SPRING CONFIG -->
 	<import resource="classpath:/plugon/lib/configuration/local/configuration-service.xml"/>
 
 	<!-- WS CONFIG -->
-	<import resource="classpath:/tdmx/server/jaxws/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/ws/jaxws/server-context.xml"/>
 
 	<bean id="userAuthenticationFilter" class="org.tdmx.server.ws.security.AgentAuthenticationFilter">
 	</bean>

@@ -14,7 +14,7 @@ import javax.servlet.ServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.service.authentication.AgentAuthorizationService.AuthorizationFailureCode;
+import org.tdmx.lib.control.service.AgentAuthorizationService.AuthorizationFailureCode;
 
 public class AgentAuthenticationFilter implements Filter {
 
