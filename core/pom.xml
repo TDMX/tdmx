@@ -29,7 +29,7 @@
                             <wsdlOptions>
                                 <wsdlOption>
                                     <wsdl>
-                                        ${basedir}/../../tdmx_v01/mos/mos.wsdl
+                                        ${basedir}/src/main/resources/wsdl/mos/mos.wsdl
                                     </wsdl>
                                     <extraargs>
                                         <extraarg>-verbose</extraarg>
@@ -51,7 +51,7 @@
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>
-                                        ${basedir}/../../tdmx_v01/mds/mds.wsdl
+                                       ${basedir}/src/main/resources/wsdl/mds/mds.wsdl
                                     </wsdl>
                                     <extraargs>
                                         <extraarg>-verbose</extraarg>
@@ -72,7 +72,7 @@
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>
-                                        ${basedir}/../../tdmx_v01/mrs/mrs.wsdl
+                                        ${basedir}/src/main/resources/wsdl/mrs/mrs.wsdl
                                     </wsdl>
                                     <extraargs>
                                         <extraarg>-verbose</extraarg>
@@ -93,7 +93,7 @@
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>
-                                        ${basedir}/../../tdmx_v01/zas/zas.wsdl
+                                        ${basedir}/src/main/resources/wsdl/zas/zas.wsdl
                                     </wsdl>
                                     <extraargs>
                                         <extraarg>-verbose</extraarg>

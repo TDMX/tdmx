@@ -1,4 +1,4 @@
-package org.tdmx.client.dns;
+package org.tdmx.core.dns;
 
 public class DnsResolver {
 

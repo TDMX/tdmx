@@ -1,4 +1,4 @@
-package org.tdmx.client.dns;
+package org.tdmx.core.dns;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

@@ -1,4 +1,4 @@
-package org.tdmx.client.api;
+package org.tdmx.core.api;
 
 import java.util.Calendar;
 
