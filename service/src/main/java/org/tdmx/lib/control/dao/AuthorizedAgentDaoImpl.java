@@ -11,7 +11,7 @@ import org.tdmx.lib.control.domain.AuthorizedAgent;
 
 public class AuthorizedAgentDaoImpl implements AuthorizedAgentDao {
 	
-	@PersistenceContext(unitName="ConfigurationRepository")
+	@PersistenceContext(unitName="ControlDB")
 	private EntityManager em;
 
 	@Override

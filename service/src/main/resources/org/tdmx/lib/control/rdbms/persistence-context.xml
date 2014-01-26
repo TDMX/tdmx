@@ -49,7 +49,7 @@
 		</property>	
 		</bean>
 
-	<tx:annotation-driven transaction-manager="plugon.lib.control.TransactionManager"/>
+	<tx:annotation-driven transaction-manager="tdmx.lib.control.TransactionManager"/>
 	
 	<context:annotation-config />
 	
@@ -64,7 +64,7 @@
 	</bean>
 
 	<bean id="tdmx.lib.control.AuthorizedAgentRepository"
-		class="org.tdmx.lib.control.rdbms.AuthorizedAgentServiceRepositoryImpl" autowire-candidate="false">
+		class="org.tdmx.lib.control.rdbms.AuthorizedAgentServiceRepositoryImpl">
 		<property name="authorizedAgentDao"
 			ref="tdmx.lib.control.dao.AuthorizedAgentDao" />
 	</bean>

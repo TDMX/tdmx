@@ -53,7 +53,15 @@ public class PropertySupport {
 	public static final synchronized PropertySupport getInstance() throws RuntimeException {
 		if(instance == null) {
 			instance = new PropertySupport();
-			instance.load();
+			instance.load(null);
+		}
+		return instance;
+	}
+	
+	public static final synchronized PropertySupport getInstance(String filename) throws RuntimeException {
+		if(instance == null) {
+			instance = new PropertySupport();
+			instance.load(filename);
 		}
 		return instance;
 	}
@@ -65,13 +73,16 @@ public class PropertySupport {
 	//-------------------------------------------------------------------------
 	//PRIVATE METHODS
 	//-------------------------------------------------------------------------
-	private void load() throws RuntimeException {
+	private void load( String filename ) throws RuntimeException {
 		Properties props = new Properties();
 		
-		String filename = EnvironmentSupport.getProperty(CONFIGURATION_PROPERTY_NAME);
 		if ( filename == null ) {
-			filename = STANDARD_FILENAME;
+			filename = EnvironmentSupport.getProperty(CONFIGURATION_PROPERTY_NAME);
+			if ( filename == null ) {
+				filename = STANDARD_FILENAME;
+			}
 		}
+		log.info("Loading configuration from " + filename);
 		
 		InputStream is = null;
 		try {

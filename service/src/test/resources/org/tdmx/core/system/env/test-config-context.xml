@@ -12,6 +12,11 @@
 		<property name="targetMethod">
 			<value>getInstance</value>
 		</property>
+		<property name="arguments">
+			<list>
+				<value>src/test/resources/test-configuration.properties</value>
+			</list>
+		</property>
 	</bean>
 
 	<bean id="tdmx.properties"

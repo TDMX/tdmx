@@ -85,7 +85,7 @@
 						<format>true</format>
 						<outputfilename>hibernate-schema.sql</outputfilename>
 						<configurationfile>${basedir}/src/main/build/hibernate.cfg.xml</configurationfile>
-						<persistenceunit>ConfigurationRepository</persistenceunit>
+						<persistenceunit>ControlDB</persistenceunit>
 					</componentProperties>
 				</configuration>
 			</plugin>
