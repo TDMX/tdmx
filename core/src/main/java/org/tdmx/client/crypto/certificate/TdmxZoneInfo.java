@@ -58,7 +58,7 @@ public class TdmxZoneInfo
     public TdmxZoneInfo(
         ASN1Sequence seq)
     {
-        Enumeration     e = seq.getObjects();
+        Enumeration<?>     e = seq.getObjects();
 
         version = (ASN1Integer)e.nextElement();
         zoneRoot = DERIA5String.getInstance(e.nextElement());

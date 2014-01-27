@@ -11,4 +11,5 @@ public enum AuthorizationStatus {
 	ERROR, // certificate processing error
 	;
 	
+	public static final int MAX_AUTHORIZATIONSTATUS_LEN = 12;
 }

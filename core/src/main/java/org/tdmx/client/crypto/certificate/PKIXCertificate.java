@@ -36,7 +36,6 @@ public class PKIXCertificate {
 	private JcaX509CertificateHolder holder;
 	
 	private String fingerprint;
-	private byte[] tbsCert;
 	
 	private static Map<String,String> oidMap = new HashMap<>();
 	static {
@@ -57,7 +56,7 @@ public class PKIXCertificate {
 			
 			holder = new JcaX509CertificateHolder(certificate);
 			{
-				tbsCert = cert.getTBSCertificate();
+				byte[] tbsCert = cert.getTBSCertificate();
 				byte[] sha1 = DigestAlgorithm.SHA_1.kdf(tbsCert);
 				fingerprint = ByteArray.asHex(sha1);
 			}
@@ -283,12 +282,12 @@ public class PKIXCertificate {
 		return certificate.toString();
 	}
 
-	public byte[] getTBSCertificate() {
-		return tbsCert;
-	}
-	
 	public boolean isIdentical( PKIXCertificate other ) {
-		return other != null && ByteArray.equals(getTBSCertificate(), other.getTBSCertificate());
+		try {
+			return other != null && ByteArray.equals(certificate.getEncoded(), other.getCertificate().getEncoded());
+		} catch (CertificateEncodingException e) {
+			return false;
+		}
 	}
 
 }

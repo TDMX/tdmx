@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
 */
-package org.tdmx.lib.control.rdbms;
+package org.tdmx.lib.control.service;
 
 import javax.persistence.PersistenceException;
 
@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.TdmxZoneInfo;
 import org.tdmx.lib.control.dao.AuthorizedAgentDao;
 import org.tdmx.lib.control.domain.AuthorizationStatus;
 import org.tdmx.lib.control.domain.AuthorizedAgent;
@@ -41,6 +42,7 @@ public class AuthorizedAgentServiceRepositoryImpl implements AuthorizedAgentServ
 	@Transactional(value="ControlDB")
 	public void createOrUpdate(PKIXCertificate certificate, AuthorizationStatus status) {
 		String fp = certificate.getFingerprint();
+		TdmxZoneInfo zi = null; //TODO get this to fill zoneapex
 		
 		AuthorizedAgent agent = new AuthorizedAgent();
 		agent.setSha1fingerprint(certificate.getFingerprint());
@@ -88,6 +90,12 @@ public class AuthorizedAgentServiceRepositoryImpl implements AuthorizedAgentServ
 	public void delete(PKIXCertificate certificate) {
 		String fp = certificate.getFingerprint();
 		
+		AuthorizedAgent agent = getAuthorizedAgentDao().loadByFingerprint(fp);
+		if ( agent != null ) {
+			getAuthorizedAgentDao().delete(agent);
+		} else {
+			log.warn("Unable to find AuthorizedAgent to delete with fingerprint " + fp);
+		}
 	}
 
 	

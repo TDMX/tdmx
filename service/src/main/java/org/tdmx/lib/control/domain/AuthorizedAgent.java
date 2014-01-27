@@ -22,7 +22,6 @@ import javax.persistence.Table;
 public class AuthorizedAgent implements Serializable {
 
 	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
-	public static final int MAX_ZONEAPEX_LEN = 255;
 	public static final int MAX_CERTIFICATE_LEN = 4000;
 	
 	private static final long serialVersionUID = -988419614813872556L;
@@ -32,10 +31,10 @@ public class AuthorizedAgent implements Serializable {
 	private String sha1fingerprint;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(length = 16, nullable = false)
+	@Column(length = AuthorizationStatus.MAX_AUTHORIZATIONSTATUS_LEN, nullable = false)
 	private AuthorizationStatus authorizationStatus;
 	
-	@Column(length = MAX_ZONEAPEX_LEN, nullable = false)
+	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 	
 	@Column(length = MAX_CERTIFICATE_LEN, nullable = false)

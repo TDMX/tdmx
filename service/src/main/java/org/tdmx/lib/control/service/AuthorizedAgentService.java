@@ -1,4 +1,4 @@
-package org.tdmx.lib.control.rdbms;
+package org.tdmx.lib.control.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AuthorizationStatus;

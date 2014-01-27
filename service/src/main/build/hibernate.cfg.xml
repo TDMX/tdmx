@@ -6,9 +6,9 @@
 <hibernate-configuration>
 	<session-factory>
 		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/lib-configuration?autoReconnect=true</property>
-		<property name="hibernate.connection.username">dev</property>
-		<property name="hibernate.connection.password">dev</property>
+		<property name="hibernate.connection.url">jdbc:mysql://tdmx-dev-db-01.cdrsfspcy8lt.eu-west-1.rds.amazonaws.com:3306/control?autoReconnect=true</property>
+		<property name="hibernate.connection.username">control</property>
+		<property name="hibernate.connection.password">control</property>
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 	</session-factory>
 </hibernate-configuration> 

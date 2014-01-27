@@ -15,7 +15,8 @@
 	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
 	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
 	
-	<!-- LIBRARY CONTROL DB -->
+	<!-- LIBRARIES -->
+	<import resource="classpath:/org/tdmx/lib/console/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
 
 	<!-- WS CONFIG -->

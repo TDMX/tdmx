@@ -5,6 +5,7 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
+//TODO ZoneAdministratorCertificateSpecifier, other classes for DomainAdminCS, UserCertSpec.
 public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS

@@ -1,7 +1,8 @@
-package org.tdmx.lib.control.rdbms;
+package org.tdmx.lib.control.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,10 +25,10 @@ import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.lib.control.dao.AuthorizedAgentDao;
 import org.tdmx.lib.control.domain.AuthorizationStatus;
 import org.tdmx.lib.control.domain.AuthorizedAgent;
+import org.tdmx.lib.control.service.AuthorizedAgentService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 
-//ApplicationContext will be loaded from "classpath:/plugon/lib/configuration/local/AuthorizedAgentServiceRepositoryUnitTest-context.xml"
 @ContextConfiguration
 
 @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager", defaultRollback=false)
@@ -99,15 +100,20 @@ public class AuthorizedAgentServiceRepositoryUnitTest {
 		assertNotNull(dao);
 		assertNotNull(service);
 	}
-/*
+
 	@Test
-	public void testGetFileNames() throws Exception {
-		List<String> filenames = dao.listFilenames();
-		assertNotNull(filenames);
-		assertEquals(1,filenames.size());
-		assertEquals("UNIT-TEST", filenames.get(0));
+	public void testLoadAuthorizedAgent() throws Exception {
+		AuthorizedAgent agent = dao.loadByFingerprint(c.getFingerprint());
+		assertNotNull(agent);
+		assertEquals(c.getFingerprint(),agent.getSha1fingerprint());
+		assertEquals(AuthorizationStatus.ACTIVE, agent.getAuthorizationStatus());
+		assertNotNull(agent.getCertificatePem());
+		
+		PKIXCertificate loadedC = CertificateIOUtils.pemToX509cert(agent.getCertificatePem());
+		assertNotNull(loadedC);
+		assertTrue(c.isIdentical(loadedC));
 	}
-	
+/*	
 	@Test
 	public void testSetProperties() throws Exception {
 		GetPropertiesRequest.Builder request = GetPropertiesRequest.newBuilder();
