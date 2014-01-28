@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.client.crypto.certificate.CertificateAuthorityUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -88,11 +88,11 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	}
 
 	@Override
-	public void create(CertificateAuthoritySpecifier request, OperationResultHolder<String> result) {
+	public void create(ZoneAdministrationCredentialSpecifier request, OperationResultHolder<String> result) {
 		//create self signed CA credentials from CSR
 		PKIXCredential credential = null;
 		try {
-			credential = CertificateAuthorityUtils.createCertificateAuthority(request);
+			credential = CertificateAuthorityUtils.createZoneAdministratorCredential(request);
 		} catch (CryptoCertificateException e) {
 			log.warn("Unable to create CA.", e);
 			result.setError(new OperationError(ERROR.SYSTEM));

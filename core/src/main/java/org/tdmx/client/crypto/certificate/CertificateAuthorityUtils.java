@@ -22,6 +22,7 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.core.system.lang.StringUtils;
 
 
 public class CertificateAuthorityUtils {
@@ -44,12 +45,15 @@ public class CertificateAuthorityUtils {
 	//-------------------------------------------------------------------------
 
 	/**
+	 * Create the credentials of a ZoneAdministrator. 
+	 * 
+	 * The ZoneAdministrator credentials are long validity.
 	 * 
 	 * @param req
 	 * @return
 	 * @throws CryptoCertificateException 
 	 */
-	public static PKIXCredential createCertificateAuthority( CertificateAuthoritySpecifier req ) throws CryptoCertificateException {
+	public static PKIXCredential createZoneAdministratorCredential( ZoneAdministrationCredentialSpecifier req ) throws CryptoCertificateException {
 		KeyPair kp = null;
 		try {
 			kp = req.getKeyAlgorithm().generateNewKeyPair();
@@ -61,11 +65,27 @@ public class CertificateAuthorityUtils {
 		PrivateKey privateKey = kp.getPrivate();
 		
 		X500NameBuilder subjectBuilder = new X500NameBuilder();
-		subjectBuilder.addRDN(BCStyle.C, req.getCountry());
-		subjectBuilder.addRDN(BCStyle.O, req.getOrg());
-		subjectBuilder.addRDN(BCStyle.E, req.getEmailAddress());
-		subjectBuilder.addRDN(BCStyle.TELEPHONE_NUMBER, req.getTelephoneNumber());
-		subjectBuilder.addRDN(BCStyle.CN, req.getCn());
+		if ( StringUtils.hasText(req.getCountry() )) {
+			subjectBuilder.addRDN(BCStyle.C, req.getCountry());
+		}
+		if ( StringUtils.hasText(req.getLocation() )) {
+			subjectBuilder.addRDN(BCStyle.L, req.getLocation());
+		}
+		if ( StringUtils.hasText(req.getOrg() )) {
+			subjectBuilder.addRDN(BCStyle.O, req.getOrg());
+		}
+		if ( StringUtils.hasText(req.getOrgUnit() )) {
+			subjectBuilder.addRDN(BCStyle.OU, req.getOrgUnit());
+		}
+		if ( StringUtils.hasText(req.getEmailAddress() )) {
+			subjectBuilder.addRDN(BCStyle.E, req.getEmailAddress());
+		}
+		if ( StringUtils.hasText(req.getTelephoneNumber() )) {
+			subjectBuilder.addRDN(BCStyle.TELEPHONE_NUMBER, req.getTelephoneNumber());
+		}
+		if ( StringUtils.hasText(req.getCn() )) {
+			subjectBuilder.addRDN(BCStyle.CN, req.getCn());
+		}
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
 		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
@@ -91,8 +111,18 @@ public class CertificateAuthorityUtils {
 			//The CA has a CN which is not part of the name constraint - but we can constrain
 			//any domain certificate issued to be limited to some OU under the O.
 			X500NameBuilder subjectConstraintBuilder = new X500NameBuilder();
-			subjectConstraintBuilder.addRDN(BCStyle.C, req.getCountry());
-			subjectConstraintBuilder.addRDN(BCStyle.O, req.getOrg());
+			if ( StringUtils.hasText(req.getCountry() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.C, req.getCountry());
+			}
+			if ( StringUtils.hasText(req.getLocation() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.L, req.getLocation());
+			}
+			if ( StringUtils.hasText(req.getOrg() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.O, req.getOrg());
+			}
+			if ( StringUtils.hasText(req.getOrgUnit() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.OU, req.getOrgUnit());
+			}
 			subjectConstraintBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
 			X500Name nameConstraint = subjectConstraintBuilder.build();
 			
@@ -101,9 +131,7 @@ public class CertificateAuthorityUtils {
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 			
-			//new
-			TdmxZoneInfo zi = new TdmxZoneInfo(1, "zoneroot.domain.name", "mrs.hostname.org" );
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, zi);
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, req.getZoneInfo());
 			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -111,6 +139,107 @@ public class CertificateAuthorityUtils {
 			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
 			
 			return new PKIXCredential(c, privateKey);
+		} catch (CertIOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		}
+	}
+	
+	/**
+	 * Create the credentials of a DomainAdministrator. 
+	 * 
+	 * @param req
+	 * @return
+	 * @throws CryptoCertificateException 
+	 */
+	public static PKIXCredential createDomainAdministratorCredential( DomainAdministrationCredentialSpecifier req ) throws CryptoCertificateException {
+		KeyPair kp = null;
+		try {
+			kp = req.getKeyAlgorithm().generateNewKeyPair();
+		} catch (CryptoException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_KEYPAIR_GENERATION, e);
+		}
+		
+		PublicKey publicKey = kp.getPublic();
+		PrivateKey privateKey = kp.getPrivate();
+		
+		PKIXCredential issuerCredential = req.getZoneAdministratorCredential();
+		PKIXCertificate issuerPublicCert = issuerCredential.getCertificateChain()[0];
+		PublicKey issuerPublicKey = issuerPublicCert.getCertificate().getPublicKey();
+		PrivateKey issuerPrivateKey = issuerCredential.getPrivateKey();
+		
+		X500NameBuilder subjectBuilder = new X500NameBuilder();
+		if ( StringUtils.hasText(issuerPublicCert.getCountry() )) {
+			subjectBuilder.addRDN(BCStyle.C, issuerPublicCert.getCountry());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getLocation() )) {
+			subjectBuilder.addRDN(BCStyle.L, issuerPublicCert.getLocation());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getOrganization() )) {
+			subjectBuilder.addRDN(BCStyle.O, issuerPublicCert.getOrganization());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getOrgUnit() )) {
+			subjectBuilder.addRDN(BCStyle.OU, issuerPublicCert.getOrgUnit());
+		}
+		subjectBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
+		subjectBuilder.addRDN(BCStyle.CN, req.getDomainName());
+		X500Name subject = subjectBuilder.build();
+		X500Name issuer = issuerPublicCert.getIssuerName();
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+				issuer, 
+				new BigInteger("1"), 
+				req.getNotBefore().getTime(),
+				req.getNotAfter().getTime(), 
+				subject, 
+				publicKey);
+
+		try {
+			BasicConstraints cA = new BasicConstraints(0);
+			certBuilder.addExtension(Extension.basicConstraints, true, cA);
+
+			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+			certBuilder.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(issuerPublicKey));
+			certBuilder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
+
+			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature|KeyUsage.keyCertSign);
+			certBuilder.addExtension(Extension.keyUsage, false, ku);
+			
+			//RFC5280 http://tools.ietf.org/html/rfc5280#section-4.2.1.10
+			//The CA has a CN which is not part of the name constraint - but we can constrain
+			//any domain certificate issued to be limited to some OU under the O.
+			X500NameBuilder subjectConstraintBuilder = new X500NameBuilder();
+			if ( StringUtils.hasText(issuerPublicCert.getCountry() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.C, issuerPublicCert.getCountry());
+			}
+			if ( StringUtils.hasText(issuerPublicCert.getLocation() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.L, issuerPublicCert.getLocation());
+			}
+			if ( StringUtils.hasText(issuerPublicCert.getOrganization() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.O, issuerPublicCert.getOrganization());
+			}
+			if ( StringUtils.hasText(issuerPublicCert.getOrgUnit() )) {
+				subjectConstraintBuilder.addRDN(BCStyle.OU, issuerPublicCert.getOrgUnit());
+			}
+			subjectConstraintBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
+			subjectConstraintBuilder.addRDN(BCStyle.OU, req.getDomainName());
+			X500Name nameConstraint = subjectConstraintBuilder.build();
+			
+			GeneralName snc = new GeneralName(GeneralName.directoryName, nameConstraint);
+			GeneralSubtree snSubtree = new GeneralSubtree(snc,new BigInteger("0"),null);
+			NameConstraints nc = new NameConstraints(new GeneralSubtree[]{snSubtree}, null);
+			certBuilder.addExtension(Extension.nameConstraints, true, nc);
+			
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, issuerPublicCert.getTdmxZoneInfo());
+			
+			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
+			byte[] certBytes = certBuilder.build(signer).getEncoded();
+			
+			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
+			
+			return new PKIXCredential( new PKIXCertificate[] { c, issuerPublicCert }, privateKey);
 		} catch (CertIOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		} catch (NoSuchAlgorithmException e) {

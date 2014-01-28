@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.console.application.Administration;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DnsResolverListDO;
@@ -146,7 +146,7 @@ public class UIServiceImpl implements UIService {
 		if ( errors.size() > 0 ) {
 			return new OperationError(errors);
 		}
-		CertificateAuthoritySpecifier csr = request.domain();
+		ZoneAdministrationCredentialSpecifier csr = request.domain();
 		// on success, the request's certificateAuthorityId is set.
 		OperationResultHolder<String> result = new OperationResultHolder<>();
 		getAdmin().getCertificateAuthorityService().create(csr, result);

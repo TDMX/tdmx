@@ -7,13 +7,16 @@ import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-import org.tdmx.client.crypto.certificate.CertificateAuthoritySpecifier;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.console.application.util.ValidationUtils;
 import org.tdmx.console.domain.validation.FieldError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
 import org.tdmx.core.system.lang.CalendarUtils;
 
 public class CertificateAuthorityRequest implements Serializable {
+
+	private static final long serialVersionUID = 539527325141504999L;
+
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
@@ -85,8 +88,8 @@ public class CertificateAuthorityRequest implements Serializable {
 		return errors;
 	}
 
-	public CertificateAuthoritySpecifier domain() {
-		CertificateAuthoritySpecifier o = new CertificateAuthoritySpecifier();
+	public ZoneAdministrationCredentialSpecifier domain() {
+		ZoneAdministrationCredentialSpecifier o = new ZoneAdministrationCredentialSpecifier();
 		o.setCn(getCommonName());
 		o.setTelephoneNumber(getTelephoneNumber());
 		o.setEmailAddress(getEmailAddress());

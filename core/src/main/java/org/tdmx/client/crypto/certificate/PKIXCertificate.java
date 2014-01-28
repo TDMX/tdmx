@@ -91,6 +91,17 @@ public class PKIXCertificate {
 		return null;
 	}
 
+	private String getLastRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
+		if ( x500name == null ) {
+			return null;
+		}
+		RDN[] rdns = x500name.getRDNs(attributeType);
+		if ( rdns != null && rdns.length > 0 ) {
+			return IETFUtils.valueToString(rdns[rdns.length-1].getFirst().getValue());		
+		}
+		return null;
+	}
+
 	private X500Name getSubjectNameConstraint() {
 		Extension e = holder.getExtension(Extension.nameConstraints);
 		if ( e != null && e.isCritical() ) {
@@ -118,7 +129,7 @@ public class PKIXCertificate {
 		return null;
 	}
 	
-	private TdmxZoneInfo getTdmxZoneInfo() {
+	public TdmxZoneInfo getTdmxZoneInfo() {
 		Extension e = holder.getExtension(TdmxZoneInfo.tdmxZoneInfo);
 		if ( e != null ) {
 			TdmxZoneInfo ku = TdmxZoneInfo.getInstance(e.getParsedValue());
@@ -139,6 +150,10 @@ public class PKIXCertificate {
 		return fingerprint;
 	}
 
+	public X500Name getIssuerName() {
+		return holder.getIssuer();
+	}
+	
 	public String getIssuer() {
 		if ( certificate.getIssuerX500Principal() != null ) {
 			return certificate.getIssuerX500Principal().getName(X500Principal.RFC2253,oidMap);
@@ -146,8 +161,11 @@ public class PKIXCertificate {
 		return null;
 	}
 
+	public X500Name getSubjectName() {
+		return holder.getSubject();
+	}
+	
 	public String getSubject() {
-
 		if ( certificate.getSubjectX500Principal() != null ) {
 			return certificate.getSubjectX500Principal().getName(X500Principal.RFC2253,oidMap);
 		}
@@ -168,6 +186,14 @@ public class PKIXCertificate {
 
 	public String getOrganization() {
 		return getFirstRDN(holder.getSubject(), BCStyle.O);
+	}
+
+	public String getOrgUnit() {
+		return getFirstRDN(holder.getSubject(), BCStyle.OU);
+	}
+
+	public String getLocation() {
+		return getFirstRDN(holder.getSubject(), BCStyle.L);
 	}
 
 	public String getCountry() {
@@ -191,10 +217,12 @@ public class PKIXCertificate {
 				return bc.getPathLenConstraint().intValue();
 			}
 		}
-		return 0;
+		return -1;
 	}
 	
-	public boolean isTdmxDomainCA() {
+	//TODO is dac
+	
+	public boolean isTdmxZoneAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 1 == getCAPathLengthConstraint();
 		if ( !caConstrained ) {
@@ -206,7 +234,7 @@ public class PKIXCertificate {
 		if ( ku == null ) {
 			return false;
 		}
-		if ( ! ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
+		if ( !ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
 			return false;
 		}
 		
@@ -226,18 +254,32 @@ public class PKIXCertificate {
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();
 		if ( snc != null ) {
-			String ou_c = getFirstRDN(snc, BCStyle.OU);
-			if ( !CertificateAuthorityUtils.TDMX_DOMAIN_CA_OU.equals(ou_c) ) {
-				return false;
+			if ( getCountry() != null ) {
+				String c = getFirstRDN(snc, BCStyle.C);
+				if ( !getCountry().equals(c) ) {
+					return false;
+				}
 			}
-			String o_c = getFirstRDN(snc, BCStyle.O);
-			String o = getOrganization();
-			if ( o_c == null || o == null || !o_c.equals(o) ) {
-				return false;
+			if ( getLocation() != null ) {
+				String l = getFirstRDN(snc, BCStyle.L);
+				if ( !getLocation().equals(l) ) {
+					return false;
+				}
 			}
-			String c_c = getFirstRDN(snc, BCStyle.C);
-			String c = getCountry();
-			if ( c_c == null || c == null || !c_c.equals(c) ) {
+			if ( getOrganization() != null ) {
+				String o = getFirstRDN(snc, BCStyle.O);
+				if ( !getOrganization().equals(o) ) {
+					return false;
+				}
+			}
+			if ( getOrgUnit() != null ) {
+				String ou = getFirstRDN(snc, BCStyle.OU);
+				if ( !getOrgUnit().equals(ou) ) {
+					return false;
+				}
+			}
+			String tdmx_ou = getLastRDN(snc, BCStyle.OU);
+			if ( !CertificateAuthorityUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
 				return false;
 			}
 			return true;

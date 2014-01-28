@@ -7,28 +7,23 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
  * a TDMX zone info object.
  */
-public class TdmxZoneInfo
-    extends ASN1Object
+public class TdmxZoneInfo extends ASN1Object
 {
+	//TODO get official ASN1OID for TdmxZoneInfo
+	
 	public static final ASN1ObjectIdentifier tdmxZoneInfo = new ASN1ObjectIdentifier("1.2.3.4.5.6.7.8.9");
 	
     private ASN1Integer             version;
     private DERIA5String            zoneRoot;
-    private DERIA5String            mrsHostname;
+    private DERIA5String            mrsUrl;
 
     public static TdmxZoneInfo getInstance(
         Object  o)
@@ -48,11 +43,11 @@ public class TdmxZoneInfo
     public TdmxZoneInfo(
         int version,
         String            zoneRoot,
-        String            mrsHostname)
+        String            mrsUrl)
     {
         this.version = new ASN1Integer(version);
         this.zoneRoot = new DERIA5String(zoneRoot);
-        this.mrsHostname = new DERIA5String(mrsHostname);
+        this.mrsUrl = new DERIA5String(mrsUrl);
     }
 
     public TdmxZoneInfo(
@@ -62,7 +57,7 @@ public class TdmxZoneInfo
 
         version = (ASN1Integer)e.nextElement();
         zoneRoot = DERIA5String.getInstance(e.nextElement());
-        mrsHostname = DERIA5String.getInstance(e.nextElement());
+        mrsUrl = DERIA5String.getInstance(e.nextElement());
     }
 
     public int getVersion()
@@ -76,9 +71,9 @@ public class TdmxZoneInfo
         return zoneRoot.getString();
     }
 
-    public String getMrsHostname()
+    public String getMrsUrl()
     {
-        return mrsHostname.getString();
+        return mrsUrl.getString();
     }
 
 
@@ -88,7 +83,7 @@ public class TdmxZoneInfo
      *  TdmxZoneInfo ::= SEQUENCE {
      *      version Version,
      *      zoneRoot IA5String,
-     *      mrsHostname IA5String
+     *      mrsUrl IA5String
      *  }
      * </pre>
      */
@@ -98,7 +93,7 @@ public class TdmxZoneInfo
 
         v.add(version);
         v.add(zoneRoot);
-        v.add(mrsHostname);
+        v.add(mrsUrl);
 
         return new DERSequence(v);
     }

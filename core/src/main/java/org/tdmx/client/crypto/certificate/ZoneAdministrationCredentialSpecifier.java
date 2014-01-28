@@ -5,8 +5,8 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
-//TODO ZoneAdministratorCertificateSpecifier, other classes for DomainAdminCS, UserCertSpec.
-public class CertificateAuthoritySpecifier {
+//TODO DomainAdminCS, UserCertSpec.
+public class ZoneAdministrationCredentialSpecifier {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
@@ -14,21 +14,25 @@ public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private PublicKeyAlgorithm keyAlgorithm;
+	private TdmxZoneInfo zoneInfo;
+	
 	private String cn;
 	private String telephoneNumber;
 	private String emailAddress;
+	private String orgUnit;
 	private String org;
-	//TODO add L  - rename to client certificate/admin certificate/user certificate
+	private String location;
 	private String country;
+
 	private Calendar notBefore;
 	private Calendar notAfter;
+	private PublicKeyAlgorithm keyAlgorithm;
 	private SignatureAlgorithm signatureAlgorithm;
 	
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-	public CertificateAuthoritySpecifier(){
+	public ZoneAdministrationCredentialSpecifier(){
 	}
 	
 	//-------------------------------------------------------------------------
@@ -46,6 +50,14 @@ public class CertificateAuthoritySpecifier {
 	//-------------------------------------------------------------------------
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
+
+	public TdmxZoneInfo getZoneInfo() {
+		return zoneInfo;
+	}
+
+	public void setZoneInfo(TdmxZoneInfo zoneInfo) {
+		this.zoneInfo = zoneInfo;
+	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {
 		return keyAlgorithm;
@@ -79,12 +91,28 @@ public class CertificateAuthoritySpecifier {
 		this.emailAddress = emailAddress;
 	}
 
+	public String getOrgUnit() {
+		return orgUnit;
+	}
+
+	public void setOrgUnit(String orgUnit) {
+		this.orgUnit = orgUnit;
+	}
+
 	public String getOrg() {
 		return org;
 	}
 
 	public void setOrg(String org) {
 		this.org = org;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getCountry() {
