@@ -105,7 +105,7 @@ public class CredentialUtilsTest {
 
 		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier();
 		req.setZoneAdministratorCredential(zac);
-		req.setDomainName("subdomain"+issuer.getTdmxZoneInfo().getZoneRoot());
+		req.setDomainName("subdomain."+issuer.getTdmxZoneInfo().getZoneRoot());
 		req.setNotBefore(now);
 		req.setNotAfter(later);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);

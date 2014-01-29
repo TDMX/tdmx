@@ -329,9 +329,12 @@ public class PKIXCertificate {
 		if ( zi == null ) {
 			return false;
 		}
-		if ( !getCommonName().endsWith(zi.getZoneRoot()) ) {
+		
+		if ( !getCommonName().equals(zi.getZoneRoot()) ) {
 			//domain is subdomain of zone root
-			return false; 
+			if ( !getCommonName().endsWith("."+zi.getZoneRoot()) ) {
+				return false; 
+			}
 		}
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();
