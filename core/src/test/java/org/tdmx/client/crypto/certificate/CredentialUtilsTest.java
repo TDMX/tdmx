@@ -4,10 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +14,7 @@ import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.util.FileUtils;
 
-public class CertificateAuthorityUtilsTest {
+public class CredentialUtilsTest {
 
 	static {
 		JCAProviderInitializer.init();	
@@ -69,7 +67,7 @@ public class CertificateAuthorityUtilsTest {
 		req.setNotAfter(later);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		PKIXCredential cred = CertificateAuthorityUtils.createZoneAdministratorCredential(req);
+		PKIXCredential cred = CredentialUtils.createZoneAdministratorCredential(req);
 		
 		assertNotNull(cred);
 		assertNotNull(cred.getCertificateChain());
@@ -94,6 +92,8 @@ public class CertificateAuthorityUtilsTest {
 	}
 
 	private PKIXCredential createDAC( PKIXCredential zac ) throws Exception {
+		PKIXCertificate issuer = zac.getPublicCert();
+
 		Calendar now = Calendar.getInstance();
 		now.setTime(new Date());
 		now.set(Calendar.MILLISECOND, 0);
@@ -105,12 +105,12 @@ public class CertificateAuthorityUtilsTest {
 
 		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier();
 		req.setZoneAdministratorCredential(zac);
-		req.setDomainName("dom.name");
+		req.setDomainName("subdomain"+issuer.getTdmxZoneInfo().getZoneRoot());
 		req.setNotBefore(now);
 		req.setNotAfter(later);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		PKIXCredential cred = CertificateAuthorityUtils.createDomainAdministratorCredential(req);
+		PKIXCredential cred = CredentialUtils.createDomainAdministratorCredential(req);
 		
 		assertNotNull(cred);
 		assertNotNull(cred.getCertificateChain());
@@ -119,18 +119,17 @@ public class CertificateAuthorityUtilsTest {
 		
 		PKIXCertificate c = cred.getCertificateChain()[0];
 
-//		assertEquals(req.getCountry(), c.getCountry());
-//		assertEquals(req.getLocation(), c.getLocation());
-//		assertEquals(req.getOrg(), c.getOrganization());
-//		assertEquals(req.getOrgUnit(), c.getOrgUnit());
-//		assertEquals(req.getTelephoneNumber(), c.getTelephoneNumber());
-//		assertEquals(req.getEmailAddress(), c.getEmailAddress());
+		
+		assertEquals(issuer.getCountry(), c.getCountry());
+		assertEquals(issuer.getLocation(), c.getLocation());
+		assertEquals(issuer.getOrganization(), c.getOrganization());
+		assertEquals(issuer.getOrgUnit(), c.getOrgUnit());
 		assertEquals(req.getDomainName(), c.getCommonName());
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
-//		assertTrue(c.isTdmxZoneAdminCertificate());
-//		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
-//		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getIssuer());
+		assertTrue(c.isTdmxDomainAdminCertificate());
+		assertEquals("CN="+req.getDomainName()+",OU=tdmx-domain,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
+		assertEquals(issuer.getSubject(), c.getIssuer());
 		
 		return cred;
 	}

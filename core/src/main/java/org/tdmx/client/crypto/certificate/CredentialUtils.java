@@ -25,7 +25,7 @@ import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.core.system.lang.StringUtils;
 
 
-public class CertificateAuthorityUtils {
+public class CredentialUtils {
 
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
@@ -75,6 +75,9 @@ public class CertificateAuthorityUtils {
 			subjectBuilder.addRDN(BCStyle.O, req.getOrg());
 		}
 		if ( StringUtils.hasText(req.getOrgUnit() )) {
+			if ( TDMX_DOMAIN_CA_OU.equals(req.getOrgUnit())) {
+				throw new CryptoCertificateException(CertificateResultCode.ERROR_INVALID_OU);
+			}
 			subjectBuilder.addRDN(BCStyle.OU, req.getOrgUnit());
 		}
 		if ( StringUtils.hasText(req.getEmailAddress() )) {

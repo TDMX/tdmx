@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
-import org.tdmx.client.crypto.certificate.CertificateAuthorityUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;

@@ -91,6 +91,17 @@ public class PKIXCertificate {
 		return null;
 	}
 
+	private String getSecondLastRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
+		if ( x500name == null ) {
+			return null;
+		}
+		RDN[] rdns = x500name.getRDNs(attributeType);
+		if ( rdns != null && rdns.length > 1 ) {
+			return IETFUtils.valueToString(rdns[rdns.length-2].getFirst().getValue());		
+		}
+		return null;
+	}
+
 	private String getLastRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
 		if ( x500name == null ) {
 			return null;
@@ -189,7 +200,8 @@ public class PKIXCertificate {
 	}
 
 	public String getOrgUnit() {
-		return getFirstRDN(holder.getSubject(), BCStyle.OU);
+		String ou = getFirstRDN(holder.getSubject(), BCStyle.OU); 
+		return !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(ou) ? ou : null;
 	}
 
 	public String getLocation() {
@@ -220,7 +232,7 @@ public class PKIXCertificate {
 		return -1;
 	}
 	
-	//TODO is dac
+	//TODO is uc
 	
 	public boolean isTdmxZoneAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
@@ -279,9 +291,85 @@ public class PKIXCertificate {
 				}
 			}
 			String tdmx_ou = getLastRDN(snc, BCStyle.OU);
-			if ( !CertificateAuthorityUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
+			if ( !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
 				return false;
 			}
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean isTdmxDomainAdminCertificate() {
+		// critical basicConstraints CA=true, max path length=1
+		boolean caConstrained = isCA() && 0 == getCAPathLengthConstraint();
+		if ( !caConstrained ) {
+			return false;
+		}
+		
+		// keyusage keyCertSign + digitalSignature
+		KeyUsage ku = getKeyUsage();
+		if ( ku == null ) {
+			return false;
+		}
+		if ( !ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
+			return false;
+		}
+		
+		// domain cert is NOT self signed, ie. subject != issuer
+		String subjectName = getSubject();
+		String issuerName = getIssuer();
+		if ( subjectName == null || issuerName == null || subjectName.equals(issuerName)  ) {
+			return false;
+		}
+		//TODO subjectKey identifiers present
+		//TODO issuerKey identifiers present
+		
+		TdmxZoneInfo zi = getTdmxZoneInfo();
+		if ( zi == null ) {
+			return false;
+		}
+		if ( !getCommonName().endsWith(zi.getZoneRoot()) ) {
+			//domain is subdomain of zone root
+			return false; 
+		}
+		// critical nameConstraint where subject(-DN)==namecontraint subtree
+		X500Name snc = getSubjectNameConstraint();
+		if ( snc != null ) {
+			if ( getCountry() != null ) {
+				String c = getFirstRDN(snc, BCStyle.C);
+				if ( !getCountry().equals(c) ) {
+					return false;
+				}
+			}
+			if ( getLocation() != null ) {
+				String l = getFirstRDN(snc, BCStyle.L);
+				if ( !getLocation().equals(l) ) {
+					return false;
+				}
+			}
+			if ( getOrganization() != null ) {
+				String o = getFirstRDN(snc, BCStyle.O);
+				if ( !getOrganization().equals(o) ) {
+					return false;
+				}
+			}
+			if ( getOrgUnit() != null ) {
+				String ou = getFirstRDN(snc, BCStyle.OU);
+				if ( !getOrgUnit().equals(ou) ) {
+					return false;
+				}
+			}
+			String tdmx_ou = getSecondLastRDN(snc, BCStyle.OU);
+			if ( !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
+				return false;
+			}
+			
+			String domain_ou = getLastRDN(snc, BCStyle.OU);
+			if ( !getCommonName().equals(domain_ou) ) {
+				return false;
+			}
+			
 			return true;
 		}
 		

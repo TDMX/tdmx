@@ -31,6 +31,10 @@ public class PKIXCredential {
 	//PUBLIC METHODS
 	//-------------------------------------------------------------------------
 	
+	public PKIXCertificate getPublicCert() {
+		return ( certificateChain != null && certificateChain.length > 0 ) ? certificateChain[0] : null;
+	}
+	
     //-------------------------------------------------------------------------
 	//PROTECTED METHODS
 	//-------------------------------------------------------------------------
