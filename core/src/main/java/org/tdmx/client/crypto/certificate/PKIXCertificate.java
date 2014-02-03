@@ -379,6 +379,50 @@ public class PKIXCertificate {
 		return false;
 	}
 	
+	public boolean isTdmxUserCertificate() {
+		// critical basicConstraints CA=true, max path length=1
+		if ( isCA() ) {
+			return false;
+		}
+		
+		// keyusage keyCertSign + digitalSignature
+		KeyUsage ku = getKeyUsage();
+		if ( ku == null ) {
+			return false;
+		}
+		if ( !ku.hasUsages(KeyUsage.keyEncipherment|KeyUsage.digitalSignature|KeyUsage.nonRepudiation) ) {
+			return false;
+		}
+		
+		// domain cert is NOT self signed, ie. subject != issuer
+		String subjectName = getSubject();
+		String issuerName = getIssuer();
+		if ( subjectName == null || issuerName == null || subjectName.equals(issuerName)  ) {
+			return false;
+		}
+		//TODO subjectKey identifiers present
+		//TODO issuerKey identifiers present
+		
+		TdmxZoneInfo zi = getTdmxZoneInfo();
+		if ( zi == null ) {
+			return false;
+		}
+
+		//Last OU is the domainName
+		String domainName = getLastRDN(getSubjectName(), BCStyle.OU);
+		if ( domainName == null ) {
+			return false;
+		}
+		if ( !domainName.equals(zi.getZoneRoot()) ) {
+			//domain is subdomain of zone root
+			if ( !domainName.endsWith("."+zi.getZoneRoot()) ) {
+				return false; 
+			}
+		}
+		
+		return true;
+	}
+	
 	public Calendar getNotBefore() {
 		if ( holder.getNotBefore() != null ) {
 			Calendar notBefore = Calendar.getInstance();

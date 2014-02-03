@@ -5,7 +5,7 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
-public class DomainAdministrationCredentialSpecifier {
+public class UserCredentialSpecifier {
 	//-------------------------------------------------------------------------
 	//PUBLIC CONSTANTS
 	//-------------------------------------------------------------------------
@@ -13,9 +13,9 @@ public class DomainAdministrationCredentialSpecifier {
 	//-------------------------------------------------------------------------
 	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	//-------------------------------------------------------------------------
-	private PKIXCredential zoneAdministratorCredential;
-	
-	private String domainName;
+	private PKIXCredential domainAdministratorCredential;
+
+	private String name;
 
 	private Calendar notBefore;
 	private Calendar notAfter;
@@ -25,7 +25,7 @@ public class DomainAdministrationCredentialSpecifier {
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
-	public DomainAdministrationCredentialSpecifier(){
+	public UserCredentialSpecifier(){
 	}
 	
 	//-------------------------------------------------------------------------
@@ -44,21 +44,21 @@ public class DomainAdministrationCredentialSpecifier {
 	//PUBLIC ACCESSORS (GETTERS / SETTERS)
 	//-------------------------------------------------------------------------
 
-	public PKIXCredential getZoneAdministratorCredential() {
-		return zoneAdministratorCredential;
+	public PKIXCredential getDomainAdministratorCredential() {
+		return domainAdministratorCredential;
 	}
 
-	public void setZoneAdministratorCredential(
-			PKIXCredential zoneAdministratorCredential) {
-		this.zoneAdministratorCredential = zoneAdministratorCredential;
+	public void setDomainAdministratorCredential(
+			PKIXCredential domainAdministratorCredential) {
+		this.domainAdministratorCredential = domainAdministratorCredential;
 	}
 
-	public String getDomainName() {
-		return domainName;
+	public String getName() {
+		return name;
 	}
 
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {

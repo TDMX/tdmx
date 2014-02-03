@@ -170,7 +170,8 @@ public class CredentialUtils {
 		PrivateKey privateKey = kp.getPrivate();
 		
 		PKIXCredential issuerCredential = req.getZoneAdministratorCredential();
-		PKIXCertificate issuerPublicCert = issuerCredential.getCertificateChain()[0];
+		PKIXCertificate issuerPublicCert = issuerCredential.getPublicCert();
+
 		PublicKey issuerPublicKey = issuerPublicCert.getCertificate().getPublicKey();
 		PrivateKey issuerPrivateKey = issuerCredential.getPrivateKey();
 		
@@ -190,7 +191,7 @@ public class CredentialUtils {
 		subjectBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
 		subjectBuilder.addRDN(BCStyle.CN, req.getDomainName());
 		X500Name subject = subjectBuilder.build();
-		X500Name issuer = issuerPublicCert.getIssuerName();
+		X500Name issuer = issuerPublicCert.getSubjectName();
 		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
 				issuer, 
 				new BigInteger("1"), 
@@ -242,7 +243,7 @@ public class CredentialUtils {
 			
 			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
 			
-			return new PKIXCredential( new PKIXCertificate[] { c, issuerPublicCert }, privateKey);
+			return new PKIXCredential( c, issuerCredential.getCertificateChain(), privateKey);
 		} catch (CertIOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		} catch (NoSuchAlgorithmException e) {
@@ -250,6 +251,73 @@ public class CredentialUtils {
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		}
+	}
+	
+	public static PKIXCredential createUserCredential( UserCredentialSpecifier req ) throws CryptoCertificateException {
+		KeyPair kp = null;
+		try {
+			kp = req.getKeyAlgorithm().generateNewKeyPair();
+		} catch (CryptoException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_KEYPAIR_GENERATION, e);
+		}
+		
+		PublicKey publicKey = kp.getPublic();
+		PrivateKey privateKey = kp.getPrivate();
+		
+		PKIXCredential issuerCredential = req.getDomainAdministratorCredential();
+		PKIXCertificate issuerPublicCert = issuerCredential.getPublicCert();
+		PublicKey issuerPublicKey = issuerPublicCert.getCertificate().getPublicKey();
+		PrivateKey issuerPrivateKey = issuerCredential.getPrivateKey();
+		
+		X500NameBuilder subjectBuilder = new X500NameBuilder();
+		if ( StringUtils.hasText(issuerPublicCert.getCountry() )) {
+			subjectBuilder.addRDN(BCStyle.C, issuerPublicCert.getCountry());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getLocation() )) {
+			subjectBuilder.addRDN(BCStyle.L, issuerPublicCert.getLocation());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getOrganization() )) {
+			subjectBuilder.addRDN(BCStyle.O, issuerPublicCert.getOrganization());
+		}
+		if ( StringUtils.hasText(issuerPublicCert.getOrgUnit() )) {
+			subjectBuilder.addRDN(BCStyle.OU, issuerPublicCert.getOrgUnit());
+		}
+		subjectBuilder.addRDN(BCStyle.OU, TDMX_DOMAIN_CA_OU);
+		subjectBuilder.addRDN(BCStyle.OU, issuerPublicCert.getCommonName());
+		subjectBuilder.addRDN(BCStyle.CN, req.getName());
+		X500Name subject = subjectBuilder.build();
+		X500Name issuer = issuerPublicCert.getSubjectName();
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+				issuer, 
+				new BigInteger("1"), 
+				req.getNotBefore().getTime(),
+				req.getNotAfter().getTime(), 
+				subject, 
+				publicKey);
+
+		try {
+			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+			certBuilder.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(issuerPublicKey));
+			certBuilder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
+
+			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature|KeyUsage.nonRepudiation|KeyUsage.keyEncipherment);
+			certBuilder.addExtension(Extension.keyUsage, false, ku);
+			
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, issuerPublicCert.getTdmxZoneInfo());
+			
+			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
+			byte[] certBytes = certBuilder.build(signer).getEncoded();
+			
+			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
+			
+			return new PKIXCredential(c, issuerCredential.getCertificateChain(), privateKey);
+		} catch (CertIOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		}		
 	}
 	
     //-------------------------------------------------------------------------

@@ -17,13 +17,27 @@ public class PKIXCredential {
 	//-------------------------------------------------------------------------
 	//CONSTRUCTORS
 	//-------------------------------------------------------------------------
+	public PKIXCredential( PKIXCertificate publicCert, PKIXCertificate[] issuerCertChain, PrivateKey key ) throws CryptoCertificateException {
+		this.certificateChain = new PKIXCertificate[issuerCertChain.length+1];
+		certificateChain[0] = publicCert;
+		for( int i = 0; i < issuerCertChain.length; i++) {
+			certificateChain[i+1] = issuerCertChain[i];
+		}
+		this.privateKey = key;
+	}
+	
 	public PKIXCredential( PKIXCertificate[] certChain, PrivateKey key ) throws CryptoCertificateException {
 		this.certificateChain = certChain;
 		this.privateKey = key;
 	}
 	
-	public PKIXCredential( PKIXCertificate cert, PrivateKey key ) throws CryptoCertificateException {
-		this.certificateChain = new PKIXCertificate[] {cert};
+	public PKIXCredential( PKIXCertificate publicCert, PKIXCertificate issuerCert, PrivateKey key ) throws CryptoCertificateException {
+		this.certificateChain = new PKIXCertificate[] {publicCert,issuerCert};
+		this.privateKey = key;
+	}
+	
+	public PKIXCredential( PKIXCertificate selfsignedCert, PrivateKey key ) throws CryptoCertificateException {
+		this.certificateChain = new PKIXCertificate[] {selfsignedCert};
 		this.privateKey = key;
 	}
 	

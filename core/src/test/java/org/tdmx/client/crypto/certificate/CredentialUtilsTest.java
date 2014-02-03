@@ -3,6 +3,7 @@ package org.tdmx.client.crypto.certificate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -33,12 +34,23 @@ public class CredentialUtilsTest {
 	@Test
 	public void testCreateDomainAdminCert() throws Exception {
 		PKIXCredential zac = createZAC();		
+		createDAC(zac);
+	}
+
+	@Test
+	public void testUserCert() throws Exception {
+		PKIXCredential zac = createZAC();		
 		byte[] bs = CertificateIOUtils.encodeCertificate(zac.getCertificateChain()[0]);
 		FileUtils.storeFileContents("za.crt", bs, ".tmp");
 		
 		PKIXCredential dac = createDAC(zac);
 		bs = CertificateIOUtils.encodeCertificate(dac.getCertificateChain()[0]);
 		FileUtils.storeFileContents("da.crt", bs, ".tmp");
+
+		PKIXCredential uc = createUC(dac);
+		bs = CertificateIOUtils.encodeCertificate(uc.getCertificateChain()[0]);
+		FileUtils.storeFileContents("uc.crt", bs, ".tmp");
+
 	}
 
 	private PKIXCredential createZAC() throws Exception  {
@@ -86,6 +98,8 @@ public class CredentialUtilsTest {
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
 		assertTrue(c.isTdmxZoneAdminCertificate());
+		assertFalse(c.isTdmxDomainAdminCertificate());
+		assertFalse(c.isTdmxUserCertificate());
 		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
 		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getIssuer());
 		return cred;
@@ -117,7 +131,7 @@ public class CredentialUtilsTest {
 		assertNotNull(cred.getPrivateKey());
 		assertEquals(2, cred.getCertificateChain().length);
 		
-		PKIXCertificate c = cred.getCertificateChain()[0];
+		PKIXCertificate c = cred.getPublicCert();
 
 		
 		assertEquals(issuer.getCountry(), c.getCountry());
@@ -127,8 +141,55 @@ public class CredentialUtilsTest {
 		assertEquals(req.getDomainName(), c.getCommonName());
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
+		assertFalse(c.isTdmxZoneAdminCertificate());
 		assertTrue(c.isTdmxDomainAdminCertificate());
+		assertFalse(c.isTdmxUserCertificate());
 		assertEquals("CN="+req.getDomainName()+",OU=tdmx-domain,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
+		assertEquals(issuer.getSubject(), c.getIssuer());
+		
+		return cred;
+	}
+	
+	private PKIXCredential createUC( PKIXCredential dac ) throws Exception {
+		PKIXCertificate issuer = dac.getPublicCert();
+
+		Calendar now = Calendar.getInstance();
+		now.setTime(new Date());
+		now.set(Calendar.MILLISECOND, 0);
+
+		Calendar later = Calendar.getInstance();
+		later.setTime(new Date());
+		later.add(Calendar.YEAR, 1);
+		later.set(Calendar.MILLISECOND, 0);
+
+		UserCredentialSpecifier req = new UserCredentialSpecifier();
+		req.setDomainAdministratorCredential(dac);
+		req.setName("username123");
+		req.setNotBefore(now);
+		req.setNotAfter(later);
+		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
+		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		PKIXCredential cred = CredentialUtils.createUserCredential(req);
+		
+		assertNotNull(cred);
+		assertNotNull(cred.getCertificateChain());
+		assertNotNull(cred.getPrivateKey());
+		assertEquals(3, cred.getCertificateChain().length);
+		
+		PKIXCertificate c = cred.getPublicCert();
+
+		
+		assertEquals(issuer.getCountry(), c.getCountry());
+		assertEquals(issuer.getLocation(), c.getLocation());
+		assertEquals(issuer.getOrganization(), c.getOrganization());
+		assertEquals(issuer.getOrgUnit(), c.getOrgUnit());
+		assertEquals(req.getName(), c.getCommonName());
+		assertEquals(req.getNotAfter(), c.getNotAfter());
+		assertEquals(req.getNotBefore(), c.getNotBefore());
+		assertFalse(c.isTdmxZoneAdminCertificate());
+		assertFalse(c.isTdmxDomainAdminCertificate());
+		assertTrue(c.isTdmxUserCertificate());
+		assertEquals("CN="+req.getName()+",OU="+issuer.getCommonName()+",OU=tdmx-domain,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
 		assertEquals(issuer.getSubject(), c.getIssuer());
 		
 		return cred;
