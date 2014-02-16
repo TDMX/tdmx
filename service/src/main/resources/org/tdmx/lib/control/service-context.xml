@@ -69,4 +69,15 @@
 			ref="tdmx.lib.control.dao.AuthorizedAgentDao" />
 	</bean>
 
+
+	<bean id="tdmx.lib.control.dao.AccountZoneDao"
+		class="org.tdmx.lib.control.dao.AccountZoneDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.AccountZoneRepository"
+		class="org.tdmx.lib.control.service.AccountZoneServiceRepositoryImpl">
+		<property name="accountZoneDao"
+			ref="tdmx.lib.control.dao.AccountZoneDao" />
+	</bean>
+
 </beans>

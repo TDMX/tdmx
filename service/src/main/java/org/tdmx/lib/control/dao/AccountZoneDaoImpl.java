@@ -6,41 +6,41 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.tdmx.lib.control.domain.AuthorizedAgent;
+import org.tdmx.lib.control.domain.AccountZone;
 
 
-public class AuthorizedAgentDaoImpl implements AuthorizedAgentDao {
+public class AccountZoneDaoImpl implements AccountZoneDao {
 	
 	@PersistenceContext(unitName="ControlDB")
 	private EntityManager em;
 
 	@Override
-	public void persist( AuthorizedAgent value ) {
+	public void persist( AccountZone value ) {
 		em.persist(value);
 	}
 	
 	@Override
-	public void delete( AuthorizedAgent value ) {
+	public void delete( AccountZone value ) {
 		em.remove(value);
 	}
 	
 	@Override
-	public void lock( AuthorizedAgent value ) {
+	public void lock( AccountZone value ) {
 		em.lock(value, LockModeType.WRITE);
 	}
 	
 	@Override
-	public AuthorizedAgent merge( AuthorizedAgent value ) {
+	public AccountZone merge( AccountZone value ) {
 		return em.merge(value);
 	}
 	
 
 	@Override
-	public AuthorizedAgent loadByFingerprint(String fingerprint) {
-		Query query = em.createQuery("from AuthorizedAgent as aa where aa.sha1fingerprint = :fingerprint");
-		query.setParameter("fingerprint", fingerprint);
+	public AccountZone loadById(String id) {
+		Query query = em.createQuery("from AccountZone as az where az.zoneApex = :id");
+		query.setParameter("id", id);
 		try {
-			return (AuthorizedAgent)query.getSingleResult();
+			return (AccountZone)query.getSingleResult();
 		} catch ( NoResultException e ) {
 			return null;
 		}

@@ -42,12 +42,15 @@ public class AuthorizedAgentServiceRepositoryImpl implements AuthorizedAgentServ
 	@Transactional(value="ControlDB")
 	public void createOrUpdate(PKIXCertificate certificate, AuthorizationStatus status) {
 		String fp = certificate.getFingerprint();
-		TdmxZoneInfo zi = null; //TODO get this to fill zoneapex
+		TdmxZoneInfo zi = certificate.getTdmxZoneInfo();
+		if ( zi == null ) {
+			throw new IllegalArgumentException("certificate missing TdmxZoneInfo");
+		}
 		
 		AuthorizedAgent agent = new AuthorizedAgent();
 		agent.setSha1fingerprint(certificate.getFingerprint());
 		agent.setAuthorizationStatus(status);
-		agent.setZoneApex("dummy"); //TODO add pkixcert tdmx zoneapex
+		agent.setZoneApex(zi.getZoneRoot());
 		try {
 			agent.setCertificatePem(CertificateIOUtils.x509certToPem(certificate));
 		} catch (CryptoCertificateException e) {

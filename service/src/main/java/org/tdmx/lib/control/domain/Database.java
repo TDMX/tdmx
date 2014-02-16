@@ -29,7 +29,7 @@ public class Database implements Serializable {
 	@Column(length = MAX_PARTITIONID_LEN)
 	private String partitionId;
 
-	@Column(length = MAX_URL_LEN)
+	@Column(length = MAX_URL_LEN, nullable = false)
 	private String url;
 	
 	@Enumerated(EnumType.STRING)

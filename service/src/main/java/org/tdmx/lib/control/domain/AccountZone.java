@@ -43,7 +43,7 @@ public class AccountZone implements Serializable {
 	private String segment;
 	
 	@Column(length = Database.MAX_URL_LEN, nullable = false)
-	private String zoneDbUrl;
+	private String zonePartitionId;
 	
 	public String getZoneApex() {
 		return zoneApex;
@@ -75,6 +75,14 @@ public class AccountZone implements Serializable {
 
 	public void setSegment(String segment) {
 		this.segment = segment;
+	}
+
+	public String getZonePartitionId() {
+		return zonePartitionId;
+	}
+
+	public void setZonePartitionId(String zonePartitionId) {
+		this.zonePartitionId = zonePartitionId;
 	}
 
 }
