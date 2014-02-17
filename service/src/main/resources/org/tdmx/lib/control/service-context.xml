@@ -80,4 +80,16 @@
 			ref="tdmx.lib.control.dao.AccountZoneDao" />
 	</bean>
 
+
+
+	<bean id="tdmx.lib.control.dao.DatabasePartitionDao"
+		class="org.tdmx.lib.control.dao.DatabasePartitionDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.control.DatabasePartitionRepository"
+		class="org.tdmx.lib.control.service.DatabasePartitionServiceRepositoryImpl">
+		<property name="databasePartitionDao"
+			ref="tdmx.lib.control.dao.DatabasePartitionDao" />
+	</bean>
+
 </beans>

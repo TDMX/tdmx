@@ -41,6 +41,10 @@ public class DynamicDataSource implements javax.sql.DataSource {
         return partitionId.get();
     }
 
+    public static void clearPartitionId() {
+        partitionId.set(null);
+    }
+
     private DataSourceConfigurationProvider configurationProvider;
     private Map<String,DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
     private Map<DatabaseConnectionInfo,BasicDataSource> connectionDataSourceMap = new ConcurrentHashMap<DatabaseConnectionInfo, BasicDataSource>();
@@ -90,7 +94,7 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		} else if (!existingCi.equals(ci)) {
 			// there's been a change of DB connection for a partition
 			partitionConnectionInfoMap.put(partitionId, ci);
-			log.warn("Database change for partitionId " + partitionId);
+			log.warn("DatabasePartition change for partitionId " + partitionId);
 		}
 		BasicDataSource bds = connectionDataSourceMap.get(ci);
 		if ( bds == null ) {

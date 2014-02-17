@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 /**
  * An AccountZone describes a Zone at a ServiceProvider and points to the Zone's
- * Database.
+ * DatabasePartition.
  * 
  * The ServiceProvider may control the authorization state of a Zone independently
  * of the Account's authorization state.
@@ -42,7 +42,7 @@ public class AccountZone implements Serializable {
 	@Column(length = MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 	
-	@Column(length = Database.MAX_URL_LEN, nullable = false)
+	@Column(length = DatabasePartition.MAX_URL_LEN, nullable = false)
 	private String zonePartitionId;
 	
 	public String getZoneApex() {

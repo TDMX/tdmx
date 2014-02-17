@@ -13,7 +13,7 @@
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
 		<class>org.tdmx.lib.control.domain.AuthorizedAgent</class>
-		<class>org.tdmx.lib.control.domain.Database</class>
+		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
 		
 	</persistence-unit>
 
