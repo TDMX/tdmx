@@ -52,11 +52,44 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		if ( storedPartition == null ) {
 			getDatabasePartitionDao().persist(partition);
 		} else {
+			assertSame( "dbType", storedPartition.getDbType(), partition.getDbType());
+			assertSame( "segment", storedPartition.getSegment(), partition.getSegment());
+			if ( storedPartition.getActivationTimestamp() != null ) {
+				// active partitions cannot change some fields.
+				assertSame( "sizeFactor", storedPartition.getSizeFactor(), partition.getSizeFactor());
+				assertSame( "activationTimestamp", storedPartition.getActivationTimestamp(), partition.getActivationTimestamp());
+				if ( storedPartition.getDeactivationTimestamp() != null ) {
+					assertSame( "deactivationTimestamp", storedPartition.getDeactivationTimestamp(), partition.getDeactivationTimestamp());
+				}
+			}
+			
 			getDatabasePartitionDao().merge(partition);
 		}
 		clearCache();
 	}
 
+	/**
+	 * @throws IllegalStateException if try to change immutable fields.
+	 */
+	private void assertSame( String field, Object target, Object actual ) {
+		if ( target != null ) {
+			if ( !target.equals(actual) ) {
+				throw new IllegalStateException("Field " + field + " is immutable, and cannot be changed or removed.");
+			}
+		} else if ( actual != null ) {
+			throw new IllegalStateException("Field " + field + " is immutable, and cannot be set.");
+		}
+	}
+	
+	/**
+	 * @throws IllegalStateException if try to change immutable fields.
+	 */
+	private void assertSame( String field, int target, int actual ) {
+		if ( target != actual ) {
+			throw new IllegalStateException("Field " + field + " is immutable, and cannot be changed.");
+		}
+	}
+	
 	@Override
 	@Transactional(value="ControlDB")
 	public void delete(DatabasePartition partition) {
@@ -82,15 +115,17 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type,
 			String segment) {
 		conditionalRefreshCache();
-		List<DatabasePartition> result = new ArrayList<>();
 		
 		if ( dptsMap != null ) {
 			Map<String,List<DatabasePartition>> segmentMap = dptsMap.get(type);
 			if ( segmentMap != null ) {
-				return segmentMap.get(segment);
+				List<DatabasePartition> segmentList = segmentMap.get(segment);
+				if ( segmentList != null ) {
+					return segmentList;
+				}
 			}
 		}
-		return Collections.unmodifiableList(result);
+		return Collections.emptyList();
 	}
 
 	@Override
