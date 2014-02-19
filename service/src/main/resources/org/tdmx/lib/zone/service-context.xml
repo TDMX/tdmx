@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+
+	<bean id="jdbc.zonedb.dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="url" value="${jdbc.zonedb.url}" />
+		<property name="driverClassName" value="${jdbc.zonedb.driverClassName}" />
+		<property name="username" value="${jdbc.zonedb.username}" />
+		<property name="password" value="${jdbc.zonedb.password}" />
+	</bean>
+
+	<bean id="tdmx.lib.zone.EntityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="jdbc.zonedb.dataSource"/>
+		<property name="persistenceUnitName" value="ZoneDB" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="generateDdl" value="true" />
+				<property name="showSql" value="true" />
+				<property name="databasePlatform" value="${jdbc.zonedb.hibernate.dialect}" />
+			</bean>
+		</property>
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="hibernate.cache.use_second_level_cache" value="false"/>
+				<entry key="hibernate.cache.use_query_cache" value="false"/>
+				<!-- 
+				<entry key="hibernate.cache.region.factory_class" value="org.hibernate.cache.jbc2.MultiplexedJBossCacheRegionFactory"/>
+				<entry key="hibernate.cache.region.jbc2.configs" value="${hb.jbc2.configs}" />
+				<entry key="hibernate.cache.region.jbc2.cfg.entity" value="${hb.jbc2.entity}" />
+				<entry key="hibernate.transaction.manager_lookup_class" value="com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup"/>
+				<entry key="hibernate.hbm2ddl.auto" value="${db.ddl-create}"/>
+				<entry key="hibernate.connection.autocommit" value="false" />
+				<entry key="hibernate.connection.release_mode" value="after_transaction"/>
+				 -->
+			</map>
+		</property>	
+		</bean>
+
+	<tx:annotation-driven transaction-manager="tdmx.lib.zone.TransactionManager"/>
+	
+	<context:annotation-config />
+	
+	<bean id="tdmx.lib.zone.TransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<qualifier value="ZoneDB"/>
+		<property name="entityManagerFactory" ref="tdmx.lib.zone.EntityManagerFactory" />
+	</bean>
+
+
+	<bean id="tdmx.lib.zone.dao.ZoneDao"
+		class="org.tdmx.lib.zone.dao.ZoneDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.ZoneRepository"
+		class="org.tdmx.lib.zone.service.ZoneServiceRepositoryImpl">
+		<property name="zoneDao"
+			ref="tdmx.lib.zone.dao.ZoneDao" />
+	</bean>
+
+
+</beans>
