@@ -60,7 +60,7 @@ public class ServerContainer {
         // above so it can get things like the output buffer size, etc. We also set the port (8080) and configure an
         // idle timeout.
         ServerConnector http = new ServerConnector(server,new HttpConnectionFactory(http_config));        
-        http.setPort(8080);
+        http.setPort(8442);
         http.setIdleTimeout(30000);
          
         // SSL Context Factory for HTTPS and SPDY
