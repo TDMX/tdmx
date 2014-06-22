@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.job;
 
 import java.util.Date;
@@ -20,14 +38,14 @@ import org.tdmx.console.domain.validation.FieldValidationException;
 
 public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
-	public static final DomainObjectField F_NAME	= new DomainObjectField("name", DomainObjectType.BackgroundJob);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+	public static final DomainObjectField F_NAME = new DomainObjectField("name", DomainObjectType.BackgroundJob);
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 
 	protected String name;
 	protected ProblemRegistry problemRegistry;
@@ -38,28 +56,27 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	protected Date startedRunningDate;
 	protected ProblemDO lastProblem;
 	protected List<SearchableObjectField> searchFields = NO_SEARCH_FIELDS;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Initialize the BackgroundJob. 
+	 * Initialize the BackgroundJob.
 	 */
 	@Override
 	public abstract void init();
-	
+
 	/**
 	 * Shutdown the BackgroundJob.
 	 */
 	@Override
 	public abstract void shutdown();
-	
-	
+
 	@Override
 	public int getExecutions() {
 		return processingId.get();
@@ -74,7 +91,7 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	public Date getLastCompletedDate() {
 		return lastCompletedDate;
 	}
-	
+
 	@Override
 	public ProblemDO getLastProblem() {
 		return lastProblem;
@@ -84,24 +101,29 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		AbstractBackgroundJob other = (AbstractBackgroundJob) obj;
 		if (name == null) {
-			if (other.name != null)
+			if (other.name != null) {
 				return false;
-		} else if (!name.equals(other.name))
+			}
+		} else if (!name.equals(other.name)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -142,19 +164,19 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 		throw new UnsupportedOperationException();
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
 	protected void updateSearch() {
-		if ( getSearchService() != null ) {
+		if (getSearchService() != null) {
 			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
 			DomainObjectFieldChanges dofc = new DomainObjectFieldChanges(this);
 			h.registerModified(dofc);
 			getSearchService().update(h);
 		}
 	}
-	
+
 	protected void initRun() {
 		startedRunningDate = new Date();
 		int runNr = processingId.getAndIncrement();
@@ -162,23 +184,23 @@ public abstract class AbstractBackgroundJob implements BackgroundJobSPI {
 		logInfo(getName() + " started " + runNr);
 		updateSearch();
 	}
-	
+
 	protected void finishRun() {
 		lastCompletedDate = new Date();
 		startedRunningDate = null;
 		logInfo(getName() + " completed " + processingId.get());
 		updateSearch();
 	}
-	
-	protected abstract void logInfo( String msg );
-	
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	protected abstract void logInfo(String msg);
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	@Override
 	public String getName() {

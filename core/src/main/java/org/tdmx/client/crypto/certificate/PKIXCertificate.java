@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.certificate;
 
 import java.security.cert.CertificateEncodingException;
@@ -25,103 +43,103 @@ import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.scheme.CryptoException;
 
 public class PKIXCertificate {
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private X509Certificate certificate;
 	private JcaX509CertificateHolder holder;
-	
+
 	private String fingerprint;
-	
-	private static Map<String,String> oidMap = new HashMap<>();
+
+	private static Map<String, String> oidMap = new HashMap<>();
 	static {
 		oidMap.put(BCStyle.E.getId(), "EMAIL");
 		oidMap.put(BCStyle.TELEPHONE_NUMBER.getId(), "TEL");
 	}
-	
-	//TODO public key - type + leyken ie RSA(2048bit) AsymmetricEncryptionAlgorithm
-	//TODO subject key identifier
-	//TODO issuer key identifier
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
-	public PKIXCertificate( X509Certificate cert ) throws CryptoCertificateException {
+
+	// TODO public key - type + leyken ie RSA(2048bit) AsymmetricEncryptionAlgorithm
+	// TODO subject key identifier
+	// TODO issuer key identifier
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+	public PKIXCertificate(X509Certificate cert) throws CryptoCertificateException {
 		try {
 			certificate = cert;
-			
+
 			holder = new JcaX509CertificateHolder(certificate);
 			{
 				byte[] tbsCert = cert.getTBSCertificate();
 				byte[] sha1 = DigestAlgorithm.SHA_1.kdf(tbsCert);
 				fingerprint = ByteArray.asHex(sha1);
 			}
-			
-		} catch ( CryptoException e ) {
+
+		} catch (CryptoException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
 		} catch (CertificateEncodingException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_ENCODING, e);
 		}
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
-	private String getFirstRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
-		if ( x500name == null ) {
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	private String getFirstRDN(X500Name x500name, ASN1ObjectIdentifier attributeType) {
+		if (x500name == null) {
 			return null;
 		}
 		RDN[] rdns = x500name.getRDNs(attributeType);
-		if ( rdns != null && rdns.length > 0 ) {
-			return IETFUtils.valueToString(rdns[0].getFirst().getValue());		
+		if (rdns != null && rdns.length > 0) {
+			return IETFUtils.valueToString(rdns[0].getFirst().getValue());
 		}
 		return null;
 	}
 
-	private String getSecondLastRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
-		if ( x500name == null ) {
+	private String getSecondLastRDN(X500Name x500name, ASN1ObjectIdentifier attributeType) {
+		if (x500name == null) {
 			return null;
 		}
 		RDN[] rdns = x500name.getRDNs(attributeType);
-		if ( rdns != null && rdns.length > 1 ) {
-			return IETFUtils.valueToString(rdns[rdns.length-2].getFirst().getValue());		
+		if (rdns != null && rdns.length > 1) {
+			return IETFUtils.valueToString(rdns[rdns.length - 2].getFirst().getValue());
 		}
 		return null;
 	}
 
-	private String getLastRDN( X500Name x500name, ASN1ObjectIdentifier attributeType ) {
-		if ( x500name == null ) {
+	private String getLastRDN(X500Name x500name, ASN1ObjectIdentifier attributeType) {
+		if (x500name == null) {
 			return null;
 		}
 		RDN[] rdns = x500name.getRDNs(attributeType);
-		if ( rdns != null && rdns.length > 0 ) {
-			return IETFUtils.valueToString(rdns[rdns.length-1].getFirst().getValue());		
+		if (rdns != null && rdns.length > 0) {
+			return IETFUtils.valueToString(rdns[rdns.length - 1].getFirst().getValue());
 		}
 		return null;
 	}
 
 	private X500Name getSubjectNameConstraint() {
 		Extension e = holder.getExtension(Extension.nameConstraints);
-		if ( e != null && e.isCritical() ) {
+		if (e != null && e.isCritical()) {
 			NameConstraints nc = NameConstraints.getInstance(e.getParsedValue());
 			GeneralSubtree[] permitted = nc.getPermittedSubtrees();
-			if ( permitted != null && permitted.length > 0 ) {
+			if (permitted != null && permitted.length > 0) {
 				GeneralName base = permitted[0].getBase();
-				if ( base != null ) {
-					if ( GeneralName.directoryName == base.getTagNo() ) {
+				if (base != null) {
+					if (GeneralName.directoryName == base.getTagNo()) {
 						X500Name baseName = X500Name.getInstance(base.getName());
 						return baseName;
 					}
@@ -130,28 +148,28 @@ public class PKIXCertificate {
 		}
 		return null;
 	}
-	
+
 	private KeyUsage getKeyUsage() {
 		Extension e = holder.getExtension(Extension.keyUsage);
-		if ( e != null ) {
+		if (e != null) {
 			KeyUsage ku = KeyUsage.getInstance(e.getParsedValue());
 			return ku;
 		}
 		return null;
 	}
-	
+
 	public TdmxZoneInfo getTdmxZoneInfo() {
 		Extension e = holder.getExtension(TdmxZoneInfo.tdmxZoneInfo);
-		if ( e != null ) {
+		if (e != null) {
 			TdmxZoneInfo ku = TdmxZoneInfo.getInstance(e.getParsedValue());
 			return ku;
 		}
 		return null;
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public X509Certificate getCertificate() {
 		return certificate;
@@ -164,10 +182,10 @@ public class PKIXCertificate {
 	public X500Name getIssuerName() {
 		return holder.getIssuer();
 	}
-	
+
 	public String getIssuer() {
-		if ( certificate.getIssuerX500Principal() != null ) {
-			return certificate.getIssuerX500Principal().getName(X500Principal.RFC2253,oidMap);
+		if (certificate.getIssuerX500Principal() != null) {
+			return certificate.getIssuerX500Principal().getName(X500Principal.RFC2253, oidMap);
 		}
 		return null;
 	}
@@ -175,10 +193,10 @@ public class PKIXCertificate {
 	public X500Name getSubjectName() {
 		return holder.getSubject();
 	}
-	
+
 	public String getSubject() {
-		if ( certificate.getSubjectX500Principal() != null ) {
-			return certificate.getSubjectX500Principal().getName(X500Principal.RFC2253,oidMap);
+		if (certificate.getSubjectX500Principal() != null) {
+			return certificate.getSubjectX500Principal().getName(X500Principal.RFC2253, oidMap);
 		}
 		return null;
 	}
@@ -200,7 +218,7 @@ public class PKIXCertificate {
 	}
 
 	public String getOrgUnit() {
-		String ou = getFirstRDN(holder.getSubject(), BCStyle.OU); 
+		String ou = getFirstRDN(holder.getSubject(), BCStyle.OU);
 		return !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(ou) ? ou : null;
 	}
 
@@ -214,217 +232,217 @@ public class PKIXCertificate {
 
 	public boolean isCA() {
 		Extension e = holder.getExtension(Extension.basicConstraints);
-		if ( e != null && e.isCritical() ) {
+		if (e != null && e.isCritical()) {
 			BasicConstraints bc = BasicConstraints.getInstance(e.getParsedValue());
 			return bc.isCA();
 		}
 		return false;
 	}
-	
+
 	public int getCAPathLengthConstraint() {
 		Extension e = holder.getExtension(Extension.basicConstraints);
-		if ( e != null && e.isCritical() ) {
+		if (e != null && e.isCritical()) {
 			BasicConstraints bc = BasicConstraints.getInstance(e.getParsedValue());
-			if ( bc.getPathLenConstraint() != null ) {
+			if (bc.getPathLenConstraint() != null) {
 				return bc.getPathLenConstraint().intValue();
 			}
 		}
 		return -1;
 	}
-	
-	//TODO is uc
-	
+
+	// TODO is uc
+
 	public boolean isTdmxZoneAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 1 == getCAPathLengthConstraint();
-		if ( !caConstrained ) {
+		if (!caConstrained) {
 			return false;
 		}
-		
+
 		// keyusage keyCertSign + digitalSignature
 		KeyUsage ku = getKeyUsage();
-		if ( ku == null ) {
+		if (ku == null) {
 			return false;
 		}
-		if ( !ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
+		if (!ku.hasUsages(KeyUsage.keyCertSign | KeyUsage.digitalSignature)) {
 			return false;
 		}
-		
+
 		// is self signed, ie. subject == issuer
 		String subjectName = getSubject();
 		String issuerName = getIssuer();
-		if ( subjectName == null || issuerName == null || !subjectName.equals(issuerName)  ) {
+		if (subjectName == null || issuerName == null || !subjectName.equals(issuerName)) {
 			return false;
 		}
-		//TODO subjectKey == issuerKey identifiers
-		
+		// TODO subjectKey == issuerKey identifiers
+
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if ( zi == null ) {
+		if (zi == null) {
 			return false;
 		}
-		
+
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();
-		if ( snc != null ) {
-			if ( getCountry() != null ) {
+		if (snc != null) {
+			if (getCountry() != null) {
 				String c = getFirstRDN(snc, BCStyle.C);
-				if ( !getCountry().equals(c) ) {
+				if (!getCountry().equals(c)) {
 					return false;
 				}
 			}
-			if ( getLocation() != null ) {
+			if (getLocation() != null) {
 				String l = getFirstRDN(snc, BCStyle.L);
-				if ( !getLocation().equals(l) ) {
+				if (!getLocation().equals(l)) {
 					return false;
 				}
 			}
-			if ( getOrganization() != null ) {
+			if (getOrganization() != null) {
 				String o = getFirstRDN(snc, BCStyle.O);
-				if ( !getOrganization().equals(o) ) {
+				if (!getOrganization().equals(o)) {
 					return false;
 				}
 			}
-			if ( getOrgUnit() != null ) {
+			if (getOrgUnit() != null) {
 				String ou = getFirstRDN(snc, BCStyle.OU);
-				if ( !getOrgUnit().equals(ou) ) {
+				if (!getOrgUnit().equals(ou)) {
 					return false;
 				}
 			}
 			String tdmx_ou = getLastRDN(snc, BCStyle.OU);
-			if ( !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
+			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou)) {
 				return false;
 			}
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean isTdmxDomainAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 0 == getCAPathLengthConstraint();
-		if ( !caConstrained ) {
+		if (!caConstrained) {
 			return false;
 		}
-		
+
 		// keyusage keyCertSign + digitalSignature
 		KeyUsage ku = getKeyUsage();
-		if ( ku == null ) {
+		if (ku == null) {
 			return false;
 		}
-		if ( !ku.hasUsages(KeyUsage.keyCertSign|KeyUsage.digitalSignature) ) {
+		if (!ku.hasUsages(KeyUsage.keyCertSign | KeyUsage.digitalSignature)) {
 			return false;
 		}
-		
+
 		// domain cert is NOT self signed, ie. subject != issuer
 		String subjectName = getSubject();
 		String issuerName = getIssuer();
-		if ( subjectName == null || issuerName == null || subjectName.equals(issuerName)  ) {
+		if (subjectName == null || issuerName == null || subjectName.equals(issuerName)) {
 			return false;
 		}
-		//TODO subjectKey identifiers present
-		//TODO issuerKey identifiers present
-		
+		// TODO subjectKey identifiers present
+		// TODO issuerKey identifiers present
+
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if ( zi == null ) {
+		if (zi == null) {
 			return false;
 		}
-		
-		if ( !getCommonName().equals(zi.getZoneRoot()) ) {
-			//domain is subdomain of zone root
-			if ( !getCommonName().endsWith("."+zi.getZoneRoot()) ) {
-				return false; 
+
+		if (!getCommonName().equals(zi.getZoneRoot())) {
+			// domain is subdomain of zone root
+			if (!getCommonName().endsWith("." + zi.getZoneRoot())) {
+				return false;
 			}
 		}
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();
-		if ( snc != null ) {
-			if ( getCountry() != null ) {
+		if (snc != null) {
+			if (getCountry() != null) {
 				String c = getFirstRDN(snc, BCStyle.C);
-				if ( !getCountry().equals(c) ) {
+				if (!getCountry().equals(c)) {
 					return false;
 				}
 			}
-			if ( getLocation() != null ) {
+			if (getLocation() != null) {
 				String l = getFirstRDN(snc, BCStyle.L);
-				if ( !getLocation().equals(l) ) {
+				if (!getLocation().equals(l)) {
 					return false;
 				}
 			}
-			if ( getOrganization() != null ) {
+			if (getOrganization() != null) {
 				String o = getFirstRDN(snc, BCStyle.O);
-				if ( !getOrganization().equals(o) ) {
+				if (!getOrganization().equals(o)) {
 					return false;
 				}
 			}
-			if ( getOrgUnit() != null ) {
+			if (getOrgUnit() != null) {
 				String ou = getFirstRDN(snc, BCStyle.OU);
-				if ( !getOrgUnit().equals(ou) ) {
+				if (!getOrgUnit().equals(ou)) {
 					return false;
 				}
 			}
 			String tdmx_ou = getSecondLastRDN(snc, BCStyle.OU);
-			if ( !CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou) ) {
+			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou)) {
 				return false;
 			}
-			
+
 			String domain_ou = getLastRDN(snc, BCStyle.OU);
-			if ( !getCommonName().equals(domain_ou) ) {
+			if (!getCommonName().equals(domain_ou)) {
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean isTdmxUserCertificate() {
 		// critical basicConstraints CA=true, max path length=1
-		if ( isCA() ) {
-			return false;
-		}
-		
-		// keyusage keyCertSign + digitalSignature
-		KeyUsage ku = getKeyUsage();
-		if ( ku == null ) {
-			return false;
-		}
-		if ( !ku.hasUsages(KeyUsage.keyEncipherment|KeyUsage.digitalSignature|KeyUsage.nonRepudiation) ) {
-			return false;
-		}
-		
-		// domain cert is NOT self signed, ie. subject != issuer
-		String subjectName = getSubject();
-		String issuerName = getIssuer();
-		if ( subjectName == null || issuerName == null || subjectName.equals(issuerName)  ) {
-			return false;
-		}
-		//TODO subjectKey identifiers present
-		//TODO issuerKey identifiers present
-		
-		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if ( zi == null ) {
+		if (isCA()) {
 			return false;
 		}
 
-		//Last OU is the domainName
-		String domainName = getLastRDN(getSubjectName(), BCStyle.OU);
-		if ( domainName == null ) {
+		// keyusage keyCertSign + digitalSignature
+		KeyUsage ku = getKeyUsage();
+		if (ku == null) {
 			return false;
 		}
-		if ( !domainName.equals(zi.getZoneRoot()) ) {
-			//domain is subdomain of zone root
-			if ( !domainName.endsWith("."+zi.getZoneRoot()) ) {
-				return false; 
+		if (!ku.hasUsages(KeyUsage.keyEncipherment | KeyUsage.digitalSignature | KeyUsage.nonRepudiation)) {
+			return false;
+		}
+
+		// domain cert is NOT self signed, ie. subject != issuer
+		String subjectName = getSubject();
+		String issuerName = getIssuer();
+		if (subjectName == null || issuerName == null || subjectName.equals(issuerName)) {
+			return false;
+		}
+		// TODO subjectKey identifiers present
+		// TODO issuerKey identifiers present
+
+		TdmxZoneInfo zi = getTdmxZoneInfo();
+		if (zi == null) {
+			return false;
+		}
+
+		// Last OU is the domainName
+		String domainName = getLastRDN(getSubjectName(), BCStyle.OU);
+		if (domainName == null) {
+			return false;
+		}
+		if (!domainName.equals(zi.getZoneRoot())) {
+			// domain is subdomain of zone root
+			if (!domainName.endsWith("." + zi.getZoneRoot())) {
+				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public Calendar getNotBefore() {
-		if ( holder.getNotBefore() != null ) {
+		if (holder.getNotBefore() != null) {
 			Calendar notBefore = Calendar.getInstance();
 			notBefore.setTime(holder.getNotBefore());
 			return notBefore;
@@ -433,7 +451,7 @@ public class PKIXCertificate {
 	}
 
 	public Calendar getNotAfter() {
-		if ( holder.getNotAfter() != null ) {
+		if (holder.getNotAfter() != null) {
 			Calendar notAfter = Calendar.getInstance();
 			notAfter.setTime(holder.getNotAfter());
 			return notAfter;
@@ -442,14 +460,14 @@ public class PKIXCertificate {
 	}
 
 	public String getSignatureAlgorithm() {
-		if ( holder.getSignatureAlgorithm() != null ) {
+		if (holder.getSignatureAlgorithm() != null) {
 			return IETFUtils.valueToString(holder.getSignatureAlgorithm());
 		}
 		return null;
 	}
 
 	public String getSignature() {
-		if ( holder.getSignature() != null ) {
+		if (holder.getSignature() != null) {
 			return ByteArray.asHex(holder.getSignature());
 		}
 		return null;
@@ -459,7 +477,7 @@ public class PKIXCertificate {
 		return certificate.toString();
 	}
 
-	public boolean isIdentical( PKIXCertificate other ) {
+	public boolean isIdentical(PKIXCertificate other) {
 		try {
 			return other != null && ByteArray.equals(certificate.getEncoded(), other.getCertificate().getEncoded());
 		} catch (CertificateEncodingException e) {

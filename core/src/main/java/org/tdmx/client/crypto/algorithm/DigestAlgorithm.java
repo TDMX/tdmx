@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.algorithm;
 
 import java.security.MessageDigest;
@@ -8,21 +26,21 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public enum DigestAlgorithm {
 
-	SHA_1("SHA-1"), 
-	SHA_256("SHA-256"), 
+	SHA_1("SHA-1"),
+	SHA_256("SHA-256"),
 	SHA_384("SHA-384"),
 	SHA_512("SHA-512");
 
 	private String algorithm;
-	
-	private DigestAlgorithm( String algorithm ) {
+
+	private DigestAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
-	
+
 	public String getAlgorithm() {
 		return this.algorithm;
 	}
-	
+
 	public MessageDigest getMessageDigest() throws CryptoException {
 		try {
 			return MessageDigest.getInstance(getAlgorithm());
@@ -30,8 +48,8 @@ public enum DigestAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_DIGEST_ALGORITHM_MISSING, e);
 		}
 	}
-	
-	public byte[] kdf( byte[] input ) throws CryptoException {
+
+	public byte[] kdf(byte[] input) throws CryptoException {
 		MessageDigest d = getMessageDigest();
 		return d.digest(input);
 	}

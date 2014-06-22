@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.algorithm;
 
 import java.io.UnsupportedEncodingException;
@@ -18,12 +36,11 @@ public enum HMACAlgorithm {
 	HMAC_SHA_1("HmacSHA1", PKCSObjectIdentifiers.id_hmacWithSHA1),
 	HMAC_SHA_256("HmacSHA256", PKCSObjectIdentifiers.id_hmacWithSHA256),
 	HMAC_SHA_384("HmacSHA384", PKCSObjectIdentifiers.id_hmacWithSHA384),
-	HMAC_SHA_512("HmacSHA512", PKCSObjectIdentifiers.id_hmacWithSHA512),
-	;
-	
+	HMAC_SHA_512("HmacSHA512", PKCSObjectIdentifiers.id_hmacWithSHA512), ;
+
 	private String algorithm;
 	private ASN1ObjectIdentifier asn1oid;
-	
+
 	private HMACAlgorithm(String algorithm, ASN1ObjectIdentifier asn1oid) {
 		this.algorithm = algorithm;
 		this.asn1oid = asn1oid;
@@ -33,20 +50,20 @@ public enum HMACAlgorithm {
 		return this.algorithm;
 	}
 
-	public String hexHMACfromUTF8( String data, String key ) throws CryptoException {
+	public String hexHMACfromUTF8(String data, String key) throws CryptoException {
 		try {
-			byte[] rawHmac=hmac(data.getBytes("UTF-8"), key.getBytes("UTF-8"));
+			byte[] rawHmac = hmac(data.getBytes("UTF-8"), key.getBytes("UTF-8"));
 			return ByteArray.asHex(rawHmac);
 		} catch (UnsupportedEncodingException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCODING_MISSING, e);
 		}
 	}
-	
-	public boolean verify( byte[] data, byte[] key, byte[] expected ) throws CryptoException {
-		byte[] result = hmac(data,key);
-		return ByteArray.equals(result,expected);
+
+	public boolean verify(byte[] data, byte[] key, byte[] expected) throws CryptoException {
+		byte[] result = hmac(data, key);
+		return ByteArray.equals(result, expected);
 	}
-	
+
 	public ASN1ObjectIdentifier getAsn1oid() {
 		return asn1oid;
 	}
@@ -64,7 +81,7 @@ public enum HMACAlgorithm {
 			// compute the hmac256 on input data bytes
 			byte[] rawHmac = mac.doFinal(data);
 			return rawHmac;
-			
+
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_HMAC_ALGORITHM_MISSING, e);
 
@@ -72,5 +89,5 @@ public enum HMACAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_HMAC_KEY_INVALID, e);
 		}
 	}
-	
+
 }

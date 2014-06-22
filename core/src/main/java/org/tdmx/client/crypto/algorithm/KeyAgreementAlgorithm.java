@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.algorithm;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -22,13 +40,13 @@ public enum KeyAgreementAlgorithm {
 
 	ECDH256(256, "EC", "ECDH", "secp256r1"),
 	ECDH384(384, "EC", "ECDH", "secp384r1");
-	
+
 	private int keyLength;
 	private String keyAlgorithm;
 	private String agreementAlgorithm;
 	private String parameter;
-	
-	private KeyAgreementAlgorithm(int keyLength, String keyAlgorithm, String agreementAlgorithm, String parameter ) {
+
+	private KeyAgreementAlgorithm(int keyLength, String keyAlgorithm, String agreementAlgorithm, String parameter) {
 		this.keyLength = keyLength;
 		this.keyAlgorithm = keyAlgorithm;
 		this.agreementAlgorithm = agreementAlgorithm;
@@ -49,7 +67,7 @@ public enum KeyAgreementAlgorithm {
 		}
 	}
 
-	public byte[] agreeKey( KeyPair ownKeyPair, PublicKey otherKey ) throws CryptoException {
+	public byte[] agreeKey(KeyPair ownKeyPair, PublicKey otherKey) throws CryptoException {
 		try {
 			KeyAgreement keyAgree = KeyAgreement.getInstance(agreementAlgorithm);
 			try {
@@ -62,21 +80,21 @@ public enum KeyAgreementAlgorithm {
 			} catch (InvalidKeyException e) {
 				throw new CryptoException(CryptoResultCode.ERROR_KA_PUBLIC_KEY_SPEC_INVALID, e);
 			}
-	        byte[] sk = keyAgree.generateSecret();
-			if ( sk.length != keyLength/8 ) {
+			byte[] sk = keyAgree.generateSecret();
+			if (sk.length != keyLength / 8) {
 				throw new CryptoException(CryptoResultCode.ERROR_KA_SHARED_SECRET_KEY_INVALID);
 			}
-	        return sk;
+			return sk;
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_KA_ALGORITHM_MISSING, e);
 		}
 	}
-	
-	public PublicKey decodeX509EncodedKey( byte[] publicKeyBytes ) throws CryptoException {
+
+	public PublicKey decodeX509EncodedKey(byte[] publicKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(keyAlgorithm);
 			EncodedKeySpec eks = new X509EncodedKeySpec(publicKeyBytes);
-			PublicKey publicKey  = kf.generatePublic(eks);
+			PublicKey publicKey = kf.generatePublic(eks);
 			return publicKey;
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING, e);
@@ -84,14 +102,14 @@ public enum KeyAgreementAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_KA_PUBLIC_KEY_SPEC_INVALID, e);
 		}
 	}
-	
-	public byte[] encodeX509PublicKey( PublicKey publicKey ) throws CryptoException {
-		if ( !"X.509".equals(publicKey.getFormat())) {
-			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID );
+
+	public byte[] encodeX509PublicKey(PublicKey publicKey) throws CryptoException {
+		if (!"X.509".equals(publicKey.getFormat())) {
+			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return publicKey.getEncoded();
 	}
-	
+
 	public int getKeyLength() {
 		return keyLength;
 	}

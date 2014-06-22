@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
@@ -8,24 +26,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.console.application.domain.SystemPropertiesVO;
 
-
 public class SystemSettingsServiceImpl implements SystemSettingsService {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 	public List<String> settingNames = new ArrayList<>();
-	
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(SystemSettingsServiceImpl.class);
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private final Logger log = LoggerFactory.getLogger(SystemSettingsServiceImpl.class);
 
 	private ObjectRegistry objectRegistry;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 	public SystemSettingsServiceImpl() {
 		settingNames.add("http.proxyHost");
 		settingNames.add("http.proxyPort");
@@ -47,48 +64,47 @@ public class SystemSettingsServiceImpl implements SystemSettingsService {
 		settingNames.add("http.maxConnections");
 		settingNames.add("http.maxRedirects");
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void updateSystemProperties() {
 		SystemPropertiesVO existing = objectRegistry.getSystemProperties();
 
-		//check updates
+		// check updates
 		SystemPropertiesVO newProps = new SystemPropertiesVO(getSettingNames());
-		
+
 		Set<String> deletes = existing.getDeletedKeys(newProps.getProperties());
-		if ( !deletes.isEmpty() ) {
+		if (!deletes.isEmpty()) {
 			log.info("SystemProperties removed: " + deletes);
-			//TODO audit removed
+			// TODO audit removed
 		}
 		Set<String> modified = existing.getModifiedKeys(newProps.getProperties());
-		if ( !modified.isEmpty() ) {
+		if (!modified.isEmpty()) {
 			log.info("SystemProperties changed: " + modified);
-			//TODO audit changed
-			
+			// TODO audit changed
+
 		}
 		Set<String> added = existing.getNewKeys(newProps.getProperties());
-		if ( !added.isEmpty() ) {
+		if (!added.isEmpty()) {
 			log.info("SystemProperties added: " + added);
-			//TODO audit added
+			// TODO audit added
 		}
 		objectRegistry.setSystemProperties(newProps);
 	}
 
-   //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistry getObjectRegistry() {
 		return objectRegistry;

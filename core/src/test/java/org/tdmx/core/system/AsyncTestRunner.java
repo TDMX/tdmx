@@ -1,139 +1,165 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.core.system;
-
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * AsyncTestRunner - can be used to run test methods for a certain time
- * or number of repetitions with a separate thread.
+ * AsyncTestRunner - can be used to run test methods for a certain time or number of repetitions with a separate thread.
  * 
- * Any exception recorded during running the method can be retrieved by
- * {@link #getError()}
+ * Any exception recorded during running the method can be retrieved by {@link #getError()}
  */
 public class AsyncTestRunner extends Thread {
-    
-    //-------------------------------------------------------------------------
-    //PUBLIC CONSTANTS
-    //-------------------------------------------------------------------------
 
-    //-------------------------------------------------------------------------
-    //PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-    //-------------------------------------------------------------------------
-    private int repetitions = 1;
-    private long duration = 0;
-    private Object subject;
-    private Throwable error;
-    private String method;
-    
-    //-------------------------------------------------------------------------
-    //CONSTRUCTORS
-    //-------------------------------------------------------------------------
-    
-    public AsyncTestRunner( Object subject, String method ) {
-    	this.subject = subject;
-    	this.method = method;
-    }
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-    //-------------------------------------------------------------------------
-    //PUBLIC METHODS
-    //-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private int repetitions = 1;
+	private long duration = 0;
+	private Object subject;
+	private Throwable error;
+	private String method;
 
-    /**
-     * Run an object's method in parallel for N repetitions
-     * 
-     * @param subject the object who's method is called
-     * @param method the methodname on the subject which is called
-     * @param parallel the number of concurrent threads calling the method
-     * @param repetitions each thread calls the subject's method repetition times
-     * 
-     * @throws Exception if any of the concurrent threads failed running the subject's method
-     */
-    public static void runRepetitions( Object subject, String method, int parallel, int repetitions ) throws Exception {
-    	run( subject, method, parallel, repetitions, 0);
-    }
-    
-    /**
-     * Run an object's method in parallel for duration
-     * 
-     * @param subject the object who's method is called
-     * @param method the methodname on the subject which is called
-     * @param parallel the number of concurrent threads calling the method
-     * @param duration (ms) each thread calls the subject's method for the duration in ms.
-     * 
-     * @throws Exception if any of the concurrent threads failed running the subject's method
-     */
-    public static void runDuration( Object subject, String method, int parallel, long duration ) throws Exception {
-    	run( subject, method, parallel, 1, duration);
-    }
-    
-    @Override
-    public void run() {
-    	try {
-	    	if ( getDuration() > 0 ) {
-	    		long startTime = System.currentTimeMillis();
-	    		long now = System.currentTimeMillis();
-	    		do {
-	    			doSubjectMethodCall();
-	    			yield();
-	    			now = System.currentTimeMillis();
-	    		} while( startTime + getDuration() > now );
-	    	} else {
-	    		for ( int i= 0; i < getRepetitions(); i++ ) {
-	    			doSubjectMethodCall();
-	    			yield();
-	    		}
-	    	}
-    	} catch ( Throwable t ) {
-    		error = t;
-    	}
-    }
-    
-    //-------------------------------------------------------------------------
-    //PROTECTED METHODS
-    //-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
-    //-------------------------------------------------------------------------
-    //PRIVATE METHODS
-    //-------------------------------------------------------------------------
+	public AsyncTestRunner(Object subject, String method) {
+		this.subject = subject;
+		this.method = method;
+	}
 
-    public static void run( Object subject, String method, int parallel, int repetitions, long duration ) throws Exception {
-    	AsyncTestRunner[] runners = new AsyncTestRunner[parallel];
-    	for( int i=0; i < runners.length; i++) {
-    		AsyncTestRunner runner = new AsyncTestRunner(subject, method);
-    		if ( duration > 0 ) {
-    			runner.setDuration(duration);
-    		}
-    		runner.setRepetitions(repetitions);
-    		runners[i] = runner;
-    	}
-    	for( int i=0; i < runners.length; i++) {
-    		runners[i].start();
-    	}
-    	for( int i=0; i < runners.length; i++) {
-    		runners[i].join();
-    	}
-    	for( int i=0; i < runners.length; i++) {
-    		if ( runners[i].getError() != null ) {
-    			throw new Exception("Runner " + i + " failed on method "+method, runners[i].getError());
-    		}
-    	}    	
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Run an object's method in parallel for N repetitions
+	 * 
+	 * @param subject
+	 *            the object who's method is called
+	 * @param method
+	 *            the methodname on the subject which is called
+	 * @param parallel
+	 *            the number of concurrent threads calling the method
+	 * @param repetitions
+	 *            each thread calls the subject's method repetition times
+	 * 
+	 * @throws Exception
+	 *             if any of the concurrent threads failed running the subject's method
+	 */
+	public static void runRepetitions(Object subject, String method, int parallel, int repetitions) throws Exception {
+		run(subject, method, parallel, repetitions, 0);
+	}
+
+	/**
+	 * Run an object's method in parallel for duration
+	 * 
+	 * @param subject
+	 *            the object who's method is called
+	 * @param method
+	 *            the methodname on the subject which is called
+	 * @param parallel
+	 *            the number of concurrent threads calling the method
+	 * @param duration
+	 *            (ms) each thread calls the subject's method for the duration in ms.
+	 * 
+	 * @throws Exception
+	 *             if any of the concurrent threads failed running the subject's method
+	 */
+	public static void runDuration(Object subject, String method, int parallel, long duration) throws Exception {
+		run(subject, method, parallel, 1, duration);
+	}
+
+	@Override
+	public void run() {
+		try {
+			if (getDuration() > 0) {
+				long startTime = System.currentTimeMillis();
+				long now = System.currentTimeMillis();
+				do {
+					doSubjectMethodCall();
+					yield();
+					now = System.currentTimeMillis();
+				} while (startTime + getDuration() > now);
+			} else {
+				for (int i = 0; i < getRepetitions(); i++) {
+					doSubjectMethodCall();
+					yield();
+				}
+			}
+		} catch (Throwable t) {
+			error = t;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	public static void run(Object subject, String method, int parallel, int repetitions, long duration)
+			throws Exception {
+		AsyncTestRunner[] runners = new AsyncTestRunner[parallel];
+		for (int i = 0; i < runners.length; i++) {
+			AsyncTestRunner runner = new AsyncTestRunner(subject, method);
+			if (duration > 0) {
+				runner.setDuration(duration);
+			}
+			runner.setRepetitions(repetitions);
+			runners[i] = runner;
+		}
+		for (int i = 0; i < runners.length; i++) {
+			runners[i].start();
+		}
+		for (int i = 0; i < runners.length; i++) {
+			runners[i].join();
+		}
+		for (int i = 0; i < runners.length; i++) {
+			if (runners[i].getError() != null) {
+				throw new Exception("Runner " + i + " failed on method " + method, runners[i].getError());
+			}
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void doSubjectMethodCall() throws Throwable {
-    	Class clazz = getSubject().getClass();
-    	Method m = clazz.getMethod(getMethod(), new Class[0]);
-    	try {
-    		m.invoke(getSubject(), new Object[0]);
-    	} catch ( InvocationTargetException e ) {
-    		throw e.getTargetException();
-    	}
-    }
-    
-    //-------------------------------------------------------------------------
-    //PUBLIC ACCESSORS (GETTERS / SETTERS)
-    //-------------------------------------------------------------------------
+		Class clazz = getSubject().getClass();
+		Method m = clazz.getMethod(getMethod(), new Class[0]);
+		try {
+			m.invoke(getSubject(), new Object[0]);
+		} catch (InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	/**
 	 * @return Returns the error.
@@ -143,7 +169,8 @@ public class AsyncTestRunner extends Thread {
 	}
 
 	/**
-	 * @param error The error to set.
+	 * @param error
+	 *            The error to set.
 	 */
 	public void setError(Throwable error) {
 		this.error = error;
@@ -157,7 +184,8 @@ public class AsyncTestRunner extends Thread {
 	}
 
 	/**
-	 * @param repetitions The repetitions to set.
+	 * @param repetitions
+	 *            The repetitions to set.
 	 */
 	public void setRepetitions(int repetitions) {
 		this.repetitions = repetitions;
@@ -171,7 +199,8 @@ public class AsyncTestRunner extends Thread {
 	}
 
 	/**
-	 * @param subject The subject to set.
+	 * @param subject
+	 *            The subject to set.
 	 */
 	public void setSubject(Object subject) {
 		this.subject = subject;
@@ -185,7 +214,8 @@ public class AsyncTestRunner extends Thread {
 	}
 
 	/**
-	 * @param method The method to set.
+	 * @param method
+	 *            The method to set.
 	 */
 	public void setMethod(String method) {
 		this.method = method;
@@ -199,11 +229,11 @@ public class AsyncTestRunner extends Thread {
 	}
 
 	/**
-	 * @param duration The duration to set.
+	 * @param duration
+	 *            The duration to set.
 	 */
 	public void setDuration(long duration) {
 		this.duration = duration;
 	}
-    
 
 }

@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.lib.zone.service;
 
 import static org.junit.Assert.assertEquals;
@@ -15,38 +33,36 @@ import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-
 @ContextConfiguration
-
-//@TransactionConfiguration(transactionManager="tdmx.lib.zone.TransactionManager")
-//@Transactional("ZoneDB")
+// @TransactionConfiguration(transactionManager="tdmx.lib.zone.TransactionManager")
+// @Transactional("ZoneDB")
 public class ZoneServiceRepositoryUnitTest {
 
 	@Autowired
 	private ZoneService service;
-	
-//	@Autowired
-//	private AuthorizedAgentDao dao;
-	
+
+	// @Autowired
+	// private AuthorizedAgentDao dao;
+
 	private String zoneApex;
-	
+
 	@Before
 	public void doSetup() throws Exception {
 		zoneApex = "zone.root.test";
-		
+
 		Zone az = ZoneFacade.createZone(zoneApex);
-		
+
 		service.createOrUpdate(az);
 	}
-	
+
 	@After
 	public void doTeardown() {
 		Zone az = service.findByZoneApex(zoneApex);
-		if ( az != null ) {
+		if (az != null) {
 			service.delete(az);
 		}
 	}
-	
+
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(service);
@@ -56,15 +72,15 @@ public class ZoneServiceRepositoryUnitTest {
 	public void testLookup() throws Exception {
 		Zone az = service.findByZoneApex(zoneApex);
 		assertNotNull(az);
-		assertEquals(zoneApex,az.getZoneApex());
+		assertEquals(zoneApex, az.getZoneApex());
 	}
-	
+
 	@Test
 	public void testLookup_NotFound() throws Exception {
 		Zone az = service.findByZoneApex("gugus");
 		assertNull(az);
 	}
-	
+
 	@Test
 	public void testModify() throws Exception {
 		Zone az = service.findByZoneApex(zoneApex);
@@ -72,7 +88,7 @@ public class ZoneServiceRepositoryUnitTest {
 
 		Zone az2 = service.findByZoneApex(zoneApex);
 
-		assertEquals(az.getZoneApex(),az2.getZoneApex());
+		assertEquals(az.getZoneApex(), az2.getZoneApex());
 	}
 
 }

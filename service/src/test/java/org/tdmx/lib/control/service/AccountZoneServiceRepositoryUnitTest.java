@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.lib.control.service;
 
 import static org.junit.Assert.assertEquals;
@@ -18,39 +36,37 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AuthorizationStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-
 @ContextConfiguration
-
-//@TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-//@Transactional("ControlDB")
+// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
+// @Transactional("ControlDB")
 public class AccountZoneServiceRepositoryUnitTest {
 
 	@Autowired
 	private AccountZoneService service;
-	
-//	@Autowired
-//	private AuthorizedAgentDao dao;
-	
+
+	// @Autowired
+	// private AuthorizedAgentDao dao;
+
 	private String zoneApex;
-	
+
 	@Before
 	public void doSetup() throws Exception {
 		zoneApex = "zone.root.test";
 		PKIXCredential za = CredentialFacade.createZAC(zoneApex);
-		
+
 		AccountZone az = AccountZoneFacade.createAccountZone(za.getPublicCert());
-		
+
 		service.createOrUpdate(az);
 	}
-	
+
 	@After
 	public void doTeardown() {
 		AccountZone az = service.findByZoneApex(zoneApex);
-		if ( az != null ) {
+		if (az != null) {
 			service.delete(az);
 		}
 	}
-	
+
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(service);
@@ -63,16 +79,16 @@ public class AccountZoneServiceRepositoryUnitTest {
 		assertNotNull(az.getAccountId());
 		assertNotNull(az.getAuthorizationStatus());
 		assertNotNull(az.getSegment());
-		assertEquals(zoneApex,az.getZoneApex());
+		assertEquals(zoneApex, az.getZoneApex());
 		assertNotNull(az.getZonePartitionId());
 	}
-	
+
 	@Test
 	public void testLookup_NotFound() throws Exception {
 		AccountZone az = service.findByZoneApex("gugus");
 		assertNull(az);
 	}
-	
+
 	@Test
 	public void testModify() throws Exception {
 		AccountZone az = service.findByZoneApex(zoneApex);
@@ -81,11 +97,11 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 		AccountZone az2 = service.findByZoneApex(zoneApex);
 		assertEquals(AuthorizationStatus.BLOCKED, az2.getAuthorizationStatus());
-		
-		assertEquals(az.getAccountId(),az2.getAccountId());
-		assertEquals(az.getSegment(),az2.getSegment());
-		assertEquals(az.getZoneApex(),az2.getZoneApex());
-		assertEquals(az.getZonePartitionId(),az2.getZonePartitionId());
+
+		assertEquals(az.getAccountId(), az2.getAccountId());
+		assertEquals(az.getSegment(), az2.getSegment());
+		assertEquals(az.getZoneApex(), az2.getZoneApex());
+		assertEquals(az.getZonePartitionId(), az2.getZonePartitionId());
 	}
 
 }

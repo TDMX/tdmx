@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application;
 
 import java.io.BufferedReader;
@@ -42,75 +60,73 @@ import org.tdmx.console.application.service.SystemSettingsServiceImpl;
 
 public class AdministrationImpl implements Administration, IInitializer {
 
-	//TODO expose RootCAList to UI - with RootCAListService
-	
-	//TODO expose DNSResolverList to UI
-	
-	//TODO use cleaner toString-stringBuilder / equals/EqualsBuilder / hashcode/HashcodeBuilder
-	
-	//TODO domain object search fields
-	
-	//TODO - DnsResolverList DNS functional test result TXT, IP
+	// TODO expose RootCAList to UI - with RootCAListService
 
-	//TODO - Pkix RootCA list load/save to storage
-	
-	//TODO - AuditService
+	// TODO expose DNSResolverList to UI
+
+	// TODO use cleaner toString-stringBuilder / equals/EqualsBuilder / hashcode/HashcodeBuilder
+
+	// TODO domain object search fields
+
+	// TODO - DnsResolverList DNS functional test result TXT, IP
+
+	// TODO - Pkix RootCA list load/save to storage
+
+	// TODO - AuditService
 	// file backing 1000 records in memory, filename listing
-	
-	//TODO - SystemTrustStoreUpdateJob merge into system setting job
-	
+
+	// TODO - SystemTrustStoreUpdateJob merge into system setting job
+
 	//
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
 	public static final String CONFIGFILE_PROPERTY = "org.tdmx.console.config";
 	public static final String CERTFILE_PROPERTY = "org.tdmx.console.certfile";
 	public static final String PASSPHRASE_PROPERTY = "org.tdmx.console.passphrase";
-	
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private String configFilePath = null;
 	private String certFilePath = null;
-	
-	private ObjectRegistryImpl registry = new ObjectRegistryImpl();
-	private SearchServiceImpl searchService = new SearchServiceImpl();
-	private BackgroundJobRegistryImpl jobRegistry = new BackgroundJobRegistryImpl();
 
-	private SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
-	private PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
-	private ProblemRegistry problemRegistry = new ProblemRegistryImpl();
-	private ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
-	
-	private SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
-	private DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
-	private CertificateServiceImpl certificateService = new CertificateServiceImpl();
-	private CertificateAuthorityServiceImpl certificateAuthorityService = new CertificateAuthorityServiceImpl();
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+	private final ObjectRegistryImpl registry = new ObjectRegistryImpl();
+	private final SearchServiceImpl searchService = new SearchServiceImpl();
+	private final BackgroundJobRegistryImpl jobRegistry = new BackgroundJobRegistryImpl();
+
+	private final SystemTrustStoreImpl trustStore = new SystemTrustStoreImpl();
+	private final PrivateKeyStoreImpl keyStore = new PrivateKeyStoreImpl();
+	private final ProblemRegistry problemRegistry = new ProblemRegistryImpl();
+	private final ServiceProviderStoreImpl store = new ServiceProviderStoreImpl();
+
+	private final SystemSettingsServiceImpl systemSettingService = new SystemSettingsServiceImpl();
+	private final DnsResolverServiceImpl dnsResolverService = new DnsResolverServiceImpl();
+	private final CertificateServiceImpl certificateService = new CertificateServiceImpl();
+	private final CertificateAuthorityServiceImpl certificateAuthorityService = new CertificateAuthorityServiceImpl();
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void init(Application application) {
-		((AdminApplication)application).setAdministration(this);
-		
-		configFilePath = System.getProperty(CONFIGFILE_PROPERTY,"config.xml");
-		certFilePath = System.getProperty(CERTFILE_PROPERTY,"certs.pkcs12");
+		((AdminApplication) application).setAdministration(this);
+
+		configFilePath = System.getProperty(CONFIGFILE_PROPERTY, "config.xml");
+		certFilePath = System.getProperty(CERTFILE_PROPERTY, "certs.pkcs12");
 		String passPhrase = System.getProperty(PASSPHRASE_PROPERTY);
-		if ( passPhrase == null ) {
+		if (passPhrase == null) {
 			System.out.println("Enter passphrase:");
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			try {
 				passPhrase = br.readLine();
-		    } catch (IOException ioe) {
-		    	throw new RuntimeException("Unable to read passphrase from stdin.");
-		    }
+			} catch (IOException ioe) {
+				throw new RuntimeException("Unable to read passphrase from stdin.");
+			}
 		}
 
-		trustStore = new SystemTrustStoreImpl();
-		
 		keyStore.setFilename(certFilePath);
 		keyStore.setKeystoreType("pkcs12");
 		keyStore.setPassphrase(passPhrase);
@@ -129,15 +145,15 @@ public class AdministrationImpl implements Administration, IInitializer {
 			ProblemDO p = new ProblemDO(ProblemCode.KEY_STORE_IO_EXCEPTION, e);
 			problemRegistry.addProblem(p);
 		}
-		
+
 		store.setFilename(configFilePath);
 		ServiceProviderStorage content = null;
 		try {
 			content = store.load();
-		} catch ( IOException e ) {
+		} catch (IOException e) {
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_READ_IO, e);
 			problemRegistry.addProblem(p);
-		} catch ( JAXBException e) {
+		} catch (JAXBException e) {
 			ProblemDO p = new ProblemDO(ProblemCode.CONFIGURATION_FILE_PARSE, e);
 			problemRegistry.addProblem(p);
 		}
@@ -151,17 +167,17 @@ public class AdministrationImpl implements Administration, IInitializer {
 		// Configure all Services.
 		//
 		systemSettingService.setObjectRegistry(registry);
-		
+
 		dnsResolverService.setObjectRegistry(registry);
 		dnsResolverService.setSearchService(searchService);
-		
+
 		certificateService.setObjectRegistry(registry);
 		certificateService.setSearchService(searchService);
-		
+
 		certificateAuthorityService.setObjectRegistry(registry);
 		certificateAuthorityService.setSearchService(searchService);
 		certificateAuthorityService.setCertificateService(certificateService);
-		
+
 		// Configure all Jobs and wire all services they need.
 		//
 		StateStorageJob storageJob = new StateStorageJob();
@@ -174,7 +190,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		storageJob.init();
 		registry.setChangeListener(storageJob);
 		jobRegistry.addBackgroundJob(storageJob);
-		
+
 		SystemTrustStoreUpdateJob trustStoreJob = new SystemTrustStoreUpdateJob();
 		trustStoreJob.setProblemRegistry(problemRegistry);
 		trustStoreJob.setSearchService(searchService);
@@ -182,7 +198,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		trustStoreJob.setName("TrustStore");
 		trustStoreJob.init();
 		jobRegistry.addBackgroundJob(trustStoreJob);
-		
+
 		SystemPropertySettingsUpdateJob systemUpdateJob = new SystemPropertySettingsUpdateJob();
 		systemUpdateJob.setProblemRegistry(problemRegistry);
 		systemUpdateJob.setSearchService(searchService);
@@ -192,7 +208,7 @@ public class AdministrationImpl implements Administration, IInitializer {
 		systemUpdateJob.init();
 		jobRegistry.addBackgroundJob(systemUpdateJob);
 
-		//TODO make dependent on system property
+		// TODO make dependent on system property
 		DevelopmentInitializationJob devInitJob = new DevelopmentInitializationJob();
 		devInitJob.setProblemRegistry(problemRegistry);
 		devInitJob.setObjectRegistry(registry);
@@ -201,39 +217,37 @@ public class AdministrationImpl implements Administration, IInitializer {
 		devInitJob.init();
 		// we don't add the systemInitJob to the jobRegistry
 		// so it is not exposed to the search / object registry
-		
+
 		// finally initialize the searchService where the jobs may already
 		// have made changes to the objectRegistry
 		searchService.setObjectRegistry(registry);
 		searchService.initialize();
-		
+
 		DomainObjectChangesHolder jobChanges = new DomainObjectChangesHolder();
 		jobChanges.registerNew(storageJob);
 		jobChanges.registerNew(trustStoreJob);
 		jobChanges.registerNew(systemUpdateJob);
 		searchService.update(jobChanges);
-		
+
 	}
 
 	@Override
 	public void destroy(Application application) {
 		jobRegistry.shutdownAndClear();
-		((AdminApplication)application).setAdministration(null);
+		((AdminApplication) application).setAdministration(null);
 	}
 
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
-
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
-
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	@Override
 	public ObjectRegistry getObjectRegistry() {

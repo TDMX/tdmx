@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.search.match;
 
 import org.tdmx.console.application.search.SearchableObjectField;
@@ -6,52 +24,52 @@ import org.tdmx.console.application.search.SearchableObjectField;
  * Matching a Time value against a Time field.
  * 
  * @author Peter
- *
+ * 
  */
 public class TimeEqualityMatch implements MatchFunction {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 
-	private Integer time;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+	private final Integer time;
 
-	public TimeEqualityMatch( Integer time ) {
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	public TimeEqualityMatch(Integer time) {
 		this.time = time;
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public boolean match(SearchableObjectField field) {
-		return time.equals((Integer)field.searchValue);
+		return time.equals(field.searchValue);
 	}
 
 	@Override
 	public String toString() {
-		return "=T="+MatchValueFormatter.getTime(time);
+		return "=T=" + MatchValueFormatter.getTime(time);
 	}
-	
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

@@ -10,33 +10,40 @@ import org.tdmx.console.base.IProtectedPage;
 import org.tdmx.console.layout.BasePage;
 import org.tdmx.console.layout.FixBootstrapStylesCssResourceReference;
 
-
 public final class DomainPage extends BasePage implements IProtectedPage {
-	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public DomainPage() {
 		createComponents();
 	}
-	
+
 	private void createComponents() {
 		AjaxLazyLoadPanel domainList = new AjaxLazyLoadPanel("domainList") {
-				@Override
-				public Component getLazyLoadComponent(String id) {
-				        return new DomainListPanel(id);
-				}
-				
-				@Override
-				public Component getLoadingComponent(String markupId) {
-					IRequestHandler handler = new ResourceReferenceRequestHandler(
-							FixBootstrapStylesCssResourceReference.INDICATOR);
-						return new Label(markupId, "<img alt=\"Loading...\" src=\"" +
-							RequestCycle.get().urlFor(handler) + "\"/>").setEscapeModelStrings(false);
-				}
-			};
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getLazyLoadComponent(String id) {
+				return new DomainListPanel(id);
+			}
+
+			@Override
+			public Component getLoadingComponent(String markupId) {
+				IRequestHandler handler = new ResourceReferenceRequestHandler(
+						FixBootstrapStylesCssResourceReference.INDICATOR);
+				return new Label(markupId, "<img alt=\"Loading...\" src=\"" + RequestCycle.get().urlFor(handler)
+						+ "\"/>").setEscapeModelStrings(false);
+			}
+		};
 		domainList.setOutputMarkupId(true);
-		
+
 		addOrReplace(domainList);
 	}
-	
-
 
 }

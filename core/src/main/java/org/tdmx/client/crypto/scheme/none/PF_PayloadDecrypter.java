@@ -1,5 +1,20 @@
-/**
+/*
+ * TDMX - Trusted Domain Messaging eXchange
  * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
  */
 package org.tdmx.client.crypto.scheme.none;
 
@@ -26,6 +41,7 @@ import org.tdmx.client.crypto.scheme.Decrypter;
 import org.tdmx.client.crypto.stream.SignatureVerifyingInputStream;
 
 /**
+ * <pre>
  * decryption( PF, (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
  *{
  * E := AES256/CTR(SKe,IVe,ZLib-compress(M||Sign(K-a,M||long-byte-len(M))))
@@ -39,20 +55,22 @@ import org.tdmx.client.crypto.stream.SignatureVerifyingInputStream;
  *   where decompression fails if invalid stream or if decompressed length > long-byte-len(M) or stream ends before byte-len(M) bytes are decompressed.
  * verify(K-A, M, Sign(K-a,M)) and fail if signature incorrect.
  *}
- *
+ *</pre>
+ * 
  * @author Peter
- *
+ * 
  */
 public class PF_PayloadDecrypter implements Decrypter {
 
-	private KeyPair ownSigningKey;
-	private PublicKey otherSigningKey;
-	private byte[] sessionKey;
-	private byte[] passphrase;
-	private boolean rsaEnabled;
-	private StreamCipherAlgorithm payloadCipher;
-	
-	public PF_PayloadDecrypter( KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] passphrase, byte[] sessionKey, boolean rsaEnabled, StreamCipherAlgorithm payloadCipher ) throws CryptoException {
+	private final KeyPair ownSigningKey;
+	private final PublicKey otherSigningKey;
+	private final byte[] sessionKey;
+	private final byte[] passphrase;
+	private final boolean rsaEnabled;
+	private final StreamCipherAlgorithm payloadCipher;
+
+	public PF_PayloadDecrypter(KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] passphrase, byte[] sessionKey,
+			boolean rsaEnabled, StreamCipherAlgorithm payloadCipher) throws CryptoException {
 		this.ownSigningKey = ownSigningKey;
 		this.otherSigningKey = otherSigningKey;
 		this.sessionKey = sessionKey;
@@ -61,47 +79,52 @@ public class PF_PayloadDecrypter implements Decrypter {
 		this.payloadCipher = payloadCipher;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.tdmx.client.crypto.scheme.Decrypter#getInputStream()
 	 */
 	@Override
-	public InputStream getInputStream( InputStream encryptedData, byte[] encryptionContext ) throws CryptoException {
-		if ( encryptionContext == null ) {
+	public InputStream getInputStream(InputStream encryptedData, byte[] encryptionContext) throws CryptoException {
+		if (encryptionContext == null) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCRYPTION_CONTEXT_MISSING);
 		}
-		if ( encryptionContext.length < 8 ) {
+		if (encryptionContext.length < 8) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCRYPTION_CONTEXT_INVALID);
-			
+
 		}
 		byte[] lengthBytes = ByteArray.subArray(encryptionContext, 0, 8);
 		long plaintextLength = NumberToOctetString.bytesToLong(lengthBytes);
-		
+
 		byte[] messageKeyBytes = ByteArray.subArray(encryptionContext, 8, encryptionContext.length - 8);
-		if ( rsaEnabled ) {
-			AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey( ownSigningKey.getPublic() );
-			messageKeyBytes = rsa.decrypt(ownSigningKey.getPrivate(),messageKeyBytes);
+		if (rsaEnabled) {
+			AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey(ownSigningKey
+					.getPublic());
+			messageKeyBytes = rsa.decrypt(ownSigningKey.getPrivate(), messageKeyBytes);
 		}
-		
-		byte[] sharedSecret = ByteArray.append(passphrase, messageKeyBytes );
-		
-		byte[] kdf = KeyDiversificationFunction.PBKDF2WithHmacSHA1(sharedSecret, sessionKey, 20000, payloadCipher.getKeyLength()*8+payloadCipher.getIvLength()*8);
+
+		byte[] sharedSecret = ByteArray.append(passphrase, messageKeyBytes);
+
+		byte[] kdf = KeyDiversificationFunction.PBKDF2WithHmacSHA1(sharedSecret, sessionKey, 20000,
+				payloadCipher.getKeyLength() * 8 + payloadCipher.getIvLength() * 8);
 
 		byte[] aesKey = ByteArray.subArray(kdf, 0, payloadCipher.getKeyLength());
 		byte[] aesIv = ByteArray.subArray(kdf, payloadCipher.getKeyLength(), payloadCipher.getIvLength());
-		
+
 		SecretKeySpec secretKey = new SecretKeySpec(aesKey, payloadCipher.getAlgorithm());
-		IvParameterSpec secretIv =  new IvParameterSpec(aesIv);
-	
-		System.out.println("PF KEY: " + ByteArray.asHex(aesKey));
-		System.out.println("PF IV: " + ByteArray.asHex(aesIv));
+		IvParameterSpec secretIv = new IvParameterSpec(aesIv);
+
+		// TODO System.out.println("PF KEY: " + ByteArray.asHex(aesKey));
+		// TODO System.out.println("PF IV: " + ByteArray.asHex(aesIv));
 
 		Cipher c = payloadCipher.getDecrypter(secretKey, secretIv);
 		CipherInputStream cis = new CipherInputStream(encryptedData, c);
-		
+
 		InflaterInputStream zis = new InflaterInputStream(cis, new Inflater(false), 512);
-		SignatureVerifyingInputStream sis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_384_RSA, otherSigningKey, plaintextLength, true, zis);
-		
+		SignatureVerifyingInputStream sis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_384_RSA,
+				otherSigningKey, plaintextLength, true, zis);
+
 		return sis;
 	}
-	
+
 }

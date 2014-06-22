@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.layout;
 
 import java.util.ArrayList;
@@ -39,12 +57,16 @@ import de.agilecoders.wicket.core.markup.html.references.BootstrapJavaScriptRefe
 import de.agilecoders.wicket.core.settings.IBootstrapSettings;
 import de.agilecoders.wicket.core.settings.ITheme;
 
-
 /**
  * Base class for application pages
  * 
  */
 public abstract class BasePage extends GenericWebPage {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public CustomSession getCustomSession() {
 		return (CustomSession) getSession();
@@ -59,70 +81,77 @@ public abstract class BasePage extends GenericWebPage {
 		createComponents();
 	}
 
-	
 	private void createComponents() {
 		add(new HtmlTag("html"));
 		add(new OptimizedMobileViewportMetaTag("viewport"));
 		add(new ChromeFrameMetaTag("chrome-frame"));
 		add(new MetaTag("description", Model.of("description"), Model.of("TBD description")));
 		add(new MetaTag("author", Model.of("author"), Model.of("TBD authors")));
-		
+
 		add(createNavigationBar("navigationBar"));
-		
+
 		add(new HeaderResponseContainer("footer-container", "footer-container"));
-		
+
 		final String packageName = getClass().getPackage().getName();
-		//add(new TopHeader("topNavigation", Strings.afterLast(packageName, '.'), this));
+		// add(new TopHeader("topNavigation", Strings.afterLast(packageName, '.'), this));
 		add(new LeftNavigation("leftNavigation"));
-		//add(new Footer("footer"));
+		// add(new Footer("footer"));
 	}
-	
-	
+
 	protected Navbar createNavigationBar(String markupId) {
-        Navbar navbar = new Navbar(markupId);
+		Navbar navbar = new Navbar(markupId);
 
-        navbar.setPosition(Navbar.Position.TOP);
+		navbar.setPosition(Navbar.Position.TOP);
 
-        // show brand name
-        navbar.brandName(Model.of("TDMX Console"));
+		// show brand name
+		navbar.brandName(Model.of("TDMX Console"));
 
-        navbar.addComponents(NavbarComponents.transform(Navbar.ComponentPosition.LEFT));
+		navbar.addComponents(NavbarComponents.transform(Navbar.ComponentPosition.LEFT));
 
-        DropDownButton themesDropdown = new NavbarDropDownButton(Model.of("Themes")) {
-        	
-            @Override
-            public boolean isActive(Component item) {
-            	return false;
-            }
+		DropDownButton themesDropdown = new NavbarDropDownButton(Model.of("Themes")) {
 
-            @Override
-            protected List<AbstractLink> newSubMenuButtons(final String buttonMarkupId) {
-                final List<AbstractLink> subMenu = new ArrayList<AbstractLink>();
-                subMenu.add(new MenuHeader(Model.of("all available themes:")));
-                //subMenu.add(new MenuDivider());
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
-                final IBootstrapSettings settings = Bootstrap.getSettings(getApplication());
-                final List<ITheme> themes = settings.getThemeProvider().available();
+			@Override
+			public boolean isActive(Component item) {
+				return false;
+			}
 
-                for (final ITheme theme : themes) {
-                    PageParameters params = new PageParameters();
-                    params.set("theme", theme.name());
-                    subMenu.add(new MenuBookmarkablePageLink<Page>(getPageClass(), params, Model.of(theme.name())));
-                }
-                
-                return subMenu;
-            }
-        }.setIconType(IconType.book);
-        //dropdown.add(new DropDownAutoOpen());
-        
-        NavbarButton userNameButon = new NavbarButton(ProfilePage.class,
-        		Model.of(getCustomSession().getUser().getFirstName() + " " + 
-        				getCustomSession().getUser().getLastName())
-        ).setIconType(IconType.user);
-        
-       // NavbarButton inspectorButon = new NavbarButton(InspectorPage.class, Model.of(" ")).setIconType(IconType.eyeopen);
-        
+			@Override
+			protected List<AbstractLink> newSubMenuButtons(final String buttonMarkupId) {
+				final List<AbstractLink> subMenu = new ArrayList<AbstractLink>();
+				subMenu.add(new MenuHeader(Model.of("all available themes:")));
+				// subMenu.add(new MenuDivider());
+
+				final IBootstrapSettings settings = Bootstrap.getSettings(getApplication());
+				final List<ITheme> themes = settings.getThemeProvider().available();
+
+				for (final ITheme theme : themes) {
+					PageParameters params = new PageParameters();
+					params.set("theme", theme.name());
+					subMenu.add(new MenuBookmarkablePageLink<Page>(getPageClass(), params, Model.of(theme.name())));
+				}
+
+				return subMenu;
+			}
+		}.setIconType(IconType.book);
+		// dropdown.add(new DropDownAutoOpen());
+
+		NavbarButton userNameButon = new NavbarButton(ProfilePage.class, Model.of(getCustomSession().getUser()
+				.getFirstName() + " " + getCustomSession().getUser().getLastName())).setIconType(IconType.user);
+
+		// NavbarButton inspectorButon = new NavbarButton(InspectorPage.class,
+		// Model.of(" ")).setIconType(IconType.eyeopen);
+
 		NavbarAjaxLink loggoutButton = new NavbarAjaxLink(Model.of("Loggout")) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public void onClick(final AjaxRequestTarget target) {
 				((CustomSession) getSession()).logOut();
@@ -130,41 +159,41 @@ public abstract class BasePage extends GenericWebPage {
 
 			};
 		}.setIconType(IconType.off);
-        
-		navbar.addComponents(	//new ImmutableNavbarComponent(themesDropdown, Navbar.ComponentPosition.LEFT),
-								//new ImmutableNavbarComponent(inspectorButon, Navbar.ComponentPosition.LEFT),
-								new ImmutableNavbarComponent(userNameButon, Navbar.ComponentPosition.RIGHT),
-								new ImmutableNavbarComponent(loggoutButton, Navbar.ComponentPosition.RIGHT));
 
-        return navbar;
-    }
-	
-	
+		navbar.addComponents(
+				// new ImmutableNavbarComponent(themesDropdown, Navbar.ComponentPosition.LEFT),
+				// new ImmutableNavbarComponent(inspectorButon, Navbar.ComponentPosition.LEFT),
+				new ImmutableNavbarComponent(userNameButon, Navbar.ComponentPosition.RIGHT),
+				new ImmutableNavbarComponent(loggoutButton, Navbar.ComponentPosition.RIGHT));
+
+		return navbar;
+	}
+
 	@Override
 	public void renderHead(IHeaderResponse response) {
 		super.renderHead(response);
 
 		response.render(CssHeaderItem.forReference(FixBootstrapStylesCssResourceReference.INSTANCE));
 		response.render(JavaScriptHeaderItem.forReference(BootstrapJavaScriptReference.instance()));
-		response.render(new FilteredHeaderItem(JavaScriptHeaderItem.forReference(ApplicationJavaScript.INSTANCE), "footer-container"));
+		response.render(new FilteredHeaderItem(JavaScriptHeaderItem.forReference(ApplicationJavaScript.INSTANCE),
+				"footer-container"));
 
-		//if ("google".equalsIgnoreCase(getActiveTheme().name())) {
-		///	response.render(CssHeaderItem.forReference(DocsCssResourceReference.GOOGLE));
-		//}
+		// if ("google".equalsIgnoreCase(getActiveTheme().name())) {
+		// / response.render(CssHeaderItem.forReference(DocsCssResourceReference.GOOGLE));
+		// }
 	}
 
 	protected ITheme getActiveTheme() {
 		IBootstrapSettings settings = Bootstrap.getSettings(getApplication());
 		return settings.getActiveThemeProvider().getActiveTheme();
 	}
-	         
 
 	@Override
 	protected void onConfigure() {
 		super.onConfigure();
 		configureTheme(getPageParameters());
 	}
-	
+
 	/**
 	 * sets the theme for the current user.
 	 * 
@@ -179,6 +208,5 @@ public abstract class BasePage extends GenericWebPage {
 			settings.getActiveThemeProvider().setActiveTheme(theme.toString(""));
 		}
 	}
-
 
 }

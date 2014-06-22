@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.pages.login;
 
 import org.apache.wicket.RestartResponseAtInterceptPageException;
@@ -23,25 +41,29 @@ import de.agilecoders.wicket.core.markup.html.bootstrap.html.HtmlTag;
 import de.agilecoders.wicket.core.markup.html.bootstrap.html.MetaTag;
 import de.agilecoders.wicket.core.markup.html.bootstrap.html.OptimizedMobileViewportMetaTag;
 
-
 /**
  * Login page
  */
 public final class LoginPage extends GenericWebPage<LoginPage> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static Logger log = LoggerFactory.getLogger(LoginPage.class);
-	
+
 	private transient UIService userService = AdminApplication.getUIService();
-	
+
 	public CustomSession getCustomSession() {
 		return (CustomSession) getSession();
 	}
-	
+
 	public LoginPage() {
 		CustomSession session = getCustomSession();
 		if (session.isLoggedIn()) {
 			throw new RestartResponseAtInterceptPageException(getApplication().getHomePage());
-		} 
+		}
 		createComponents();
 	}
 
@@ -52,33 +74,37 @@ public final class LoginPage extends GenericWebPage<LoginPage> {
 		add(new ChromeFrameMetaTag("chrome-frame"));
 		add(new MetaTag("description", Model.of("description"), Model.of("TBD description")));
 		add(new MetaTag("author", Model.of("author"), Model.of("TBD authors")));
-		
+
 		add(new HeaderResponseContainer("footer-container", "footer-container"));
-		
+
 		add(new NotificationPanel("loginFeedback"));
-		
+
 		LoginForm loginForm = new LoginForm("loginForm");
 		add(loginForm);
 	}
-	
+
 	private class LoginForm extends StatelessForm<LoginForm> {
 
-		private LoginModel loginModel = new LoginModel();
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private final LoginModel loginModel = new LoginModel();
 
 		public LoginForm(String id) {
 			super(id);
-			
+
 			ControlGroup loginNameLabel = new ControlGroup("userNameLabel", Model.of("Username"));
 			TextField loginName = new TextField("userName", new PropertyModel(loginModel, "userName"));
 			loginName.setRequired(true);
 			loginNameLabel.add(loginName);
 			add(loginNameLabel);
-			
+
 			ControlGroup passwordLabel = new ControlGroup("passwordLabel", Model.of("Password"));
 			PasswordTextField password = new PasswordTextField("password", new PropertyModel(loginModel, "password"));
 			passwordLabel.add(password);
 			add(passwordLabel);
-			
+
 			ControlGroup loginButtonGroup = new ControlGroup("loginButtonGroup");
 			add(loginButtonGroup);
 		}
@@ -90,11 +116,11 @@ public final class LoginPage extends GenericWebPage<LoginPage> {
 				setResponsePage(getApplication().getHomePage());
 			} else {
 				User user = null; // TODO: load user
-				
+
 				if (user == null) {
 					user = userService.authenticate(loginModel.getUserName(), loginModel.getPassword());
 				}
-				
+
 				if (user != null) {
 					session.setUser(user);
 					continueToOriginalDestination();

@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.stream;
 
 import static org.junit.Assert.assertEquals;
@@ -18,57 +36,58 @@ import java.util.zip.InflaterInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 
 public class CompressionStreamTest {
 
 	FileBackedOutputStream fbos = null;
+
 	@Before
 	public void setup() {
-		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl(1,1);
+		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl(1, 1);
 		fbos = mgr.getOutputStream();
 	}
-	
+
 	@After
 	public void tearDown() {
-		if ( fbos != null ) {
+		if (fbos != null) {
 			fbos.discard();
 		}
 	}
-	
+
 	@Test
 	public void testCompressDecompress_Compress() throws IOException {
-		
-		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512, false);
-		
+
+		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, false),
+				512, false);
+
 		PrintWriter pw = new PrintWriter(zos);
 		int repeats = 10000;
-		for( int i = 0; i < repeats; i++) {
-			String contentLine = "NUM"+i;
+		for (int i = 0; i < repeats; i++) {
+			String contentLine = "NUM" + i;
 			pw.write(contentLine);
 			pw.write("\n");
 		}
 		pw.flush();
 		pw.close();
-		
-		assertTrue( fbos.isClosed() );
-		
+
+		assertTrue(fbos.isClosed());
+
 		InputStream fbis = fbos.getInputStream();
 		try {
 			InflaterInputStream zis = new InflaterInputStream(fbis, new Inflater(false));
-			
+
 			BufferedReader br = new BufferedReader(new InputStreamReader(zis));
 
 			String strLine;
 			int i = 0;
-			while ((strLine = br.readLine()) != null)   {
-				String contentLine = "NUM"+i;
-			  
+			while ((strLine = br.readLine()) != null) {
+				String contentLine = "NUM" + i;
+
 				assertEquals(contentLine, strLine);
 				i++;
 			}
-			assertEquals( repeats, i);
+			assertEquals(repeats, i);
 		} finally {
 			fbis.close();
 		}
@@ -76,36 +95,37 @@ public class CompressionStreamTest {
 
 	@Test
 	public void testCompressDecompress_Zlib() throws IOException {
-		
-		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, true), 512, false);
-		
+
+		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, true),
+				512, false);
+
 		PrintWriter pw = new PrintWriter(zos);
 		int repeats = 10000;
-		for( int i = 0; i < repeats; i++) {
-			String contentLine = "NUM"+i;
+		for (int i = 0; i < repeats; i++) {
+			String contentLine = "NUM" + i;
 			pw.write(contentLine);
 			pw.write("\n");
 		}
 		pw.flush();
 		pw.close();
-		
-		assertTrue( fbos.isClosed() );
-		
+
+		assertTrue(fbos.isClosed());
+
 		InputStream fbis = fbos.getInputStream();
 		try {
 			InflaterInputStream zis = new InflaterInputStream(fbis, new Inflater(true));
-			
+
 			BufferedReader br = new BufferedReader(new InputStreamReader(zis));
 
 			String strLine;
 			int i = 0;
-			while ((strLine = br.readLine()) != null)   {
-				String contentLine = "NUM"+i;
-			  
+			while ((strLine = br.readLine()) != null) {
+				String contentLine = "NUM" + i;
+
 				assertEquals(contentLine, strLine);
 				i++;
 			}
-			assertEquals( repeats, i);
+			assertEquals(repeats, i);
 		} finally {
 			fbis.close();
 		}
@@ -113,36 +133,36 @@ public class CompressionStreamTest {
 
 	@Test
 	public void testGZipGunzip() throws IOException {
-		
+
 		GZIPOutputStream zos = new GZIPOutputStream(fbos, false);
-		
+
 		PrintWriter pw = new PrintWriter(zos);
 		int repeats = 10000;
-		for( int i = 0; i < repeats; i++) {
-			String contentLine = "NUM"+i;
+		for (int i = 0; i < repeats; i++) {
+			String contentLine = "NUM" + i;
 			pw.write(contentLine);
 			pw.write("\n");
 		}
 		pw.flush();
 		pw.close();
-		
-		assertTrue( fbos.isClosed() );
-		
+
+		assertTrue(fbos.isClosed());
+
 		InputStream fbis = fbos.getInputStream();
 		try {
 			GZIPInputStream zis = new GZIPInputStream(fbis);
-			
+
 			BufferedReader br = new BufferedReader(new InputStreamReader(zis));
 
 			String strLine;
 			int i = 0;
-			while ((strLine = br.readLine()) != null)   {
-				String contentLine = "NUM"+i;
-			  
+			while ((strLine = br.readLine()) != null) {
+				String contentLine = "NUM" + i;
+
 				assertEquals(contentLine, strLine);
 				i++;
 			}
-			assertEquals( repeats, i);
+			assertEquals(repeats, i);
 		} finally {
 			fbis.close();
 		}

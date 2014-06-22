@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.algorithm;
 
 import java.security.InvalidKeyException;
@@ -26,13 +44,13 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 public enum AsymmetricEncryptionAlgorithm {
 
 	RSA2048(2048, "RSA", "RSA/ECB/OAEPWithSHA1AndMGF1Padding"),
-	RSA4096(4096, "RSA", "RSA/ECB/OAEPWithSHA1AndMGF1Padding"); 
+	RSA4096(4096, "RSA", "RSA/ECB/OAEPWithSHA1AndMGF1Padding");
 
 	private int keyLength;
 	private String algorithm;
 	private String transformation;
-	
-	private AsymmetricEncryptionAlgorithm(int keyLength, String algorithm, String transformation ) {
+
+	private AsymmetricEncryptionAlgorithm(int keyLength, String algorithm, String transformation) {
 		this.keyLength = keyLength;
 		this.algorithm = algorithm;
 		this.transformation = transformation;
@@ -49,14 +67,14 @@ public enum AsymmetricEncryptionAlgorithm {
 		}
 	}
 
-	public PrivateKey decodePKCS8EncodedKey( byte[] privateKeyBytes ) throws CryptoException {
+	public PrivateKey decodePKCS8EncodedKey(byte[] privateKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(algorithm);
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-			PrivateKey privateKey  = kf.generatePrivate(privateKeySpec);
-			if ( privateKey instanceof RSAPrivateKey ) {
-				int bitLen = ((RSAPrivateKey)privateKey).getModulus().bitLength();
-				if ( bitLen != keyLength ) {
+			PrivateKey privateKey = kf.generatePrivate(privateKeySpec);
+			if (privateKey instanceof RSAPrivateKey) {
+				int bitLen = ((RSAPrivateKey) privateKey).getModulus().bitLength();
+				if (bitLen != keyLength) {
 					throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID);
 				}
 			} else {
@@ -69,15 +87,15 @@ public enum AsymmetricEncryptionAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID, e);
 		}
 	}
-	
-	public PublicKey decodeX509EncodedKey( byte[] publicKeyBytes ) throws CryptoException {
+
+	public PublicKey decodeX509EncodedKey(byte[] publicKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(algorithm);
 			EncodedKeySpec eks = new X509EncodedKeySpec(publicKeyBytes);
-			PublicKey publicKey  = kf.generatePublic(eks);
-			if ( publicKey instanceof RSAPublicKey ) {
-				int bitLen = ((RSAPublicKey)publicKey).getModulus().bitLength();
-				if ( bitLen != keyLength ) {
+			PublicKey publicKey = kf.generatePublic(eks);
+			if (publicKey instanceof RSAPublicKey) {
+				int bitLen = ((RSAPublicKey) publicKey).getModulus().bitLength();
+				if (bitLen != keyLength) {
 					throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID);
 				}
 			} else {
@@ -90,55 +108,55 @@ public enum AsymmetricEncryptionAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PUBLIC_KEY_SPEC_INVALID, e);
 		}
 	}
-	
-	public byte[] encodeX509PublicKey( PublicKey publicKey ) throws CryptoException {
-		if ( !"X.509".equals(publicKey.getFormat())) {
-			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID );
+
+	public byte[] encodeX509PublicKey(PublicKey publicKey) throws CryptoException {
+		if (!"X.509".equals(publicKey.getFormat())) {
+			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return publicKey.getEncoded();
 	}
-	
-	public byte[] encrypt( PublicKey publicKey, byte[] plaintext ) throws CryptoException {
+
+	public byte[] encrypt(PublicKey publicKey, byte[] plaintext) throws CryptoException {
 		try {
 			Cipher c = Cipher.getInstance(transformation);
-	        c.init(Cipher.ENCRYPT_MODE, publicKey);
-	        return c.doFinal(plaintext);
+			c.init(Cipher.ENCRYPT_MODE, publicKey);
+			return c.doFinal(plaintext);
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING, e);
 		} catch (NoSuchPaddingException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PADDING_MISSING, e);
 		} catch (InvalidKeyException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_KEY_INVALID, e);
-		} catch (IllegalBlockSizeException e) { 
+		} catch (IllegalBlockSizeException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_BLOCKSIZE_INVALID, e);
 		} catch (BadPaddingException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PADDING_INVALID, e);
 		}
 	}
-	
-	public byte[] decrypt( PrivateKey privateKey, byte[] ciphertext ) throws CryptoException {
-        Cipher c;
+
+	public byte[] decrypt(PrivateKey privateKey, byte[] ciphertext) throws CryptoException {
+		Cipher c;
 		try {
 			c = Cipher.getInstance(transformation);
-	        c.init(Cipher.DECRYPT_MODE, privateKey);
-	        return c.doFinal(ciphertext);
+			c.init(Cipher.DECRYPT_MODE, privateKey);
+			return c.doFinal(ciphertext);
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING, e);
 		} catch (NoSuchPaddingException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PADDING_MISSING, e);
 		} catch (InvalidKeyException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_KEY_INVALID, e);
-		} catch (IllegalBlockSizeException e) { 
+		} catch (IllegalBlockSizeException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_BLOCKSIZE_INVALID, e);
 		} catch (BadPaddingException e) {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PADDING_INVALID, e);
 		}
 	}
-	
-	public static AsymmetricEncryptionAlgorithm getAlgorithmMatchingKey( PublicKey k ) throws CryptoException {
-		if ( k instanceof RSAPublicKey ) {
-			int bitLen = ((RSAPublicKey)k).getModulus().bitLength();
-			switch ( bitLen ) {
+
+	public static AsymmetricEncryptionAlgorithm getAlgorithmMatchingKey(PublicKey k) throws CryptoException {
+		if (k instanceof RSAPublicKey) {
+			int bitLen = ((RSAPublicKey) k).getModulus().bitLength();
+			switch (bitLen) {
 			case 2048:
 				return AsymmetricEncryptionAlgorithm.RSA2048;
 			case 4096:
@@ -147,11 +165,11 @@ public enum AsymmetricEncryptionAlgorithm {
 		}
 		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
 	}
-	
-	public static AsymmetricEncryptionAlgorithm getAlgorithmMatchingKey( PrivateKey k ) throws CryptoException {
-		if ( k instanceof RSAPrivateKey ) {
-			int bitLen = ((RSAPrivateKey)k).getModulus().bitLength();
-			switch ( bitLen ) {
+
+	public static AsymmetricEncryptionAlgorithm getAlgorithmMatchingKey(PrivateKey k) throws CryptoException {
+		if (k instanceof RSAPrivateKey) {
+			int bitLen = ((RSAPrivateKey) k).getModulus().bitLength();
+			switch (bitLen) {
 			case 2048:
 				return AsymmetricEncryptionAlgorithm.RSA2048;
 			case 4096:
@@ -160,7 +178,7 @@ public enum AsymmetricEncryptionAlgorithm {
 		}
 		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
 	}
-	
+
 	public int getKeyLength() {
 		return keyLength;
 	}

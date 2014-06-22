@@ -1,3 +1,22 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
+
 package org.tdmx.client.crypto.scheme.ecdh;
 
 import java.io.OutputStream;
@@ -27,6 +46,7 @@ import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
 
 /**
+ * <pre>
  * encryption( M, PF, (K-A,K-a), K-B, A-B ) -> E, L
  * {
  * This scheme passes the secret keys used to decrypt the message payload to the 
@@ -48,123 +68,128 @@ import org.tdmx.client.crypto.stream.SigningOutputStream;
  *   where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer, and short-byte-len is a single byte representing the length of A-A in bytes.
  *   A-A is a X.509 encoded EC public key - aka the sender’s messageKey
  * }
+ * </pre>
  * 
  * @author Peter
- *
+ * 
  */
 public class PF_ECDHContextCascadeEncrypter implements Encrypter {
 
-	private TemporaryBufferFactory bufferFactory;
-	
-	private KeyPair ownSigningKey;
-	private PublicKey otherSigningKey;
-	private PublicKey sessionKey;
-	private KeyPair messageKey;
-	private boolean rsaEnabled;
-	
-	private StreamCipherAlgorithm keyEncryptionCipher;
-	private SecretKeySpec keyEncryptionKey;
-	private IvParameterSpec keyEncryptionIv;
-	
+	private final TemporaryBufferFactory bufferFactory;
+
+	private final KeyPair ownSigningKey;
+	private final PublicKey otherSigningKey;
+	private final PublicKey sessionKey;
+	private final KeyPair messageKey;
+	private final boolean rsaEnabled;
+
+	private final StreamCipherAlgorithm keyEncryptionCipher;
+	private final SecretKeySpec keyEncryptionKey;
+	private final IvParameterSpec keyEncryptionIv;
+
 	private FileBackedOutputStream fbos = null;
 	private SigningOutputStream sos = null;
-	
-	private StreamCipherAlgorithm innerPayloadCipher;
-	private byte[] innerPayloadSecretKey;
-	private byte[] innerPayloadSecretIv;
-	private StreamCipherAlgorithm outerPayloadCipher;
-	private byte[] outerPayloadSecretKey;
-	private byte[] outerPayloadSecretIv;
-	
-	public PF_ECDHContextCascadeEncrypter( KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] passphrase, byte[] encodedSessionKey, TemporaryBufferFactory bufferFactory, boolean rsaEnabled, StreamCipherAlgorithm keyEncryptionCipher, StreamCipherAlgorithm innerPayloadCipher, StreamCipherAlgorithm outerPayloadCipher ) throws CryptoException {
+
+	private final StreamCipherAlgorithm innerPayloadCipher;
+	private final byte[] innerPayloadSecretKey;
+	private final byte[] innerPayloadSecretIv;
+	private final StreamCipherAlgorithm outerPayloadCipher;
+	private final byte[] outerPayloadSecretKey;
+	private final byte[] outerPayloadSecretIv;
+
+	public PF_ECDHContextCascadeEncrypter(KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] passphrase,
+			byte[] encodedSessionKey, TemporaryBufferFactory bufferFactory, boolean rsaEnabled,
+			StreamCipherAlgorithm keyEncryptionCipher, StreamCipherAlgorithm innerPayloadCipher,
+			StreamCipherAlgorithm outerPayloadCipher) throws CryptoException {
 		this.bufferFactory = bufferFactory;
 		this.rsaEnabled = rsaEnabled;
-		
+
 		this.ownSigningKey = ownSigningKey;
 		this.otherSigningKey = otherSigningKey;
-	
+
 		this.keyEncryptionCipher = keyEncryptionCipher;
 		this.innerPayloadCipher = innerPayloadCipher;
 		this.outerPayloadCipher = outerPayloadCipher;
-		
+
 		this.sessionKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(encodedSessionKey);
 		this.messageKey = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(messageKey, sessionKey);
-		
+
 		byte[] passphraseSecret = DigestAlgorithm.SHA_384.kdf(passphrase);
-		
-		byte[] kdf = DigestAlgorithm.SHA_384.kdf(ByteArray.append(encodedSessionKey,sharedSecret,passphraseSecret));
+
+		byte[] kdf = DigestAlgorithm.SHA_384.kdf(ByteArray.append(encodedSessionKey, sharedSecret, passphraseSecret));
 
 		byte[] aesKey = ByteArray.subArray(kdf, 0, keyEncryptionCipher.getKeyLength());
 		byte[] aesIv = ByteArray.subArray(kdf, keyEncryptionCipher.getKeyLength(), keyEncryptionCipher.getIvLength());
-		
+
 		keyEncryptionKey = new SecretKeySpec(aesKey, keyEncryptionCipher.getAlgorithm());
-		keyEncryptionIv =  new IvParameterSpec(aesIv);
-		
+		keyEncryptionIv = new IvParameterSpec(aesIv);
+
 		System.out.println("KeyEncryption KEY: " + ByteArray.asHex(aesKey));
 		System.out.println("KeyEncryption IV: " + ByteArray.asHex(aesIv));
-		
+
 		innerPayloadSecretKey = EntropySource.getRandomBytes(innerPayloadCipher.getKeyLength());
 		innerPayloadSecretIv = EntropySource.getRandomBytes(innerPayloadCipher.getIvLength());
 
 		System.out.println("Inner Payload KEY: " + ByteArray.asHex(innerPayloadSecretKey));
 		System.out.println("Inner Payload IV: " + ByteArray.asHex(innerPayloadSecretKey));
-		
-		
+
 		outerPayloadSecretKey = EntropySource.getRandomBytes(outerPayloadCipher.getKeyLength());
 		outerPayloadSecretIv = EntropySource.getRandomBytes(outerPayloadCipher.getIvLength());
 
 		System.out.println("Outer Payload KEY: " + ByteArray.asHex(outerPayloadSecretKey));
 		System.out.println("Outer Payload IV: " + ByteArray.asHex(outerPayloadSecretIv));
-		
+
 	}
-	
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.tdmx.client.crypto.scheme.Encrypter#getOutputStream()
 	 */
 	@Override
 	public OutputStream getOutputStream() throws CryptoException {
-		if ( fbos != null ) {
+		if (fbos != null) {
 			throw new IllegalStateException();
 		}
 		fbos = bufferFactory.getOutputStream();
-		
+
 		SecretKeySpec innerPayloadKey = innerPayloadCipher.convertKey(innerPayloadSecretKey);
 		IvParameterSpec innerPayloadIv = innerPayloadCipher.convertIv(innerPayloadSecretIv);
-		
+
 		Cipher ic = innerPayloadCipher.getEncrypter(innerPayloadKey, innerPayloadIv);
 		CipherOutputStream icos = new CipherOutputStream(fbos, ic);
-		
+
 		SecretKeySpec outerPayloadKey = outerPayloadCipher.convertKey(outerPayloadSecretKey);
 		IvParameterSpec outerPayloadIv = outerPayloadCipher.convertIv(outerPayloadSecretIv);
-		
+
 		Cipher oc = outerPayloadCipher.getEncrypter(outerPayloadKey, outerPayloadIv);
 		CipherOutputStream ocos = new CipherOutputStream(icos, oc);
-		
-		DeflaterOutputStream zos = new DeflaterOutputStream(ocos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512, false);
-		
+
+		DeflaterOutputStream zos = new DeflaterOutputStream(ocos, new Deflater(Deflater.DEFAULT_COMPRESSION, false),
+				512, false);
+
 		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
 		return sos;
 	}
 
-
 	@Override
 	public CryptoContext getResult() throws CryptoException {
-		if ( fbos == null ) {
+		if (fbos == null) {
 			throw new IllegalStateException();
 		}
-		if ( !fbos.isClosed() ) {
+		if (!fbos.isClosed()) {
 			throw new IllegalStateException();
 		}
 		byte[] msgKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(messageKey.getPublic());
 		byte[] msgKeyLen = NumberToOctetString.intToByte(msgKey.length);
 		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
-		byte[] payloadKeyBytes = ByteArray.append(innerPayloadSecretKey, innerPayloadSecretIv, outerPayloadSecretKey, outerPayloadSecretIv);
-		
-		if ( rsaEnabled ) {
-			AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey( otherSigningKey );
+		byte[] payloadKeyBytes = ByteArray.append(innerPayloadSecretKey, innerPayloadSecretIv, outerPayloadSecretKey,
+				outerPayloadSecretIv);
+
+		if (rsaEnabled) {
+			AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey(otherSigningKey);
 			payloadKeyBytes = rsa.encrypt(otherSigningKey, payloadKeyBytes);
 		}
 		byte[] encryptedKey = keyEncryptionCipher.encrypt(keyEncryptionKey, keyEncryptionIv, payloadKeyBytes);
@@ -173,6 +198,5 @@ public class PF_ECDHContextCascadeEncrypter implements Encrypter {
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, sos.getSize(), fbos.getSize());
 		return cc;
 	}
-
 
 }

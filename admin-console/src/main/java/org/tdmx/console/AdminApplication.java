@@ -1,22 +1,21 @@
-/* TDMX - Trusted Domain Messaging eXchange
- *   enables enterprise B2B messaging between separate corporations
- *   via interoperable cloud service providers. 
- *
- *   Copyright (C) 2014 Peter Klauser
- *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU Affero General Public License as
- *   published by the Free Software Foundation, either version 3 of the
- *   License, or (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU Affero General Public License for more details.
- *
- *   You should have received a copy of the GNU Affero General Public License
- *   along with this program.  If not, see http://www.gnu.org/licenses/.
-*/
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console;
 
 import org.apache.wicket.Application;
@@ -49,7 +48,6 @@ import de.agilecoders.wicket.themes.markup.html.metro.MetroTheme;
 import de.agilecoders.wicket.themes.markup.html.wicket.WicketTheme;
 import de.agilecoders.wicket.themes.settings.BootswatchThemeProvider;
 
-
 /**
  * TDMX Admin Console
  * 
@@ -58,26 +56,26 @@ import de.agilecoders.wicket.themes.settings.BootswatchThemeProvider;
 public class AdminApplication extends WebApplication {
 
 	private Administration admin;
-	
+
 	public static AdminApplication get() {
 		Application application = Application.get();
 		if (application instanceof AdminApplication == false) {
 			throw new WicketRuntimeException("The application attached to the current thread is not a "
-							+ AdminApplication.class.getSimpleName());
+					+ AdminApplication.class.getSimpleName());
 		}
 
 		return (AdminApplication) application;
 	}
-	
+
 	public static UIService getUIService() {
 		UIServiceImpl impl = new UIServiceImpl();
 		Administration a = get().getAdministration();
 		impl.setAdmin(a);
 		return impl;
 	}
-	
+
 	public AdminApplication() {
-		
+
 	}
 
 	@Override
@@ -87,33 +85,34 @@ public class AdminApplication extends WebApplication {
 
 	@Override
 	public Session newSession(Request request, Response response) {
-	    return new CustomSession(AdminApplication.this, request);
+		return new CustomSession(AdminApplication.this, request);
 	}
-	
+
 	@Override
 	protected void init() {
 		super.init();
-		
+
 		// dev utilities
 		getDebugSettings().setDevelopmentUtilitiesEnabled(false);
 		getDebugSettings().setAjaxDebugModeEnabled(false);
 		getRequestCycleSettings().addResponseFilter(new ServerAndClientTimeFilter());
-		
+
 		// wicket bootstrap
 		configureBootstrap();
-		
+
 		// javascripts to the bottom
 		setHeaderResponseDecorator(new RenderJavaScriptToFooterHeaderResponseDecorator());
-		
+
 		// Setting authorization strategy
- 		SimplePageAuthorizationStrategy authorizationStrategy = new SimplePageAuthorizationStrategy(IProtectedPage.class, LoginPage.class) {
+		SimplePageAuthorizationStrategy authorizationStrategy = new SimplePageAuthorizationStrategy(
+				IProtectedPage.class, LoginPage.class) {
 			@Override
 			protected boolean isAuthorized() {
-				return (((CustomSession)Session.get()).isLoggedIn());
+				return ((CustomSession) Session.get()).isLoggedIn();
 			}
 		};
 		getSecuritySettings().setAuthorizationStrategy(authorizationStrategy);
-		
+
 		// setting session expired error page
 		IApplicationSettings applicationSettings = getApplicationSettings();
 		applicationSettings.setPageExpiredErrorPage(LoginPage.class);
@@ -123,24 +122,25 @@ public class AdminApplication extends WebApplication {
 		mountPage("profile", ProfilePage.class);
 		mount(new MountedMapperWithoutPageComponentInfo("domain", DomainPage.class));
 		mountPage("domain/details", DomainDetailsPage.class);
-		
+
 		getMarkupSettings().setStripWicketTags(true);
 
-		
 	}
-	
+
 	/**
 	 * configures wicket-bootstrap and installs the settings.
 	 */
 	private void configureBootstrap() {
-		final ThemeProvider themeProvider = new BootswatchThemeProvider() {{
+		final ThemeProvider themeProvider = new BootswatchThemeProvider() {
+			{
 				add(new MetroTheme());
 				add(new GoogleTheme());
 				add(new WicketTheme());
 				add(new Bootstrap3Theme());
-				
+
 				defaultTheme(new GoogleTheme().name());
-		}};
+			}
+		};
 
 		final BootstrapSettings settings = new BootstrapSettings();
 		settings.setJsResourceFilterName("footer-container");
@@ -151,13 +151,9 @@ public class AdminApplication extends WebApplication {
 	public Administration getAdministration() {
 		return this.admin;
 	}
-	
+
 	public void setAdministration(Administration administration) {
 		this.admin = administration;
 	}
 
-	
 }
-
-
-

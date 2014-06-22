@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
@@ -17,30 +35,29 @@ import org.tdmx.console.domain.validation.OperationError.ERROR;
 import org.tdmx.core.system.lang.StringUtils;
 import org.xbill.DNS.ResolverConfig;
 
-
 public class DnsResolverServiceImpl implements DnsResolverService {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	public static final String SYSTEM_DNS_RESOLVER_LIST_ID = "system-dns-resolver-list";
 	public static final String SYSTEM_DNS_RESOLVER_LIST_NAME = "System";
-	
+
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public DnsResolverListDO lookup(String id) {
 		return objectRegistry.getDnsResolverList(id);
@@ -48,11 +65,11 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 
 	@Override
 	public List<DnsResolverListDO> search(String criteria) {
-		if ( StringUtils.hasText(criteria)) {
+		if (StringUtils.hasText(criteria)) {
 			List<DnsResolverListDO> result = new ArrayList<>();
 			Set<DnsResolverListDO> found = searchService.search(DomainObjectType.DnsResolverList, criteria);
-			for( DomainObject o : found ) {
-				result.add((DnsResolverListDO)o );
+			for (DomainObject o : found) {
+				result.add((DnsResolverListDO) o);
 			}
 			return result;
 		}
@@ -62,7 +79,7 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	@Override
 	public void updateSystemResolverList() {
 		DnsResolverListDO systemList = objectRegistry.getDnsResolverList(SYSTEM_DNS_RESOLVER_LIST_ID);
-		if ( systemList == null ) {
+		if (systemList == null) {
 			DomainObjectChangesHolder h = new DomainObjectChangesHolder();
 			systemList = new DnsResolverListDO();
 			systemList.setId(SYSTEM_DNS_RESOLVER_LIST_ID);
@@ -71,7 +88,7 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 			systemList.setHostnames(getSystemDnsHostnames());
 			objectRegistry.notifyAdd(systemList, h);
 			searchService.update(h);
-			// TODO audit log 
+			// TODO audit log
 		} else {
 			DnsResolverListDO systemListCopy = new DnsResolverListDO(systemList);
 			systemListCopy.setHostnames(getSystemDnsHostnames());
@@ -83,20 +100,20 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	public OperationError createOrUpdate(DnsResolverListDO resolverList) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		List<FieldError> validation = resolverList.validate();
-		if ( !validation.isEmpty() ) {
+		if (!validation.isEmpty()) {
 			return new OperationError(validation);
 		}
 		DnsResolverListDO existing = objectRegistry.getDnsResolverList(resolverList.getId());
-		if ( existing == null ) {
+		if (existing == null) {
 			objectRegistry.notifyAdd(resolverList, holder);
 			searchService.update(holder);
 		} else {
 			DomainObjectFieldChanges changes = existing.merge(resolverList);
-			if ( !changes.isEmpty() ) {
+			if (!changes.isEmpty()) {
 				objectRegistry.notifyModify(changes, holder);
 				searchService.update(holder);
-				
-				//TODO if system's hostnames change then issue audit warning
+
+				// TODO if system's hostnames change then issue audit warning
 			}
 		}
 		return null;
@@ -105,11 +122,11 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 	@Override
 	public OperationError delete(String id) {
 		// not allowed to delete the "system" DNS resolver list.
-		if ( SYSTEM_DNS_RESOLVER_LIST_ID.equals(id)) {
+		if (SYSTEM_DNS_RESOLVER_LIST_ID.equals(id)) {
 			return new OperationError(ERROR.IMMUTABLE);
 		}
 		DnsResolverListDO existing = objectRegistry.getDnsResolverList(id);
-		if ( existing == null ) {
+		if (existing == null) {
 			return new OperationError(ERROR.MISSING);
 		}
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
@@ -118,29 +135,29 @@ public class DnsResolverServiceImpl implements DnsResolverService {
 		return null;
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
 	private List<String> getSystemDnsHostnames() {
-		List<String> hosts= new ArrayList<>();
-		
+		List<String> hosts = new ArrayList<>();
+
 		String[] list = ResolverConfig.getCurrentConfig().servers();
-		if ( list != null ) {
-			for( String h : list ) {
+		if (list != null) {
+			for (String h : list) {
 				hosts.add(h);
 			}
 		}
 		return Collections.unmodifiableList(hosts);
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistry getObjectRegistry() {
 		return objectRegistry;

@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.search;
 
 import java.util.ArrayList;
@@ -25,46 +43,46 @@ import org.tdmx.console.application.domain.visit.TraversalContextHolder;
 import org.tdmx.console.application.domain.visit.TraversalFunction;
 import org.tdmx.console.application.service.ObjectRegistry;
 
-
 /**
  * 
  * @author Peter
- *
+ * 
  */
 public class SearchServiceImpl implements SearchService {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private final Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
-	//TODO search: text - reverse syntax
-	
+	// TODO search: text - reverse syntax
+
 	private ObjectRegistry objectRegistry;
-	
-	private SearchContext searchContext = new SearchContext();
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
+	private final SearchContext searchContext = new SearchContext();
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
-	public Set<DomainObject> search( DomainObjectType type, String text) {
-		SearchCriteria criteria = parse(type,text);
+	public Set<DomainObject> search(DomainObjectType type, String text) {
+		SearchCriteria criteria = parse(type, text);
 		SearchResultSet resultSet = new SearchResultSet(criteria);
-		
-		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap(criteria.getType());
-		
+
+		Map<DomainObject, List<SearchableObjectField>> objectFieldMaps = searchContext.getObjectFieldMap(criteria
+				.getType());
+
 		Iterator<Entry<DomainObject, List<SearchableObjectField>>> objectFields = objectFieldMaps.entrySet().iterator();
-		while( objectFields.hasNext()) {
+		while (objectFields.hasNext()) {
 			Entry<DomainObject, List<SearchableObjectField>> object = objectFields.next();
 			resultSet.match(object.getKey(), object.getValue());
 		}
@@ -73,7 +91,7 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public List<SearchableObjectField> getSearchableFields(DomainObject object) {
-		if ( object == null ) {
+		if (object == null) {
 			return null;
 		}
 		DomainObjectType type = object.getType();
@@ -82,16 +100,16 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	@Override
-	public void update( DomainObjectChangesHolder objects ) {
+	public void update(DomainObjectChangesHolder objects) {
 
-		for( DomainObject deletedObject : objects.deletedObjects ) {
+		for (DomainObject deletedObject : objects.deletedObjects) {
 			searchContext.removeObject(deletedObject);
 		}
-		for( DomainObject newObject : objects.newObjects ) {
+		for (DomainObject newObject : objects.newObjects) {
 			newObject.updateSearchFields(objectRegistry);
 			searchContext.addOrUpdateObject(newObject);
 		}
-		for( Entry<DomainObject,DomainObjectFieldChanges> entry : objects.changedMap.entrySet() ) {
+		for (Entry<DomainObject, DomainObjectFieldChanges> entry : objects.changedMap.entrySet()) {
 			DomainObject updatedObject = entry.getKey();
 			updatedObject.updateSearchFields(objectRegistry);
 			searchContext.addOrUpdateObject(updatedObject);
@@ -99,59 +117,64 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	public void initialize() {
-		if ( objectRegistry == null ) {
+		if (objectRegistry == null) {
 			log.info("Initialization without objectRegistry.");
 			return;
 		}
 		DomainObjectChangesHolder ch = new DomainObjectChangesHolder();
-		
-		Traversal.traverse( getObjectRegistry().getX509Certificates(), ch, new TraversalFunction<X509CertificateDO, DomainObjectChangesHolder>() {
-			@Override
-			public void visit(X509CertificateDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
-				holder.getResult().registerNew(object);
-			}
-		});
-		
-		Traversal.traverse( getObjectRegistry().getCertificateAutorities(), ch, new TraversalFunction<CertificateAuthorityDO, DomainObjectChangesHolder>() {
-			@Override
-			public void visit(CertificateAuthorityDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
-				holder.getResult().registerNew(object);
-			}
-		});
-		
-		Traversal.traverse( getObjectRegistry().getDnsResolverLists(), ch, new TraversalFunction<DnsResolverListDO, DomainObjectChangesHolder>() {
-			@Override
-			public void visit(DnsResolverListDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
-				holder.getResult().registerNew(object);
-			}
-		});
-		
-		Traversal.traverse( getObjectRegistry().getServiceProviders(), ch, new TraversalFunction<ServiceProviderDO, DomainObjectChangesHolder>() {
-			@Override
-			public void visit(ServiceProviderDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
-				holder.getResult().registerNew(object);
-			}
-		});
-		
-		//TODO RootCAList
+
+		Traversal.traverse(getObjectRegistry().getX509Certificates(), ch,
+				new TraversalFunction<X509CertificateDO, DomainObjectChangesHolder>() {
+					@Override
+					public void visit(X509CertificateDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+						holder.getResult().registerNew(object);
+					}
+				});
+
+		Traversal.traverse(getObjectRegistry().getCertificateAutorities(), ch,
+				new TraversalFunction<CertificateAuthorityDO, DomainObjectChangesHolder>() {
+					@Override
+					public void visit(CertificateAuthorityDO object,
+							TraversalContextHolder<DomainObjectChangesHolder> holder) {
+						holder.getResult().registerNew(object);
+					}
+				});
+
+		Traversal.traverse(getObjectRegistry().getDnsResolverLists(), ch,
+				new TraversalFunction<DnsResolverListDO, DomainObjectChangesHolder>() {
+					@Override
+					public void visit(DnsResolverListDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+						holder.getResult().registerNew(object);
+					}
+				});
+
+		Traversal.traverse(getObjectRegistry().getServiceProviders(), ch,
+				new TraversalFunction<ServiceProviderDO, DomainObjectChangesHolder>() {
+					@Override
+					public void visit(ServiceProviderDO object, TraversalContextHolder<DomainObjectChangesHolder> holder) {
+						holder.getResult().registerNew(object);
+					}
+				});
+
+		// TODO RootCAList
 
 		// do the initial insert of all objects.
 		update(ch);
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
-	private SearchCriteria parse( DomainObjectType type, String text) {
+	private SearchCriteria parse(DomainObjectType type, String text) {
 		SearchExpressionParser parser = new SearchExpressionParser(text);
 		List<SearchExpression> expressions = new ArrayList<>();
 		SearchExpression exp = null;
-		while( (exp = parser.parseNext() ) != null ) {
+		while ((exp = parser.parseNext()) != null) {
 			expressions.add(exp);
 		}
 
@@ -159,70 +182,70 @@ public class SearchServiceImpl implements SearchService {
 	}
 
 	public static class SearchContext {
-		private Map<DomainObjectType, Map<DomainObject, List<SearchableObjectField>>> objectTypeMap = new HashMap<>();
-		
+		private final Map<DomainObjectType, Map<DomainObject, List<SearchableObjectField>>> objectTypeMap = new HashMap<>();
+
 		public Map<DomainObject, List<SearchableObjectField>> getObjectFieldMap(DomainObjectType type) {
 			return objectTypeMap.get(type);
 		}
-		
+
 		public SearchContext() {
-			for( DomainObjectType dot : DomainObjectType.values() ) {
+			for (DomainObjectType dot : DomainObjectType.values()) {
 				objectTypeMap.put(dot, new ConcurrentHashMap<DomainObject, List<SearchableObjectField>>());
 			}
 		}
-		
-		public void removeObject( DomainObject object ) {
+
+		public void removeObject(DomainObject object) {
 			objectTypeMap.get(object.getType()).remove(object);
 		}
-		
-		public void addOrUpdateObject( DomainObject object ) {
+
+		public void addOrUpdateObject(DomainObject object) {
 			objectTypeMap.get(object.getType()).put(object, object.getSearchFields());
 		}
 	}
-	
+
 	public static class ObjectSearchContext {
 		List<SearchableObjectField> searchFields = new ArrayList<>();
-		
+
 		public ObjectSearchContext() {
 		}
-		
-		public void sof( DomainObject object, FieldDescriptor field, Calendar cal ) {
-			if ( cal != null ) {
+
+		public void sof(DomainObject object, FieldDescriptor field, Calendar cal) {
+			if (cal != null) {
 				add(new SearchableObjectField(object, field, cal));
 			}
 		}
-		
-		public void sof( DomainObject object, FieldDescriptor field, Number num ) {
-			if ( num != null ) {
+
+		public void sof(DomainObject object, FieldDescriptor field, Number num) {
+			if (num != null) {
 				add(new SearchableObjectField(object, field, num));
 			}
 		}
-		
-		public void sof( DomainObject object, FieldDescriptor field, String str ) {
-			if ( str != null ) {
+
+		public void sof(DomainObject object, FieldDescriptor field, String str) {
+			if (str != null) {
 				add(new SearchableObjectField(object, field, str));
 			}
 		}
-		
-		public void sof( DomainObject object, FieldDescriptor field, Boolean bool ) {
-			if ( bool != null ) {
+
+		public void sof(DomainObject object, FieldDescriptor field, Boolean bool) {
+			if (bool != null) {
 				add(new SearchableObjectField(object, field, bool));
 			}
 		}
-		
-		private void add( SearchableObjectField sof ) {
+
+		private void add(SearchableObjectField sof) {
 			searchFields.add(sof);
 		}
-		
+
 		public List<SearchableObjectField> getSearchFields() {
 			return searchFields;
 		}
 
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistry getObjectRegistry() {
 		return objectRegistry;

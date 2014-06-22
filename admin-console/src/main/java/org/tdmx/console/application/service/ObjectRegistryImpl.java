@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
@@ -26,70 +44,72 @@ import org.tdmx.console.domain.Domain;
 
 public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 	private static enum OBJECT_OPERATION {
-		Add, Modify, Remove
+		Add,
+		Modify,
+		Remove
 	};
-	
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
-	private Object syncObj = new Object();
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private final Object syncObj = new Object();
 	private boolean dirty = false;
 	private boolean cleanLoad = false;
 
 	private ObjectRegistryChangeListener changeListener;
-	
-	private DomainObjectFromStoreMapper domMapper = new DomainObjectFromStoreMapper();
-	private DomainObjectToStoreMapper storeMapper = new DomainObjectToStoreMapper();
-	
-	private Map<String, DomainObject> objects = new ConcurrentSkipListMap<>();
-	private Map<String, DomainObjectContainer<? extends DomainObject>> classMap = new TreeMap<>();
+
+	private final DomainObjectFromStoreMapper domMapper = new DomainObjectFromStoreMapper();
+	private final DomainObjectToStoreMapper storeMapper = new DomainObjectToStoreMapper();
+
+	private final Map<String, DomainObject> objects = new ConcurrentSkipListMap<>();
+	private final Map<String, DomainObjectContainer<? extends DomainObject>> classMap = new TreeMap<>();
 	private SystemPropertiesVO systemSettings;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 	public ObjectRegistryImpl() {
 		init();
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
-	public void initContent( ServiceProviderStorage content ) throws Exception {
-		if ( content == null ) {
+	public void initContent(ServiceProviderStorage content) throws Exception {
+		if (content == null) {
 			return;
 		}
-		synchronized( syncObj ) {
+		synchronized (syncObj) {
 			init();
-			if ( content.getSystemPropertyList() != null ) {
+			if (content.getSystemPropertyList() != null) {
 				systemSettings = domMapper.map(content.getSystemPropertyList());
 			} else {
 				systemSettings = new SystemPropertiesVO();
 			}
-			for ( X509Certificate pkcert : content.getX509Certificate()) {
+			for (X509Certificate pkcert : content.getX509Certificate()) {
 				X509CertificateDO cert = domMapper.map(pkcert);
 				cert.check();
 				add(cert);
 			}
-			for( ClientCA cas : content.getTdmxCa()) {
+			for (ClientCA cas : content.getTdmxCa()) {
 				CertificateAuthorityDO ca = domMapper.map(cas);
 				ca.check();
 				add(ca);
 			}
-			//TODO rootcalist
+			// TODO rootcalist
 
-			for( DNSResolverList dnslist : content.getDnsresolverList() ) {
+			for (DNSResolverList dnslist : content.getDnsresolverList()) {
 				DnsResolverListDO d = domMapper.map(dnslist);
 				d.check();
 				add(d);
 			}
-			for( ServiceProvider sp : content.getServiceprovider() ) {
+			for (ServiceProvider sp : content.getServiceprovider()) {
 				ServiceProviderDO s = domMapper.map(sp);
 				s.check();
 				add(s);
@@ -98,34 +118,34 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 			cleanLoad = true;
 		}
 	}
-	
+
 	@Override
 	public ServiceProviderStorage getContentIfDirty() throws Exception {
-		if ( !cleanLoad ) {
+		if (!cleanLoad) {
 			throw new Exception("Storage was not loaded cleanly.");
 		}
-		synchronized( syncObj ) {
-			if ( dirty ) {
+		synchronized (syncObj) {
+			if (dirty) {
 				ServiceProviderStorage store = new ServiceProviderStorage();
 				SystemPropertyList systemProps = storeMapper.map(getSystemProperties());
 				store.setSystemPropertyList(systemProps);
 
-				for( X509CertificateDO c : getX509Certificates()) {
+				for (X509CertificateDO c : getX509Certificates()) {
 					X509Certificate cert = storeMapper.map(c);
 					store.getX509Certificate().add(cert);
 				}
-				for( CertificateAuthorityDO ca : getCertificateAutorities() ) {
+				for (CertificateAuthorityDO ca : getCertificateAutorities()) {
 					ClientCA cca = storeMapper.map(ca);
 					store.getTdmxCa().add(cca);
 				}
-				
-				//TODO rootcalist
-				for( DnsResolverListDO d : getDnsResolverLists() ) {
+
+				// TODO rootcalist
+				for (DnsResolverListDO d : getDnsResolverLists()) {
 					DNSResolverList rl = storeMapper.map(d);
 					store.getDnsresolverList().add(rl);
 				}
-				
-				for( ServiceProviderDO sp : getServiceProviders() ) {
+
+				for (ServiceProviderDO sp : getServiceProviders()) {
 					ServiceProvider s = storeMapper.map(sp);
 					store.getServiceprovider().add(s);
 				}
@@ -135,7 +155,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public void notifyRemove(DomainObject obj, DomainObjectChangesHolder holder) {
 		notifyObject(OBJECT_OPERATION.Remove, obj, null, holder);
@@ -147,13 +167,13 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	}
 
 	@Override
-	public void notifyModify(DomainObjectFieldChanges changes,
-			DomainObjectChangesHolder holder) {
+	public void notifyModify(DomainObjectFieldChanges changes, DomainObjectChangesHolder holder) {
 		notifyObject(OBJECT_OPERATION.Modify, changes.getObject(), changes, holder);
 	}
 
-	private void notifyObject( OBJECT_OPERATION op, DomainObject obj, DomainObjectFieldChanges changes, DomainObjectChangesHolder holder ) {
-		synchronized( syncObj ) {
+	private void notifyObject(OBJECT_OPERATION op, DomainObject obj, DomainObjectFieldChanges changes,
+			DomainObjectChangesHolder holder) {
+		synchronized (syncObj) {
 			switch (op) {
 			case Add:
 				add(obj);
@@ -171,23 +191,23 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		}
 		notifyChangedListener();
 	}
-	
+
 	@Override
 	public List<Domain> getDomains() {
-    	List<Domain> domainList = new ArrayList<Domain>();
-    	//TODO remove
-    	domainList.add(new Domain("Domain A"));
-    	domainList.add(new Domain("Domain B"));
-    	domainList.add(new Domain("Domain C"));
-    	domainList.add(new Domain("Domain D"));
+		List<Domain> domainList = new ArrayList<Domain>();
+		// TODO remove
+		domainList.add(new Domain("Domain A"));
+		domainList.add(new Domain("Domain B"));
+		domainList.add(new Domain("Domain C"));
+		domainList.add(new Domain("Domain D"));
 
-    	// structural changes need to be made under syncObj
-    	// and set dirty to true
-		synchronized( syncObj ) {
+		// structural changes need to be made under syncObj
+		// and set dirty to true
+		synchronized (syncObj) {
 			dirty = true;
 		}
-    	notifyChangedListener();
-		return domainList; 
+		notifyChangedListener();
+		return domainList;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -206,16 +226,16 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 
 	@Override
 	public DnsResolverListDO getDnsResolverList(String id) {
-		if ( id == null ) {
+		if (id == null) {
 			return null;
 		}
 		DomainObject dom = objects.get(id);
-		if ( dom instanceof DnsResolverListDO ) {
-			return (DnsResolverListDO)dom;
+		if (dom instanceof DnsResolverListDO) {
+			return (DnsResolverListDO) dom;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public SystemPropertiesVO getSystemProperties() {
 		return systemSettings;
@@ -225,7 +245,7 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 	public void setSystemProperties(SystemPropertiesVO systemProperties) {
 		this.systemSettings = systemProperties;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<X509CertificateDO> getX509Certificates() {
@@ -235,24 +255,24 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 
 	@Override
 	public X509CertificateDO getX509Certificate(String id) {
-		if ( id == null ) {
+		if (id == null) {
 			return null;
 		}
 		DomainObject dom = objects.get(id);
-		if ( dom instanceof X509CertificateDO ) {
-			return (X509CertificateDO)dom;
+		if (dom instanceof X509CertificateDO) {
+			return (X509CertificateDO) dom;
 		}
 		return null;
 	}
 
 	@Override
 	public CertificateAuthorityDO getCertificateAuthority(String id) {
-		if ( id == null ) {
+		if (id == null) {
 			return null;
 		}
 		DomainObject dom = objects.get(id);
-		if ( dom instanceof CertificateAuthorityDO ) {
-			return (CertificateAuthorityDO)dom;
+		if (dom instanceof CertificateAuthorityDO) {
+			return (CertificateAuthorityDO) dom;
 		}
 		return null;
 	}
@@ -264,21 +284,21 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		return (List<CertificateAuthorityDO>) c.getList();
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
 	private void notifyChangedListener() {
 		ObjectRegistryChangeListener l = getChangeListener();
-		if ( l != null ) {
+		if (l != null) {
 			l.notifyObjectRegistryChanged();
 		}
 	}
-	
+
 	private void init() {
 		objects.clear();
 		classMap.clear();
@@ -286,37 +306,37 @@ public class ObjectRegistryImpl implements ObjectRegistry, ObjectRegistrySPI {
 		classMap.put(X509CertificateDO.class.getName(), new DomainObjectContainer<X509CertificateDO>());
 		classMap.put(DnsResolverListDO.class.getName(), new DomainObjectContainer<DnsResolverListDO>());
 		classMap.put(ServiceProviderDO.class.getName(), new DomainObjectContainer<ServiceProviderDO>());
-		//TODO new domain objects
+		// TODO new domain objects
 	}
-	
+
 	private DomainObjectContainer<? extends DomainObject> getContainer(Class<?> c) {
 		DomainObjectContainer<? extends DomainObject> l = classMap.get(c.getName());
 		return l;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <E extends DomainObject> void add(E obj) {
 		DomainObjectContainer<? extends DomainObject> l = classMap.get(obj.getClass().getName());
-		DomainObjectContainer<E> cl = (DomainObjectContainer<E>)l;
-		if ( cl.add(obj) ) {
+		DomainObjectContainer<E> cl = (DomainObjectContainer<E>) l;
+		if (cl.add(obj)) {
 			objects.put(obj.getId(), obj);
 		}
 		return;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <E extends DomainObject> void remove(E obj) {
 		DomainObjectContainer<? extends DomainObject> l = classMap.get(obj.getClass().getName());
-		DomainObjectContainer<E> cl = (DomainObjectContainer<E>)l;
-		if ( cl.remove(obj) ) {
+		DomainObjectContainer<E> cl = (DomainObjectContainer<E>) l;
+		if (cl.remove(obj)) {
 			objects.remove(obj.getId());
 		}
 		return;
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	@Override
 	public ObjectRegistryChangeListener getChangeListener() {

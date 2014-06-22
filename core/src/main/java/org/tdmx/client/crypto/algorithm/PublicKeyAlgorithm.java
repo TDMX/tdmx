@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.client.crypto.algorithm;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -24,14 +42,13 @@ public enum PublicKeyAlgorithm {
 	RSA2048(2048, "RSA", null),
 	RSA4096(4096, "RSA", null),
 	ECDSA256(384, "EC", "secp256r1"),
-	ECDSA384(384, "EC", "secp384r1"),
-	;
+	ECDSA384(384, "EC", "secp384r1"), ;
 
 	private int keyLength;
 	private String algorithm;
 	private String parameter;
-	
-	private PublicKeyAlgorithm(int keyLength, String algorithm, String parameter ) {
+
+	private PublicKeyAlgorithm(int keyLength, String algorithm, String parameter) {
 		this.keyLength = keyLength;
 		this.algorithm = algorithm;
 		this.parameter = parameter;
@@ -40,7 +57,7 @@ public enum PublicKeyAlgorithm {
 	public KeyPair generateNewKeyPair() throws CryptoException {
 		try {
 			KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm);
-			if ( parameter != null ) {
+			if (parameter != null) {
 				ECGenParameterSpec ecSpec = new ECGenParameterSpec(parameter);
 				kpg.initialize(ecSpec, EntropySource.getSecureRandom());
 			} else {
@@ -55,14 +72,14 @@ public enum PublicKeyAlgorithm {
 		}
 	}
 
-	public PrivateKey decodePKCS8EncodedKey( byte[] privateKeyBytes ) throws CryptoException {
+	public PrivateKey decodePKCS8EncodedKey(byte[] privateKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(algorithm);
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-			PrivateKey privateKey  = kf.generatePrivate(privateKeySpec);
-			if ( privateKey instanceof RSAPrivateKey ) {
-				int bitLen = ((RSAPrivateKey)privateKey).getModulus().bitLength();
-				if ( bitLen != keyLength ) {
+			PrivateKey privateKey = kf.generatePrivate(privateKeySpec);
+			if (privateKey instanceof RSAPrivateKey) {
+				int bitLen = ((RSAPrivateKey) privateKey).getModulus().bitLength();
+				if (bitLen != keyLength) {
 					throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID);
 				}
 			} else {
@@ -75,15 +92,15 @@ public enum PublicKeyAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID, e);
 		}
 	}
-	
-	public PublicKey decodeX509EncodedKey( byte[] publicKeyBytes ) throws CryptoException {
+
+	public PublicKey decodeX509EncodedKey(byte[] publicKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(algorithm);
 			EncodedKeySpec eks = new X509EncodedKeySpec(publicKeyBytes);
-			PublicKey publicKey  = kf.generatePublic(eks);
-			if ( publicKey instanceof RSAPublicKey ) {
-				int bitLen = ((RSAPublicKey)publicKey).getModulus().bitLength();
-				if ( bitLen != keyLength ) {
+			PublicKey publicKey = kf.generatePublic(eks);
+			if (publicKey instanceof RSAPublicKey) {
+				int bitLen = ((RSAPublicKey) publicKey).getModulus().bitLength();
+				if (bitLen != keyLength) {
 					throw new CryptoException(CryptoResultCode.ERROR_PK_PRIVATE_KEY_SPEC_INVALID);
 				}
 			} else {
@@ -96,18 +113,18 @@ public enum PublicKeyAlgorithm {
 			throw new CryptoException(CryptoResultCode.ERROR_PK_PUBLIC_KEY_SPEC_INVALID, e);
 		}
 	}
-	
-	public byte[] encodeX509PublicKey( PublicKey publicKey ) throws CryptoException {
-		if ( !"X.509".equals(publicKey.getFormat())) {
-			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID );
+
+	public byte[] encodeX509PublicKey(PublicKey publicKey) throws CryptoException {
+		if (!"X.509".equals(publicKey.getFormat())) {
+			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return publicKey.getEncoded();
 	}
-	
-	public static PublicKeyAlgorithm getAlgorithmMatchingKey( PublicKey k ) throws CryptoException {
-		if ( k instanceof RSAPublicKey ) {
-			int bitLen = ((RSAPublicKey)k).getModulus().bitLength();
-			switch ( bitLen ) {
+
+	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PublicKey k) throws CryptoException {
+		if (k instanceof RSAPublicKey) {
+			int bitLen = ((RSAPublicKey) k).getModulus().bitLength();
+			switch (bitLen) {
 			case 2048:
 				return PublicKeyAlgorithm.RSA2048;
 			case 4096:
@@ -116,11 +133,11 @@ public enum PublicKeyAlgorithm {
 		}
 		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
 	}
-	
-	public static PublicKeyAlgorithm getAlgorithmMatchingKey( PrivateKey k ) throws CryptoException {
-		if ( k instanceof RSAPrivateKey ) {
-			int bitLen = ((RSAPrivateKey)k).getModulus().bitLength();
-			switch ( bitLen ) {
+
+	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PrivateKey k) throws CryptoException {
+		if (k instanceof RSAPrivateKey) {
+			int bitLen = ((RSAPrivateKey) k).getModulus().bitLength();
+			switch (bitLen) {
 			case 2048:
 				return PublicKeyAlgorithm.RSA2048;
 			case 4096:
@@ -129,7 +146,7 @@ public enum PublicKeyAlgorithm {
 		}
 		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
 	}
-	
+
 	public int getKeyLength() {
 		return keyLength;
 	}

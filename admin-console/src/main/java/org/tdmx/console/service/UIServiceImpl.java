@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.service;
 
 import java.util.ArrayList;
@@ -25,33 +43,33 @@ import org.tdmx.console.domain.validation.OperationError;
 
 public class UIServiceImpl implements UIService {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 
 	private Administration admin;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
-	public List<Domain> listDomains( ) {
+	public List<Domain> listDomains() {
 		return getAdmin().getObjectRegistry().getDomains();
 	}
 
 	@Override
 	public List<Job> getJobs() {
 		List<Job> list = new ArrayList<>();
-		for( org.tdmx.console.application.job.BackgroundJob j : getAdmin().getBackgroundJobRegistry().getJobs()) {
+		for (org.tdmx.console.application.job.BackgroundJob j : getAdmin().getBackgroundJobRegistry().getJobs()) {
 			list.add(new Job(j));
 		}
 		return list;
@@ -60,7 +78,7 @@ public class UIServiceImpl implements UIService {
 	@Override
 	public List<Problem> getProblems() {
 		List<Problem> list = new ArrayList<>();
-		for( org.tdmx.console.application.domain.ProblemDO p : getAdmin().getProblemRegistry().getProblems()) {
+		for (org.tdmx.console.application.domain.ProblemDO p : getAdmin().getProblemRegistry().getProblems()) {
 			list.add(new Problem(p));
 		}
 		return list;
@@ -73,17 +91,17 @@ public class UIServiceImpl implements UIService {
 
 	@Override
 	public void deleteAllProblems() {
-		 getAdmin().getProblemRegistry().deleteAllProblems();
+		getAdmin().getProblemRegistry().deleteAllProblems();
 	}
 
 	@Override
 	public void deleteProblem(String id) {
-		 getAdmin().getProblemRegistry().deleteProblem(id);
+		getAdmin().getProblemRegistry().deleteProblem(id);
 	}
 
 	@Override
 	public int getNumberOfProblems() {
-		return  getAdmin().getProblemRegistry().getProblems().size();
+		return getAdmin().getProblemRegistry().getProblems().size();
 	}
 
 	@Override
@@ -94,13 +112,13 @@ public class UIServiceImpl implements UIService {
 
 	@Override
 	public User authenticate(String login, String password) {
-		if ("secret".equals(password) ) {
+		if ("secret".equals(password)) {
 			User user = new User(login, "George", "Bush", "noreply@mycompany.com", new Date());
 			return user;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public DnsResolverList getDnsResolverList(String id) {
 		DnsResolverListDO dom = getAdmin().getDnsResolverService().lookup(id);
@@ -111,7 +129,7 @@ public class UIServiceImpl implements UIService {
 	public List<DnsResolverList> searchDnsResolverList(String criteria) {
 		List<DnsResolverList> list = new ArrayList<>();
 		List<DnsResolverListDO> domList = getAdmin().getDnsResolverService().search(criteria);
-		for( DnsResolverListDO dom : domList ) {
+		for (DnsResolverListDO dom : domList) {
 			list.add(new DnsResolverList(dom));
 		}
 		return list;
@@ -121,7 +139,7 @@ public class UIServiceImpl implements UIService {
 	public OperationError deleteDnsResolverList(String id) {
 		return getAdmin().getDnsResolverService().delete(id);
 	}
-	
+
 	@Override
 	public OperationError createOrUpdateDnsResolverList(DnsResolverList object) {
 		DnsResolverListDO d = object.domain();
@@ -134,23 +152,21 @@ public class UIServiceImpl implements UIService {
 	}
 
 	@Override
-	public List<SignatureAlgorithm> getValidCSRSignatureAlgorithms(
-			AsymmetricEncryptionAlgorithm keyAlgorithm) {
+	public List<SignatureAlgorithm> getValidCSRSignatureAlgorithms(AsymmetricEncryptionAlgorithm keyAlgorithm) {
 		return getAdmin().getCertificateAuthorityService().getSignatureTypes(keyAlgorithm);
 	}
 
 	@Override
-	public OperationError createCertificateAuthority(
-			CertificateAuthorityRequest request) {
+	public OperationError createCertificateAuthority(CertificateAuthorityRequest request) {
 		List<FieldError> errors = request.validate();
-		if ( errors.size() > 0 ) {
+		if (errors.size() > 0) {
 			return new OperationError(errors);
 		}
 		ZoneAdministrationCredentialSpecifier csr = request.domain();
 		// on success, the request's certificateAuthorityId is set.
 		OperationResultHolder<String> result = new OperationResultHolder<>();
 		getAdmin().getCertificateAuthorityService().create(csr, result);
-		if  ( result.getError() != null ) {
+		if (result.getError() != null) {
 			return result.getError();
 		}
 		request.setCertificateAuthorityId(result.getResult());
@@ -178,7 +194,7 @@ public class UIServiceImpl implements UIService {
 	public List<CertificateAuthority> searchCertificateAuthority(String criteria) {
 		List<CertificateAuthority> list = new ArrayList<>();
 		List<CertificateAuthorityDO> domList = getAdmin().getCertificateAuthorityService().search(criteria);
-		for( CertificateAuthorityDO dom : domList ) {
+		for (CertificateAuthorityDO dom : domList) {
 			list.add(new CertificateAuthority(dom));
 		}
 		return list;
@@ -194,23 +210,23 @@ public class UIServiceImpl implements UIService {
 	public List<Certificate> searchCertificate(String criteria) {
 		List<Certificate> list = new ArrayList<>();
 		List<X509CertificateDO> domList = getAdmin().getCertificateService().search(criteria);
-		for( X509CertificateDO dom : domList ) {
+		for (X509CertificateDO dom : domList) {
 			list.add(new Certificate(dom));
 		}
 		return list;
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public Administration getAdmin() {
 		return admin;

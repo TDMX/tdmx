@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.domain;
 
 import org.tdmx.console.application.domain.X509CertificateDO.X509CertificateSO;
@@ -6,34 +24,35 @@ import org.tdmx.console.application.search.FieldDescriptor.FieldType;
 import org.tdmx.console.application.search.SearchServiceImpl.ObjectSearchContext;
 import org.tdmx.console.application.service.ObjectRegistry;
 
-
-
 /**
  * A ServiceProvider.
  * 
  * @author Peter
- *
+ * 
  */
 public class ServiceProviderDO extends AbstractDO {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 	public static final class ServiceProviderSO {
-		public static final FieldDescriptor SUBJECT		 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "subject", FieldType.Text);
-		public static final FieldDescriptor MAS_HOSTNAME 	= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.hostname", FieldType.String);
-		public static final FieldDescriptor MAS_PORT 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.port", FieldType.Number);
-		public static final FieldDescriptor MAS_PROXY 		= new FieldDescriptor(DomainObjectType.ServiceProvider, "mas.proxy", FieldType.String);
+		public static final FieldDescriptor SUBJECT = new FieldDescriptor(DomainObjectType.ServiceProvider, "subject",
+				FieldType.Text);
+		public static final FieldDescriptor MAS_HOSTNAME = new FieldDescriptor(DomainObjectType.ServiceProvider,
+				"mas.hostname", FieldType.String);
+		public static final FieldDescriptor MAS_PORT = new FieldDescriptor(DomainObjectType.ServiceProvider,
+				"mas.port", FieldType.Number);
+		public static final FieldDescriptor MAS_PROXY = new FieldDescriptor(DomainObjectType.ServiceProvider,
+				"mas.proxy", FieldType.String);
 	}
-	
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private String subjectIdentifier; // initially unidentified - after connection test we have it.
 	private Integer version;
-	
-	//TODO rethink
+
+	// TODO rethink
 	private String masHostname;
 	private Integer masPort;
 	private ConnectionTestResultVO masStatus;
@@ -49,25 +68,25 @@ public class ServiceProviderDO extends AbstractDO {
 	private String mdsHostname;
 	private Integer mdsPort;
 	private ConnectionTestResultVO mdsStatus;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
 	public ServiceProviderDO() {
 		super();
 	}
-	
-	private ServiceProviderDO( ServiceProviderDO original ) {
+
+	private ServiceProviderDO(ServiceProviderDO original) {
 		this.setId(original.getId());
 		this.setSubjectIdentifier(original.getSubjectIdentifier());
-		//TODO
+		// TODO
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public DomainObjectType getType() {
 		return DomainObjectType.ServiceProvider;
@@ -83,22 +102,21 @@ public class ServiceProviderDO extends AbstractDO {
 		setSearchFields(ctx.getSearchFields());
 	}
 
-	
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
-	private <E extends DomainObject> ServiceProviderDO narrow( E other ) {
-		return (ServiceProviderDO)other;
+	private <E extends DomainObject> ServiceProviderDO narrow(E other) {
+		return (ServiceProviderDO) other;
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public String getSubjectIdentifier() {
 		return subjectIdentifier;
@@ -156,7 +174,6 @@ public class ServiceProviderDO extends AbstractDO {
 		this.masPort = masPort;
 	}
 
-
 	public ConnectionTestResultVO getMasStatus() {
 		return masStatus;
 	}
@@ -180,7 +197,6 @@ public class ServiceProviderDO extends AbstractDO {
 	public void setMosPort(Integer mosPort) {
 		this.mosPort = mosPort;
 	}
-
 
 	public ConnectionTestResultVO getMosStatus() {
 		return mosStatus;

@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * import java.util.Calendar; import java.util.StringTokenizer; nteroperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.search.match;
 
 import java.util.Calendar;
@@ -5,144 +23,150 @@ import java.util.StringTokenizer;
 
 public class MatchValueNormalizer {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Get the normalized String from a String field.
+	 * 
 	 * @param string
 	 * @return
 	 */
-	public static String getStringFromString( String string ) {
+	public static String getStringFromString(String string) {
 		return string.toLowerCase();
 	}
-	
+
 	/**
 	 * Get the normalized String[] tokenized from a Text field.
+	 * 
 	 * @param string
 	 * @return
 	 */
-	public static String[] getStringListFromString( String string ) {
+	public static String[] getStringListFromString(String string) {
 		StringTokenizer tokenizer = new StringTokenizer(string);
 		String[] result = new String[tokenizer.countTokens()];
-		for( int i = 0; i < result.length; i++) {
+		for (int i = 0; i < result.length; i++) {
 			result[i] = tokenizer.nextToken();
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Get the normalized String from a Number field.
+	 * 
 	 * @param number
 	 * @return
 	 */
-	public static String getStringFromNumber( Number number ) {
+	public static String getStringFromNumber(Number number) {
 		return MatchValueFormatter.getNumber(getNumber(number));
 	}
-	
+
 	/**
 	 * Get the normalized String from a Time field.
+	 * 
 	 * @param time
 	 * @return
 	 */
-	public static String getStringFromTime( Calendar time ) {
+	public static String getStringFromTime(Calendar time) {
 		return MatchValueFormatter.getTime(getTime(time));
 	}
-	
+
 	/**
 	 * Get the normalized String from a DateTime field.
+	 * 
 	 * @param time
 	 * @return
 	 */
-	public static String getStringFromDateTime( Calendar time ) {
+	public static String getStringFromDateTime(Calendar time) {
 		return MatchValueFormatter.getDateTime(getDateTime(time));
 	}
-	
+
 	/**
 	 * Get the normalized String from a Date field.
+	 * 
 	 * @param time
 	 * @return
 	 */
-	public static String getStringFromDate( Calendar time ) {
+	public static String getStringFromDate(Calendar time) {
 		return MatchValueFormatter.getDate(getDate(time));
 	}
-	
-	public static String[] getStringNumberList( Number n1, Number n2 ) {
-		if ( n1 != null && n2 != null ) {
+
+	public static String[] getStringNumberList(Number n1, Number n2) {
+		if (n1 != null && n2 != null) {
 			return new String[] { getStringFromNumber(n1), getStringFromNumber(n2) };
-		} else if ( n1 != null ) {
+		} else if (n1 != null) {
 			return new String[] { getStringFromNumber(n1) };
-		} else if ( n2 != null ) {
+		} else if (n2 != null) {
 			return new String[] { getStringFromNumber(n2) };
 		}
 		return null;
 	}
-	
-	public static String[] getStringTimeList( Calendar c1, Calendar c2 ) {
-		if ( c1 != null && c2 != null ) {
+
+	public static String[] getStringTimeList(Calendar c1, Calendar c2) {
+		if (c1 != null && c2 != null) {
 			return new String[] { getStringFromTime(c1), getStringFromTime(c2) };
-		} else if ( c1 != null ) {
+		} else if (c1 != null) {
 			return new String[] { getStringFromTime(c1) };
-		} else if ( c2 != null ) {
+		} else if (c2 != null) {
 			return new String[] { getStringFromTime(c2) };
 		}
 		return null;
 	}
-	
-	public static String[] getStringDateTimeList( Calendar c1, Calendar c2 ) {
-		if ( c1 != null && c2 != null ) {
+
+	public static String[] getStringDateTimeList(Calendar c1, Calendar c2) {
+		if (c1 != null && c2 != null) {
 			return new String[] { getStringFromDateTime(c1), getStringFromDateTime(c2) };
-		} else if ( c1 != null ) {
+		} else if (c1 != null) {
 			return new String[] { getStringFromDateTime(c1) };
-		} else if ( c2 != null ) {
+		} else if (c2 != null) {
 			return new String[] { getStringFromDateTime(c2) };
 		}
 		return null;
 	}
-	
-	public static String[] getStringDateList( Calendar c1, Calendar c2 ) {
-		if ( c1 != null && c2 != null ) {
+
+	public static String[] getStringDateList(Calendar c1, Calendar c2) {
+		if (c1 != null && c2 != null) {
 			return new String[] { getStringFromDate(c1), getStringFromDate(c2) };
-		} else if ( c1 != null ) {
+		} else if (c1 != null) {
 			return new String[] { getStringFromDate(c1) };
-		} else if ( c2 != null ) {
+		} else if (c2 != null) {
 			return new String[] { getStringFromDate(c2) };
 		}
 		return null;
 	}
-	
-	public static Long getNumber( Number number ) {
-		if ( number == null ) {
+
+	public static Long getNumber(Number number) {
+		if (number == null) {
 			return null;
 		}
 		return number.longValue();
 	}
-	
-	public static Integer getTime( Calendar cal ) {
-		if ( cal == null ) {
+
+	public static Integer getTime(Calendar cal) {
+		if (cal == null) {
 			return null;
 		}
 		int hours = cal.get(Calendar.HOUR_OF_DAY);
 		int minutes = cal.get(Calendar.MINUTE);
 		int seconds = cal.get(Calendar.SECOND);
-		return Integer.valueOf(hours*3600+minutes*60+seconds);
+		return Integer.valueOf(hours * 3600 + minutes * 60 + seconds);
 	}
-	
-	public static Long getDate( Calendar cal ) {
-		if ( cal == null ) {
+
+	public static Long getDate(Calendar cal) {
+		if (cal == null) {
 			return null;
 		}
 		Calendar c = Calendar.getInstance();
@@ -153,30 +177,30 @@ public class MatchValueNormalizer {
 		c.set(Calendar.HOUR_OF_DAY, 0);
 		return Long.valueOf(c.getTimeInMillis());
 	}
-	
-	public static Long getDateTimeTS( Calendar cal ) {
-		if ( cal == null ) {
+
+	public static Long getDateTimeTS(Calendar cal) {
+		if (cal == null) {
 			return null;
 		}
 		return Long.valueOf(cal.getTimeInMillis());
 	}
-	
-	public static Object[] getDateTime( Calendar cal ) {
+
+	public static Object[] getDateTime(Calendar cal) {
 		Integer time = getTime(cal);
 		Long date = getDate(cal);
 		return new Object[] { date, time, getDateTimeTS(cal) };
 	}
-	
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

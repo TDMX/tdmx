@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.lib.console.domain;
 
 import java.util.Calendar;
@@ -15,7 +33,7 @@ import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 
 public class CredentialFacade {
 
-	public static PKIXCredential createZAC( String zoneRoot ) throws Exception  {
+	public static PKIXCredential createZAC(String zoneRoot) throws Exception {
 		Calendar now = Calendar.getInstance();
 		now.setTime(new Date());
 		now.set(Calendar.MILLISECOND, 0);
@@ -26,10 +44,10 @@ public class CredentialFacade {
 		later.set(Calendar.MILLISECOND, 0);
 
 		TdmxZoneInfo zi = new TdmxZoneInfo(1, zoneRoot, "https://mrsUrl/api");
-		
+
 		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier();
 		req.setZoneInfo(zi);
-		
+
 		req.setCn("name");
 		req.setTelephoneNumber("0417100000");
 		req.setEmailAddress("pjk@gmail.com");
@@ -46,7 +64,7 @@ public class CredentialFacade {
 		return cred;
 	}
 
-	public static PKIXCredential createDAC( PKIXCredential zac ) throws Exception {
+	public static PKIXCredential createDAC(PKIXCredential zac) throws Exception {
 		PKIXCertificate issuer = zac.getPublicCert();
 
 		Calendar now = Calendar.getInstance();
@@ -60,17 +78,17 @@ public class CredentialFacade {
 
 		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier();
 		req.setZoneAdministratorCredential(zac);
-		req.setDomainName("subdomain."+issuer.getTdmxZoneInfo().getZoneRoot());
+		req.setDomainName("subdomain." + issuer.getTdmxZoneInfo().getZoneRoot());
 		req.setNotBefore(now);
 		req.setNotAfter(later);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CredentialUtils.createDomainAdministratorCredential(req);
-		
+
 		return cred;
 	}
-	
-	public static PKIXCredential createUC( PKIXCredential dac ) throws Exception {
+
+	public static PKIXCredential createUC(PKIXCredential dac) throws Exception {
 		Calendar now = Calendar.getInstance();
 		now.setTime(new Date());
 		now.set(Calendar.MILLISECOND, 0);
@@ -88,8 +106,8 @@ public class CredentialFacade {
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		PKIXCredential cred = CredentialUtils.createUserCredential(req);
-		
+
 		return cred;
 	}
-	
+
 }

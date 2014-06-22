@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.job;
 
 import java.io.IOException;
@@ -28,31 +46,31 @@ import org.tdmx.console.application.service.ObjectRegistrySPI;
 
 public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegistryChangeListener {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(StateStorageJob.class);
-	
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private final Logger log = LoggerFactory.getLogger(StateStorageJob.class);
+
 	private ScheduledExecutorService scheduler = null;
-	
+
 	private ObjectRegistrySPI registry = null;
 	private PrivateKeyStore keyStore = null;
 
 	private ServiceProviderStore store = null;
-	private List<ScheduledFuture<?>> futureList = new LinkedList<>();
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+	private final List<ScheduledFuture<?>> futureList = new LinkedList<>();
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public void init() {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -60,7 +78,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 
 	@Override
 	public void shutdown() {
-		if ( scheduler != null ) {
+		if (scheduler != null) {
 			scheduler.shutdown();
 			try {
 				scheduler.awaitTermination(60, TimeUnit.SECONDS);
@@ -75,13 +93,13 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 	@Override
 	public Date getPendingDate() {
 		clearCompletedTasks();
-		if ( futureList.isEmpty() ) {
+		if (futureList.isEmpty()) {
 			return null;
 		}
 		long seconds = futureList.get(0).getDelay(TimeUnit.SECONDS);
-		if ( seconds > 0 ) {
+		if (seconds > 0) {
 			Calendar c = Calendar.getInstance();
-			c.add(Calendar.SECOND, (int)seconds);
+			c.add(Calendar.SECOND, (int) seconds);
 			return c.getTime();
 		}
 		return null;
@@ -92,10 +110,9 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 		flushStorage();
 	}
 
-	
-	public void flushStorage()  {
+	public void flushStorage() {
 		clearCompletedTasks();
-		
+
 		// start a thread off which will periodically save the app state.
 		Runnable r = new Runnable() {
 
@@ -105,7 +122,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 				try {
 
 					try {
-						if ( keyStore == null ) {
+						if (keyStore == null) {
 							log.warn("keyStore missing.");
 						} else {
 							keyStore.save();
@@ -126,7 +143,7 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 
 					ServiceProviderStorage s = null;
 					try {
-						if ( registry == null ) {
+						if (registry == null) {
 							log.warn("registry missing.");
 						} else {
 							s = registry.getContentIfDirty();
@@ -135,12 +152,12 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 						ProblemDO p = new ProblemDO(ProblemCode.OBJECT_REGISTRY_WRITE, c);
 						problemRegistry.addProblem(p);
 					}
-					
+
 					try {
-						if ( store == null ) {
+						if (store == null) {
 							log.warn("store missing.");
 						} else {
-							if ( s != null ) {
+							if (s != null) {
 								store.save(s);
 							}
 						}
@@ -151,19 +168,19 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 						lastProblem = new ProblemDO(ProblemCode.CONFIGURATION_FILE_MARSHAL, e);
 						problemRegistry.addProblem(lastProblem);
 					}
-					
-				} catch ( Throwable t ) {
+
+				} catch (Throwable t) {
 					log.warn("Unexpected RuntimeException.", t);
 					ProblemDO p = new ProblemDO(ProblemCode.RUNTIME_EXCEPTION, t);
-					problemRegistry.addProblem(p);							
+					problemRegistry.addProblem(p);
 					throw t;
 				} finally {
 					finishRun();
 				}
 			}
-			
+
 		};
-		if ( scheduler != null && !scheduler.isShutdown()) {
+		if (scheduler != null && !scheduler.isShutdown()) {
 			ScheduledFuture<?> future = scheduler.schedule(r, 10, TimeUnit.SECONDS);
 			futureList.add(future);
 			log.info(getName() + " scheduled.");
@@ -171,32 +188,31 @@ public class StateStorageJob extends AbstractBackgroundJob implements ObjectRegi
 		}
 	}
 
-
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	protected void logInfo(String msg) {
 		log.info(msg);
 	}
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 	private void clearCompletedTasks() {
 		Iterator<ScheduledFuture<?>> iterator = futureList.iterator();
-		while( iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			ScheduledFuture<?> future = iterator.next();
-			if ( future.isDone() ) {
+			if (future.isDone()) {
 				iterator.remove();
 			}
 		}
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistrySPI getRegistry() {
 		return registry;

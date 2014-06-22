@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.dao;
 
 import java.io.ByteArrayInputStream;
@@ -16,36 +34,37 @@ import org.tdmx.core.system.lang.FileUtils;
 
 public class PrivateKeyStoreImpl implements PrivateKeyStore {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private String filename;
 	private String passphrase;
 	private String keystoreType;
-	
+
 	private KeyStore keyStore;
 	private boolean dirty = false;
-	private AtomicInteger suffixId = new AtomicInteger();
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
+	private final AtomicInteger suffixId = new AtomicInteger();
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
 	public PrivateKeyStoreImpl() {
 	}
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
-	public synchronized void load() throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
+	public synchronized void load() throws IOException, NoSuchAlgorithmException, CertificateException,
+			KeyStoreException {
 		byte[] contents = FileUtils.getFileContents(getFilename());
-		if  ( contents == null ) {
+		if (contents == null) {
 			keyStore = KeyStore.getInstance(getKeystoreType());
 			keyStore.load(null, getPassphrase().toCharArray());
 			dirty = true;
@@ -56,14 +75,15 @@ public class PrivateKeyStoreImpl implements PrivateKeyStore {
 		ByteArrayInputStream bais = new ByteArrayInputStream(contents);
 		keyStore.load(bais, getPassphrase().toCharArray());
 	}
-	
+
 	@Override
-	public synchronized void save() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-		if ( dirty ) {
-	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	public synchronized void save() throws IOException, KeyStoreException, NoSuchAlgorithmException,
+			CertificateException {
+		if (dirty) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			keyStore.store(baos, getPassphrase().toCharArray());
 			baos.close();
-			FileUtils.storeFileContents(getFilename(), baos.toByteArray(), "."+suffixId.getAndIncrement());
+			FileUtils.storeFileContents(getFilename(), baos.toByteArray(), "." + suffixId.getAndIncrement());
 		}
 		dirty = false;
 	}
@@ -74,34 +94,35 @@ public class PrivateKeyStoreImpl implements PrivateKeyStore {
 	}
 
 	@Override
-	public synchronized PrivateKey getPrivateKey(String certId) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-		return (PrivateKey)keyStore.getKey(certId, getPassphrase().toCharArray());
+	public synchronized PrivateKey getPrivateKey(String certId) throws UnrecoverableKeyException, KeyStoreException,
+			NoSuchAlgorithmException {
+		return (PrivateKey) keyStore.getKey(certId, getPassphrase().toCharArray());
 	}
 
 	@Override
-	public synchronized void setPrivateKey(String certId, X509Certificate[] chain,
-			PrivateKey privateKey) throws KeyStoreException {
+	public synchronized void setPrivateKey(String certId, X509Certificate[] chain, PrivateKey privateKey)
+			throws KeyStoreException {
 		keyStore.setKeyEntry(certId, privateKey, getPassphrase().toCharArray(), chain);
 		dirty = true;
 	}
-	
+
 	@Override
 	public synchronized void delete(String certId) throws KeyStoreException {
 		keyStore.deleteEntry(certId);
 		dirty = true;
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public String getFilename() {
 		return filename;

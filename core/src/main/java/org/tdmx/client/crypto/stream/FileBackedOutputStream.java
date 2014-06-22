@@ -1,5 +1,20 @@
-/**
+/*
+ * TDMX - Trusted Domain Messaging eXchange
  * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
  */
 package org.tdmx.client.crypto.stream;
 
@@ -13,61 +28,60 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * A FileBackedOutputStream writes through to a File after maxSizeMemory bytes have
- * been written to the underlying output stream.
+ * A FileBackedOutputStream writes through to a File after maxSizeMemory bytes have been written to the underlying
+ * output stream.
  * 
  * The number of bytes written to the underlying stream is returned with {@link #getSize()}
  * 
- * The File backing the OutputStream can be retrieved after closing with {@link #getStorage()} 
- * if there is one, else the {@link #getMemory()} will return the underlying bytes from memory.
+ * The File backing the OutputStream can be retrieved after closing with {@link #getStorage()} if there is one, else the
+ * {@link #getMemory()} will return the underlying bytes from memory.
  * 
  * The caller should take care to call {@link #close()}.
  * 
- * The caller should always call {@link #discard()}, especially if the {@link #getInputStream()}
- * has not been called. {@link #getInputStream()} converts the backing File into an InputStream
- * and removes it from this OutputStream.
+ * The caller should always call {@link #discard()}, especially if the {@link #getInputStream()} has not been called.
+ * {@link #getInputStream()} converts the backing File into an InputStream and removes it from this OutputStream.
  * 
  * @author Peter
- *
+ * 
  */
 public class FileBackedOutputStream extends OutputStream {
 
 	private OutputStream output;
 	private long size = 0;
-	private int maxSizeMemory;
+	private final int maxSizeMemory;
 	private boolean closed = false;
 	private ByteArrayOutputStream baos;
 	private File tmpFile;
-	private File tmpDirectory;
-	
-	public FileBackedOutputStream( int initialSize, int maxSizeMemory, File directory ) {
-		this.baos = new ByteArrayOutputStream( Math.min(initialSize, maxSizeMemory));
+	private final File tmpDirectory;
+
+	public FileBackedOutputStream(int initialSize, int maxSizeMemory, File directory) {
+		this.baos = new ByteArrayOutputStream(Math.min(initialSize, maxSizeMemory));
 		this.output = baos;
 		this.maxSizeMemory = maxSizeMemory;
 		this.tmpDirectory = directory;
 	}
 
 	public InputStream getInputStream() {
-		if ( !isClosed() ) {
+		if (!isClosed()) {
 			throw new IllegalStateException("getInputStream called when output stream open.");
 		}
-		if ( baos != null ) {
+		if (baos != null) {
 			InputStream is = new ByteArrayInputStream(baos.toByteArray());
 			baos = null;
 			return is;
-		} else if ( tmpFile != null ) {
+		} else if (tmpFile != null) {
 			InputStream fis;
 			try {
 				fis = new FileBackedInputStream(tmpFile);
 			} catch (FileNotFoundException e) {
-				throw new IllegalStateException("Converting existing File into InputStream failed unexpectedly.",e);
+				throw new IllegalStateException("Converting existing File into InputStream failed unexpectedly.", e);
 			}
 			tmpFile = null;
 			return fis;
 		}
 		throw new IllegalStateException("getInputStream called when output stream open.");
 	}
-	
+
 	@Override
 	public void write(int b) throws IOException {
 		output.write(b);
@@ -75,55 +89,55 @@ public class FileBackedOutputStream extends OutputStream {
 	}
 
 	@Override
-    public void write(byte b[]) throws IOException {
+	public void write(byte b[]) throws IOException {
 		size += b.length;
-		if ( tmpFile == null && size > maxSizeMemory ) {
+		if (tmpFile == null && size > maxSizeMemory) {
 			replaceStorage();
 		}
-        output.write(b, 0, b.length);
-    }
-	
+		output.write(b, 0, b.length);
+	}
+
 	@Override
-    public void write(byte b[], int off, int len) throws IOException {
-    	size += len;
-		if ( tmpFile == null && size > maxSizeMemory ) {
+	public void write(byte b[], int off, int len) throws IOException {
+		size += len;
+		if (tmpFile == null && size > maxSizeMemory) {
 			replaceStorage();
 		}
 		output.write(b, off, len);
-    }
-	
-	@Override
-    public void flush() throws IOException {
-		output.flush();
-    }
+	}
 
 	@Override
-    public void close() throws IOException {
+	public void flush() throws IOException {
+		output.flush();
+	}
+
+	@Override
+	public void close() throws IOException {
 		output.close();
 		this.closed = true;
-    }
+	}
 
 	public void discard() {
-		if ( !isClosed() ) {
+		if (!isClosed()) {
 			try {
 				close();
-			} catch ( IOException e) {
+			} catch (IOException e) {
 				// TODO warn but ignore
 			}
 		}
 		baos = null;
-		if ( tmpFile != null ) {
-			if ( !tmpFile.delete() ){
+		if (tmpFile != null) {
+			if (!tmpFile.delete()) {
 				// TODO warn but ignore
 			}
 		}
 	}
-	
+
 	private void replaceStorage() throws IOException {
 		tmpFile = File.createTempFile("fbos", ".buf", tmpDirectory);
 		FileOutputStream fos = new FileOutputStream(tmpFile);
 		fos.write(baos.toByteArray());
-		
+
 		output = fos;
 		baos = null;
 	}
@@ -142,7 +156,9 @@ public class FileBackedOutputStream extends OutputStream {
 		return closed;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#finalize()
 	 */
 	@Override

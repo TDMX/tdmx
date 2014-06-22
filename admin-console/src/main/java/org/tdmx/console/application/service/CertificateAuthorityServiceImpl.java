@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.service;
 
 import java.util.ArrayList;
@@ -8,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.console.application.domain.CertificateAuthorityDO;
 import org.tdmx.console.application.domain.DomainObject;
 import org.tdmx.console.application.domain.DomainObjectChangesHolder;
@@ -25,33 +43,32 @@ import org.tdmx.console.domain.validation.OperationError;
 import org.tdmx.console.domain.validation.OperationError.ERROR;
 import org.tdmx.core.system.lang.StringUtils;
 
-
 public class CertificateAuthorityServiceImpl implements CertificateAuthorityService {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
 	public static final String SYSTEM_ROOTCA_TRUSTED_LIST_ID = "tdmx-ca-trusted";
 	public static final String SYSTEM_ROOTCA_DISTRUSTED_LIST_ID = "tdmx-ca-revoked";
-	
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private static Logger log = LoggerFactory.getLogger(CertificateAuthorityServiceImpl.class);
 
 	private ObjectRegistry objectRegistry;
 	private SearchService searchService;
 	private CertificateService certificateService;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public CertificateAuthorityDO lookup(String id) {
 		return objectRegistry.getCertificateAuthority(id);
@@ -59,11 +76,11 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 
 	@Override
 	public List<CertificateAuthorityDO> search(String criteria) {
-		if ( StringUtils.hasText(criteria)) {
+		if (StringUtils.hasText(criteria)) {
 			List<CertificateAuthorityDO> result = new ArrayList<>();
 			Set<CertificateAuthorityDO> found = searchService.search(DomainObjectType.CertificateAuthority, criteria);
-			for( DomainObject o : found ) {
-				result.add((CertificateAuthorityDO)o );
+			for (DomainObject o : found) {
+				result.add((CertificateAuthorityDO) o);
 			}
 			return result;
 		}
@@ -89,7 +106,7 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 
 	@Override
 	public void create(ZoneAdministrationCredentialSpecifier request, OperationResultHolder<String> result) {
-		//create self signed CA credentials from CSR
+		// create self signed CA credentials from CSR
 		PKIXCredential credential = null;
 		try {
 			credential = CredentialUtils.createZoneAdministratorCredential(request);
@@ -98,30 +115,30 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 			result.setError(new OperationError(ERROR.SYSTEM));
 			return;
 		}
-		
+
 		PKIXCertificate caPublicCert = credential.getCertificateChain()[0];
 		X509CertificateDO publicCert = new X509CertificateDO(caPublicCert);
 
-		//check if new fingerprint is "unique" under all known certs - if not error
-		if ( getCertificateService().lookup(publicCert.getId()) != null ) {
+		// check if new fingerprint is "unique" under all known certs - if not error
+		if (getCertificateService().lookup(publicCert.getId()) != null) {
 			log.warn("Fingerprint clash " + publicCert);
 			result.setError(new OperationError(ERROR.SYSTEM));
 			return;
 		}
-		
+
 		CertificateAuthorityDO ca = new CertificateAuthorityDO();
 		ca.setX509certificateId(publicCert.getId());
 		ca.setActive(true);
 
 		List<FieldError> validation = ca.validate();
-		if ( !validation.isEmpty() ) {
+		if (!validation.isEmpty()) {
 			result.setError(new OperationError(validation));
 			return;
 		}
 
-		//store CA publicCert in certificates
+		// store CA publicCert in certificates
 		OperationError certError = getCertificateService().create(publicCert);
-		if ( certError != null ) {
+		if (certError != null) {
 			result.setError(certError);
 			return;
 		}
@@ -130,12 +147,12 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 		objectRegistry.notifyAdd(ca, holder);
 		searchService.update(holder);
 
-		//TODO store CA privateKey in privateKeystore
-		
-		//TODO add tdmx-ca-trusted ROOTCA lists
-		
-		//TODO audit
-		
+		// TODO store CA privateKey in privateKeystore
+
+		// TODO add tdmx-ca-trusted ROOTCA lists
+
+		// TODO audit
+
 		result.setResult(ca.getId());
 		return;
 	}
@@ -144,21 +161,21 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	public OperationError update(CertificateAuthorityDO ca) {
 		DomainObjectChangesHolder holder = new DomainObjectChangesHolder();
 		List<FieldError> validation = ca.validate();
-		if ( !validation.isEmpty() ) {
+		if (!validation.isEmpty()) {
 			return new OperationError(validation);
 		}
 		CertificateAuthorityDO existing = objectRegistry.getCertificateAuthority(ca.getId());
-		if ( existing == null ) {
+		if (existing == null) {
 			return new OperationError(ERROR.INVALID);
 		} else {
 			DomainObjectFieldChanges changes = existing.merge(ca);
-			if ( !changes.isEmpty() ) {
+			if (!changes.isEmpty()) {
 				objectRegistry.notifyModify(changes, holder);
 				searchService.update(holder);
 
-				//TODO switch tdmx-ca-trusted/distrusted ROOTCA lists
-				
-				//TODO audit
+				// TODO switch tdmx-ca-trusted/distrusted ROOTCA lists
+
+				// TODO audit
 			}
 		}
 		return null;
@@ -167,7 +184,7 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 	@Override
 	public OperationError delete(String id) {
 		CertificateAuthorityDO existing = objectRegistry.getCertificateAuthority(id);
-		if ( existing == null ) {
+		if (existing == null) {
 			return new OperationError(ERROR.MISSING);
 		}
 		// TODO not allowed to delete the root ca if there are any domain certificates not deleted
@@ -178,17 +195,17 @@ public class CertificateAuthorityServiceImpl implements CertificateAuthorityServ
 		return null;
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistry getObjectRegistry() {
 		return objectRegistry;

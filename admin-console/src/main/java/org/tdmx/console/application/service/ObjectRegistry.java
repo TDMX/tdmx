@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.service;
 
 import java.util.List;
@@ -19,29 +37,34 @@ public interface ObjectRegistry {
 	 * 
 	 * The DomainObjectChangesHolder is updated to know the change.
 	 * 
-	 * @param obj the DomainObject removed
+	 * @param obj
+	 *            the DomainObject removed
 	 * @param holder
 	 */
-	public void notifyRemove( DomainObject obj, DomainObjectChangesHolder holder );
+	public void notifyRemove(DomainObject obj, DomainObjectChangesHolder holder);
+
 	/**
 	 * Inform the ObjectRegistry that a DomainObject has been added.
 	 * 
 	 * The DomainObjectChangesHolder is updated to know the change.
 	 * 
-	 * @param obj the DomainObject added
+	 * @param obj
+	 *            the DomainObject added
 	 * @param holder
 	 */
-	public void notifyAdd( DomainObject obj, DomainObjectChangesHolder holder );
+	public void notifyAdd(DomainObject obj, DomainObjectChangesHolder holder);
+
 	/**
 	 * Inform the ObjectRegistry that a DomainObject has been changed.
 	 * 
 	 * The DomainObjectChangesHolder is updated to know the change.
 	 * 
-	 * @param obj the DomainObject changed
+	 * @param obj
+	 *            the DomainObject changed
 	 * @param holder
 	 */
-	public void notifyModify( DomainObjectFieldChanges changes, DomainObjectChangesHolder holder );
-	
+	public void notifyModify(DomainObjectFieldChanges changes, DomainObjectChangesHolder holder);
+
 	/**
 	 * @return the list of all Domain DomainObjects.
 	 */
@@ -51,7 +74,7 @@ public interface ObjectRegistry {
 	 * @return the list of all ServiceProvider DomainObjects.
 	 */
 	public List<ServiceProviderDO> getServiceProviders();
-	
+
 	/**
 	 * @return the list of all DnsResolverList DomainObjects.
 	 */
@@ -61,19 +84,20 @@ public interface ObjectRegistry {
 	 * @param id
 	 * @return the DnsResolverListDO DomainObject with the id, or null if none exists.
 	 */
-	public DnsResolverListDO getDnsResolverList( String id );
+	public DnsResolverListDO getDnsResolverList(String id);
 
 	/**
 	 * Get the SystemPropertyList settings of this runtime.
+	 * 
 	 * @return
 	 */
 	public SystemPropertiesVO getSystemProperties();
-	
+
 	/**
 	 * Set the SystemPropertyList of this runtime.
 	 */
 	public void setSystemProperties(SystemPropertiesVO systemProperties);
-	
+
 	/**
 	 * @return the list of all X509Certificate DomainObjects.
 	 */
@@ -83,14 +107,14 @@ public interface ObjectRegistry {
 	 * @param id
 	 * @return the X509CertificateDO DomainObject with the id, or null if none exists.
 	 */
-	public X509CertificateDO getX509Certificate( String id );
+	public X509CertificateDO getX509Certificate(String id);
 
 	/**
 	 * @param id
 	 * @return the CertificateAuthorityDO DomainObject with the id, or null if none exists.
 	 */
-	public CertificateAuthorityDO getCertificateAuthority( String id );
-	
+	public CertificateAuthorityDO getCertificateAuthority(String id);
+
 	/**
 	 * @return the list of all CertificateAuthority DomainObjects.
 	 */

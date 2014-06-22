@@ -1,3 +1,21 @@
+/*
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
+ * http://www.gnu.org/licenses/.
+ */
 package org.tdmx.console.application.job;
 
 import java.util.Calendar;
@@ -21,30 +39,30 @@ import org.tdmx.core.system.lang.CalendarUtils;
 
 public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 
-	//-------------------------------------------------------------------------
-	//PUBLIC CONSTANTS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	//-------------------------------------------------------------------------
-	private Logger log = LoggerFactory.getLogger(DevelopmentInitializationJob.class);
-	
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private final Logger log = LoggerFactory.getLogger(DevelopmentInitializationJob.class);
+
 	private ScheduledExecutorService scheduler = null;
-	
+
 	private ObjectRegistry objectRegistry = null;
 	private CertificateAuthorityService certificateAuthorityService = null;
-	
-	private ScheduledFuture<?> future = null;
-	
-	//-------------------------------------------------------------------------
-	//CONSTRUCTORS
-	//-------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------
-	//PUBLIC METHODS
-	//-------------------------------------------------------------------------
-	
+	private ScheduledFuture<?> future = null;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public void init() {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -56,40 +74,41 @@ public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 				try {
 
 					// do something
-					if ( getCertificateAuthorityService().search("").size() == 0 ) {
+					if (getCertificateAuthorityService().search("").size() == 0) {
 						CertificateAuthorityRequest csr = new CertificateAuthorityRequest();
 						csr.setCommonName("Peter Klauser");
 						csr.setEmailAddress("pjk@gmail.com");
 						csr.setTelephoneNumber("0417100000");
 						csr.setOrganization("mycompany.com");
 						csr.setCountry("CH");
-						
+
 						csr.setNotBefore(new Date());
 						csr.setNotAfter(CalendarUtils.getDateWithOffset(new Date(), Calendar.YEAR, 1));
-						
+
 						csr.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
 						csr.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
-						
+
 						OperationResultHolder<String> result = new OperationResultHolder<>();
-						
-						getCertificateAuthorityService().create(csr.domain(),result);
-						if ( result.getError() != null ) {
-							ProblemDO p = new ProblemDO(ProblemCode.DEVELOPMENT_INITIALIZATION, result.getError().toString());
-							problemRegistry.addProblem(p);							
+
+						getCertificateAuthorityService().create(csr.domain(), result);
+						if (result.getError() != null) {
+							ProblemDO p = new ProblemDO(ProblemCode.DEVELOPMENT_INITIALIZATION, result.getError()
+									.toString());
+							problemRegistry.addProblem(p);
 						} else {
 							log.info("Created own CA " + csr.getCertificateAuthorityId());
 						}
 					}
-				} catch ( Throwable t ) {
+				} catch (Throwable t) {
 					log.warn("Unexpected RuntimeException.", t);
 					ProblemDO p = new ProblemDO(ProblemCode.RUNTIME_EXCEPTION, t);
-					problemRegistry.addProblem(p);							
+					problemRegistry.addProblem(p);
 					throw t;
 				} finally {
 					finishRun();
 				}
 			}
-			
+
 		};
 		// we run 10s to give other jobs a chance to finish, so
 		// some objects will be available for us to build on.
@@ -98,7 +117,7 @@ public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 
 	@Override
 	public void shutdown() {
-		if ( scheduler != null ) {
+		if (scheduler != null) {
 			scheduler.shutdown();
 			try {
 				scheduler.awaitTermination(60, TimeUnit.SECONDS);
@@ -112,34 +131,34 @@ public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 
 	@Override
 	public Date getPendingDate() {
-		if ( future == null ) {
+		if (future == null) {
 			return null;
 		}
 		long seconds = future.getDelay(TimeUnit.SECONDS);
-		if ( seconds > 0 ) {
+		if (seconds > 0) {
 			Calendar c = Calendar.getInstance();
-			c.add(Calendar.SECOND, (int)seconds);
+			c.add(Calendar.SECOND, (int) seconds);
 			return c.getTime();
 		}
 		return null;
 	}
 
-    //-------------------------------------------------------------------------
-	//PROTECTED METHODS
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	protected void logInfo(String msg) {
 		log.info(msg);
 	}
 
-	//-------------------------------------------------------------------------
-	//PRIVATE METHODS
-	//-------------------------------------------------------------------------
-	
-	//-------------------------------------------------------------------------
-	//PUBLIC ACCESSORS (GETTERS / SETTERS)
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ObjectRegistry getObjectRegistry() {
 		return objectRegistry;
@@ -153,8 +172,7 @@ public class DevelopmentInitializationJob extends AbstractBackgroundJob {
 		return certificateAuthorityService;
 	}
 
-	public void setCertificateAuthorityService(
-			CertificateAuthorityService certificateAuthorityService) {
+	public void setCertificateAuthorityService(CertificateAuthorityService certificateAuthorityService) {
 		this.certificateAuthorityService = certificateAuthorityService;
 	}
 
