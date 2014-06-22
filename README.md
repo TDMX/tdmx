@@ -8,7 +8,9 @@ Visit [http://tdmx.org](http://tdmx.org "tdmx.org") for more information.
 clone the tdmx Github repository
 in Eclipse, use the `import existing maven projects` wizard on the tdmx root directory. Prerequisite is the m2eclipse plugin which can be found via Eclipse marketplace, or is bundled with Jboss Tools plugins. 
 
-to build run `mvn install` in the root tdmx folder.
+To build run `mvn clean install` in the root tdmx folder.
+
+To conform with developer coding guidelines, you can set the Java Editor's "Save Actions" to perform formatting on each source folder. The template for formatting and cleanup are stored under tdmx/format.xml and tdmx/cleanup.xml respectively.
 
 ## Folders
 The root of the tdmx repository structure contains...
