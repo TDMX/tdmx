@@ -20,9 +20,12 @@ package org.tdmx.core.system.env;
 
 import junit.framework.TestCase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.AsyncTestRunner;
 
 public class StringEncrypterLongRunningTest extends TestCase {
+	private final Logger log = LoggerFactory.getLogger(StringEncrypterLongRunningTest.class);
 
 	protected String clearText = "This is a simple string which will be encrypted into some other string - silly";
 	protected String cipherText = "xuqqNQPgUw/+XB26DLH1rukbS0BINoJkv4FyKq+aMtUxVfsFN9YP9aW61u6a092gt/QU0+fwrRUAjnnFPz4I5QjhH6WfUevRSj7w3pgE6rI=";
@@ -30,7 +33,9 @@ public class StringEncrypterLongRunningTest extends TestCase {
 	protected StringEncrypter encrypter = new StringEncrypter("This is a Reused object!!");
 
 	public void doTestDecrypt() throws Exception {
-		// System.out.println(encrypter.encrypt(clearText));
+		if (log.isDebugEnabled()) {
+			log.debug("Ciphertext of " + clearText + " is " + encrypter.encrypt(clearText));
+		}
 		assertEquals(clearText, encrypter.decrypt(cipherText));
 	}
 

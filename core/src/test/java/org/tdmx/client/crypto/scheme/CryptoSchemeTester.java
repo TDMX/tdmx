@@ -25,16 +25,20 @@ import java.security.KeyPair;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryBufferFactory;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
+import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtilsTest;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.converters.StringToUtf8;
 import org.tdmx.client.crypto.entropy.EntropySource;
 
 public class CryptoSchemeTester {
+	private final Logger log = LoggerFactory.getLogger(TrustStoreCertificateIOUtilsTest.class);
 
 	static {
 		JCAProviderInitializer.init();
@@ -60,7 +64,7 @@ public class CryptoSchemeTester {
 
 		CryptoScheme[] css = CryptoScheme.values();
 		for (CryptoScheme cs : css) {
-			System.out.println("Testing " + cs.getName());
+			log.info("Testing " + cs.getName());
 			if (cs.getName().contains("ecdh384")) {
 				KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 				byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());

@@ -25,10 +25,13 @@ import java.security.Signature;
 import java.security.SignatureException;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.scheme.CryptoException;
 
 public class SignatureAlgorithmTest {
+	private final Logger log = LoggerFactory.getLogger(SignatureAlgorithmTest.class);
 
 	static {
 		JCAProviderInitializer.init();
@@ -94,7 +97,7 @@ public class SignatureAlgorithmTest {
 		// sign the data
 		byte[] signedInfo = signature.sign();
 
-		System.out.println("Alg: " + alg + " signature len " + signedInfo.length);
+		log.debug("Alg: " + alg + " signature len " + signedInfo.length);
 
 		Signature verifier = alg.getVerifier(kp.getPublic());
 		verifier.update(dataInBytes);

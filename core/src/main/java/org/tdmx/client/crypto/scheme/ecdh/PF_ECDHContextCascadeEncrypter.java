@@ -126,20 +126,20 @@ public class PF_ECDHContextCascadeEncrypter implements Encrypter {
 		keyEncryptionKey = new SecretKeySpec(aesKey, keyEncryptionCipher.getAlgorithm());
 		keyEncryptionIv = new IvParameterSpec(aesIv);
 
-		System.out.println("KeyEncryption KEY: " + ByteArray.asHex(aesKey));
-		System.out.println("KeyEncryption IV: " + ByteArray.asHex(aesIv));
+		// TODO System.out.println("KeyEncryption KEY: " + ByteArray.asHex(aesKey));
+		// TODO System.out.println("KeyEncryption IV: " + ByteArray.asHex(aesIv));
 
 		innerPayloadSecretKey = EntropySource.getRandomBytes(innerPayloadCipher.getKeyLength());
 		innerPayloadSecretIv = EntropySource.getRandomBytes(innerPayloadCipher.getIvLength());
 
-		System.out.println("Inner Payload KEY: " + ByteArray.asHex(innerPayloadSecretKey));
-		System.out.println("Inner Payload IV: " + ByteArray.asHex(innerPayloadSecretKey));
+		// TODO System.out.println("Inner Payload KEY: " + ByteArray.asHex(innerPayloadSecretKey));
+		// TODO System.out.println("Inner Payload IV: " + ByteArray.asHex(innerPayloadSecretKey));
 
 		outerPayloadSecretKey = EntropySource.getRandomBytes(outerPayloadCipher.getKeyLength());
 		outerPayloadSecretIv = EntropySource.getRandomBytes(outerPayloadCipher.getIvLength());
 
-		System.out.println("Outer Payload KEY: " + ByteArray.asHex(outerPayloadSecretKey));
-		System.out.println("Outer Payload IV: " + ByteArray.asHex(outerPayloadSecretIv));
+		// TODO System.out.println("Outer Payload KEY: " + ByteArray.asHex(outerPayloadSecretKey));
+		// TODO System.out.println("Outer Payload IV: " + ByteArray.asHex(outerPayloadSecretIv));
 
 	}
 

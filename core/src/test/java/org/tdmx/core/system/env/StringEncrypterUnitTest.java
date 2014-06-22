@@ -20,6 +20,9 @@ package org.tdmx.core.system.env;
 
 import junit.framework.TestCase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JUnit unit tests for BCrypt routines
  * 
@@ -27,6 +30,7 @@ import junit.framework.TestCase;
  * @version 0.2
  */
 public class StringEncrypterUnitTest extends TestCase {
+	private final Logger log = LoggerFactory.getLogger(StringEncrypterUnitTest.class);
 
 	protected String clearText = "This is a simple string which will be encrypted into some other string - silly";
 	protected String cipherText = "PmDt6ocl/NfPlYL2XQtDq3MfnDHRuXP3IxuPzlPbzWHe23AVCcvK2xDGKp4S5gcl+bf5HQW7oddXfFCAlw4eMmi5HA35jTCQGtGpSKkwZkw=";
@@ -38,11 +42,9 @@ public class StringEncrypterUnitTest extends TestCase {
 	 */
 	public void testEncrypt() {
 
-		System.out.println();
-		System.out.println("+----------------------------------------+");
-		System.out.println("|  -- Test Using Pass Phrase Method --   |");
-		System.out.println("+----------------------------------------+");
-		System.out.println();
+		log.debug("+----------------------------------------+");
+		log.debug("|  -- Test Using Pass Phrase Method --   |");
+		log.debug("+----------------------------------------+");
 
 		String secretString = "Attack at dawn!";
 		String passPhrase = "My Pass Phrase";
@@ -57,10 +59,9 @@ public class StringEncrypterUnitTest extends TestCase {
 		String desDecrypted = desEncrypter.decrypt(desEncrypted);
 
 		// Print out values
-		System.out.println("    Original String  : " + secretString);
-		System.out.println("    Encrypted String : " + desEncrypted);
-		System.out.println("    Decrypted String : " + desDecrypted);
-		System.out.println();
+		log.debug("    Original String  : " + secretString);
+		log.debug("    Encrypted String : " + desEncrypted);
+		log.debug("    Decrypted String : " + desDecrypted);
 
 		assertEquals(secretString, desDecrypted);
 	}

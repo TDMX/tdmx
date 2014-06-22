@@ -28,8 +28,12 @@ import java.security.interfaces.RSAPublicKey;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PrivateKeyIOUtilsTest {
+
+	private final Logger log = LoggerFactory.getLogger(PrivateKeyIOUtilsTest.class);
 
 	private final String privateKey = "" + "-----BEGIN RSA PRIVATE KEY-----" + TrustStoreEntry.NL
 			+ "MIIEpAIBAAKCAQEAww8tL6orP7ZiG1Os25JOK4OwoJ+snUIvptimgInfzwJ1LhM4" + TrustStoreEntry.NL
@@ -78,7 +82,7 @@ public class PrivateKeyIOUtilsTest {
 		assertEquals(pub.getPublicExponent(), new BigInteger("65537"));
 
 		assertNotNull(kp.getPrivate());
-		// TODO System.out.println(kp.getPrivate());
+		log.debug("PrivateKey " + kp.getPrivate());
 	}
 
 }

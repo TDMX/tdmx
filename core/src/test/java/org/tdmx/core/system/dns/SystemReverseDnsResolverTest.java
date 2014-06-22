@@ -22,8 +22,11 @@ import java.net.InetAddress;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SystemReverseDnsResolverTest {
+	private final Logger log = LoggerFactory.getLogger(SystemReverseDnsResolverTest.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -31,12 +34,13 @@ public class SystemReverseDnsResolverTest {
 
 	@Test
 	public void testReverseDnsLookup() throws Exception {
-		SystemReverseDnsResolver r = new SystemReverseDnsResolver("173.194.116.63");
-		String ip = r.reverseDns();
-		System.out.println(ip);
+		String IP = "173.194.116.63";
+		SystemReverseDnsResolver r = new SystemReverseDnsResolver(IP);
+		String host = r.reverseDns();
+		log.debug("Reverse dns lookup of " + IP + " is " + host);
 
-		InetAddress addr = InetAddress.getByName("173.194.116.63");
-		System.out.println(addr.getHostName());
+		InetAddress addr = InetAddress.getByName(IP);
+		log.debug("Hostname of " + IP + " is " + addr.getHostName());
 	}
 
 }

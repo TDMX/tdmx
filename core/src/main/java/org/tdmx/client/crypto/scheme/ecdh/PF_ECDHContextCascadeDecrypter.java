@@ -140,9 +140,6 @@ public class PF_ECDHContextCascadeDecrypter implements Decrypter {
 		SecretKeySpec innerPayloadSecretKey = new SecretKeySpec(innerPayloadKey, innerPayloadCipher.getAlgorithm());
 		IvParameterSpec innerPayloadSecretIv = new IvParameterSpec(innerPayloadIv);
 
-		// TODO System.out.println("Inner Payload KEY: " + ByteArray.asHex(innerPayloadKey));
-		// TODO System.out.println("Inner Payload IV: " + ByteArray.asHex(innerPayloadIv));
-
 		byte[] outerPayloadKey = ByteArray.subArray(payloadKeyBytes, innerPayloadCipher.getKeyLength()
 				+ innerPayloadCipher.getIvLength(), outerPayloadCipher.getKeyLength());
 		byte[] outerPayloadIv = ByteArray.subArray(payloadKeyBytes, innerPayloadCipher.getKeyLength()

@@ -20,10 +20,16 @@ package org.tdmx.client.crypto.pwdhash;
 
 import junit.framework.TestCase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtilsTest;
+
 /**
  * 
  */
 public class BCryptPerformanceUnitTest extends TestCase {
+
+	private final Logger log = LoggerFactory.getLogger(TrustStoreCertificateIOUtilsTest.class);
 
 	/**
 	 * Entry point for unit tests
@@ -48,7 +54,7 @@ public class BCryptPerformanceUnitTest extends TestCase {
 				assertTrue(BCrypt_v03.checkpw("my pwd", hashpw));
 			}
 			long endTs = System.currentTimeMillis();
-			// TODO System.out.println("" + i + ": " + ((endTs - startTs) / MULT));
+			log.debug("" + i + ": " + ((endTs - startTs) / MULT));
 		}
 	}
 

@@ -16,6 +16,10 @@ package org.tdmx.client.crypto.pwdhash;
 
 import junit.framework.TestCase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtilsTest;
+
 /**
  * JUnit unit tests for BCrypt routines
  * 
@@ -23,6 +27,8 @@ import junit.framework.TestCase;
  * @version 0.2
  */
 public class BCryptUnitTest extends TestCase {
+	private final Logger log = LoggerFactory.getLogger(TrustStoreCertificateIOUtilsTest.class);
+
 	String test_vectors[][] = {
 			{ "", "$2a$06$DCq7YPn5Rq63x1Lad4cll.", "$2a$06$DCq7YPn5Rq63x1Lad4cll.TV4S6ytwfsfvkgY8jIucDrjc8deX1s." },
 			{ "", "$2a$08$HqWuK6/Ng6sg9gQzbLrgb.", "$2a$08$HqWuK6/Ng6sg9gQzbLrgb.Tl.ZHfXLhvt/SgVyWhQqgqcZ7ZuUtye" },
@@ -67,98 +73,92 @@ public class BCryptUnitTest extends TestCase {
 	 * Test method for 'BCrypt.hashpw(String, String)'
 	 */
 	public void testHashpw() {
-		System.out.print("BCrypt.hashpw(): ");
+		log.debug("BCrypt.hashpw(): ");
 		for (int i = 0; i < test_vectors.length; i++) {
 			String plain = test_vectors[i][0];
 			String salt = test_vectors[i][1];
 			String expected = test_vectors[i][2];
 			String hashed = BCrypt_v03.hashpw(plain, salt);
 			assertEquals(hashed, expected);
-			System.out.print(".");
+			log.debug(".");
 		}
-		System.out.println("");
 	}
 
 	/**
 	 * Test method for 'BCrypt.gensalt(int)'
 	 */
 	public void testGensaltInt() {
-		System.out.print("BCrypt.gensalt(log_rounds):");
+		log.debug("BCrypt.gensalt(log_rounds):");
 		for (int i = 4; i <= 12; i++) {
-			System.out.print(" " + Integer.toString(i) + ":");
+			log.debug(" " + Integer.toString(i) + ":");
 			for (int j = 0; j < test_vectors.length; j += 4) {
 				String plain = test_vectors[j][0];
 				String salt = BCrypt_v03.gensalt(i);
 				String hashed1 = BCrypt_v03.hashpw(plain, salt);
 				String hashed2 = BCrypt_v03.hashpw(plain, hashed1);
 				assertEquals(hashed1, hashed2);
-				System.out.print(".");
+				log.debug(".");
 			}
 		}
-		System.out.println("");
 	}
 
 	/**
 	 * Test method for 'BCrypt.gensalt()'
 	 */
 	public void testGensalt() {
-		System.out.print("BCrypt.gensalt(): ");
+		log.debug("BCrypt.gensalt(): ");
 		for (int i = 0; i < test_vectors.length; i += 4) {
 			String plain = test_vectors[i][0];
 			String salt = BCrypt_v03.gensalt();
 			String hashed1 = BCrypt_v03.hashpw(plain, salt);
 			String hashed2 = BCrypt_v03.hashpw(plain, hashed1);
 			assertEquals(hashed1, hashed2);
-			System.out.print(".");
+			log.debug(".");
 		}
-		System.out.println("");
 	}
 
 	/**
 	 * Test method for 'BCrypt.checkpw(String, String)' expecting success
 	 */
 	public void testCheckpw_success() {
-		System.out.print("BCrypt.checkpw w/ good passwords: ");
+		log.debug("BCrypt.checkpw w/ good passwords: ");
 		for (int i = 0; i < test_vectors.length; i++) {
 			String plain = test_vectors[i][0];
 			String expected = test_vectors[i][2];
 			assertTrue(BCrypt_v03.checkpw(plain, expected));
-			System.out.print(".");
+			log.debug(".");
 		}
-		System.out.println("");
 	}
 
 	/**
 	 * Test method for 'BCrypt.checkpw(String, String)' expecting failure
 	 */
 	public void testCheckpw_failure() {
-		System.out.print("BCrypt.checkpw w/ bad passwords: ");
+		log.debug("BCrypt.checkpw w/ bad passwords: ");
 		for (int i = 0; i < test_vectors.length; i++) {
 			int broken_index = (i + 4) % test_vectors.length;
 			String plain = test_vectors[i][0];
 			String expected = test_vectors[broken_index][2];
 			assertFalse(BCrypt_v03.checkpw(plain, expected));
-			System.out.print(".");
+			log.debug(".");
 		}
-		System.out.println("");
 	}
 
 	/**
 	 * Test for correct hashing of non-US-ASCII passwords
 	 */
 	public void testInternationalChars() {
-		System.out.print("BCrypt.hashpw w/ international chars: ");
+		log.debug("BCrypt.hashpw w/ international chars: ");
 		String pw1 = "ππππππππ";
 		String pw2 = "????????";
 
 		String h1 = BCrypt_v03.hashpw(pw1, BCrypt_v03.gensalt());
 		assertFalse(BCrypt_v03.checkpw(pw2, h1));
-		System.out.print(".");
+		log.debug(".");
 
 		String h2 = BCrypt_v03.hashpw(pw2, BCrypt_v03.gensalt());
 		assertFalse(BCrypt_v03.checkpw(pw1, h2));
-		System.out.print(".");
-		System.out.println("");
+		log.debug(".");
 	}
 
 }
