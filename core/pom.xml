@@ -12,114 +12,114 @@
 		<relativePath>..</relativePath>
 	</parent>
 
-<build>
+	<build>
 		<plugins>
-            <plugin>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-codegen-plugin</artifactId>
-                <version>${cxf.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <sourceRoot>
-                                ${basedir}/target/generated-sources
-                            </sourceRoot>
-                            <wsdlOptions>
-                                <wsdlOption>
-                                    <wsdl>
-                                        ${basedir}/src/main/resources/wsdl/mos/mos.wsdl
-                                    </wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
-                                        <extraarg>-validate</extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/global-schema-binding.xml
-                                        </extraarg> 
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mos-schema-binding.xml
-                                        </extraarg>
-                                       
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mos-definitions-binding.xml
-                                        </extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                                <wsdlOption>
-                                    <wsdl>
-                                       ${basedir}/src/main/resources/wsdl/mds/mds.wsdl
-                                    </wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
-                                        <extraarg>-validate</extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/global-schema-binding.xml
-                                        </extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mds-schema-binding.xml
-                                        </extraarg> 
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mds-definitions-binding.xml
-                                        </extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                                <wsdlOption>
-                                    <wsdl>
-                                        ${basedir}/src/main/resources/wsdl/mrs/mrs.wsdl
-                                    </wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
-                                        <extraarg>-validate</extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/global-schema-binding.xml
-                                        </extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mrs-schema-binding.xml
-                                        </extraarg> 
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/mrs-definitions-binding.xml
-                                        </extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                                <wsdlOption>
-                                    <wsdl>
-                                        ${basedir}/src/main/resources/wsdl/zas/zas.wsdl
-                                    </wsdl>
-                                    <extraargs>
-                                        <extraarg>-verbose</extraarg>
-                                        <extraarg>-validate</extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/global-schema-binding.xml
-                                        </extraarg>
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/zas-schema-binding.xml
-                                        </extraarg> 
-                                        <extraarg>-b</extraarg>
-                                        <extraarg>
-                                            ${basedir}/src/main/resources/zas-definitions-binding.xml
-                                        </extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                            </wsdlOptions>
-                        </configuration>
-                        <goals>
-                            <goal>wsdl2java</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-codegen-plugin</artifactId>
+				<version>${cxf.version}</version>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceRoot>
+								${basedir}/target/generated-sources
+							</sourceRoot>
+							<wsdlOptions>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/mos/mos.wsdl
+									</wsdl>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-validate</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/global-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mos-schema-binding.xml
+										</extraarg>
+
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mos-definitions-binding.xml
+										</extraarg>
+									</extraargs>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/mds/mds.wsdl
+									</wsdl>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-validate</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/global-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mds-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mds-definitions-binding.xml
+										</extraarg>
+									</extraargs>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/mrs/mrs.wsdl
+									</wsdl>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-validate</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/global-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mrs-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/mrs-definitions-binding.xml
+										</extraarg>
+									</extraargs>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/zas/zas.wsdl
+									</wsdl>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-validate</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/global-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/zas-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/zas-definitions-binding.xml
+										</extraarg>
+									</extraargs>
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -140,7 +140,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-</build>
+	</build>
 
 	<dependencies>
 
@@ -181,8 +181,8 @@
 			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
