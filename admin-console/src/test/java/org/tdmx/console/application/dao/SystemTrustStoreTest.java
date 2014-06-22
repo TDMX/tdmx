@@ -24,9 +24,13 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 
 public class SystemTrustStoreTest {
+	private static Logger log = LoggerFactory.getLogger(SystemTrustStoreTest.class);
 
 	private SystemTrustStoreImpl ts;
 
@@ -41,8 +45,7 @@ public class SystemTrustStoreTest {
 		assertNotNull(rootCAs);
 
 		for (TrustStoreEntry rootCA : rootCAs) {
-			// TODO System.out.println(CertificateIOUtils.x509certToPem(rootCA.getCertificate()));
-			// TODO System.out.println();
+			log.debug("TrustedCA " + CertificateIOUtils.x509certToPem(rootCA.getCertificate()));
 		}
 	}
 
@@ -52,8 +55,7 @@ public class SystemTrustStoreTest {
 		assertNotNull(rootCAs);
 
 		for (TrustStoreEntry rootCA : rootCAs) {
-			// TODO System.out.println(CertificateIOUtils.x509certToPem(rootCA.getCertificate()));
-			// TODO System.out.println();
+			log.debug("DistrustedCA " + CertificateIOUtils.x509certToPem(rootCA.getCertificate()));
 		}
 	}
 }

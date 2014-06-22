@@ -27,8 +27,12 @@ import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DateFormatTest {
+
+	private static Logger log = LoggerFactory.getLogger(DateFormatTest.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -40,15 +44,15 @@ public class DateFormatTest {
 
 		// Date
 		DateFormat df = DateFormat.getDateInstance();
-		System.out.println(df.format(d));
+		log.debug(df.format(d));
 
 		// DateTime
 		df = DateFormat.getDateTimeInstance();
-		System.out.println(df.format(d));
+		log.debug(df.format(d));
 
 		// Time
 		df = DateFormat.getTimeInstance();
-		System.out.println(df.format(d));
+		log.debug(df.format(d));
 
 	}
 
@@ -56,7 +60,6 @@ public class DateFormatTest {
 	public void testParse_Time() {
 		// Time
 		DateFormat df = DateFormat.getTimeInstance();
-		System.out.println(df.isLenient());
 
 		expectParseSuccess(df, "11:39:19");
 		expectParseFailure(df, "11:39");
@@ -69,7 +72,6 @@ public class DateFormatTest {
 	public void testParse_DateTime() {
 		// Time
 		DateFormat df = DateFormat.getDateTimeInstance();
-		System.out.println(df.isLenient());
 
 		expectParseSuccess(df, "03.11.2013 11:39:19");
 		expectParseFailure(df, "03.11.2013");
@@ -82,7 +84,6 @@ public class DateFormatTest {
 	public void testParse_Date() {
 		// Time
 		DateFormat df = DateFormat.getDateInstance();
-		System.out.println(df.isLenient());
 
 		expectParseSuccess(df, "03.11.2013 11:39:19");
 		expectParseSuccess(df, "03.11.2013");
@@ -112,7 +113,7 @@ public class DateFormatTest {
 			Calendar c = Calendar.getInstance();
 			c.setTime(d);
 
-			System.out.println(" formatted " + text + " to " + c.toString());
+			log.debug(" formatted " + text + " to " + c.toString());
 		} catch (ParseException e) {
 			fail("Expected [" + text + "] to succeed with " + format.toString());
 		}
