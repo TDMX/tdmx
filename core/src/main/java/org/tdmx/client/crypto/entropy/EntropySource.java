@@ -22,15 +22,19 @@ import java.security.SecureRandom;
 
 public class EntropySource {
 
-	private static final SecureRandom sr = new SecureRandom();
+	private static final SecureRandom ENTROPY_SOURCE = new SecureRandom();
+
+	private EntropySource() {
+	}
 
 	public static byte[] getRandomBytes(int length) {
 		byte[] result = new byte[length];
-		sr.nextBytes(result);
+		ENTROPY_SOURCE.nextBytes(result);
 		return result;
 	}
 
 	public static SecureRandom getSecureRandom() {
-		return sr;
+		return ENTROPY_SOURCE;
 	}
+
 }

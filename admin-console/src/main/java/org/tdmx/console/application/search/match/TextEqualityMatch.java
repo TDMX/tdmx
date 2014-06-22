@@ -1,7 +1,7 @@
 /*
  * TDMX - Trusted Domain Messaging eXchange
  * 
- * import org.tdmx.console.application.search.SearchableObjectField; operable cloud service providers.
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
  * 
  * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
  * 

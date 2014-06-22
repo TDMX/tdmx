@@ -1,10 +1,13 @@
 /*
- * TDMX - Trusted Domain Messaging eXchange import java.util.Collections; import java.util.HashMap; import
- * java.util.HashSet; import java.util.List; import java.util.Map; import java.util.Set;
+ * TDMX - Trusted Domain Messaging eXchange
  * 
- * import org.tdmx.core.system.lang.StringUtils; e: you can redistribute it and/or modify it under the terms of the GNU
- * Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
- * your option) any later version.
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
+ * 
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more

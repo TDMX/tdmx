@@ -15,15 +15,15 @@
  * 
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
- */package org.tdmx.core.system.env;
+ */
+package org.tdmx.core.system.env;
 
 // -----------------------------------------------------------------------------
 // StringEncrypter.java
 // -----------------------------------------------------------------------------
 
 /*
- * ============================================================================= Copyright (c) 1998-2008 Jeffrey M.
- * Hunter. All rights reserved.
+ * Copyright (c) 1998-2008 Jeffrey M. Hunter. All rights reserved.
  * 
  * All source code and material located at the Internet address of http://www.idevelopment.info is the copyright of
  * Jeffrey M. Hunter and is protected under copyright laws of the United States. This source code may not be hosted on
@@ -36,7 +36,6 @@
  * arising from such loss, damage or destruction.
  * 
  * As with any code, ensure to test this code in a development environment before attempting to run it in production.
- * =============================================================================
  */
 
 // CIPHER / GENERATORS

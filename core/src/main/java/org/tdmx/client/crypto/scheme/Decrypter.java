@@ -1,6 +1,7 @@
 /*
- * TDMX - Trusted Domain Messaging eXcimport java.io.InputStream; messaging between separate corporations via
- * interoperable cloud service providers.
+ * TDMX - Trusted Domain Messaging eXchange
+ * 
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
  * 
  * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
  * 

@@ -1,7 +1,7 @@
 /*
  * TDMX - Trusted Domain Messaging eXchange
  * 
- * import java.util.Calendar; import java.util.StringTokenizer; nteroperable cloud service providers.
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
  * 
  * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
  * 

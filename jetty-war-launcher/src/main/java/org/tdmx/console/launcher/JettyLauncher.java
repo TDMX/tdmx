@@ -1,10 +1,9 @@
 /*
- * TDMX - Trusted Domain Messaging eXchange enables enterprise B2B messaging between separate corporations via
- * interoperable cloud service providers.
+ * TDMX - Trusted Domain Messaging eXchange
  * 
- * @see http://tdmx.org
+ * Enterprise B2B messaging between separate corporations via interoperable cloud service providers.
  * 
- * Copyright (C) 2014 Peter Klauser
+ * Copyright (C) 2014 Peter Klauser (http://tdmx.org)
  * 
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
  * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
