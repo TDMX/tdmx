@@ -49,8 +49,10 @@
         			<testFailureIgnore>false</testFailureIgnore>
 					<includes>
 						<include>**/*Test.java</include>
-						<excludes>**/*LongRunningTest.java</excludes>
 					</includes>
+					<excludes>
+						<exclude>**/*LongRunningTest.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>
