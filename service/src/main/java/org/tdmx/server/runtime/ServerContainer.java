@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
+import org.apache.cxf.transport.servlet.CXFServlet;
 import org.eclipse.jetty.server.AsyncNCSARequestLog;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -60,7 +61,7 @@ public class ServerContainer {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(ServerContainer.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
 	private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
@@ -185,7 +186,7 @@ public class ServerContainer {
 		context.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
 
 		// Add servlets
-		ServletHolder sh = new ServletHolder(org.apache.cxf.transport.servlet.CXFServlet.class);
+		ServletHolder sh = new ServletHolder(CXFServlet.class);
 		sh.setInitOrder(1);
 		context.addServlet(sh, "/*");
 
@@ -196,13 +197,11 @@ public class ServerContainer {
 			Thread monitor = new MonitorThread(server, getStopPort(), getStopCommand());
 			monitor.start();
 
-			try {
-				// Wait for the server to be stopped by the MonitorThread.
-				server.join();
-			} catch (InterruptedException ie) {
-				log.warn("Container running thread interrupted.", ie);
-			}
+			// Wait for the server to be stopped by the MonitorThread.
+			server.join();
 
+		} catch (InterruptedException ie) {
+			log.warn("Container running thread interrupted.", ie);
 		} catch (Exception e) {
 			log.error("Starting failed.", e);
 		}

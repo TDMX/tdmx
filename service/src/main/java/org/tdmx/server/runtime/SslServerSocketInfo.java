@@ -16,12 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.console.application;
+package org.tdmx.server.runtime;
+
+import java.io.IOException;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CodeTemplate {
+public class SslServerSocketInfo {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -30,7 +35,12 @@ public class CodeTemplate {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(CodeTemplate.class);
+	private static final Logger log = LoggerFactory.getLogger(SslServerSocketInfo.class);
+
+	private int sslTestPort;
+
+	private String[] supportedCipherSuites;
+	private String[] supportedProtocols;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -39,6 +49,33 @@ public class CodeTemplate {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	public void init() {
+
+		try {
+			log.debug("Locating server socket factory for SSL...");
+			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
+			log.debug("Creating a server socket on port " + sslTestPort);
+			SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(sslTestPort);
+			try {
+				supportedCipherSuites = serverSocket.getSupportedCipherSuites();
+				for (int i = 0; i < supportedCipherSuites.length; i++) {
+					log.debug("supported cipher suite: " + supportedCipherSuites[i]);
+				}
+
+				supportedProtocols = serverSocket.getSupportedProtocols();
+				for (int i = 0; i < supportedProtocols.length; i++) {
+					log.debug("supported ssl protocol: " + supportedProtocols[i]);
+				}
+
+			} finally {
+				serverSocket.close();
+			}
+
+		} catch (IOException e) {
+			log.warn("Unable to determine SSL capabilities of the JVM.", e);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -51,5 +88,28 @@ public class CodeTemplate {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+	public int getSslTestPort() {
+		return sslTestPort;
+	}
+
+	public void setSslTestPort(int sslTestPort) {
+		this.sslTestPort = sslTestPort;
+	}
+
+	public String[] getSupportedCipherSuites() {
+		return supportedCipherSuites;
+	}
+
+	public void setSupportedCipherSuites(String[] supportedCipherSuites) {
+		this.supportedCipherSuites = supportedCipherSuites;
+	}
+
+	public String[] getSupportedProtocols() {
+		return supportedProtocols;
+	}
+
+	public void setSupportedProtocols(String[] supportedProtocols) {
+		this.supportedProtocols = supportedProtocols;
+	}
 
 }
