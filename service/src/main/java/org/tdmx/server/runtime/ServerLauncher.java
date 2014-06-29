@@ -24,12 +24,16 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 
 public class ServerLauncher {
+
+	private static Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
 	public static void main(String[] args) throws Exception {
 		String javaVersion = System.getProperty("java.version");
@@ -58,13 +62,9 @@ public class ServerLauncher {
 		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
 		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
 		ApplicationContext context = (ApplicationContext) beanFactoryReference.getFactory();
-		System.out.println(context);
 
 		ServerContainer sc = (ServerContainer) context.getBean("serverContainer");
-		sc.startJetty();
-
-		Thread.sleep(10000);
-
+		sc.runUntilStopped();
 	}
 
 	private static class SSlServerCheck {
