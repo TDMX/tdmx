@@ -1,2 +1,3 @@
 *.crt
 /target
+/client.keystore

@@ -160,25 +160,21 @@ public class TrustStoreCertificateIOUtils {
 			tmf = TrustManagerFactory.getInstance(CertificateIOUtils.ALGORITHM);
 			tmf.init((KeyStore) null);
 			TrustManager[] tmgs = tmf.getTrustManagers();
-			if (tmgs != null) {
-				for (TrustManager tm : tmgs) {
-					if (tm instanceof X509TrustManager) {
-						X509TrustManager t = (X509TrustManager) tm;
-						X509Certificate[] issuers = t.getAcceptedIssuers();
-						if (issuers != null) {
-							for (X509Certificate i : issuers) {
-								PKIXCertificate pk = new PKIXCertificate(i);
-								TrustStoreEntry e = new TrustStoreEntry(pk);
-								caList.add(e);
-							}
-						}
+			for (TrustManager tm : tmgs) {
+				if (tm instanceof X509TrustManager) {
+					X509TrustManager t = (X509TrustManager) tm;
+					X509Certificate[] issuers = t.getAcceptedIssuers();
+					for (X509Certificate i : issuers) {
+						PKIXCertificate pk = new PKIXCertificate(i);
+						TrustStoreEntry e = new TrustStoreEntry(pk);
+						caList.add(e);
 					}
 				}
 			}
 		} catch (NoSuchAlgorithmException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
 		} catch (KeyStoreException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE, e);
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_SYSTEM_TRUSTSTORE_EXCEPTION, e);
 		}
 		return caList;
 	}

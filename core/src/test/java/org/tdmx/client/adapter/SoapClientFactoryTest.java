@@ -16,31 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.crypto.certificate;
+package org.tdmx.client.adapter;
 
-public enum CertificateResultCode {
+import static org.junit.Assert.assertEquals;
 
-	OK,
+import org.junit.Before;
+import org.junit.Test;
+import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 
-	ERROR_CA_KEYPAIR_GENERATION,
-	ERROR_CA_CERT_GENERATION,
+public class SoapClientFactoryTest {
 
-	ERROR_MISSING_CERTS,
-	ERROR_TOO_MANY_CERTS,
-	ERROR_FINGERPRINT_TAMPERING,
+	@Before
+	public void setUp() throws Exception {
+	}
 
-	ERROR_INVALID_KEY_SPEC,
-
-	ERROR_MISSING_ALGORITHM,
-	ERROR_MISSING_PROVIDER,
-
-	ERROR_SYSTEM_TRUSTSTORE_EXCEPTION,
-	ERROR_KEYSTORE_EXCEPTION,
-
-	ERROR_INVALID_OU,
-
-	ERROR_EXCEPTION,
-	ERROR_ENCODING,
-	ERROR_IO,
+	@Test
+	public void testKeyInfos() {
+		SoapClientFactory<MOS> mosFactory = new SoapClientFactory<>();
+		assertEquals(1, 1);
+	}
 
 }
