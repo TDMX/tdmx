@@ -2,3 +2,10 @@
 .project
 .classpath
 target
+/service/tdmx-configuration.properties
+/service/server.keystore
+/deployment/ssl/server.keystore
+/deployment/ssl/startssl-root.cer
+/deployment/ssl/startssl-intermediate.cer
+/deployment/ssl/server.crt
+/deployment/ssl/server.csr
