@@ -44,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DynamicDataSource implements javax.sql.DataSource {
 
-	private static Log log = LogFactory.getLog(DynamicDataSource.class);
+	private static final Log log = LogFactory.getLog(DynamicDataSource.class);
 
 	private static final ThreadLocal<String> partitionId = new ThreadLocal<String>();
 
@@ -61,8 +61,8 @@ public class DynamicDataSource implements javax.sql.DataSource {
 	}
 
 	private DataSourceConfigurationProvider configurationProvider;
-	private Map<String, DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
-	private Map<DatabaseConnectionInfo, BasicDataSource> connectionDataSourceMap = new ConcurrentHashMap<DatabaseConnectionInfo, BasicDataSource>();
+	private final Map<String, DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
+	private final Map<DatabaseConnectionInfo, BasicDataSource> connectionDataSourceMap = new ConcurrentHashMap<DatabaseConnectionInfo, BasicDataSource>();
 
 	/**
 	 * The PrintWriter to which log messages should be directed.

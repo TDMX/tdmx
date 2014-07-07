@@ -34,8 +34,8 @@ public class ClientAdapterFactoryIntegrationTest {
 
 		SoapClientFactory<MOS> mosCF = new SoapClientFactory<>();
 		mosCF.setClazz(MOS.class);
-		mosCF.setConnectionTimeout(10000);
-		mosCF.setReceiveTimeout(10000);
+		mosCF.setConnectionTimeoutMillis(10000);
+		mosCF.setReceiveTimeoutMillis(10000);
 		mosCF.setKeepAlive(true);
 		mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/");
 

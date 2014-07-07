@@ -50,7 +50,10 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.server.ws.security.HSTSHandler;
+import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.security.RequireClientCertificateFilter;
+import org.tdmx.server.ws.security.SessionRemovingHandler;
 
 public class ServerContainer {
 
@@ -71,6 +74,8 @@ public class ServerContainer {
 	private int httpsPort;
 	private String[] httpsCiphers;
 	private String[] httpsProtocols;
+	private boolean renegotiationAllowed;
+
 	private String keyStoreFile;
 	private String keyStorePassword;
 	private int connectionIdleTimeoutSec;
@@ -109,7 +114,7 @@ public class ServerContainer {
 		// we trust all client certs, with security in servlet "filters"
 		sslContextFactory.setTrustAll(true);
 		// sslContextFactory.setCertAlias("server");
-		sslContextFactory.setRenegotiationAllowed(false);
+		sslContextFactory.setRenegotiationAllowed(isRenegotiationAllowed());
 		// TODO change to NEED
 		sslContextFactory.setWantClientAuth(true);
 
@@ -151,9 +156,11 @@ public class ServerContainer {
 		HandlerCollection handlers = new HandlerCollection();
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 		RequestLogHandler requestLogHandler = new RequestLogHandler();
+		HSTSHandler hstsHandler = new HSTSHandler();
+		NotFoundHandler notfoundHandler = new NotFoundHandler();
+		SessionRemovingHandler sessionHandler = new SessionRemovingHandler();
 
-		handlers.setHandlers(new Handler[] { contexts, requestLogHandler });
-		// , new DefaultHandler()
+		handlers.setHandlers(new Handler[] { hstsHandler, contexts, requestLogHandler, notfoundHandler, sessionHandler });
 
 		StatisticsHandler stats = new StatisticsHandler();
 		stats.setHandler(handlers);
@@ -176,7 +183,6 @@ public class ServerContainer {
 		context.setInitParameter("contextConfigLocation", "classpath:/empty-context.xml");
 
 		// Add filters
-
 		FilterHolder cf = new FilterHolder();
 		cf.setFilter(new RequireClientCertificateFilter());
 		context.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
@@ -310,6 +316,14 @@ public class ServerContainer {
 
 	public void setHttpsProtocols(String[] httpsProtocols) {
 		this.httpsProtocols = httpsProtocols;
+	}
+
+	public boolean isRenegotiationAllowed() {
+		return renegotiationAllowed;
+	}
+
+	public void setRenegotiationAllowed(boolean renegotiationAllowed) {
+		this.renegotiationAllowed = renegotiationAllowed;
 	}
 
 	public String getKeyStoreFile() {

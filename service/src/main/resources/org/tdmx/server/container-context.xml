@@ -19,6 +19,7 @@
 		<property name="httpsPort" value="${container.httpsPort}" />
 		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
 		<property name="httpsProtocols" value="${container.httpsProtocols}"/>
+		<property name="renegotiationAllowed" value="${container.tlsRenegotiationAllowed}"/>
 		<property name="keyStoreFile" value="${container.keyStoreFile}"/>
 		<property name="keyStorePassword" value="${container.keyStorePassword}"/>
 		<property name="connectionIdleTimeoutSec" value="${container.connectionIdleTimeoutSec}"/>
