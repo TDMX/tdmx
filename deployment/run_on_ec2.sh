@@ -1,4 +1,9 @@
 #!/bin/sh
+#ssh -2 -i EC2.pem ec2-user@ec2-54-85-169-145.compute-1.amazonaws.com
+#https://ec2-54-85-169-145.compute-1.amazonaws.com:8443
+#java -Xmx512m -XX:+UseCompressedOops -jar server.jar >> stdout.log 2>&1 &
+#nc -v localhost 8079
+
 HOST=ec2-54-85-169-145.compute-1.amazonaws.com
 
 echo Copy the server configuration to remote machine

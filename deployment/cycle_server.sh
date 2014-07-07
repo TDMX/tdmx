@@ -23,7 +23,7 @@ ps -elf | grep ec-user | grep -v grep
 echo Killing any java processes....
 echo
 echo
-pkill -f 'java -jar'
+pkill -f 'java'
 
 if [ -d server ]; then
         echo Deleting previous backup directory if it exists....
@@ -48,7 +48,7 @@ mv server.keystore server
 chmod 600 server/*
 
 
-JAVA_OPTS="-Xmx512m -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
+JAVA_OPTS="-Djavax.net.debug=all -Xmx512m -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
 
 echo Starting server....
 echo
@@ -62,7 +62,7 @@ java $JAVA_OPTS -jar server.jar >> stdout.log 2>&1 &
 echo Waiting startup....
 echo
 echo
-sleep 30
+sleep 60
 
 echo Log stdout and exit....
 echo
