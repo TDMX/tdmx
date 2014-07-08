@@ -38,7 +38,7 @@ import org.tdmx.lib.control.domain.AuthorizedAgent;
  */
 public class AuthorizedAgentServiceRepositoryImpl implements AuthorizedAgentService {
 
-	private static Logger log = LoggerFactory.getLogger(AuthorizedAgentServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(AuthorizedAgentServiceRepositoryImpl.class);
 
 	private AuthorizedAgentDao authorizedAgentDao;
 

@@ -18,10 +18,17 @@
  */
 package org.tdmx.client.adapter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.tdmx.client.crypto.certificate.CertificateFacade;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.sp.mos.Submit;
+import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
+import org.tdmx.core.api.v01.sp.mos.msg.Msg;
+import org.tdmx.core.api.v01.sp.mos.tx.Transaction;
 import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 
 public class SoapClientFactoryTest {
@@ -31,9 +38,37 @@ public class SoapClientFactoryTest {
 	}
 
 	@Test
-	public void testKeyInfos() {
+	public void test_MOS_submit() throws CryptoCertificateException {
+		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		final PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		CredentialProvider cp = new CredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return uc;
+			}
+
+		};
+
 		SoapClientFactory<MOS> mosFactory = new SoapClientFactory<>();
-		assertEquals(1, 1);
+		// serviceprovider.tdmx.org
+		mosFactory.setUrl("https://localhost:8443/api/v1.0/sp/mos");
+		mosFactory.setConnectionTimeoutMillis(10000);
+		mosFactory.setKeepAlive(true);
+		mosFactory.setClazz(MOS.class);
+		mosFactory.setReceiveTimeoutMillis(10000);
+		mosFactory.setCredentialProvider(cp);
+
+		MOS client = mosFactory.createClient();
+		assertNotNull(client);
+
+		Submit submit = new Submit();
+		submit.setMsg(new Msg());
+		submit.setTransaction(new Transaction());
+		SubmitResponse response = client.submit(submit);
+		assertNotNull(response);
 	}
 
 }

@@ -59,6 +59,8 @@ public class SoapClientFactory<E> {
 	private int receiveTimeoutMillis;
 	private int connectionTimeoutMillis;
 
+	private CredentialProvider credentialProvider;
+
 	// TODO logging interceptors as properties
 
 	// -------------------------------------------------------------------------
@@ -118,32 +120,25 @@ public class SoapClientFactory<E> {
 		TLSClientParameters params = new TLSClientParameters(); // TODO configure
 																// keystore/truststore/protocols/ciphersuites
 		params.setDisableCNCheck(true); // TODO fix
-		params.setSecureSocketProtocol("TLS");
+		params.setSecureSocketProtocol("TLSv1.2");
 
 		SavingTrustManager stm = new SavingTrustManager(null);
 		params.setTrustManagers(new TrustManager[] { stm });
 
-		PKIXCredential identity = null; // TODO
-		params.setKeyManagers(new KeyManager[] { new PKIXCredentialKeyManager(identity) });
+		// setup the client identity certificate
+		if (getCredentialProvider() != null) {
+			PKIXCredential identity = getCredentialProvider().getCredential();
+			if (identity != null) {
+				params.setKeyManagers(new KeyManager[] { new PKIXCredentialKeyManager(identity) });
+			}
+		}
+
 		// link the HTTP and SSL configuration with the client's conduit.
 		HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
 		conduit.setClient(httpClientPolicy);
 		conduit.setTlsClientParameters(params);
 
 		return serviceClient;
-		/*
-		 * GetDeviceRequest parameters = new GetDeviceRequest(); RequestContext rc = new RequestContext();
-		 * rc.setOrderId("O123"); rc.setSourceSystem(Application.PP); parameters.setRequestContext(rc); DeviceReference
-		 * ref = new DeviceReference(); ref.setDeviceId("123"); parameters.setDeviceReference(ref); GetDeviceResponse
-		 * resp; try { resp = serviceClient.getDevice(parameters); System.out.println(resp.getDevice()); } catch
-		 * (ProcessingException e) { // TODO Auto-generated catch block e.printStackTrace(); } catch
-		 * (ValidationException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-		 * 
-		 * DeviceV1 serviceClient2 = (DeviceV1) factory.create(); System.out.println("1) " + serviceClient + ", 2) " +
-		 * serviceClient2);
-		 * 
-		 * System.out.println("ServerCert=" + stm.chain);
-		 */
 	}
 
 	// -------------------------------------------------------------------------
@@ -279,6 +274,14 @@ public class SoapClientFactory<E> {
 
 	public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
 		this.connectionTimeoutMillis = connectionTimeoutMillis;
+	}
+
+	public CredentialProvider getCredentialProvider() {
+		return credentialProvider;
+	}
+
+	public void setCredentialProvider(CredentialProvider credentialProvider) {
+		this.credentialProvider = credentialProvider;
 	}
 
 }

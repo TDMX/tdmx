@@ -66,7 +66,7 @@ public class CertificateFacade {
 		return req;
 	}
 
-	public static PKIXCredential createZAC(int validForYears) throws Exception {
+	public static PKIXCredential createZAC(int validForYears) throws CryptoCertificateException {
 		TdmxZoneInfo zi = createZI("zone.root", "https://mrsUrl/api");
 
 		ZoneAdministrationCredentialSpecifier req = createZACS(getNow(), getNowPlusYears(validForYears), zi);
@@ -85,7 +85,7 @@ public class CertificateFacade {
 		return req;
 	}
 
-	public static PKIXCredential createDAC(PKIXCredential zac, int validForYears) throws Exception {
+	public static PKIXCredential createDAC(PKIXCredential zac, int validForYears) throws CryptoCertificateException {
 		PKIXCertificate issuer = zac.getPublicCert();
 
 		DomainAdministrationCredentialSpecifier req = createDACS(zac, issuer, getNow(), getNowPlusYears(validForYears));
@@ -104,7 +104,7 @@ public class CertificateFacade {
 		return req;
 	}
 
-	public static PKIXCredential createUC(PKIXCredential dac, int validForYears) throws Exception {
+	public static PKIXCredential createUC(PKIXCredential dac, int validForYears) throws CryptoCertificateException {
 		UserCredentialSpecifier req = createUCS(dac, getNow(), getNowPlusYears(validForYears));
 		PKIXCredential cred = CredentialUtils.createUserCredential(req);
 		return cred;

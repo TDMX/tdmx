@@ -24,8 +24,12 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyStore;
+import java.security.cert.CRL;
+import java.util.Collection;
 import java.util.EnumSet;
 
+import javax.net.ssl.TrustManager;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
@@ -110,9 +114,9 @@ public class ServerContainer {
 		// SSL requires a certificate so we configure a factory for ssl contents with information pointing to what
 		// keystore the ssl connection needs to know about. Much more configuration is available the ssl context,
 		// including things like choosing the particular certificate out of a keystore to be used.
-		SslContextFactory sslContextFactory = new SslContextFactory();
+		TrustingSslContextFactory sslContextFactory = new TrustingSslContextFactory();
 		// we trust all client certs, with security in servlet "filters"
-		sslContextFactory.setTrustAll(true);
+
 		// sslContextFactory.setCertAlias("server");
 		sslContextFactory.setRenegotiationAllowed(isRenegotiationAllowed());
 		// TODO change to NEED
@@ -190,6 +194,8 @@ public class ServerContainer {
 		FilterHolder fh = new FilterHolder();
 		fh.setFilter(getUserAuthenticationFilter());
 		context.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
+		context.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
+		context.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
 
 		// Add servlets
 		ServletHolder sh = new ServletHolder(CXFServlet.class);
@@ -221,6 +227,13 @@ public class ServerContainer {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private static class TrustingSslContextFactory extends SslContextFactory {
+		@Override
+		protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls) throws Exception {
+			return SslContextFactory.TRUST_ALL_CERTS;
+		}
+	}
 
 	private static class MonitorThread extends Thread {
 		private static Logger log = LoggerFactory.getLogger(MonitorThread.class);

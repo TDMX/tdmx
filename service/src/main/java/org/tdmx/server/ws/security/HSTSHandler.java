@@ -51,8 +51,9 @@ public class HSTSHandler extends AbstractHandler {
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 
-		if (response.isCommitted() || baseRequest.isHandled())
+		if (response.isCommitted() || baseRequest.isHandled()) {
 			return;
+		}
 
 		log.debug("adding HSTS header");
 		response.addHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");

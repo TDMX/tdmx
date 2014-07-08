@@ -31,5 +31,23 @@
 
 	<bean id="ws.MOS" class="org.tdmx.server.ws.mos.MOSImpl" />
 
+
+
+
+	<jaxws:endpoint id="mrsEndpoint_V01" implementor="#ws.MRS" address="/v1.0/sp/mrs">
+	
+	</jaxws:endpoint>
+
+	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSImpl" />
+
+
+
+
+	<jaxws:endpoint id="zasEndpoint_V01" implementor="#ws.ZAS" address="/v1.0/sp/zas">
+	
+	</jaxws:endpoint>
+
+	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" />
+
 	
 </beans>

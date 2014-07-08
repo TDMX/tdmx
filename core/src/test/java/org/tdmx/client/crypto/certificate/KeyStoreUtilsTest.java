@@ -18,9 +18,13 @@
  */
 package org.tdmx.client.crypto.certificate;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.util.FileUtils;
 
 public class KeyStoreUtilsTest {
@@ -34,14 +38,57 @@ public class KeyStoreUtilsTest {
 	}
 
 	@Test
-	public void testCreateClientKeystore() throws Exception {
+	public void storeCreateClientKeystore() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
 		byte[] contents = KeyStoreUtils.saveKeyStore(uc, "jks", "changeme", "client");
 		FileUtils.storeFileContents("client.keystore", contents, ".tmp");
+	}
 
+	@Test
+	public void testLoadClientKeystore() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		byte[] contents = KeyStoreUtils.saveKeyStore(uc, "jks", "changeme", "client");
+
+		PKIXCredential loadedUC = KeyStoreUtils.getPrivateCredential(contents, "jks", "changeme", "client");
+
+		assertTrue(uc.getPublicCert().isIdentical(loadedUC.getPublicCert()));
+
+	}
+
+	@Test
+	public void testLoadInvalidKeystore() throws Exception {
+		byte[] randomBytes = EntropySource.getRandomBytes(1000);
+
+		try {
+			KeyStoreUtils.getPrivateCredential(randomBytes, "jks", "changeme", "client");
+			fail();
+		} catch (CryptoCertificateException e) {
+
+		}
+	}
+
+	@Test
+	public void testLoadTruncatedKeystore() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		byte[] contents = KeyStoreUtils.saveKeyStore(uc, "jks", "changeme", "client");
+
+		byte[] part = new byte[contents.length / 2];
+		System.arraycopy(contents, 0, part, 0, part.length);
+		try {
+			KeyStoreUtils.getPrivateCredential(part, "jks", "changeme", "client");
+			fail();
+		} catch (CryptoCertificateException e) {
+
+		}
 	}
 
 }
