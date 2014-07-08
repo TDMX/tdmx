@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.client.crypto.util.FileUtils;
+import org.tdmx.core.system.lang.FileUtils;
 
 public class KeystoreFileCredentialProvider implements CredentialProvider {
 

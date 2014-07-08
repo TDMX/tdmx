@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
-import org.tdmx.client.crypto.util.FileUtils;
+import org.tdmx.core.system.lang.FileUtils;
 
 public class KeyStoreUtilsTest {
 
