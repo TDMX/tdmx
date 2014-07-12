@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ public class SslServerSocketInfo {
 
 	private String[] supportedCipherSuites;
 	private String[] supportedProtocols;
+	private String defaultTrustManagerFactoryAlgorithm;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,6 +54,9 @@ public class SslServerSocketInfo {
 	public void init() {
 
 		try {
+			defaultTrustManagerFactoryAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+			log.debug("TrustManagerFactory.getDefaultAlgorithm() " + defaultTrustManagerFactoryAlgorithm);
+
 			log.debug("Locating server socket factory for SSL...");
 			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -110,6 +115,10 @@ public class SslServerSocketInfo {
 
 	public void setSupportedProtocols(String[] supportedProtocols) {
 		this.supportedProtocols = supportedProtocols;
+	}
+
+	public String getDefaultTrustManagerFactoryAlgorithm() {
+		return defaultTrustManagerFactoryAlgorithm;
 	}
 
 }

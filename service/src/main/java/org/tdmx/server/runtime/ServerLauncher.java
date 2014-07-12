@@ -55,6 +55,7 @@ public class ServerLauncher {
 		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean("sslInfo");
 		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
 		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
+		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
 
 		// Start the Jetty
 		ServerContainer sc = (ServerContainer) context.getBean("serverContainer");

@@ -37,6 +37,20 @@ public class ClientAdapterFactoryIntegrationTest {
 		mosCF.setConnectionTimeoutMillis(10000);
 		mosCF.setReceiveTimeoutMillis(10000);
 		mosCF.setKeepAlive(true);
+		mosCF.setTlsProtocolVersion("TLSv1.2");
+		mosCF.setDisableCNCheck(true);
+		//@formatter:off
+		String[] select_strong_ciphers = new String[] {
+				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+				"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
+				
+		};
+		//@formatter:on
+		mosCF.setEnabledCipherSuites(select_strong_ciphers);
 		mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/");
 
 		MOS service = mosCF.createClient();

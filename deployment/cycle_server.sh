@@ -47,8 +47,8 @@ mv tdmx-configuration.properties server
 mv server.keystore server
 chmod 600 server/*
 
-
-JAVA_OPTS="-Djavax.net.debug=all -Xmx512m -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
+#-Djavax.net.debug=all
+JAVA_OPTS="-Xmx512m -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
 
 echo Starting server....
 echo

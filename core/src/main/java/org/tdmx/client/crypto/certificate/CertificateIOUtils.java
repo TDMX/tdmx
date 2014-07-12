@@ -37,19 +37,33 @@ public class CertificateIOUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final String ALGORITHM = "X.509";
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final String X509CERTIFICATE_FACTORY_ALGORITHM = "X.509";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	private CertificateIOUtils() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	public static PKIXCertificate[] convert(X509Certificate[] certs) throws CryptoCertificateException {
+		if (certs == null) {
+			return null;
+		}
+
+		PKIXCertificate[] result = new PKIXCertificate[certs.length];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = new PKIXCertificate(certs[i]);
+		}
+		return result;
+	}
+
 	public static List<X509Certificate> convert(List<PKIXCertificate> certs) {
 		List<X509Certificate> xs = new ArrayList<>();
 		for (PKIXCertificate p : certs) {
@@ -110,7 +124,7 @@ public class CertificateIOUtils {
 	public static PKIXCertificate decodeCertificate(byte[] x509encodedValue) throws CryptoCertificateException {
 		CertificateFactory certFactory;
 		try {
-			certFactory = CertificateFactory.getInstance(ALGORITHM);
+			certFactory = CertificateFactory.getInstance(X509CERTIFICATE_FACTORY_ALGORITHM);
 			X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(
 					x509encodedValue));
 			return new PKIXCertificate(cert);

@@ -21,6 +21,7 @@ package org.tdmx.client.adapter;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.client.crypto.certificate.CertificateFacade;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
@@ -31,6 +32,7 @@ import org.tdmx.core.api.v01.sp.mos.msg.Msg;
 import org.tdmx.core.api.v01.sp.mos.tx.Transaction;
 import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 
+@Ignore
 public class SoapClientFactoryTest {
 
 	@Before
@@ -54,12 +56,26 @@ public class SoapClientFactoryTest {
 
 		SoapClientFactory<MOS> mosFactory = new SoapClientFactory<>();
 		// serviceprovider.tdmx.org
-		mosFactory.setUrl("https://localhost:8443/api/v1.0/sp/mos");
+		mosFactory.setUrl("https://serviceprovider.tdmx.org/api/v1.0/sp/mos");
 		mosFactory.setConnectionTimeoutMillis(10000);
 		mosFactory.setKeepAlive(true);
 		mosFactory.setClazz(MOS.class);
 		mosFactory.setReceiveTimeoutMillis(10000);
+		mosFactory.setDisableCNCheck(false);
 		mosFactory.setCredentialProvider(cp);
+		mosFactory.setTlsProtocolVersion("TLSv1.2");
+
+		//@formatter:off
+		String[] select_strong_ciphers = new String[] {
+				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+				"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
+				"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
+		};
+		//@formatter:on
+		mosFactory.setEnabledCipherSuites(select_strong_ciphers);
 
 		MOS client = mosFactory.createClient();
 		assertNotNull(client);

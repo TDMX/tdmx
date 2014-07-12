@@ -18,16 +18,9 @@
  */
 package org.tdmx.client.adapter;
 
-import java.net.Socket;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
@@ -58,6 +51,9 @@ public class SoapClientFactory<E> {
 	private boolean keepAlive;
 	private int receiveTimeoutMillis;
 	private int connectionTimeoutMillis;
+	private boolean disableCNCheck = false;
+	private String tlsProtocolVersion;
+	private String[] enabledCipherSuites;
 
 	private CredentialProvider credentialProvider;
 
@@ -117,13 +113,10 @@ public class SoapClientFactory<E> {
 		httpClientPolicy.setAutoRedirect(false);
 
 		// configure the SSL properties
-		TLSClientParameters params = new TLSClientParameters(); // TODO configure
-																// keystore/truststore/protocols/ciphersuites
-		params.setDisableCNCheck(true); // TODO fix
-		params.setSecureSocketProtocol("TLSv1.2");
-
-		SavingTrustManager stm = new SavingTrustManager(null);
-		params.setTrustManagers(new TrustManager[] { stm });
+		TLSClientParameters params = new TLSClientParameters();
+		params.setDisableCNCheck(isDisableCNCheck());
+		params.setSecureSocketProtocol(getTlsProtocolVersion());
+		params.setCipherSuites(Arrays.asList(getEnabledCipherSuites()));
 
 		// setup the client identity certificate
 		if (getCredentialProvider() != null) {
@@ -149,98 +142,15 @@ public class SoapClientFactory<E> {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private static class PKIXCredentialKeyManager implements X509KeyManager {
-
-		private static final Logger log = LoggerFactory.getLogger(PKIXCredentialKeyManager.class);
-
-		private final PKIXCredential credential;
-
-		public PKIXCredentialKeyManager(PKIXCredential credential) {
-			this.credential = credential;
-		}
-
-		@Override
-		public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-			log.info("chooseClientAlias keyType{" + keyType + "} issuers {" + issuers + "} on "
-					+ socket.getInetAddress());
-			return "identity";
-		}
-
-		@Override
-		public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-			log.info("chooseServerAlias keyType{" + keyType + "} issuers {" + issuers + "} on "
-					+ socket.getInetAddress());
-			// not relevant for client side
-			return null;
-		}
-
-		@Override
-		public X509Certificate[] getCertificateChain(String alias) {
-			log.info("getCertificateChain alias{" + alias + "}");
-			// we don't provide the "full" chain to the TDMX zone root issuer since
-			// the service providers always know our certificates exactly, and the
-			// "certification" chain is not relevant for TLS trust - since the SP "knows"
-			// each identity.
-			return new X509Certificate[] { credential.getPublicCert().getCertificate() };
-		}
-
-		@Override
-		public String[] getClientAliases(String keyType, Principal[] issuers) {
-			log.info("getClientAliases keyType{" + keyType + "} issuers {" + issuers + "}");
-			return null;
-		}
-
-		@Override
-		public PrivateKey getPrivateKey(String alias) {
-			log.info("getPrivateKey alias{" + alias + "}");
-			return credential.getPrivateKey();
-		}
-
-		@Override
-		public String[] getServerAliases(String keyType, Principal[] issuers) {
-			log.info("getServerAliases keyType{" + keyType + "} issuers {" + issuers + "}");
-			// not relevant for client side.
-			return null;
-		}
-
-	}
-
-	private static class SavingTrustManager implements X509TrustManager {
-
-		// private final X509TrustManager tm;
-		private X509Certificate[] chain;
-
-		SavingTrustManager(X509TrustManager tm) {
-			// this.tm = tm;
-		}
-
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-			return null;
-			// throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			this.chain = chain;
-			// tm.checkServerTrusted(chain, authType);
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public Class getClazz() {
+	public Class<E> getClazz() {
 		return clazz;
 	}
 
-	public void setClazz(Class clazz) {
+	public void setClazz(Class<E> clazz) {
 		this.clazz = clazz;
 	}
 
@@ -282,6 +192,30 @@ public class SoapClientFactory<E> {
 
 	public void setCredentialProvider(CredentialProvider credentialProvider) {
 		this.credentialProvider = credentialProvider;
+	}
+
+	public boolean isDisableCNCheck() {
+		return disableCNCheck;
+	}
+
+	public void setDisableCNCheck(boolean disableCNCheck) {
+		this.disableCNCheck = disableCNCheck;
+	}
+
+	public String getTlsProtocolVersion() {
+		return tlsProtocolVersion;
+	}
+
+	public void setTlsProtocolVersion(String tlsProtocolVersion) {
+		this.tlsProtocolVersion = tlsProtocolVersion;
+	}
+
+	public String[] getEnabledCipherSuites() {
+		return enabledCipherSuites;
+	}
+
+	public void setEnabledCipherSuites(String[] enabledCipherSuites) {
+		this.enabledCipherSuites = enabledCipherSuites;
 	}
 
 }

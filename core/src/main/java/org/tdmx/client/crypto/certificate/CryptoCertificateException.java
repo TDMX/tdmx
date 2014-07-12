@@ -18,7 +18,9 @@
  */
 package org.tdmx.client.crypto.certificate;
 
-public class CryptoCertificateException extends Exception {
+import java.security.GeneralSecurityException;
+
+public class CryptoCertificateException extends GeneralSecurityException {
 
 	private static final long serialVersionUID = -3340667312593427822L;
 

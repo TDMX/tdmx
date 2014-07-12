@@ -26,6 +26,16 @@ import java.nio.charset.Charset;
 
 public class StringUtils {
 
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+	private StringUtils() {
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	public static boolean hasText(String text) {
 		return text != null && text.length() > 0;
 	}

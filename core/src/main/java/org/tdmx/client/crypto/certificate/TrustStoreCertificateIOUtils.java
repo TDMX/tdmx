@@ -58,6 +58,8 @@ public class TrustStoreCertificateIOUtils {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	private TrustStoreCertificateIOUtils() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -152,22 +154,19 @@ public class TrustStoreCertificateIOUtils {
 		return certList;
 	}
 
-	public static List<TrustStoreEntry> getAllSystemTrustedCAs() throws CryptoCertificateException {
-		List<TrustStoreEntry> caList = new ArrayList<>();
-
-		TrustManagerFactory tmf;
+	public static X509TrustManager getDefaultPKIXTrustManager() throws CryptoCertificateException {
+		X509TrustManager platformTm = null;
 		try {
-			tmf = TrustManagerFactory.getInstance(CertificateIOUtils.ALGORITHM);
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			tmf.init((KeyStore) null);
 			TrustManager[] tmgs = tmf.getTrustManagers();
-			for (TrustManager tm : tmgs) {
-				if (tm instanceof X509TrustManager) {
-					X509TrustManager t = (X509TrustManager) tm;
-					X509Certificate[] issuers = t.getAcceptedIssuers();
-					for (X509Certificate i : issuers) {
-						PKIXCertificate pk = new PKIXCertificate(i);
-						TrustStoreEntry e = new TrustStoreEntry(pk);
-						caList.add(e);
+
+			// we get the first X509 trust manager and embedd it in our saving/testing wrapper.
+			if (tmgs != null) {
+				for (TrustManager m : tmgs) {
+					if (m instanceof X509TrustManager) {
+						platformTm = (X509TrustManager) m;
+						break;
 					}
 				}
 			}
@@ -175,6 +174,20 @@ public class TrustStoreCertificateIOUtils {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
 		} catch (KeyStoreException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_SYSTEM_TRUSTSTORE_EXCEPTION, e);
+		}
+
+		return platformTm;
+	}
+
+	public static List<TrustStoreEntry> getAllSystemTrustedCAs() throws CryptoCertificateException {
+		List<TrustStoreEntry> caList = new ArrayList<>();
+
+		X509TrustManager t = getDefaultPKIXTrustManager();
+		X509Certificate[] issuers = t.getAcceptedIssuers();
+		for (X509Certificate i : issuers) {
+			PKIXCertificate pk = new PKIXCertificate(i);
+			TrustStoreEntry e = new TrustStoreEntry(pk);
+			caList.add(e);
 		}
 		return caList;
 	}
