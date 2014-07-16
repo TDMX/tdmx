@@ -18,8 +18,16 @@
  */
 package org.tdmx.server.ws.security.service;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+
+/**
+ * The Service to use to lookup the authenticated agent.
+ * 
+ * @author Peter
+ * 
+ */
 public interface AuthenticatedAgentLookupService {
 
-	public Object getAuthenticatedAgent();
+	public PKIXCertificate getAuthenticatedAgent();
 
 }

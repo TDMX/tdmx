@@ -16,17 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.lib.zone.service;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.control.domain.AuthorizationStatus;
+import java.util.List;
 
-public interface AuthorizedAgentService {
+import org.tdmx.lib.zone.domain.AgentCredential;
 
-	public void createOrUpdate(PKIXCertificate certificate, AuthorizationStatus status);
+/**
+ * Management Services for a AgentCredential.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AgentCredentialService {
 
-	public AuthorizationStatus checkAuthorization(PKIXCertificate certificate);
+	public void createOrUpdate(AgentCredential zone);
 
-	public void delete(PKIXCertificate certificate);
+	public AgentCredential findByFingerprint(String sha1fingerprint);
+
+	public List<AgentCredential> findByZoneApex(String zoneApex);
+
+	public void delete(AgentCredential zone);
 
 }

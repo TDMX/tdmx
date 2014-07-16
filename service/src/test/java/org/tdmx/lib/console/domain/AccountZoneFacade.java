@@ -20,7 +20,7 @@ package org.tdmx.lib.console.domain;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AuthorizationStatus;
+import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 public class AccountZoneFacade {
 
@@ -29,7 +29,7 @@ public class AccountZoneFacade {
 		az.setZoneApex(zoneAdminCert.getTdmxZoneInfo().getZoneRoot());
 
 		az.setAccountId("1234");
-		az.setAuthorizationStatus(AuthorizationStatus.ACTIVE);
+		az.setStatus(AccountZoneStatus.ACTIVE);
 		az.setSegment("test");
 		az.setZonePartitionId("test-zone");
 		return az;

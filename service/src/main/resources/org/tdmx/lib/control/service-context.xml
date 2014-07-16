@@ -59,17 +59,6 @@
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.AuthorizedAgentDao"
-		class="org.tdmx.lib.control.dao.AuthorizedAgentDaoImpl">
-	</bean>
-
-	<bean id="tdmx.lib.control.AuthorizedAgentRepository"
-		class="org.tdmx.lib.control.service.AuthorizedAgentServiceRepositoryImpl">
-		<property name="authorizedAgentDao"
-			ref="tdmx.lib.control.dao.AuthorizedAgentDao" />
-	</bean>
-
-
 	<bean id="tdmx.lib.control.dao.AccountZoneDao"
 		class="org.tdmx.lib.control.dao.AccountZoneDaoImpl">
 	</bean>

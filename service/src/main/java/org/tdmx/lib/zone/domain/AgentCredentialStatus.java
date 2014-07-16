@@ -16,20 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.dao;
+package org.tdmx.lib.zone.domain;
 
-import org.tdmx.lib.control.domain.AuthorizedAgent;
+public enum AgentCredentialStatus {
 
-public interface AuthorizedAgentDao {
+	ACTIVE,
+	SUSPENDED, ;
 
-	public void persist(AuthorizedAgent value);
-
-	public void delete(AuthorizedAgent value);
-
-	public void lock(AuthorizedAgent value);
-
-	public AuthorizedAgent merge(AuthorizedAgent value);
-
-	public AuthorizedAgent loadByFingerprint(String fingerprint);
-
+	public static final int MAX_CREDENTIALSTATUS_LEN = 12;
 }

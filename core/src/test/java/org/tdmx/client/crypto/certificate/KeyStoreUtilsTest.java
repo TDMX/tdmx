@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
@@ -38,13 +39,20 @@ public class KeyStoreUtilsTest {
 	}
 
 	@Test
-	public void storeCreateClientKeystore() throws Exception {
+	@Ignore
+	public void storeCreateClientKeystores() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
 		byte[] contents = KeyStoreUtils.saveKeyStore(uc, "jks", "changeme", "client");
-		FileUtils.storeFileContents("client.keystore", contents, ".tmp");
+		FileUtils.storeFileContents("uc.keystore", contents, ".tmp");
+
+		contents = KeyStoreUtils.saveKeyStore(dac, "jks", "changeme", "client");
+		FileUtils.storeFileContents("dac.keystore", contents, ".tmp");
+
+		contents = KeyStoreUtils.saveKeyStore(zac, "jks", "changeme", "client");
+		FileUtils.storeFileContents("zac.keystore", contents, ".tmp");
 	}
 
 	@Test

@@ -16,16 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.zone.domain;
 
-public enum AuthorizationStatus {
+public enum AgentCredentialType {
 
-	ACTIVE,
-	BLOCKED,
-	UNKNOWN,
-	CONFLICT, // fingerprint conflict.
-	ERROR, // certificate processing error
-	;
+	/*
+	 * ZoneAdministratorCredential
+	 */
+	ZAC,
+	/*
+	 * DomainAdministratorCredential
+	 */
+	DAC,
+	/*
+	 * UserCredential
+	 */
+	UC, ;
 
-	public static final int MAX_AUTHORIZATIONSTATUS_LEN = 12;
+	public static final int MAX_CREDENTIALTYPE_LEN = 4;
 }

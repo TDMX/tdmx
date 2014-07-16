@@ -53,6 +53,9 @@ public class PKIXCertificate {
 	private X509Certificate certificate;
 	private JcaX509CertificateHolder holder;
 
+	/**
+	 * The SHA1 fingerprint
+	 */
 	private String fingerprint;
 
 	private static Map<String, String> oidMap = new HashMap<>();

@@ -16,28 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
 
-import java.io.IOException;
+package org.tdmx.lib.zone.service;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import java.util.List;
 
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.zone.dao.AgentCredentialDao;
+import org.tdmx.lib.zone.domain.AgentCredential;
 
 /**
- * A Jetty handler which enforces that no session is created and caching header is always set correctly for web
- * services.
+ * Transactional CRUD Services for AgentCredential Entity.
  * 
- * @author Peter
+ * @author Peter Klauser
  * 
  */
-public class SessionRemovingHandler extends AbstractHandler {
+public class AgentCredentialServiceRepositoryImpl implements AgentCredentialService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,7 +42,9 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionRemovingHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(AgentCredentialServiceRepositoryImpl.class);
+
+	private AgentCredentialDao agentCredentialDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,14 +55,38 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		// forcing any created session to invalidate
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			log.warn("Session created which should not have been " + session);
-			session.invalidate();
+	@Transactional(value = "ZoneDB")
+	public void createOrUpdate(AgentCredential agentCredential) {
+		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getSha1fingerprint());
+		if (storedAgentCredential == null) {
+			getAgentCredentialDao().persist(agentCredential);
+		} else {
+			getAgentCredentialDao().merge(agentCredential);
 		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void delete(AgentCredential agentCredential) {
+		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getSha1fingerprint());
+		if (storedAgentCredential != null) {
+			getAgentCredentialDao().delete(storedAgentCredential);
+		} else {
+			log.warn("Unable to find AgentCredential to delete with fingerprint "
+					+ agentCredential.getSha1fingerprint());
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public AgentCredential findByFingerprint(String fingerprint) {
+		return getAgentCredentialDao().loadById(fingerprint);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<AgentCredential> findByZoneApex(String zoneApex) {
+		return getAgentCredentialDao().loadByZoneApex(zoneApex);
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,5 +100,13 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public AgentCredentialDao getAgentCredentialDao() {
+		return agentCredentialDao;
+	}
+
+	public void setAgentCredentialDao(AgentCredentialDao agentCredentialDao) {
+		this.agentCredentialDao = agentCredentialDao;
+	}
 
 }

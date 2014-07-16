@@ -33,7 +33,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.lib.console.domain.AccountZoneFacade;
 import org.tdmx.lib.console.domain.CredentialFacade;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AuthorizationStatus;
+import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -77,7 +77,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 		AccountZone az = service.findByZoneApex(zoneApex);
 		assertNotNull(az);
 		assertNotNull(az.getAccountId());
-		assertNotNull(az.getAuthorizationStatus());
+		assertNotNull(az.getStatus());
 		assertNotNull(az.getSegment());
 		assertEquals(zoneApex, az.getZoneApex());
 		assertNotNull(az.getZonePartitionId());
@@ -92,11 +92,11 @@ public class AccountZoneServiceRepositoryUnitTest {
 	@Test
 	public void testModify() throws Exception {
 		AccountZone az = service.findByZoneApex(zoneApex);
-		az.setAuthorizationStatus(AuthorizationStatus.BLOCKED);
+		az.setStatus(AccountZoneStatus.BLOCKED);
 		service.createOrUpdate(az);
 
 		AccountZone az2 = service.findByZoneApex(zoneApex);
-		assertEquals(AuthorizationStatus.BLOCKED, az2.getAuthorizationStatus());
+		assertEquals(AccountZoneStatus.BLOCKED, az2.getStatus());
 
 		assertEquals(az.getAccountId(), az2.getAccountId());
 		assertEquals(az.getSegment(), az2.getSegment());

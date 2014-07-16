@@ -16,28 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
+package org.tdmx.lib.zone.dao;
 
-import java.io.IOException;
+import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tdmx.lib.zone.domain.AgentCredential;
 
-/**
- * A Jetty handler which enforces that no session is created and caching header is always set correctly for web
- * services.
- * 
- * @author Peter
- * 
- */
-public class SessionRemovingHandler extends AbstractHandler {
+public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,7 +37,9 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionRemovingHandler.class);
+
+	@PersistenceContext(unitName = "ZoneDB")
+	private EntityManager em;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,14 +50,42 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		// forcing any created session to invalidate
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			log.warn("Session created which should not have been " + session);
-			session.invalidate();
+	public void persist(AgentCredential value) {
+		em.persist(value);
+	}
+
+	@Override
+	public void delete(AgentCredential value) {
+		em.remove(value);
+	}
+
+	@Override
+	public void lock(AgentCredential value) {
+		em.lock(value, LockModeType.WRITE);
+	}
+
+	@Override
+	public AgentCredential merge(AgentCredential value) {
+		return em.merge(value);
+	}
+
+	@Override
+	public AgentCredential loadById(String sha1fingerprint) {
+		Query query = em.createQuery("from AgentCredential as ac where ac.sha1fingerprint = :id");
+		query.setParameter("id", sha1fingerprint);
+		try {
+			return (AgentCredential) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AgentCredential> loadByZoneApex(String zoneApex) {
+		Query query = em.createQuery("from AgentCredential as ac where ac.zoneApex = :zoneApex");
+		query.setParameter("zoneApex", zoneApex);
+		return query.getResultList();
 	}
 
 	// -------------------------------------------------------------------------

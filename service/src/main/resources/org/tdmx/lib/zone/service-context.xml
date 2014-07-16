@@ -58,6 +58,20 @@
 		<property name="entityManagerFactory" ref="tdmx.lib.zone.EntityManagerFactory" />
 	</bean>
 
+	<bean id="tdmx.lib.zone.dao.AgentCredentialDao"
+		class="org.tdmx.lib.zone.dao.AgentCredentialDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.AgentCredentialRepository"
+		class="org.tdmx.lib.zone.service.AgentCredentialServiceRepositoryImpl">
+		<property name="agentCredentialDao"
+			ref="tdmx.lib.zone.dao.AgentCredentialDao" />
+	</bean>
+
+	<bean id="tdmx.lib.zone.dao.AgentCredentialFactory"
+		class="org.tdmx.lib.zone.service.AgentCredentialFactoryImpl">
+	</bean>
+
 
 	<bean id="tdmx.lib.zone.dao.ZoneDao"
 		class="org.tdmx.lib.zone.dao.ZoneDaoImpl">

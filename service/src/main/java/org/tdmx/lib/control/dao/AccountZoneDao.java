@@ -20,6 +20,12 @@ package org.tdmx.lib.control.dao;
 
 import org.tdmx.lib.control.domain.AccountZone;
 
+/**
+ * DAO for AccountZone entity.
+ * 
+ * @author Peter
+ * 
+ */
 public interface AccountZoneDao {
 
 	public void persist(AccountZone value);

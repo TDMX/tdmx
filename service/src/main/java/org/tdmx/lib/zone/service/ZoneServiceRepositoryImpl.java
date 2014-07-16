@@ -26,14 +26,31 @@ import org.tdmx.lib.zone.dao.ZoneDao;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
+ * Transactional CRUD Services for Zone Entity.
+ * 
  * @author Peter Klauser
  * 
  */
 public class ZoneServiceRepositoryImpl implements ZoneService {
 
-	private static Logger log = LoggerFactory.getLogger(ZoneServiceRepositoryImpl.class);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(ZoneServiceRepositoryImpl.class);
 
 	private ZoneDao zoneDao;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	@Transactional(value = "ZoneDB")
@@ -60,9 +77,20 @@ public class ZoneServiceRepositoryImpl implements ZoneService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public Zone findByZoneApex(String zoneApex) {
-		Zone storedZone = getZoneDao().loadById(zoneApex);
-		return storedZone;
+		return getZoneDao().loadById(zoneApex);
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public ZoneDao getZoneDao() {
 		return zoneDao;

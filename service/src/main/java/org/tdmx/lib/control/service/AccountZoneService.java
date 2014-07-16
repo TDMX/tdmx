@@ -20,6 +20,12 @@ package org.tdmx.lib.control.service;
 
 import org.tdmx.lib.control.domain.AccountZone;
 
+/**
+ * AccountZoneService provides access to the control information about a Zone in the ControlDB.
+ * 
+ * @author Peter
+ * 
+ */
 public interface AccountZoneService {
 
 	public void createOrUpdate(AccountZone accountZone);

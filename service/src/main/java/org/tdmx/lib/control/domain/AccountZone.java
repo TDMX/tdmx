@@ -39,9 +39,15 @@ import javax.persistence.Table;
 @Table(name = "AccountZone")
 public class AccountZone implements Serializable {
 
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 	public static final int MAX_ZONEAPEX_LEN = 255;
 	public static final int MAX_SEGMENT_LEN = 16;
 
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
@@ -49,17 +55,43 @@ public class AccountZone implements Serializable {
 	private String zoneApex;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = AuthorizationStatus.MAX_AUTHORIZATIONSTATUS_LEN, nullable = false)
-	private AuthorizationStatus authorizationStatus;
+	@Column(length = AccountZoneStatus.MAX_ACCOUNTZONESTATUS_LEN, nullable = false)
+	private AccountZoneStatus status;
 
 	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
 	private String accountId;
 
+	/**
+	 * The segment is a secondary partitioning criteria like "premium" or "free" tier.
+	 */
 	@Column(length = MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
+	/**
+	 * Each zone is assigned into a DatabasePartition at creation time.
+	 */
 	@Column(length = DatabasePartition.MAX_URL_LEN, nullable = false)
 	private String zonePartitionId;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public String getZoneApex() {
 		return zoneApex;
@@ -69,20 +101,20 @@ public class AccountZone implements Serializable {
 		this.zoneApex = zoneApex;
 	}
 
-	public AuthorizationStatus getAuthorizationStatus() {
-		return authorizationStatus;
-	}
-
-	public void setAuthorizationStatus(AuthorizationStatus authorizationStatus) {
-		this.authorizationStatus = authorizationStatus;
-	}
-
 	public String getAccountId() {
 		return accountId;
 	}
 
 	public void setAccountId(String accountId) {
 		this.accountId = accountId;
+	}
+
+	public AccountZoneStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AccountZoneStatus status) {
+		this.status = status;
 	}
 
 	public String getSegment() {

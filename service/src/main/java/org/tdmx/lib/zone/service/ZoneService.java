@@ -20,6 +20,12 @@ package org.tdmx.lib.zone.service;
 
 import org.tdmx.lib.zone.domain.Zone;
 
+/**
+ * Management Services for a Zone.
+ * 
+ * @author Peter
+ * 
+ */
 public interface ZoneService {
 
 	public void createOrUpdate(Zone zone);

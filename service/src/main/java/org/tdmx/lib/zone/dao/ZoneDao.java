@@ -20,6 +20,12 @@ package org.tdmx.lib.zone.dao;
 
 import org.tdmx.lib.zone.domain.Zone;
 
+/**
+ * DAO for the Zone Entity.
+ * 
+ * @author Peter
+ * 
+ */
 public interface ZoneDao {
 
 	public void persist(Zone value);

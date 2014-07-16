@@ -16,13 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.zone.service;
 
-public enum InterfaceName {
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 
-	MOS, // Message Origination Service - for sending messages.
-	MDS, // Message Destination Service - for receiving messages.
-	MRS, // Message Relay Service - for relaying messages.
-	ZAS, // Zone Administration Service - for administration of zones.
-	;
+/**
+ * Factory Services for AgentCredential.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AgentCredentialFactory {
+
+	public AgentCredential createAgentCredential(PKIXCertificate[] certChain, AgentCredentialStatus status);
+
 }

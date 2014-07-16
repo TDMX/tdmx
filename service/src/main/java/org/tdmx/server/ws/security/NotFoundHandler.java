@@ -39,7 +39,22 @@ import org.slf4j.LoggerFactory;
  */
 public class NotFoundHandler extends AbstractHandler {
 
-	private static Logger log = LoggerFactory.getLogger(NotFoundHandler.class);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(NotFoundHandler.class);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void destroy() {
@@ -61,5 +76,17 @@ public class NotFoundHandler extends AbstractHandler {
 		response.setHeader(HttpHeader.CONNECTION.toString(), HttpHeaderValue.CLOSE.toString());
 		baseRequest.setHandled(true);
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

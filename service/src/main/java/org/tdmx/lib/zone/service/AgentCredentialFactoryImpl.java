@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
 
-import java.io.IOException;
+package org.tdmx.lib.zone.service;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 /**
- * A Jetty handler which enforces that no session is created and caching header is always set correctly for web
- * services.
+ * Factory for AgentCredential Entity.
  * 
- * @author Peter
+ * @author Peter Klauser
  * 
  */
-public class SessionRemovingHandler extends AbstractHandler {
+public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,26 +43,49 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionRemovingHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(AgentCredentialFactoryImpl.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public AgentCredential createAgentCredential(PKIXCertificate[] certificateChain, AgentCredentialStatus status) {
+		if (certificateChain == null || certificateChain.length < 1) {
+			log.error("createAgentCredential called without certificateChain.");
+			return null;
+		}
+		PKIXCertificate publicKey = certificateChain[0];
+		AgentCredential c = new AgentCredential();
+		c.setSha1fingerprint(publicKey.getFingerprint());
+		c.setCredentialStatus(status);
+
+		if (publicKey.isTdmxZoneAdminCertificate()) {
+			c.setCredentialType(AgentCredentialType.ZAC);
+		} else if (publicKey.isTdmxDomainAdminCertificate()) {
+			c.setCredentialType(AgentCredentialType.DAC);
+		} else if (publicKey.isTdmxUserCertificate()) {
+			c.setCredentialType(AgentCredentialType.UC);
+		} else {
+			log.error("createAgentCredential called with non TDMX certificateChain.");
+			return null;
+		}
+
+		c.setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+
+		try {
+			c.setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
+		} catch (CryptoCertificateException e) {
+			log.error("createAgentCredential failed to serialize certificateChain.", e);
+			return null;
+		}
+
+		return c;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		// forcing any created session to invalidate
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			log.warn("Session created which should not have been " + session);
-			session.invalidate();
-		}
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

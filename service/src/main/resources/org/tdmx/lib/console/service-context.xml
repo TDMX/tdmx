@@ -58,15 +58,4 @@
 		<property name="entityManagerFactory" ref="tdmx.lib.console.EntityManagerFactory" />
 	</bean>
 
-<!-- 
-	<bean id="tdmx.lib.console.dao.AuthorizedAgentDao"
-		class="org.tdmx.lib.console.dao.AuthorizedAgentDaoImpl">
-	</bean>
-
-	<bean id="tdmx.lib.console.AuthorizedAgentRepository"
-		class="org.tdmx.lib.console.service.AuthorizedAgentServiceRepositoryImpl">
-		<property name="authorizedAgentDao"
-			ref="tdmx.lib.console.dao.AuthorizedAgentDao" />
-	</bean>
- -->
 </beans>

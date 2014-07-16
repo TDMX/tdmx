@@ -16,14 +16,29 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.zone.dao;
 
-public enum CredentialType {
+import java.util.List;
 
-	ZAC, // ZoneAdministratorCredential
-	DAC, // DomainAdministratorCredential
-	UC, // UserCredential
-	;
+import org.tdmx.lib.zone.domain.AgentCredential;
 
-	public static final int MAX_CREDENTIALTYPE_LEN = 4;
+/**
+ * DAO for the AgentCredential Entity.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AgentCredentialDao {
+
+	public void persist(AgentCredential value);
+
+	public void delete(AgentCredential value);
+
+	public void lock(AgentCredential value);
+
+	public AgentCredential merge(AgentCredential value);
+
+	public AgentCredential loadById(String id);
+
+	public List<AgentCredential> loadByZoneApex(String zoneApex);
 }

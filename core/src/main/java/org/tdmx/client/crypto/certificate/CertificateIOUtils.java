@@ -52,6 +52,9 @@ public class CertificateIOUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	/**
+	 * Convert X509Certificates to PKIXCertificates.
+	 */
 	public static PKIXCertificate[] convert(X509Certificate[] certs) throws CryptoCertificateException {
 		if (certs == null) {
 			return null;
@@ -64,6 +67,9 @@ public class CertificateIOUtils {
 		return result;
 	}
 
+	/**
+	 * Convert PKIXCertificates to X509Certificates array.
+	 */
 	public static List<X509Certificate> convert(List<PKIXCertificate> certs) {
 		List<X509Certificate> xs = new ArrayList<>();
 		for (PKIXCertificate p : certs) {
@@ -72,17 +78,23 @@ public class CertificateIOUtils {
 		return xs;
 	}
 
-	public static String x509certToPem(PKIXCertificate cert) throws CryptoCertificateException {
+	public static String x509certsToPem(PKIXCertificate[] certs) throws CryptoCertificateException {
 		StringWriter writer = new StringWriter();
 		PEMWriter pemWrtCer = new PEMWriter(writer);
 		try {
-			pemWrtCer.writeObject(cert.getCertificate());
+			for (PKIXCertificate cert : certs) {
+				pemWrtCer.writeObject(cert.getCertificate());
+			}
 			pemWrtCer.close();
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
 		}
 
 		return writer.toString();
+	}
+
+	public static String x509certToPem(PKIXCertificate cert) throws CryptoCertificateException {
+		return x509certsToPem(new PKIXCertificate[] { cert });
 	}
 
 	public static PKIXCertificate pemToX509cert(String input) throws CryptoCertificateException {
@@ -121,6 +133,7 @@ public class CertificateIOUtils {
 		return certList.toArray(new PKIXCertificate[0]);
 	}
 
+	// TODO rename decodeX509
 	public static PKIXCertificate decodeCertificate(byte[] x509encodedValue) throws CryptoCertificateException {
 		CertificateFactory certFactory;
 		try {
@@ -133,6 +146,7 @@ public class CertificateIOUtils {
 		}
 	}
 
+	// TODO rename encodeX509
 	public static byte[] encodeCertificate(PKIXCertificate cert) throws CryptoCertificateException {
 		try {
 			if (cert != null && cert.getCertificate() != null) {

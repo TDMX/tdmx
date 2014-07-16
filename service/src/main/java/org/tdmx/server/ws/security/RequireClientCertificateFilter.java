@@ -34,9 +34,24 @@ import org.slf4j.LoggerFactory;
 
 public class RequireClientCertificateFilter implements Filter {
 
-	private static Logger log = LoggerFactory.getLogger(RequireClientCertificateFilter.class);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(RequireClientCertificateFilter.class);
 
 	private static String CLIENT_CERTIFICATE = "javax.servlet.request.X509Certificate";
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -62,5 +77,17 @@ public class RequireClientCertificateFilter implements Filter {
 	public void destroy() {
 		log.debug("destroy");
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

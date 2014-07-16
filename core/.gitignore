@@ -1,3 +1,6 @@
 *.crt
 /target
 /client.keystore
+/dac.keystore
+/uc.keystore
+/zac.keystore

@@ -18,23 +18,18 @@
  */
 package org.tdmx.server.ws.security.service;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+
 /**
  * Register/Clear/Get the AuthenticatedAgent with the current Thread.
  * 
- * Works together with the {@link AuthenticatedAgentLookupService} to provide the current Threadlocal authenticated
+ * Works together with the {@link AuthenticatedAgentLookupService} to provide the current ThreadLocal authenticated
  * agent.
  * 
  * @author Peter
  * 
  */
-public interface AuthenticatedAgentService {
-
-	/**
-	 * Get the AuthenticatedAgent associated with the current Thread.
-	 * 
-	 * @return
-	 */
-	public Object getAuthenticatedAgent();
+public interface AuthenticatedAgentService extends AuthenticatedAgentLookupService {
 
 	/**
 	 * Set the AuthenticatedAgent associated with the current Thread.
@@ -43,10 +38,10 @@ public interface AuthenticatedAgentService {
 	 * 
 	 * @param agent
 	 */
-	public void setAuthenticatedAgent(Object agent);
+	public void setAuthenticatedAgent(PKIXCertificate agent);
 
 	/**
-	 * Clear the AuthenticatedAgent so that non is associated with the current thread.
+	 * Clear the AuthenticatedAgent so that none is associated with the current thread.
 	 */
 	public void clearAuthenticatedAgent();
 

@@ -32,23 +32,43 @@ import javax.servlet.ServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.ws.security.service.AgentAuthorizationService.AuthorizationFailureCode;
+import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService;
+import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService.AuthorizationFailureCode;
+import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService.AuthorizationResult;
 
 public class AgentAuthenticationFilter implements Filter {
 
-	private static Logger log = LoggerFactory.getLogger(AgentAuthenticationFilter.class);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(AgentAuthenticationFilter.class);
 
 	private static String CLIENT_CERTIFICATE = "javax.servlet.request.X509Certificate";
 	private static Map<AuthorizationFailureCode, String> errorMessageMap = new HashMap<>();
 	static {
-		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_AGENT, "Unknown Agent.");
-		errorMessageMap.put(AuthorizationFailureCode.AGENT_SUSPENDED, "Suspended.");
-		errorMessageMap.put(AuthorizationFailureCode.INVALID_API_USAGE_ATTEMPT, "Wrong API usage attempt.");
-		errorMessageMap.put(AuthorizationFailureCode.NON_WHITELISTED_IPADDRESS,
-				"Connection from non whitelisted IP address.");
+		errorMessageMap.put(AuthorizationFailureCode.BAD_CERTIFICATE, "Bad Certificate.");
+		errorMessageMap.put(AuthorizationFailureCode.NON_TDMX, "Certificate is non TDMX.");
+		errorMessageMap.put(AuthorizationFailureCode.MISSING_CERT, "Missing Certificate.");
+		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_AGENT, "Unknown Certificate.");
+		errorMessageMap.put(AuthorizationFailureCode.AGENT_BLOCKED, "Blocked.");
 	}
 
-	// TODO wire agentAuthorizationService
+	// TODO spring wire agentAuthorizationService
+	private ZoneCredentialAuthorizationService authorizationService;
+	private AuthenticatedAgentService authenticatedAgentService;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -58,26 +78,55 @@ public class AgentAuthenticationFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 			ServletException {
-		log.debug("doFilter");
-
-		X509Certificate[] certs = (X509Certificate[]) request.getAttribute(CLIENT_CERTIFICATE);
-		if (certs != null && certs.length > 0) {
-			log.info("Client Cert: " + certs[0]);
-		} else {
-			log.info("No client cert.");
-		}
 		try {
-			// TODO setAuthorizedAgent
-			chain.doFilter(request, response);
+			log.debug("doFilter");
 
+			X509Certificate[] certs = (X509Certificate[]) request.getAttribute(CLIENT_CERTIFICATE);
+			AuthorizationResult authorization = getAuthorizationService().isAuthorized(certs);
+			if (authorization.getFailureCode() == null) {
+				getAuthenticatedAgentService().setAuthenticatedAgent(authorization.getPublicCertificate());
+
+				// the AuthorizationLookupService will give the agent further down the chain.
+				chain.doFilter(request, response);
+			} else {
+				// TODO 401 - access denied, message mapped from errorMessageMap
+			}
 		} finally {
-			// TODO clearAUthorizedAgent
+			getAuthenticatedAgentService().clearAuthenticatedAgent();
 		}
 	}
 
 	@Override
 	public void destroy() {
 		log.debug("destroy");
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
+
+	public ZoneCredentialAuthorizationService getAuthorizationService() {
+		return authorizationService;
+	}
+
+	public void setAuthorizationService(ZoneCredentialAuthorizationService authorizationService) {
+		this.authorizationService = authorizationService;
+	}
+
+	public AuthenticatedAgentService getAuthenticatedAgentService() {
+		return authenticatedAgentService;
+	}
+
+	public void setAuthenticatedAgentService(AuthenticatedAgentService authenticatedAgentService) {
+		this.authenticatedAgentService = authenticatedAgentService;
 	}
 
 }

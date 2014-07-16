@@ -16,12 +16,29 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.control.domain;
 
-public enum CredentialStatus {
+/**
+ * The AccountZoneStatus represents the state of a Zone as defined by the Account. The Account is free to toggle the
+ * AccountZone's status at any time. The AccountZoneStatus applies to all Agents of the Zone.
+ * 
+ * The AccountZoneStatus is not specified by the TDMX specification. How it is changed is defined by the
+ * ServiceProvider.
+ * 
+ * @author Peter
+ * 
+ */
+public enum AccountZoneStatus {
 
+	/**
+	 * The AccountZone is active so that Agents associated with the Zone may interact with the ServiceProvider.
+	 */
 	ACTIVE,
-	SUSPENDED, ;
 
-	public static final int MAX_CREDENTIALSTATUS_LEN = 12;
+	/**
+	 * The AccountZone is blocked so that Agents associated with the Zone may not interact with the ServiceProvider.
+	 */
+	BLOCKED, ;
+
+	public static final int MAX_ACCOUNTZONESTATUS_LEN = 16;
 }

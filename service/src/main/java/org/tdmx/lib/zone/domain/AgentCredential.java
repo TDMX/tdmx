@@ -16,33 +16,57 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
+package org.tdmx.lib.zone.domain;
 
-package org.tdmx.lib.control.service;
+import java.io.Serializable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.lib.control.dao.AccountZoneDao;
-import org.tdmx.lib.control.domain.AccountZone;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * Management of the AccountZone via transactional services.
+ * An AgentCredential is the public certificate of a ZAC, DAC or UC.
+ * 
+ * The AgentCredential is identified by it's SHA1 fingerprint of the public certificate ( first in chain ).
  * 
  * @author Peter Klauser
  * 
  */
-public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
+@Entity
+@Table(name = "AgentCredential")
+public class AgentCredential implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
+	public static final int MAX_CERTIFICATECHAIN_LEN = 12000; // 3 public keys max
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AccountZoneServiceRepositoryImpl.class);
+	private static final long serialVersionUID = -988419614813872556L;
 
-	private AccountZoneDao accountZoneDao;
+	@Id
+	@Column(length = MAX_SHA1FINGERPRINT_LEN)
+	private String sha1fingerprint;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = AgentCredentialType.MAX_CREDENTIALTYPE_LEN, nullable = false)
+	private AgentCredentialType credentialType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = AgentCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
+	private AgentCredentialStatus credentialStatus;
+
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
+	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
+	private String certificateChainPem;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -51,34 +75,6 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void createOrUpdate(AccountZone accountZone) {
-		AccountZone storedZone = getAccountZoneDao().loadById(accountZone.getZoneApex());
-		if (storedZone == null) {
-			getAccountZoneDao().persist(accountZone);
-		} else {
-			getAccountZoneDao().merge(accountZone);
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void delete(AccountZone accountZone) {
-		AccountZone storedZone = getAccountZoneDao().loadById(accountZone.getZoneApex());
-		if (storedZone != null) {
-			getAccountZoneDao().delete(storedZone);
-		} else {
-			log.warn("Unable to find AccountZone to delete with root " + accountZone.getZoneApex());
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public AccountZone findByZoneApex(String zoneApex) {
-		return getAccountZoneDao().loadById(zoneApex);
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -92,12 +88,44 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AccountZoneDao getAccountZoneDao() {
-		return accountZoneDao;
+	public String getSha1fingerprint() {
+		return sha1fingerprint;
 	}
 
-	public void setAccountZoneDao(AccountZoneDao accountZoneDao) {
-		this.accountZoneDao = accountZoneDao;
+	public void setSha1fingerprint(String sha1fingerprint) {
+		this.sha1fingerprint = sha1fingerprint;
+	}
+
+	public AgentCredentialType getCredentialType() {
+		return credentialType;
+	}
+
+	public void setCredentialType(AgentCredentialType credentialType) {
+		this.credentialType = credentialType;
+	}
+
+	public AgentCredentialStatus getCredentialStatus() {
+		return credentialStatus;
+	}
+
+	public void setCredentialStatus(AgentCredentialStatus credentialStatus) {
+		this.credentialStatus = credentialStatus;
+	}
+
+	public String getCertificateChainPem() {
+		return certificateChainPem;
+	}
+
+	public void setCertificateChainPem(String certificateChainPem) {
+		this.certificateChainPem = certificateChainPem;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
 }
