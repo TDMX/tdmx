@@ -29,13 +29,15 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService;
+import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationFailureCode;
+import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
-import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService;
-import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService.AuthorizationFailureCode;
-import org.tdmx.server.ws.security.service.ZoneCredentialAuthorizationService.AuthorizationResult;
 
 public class AgentAuthenticationFilter implements Filter {
 
@@ -54,12 +56,12 @@ public class AgentAuthenticationFilter implements Filter {
 		errorMessageMap.put(AuthorizationFailureCode.BAD_CERTIFICATE, "Bad Certificate.");
 		errorMessageMap.put(AuthorizationFailureCode.NON_TDMX, "Certificate is non TDMX.");
 		errorMessageMap.put(AuthorizationFailureCode.MISSING_CERT, "Missing Certificate.");
+		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_ZONE, "Unknown Zone.");
 		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_AGENT, "Unknown Certificate.");
 		errorMessageMap.put(AuthorizationFailureCode.AGENT_BLOCKED, "Blocked.");
 	}
 
-	// TODO spring wire agentAuthorizationService
-	private ZoneCredentialAuthorizationService authorizationService;
+	private AgentCredentialAuthorizationService authorizationService;
 	private AuthenticatedAgentService authenticatedAgentService;
 
 	// -------------------------------------------------------------------------
@@ -78,18 +80,26 @@ public class AgentAuthenticationFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 			ServletException {
+		if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+			throw new ServletException("AgentAuthenticationFilter just supports HTTP requests");
+		}
+		HttpServletRequest httpRequest = (HttpServletRequest) request;
+		HttpServletResponse httpResponse = (HttpServletResponse) response;
+
 		try {
 			log.debug("doFilter");
 
-			X509Certificate[] certs = (X509Certificate[]) request.getAttribute(CLIENT_CERTIFICATE);
+			X509Certificate[] certs = (X509Certificate[]) httpRequest.getAttribute(CLIENT_CERTIFICATE);
 			AuthorizationResult authorization = getAuthorizationService().isAuthorized(certs);
 			if (authorization.getFailureCode() == null) {
-				getAuthenticatedAgentService().setAuthenticatedAgent(authorization.getPublicCertificate());
+				getAuthenticatedAgentService().setAuthenticatedAgent(authorization);
 
 				// the AuthorizationLookupService will give the agent further down the chain.
 				chain.doFilter(request, response);
 			} else {
-				// TODO 401 - access denied, message mapped from errorMessageMap
+				// 401 - access denied, message mapped from errorMessageMap
+				httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+						errorMessageMap.get(authorization.getFailureCode()));
 			}
 		} finally {
 			getAuthenticatedAgentService().clearAuthenticatedAgent();
@@ -113,11 +123,11 @@ public class AgentAuthenticationFilter implements Filter {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ZoneCredentialAuthorizationService getAuthorizationService() {
+	public AgentCredentialAuthorizationService getAuthorizationService() {
 		return authorizationService;
 	}
 
-	public void setAuthorizationService(ZoneCredentialAuthorizationService authorizationService) {
+	public void setAuthorizationService(AgentCredentialAuthorizationService authorizationService) {
 		this.authorizationService = authorizationService;
 	}
 

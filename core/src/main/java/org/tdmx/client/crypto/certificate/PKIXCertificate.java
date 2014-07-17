@@ -68,6 +68,8 @@ public class PKIXCertificate {
 	// TODO subject key identifier
 	// TODO issuer key identifier
 
+	// TODO TDMX domain and zone apex MUST be uppercase! address / username is case sensitive but not DomainNames.
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -258,8 +260,6 @@ public class PKIXCertificate {
 		return -1;
 	}
 
-	// TODO is uc
-
 	public boolean isTdmxZoneAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 1 == getCAPathLengthConstraint();
@@ -285,7 +285,7 @@ public class PKIXCertificate {
 		// TODO subjectKey == issuerKey identifiers
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null) {
+		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
 			return false;
 		}
 
@@ -316,8 +316,8 @@ public class PKIXCertificate {
 					return false;
 				}
 			}
-			String tdmx_ou = getLastRDN(snc, BCStyle.OU);
-			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou)) {
+			String tdmxOU = getLastRDN(snc, BCStyle.OU);
+			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmxOU)) {
 				return false;
 			}
 			return true;
@@ -352,15 +352,13 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null) {
+		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
 			return false;
 		}
 
-		if (!getCommonName().equals(zi.getZoneRoot())) {
+		if (!getCommonName().equals(zi.getZoneRoot()) && !getCommonName().endsWith("." + zi.getZoneRoot())) {
 			// domain is subdomain of zone root
-			if (!getCommonName().endsWith("." + zi.getZoneRoot())) {
-				return false;
-			}
+			return false;
 		}
 		// critical nameConstraint where subject(-DN)==namecontraint subtree
 		X500Name snc = getSubjectNameConstraint();
@@ -389,13 +387,13 @@ public class PKIXCertificate {
 					return false;
 				}
 			}
-			String tdmx_ou = getSecondLastRDN(snc, BCStyle.OU);
-			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmx_ou)) {
+			String tdmxOU = getSecondLastRDN(snc, BCStyle.OU);
+			if (!CredentialUtils.TDMX_DOMAIN_CA_OU.equals(tdmxOU)) {
 				return false;
 			}
 
-			String domain_ou = getLastRDN(snc, BCStyle.OU);
-			if (!getCommonName().equals(domain_ou)) {
+			String domainOU = getLastRDN(snc, BCStyle.OU);
+			if (!getCommonName().equals(domainOU)) {
 				return false;
 			}
 
@@ -430,7 +428,8 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null) {
+		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
+			// we must have the zone root normalized to uppercase.
 			return false;
 		}
 

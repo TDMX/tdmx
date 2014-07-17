@@ -43,7 +43,7 @@ public class CredentialUtilsTest {
 	@Test
 	public void testCreateZoneAdminCredentials() throws Exception {
 
-		TdmxZoneInfo zi = CertificateFacade.createZI("zone.root", "https://mrsUrl/api");
+		TdmxZoneInfo zi = CertificateFacade.createZI("ZONE.ROOT", "https://mrsUrl/api");
 		Calendar now = CertificateFacade.getNow();
 		Calendar to = CertificateFacade.getNowPlusYears(10);
 		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(now, to, zi);

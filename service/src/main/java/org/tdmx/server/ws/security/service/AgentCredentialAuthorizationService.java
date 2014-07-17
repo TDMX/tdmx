@@ -21,6 +21,7 @@ package org.tdmx.server.ws.security.service;
 import java.security.cert.X509Certificate;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.control.domain.AccountZone;
 
 /**
  * AuthorizationService for ZoneCredentials.
@@ -33,7 +34,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
  * @author Peter
  * 
  */
-public interface ZoneCredentialAuthorizationService {
+public interface AgentCredentialAuthorizationService {
 
 	public static enum AuthorizationFailureCode {
 		/*
@@ -49,6 +50,10 @@ public interface ZoneCredentialAuthorizationService {
 		 */
 		NON_TDMX,
 		/*
+		 * The certificates provided indicate an unknown zone.
+		 */
+		UNKNOWN_ZONE,
+		/*
 		 * The certificates provided are not recognized as a valid Agent.
 		 */
 		UNKNOWN_AGENT,
@@ -62,17 +67,20 @@ public interface ZoneCredentialAuthorizationService {
 	 * The result of an authorization check can be either successful, or provide a failure code.
 	 */
 	public static class AuthorizationResult {
-		private final PKIXCertificate publicCertificate;
 		private final AuthorizationFailureCode failureCode;
+		private final PKIXCertificate publicCertificate;
+		private final AccountZone accountZone;
 
-		public AuthorizationResult(PKIXCertificate publicCertificate) {
+		public AuthorizationResult(PKIXCertificate publicCertificate, AccountZone accountZone) {
 			this.publicCertificate = publicCertificate;
 			this.failureCode = null;
+			this.accountZone = accountZone;
 		}
 
 		public AuthorizationResult(AuthorizationFailureCode failureCode) {
 			this.publicCertificate = null;
 			this.failureCode = failureCode;
+			this.accountZone = null;
 		}
 
 		/**
@@ -85,6 +93,15 @@ public interface ZoneCredentialAuthorizationService {
 		}
 
 		/**
+		 * The accountZone which holds what zonePartitionId is valid.
+		 * 
+		 * @return
+		 */
+		public AccountZone getAccountZone() {
+			return accountZone;
+		}
+
+		/**
 		 * Whether there was an authentication failure.
 		 * 
 		 * @return null if successful, else the failure code.
@@ -92,6 +109,7 @@ public interface ZoneCredentialAuthorizationService {
 		public AuthorizationFailureCode getFailureCode() {
 			return failureCode;
 		}
+
 	}
 
 	/**

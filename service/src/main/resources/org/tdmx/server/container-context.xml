@@ -11,11 +11,25 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
  
- 	<bean id="sslInfo" class="org.tdmx.server.runtime.SslServerSocketInfo" init-method="init">
+ 	<bean id="server.sslInfo" class="org.tdmx.server.runtime.SslServerSocketInfo" init-method="init">
 		<property name="sslTestPort" value="${container.httpsPort}" />
  	</bean>
 
-	<bean id="serverContainer" class="org.tdmx.server.runtime.ServerContainer">
+	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">
+	</bean>
+	
+	<bean id="server.authorizationFilter" class="org.tdmx.server.ws.security.AgentAuthenticationFilter">
+		<property name="authorizationService" ref="server.agentCredentialAuthorizationService" />
+		<property name="authenticatedAgentService" ref="server.authenticatedAgentService" />
+	</bean>
+	
+	<bean id="server.agentCredentialAuthorizationService" class="org.tdmx.server.ws.security.service.AgentCredentialAuthorizationServiceImpl">
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository" />
+		<property name="agentCredentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
+	</bean>
+	
+	<bean id="server.Container" class="org.tdmx.server.runtime.ServerContainer">
 		<property name="httpsPort" value="${container.httpsPort}" />
 		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
 		<property name="httpsProtocols" value="${container.httpsProtocols}"/>
@@ -27,11 +41,9 @@
 		<property name="stopPort" value="${container.stopPort}" />
 		<property name="stopCommand" value="${container.stopCommand}" />
 
-		<property name="userAuthenticationFilter" ref="userAuthenticationFilter"/>
+		<property name="agentAuthorizationFilter" ref="server.authorizationFilter"/>
 	</bean>
 
-	<bean id="userAuthenticationFilter" class="org.tdmx.server.ws.security.AgentAuthenticationFilter">
-	</bean>
 	
 	
 </beans>

@@ -73,7 +73,7 @@ public class ServerContainer {
 	private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
 
-	private Filter userAuthenticationFilter;
+	private Filter agentAuthorizationFilter;
 
 	private int httpsPort;
 	private String[] httpsCiphers;
@@ -192,10 +192,14 @@ public class ServerContainer {
 		context.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
 
 		FilterHolder fh = new FilterHolder();
-		fh.setFilter(getUserAuthenticationFilter());
+		fh.setFilter(getAgentAuthorizationFilter());
 		context.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
 		context.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
 		context.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
+		// the MRS endpoint is not filtered by any authorization filter because
+		// each ServiceProvider is automatically "authorized" but only to operate
+		// sending data which is signed to be relevant to that service provider, so service
+		// layer checking takes place.
 
 		// Add servlets
 		ServletHolder sh = new ServletHolder(CXFServlet.class);
@@ -236,7 +240,7 @@ public class ServerContainer {
 	}
 
 	private static class MonitorThread extends Thread {
-		private static Logger log = LoggerFactory.getLogger(MonitorThread.class);
+		private static final Logger log = LoggerFactory.getLogger(MonitorThread.class);
 
 		private final ServerSocket socket;
 		private final Server server;
@@ -379,12 +383,12 @@ public class ServerContainer {
 		this.stopCommand = stopCommand;
 	}
 
-	public Filter getUserAuthenticationFilter() {
-		return userAuthenticationFilter;
+	public Filter getAgentAuthorizationFilter() {
+		return agentAuthorizationFilter;
 	}
 
-	public void setUserAuthenticationFilter(Filter userAuthenticationFilter) {
-		this.userAuthenticationFilter = userAuthenticationFilter;
+	public void setAgentAuthorizationFilter(Filter agentAuthorizationFilter) {
+		this.agentAuthorizationFilter = agentAuthorizationFilter;
 	}
 
 }

@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.entropy.EntropySource;
@@ -39,7 +38,6 @@ public class KeyStoreUtilsTest {
 	}
 
 	@Test
-	@Ignore
 	public void storeCreateClientKeystores() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);

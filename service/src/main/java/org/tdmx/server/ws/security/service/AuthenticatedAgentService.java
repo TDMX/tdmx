@@ -18,7 +18,7 @@
  */
 package org.tdmx.server.ws.security.service;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 
 /**
  * Register/Clear/Get the AuthenticatedAgent with the current Thread.
@@ -32,13 +32,13 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 public interface AuthenticatedAgentService extends AuthenticatedAgentLookupService {
 
 	/**
-	 * Set the AuthenticatedAgent associated with the current Thread.
+	 * Set the AuthorizationResult associated with the current Thread.
 	 * 
-	 * Setting the AuthenticatedAgent without it being cleared first for the thread calling will issue a warning.
+	 * Setting the AuthorizationResult without it being cleared first for the thread calling will issue a warning.
 	 * 
 	 * @param agent
 	 */
-	public void setAuthenticatedAgent(PKIXCertificate agent);
+	public void setAuthenticatedAgent(AuthorizationResult authorization);
 
 	/**
 	 * Clear the AuthenticatedAgent so that none is associated with the current thread.

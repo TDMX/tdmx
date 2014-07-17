@@ -52,13 +52,13 @@ public class ServerLauncher {
 		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
 		ApplicationContext context = (ApplicationContext) beanFactoryReference.getFactory();
 
-		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean("sslInfo");
+		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean("server.sslInfo");
 		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
 		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
 		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
 
 		// Start the Jetty
-		ServerContainer sc = (ServerContainer) context.getBean("serverContainer");
+		ServerContainer sc = (ServerContainer) context.getBean("server.Container");
 		sc.runUntilStopped();
 	}
 

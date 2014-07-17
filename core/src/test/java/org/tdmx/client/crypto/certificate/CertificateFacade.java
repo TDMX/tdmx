@@ -67,7 +67,7 @@ public class CertificateFacade {
 	}
 
 	public static PKIXCredential createZAC(int validForYears) throws CryptoCertificateException {
-		TdmxZoneInfo zi = createZI("zone.root", "https://mrsUrl/api");
+		TdmxZoneInfo zi = createZI("ZONE.ROOT", "https://mrsUrl/api");
 
 		ZoneAdministrationCredentialSpecifier req = createZACS(getNow(), getNowPlusYears(validForYears), zi);
 		return CredentialUtils.createZoneAdministratorCredential(req);

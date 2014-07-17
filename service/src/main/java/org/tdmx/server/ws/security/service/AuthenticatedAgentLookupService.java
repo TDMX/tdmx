@@ -21,7 +21,7 @@ package org.tdmx.server.ws.security.service;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
- * The Service to use to lookup the authenticated agent.
+ * The Service to use to lookup the authenticated agent's certificate and zone DB partition information.
  * 
  * @author Peter
  * 
@@ -29,5 +29,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 public interface AuthenticatedAgentLookupService {
 
 	public PKIXCertificate getAuthenticatedAgent();
+
+	public String getZoneDbPartitionId();
 
 }

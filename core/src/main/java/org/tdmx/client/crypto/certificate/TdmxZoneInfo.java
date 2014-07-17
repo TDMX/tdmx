@@ -42,16 +42,17 @@ public class TdmxZoneInfo extends ASN1Object {
 	private final DERIA5String zoneRoot;
 	private final DERIA5String mrsUrl;
 
-	public static TdmxZoneInfo getInstance(Object o) {
-		if (o instanceof TdmxZoneInfo) {
-			return (TdmxZoneInfo) o;
-		} else if (o instanceof ASN1Sequence) {
-			return new TdmxZoneInfo((ASN1Sequence) o);
-		}
-
-		throw new IllegalArgumentException("unknown object in factory: " + o.getClass().getName());
-	}
-
+	/**
+	 * Create a TdmxZoneInfo descriptor which describes a versioned TDMX relay interface for a normalized domain name
+	 * (zone apex).
+	 * 
+	 * @param version
+	 *            currently only 1
+	 * @param zoneRoot
+	 *            must be uppercase
+	 * @param mrsUrl
+	 *            the MRS relay URL, ie. http://mrs.serviceprovider.com/api/v01/mrs
+	 */
 	public TdmxZoneInfo(int version, String zoneRoot, String mrsUrl) {
 		this.version = new ASN1Integer(version);
 		this.zoneRoot = new DERIA5String(zoneRoot);
@@ -66,17 +67,14 @@ public class TdmxZoneInfo extends ASN1Object {
 		mrsUrl = DERIA5String.getInstance(e.nextElement());
 	}
 
-	public int getVersion() {
-		BigInteger bi = version.getValue();
-		return bi.intValue();
-	}
+	public static TdmxZoneInfo getInstance(Object o) {
+		if (o instanceof TdmxZoneInfo) {
+			return (TdmxZoneInfo) o;
+		} else if (o instanceof ASN1Sequence) {
+			return new TdmxZoneInfo((ASN1Sequence) o);
+		}
 
-	public String getZoneRoot() {
-		return zoneRoot.getString();
-	}
-
-	public String getMrsUrl() {
-		return mrsUrl.getString();
+		throw new IllegalArgumentException("unknown object in factory: " + o.getClass().getName());
 	}
 
 	/**
@@ -100,4 +98,18 @@ public class TdmxZoneInfo extends ASN1Object {
 
 		return new DERSequence(v);
 	}
+
+	public int getVersion() {
+		BigInteger bi = version.getValue();
+		return bi.intValue();
+	}
+
+	public String getZoneRoot() {
+		return zoneRoot.getString();
+	}
+
+	public String getMrsUrl() {
+		return mrsUrl.getString();
+	}
+
 }

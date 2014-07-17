@@ -68,7 +68,7 @@
 			ref="tdmx.lib.zone.dao.AgentCredentialDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.AgentCredentialFactory"
+	<bean id="tdmx.lib.zone.AgentCredentialFactory"
 		class="org.tdmx.lib.zone.service.AgentCredentialFactoryImpl">
 	</bean>
 

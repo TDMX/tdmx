@@ -23,7 +23,6 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
-// TODO UserCertSpec.
 public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
