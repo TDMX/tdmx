@@ -34,7 +34,7 @@ public class ClientAdapterFactoryIntegrationTest {
 		cp.setKeystoreAlias("client");
 		cp.setKeystoreFilePath("src/test/resources/uc.keystore"); // USER
 		cp.setKeystorePassphrase("changeme");
-		cp.setKeystoreType("jk");
+		cp.setKeystoreType("jks");
 
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
