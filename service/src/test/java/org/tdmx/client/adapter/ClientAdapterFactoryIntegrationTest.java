@@ -20,7 +20,6 @@ package org.tdmx.client.adapter;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.core.api.v01.sp.mos.Submit;
 import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
@@ -29,8 +28,16 @@ import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 public class ClientAdapterFactoryIntegrationTest {
 
 	@Test
-	@Ignore
+	// @Ignore
 	public void test() {
+		KeystoreFileCredentialProvider cp = new KeystoreFileCredentialProvider();
+		cp.setKeystoreAlias("client");
+		cp.setKeystoreFilePath("src/test/resources/uc.keystore"); // USER
+		cp.setKeystorePassphrase("changeme");
+		cp.setKeystoreType("jk");
+
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
 
 		SoapClientFactory<MOS> mosCF = new SoapClientFactory<>();
 		mosCF.setClazz(MOS.class);
@@ -39,6 +46,7 @@ public class ClientAdapterFactoryIntegrationTest {
 		mosCF.setKeepAlive(true);
 		mosCF.setTlsProtocolVersion("TLSv1.2");
 		mosCF.setDisableCNCheck(true);
+		mosCF.setKeyManagerFactory(kmf);
 		//@formatter:off
 		String[] select_strong_ciphers = new String[] {
 				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
@@ -51,7 +59,8 @@ public class ClientAdapterFactoryIntegrationTest {
 		};
 		//@formatter:on
 		mosCF.setEnabledCipherSuites(select_strong_ciphers);
-		mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/");
+		// mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/");
+		mosCF.setUrl("https://localhost:8443/api/");
 
 		MOS service = mosCF.createClient();
 

@@ -45,7 +45,7 @@ public class SslProbeServiceTest {
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		final PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
-		CredentialProvider cp = new CredentialProvider() {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
 			public PKIXCredential getCredential() {
@@ -53,6 +53,9 @@ public class SslProbeServiceTest {
 			}
 
 		};
+
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
 
 		//@formatter:off
 		/*
@@ -110,7 +113,7 @@ public class SslProbeServiceTest {
 		//@formatter:on
 
 		service = new SslProbeService();
-		service.setClientCredentialProvider(cp);
+		service.setKeyManagerFactory(kmf);
 		service.setSslProtocol("TLSv1.2");
 		service.setEnabledCiphers(select_strong_ciphers);
 		service.setConnectionTimeoutMillis(10000);

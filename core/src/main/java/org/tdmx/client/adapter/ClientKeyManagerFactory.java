@@ -18,21 +18,21 @@
  */
 package org.tdmx.client.adapter;
 
-import org.tdmx.client.crypto.certificate.PKIXCredential;
+import javax.net.ssl.X509KeyManager;
 
 /**
- * An interface which provides a Credential.
+ * An interface which provides the X509KeyManager.
  * 
  * @author Peter
  * 
  */
-public interface CredentialProvider {
+public interface ClientKeyManagerFactory {
 
 	/**
-	 * Return the credential or null if not possible.
+	 * Return the key manager.
 	 * 
-	 * @return the credential or null if not possible.
+	 * @return the key manager or null if not possible.
 	 */
-	public PKIXCredential getCredential();
+	public X509KeyManager getKeyManager();
 
 }

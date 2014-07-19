@@ -45,7 +45,7 @@ public class SoapClientFactoryTest {
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		final PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
-		CredentialProvider cp = new CredentialProvider() {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
 			public PKIXCredential getCredential() {
@@ -53,6 +53,8 @@ public class SoapClientFactoryTest {
 			}
 
 		};
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
 
 		SoapClientFactory<MOS> mosFactory = new SoapClientFactory<>();
 		// serviceprovider.tdmx.org
@@ -62,7 +64,7 @@ public class SoapClientFactoryTest {
 		mosFactory.setClazz(MOS.class);
 		mosFactory.setReceiveTimeoutMillis(10000);
 		mosFactory.setDisableCNCheck(false);
-		mosFactory.setCredentialProvider(cp);
+		mosFactory.setKeyManagerFactory(kmf);
 		mosFactory.setTlsProtocolVersion("TLSv1.2");
 
 		//@formatter:off

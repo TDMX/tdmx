@@ -32,7 +32,6 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCredential;
 
 public class SoapClientFactory<E> {
 
@@ -55,7 +54,9 @@ public class SoapClientFactory<E> {
 	private String tlsProtocolVersion;
 	private String[] enabledCipherSuites;
 
-	private CredentialProvider credentialProvider;
+	// TODO hookin ServerTrustManagerFactory
+
+	private ClientKeyManagerFactory keyManagerFactory;
 
 	// TODO logging interceptors as properties
 
@@ -119,10 +120,10 @@ public class SoapClientFactory<E> {
 		params.setCipherSuites(Arrays.asList(getEnabledCipherSuites()));
 
 		// setup the client identity certificate
-		if (getCredentialProvider() != null) {
-			PKIXCredential identity = getCredentialProvider().getCredential();
-			if (identity != null) {
-				params.setKeyManagers(new KeyManager[] { new PKIXCredentialKeyManager(identity) });
+		if (getKeyManagerFactory() != null) {
+			KeyManager clientKeyManager = getKeyManagerFactory().getKeyManager();
+			if (clientKeyManager != null) {
+				params.setKeyManagers(new KeyManager[] { clientKeyManager });
 			}
 		}
 
@@ -186,14 +187,6 @@ public class SoapClientFactory<E> {
 		this.connectionTimeoutMillis = connectionTimeoutMillis;
 	}
 
-	public CredentialProvider getCredentialProvider() {
-		return credentialProvider;
-	}
-
-	public void setCredentialProvider(CredentialProvider credentialProvider) {
-		this.credentialProvider = credentialProvider;
-	}
-
 	public boolean isDisableCNCheck() {
 		return disableCNCheck;
 	}
@@ -216,6 +209,14 @@ public class SoapClientFactory<E> {
 
 	public void setEnabledCipherSuites(String[] enabledCipherSuites) {
 		this.enabledCipherSuites = enabledCipherSuites;
+	}
+
+	public ClientKeyManagerFactory getKeyManagerFactory() {
+		return keyManagerFactory;
+	}
+
+	public void setKeyManagerFactory(ClientKeyManagerFactory keyManagerFactory) {
+		this.keyManagerFactory = keyManagerFactory;
 	}
 
 }

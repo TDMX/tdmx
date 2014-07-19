@@ -29,16 +29,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 
-class PKIXCredentialKeyManager implements X509KeyManager {
+class ClientCredentialKeyManager implements X509KeyManager {
 
-	private static final Logger log = LoggerFactory.getLogger(PKIXCredentialKeyManager.class);
+	private static final Logger log = LoggerFactory.getLogger(ClientCredentialKeyManager.class);
 
 	// a fake alias for a pre-loaded credential
 	private static final String CLIENT_ALIAS = "identity";
 
 	private final PKIXCredential credential;
 
-	public PKIXCredentialKeyManager(PKIXCredential credential) {
+	public ClientCredentialKeyManager(PKIXCredential credential) {
 		this.credential = credential;
 	}
 

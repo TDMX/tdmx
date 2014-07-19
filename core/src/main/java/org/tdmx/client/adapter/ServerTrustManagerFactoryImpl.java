@@ -18,16 +18,12 @@
  */
 package org.tdmx.client.adapter;
 
-import java.io.IOException;
+import javax.net.ssl.X509TrustManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.client.crypto.certificate.KeyStoreUtils;
-import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.system.lang.FileUtils;
 
-public class KeystoreFileCredentialProvider implements ClientCredentialProvider {
+public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,12 +32,9 @@ public class KeystoreFileCredentialProvider implements ClientCredentialProvider 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(KeystoreFileCredentialProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerTrustManagerFactoryImpl.class);
 
-	private String keystoreType;
-	private String keystoreAlias;
-	private String keystorePassphrase;
-	private String keystoreFilePath;
+	private TrustedServerCertificateProvider certificateProvider;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,17 +45,8 @@ public class KeystoreFileCredentialProvider implements ClientCredentialProvider 
 	// -------------------------------------------------------------------------
 
 	@Override
-	public PKIXCredential getCredential() {
-		try {
-			byte[] keystoreContents = FileUtils.getFileContents(getKeystoreFilePath());
-
-			return KeyStoreUtils.getPrivateCredential(keystoreContents, getKeystoreType(), getKeystorePassphrase(),
-					getKeystoreAlias());
-		} catch (IOException e) {
-			log.warn("Unable to load keystore " + keystoreFilePath, e);
-		} catch (CryptoCertificateException e) {
-			log.warn("Unable to load keystore contents " + keystoreFilePath, e);
-		}
+	public X509TrustManager getTrustManager() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -78,36 +62,12 @@ public class KeystoreFileCredentialProvider implements ClientCredentialProvider 
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getKeystoreType() {
-		return keystoreType;
+	public TrustedServerCertificateProvider getCertificateProvider() {
+		return certificateProvider;
 	}
 
-	public void setKeystoreType(String keystoreType) {
-		this.keystoreType = keystoreType;
-	}
-
-	public String getKeystoreAlias() {
-		return keystoreAlias;
-	}
-
-	public void setKeystoreAlias(String keystoreAlias) {
-		this.keystoreAlias = keystoreAlias;
-	}
-
-	public String getKeystorePassphrase() {
-		return keystorePassphrase;
-	}
-
-	public void setKeystorePassphrase(String keystorePassphrase) {
-		this.keystorePassphrase = keystorePassphrase;
-	}
-
-	public String getKeystoreFilePath() {
-		return keystoreFilePath;
-	}
-
-	public void setKeystoreFilePath(String keystoreFilePath) {
-		this.keystoreFilePath = keystoreFilePath;
+	public void setCertificateProvider(TrustedServerCertificateProvider certificateProvider) {
+		this.certificateProvider = certificateProvider;
 	}
 
 }
