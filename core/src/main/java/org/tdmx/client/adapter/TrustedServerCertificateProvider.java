@@ -29,9 +29,9 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 public interface TrustedServerCertificateProvider {
 
 	/**
-	 * Return the trusted certificates or null if not possible.
+	 * Return the trusted certificates or empty list if not possible.
 	 * 
-	 * @return the credentials or null if not possible.
+	 * @return the credentials or empty list if not possible.
 	 */
 	public PKIXCertificate[] getTrustedCertificates();
 

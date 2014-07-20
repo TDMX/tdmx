@@ -25,9 +25,7 @@ import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.DomainAdministrationCredentialSpecifier;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.client.crypto.certificate.TdmxZoneInfo;
 import org.tdmx.client.crypto.certificate.UserCredentialSpecifier;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 
@@ -43,11 +41,8 @@ public class CredentialFacade {
 		later.add(Calendar.YEAR, 10);
 		later.set(Calendar.MILLISECOND, 0);
 
-		TdmxZoneInfo zi = new TdmxZoneInfo(1, zoneRoot, "https://mrsUrl/api");
-
-		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier();
-		req.setZoneInfo(zi);
-
+		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zoneRoot,
+				"https://mrsUrl/api");
 		req.setCn("name");
 		req.setTelephoneNumber("0417100000");
 		req.setEmailAddress("pjk@gmail.com");
@@ -65,8 +60,6 @@ public class CredentialFacade {
 	}
 
 	public static PKIXCredential createDAC(PKIXCredential zac) throws Exception {
-		PKIXCertificate issuer = zac.getPublicCert();
-
 		Calendar now = Calendar.getInstance();
 		now.setTime(new Date());
 		now.set(Calendar.MILLISECOND, 0);
@@ -76,9 +69,7 @@ public class CredentialFacade {
 		later.add(Calendar.YEAR, 2);
 		later.set(Calendar.MILLISECOND, 0);
 
-		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier();
-		req.setZoneAdministratorCredential(zac);
-		req.setDomainName("subdomain." + issuer.getTdmxZoneInfo().getZoneRoot());
+		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier("subdomain", zac);
 		req.setNotBefore(now);
 		req.setNotAfter(later);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);

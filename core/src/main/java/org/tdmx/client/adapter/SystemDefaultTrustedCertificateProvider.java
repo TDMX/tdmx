@@ -18,22 +18,16 @@
  */
 package org.tdmx.client.adapter;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
+import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 
-public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory {
+public class SystemDefaultTrustedCertificateProvider implements TrustedServerCertificateProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,9 +36,7 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerTrustManagerFactoryImpl.class);
-
-	private TrustedServerCertificateProvider certificateProvider;
+	private static final Logger log = LoggerFactory.getLogger(SystemDefaultTrustedCertificateProvider.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,26 +47,19 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// -------------------------------------------------------------------------
 
 	@Override
-	public X509TrustManager getTrustManager() {
-		PKIXCertificate[] trustedCertificates = certificateProvider.getTrustedCertificates();
-
+	public PKIXCertificate[] getTrustedCertificates() {
 		try {
-			KeyStore keyStore = KeyStoreUtils.createTrustStore(trustedCertificates, "jks");
-			TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			tmf.init(keyStore);
-			TrustManager[] tms = tmf.getTrustManagers();
-			for (int i = 0; tms != null && i < tms.length; i++) {
-				if (tms[i] instanceof X509TrustManager) {
-					return (X509TrustManager) tms[i];
-				}
+			List<TrustStoreEntry> trustedEntries = TrustStoreCertificateIOUtils.getAllSystemTrustedCAs();
+			PKIXCertificate[] result = new PKIXCertificate[trustedEntries.size()];
+			int i = 0;
+			for (TrustStoreEntry e : trustedEntries) {
+				result[i++] = e.getCertificate();
 			}
-		} catch (KeyStoreException | NoSuchAlgorithmException e) {
-			log.warn("Unable to initialize TrustManager.", e);
+			return result;
 		} catch (CryptoCertificateException e) {
-			log.warn("Unable to initialize KeyStore for use by TrustManager.", e);
+			log.warn("Unable to get trusted system certs.", e);
 		}
-
-		return null;
+		return new PKIXCertificate[0];
 	}
 
 	// -------------------------------------------------------------------------
@@ -88,13 +73,5 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public TrustedServerCertificateProvider getCertificateProvider() {
-		return certificateProvider;
-	}
-
-	public void setCertificateProvider(TrustedServerCertificateProvider certificateProvider) {
-		this.certificateProvider = certificateProvider;
-	}
 
 }

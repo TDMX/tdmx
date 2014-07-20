@@ -56,6 +56,10 @@ public class SoapClientFactoryTest {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
+		SystemDefaultTrustedCertificateProvider tcp = new SystemDefaultTrustedCertificateProvider();
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(tcp);
+
 		SoapClientFactory<MOS> mosFactory = new SoapClientFactory<>();
 		// serviceprovider.tdmx.org
 		mosFactory.setUrl("https://serviceprovider.tdmx.org/api/v1.0/sp/mos");
@@ -65,6 +69,7 @@ public class SoapClientFactoryTest {
 		mosFactory.setReceiveTimeoutMillis(10000);
 		mosFactory.setDisableCNCheck(false);
 		mosFactory.setKeyManagerFactory(kmf);
+		mosFactory.setTrustManagerFactory(stfm);
 		mosFactory.setTlsProtocolVersion("TLSv1.2");
 
 		//@formatter:off

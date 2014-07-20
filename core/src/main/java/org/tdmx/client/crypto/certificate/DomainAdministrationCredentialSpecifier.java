@@ -22,6 +22,7 @@ import java.util.Calendar;
 
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class DomainAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
@@ -31,9 +32,9 @@ public class DomainAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private PKIXCredential zoneAdministratorCredential;
+	private final PKIXCredential zoneAdministratorCredential;
 
-	private String domainName;
+	private final String domainName;
 
 	private Calendar notBefore;
 	private Calendar notAfter;
@@ -43,7 +44,27 @@ public class DomainAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public DomainAdministrationCredentialSpecifier() {
+
+	/**
+	 * Construct a DomainAdministrationCredentialSpecifier for a Domain.
+	 * 
+	 * @param subdomainName
+	 *            will be normalized to uppercase and prefixed onto the issuing zoneApex.
+	 */
+	public DomainAdministrationCredentialSpecifier(String subdomainName, PKIXCredential zoneAdministratorCredential) {
+		if (!StringUtils.hasText(subdomainName)) {
+			throw new IllegalArgumentException("Missing domainName.");
+		}
+		if (zoneAdministratorCredential == null || zoneAdministratorCredential.getPublicCert() == null) {
+			throw new IllegalArgumentException("Missing ZAC.");
+		}
+		if (!zoneAdministratorCredential.getPublicCert().isTdmxZoneAdminCertificate()) {
+			throw new IllegalArgumentException("DAC must be specified using a ZAC.");
+		}
+		PKIXCertificate issuer = zoneAdministratorCredential.getPublicCert();
+		String zoneApex = issuer.getTdmxZoneInfo().getZoneRoot();
+		this.domainName = subdomainName.toUpperCase() + "." + zoneApex;
+		this.zoneAdministratorCredential = zoneAdministratorCredential;
 	}
 
 	// -------------------------------------------------------------------------
@@ -66,16 +87,8 @@ public class DomainAdministrationCredentialSpecifier {
 		return zoneAdministratorCredential;
 	}
 
-	public void setZoneAdministratorCredential(PKIXCredential zoneAdministratorCredential) {
-		this.zoneAdministratorCredential = zoneAdministratorCredential;
-	}
-
 	public String getDomainName() {
 		return domainName;
-	}
-
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
 	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {

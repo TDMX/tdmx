@@ -29,8 +29,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableEntryException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KeyStoreUtils {
 
@@ -41,6 +48,7 @@ public class KeyStoreUtils {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(KeyStoreUtils.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,6 +60,70 @@ public class KeyStoreUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Return trusted CA certs of the keystore provided.
+	 * 
+	 * @param keystoreContents
+	 *            the keystore contents.
+	 * @param storeType
+	 *            the keystore type.
+	 * @param storePassword
+	 *            the keystore passphrase.
+	 * @return the trusted CA certs, or emtpy list if there were problems.
+	 * @throws CryptoCertificateException
+	 */
+	public static PKIXCertificate[] getTrustedCertificates(byte[] keystoreContents, String storeType,
+			String storePassword) throws CryptoCertificateException {
+		List<X509Certificate> certs = new ArrayList<>();
+		try {
+			KeyStore store = loadKeyStore(keystoreContents, storeType, storePassword);
+
+			Enumeration<String> aliases = store.aliases();
+			while (aliases.hasMoreElements()) {
+				String alias = aliases.nextElement();
+				if (store.isCertificateEntry(alias)) {
+					Certificate c = store.getCertificate(alias);
+					if (c instanceof X509Certificate) {
+						certs.add((X509Certificate) c);
+					}
+				}
+			}
+			PKIXCertificate[] result = new PKIXCertificate[certs.size()];
+			for (int i = 0; i < result.length; i++) {
+				result[i] = new PKIXCertificate(certs.get(i));
+			}
+
+			return result;
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
+		} catch (KeyStoreException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
+		} catch (CertificateException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		} catch (NoSuchProviderException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_PROVIDER, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
+		}
+	}
+
+	public static KeyStore createTrustStore(PKIXCertificate[] trustedCerts, String storeType)
+			throws CryptoCertificateException {
+		try {
+			KeyStore ks = KeyStore.getInstance(storeType);
+			ks.load(null);
+			for (int i = 0; trustedCerts != null && i < trustedCerts.length; i++) {
+				ks.setCertificateEntry("cert[" + i + "]", trustedCerts[i].getCertificate());
+			}
+			return ks;
+		} catch (KeyStoreException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
+		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
+			log.warn("Unexpected problem creating TrustStore.", e);
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		}
+	}
 
 	public static PKIXCredential getPrivateCredential(byte[] keystoreContents, String storeType, String storePassword,
 			String alias) throws CryptoCertificateException {

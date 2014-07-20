@@ -35,11 +35,12 @@ import javax.net.ssl.X509TrustManager;
 import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult.TestStep;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
 
+// TODO doc
 public class SslProbeService {
 
 	private ClientKeyManagerFactory keyManagerFactory;
+	private ServerTrustManagerFactory trustManagerFactory;
 
 	private String sslProtocol;
 	private String[] enabledCiphers;
@@ -130,8 +131,8 @@ public class SslProbeService {
 		try {
 			result.setTestStep(TestStep.PRE_CONNECT);
 
-			KeyManager km = getKeyManagerFactory().getKeyManager();// TODO;
-			X509TrustManager platformTm = TrustStoreCertificateIOUtils.getDefaultPKIXTrustManager();
+			KeyManager km = getKeyManagerFactory().getKeyManager();
+			X509TrustManager platformTm = getTrustManagerFactory().getTrustManager();
 			TestingTrustManager ttm = new TestingTrustManager(platformTm);
 
 			SSLContext sc = SSLContext.getInstance(getSslProtocol());
@@ -210,4 +211,13 @@ public class SslProbeService {
 	public void setKeyManagerFactory(ClientKeyManagerFactory keyManagerFactory) {
 		this.keyManagerFactory = keyManagerFactory;
 	}
+
+	public ServerTrustManagerFactory getTrustManagerFactory() {
+		return trustManagerFactory;
+	}
+
+	public void setTrustManagerFactory(ServerTrustManagerFactory trustManagerFactory) {
+		this.trustManagerFactory = trustManagerFactory;
+	}
+
 }

@@ -22,8 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,23 @@ public class SslProbeServiceTest {
 
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
+
+		SystemDefaultTrustedCertificateProvider stcp = new SystemDefaultTrustedCertificateProvider();
+
+		KeystoreFileTrustedCertificateProvider tcp = new KeystoreFileTrustedCertificateProvider();
+		tcp.setKeystoreType("jks");
+		tcp.setKeystoreAlias("");
+		tcp.setKeystorePassphrase("changeme");
+		tcp.setKeystoreFilePath("src/test/resources/cacerts.keystore");
+
+		List<TrustedServerCertificateProvider> providers = new ArrayList<>();
+		providers.add(tcp);
+		providers.add(stcp);
+		DelegatingTrustedCertificateProvider dtcp = new DelegatingTrustedCertificateProvider();
+		dtcp.setDelegateProviders(providers);
+
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(dtcp);
 
 		//@formatter:off
 		/*
@@ -114,6 +133,7 @@ public class SslProbeServiceTest {
 
 		service = new SslProbeService();
 		service.setKeyManagerFactory(kmf);
+		service.setTrustManagerFactory(stfm);
 		service.setSslProtocol("TLSv1.2");
 		service.setEnabledCiphers(select_strong_ciphers);
 		service.setConnectionTimeoutMillis(10000);
@@ -130,12 +150,10 @@ public class SslProbeServiceTest {
 	}
 
 	@Test
-	@Ignore("solve problem with #24")
-	// FIXME
 	public void test_SSL_pkixvalidationfailed() throws CryptoCertificateException {
 		ConnectionTestResult result = service.testConnection("serviceprovider.tdmx.org", 443);
 		assertNotNull(result);
-		assertEquals(TestStep.TRUST_CHECK, result.getTestStep());
+		assertEquals(TestStep.COMPLETE, result.getTestStep());
 		assertNotNull(result.getServerCertChain());
 		log.info(result.toString());
 	}

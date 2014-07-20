@@ -21,6 +21,7 @@ package org.tdmx.client.crypto.certificate;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -154,7 +155,7 @@ public class CredentialUtils {
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 
-			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
+			PKIXCertificate c = CertificateIOUtils.decodeX509(certBytes);
 
 			return new PKIXCredential(c, privateKey);
 		} catch (CertIOException e) {
@@ -254,7 +255,7 @@ public class CredentialUtils {
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 
-			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
+			PKIXCertificate c = CertificateIOUtils.decodeX509(certBytes);
 
 			return new PKIXCredential(c, issuerCredential.getCertificateChain(), privateKey);
 		} catch (CertIOException e) {
@@ -318,7 +319,7 @@ public class CredentialUtils {
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 
-			PKIXCertificate c = CertificateIOUtils.decodeCertificate(certBytes);
+			PKIXCertificate c = CertificateIOUtils.decodeX509(certBytes);
 
 			return new PKIXCredential(c, issuerCredential.getCertificateChain(), privateKey);
 		} catch (CertIOException e) {
@@ -328,6 +329,14 @@ public class CredentialUtils {
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		}
+	}
+
+	// TODO java.security.cert.CertPathValidatorException: unrecognized critical extension(s)
+	public static boolean isValidUserCertificate(PKIXCertificate zac, PKIXCertificate dac, PKIXCertificate uc)
+			throws CryptoCertificateException {
+		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
+		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { uc, dac };
+		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
 	}
 
 	// -------------------------------------------------------------------------

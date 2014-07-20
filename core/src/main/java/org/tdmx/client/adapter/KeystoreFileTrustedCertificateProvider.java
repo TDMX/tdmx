@@ -18,22 +18,16 @@
  */
 package org.tdmx.client.adapter;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.system.lang.FileUtils;
 
-public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory {
+public class KeystoreFileTrustedCertificateProvider implements TrustedServerCertificateProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,9 +36,12 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerTrustManagerFactoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(KeystoreFileTrustedCertificateProvider.class);
 
-	private TrustedServerCertificateProvider certificateProvider;
+	private String keystoreType;
+	private String keystoreAlias;
+	private String keystorePassphrase;
+	private String keystoreFilePath;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,26 +52,16 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// -------------------------------------------------------------------------
 
 	@Override
-	public X509TrustManager getTrustManager() {
-		PKIXCertificate[] trustedCertificates = certificateProvider.getTrustedCertificates();
-
+	public PKIXCertificate[] getTrustedCertificates() {
 		try {
-			KeyStore keyStore = KeyStoreUtils.createTrustStore(trustedCertificates, "jks");
-			TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			tmf.init(keyStore);
-			TrustManager[] tms = tmf.getTrustManagers();
-			for (int i = 0; tms != null && i < tms.length; i++) {
-				if (tms[i] instanceof X509TrustManager) {
-					return (X509TrustManager) tms[i];
-				}
-			}
-		} catch (KeyStoreException | NoSuchAlgorithmException e) {
-			log.warn("Unable to initialize TrustManager.", e);
-		} catch (CryptoCertificateException e) {
-			log.warn("Unable to initialize KeyStore for use by TrustManager.", e);
-		}
+			byte[] keystoreContents = FileUtils.getFileContents(getKeystoreFilePath());
 
-		return null;
+			return KeyStoreUtils.getTrustedCertificates(keystoreContents, getKeystoreType(), getKeystorePassphrase());
+
+		} catch (IOException | CryptoCertificateException e) {
+			log.warn("Unable to load keystore.", e);
+		}
+		return new PKIXCertificate[0];
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,12 +76,36 @@ public class ServerTrustManagerFactoryImpl implements ServerTrustManagerFactory 
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public TrustedServerCertificateProvider getCertificateProvider() {
-		return certificateProvider;
+	public String getKeystoreType() {
+		return keystoreType;
 	}
 
-	public void setCertificateProvider(TrustedServerCertificateProvider certificateProvider) {
-		this.certificateProvider = certificateProvider;
+	public void setKeystoreType(String keystoreType) {
+		this.keystoreType = keystoreType;
+	}
+
+	public String getKeystoreAlias() {
+		return keystoreAlias;
+	}
+
+	public void setKeystoreAlias(String keystoreAlias) {
+		this.keystoreAlias = keystoreAlias;
+	}
+
+	public String getKeystorePassphrase() {
+		return keystorePassphrase;
+	}
+
+	public void setKeystorePassphrase(String keystorePassphrase) {
+		this.keystorePassphrase = keystorePassphrase;
+	}
+
+	public String getKeystoreFilePath() {
+		return keystoreFilePath;
+	}
+
+	public void setKeystoreFilePath(String keystoreFilePath) {
+		this.keystoreFilePath = keystoreFilePath;
 	}
 
 }

@@ -54,7 +54,7 @@
 	<context:annotation-config />
 	
 	<bean id="tdmx.lib.console.TransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-		<qualifier value="ControlDB"/>
+		<qualifier value="ConsoleDB"/>
 		<property name="entityManagerFactory" ref="tdmx.lib.console.EntityManagerFactory" />
 	</bean>
 

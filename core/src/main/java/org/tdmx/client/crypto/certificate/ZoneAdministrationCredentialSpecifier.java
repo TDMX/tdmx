@@ -22,6 +22,7 @@ import java.util.Calendar;
 
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
@@ -31,7 +32,7 @@ public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private TdmxZoneInfo zoneInfo;
+	private final TdmxZoneInfo zoneInfo;
 
 	private String cn;
 	private String telephoneNumber;
@@ -49,7 +50,14 @@ public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ZoneAdministrationCredentialSpecifier() {
+	public ZoneAdministrationCredentialSpecifier(int version, String zoneRoot, String mrsUrl) {
+		if (!StringUtils.hasText(zoneRoot)) {
+			throw new IllegalArgumentException("Missing zoneRoot.");
+		}
+		if (!StringUtils.hasText(mrsUrl)) {
+			throw new IllegalArgumentException("Missing mrsUrl.");
+		}
+		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot.toUpperCase(), mrsUrl);
 	}
 
 	// -------------------------------------------------------------------------
@@ -70,10 +78,6 @@ public class ZoneAdministrationCredentialSpecifier {
 
 	public TdmxZoneInfo getZoneInfo() {
 		return zoneInfo;
-	}
-
-	public void setZoneInfo(TdmxZoneInfo zoneInfo) {
-		this.zoneInfo = zoneInfo;
 	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {

@@ -21,6 +21,7 @@ package org.tdmx.client.adapter;
 import java.util.Arrays;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
@@ -57,6 +58,7 @@ public class SoapClientFactory<E> {
 	// TODO hookin ServerTrustManagerFactory
 
 	private ClientKeyManagerFactory keyManagerFactory;
+	private ServerTrustManagerFactory trustManagerFactory;
 
 	// TODO logging interceptors as properties
 
@@ -124,6 +126,13 @@ public class SoapClientFactory<E> {
 			KeyManager clientKeyManager = getKeyManagerFactory().getKeyManager();
 			if (clientKeyManager != null) {
 				params.setKeyManagers(new KeyManager[] { clientKeyManager });
+			}
+		}
+		// setup the server trust manager
+		if (getTrustManagerFactory() != null) {
+			TrustManager serverTrustManager = getTrustManagerFactory().getTrustManager();
+			if (serverTrustManager != null) {
+				params.setTrustManagers(new TrustManager[] { serverTrustManager });
 			}
 		}
 
@@ -217,6 +226,14 @@ public class SoapClientFactory<E> {
 
 	public void setKeyManagerFactory(ClientKeyManagerFactory keyManagerFactory) {
 		this.keyManagerFactory = keyManagerFactory;
+	}
+
+	public ServerTrustManagerFactory getTrustManagerFactory() {
+		return trustManagerFactory;
+	}
+
+	public void setTrustManagerFactory(ServerTrustManagerFactory trustManagerFactory) {
+		this.trustManagerFactory = trustManagerFactory;
 	}
 
 }

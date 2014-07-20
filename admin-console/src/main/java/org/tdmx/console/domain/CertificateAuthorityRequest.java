@@ -109,7 +109,8 @@ public class CertificateAuthorityRequest implements Serializable {
 	}
 
 	public ZoneAdministrationCredentialSpecifier domain() {
-		ZoneAdministrationCredentialSpecifier o = new ZoneAdministrationCredentialSpecifier();
+		// TODO mrsUrl/zoneApex not yet specified.
+		ZoneAdministrationCredentialSpecifier o = new ZoneAdministrationCredentialSpecifier(1, "zone.root", "mrsUrl");
 		o.setCn(getCommonName());
 		o.setTelephoneNumber(getTelephoneNumber());
 		o.setEmailAddress(getEmailAddress());

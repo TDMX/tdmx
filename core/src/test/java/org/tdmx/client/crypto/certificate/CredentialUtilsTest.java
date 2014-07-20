@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.core.system.lang.FileUtils;
@@ -43,10 +44,10 @@ public class CredentialUtilsTest {
 	@Test
 	public void testCreateZoneAdminCredentials() throws Exception {
 
-		TdmxZoneInfo zi = CertificateFacade.createZI("ZONE.ROOT", "https://mrsUrl/api");
 		Calendar now = CertificateFacade.getNow();
 		Calendar to = CertificateFacade.getNowPlusYears(10);
-		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(now, to, zi);
+		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(1, "zone.root", "https://mrsUrl/api",
+				now, to);
 
 		PKIXCredential cred = CredentialUtils.createZoneAdministratorCredential(req);
 
@@ -82,7 +83,7 @@ public class CredentialUtilsTest {
 		Calendar now = CertificateFacade.getNow();
 		Calendar to = CertificateFacade.getNowPlusYears(2);
 
-		DomainAdministrationCredentialSpecifier req = CertificateFacade.createDACS(zac, issuer, now, to);
+		DomainAdministrationCredentialSpecifier req = CertificateFacade.createDACS(zac, now, to);
 
 		PKIXCredential cred = CredentialUtils.createDomainAdministratorCredential(req);
 
@@ -140,17 +141,28 @@ public class CredentialUtilsTest {
 	}
 
 	@Test
+	@Ignore("java.security.cert.CertPathValidatorException: unrecognized critical extension(s)")
+	public void test_PKIXValidation_UC() throws Exception {
+		// TODO
+		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		assertTrue(CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), uc.getPublicCert()));
+	}
+
+	@Test
 	public void dumpUserCert() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
-		byte[] bs = CertificateIOUtils.encodeCertificate(zac.getCertificateChain()[0]);
+		byte[] bs = CertificateIOUtils.encodeX509(zac.getCertificateChain()[0]);
 		FileUtils.storeFileContents("za.crt", bs, ".tmp");
 
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
-		bs = CertificateIOUtils.encodeCertificate(dac.getCertificateChain()[0]);
+		bs = CertificateIOUtils.encodeX509(dac.getCertificateChain()[0]);
 		FileUtils.storeFileContents("da.crt", bs, ".tmp");
 
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
-		bs = CertificateIOUtils.encodeCertificate(uc.getCertificateChain()[0]);
+		bs = CertificateIOUtils.encodeX509(uc.getCertificateChain()[0]);
 		FileUtils.storeFileContents("uc.crt", bs, ".tmp");
 
 	}

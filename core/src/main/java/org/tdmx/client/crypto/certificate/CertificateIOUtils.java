@@ -22,8 +22,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +39,10 @@ import java.util.List;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+// TODO rename -io
 public class CertificateIOUtils {
 
 	// -------------------------------------------------------------------------
@@ -41,7 +52,10 @@ public class CertificateIOUtils {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(CertificateIOUtils.class);
+
 	private static final String X509CERTIFICATE_FACTORY_ALGORITHM = "X.509";
+	private static final String PKIXCERTIFICATE_PATHVALIDATOR_ALGORITHM = "PKIX";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,6 +66,21 @@ public class CertificateIOUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	/**
+	 * Cast PKIXCertificates array to X509Certificates array.
+	 */
+	public static X509Certificate[] cast(PKIXCertificate[] certs) {
+		if (certs == null) {
+			return null;
+		}
+
+		X509Certificate[] result = new X509Certificate[certs.length];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = certs[i].getCertificate();
+		}
+		return result;
+	}
+
 	/**
 	 * Convert X509Certificates to PKIXCertificates.
 	 */
@@ -70,10 +99,21 @@ public class CertificateIOUtils {
 	/**
 	 * Convert PKIXCertificates to X509Certificates array.
 	 */
-	public static List<X509Certificate> convert(List<PKIXCertificate> certs) {
+	public static List<X509Certificate> cast(List<PKIXCertificate> certs) {
 		List<X509Certificate> xs = new ArrayList<>();
 		for (PKIXCertificate p : certs) {
 			xs.add(p.getCertificate());
+		}
+		return xs;
+	}
+
+	/**
+	 * Convert PKIXCertificates to X509Certificates array.
+	 */
+	public static List<PKIXCertificate> convert(List<X509Certificate> certs) throws CryptoCertificateException {
+		List<PKIXCertificate> xs = new ArrayList<>();
+		for (X509Certificate c : certs) {
+			xs.add(new PKIXCertificate(c));
 		}
 		return xs;
 	}
@@ -118,7 +158,7 @@ public class CertificateIOUtils {
 			while ((o = pp.readObject()) != null) {
 				if (o instanceof X509CertificateHolder) {
 					X509CertificateHolder ch = (X509CertificateHolder) o;
-					PKIXCertificate c = decodeCertificate(ch.getEncoded());
+					PKIXCertificate c = decodeX509(ch.getEncoded());
 					certList.add(c);
 				}
 			}
@@ -133,8 +173,16 @@ public class CertificateIOUtils {
 		return certList.toArray(new PKIXCertificate[0]);
 	}
 
-	// TODO rename decodeX509
-	public static PKIXCertificate decodeCertificate(byte[] x509encodedValue) throws CryptoCertificateException {
+	/**
+	 * Decode a binary DER encoded X509 certificate into a PKIXCertificate.
+	 * 
+	 * @param x509encodedValue
+	 *            a binary DER encoded X509 certificate.
+	 * @return a PKIXCertificate.
+	 * @throws CryptoCertificateException
+	 *             if there are any problems.
+	 */
+	public static PKIXCertificate decodeX509(byte[] x509encodedValue) throws CryptoCertificateException {
 		CertificateFactory certFactory;
 		try {
 			certFactory = CertificateFactory.getInstance(X509CERTIFICATE_FACTORY_ALGORITHM);
@@ -146,8 +194,16 @@ public class CertificateIOUtils {
 		}
 	}
 
-	// TODO rename encodeX509
-	public static byte[] encodeCertificate(PKIXCertificate cert) throws CryptoCertificateException {
+	/**
+	 * Encode a PKIXCertificate as a binary DER encoded X509 certificate.
+	 * 
+	 * @param cert
+	 *            the PKIXCertificate
+	 * @return a binary DER encoded X509 certificate
+	 * @throws CryptoCertificateException
+	 *             if there are any problems.
+	 */
+	public static byte[] encodeX509(PKIXCertificate cert) throws CryptoCertificateException {
 		try {
 			if (cert != null && cert.getCertificate() != null) {
 				return cert.getCertificate().getEncoded();
@@ -158,6 +214,28 @@ public class CertificateIOUtils {
 		return null;
 	}
 
+	public static boolean pkixValidate(X509Certificate[] certs, KeyStore trustStore) throws CryptoCertificateException {
+		try {
+			CertificateFactory cf = CertificateFactory.getInstance(X509CERTIFICATE_FACTORY_ALGORITHM);
+			List<X509Certificate> mylist = new ArrayList<X509Certificate>();
+			for (X509Certificate cert : certs) {
+				mylist.add(cert);
+			}
+			CertPath cp = cf.generateCertPath(mylist);
+
+			PKIXParameters params = new PKIXParameters(trustStore);
+			params.setRevocationEnabled(false);
+			CertPathValidator cpv = CertPathValidator.getInstance(PKIXCERTIFICATE_PATHVALIDATOR_ALGORITHM);
+			cpv.validate(cp, params);
+			return true;
+		} catch (CertificateException | KeyStoreException | InvalidAlgorithmParameterException
+				| NoSuchAlgorithmException e) {
+			log.warn("pkixValidation unexpected problem.", e);
+		} catch (CertPathValidatorException e) {
+			log.debug("PKIX Certificate validation failed.", e);
+		}
+		return false;
+	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

@@ -47,10 +47,9 @@ public class CertificateFacade {
 		return zi;
 	}
 
-	public static ZoneAdministrationCredentialSpecifier createZACS(Calendar validStart, Calendar validEnd,
-			TdmxZoneInfo zi) {
-		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier();
-		req.setZoneInfo(zi);
+	public static ZoneAdministrationCredentialSpecifier createZACS(int version, String zoneRoot, String mrsUrl,
+			Calendar validStart, Calendar validEnd) {
+		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(version, zoneRoot, mrsUrl);
 
 		req.setCn("name");
 		req.setTelephoneNumber("0417100000");
@@ -67,17 +66,14 @@ public class CertificateFacade {
 	}
 
 	public static PKIXCredential createZAC(int validForYears) throws CryptoCertificateException {
-		TdmxZoneInfo zi = createZI("ZONE.ROOT", "https://mrsUrl/api");
-
-		ZoneAdministrationCredentialSpecifier req = createZACS(getNow(), getNowPlusYears(validForYears), zi);
+		ZoneAdministrationCredentialSpecifier req = createZACS(1, "zone.root", "https://mrsUrl/api", getNow(),
+				getNowPlusYears(validForYears));
 		return CredentialUtils.createZoneAdministratorCredential(req);
 	}
 
-	public static DomainAdministrationCredentialSpecifier createDACS(PKIXCredential zac, PKIXCertificate issuer,
-			Calendar from, Calendar to) {
-		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier();
-		req.setZoneAdministratorCredential(zac);
-		req.setDomainName("subdomain." + issuer.getTdmxZoneInfo().getZoneRoot());
+	public static DomainAdministrationCredentialSpecifier createDACS(PKIXCredential zac, Calendar from, Calendar to) {
+
+		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier("SUBDOMAIN", zac);
 		req.setNotBefore(from);
 		req.setNotAfter(to);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
@@ -86,9 +82,7 @@ public class CertificateFacade {
 	}
 
 	public static PKIXCredential createDAC(PKIXCredential zac, int validForYears) throws CryptoCertificateException {
-		PKIXCertificate issuer = zac.getPublicCert();
-
-		DomainAdministrationCredentialSpecifier req = createDACS(zac, issuer, getNow(), getNowPlusYears(validForYears));
+		DomainAdministrationCredentialSpecifier req = createDACS(zac, getNow(), getNowPlusYears(validForYears));
 
 		return CredentialUtils.createDomainAdministratorCredential(req);
 	}
