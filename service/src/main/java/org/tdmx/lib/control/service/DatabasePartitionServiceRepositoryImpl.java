@@ -34,12 +34,14 @@ import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
 
 /**
+ * A transactional service managing the DatabasePartition information.
+ * 
  * @author Peter Klauser
  * 
  */
 public class DatabasePartitionServiceRepositoryImpl implements DatabasePartitionService {
 
-	private static Logger log = LoggerFactory.getLogger(DatabasePartitionServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionServiceRepositoryImpl.class);
 
 	private DatabasePartitionDao databasePartitionDao;
 

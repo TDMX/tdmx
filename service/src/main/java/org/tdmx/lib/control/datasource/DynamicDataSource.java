@@ -46,23 +46,11 @@ public class DynamicDataSource implements javax.sql.DataSource {
 
 	private static final Log log = LogFactory.getLog(DynamicDataSource.class);
 
-	private static final ThreadLocal<String> partitionId = new ThreadLocal<String>();
-
-	public static void setPartitionId(String pId) {
-		partitionId.set(pId);
-	}
-
-	public static String getPartitionId() {
-		return partitionId.get();
-	}
-
-	public static void clearPartitionId() {
-		partitionId.set(null);
-	}
-
 	private DataSourceConfigurationProvider configurationProvider;
 	private final Map<String, DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
 	private final Map<DatabaseConnectionInfo, BasicDataSource> connectionDataSourceMap = new ConcurrentHashMap<DatabaseConnectionInfo, BasicDataSource>();
+
+	private PartitionIdProvider partitionIdProvider;
 
 	/**
 	 * The PrintWriter to which log messages should be directed.
@@ -94,11 +82,10 @@ public class DynamicDataSource implements javax.sql.DataSource {
 	 */
 	@Override
 	public Connection getConnection() throws SQLException {
-		String partitionId = getPartitionId();
-		if (partitionId == null) {
-			log.warn("Connection requested without partitionId. Using VALIDATION.");
-			partitionId = "VALIDATION";
+		if (getPartitionIdProvider() == null) {
+			throw new SQLException("No partitionIdProvider.");
 		}
+		String partitionId = getPartitionIdProvider().getPartitionId();
 		DatabaseConnectionInfo ci = getConfigurationProvider().getPartitionInfo(partitionId);
 		if (ci == null) {
 			log.warn("No DatabaseConnectionInfo provided for partitionId " + partitionId);
@@ -178,7 +165,6 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		// This method isn't supported by the PoolingDataSource returned by
 		// the createDataSource
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
-		// createDataSource().setLoginTimeout(loginTimeout);
 	}
 
 	/*
@@ -191,7 +177,6 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		// This method isn't supported by the PoolingDataSource returned by
 		// the createDataSource
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
-		// return createDataSource().getLoginTimeout();
 	}
 
 	/*
@@ -204,22 +189,22 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		// This method isn't supported by the PoolingDataSource returned by
 		// the createDataSource
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
-		// return createDataSource().getConnection(username, password);
 	}
 
-	/**
-	 * @return the configurationProvider
-	 */
 	public DataSourceConfigurationProvider getConfigurationProvider() {
 		return configurationProvider;
 	}
 
-	/**
-	 * @param configurationProvider
-	 *            the configurationProvider to set
-	 */
 	public void setConfigurationProvider(DataSourceConfigurationProvider configurationProvider) {
 		this.configurationProvider = configurationProvider;
+	}
+
+	public PartitionIdProvider getPartitionIdProvider() {
+		return partitionIdProvider;
+	}
+
+	public void setPartitionIdProvider(PartitionIdProvider partitionIdProvider) {
+		this.partitionIdProvider = partitionIdProvider;
 	}
 
 }

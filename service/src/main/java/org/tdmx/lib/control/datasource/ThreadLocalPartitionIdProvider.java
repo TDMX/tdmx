@@ -16,38 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
 
-import java.util.List;
-
-import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabaseType;
+package org.tdmx.lib.control.datasource;
 
 /**
- * The DatabasePartitionService provides a cache of slowly changing DatabasePartition records.
- * 
- * Cache is a simple time based cache, refreshing all entities ( of which a small finite number are expected ).
+ * Manages a threadbound partitionId.
  * 
  * @author Peter
  * 
  */
-public interface DatabasePartitionService {
-
-	public void createOrUpdate(DatabasePartition partition);
-
-	// a partition can only be deleted if it is not yet activated.
-	public void delete(DatabasePartition partition);
+public interface ThreadLocalPartitionIdProvider extends PartitionIdProvider {
 
 	/**
-	 * Find the DatabasePartition by partitionId.
+	 * Set the partitionId.
 	 * 
 	 * @param partitionId
-	 * @return the DatabasePartition or null if not found.
 	 */
-	public DatabasePartition findById(String partitionId);
+	public void setPartitionId(String partitionId);
 
-	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type, String segment);
-
-	public List<DatabasePartition> findByType(DatabaseType type);
-
+	/**
+	 * Clear the thread's partitionId.
+	 */
+	public void clearPartitionId();
 }
