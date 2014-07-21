@@ -81,6 +81,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 		assertNotNull(az.getSegment());
 		assertEquals(zoneApex, az.getZoneApex());
 		assertNotNull(az.getZonePartitionId());
+
 	}
 
 	@Test

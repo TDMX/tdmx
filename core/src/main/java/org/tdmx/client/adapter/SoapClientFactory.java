@@ -140,7 +140,8 @@ public class SoapClientFactory<E> {
 		HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
 		conduit.setClient(httpClientPolicy);
 		conduit.setTlsClientParameters(params);
-
+		// cxf's trust decider is not relevant since we have the truststore to check
+		// if a server is trusted.
 		return serviceClient;
 	}
 

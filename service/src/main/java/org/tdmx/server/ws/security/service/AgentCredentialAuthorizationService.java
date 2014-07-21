@@ -38,6 +38,10 @@ public interface AgentCredentialAuthorizationService {
 
 	public static enum AuthorizationFailureCode {
 		/*
+		 * A system problem caused authorization failure.
+		 */
+		SYSTEM,
+		/*
 		 * The certificates provided caused problems whilst processing.
 		 */
 		BAD_CERTIFICATE,

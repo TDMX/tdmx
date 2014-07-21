@@ -25,27 +25,40 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.sp.mos.Submit;
 import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
 import org.tdmx.core.api.v01.sp.mos.ws.MOS;
+import org.tdmx.server.runtime.ServerContainer;
 
 public class ClientAdapterFactoryIntegrationTest {
 
+	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
+
 	@Test
 	@Ignore
-	public void test() {
+	public void test() throws Exception {
 		KeystoreFileCredentialProvider cp = new KeystoreFileCredentialProvider();
 		cp.setKeystoreAlias("client");
 		cp.setKeystoreFilePath("src/test/resources/uc.keystore"); // USER
 		cp.setKeystorePassphrase("changeme");
 		cp.setKeystoreType("jks");
 
+		/**
+		 * Get hold of the PK of the UC
+		 */
+		// PKIXCredential uc = cp.getCredential();
+		// String ucPem = CertificateIOUtils.x509certsToPem(uc.getCertificateChain());
+		// to know what to setup.
+		// log.warn("sha1" + uc.getPublicCert().getFingerprint());
+		// log.warn(ucPem);
+
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
 		KeystoreFileTrustedCertificateProvider tcp = new KeystoreFileTrustedCertificateProvider();
 		tcp.setKeystoreType("jks");
-		tcp.setKeystoreAlias("");
 		tcp.setKeystorePassphrase("changeme");
 		tcp.setKeystoreFilePath("src/test/resources/cacerts.keystore");
 

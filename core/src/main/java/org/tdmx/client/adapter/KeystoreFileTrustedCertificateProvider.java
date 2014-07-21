@@ -39,7 +39,6 @@ public class KeystoreFileTrustedCertificateProvider implements TrustedServerCert
 	private static final Logger log = LoggerFactory.getLogger(KeystoreFileTrustedCertificateProvider.class);
 
 	private String keystoreType;
-	private String keystoreAlias;
 	private String keystorePassphrase;
 	private String keystoreFilePath;
 
@@ -82,14 +81,6 @@ public class KeystoreFileTrustedCertificateProvider implements TrustedServerCert
 
 	public void setKeystoreType(String keystoreType) {
 		this.keystoreType = keystoreType;
-	}
-
-	public String getKeystoreAlias() {
-		return keystoreAlias;
-	}
-
-	public void setKeystoreAlias(String keystoreAlias) {
-		this.keystoreAlias = keystoreAlias;
 	}
 
 	public String getKeystorePassphrase() {

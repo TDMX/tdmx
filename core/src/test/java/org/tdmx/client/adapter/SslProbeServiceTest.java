@@ -63,7 +63,6 @@ public class SslProbeServiceTest {
 
 		KeystoreFileTrustedCertificateProvider tcp = new KeystoreFileTrustedCertificateProvider();
 		tcp.setKeystoreType("jks");
-		tcp.setKeystoreAlias("");
 		tcp.setKeystorePassphrase("changeme");
 		tcp.setKeystoreFilePath("src/test/resources/cacerts.keystore");
 

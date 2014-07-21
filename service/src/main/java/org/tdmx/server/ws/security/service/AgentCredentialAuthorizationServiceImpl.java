@@ -94,6 +94,20 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		if (AgentCredentialStatus.ACTIVE != agentCredential.getCredentialStatus()) {
 			return new AuthorizationResult(AuthorizationFailureCode.AGENT_BLOCKED);
 		}
+		// TODO check exact match of the certifictes stored and provided - since a SHA1 match is not enough
+		// to prove we "know" the client
+		try {
+			PKIXCertificate[] storedCertChain = CertificateIOUtils.pemToX509certs(agentCredential
+					.getCertificateChainPem());
+			PKIXCertificate storedPublicKey = storedCertChain[0];
+			if (!storedPublicKey.isIdentical(cert)) {
+				log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
+				return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
+			}
+		} catch (CryptoCertificateException e) {
+			log.warn("Could not convert stored certificate chain for fingerprint=" + fingerprint, e);
+			return new AuthorizationResult(AuthorizationFailureCode.SYSTEM);
+		}
 		return new AuthorizationResult(cert, accountZone);
 	}
 
