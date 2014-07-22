@@ -22,6 +22,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.sp.mds.Download;
 import org.tdmx.core.api.v01.sp.mds.DownloadResponse;
 import org.tdmx.core.api.v01.sp.mds.GetAddress;
@@ -51,6 +53,23 @@ import org.tdmx.core.api.v01.sp.mds.tx.RollbackResponse;
 import org.tdmx.core.api.v01.sp.mds.ws.MDS;
 
 public class MDSImpl implements MDS {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(MDSImpl.class);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	@WebResult(name = "forgetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:tx", partName = "parameters")
@@ -168,5 +187,17 @@ public class MDSImpl implements MDS {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

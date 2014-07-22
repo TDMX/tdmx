@@ -16,22 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.mrs;
+package org.tdmx.lib.zone.dao;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.sp.mrs.CreateSession;
-import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.core.api.v01.sp.mrs.Relay;
-import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
-public class MRSImpl implements MRS {
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.DomainID;
+import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
+public class DomainDaoImpl implements DomainDao {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -39,7 +39,9 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+
+	@PersistenceContext(unitName = "ZoneDB")
+	private EntityManager em;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -50,21 +52,50 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	@WebResult(name = "createSessionResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/createSession")
-	public CreateSessionResponse createSession(
-			@WebParam(partName = "parameters", name = "createSession", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") CreateSession parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public void persist(Domain value) {
+		em.persist(value);
 	}
 
 	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public void delete(Domain value) {
+		em.remove(value);
+	}
+
+	@Override
+	public void lock(Domain value) {
+		em.lock(value, LockModeType.WRITE);
+	}
+
+	@Override
+	public Domain merge(Domain value) {
+		return em.merge(value);
+	}
+
+	@Override
+	public Domain loadById(DomainID id) {
+		Query query = em.createQuery("from Domain as d where d.id = :d");
+		query.setParameter("d", id);
+		try {
+			return (Domain) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria) {
+		Query query = null;
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			query = em.createQuery("from Domain as d where d.id.domainName = :d and d.id.zoneApex = :z");
+			query.setParameter("d", criteria.getDomainName());
+		} else {
+			query = em.createQuery("from Domain as d where d.id.zoneApex = :z");
+		}
+		query.setParameter("z", zoneApex);
+		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
+		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
+		return query.getResultList();
 	}
 
 	// -------------------------------------------------------------------------

@@ -16,20 +16,28 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.zone.service;
 
-public class ZoneFacade {
+import java.util.List;
 
-	public static Zone createZone(String zoneApex) throws Exception {
-		Zone z = new Zone();
-		z.setZoneApex(zoneApex);
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.DomainID;
+import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
-		return z;
-	}
+/**
+ * Management Services for a Domain.
+ * 
+ * @author Peter
+ * 
+ */
+public interface DomainService {
 
-	public static Domain createDomain(DomainID id) throws Exception {
-		Domain d = new Domain(id);
-		return d;
-	}
+	public void createOrUpdate(Domain domain);
+
+	public Domain findById(DomainID domainId);
+
+	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria);
+
+	public void delete(Domain domain);
 
 }

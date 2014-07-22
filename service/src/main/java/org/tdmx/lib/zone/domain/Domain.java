@@ -16,21 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.mrs;
+package org.tdmx.lib.zone.domain;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
+import java.io.Serializable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.sp.mrs.CreateSession;
-import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.core.api.v01.sp.mrs.Relay;
-import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-public class MRSImpl implements MRS {
+/**
+ * An Domain (within a Zone) managed by a ServiceProvider
+ * 
+ * @author Peter Klauser
+ * 
+ */
+@Entity
+@Table(name = "Domain")
+public class Domain implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,33 +41,29 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+	private static final long serialVersionUID = -128859602084626282L;
+
+	@EmbeddedId
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	private DomainID id;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public Domain() {
+
+	}
+
+	public Domain(DomainID id) {
+		this.id = id;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	@WebResult(name = "createSessionResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/createSession")
-	public CreateSessionResponse createSession(
-			@WebParam(partName = "parameters", name = "createSession", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") CreateSession parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -78,5 +76,13 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public DomainID getId() {
+		return id;
+	}
+
+	public void setId(DomainID id) {
+		this.id = id;
+	}
 
 }

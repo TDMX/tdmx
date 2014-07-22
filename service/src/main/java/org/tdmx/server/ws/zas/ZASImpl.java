@@ -18,10 +18,15 @@
  */
 package org.tdmx.server.ws.zas;
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.sp.zas.CreateAddress;
 import org.tdmx.core.api.v01.sp.zas.CreateAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
@@ -84,21 +89,64 @@ import org.tdmx.core.api.v01.sp.zas.SearchUser;
 import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.sp.zas.SetChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.SetChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
+import org.tdmx.core.api.v01.sp.zas.common.Error;
+import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.report.Incident;
 import org.tdmx.core.api.v01.sp.zas.report.IncidentResponse;
 import org.tdmx.core.api.v01.sp.zas.report.Report;
 import org.tdmx.core.api.v01.sp.zas.report.ReportResponse;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.DomainID;
+import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class ZASImpl implements ZAS {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(ZASImpl.class);
+
+	private AuthenticatedAgentLookupService agentService;
+	private DomainService domainService;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	@WebResult(name = "searchDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchDomain")
 	public SearchDomainResponse searchDomain(
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
-		// TODO Auto-generated method stub
-		return null;
+
+		SearchDomainResponse response = new SearchDomainResponse();
+		String zoneApex = checkDomainAuthorization(null, response);
+		if (zoneApex == null) {
+			return response;
+		}
+		DomainSearchCriteria criteria = new DomainSearchCriteria(mapPage(parameters.getPage()));
+		criteria.setDomainName(parameters.getFilter().getDomain());
+		List<Domain> domains = domainService.search(zoneApex, criteria);
+		for (Domain d : domains) {
+			response.getDomains().add(d.getId().getDomainName());
+		}
+		response.setPage(parameters.getPage());
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -115,8 +163,26 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createDomain")
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		CreateDomainResponse response = new CreateDomainResponse();
+		String zoneApex = checkDomainAuthorization(parameters.getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(id);
+		if (domain != null) {
+			// TODO make a enum for the error response
+			setError(500, "Domain exists.", response);
+			return response;
+		}
+
+		// create the domain
+		domain = new Domain(id);
+
+		getDomainService().createOrUpdate(domain);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -387,6 +453,86 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAdministrator parameters) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Checks the AuthenticatedAgent is authorized to perform administration on the domain, and return the agent's
+	 * zoneApex. If the agent is not authorized then the acknowledge's Error info will be set and null returned.
+	 * 
+	 * @param ack
+	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 */
+	private String checkDomainAuthorization(String domain, Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+
+		String errorDescription = null;
+		if (!StringUtils.hasText(domain)) {
+			// if no domain is passed in then the authenticated agent needs to be a ZAC
+			if (user.isTdmxZoneAdminCertificate()) {
+				return user.getTdmxZoneInfo().getZoneRoot();
+			}
+			errorDescription = "Agent is not a ZAC.";
+		} else {
+
+			if (user.isTdmxZoneAdminCertificate()) {
+				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+				if (domain.endsWith(zoneApex)) {
+					return zoneApex;
+				}
+				errorDescription = "ZAC only authorized on own subdomains.";
+			} else if (user.isTdmxDomainAdminCertificate()) {
+				// a DAC needs to match the domain exactly, doesn't administer subdomains
+				String dacDomainName = user.getCommonName();
+				if (dacDomainName.equals(domain)) {
+					return user.getTdmxZoneInfo().getZoneRoot();
+				}
+				errorDescription = "DAC only authorized on own domain.";
+			} else {
+				errorDescription = "Agent is not a ZAC or DAC.";
+			}
+		}
+		setError(401, errorDescription, ack);
+		return null;
+	}
+
+	private void setError(int code, String description, Acknowledge ack) {
+		Error error = new Error();
+		error.setCode(code);
+		error.setDescription(description);
+		ack.setError(error);
+		ack.setSuccess(false);
+	}
+
+	private PageSpecifier mapPage(Page p) {
+		return new PageSpecifier(p.getNumber(), p.getSize());
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
+
+	public AuthenticatedAgentLookupService getAgentService() {
+		return agentService;
+	}
+
+	public void setAgentService(AuthenticatedAgentLookupService agentService) {
+		this.agentService = agentService;
+	}
+
+	public DomainService getDomainService() {
+		return domainService;
+	}
+
+	public void setDomainService(DomainService domainService) {
+		this.domainService = domainService;
 	}
 
 }

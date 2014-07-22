@@ -35,8 +35,8 @@
 		<xs:attribute name="code" type="errorcode" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="Page">
-		<xs:attribute name="size" type="xs:unsignedInt" use="required"/>
-		<xs:attribute name="number" type="xs:unsignedInt" use="required"/>
+		<xs:attribute name="size" type="xs:unsignedShort" use="required"/>
+		<xs:attribute name="number" type="xs:unsignedShort" use="required"/>
 	</xs:complexType>
 	<xs:complexType name="ProcessingStatus">
 		<xs:sequence>

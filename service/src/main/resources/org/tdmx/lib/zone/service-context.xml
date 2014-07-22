@@ -97,4 +97,16 @@
 	</bean>
 
 
+	<bean id="tdmx.lib.zone.dao.DomainDao"
+		class="org.tdmx.lib.zone.dao.DomainDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.DomainRepository"
+		class="org.tdmx.lib.zone.service.DomainServiceRepositoryImpl">
+		<property name="domainDao"
+			ref="tdmx.lib.zone.dao.DomainDao" />
+	</bean>
+
+
+
 </beans>

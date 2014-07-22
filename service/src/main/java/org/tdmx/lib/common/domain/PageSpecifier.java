@@ -16,21 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.mrs;
+package org.tdmx.lib.common.domain;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.sp.mrs.CreateSession;
-import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.core.api.v01.sp.mrs.Relay;
-import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
-
-public class MRSImpl implements MRS {
+/**
+ * The PageSpecifier part of a search criteria.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class PageSpecifier {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,32 +33,45 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+
+	/**
+	 * Page number starting at 0.
+	 */
+	private final int pageNumber;
+
+	/**
+	 * Page size to which each fetch is limited to.
+	 */
+	private final int pageSize;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	public PageSpecifier(int pageNumber, int pageSize) {
+		this.pageNumber = pageNumber;
+		this.pageSize = pageSize;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	@WebResult(name = "createSessionResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/createSession")
-	public CreateSessionResponse createSession(
-			@WebParam(partName = "parameters", name = "createSession", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") CreateSession parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * The offset of the first result.
+	 * 
+	 * @return pageNumber * pageSize
+	 */
+	public int getFirstResult() {
+		return pageNumber * pageSize;
 	}
 
-	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * The pageSize.
+	 * 
+	 * @return
+	 */
+	public int getMaxResults() {
+		return pageSize;
 	}
 
 	// -------------------------------------------------------------------------

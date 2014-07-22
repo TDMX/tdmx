@@ -47,7 +47,10 @@
 	
 	</jaxws:endpoint>
 
-	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" />
+	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" >
+		<property name="agentService" ref="server.authenticatedAgentService"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+	</bean>
 
 	
 </beans>

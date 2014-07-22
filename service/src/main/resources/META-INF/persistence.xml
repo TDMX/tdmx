@@ -18,6 +18,7 @@
 	<persistence-unit name="ZoneDB" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>org.tdmx.lib.zone.domain.Zone</class>
+		<class>org.tdmx.lib.zone.domain.Domain</class>
 		<class>org.tdmx.lib.zone.domain.AgentCredential</class>
 	</persistence-unit>
 

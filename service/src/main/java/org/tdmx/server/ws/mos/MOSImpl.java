@@ -22,6 +22,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.sp.mos.GetAddress;
 import org.tdmx.core.api.v01.sp.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.sp.mos.GetFlowTargetSession;
@@ -51,6 +53,23 @@ import org.tdmx.core.api.v01.sp.mos.tx.RollbackResponse;
 import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 
 public class MOSImpl implements MOS {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(MOSImpl.class);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	@Override
 	@WebResult(name = "listAuthorizedChannelDestinationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mos", partName = "parameters")
@@ -168,5 +187,17 @@ public class MOSImpl implements MOS {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 }

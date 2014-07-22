@@ -16,55 +16,97 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.mrs;
+package org.tdmx.lib.zone.domain;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
+import java.io.Serializable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.sp.mrs.CreateSession;
-import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.core.api.v01.sp.mrs.Relay;
-import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class MRSImpl implements MRS {
+/**
+ * A DomainID is only unique within a zone.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+@Embeddable
+public class DomainID implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+	private static final long serialVersionUID = -128859602084626282L;
+
+	@Column(length = MAX_NAME_LEN, nullable = false)
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	private String domainName;
+
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public DomainID() {
+	}
+
+	public DomainID(String domainName, String zoneApex) {
+		this.domainName = domainName;
+		this.zoneApex = zoneApex;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	@WebResult(name = "createSessionResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/createSession")
-	public CreateSessionResponse createSession(
-			@WebParam(partName = "parameters", name = "createSession", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") CreateSession parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result + ((zoneApex == null) ? 0 : zoneApex.hashCode());
+		return result;
 	}
 
 	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DomainID other = (DomainID) obj;
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (zoneApex == null) {
+			if (other.zoneApex != null)
+				return false;
+		} else if (!zoneApex.equals(other.zoneApex))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("DomainID [domainName=");
+		builder.append(domainName);
+		builder.append(", zoneApex=");
+		builder.append(zoneApex);
+		builder.append("]");
+		return builder.toString();
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,5 +120,20 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
+	}
 
 }

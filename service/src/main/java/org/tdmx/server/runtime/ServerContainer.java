@@ -177,7 +177,8 @@ public class ServerContainer {
 		requestLog.setRetainDays(7);
 		requestLogHandler.setRequestLog(requestLog);
 
-		ServletContextHandler context = new ServletContextHandler();
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SECURITY
+				| ServletContextHandler.NO_SESSIONS);
 		contexts.addHandler(context);
 		context.setContextPath("/api");
 		// Setup Spring context

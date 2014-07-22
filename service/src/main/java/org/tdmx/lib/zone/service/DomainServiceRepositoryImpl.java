@@ -16,21 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.mrs;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
+package org.tdmx.lib.zone.service;
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.sp.mrs.CreateSession;
-import org.tdmx.core.api.v01.sp.mrs.CreateSessionResponse;
-import org.tdmx.core.api.v01.sp.mrs.Relay;
-import org.tdmx.core.api.v01.sp.mrs.RelayResponse;
-import org.tdmx.core.api.v01.sp.mrs.ws.MRS;
+import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.zone.dao.DomainDao;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.DomainID;
+import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
-public class MRSImpl implements MRS {
+/**
+ * Transactional CRUD Services for Domain Entity.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class DomainServiceRepositoryImpl implements DomainService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,7 +44,9 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DomainServiceRepositoryImpl.class);
+
+	private DomainDao domainDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -50,21 +57,37 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	@WebResult(name = "createSessionResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/createSession")
-	public CreateSessionResponse createSession(
-			@WebParam(partName = "parameters", name = "createSession", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") CreateSession parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional(value = "ZoneDB")
+	public void createOrUpdate(Domain domain) {
+		Domain storedDomain = getDomainDao().loadById(domain.getId());
+		if (storedDomain == null) {
+			getDomainDao().persist(domain);
+		} else {
+			getDomainDao().merge(domain);
+		}
 	}
 
 	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional(value = "ZoneDB")
+	public void delete(Domain domain) {
+		Domain storedDomain = getDomainDao().loadById(domain.getId());
+		if (storedDomain != null) {
+			getDomainDao().delete(storedDomain);
+		} else {
+			log.warn("Unable to find Domain to delete with domainName " + domain.getId());
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria) {
+		return getDomainDao().search(zoneApex, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Domain findById(DomainID domainId) {
+		return getDomainDao().loadById(domainId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,5 +101,13 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public DomainDao getDomainDao() {
+		return domainDao;
+	}
+
+	public void setDomainDao(DomainDao domainDao) {
+		this.domainDao = domainDao;
+	}
 
 }
