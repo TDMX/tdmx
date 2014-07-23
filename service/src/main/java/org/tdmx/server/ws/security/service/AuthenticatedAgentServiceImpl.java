@@ -54,7 +54,10 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	@Override
 	public PKIXCertificate getAuthenticatedAgent() {
 		AuthorizationResult r = TL.get();
-		return r != null ? r.getPublicCertificate() : null;
+		if (r == null) {
+			throw new IllegalStateException();
+		}
+		return r.getPublicCertificate();
 	}
 
 	@Override
@@ -63,13 +66,17 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 			log.warn("SECURITY WARNING: ThreadLocal not cleared when being set." + authorization);
 			clearAuthenticatedAgent();
 		}
+		if (authorization.getFailureCode() != null) {
+			log.error("Illegal to setAuthenticatedAgent with AuthorizationResult with failurecode.");
+			throw new IllegalStateException();
+		}
 		TL.set(authorization);
 	}
 
 	@Override
 	public String getZoneDbPartitionId() {
 		AuthorizationResult r = TL.get();
-		return r != null ? r.getAccountZone().getZonePartitionId() : null;
+		return r.getAccountZone().getZonePartitionId();
 	}
 
 	@Override

@@ -11,19 +11,7 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<!-- CONFIGURATION -->
-	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
-	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/ws/test-context.xml"/>
+
 	
-	<!-- LIBRARIES -->
-	<import resource="classpath:/org/tdmx/lib/console/service-context.xml"/>
-	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
-	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
-
-	<!-- WS CONFIG -->
-	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
-
-	<!-- CONTAINER -->
-	<import resource="classpath:/org/tdmx/server/container-context.xml"/>
-
 </beans>

@@ -65,6 +65,15 @@ public class Domain implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Domain [id=");
+		builder.append(id);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

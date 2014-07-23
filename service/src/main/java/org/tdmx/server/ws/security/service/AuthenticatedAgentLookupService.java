@@ -28,8 +28,22 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
  */
 public interface AuthenticatedAgentLookupService {
 
+	/**
+	 * Returns the authorized agent.
+	 * 
+	 * @return the authorized agent.
+	 * @throws IllegalStateException
+	 *             if there is no authorized agent.
+	 */
 	public PKIXCertificate getAuthenticatedAgent();
 
+	/**
+	 * Returns the ZoneDB partition used by the authorized agent.
+	 * 
+	 * @return the ZoneDB partition used by the authorized agent.
+	 * @throws IllegalStateException
+	 *             if there is no authorized agent.
+	 */
 	public String getZoneDbPartitionId();
 
 }

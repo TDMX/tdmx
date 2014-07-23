@@ -481,8 +481,9 @@ public class ZASImpl implements ZAS {
 			}
 			errorDescription = "Agent is not a ZAC.";
 		} else {
-
-			if (user.isTdmxZoneAdminCertificate()) {
+			if (!domain.toUpperCase().equals(domain)) {
+				errorDescription = "Domain not normalized to uppercase.";
+			} else if (user.isTdmxZoneAdminCertificate()) {
 				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
 				if (domain.endsWith(zoneApex)) {
 					return zoneApex;
