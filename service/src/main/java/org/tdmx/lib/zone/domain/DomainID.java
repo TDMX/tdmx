@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -69,33 +70,17 @@ public class DomainID implements Serializable {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((domainName == null) ? 0 : domainName.hashCode());
-		result = prime * result + ((zoneApex == null) ? 0 : zoneApex.hashCode());
-		return result;
+		return Objects.hash(zoneApex, domainName);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
+		if (obj instanceof DomainID) {
+			DomainID other = (DomainID) obj;
+			return Objects.equals(zoneApex, other.getZoneApex()) && Objects.equals(domainName, other.getDomainName());
+		} else {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DomainID other = (DomainID) obj;
-		if (domainName == null) {
-			if (other.domainName != null)
-				return false;
-		} else if (!domainName.equals(other.domainName))
-			return false;
-		if (zoneApex == null) {
-			if (other.zoneApex != null)
-				return false;
-		} else if (!zoneApex.equals(other.zoneApex))
-			return false;
-		return true;
+		}
 	}
 
 	@Override
