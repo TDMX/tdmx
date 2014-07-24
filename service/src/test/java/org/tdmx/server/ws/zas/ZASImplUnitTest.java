@@ -19,6 +19,7 @@
 package org.tdmx.server.ws.zas;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -162,7 +163,47 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testCreateDomain() {
+	public void testCreateDomain_AuthorizationFailure_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateDomain req = new CreateDomain();
+		req.setDomain(dac.getPublicCert().getCommonName()); // DAC's cn is the domain
+		CreateDomainResponse response = zas.createDomain(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertNotNull(response.getError()); // TODO error code
+	}
+
+	@Test
+	public void testCreateDomain_AuthorizationFailure_ZAC_nonsubdomain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateDomain req = new CreateDomain();
+		req.setDomain("NOT.A.SUBDOMAIN.COM"); // ZAC can only create subdomains of their root
+		CreateDomainResponse response = zas.createDomain(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertNotNull(response.getError()); // TODO error code
+	}
+
+	@Test
+	public void testCreateDomain_AuthorizationFailure_wrongDomain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateDomain req = new CreateDomain();
+		req.setDomain("lowercase." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot()); // domains must be normalized
+																							// uppercase
+		CreateDomainResponse response = zas.createDomain(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertNotNull(response.getError()); // TODO error code
+	}
+
+	@Test
+	public void testCreateDomain_Success() {
 		// lowercase domain, uppercasedomain
 		// auth agent: null, zac, dac, uc
 

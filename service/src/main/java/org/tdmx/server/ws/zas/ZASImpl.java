@@ -128,13 +128,49 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 
 	@Override
+	@WebResult(name = "createDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createDomain")
+	public CreateDomainResponse createDomain(
+			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
+		CreateDomainResponse response = new CreateDomainResponse();
+		String zoneApex = checkZoneAuthorization(parameters.getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(id);
+		if (domain != null) {
+			// TODO make a enum for the error response
+			setError(500, "Domain exists.", response);
+			return response;
+		}
+
+		// create the domain
+		domain = new Domain(id);
+
+		getDomainService().createOrUpdate(domain);
+		response.setSuccess(true);
+		return response;
+	}
+
+	@Override
+	@WebResult(name = "deleteDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteDomain")
+	public DeleteDomainResponse deleteDomain(
+			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	@WebResult(name = "searchDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchDomain")
 	public SearchDomainResponse searchDomain(
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
 
 		SearchDomainResponse response = new SearchDomainResponse();
-		String zoneApex = checkDomainAuthorization(null, response);
+		String zoneApex = checkZoneAuthorization(null, response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -156,33 +192,6 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchUser parameters) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	@WebResult(name = "createDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createDomain")
-	public CreateDomainResponse createDomain(
-			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
-		CreateDomainResponse response = new CreateDomainResponse();
-		String zoneApex = checkDomainAuthorization(parameters.getDomain(), response);
-		if (zoneApex == null) {
-			return response;
-		}
-		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
-		// check if the domain exists already
-		Domain domain = getDomainService().findById(id);
-		if (domain != null) {
-			// TODO make a enum for the error response
-			setError(500, "Domain exists.", response);
-			return response;
-		}
-
-		// create the domain
-		domain = new Domain(id);
-
-		getDomainService().createOrUpdate(domain);
-		response.setSuccess(true);
-		return response;
 	}
 
 	@Override
@@ -253,15 +262,6 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteIpZone")
 	public DeleteIpZoneResponse deleteIpZone(
 			@WebParam(partName = "parameters", name = "deleteIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteIpZone parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	@WebResult(name = "deleteDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteDomain")
-	public DeleteDomainResponse deleteDomain(
-			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -498,6 +498,35 @@ public class ZASImpl implements ZAS {
 				errorDescription = "DAC only authorized on own domain.";
 			} else {
 				errorDescription = "Agent is not a ZAC or DAC.";
+			}
+		}
+		setError(401, errorDescription, ack);
+		return null;
+	}
+
+	/**
+	 * Checks the AuthenticatedAgent is a ZAC authorized to perform administration on the domain, and return the agent's
+	 * zoneApex. If the agent is not authorized then the acknowledge's Error info will be set and null returned.
+	 * 
+	 * @param ack
+	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 */
+	private String checkZoneAuthorization(String domain, Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+
+		String errorDescription = null;
+		if (!StringUtils.hasText(domain)) {
+			errorDescription = "Domain not supplied.";
+		} else if (!user.isTdmxZoneAdminCertificate()) {
+		} else {
+			if (!domain.toUpperCase().equals(domain)) {
+				errorDescription = "Domain not normalized to uppercase.";
+			} else {
+				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+				if (domain.endsWith(zoneApex)) {
+					return zoneApex;
+				}
+				errorDescription = "ZAC only authorized on own subdomains.";
 			}
 		}
 		setError(401, errorDescription, ack);
