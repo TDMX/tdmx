@@ -19,65 +19,79 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.Embeddable;
 
 /**
- * An AgentCredential is the public certificate of a ZAC, DAC or UC.
- * 
- * The AgentCredential is identified by it's SHA1 fingerprint of the public certificate ( first in chain ).
+ * A ZoneCredentialID is only unique within a zone, eventhough it's SHA1 fingerprint is likely to be fairly unique.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "AgentCredential")
-public class AgentCredential implements Serializable {
+@Embeddable
+public class AgentCredentialID implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_NAME_LEN = 255;
 	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
-	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -988419614813872556L;
+	private static final long serialVersionUID = -128859602084626282L;
 
-	@Id
-	private AgentCredentialID id;
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
 
-	@Enumerated(EnumType.STRING)
-	@Column(length = AgentCredentialType.MAX_CREDENTIALTYPE_LEN, nullable = false)
-	private AgentCredentialType credentialType;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = AgentCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
-	private AgentCredentialStatus credentialStatus;
-
-	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
-	private String certificateChainPem;
+	@Column(length = MAX_SHA1FINGERPRINT_LEN, nullable = false)
+	private String sha1fingerprint;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public AgentCredential() {
+	public AgentCredentialID() {
 	}
 
-	public AgentCredential(AgentCredentialID id) {
-		this.id = id;
+	public AgentCredentialID(String zoneApex, String sha1fingerprint) {
+		this.zoneApex = zoneApex;
+		this.sha1fingerprint = sha1fingerprint;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(zoneApex, sha1fingerprint);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof AgentCredentialID) {
+			AgentCredentialID other = (AgentCredentialID) obj;
+			return Objects.equals(zoneApex, other.getZoneApex())
+					&& Objects.equals(sha1fingerprint, other.getSha1fingerprint());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AgentCredentialID [zoneApex=");
+		builder.append(zoneApex);
+		builder.append(", sha1fingerprint=");
+		builder.append(sha1fingerprint);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -91,36 +105,20 @@ public class AgentCredential implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AgentCredentialID getId() {
-		return id;
+	public String getZoneApex() {
+		return zoneApex;
 	}
 
-	public void setId(AgentCredentialID id) {
-		this.id = id;
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
-	public AgentCredentialType getCredentialType() {
-		return credentialType;
+	public String getSha1fingerprint() {
+		return sha1fingerprint;
 	}
 
-	public void setCredentialType(AgentCredentialType credentialType) {
-		this.credentialType = credentialType;
-	}
-
-	public AgentCredentialStatus getCredentialStatus() {
-		return credentialStatus;
-	}
-
-	public void setCredentialStatus(AgentCredentialStatus credentialStatus) {
-		this.credentialStatus = credentialStatus;
-	}
-
-	public String getCertificateChainPem() {
-		return certificateChainPem;
-	}
-
-	public void setCertificateChainPem(String certificateChainPem) {
-		this.certificateChainPem = certificateChainPem;
+	public void setSha1fingerprint(String sha1fingerprint) {
+		this.sha1fingerprint = sha1fingerprint;
 	}
 
 }

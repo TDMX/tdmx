@@ -102,24 +102,24 @@ public class ZASImplUnitTest {
 		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zac.getCertificateChain(),
 				AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
-		assertEquals(zoneApex, zoneAC.getZoneApex());
+		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(zoneAC);
 
 		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain(),
 				AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
-		assertNotNull(domainAC.getZoneApex());
+		assertNotNull(domainAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(domainAC);
 
 		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain(),
 				AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
-		assertEquals(zoneApex, userAC.getZoneApex());
+		assertEquals(zoneApex, userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
 
 		accountZone = new AccountZone();
 		accountZone.setAccountId("TEST");
-		accountZone.setZoneApex(zoneAC.getZoneApex());
+		accountZone.setZoneApex(zoneAC.getId().getZoneApex());
 		accountZone.setStatus(AccountZoneStatus.ACTIVE);
 		accountZone.setSegment("test");
 		accountZone.setZonePartitionId("default");

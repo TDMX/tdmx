@@ -29,6 +29,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -87,7 +88,8 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		}
 
 		String fingerprint = cert.getFingerprint();
-		AgentCredential agentCredential = getAgentCredentialService().findByFingerprint(fingerprint);
+		AgentCredentialID id = new AgentCredentialID(zoneApex, fingerprint);
+		AgentCredential agentCredential = getAgentCredentialService().findById(id);
 		if (agentCredential == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_AGENT);
 		}

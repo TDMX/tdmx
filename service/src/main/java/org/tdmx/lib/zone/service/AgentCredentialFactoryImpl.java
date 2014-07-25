@@ -25,6 +25,7 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 
@@ -56,8 +57,10 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 			return null;
 		}
 		PKIXCertificate publicKey = certificateChain[0];
-		AgentCredential c = new AgentCredential();
-		c.setSha1fingerprint(publicKey.getFingerprint());
+
+		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
+				publicKey.getFingerprint());
+		AgentCredential c = new AgentCredential(id);
 		c.setCredentialStatus(status);
 
 		if (publicKey.isTdmxZoneAdminCertificate()) {
@@ -71,8 +74,6 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 			return null;
 		}
 
-		c.setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
-
 		try {
 			c.setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
 		} catch (CryptoCertificateException e) {
@@ -82,7 +83,6 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 
 		return c;
 	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------

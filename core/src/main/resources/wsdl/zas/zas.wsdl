@@ -2,7 +2,7 @@
 <!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:zas-definition" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:zas="urn:tdmx:api:v1.0:sp:zas" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" xmlns:report="urn:tdmx:api:v1.0:sp:report" targetNamespace="urn:tdmx:api:v1.0:sp:zas-definition" name="ZAS">
 	<wsdl:documentation>
-		Bla Bla...
+		Administration of a Zone at a ServiceProvider. Callers are either ZoneAdministratorCredentials (ZAC) or DomainAdministratorCredentials (DAC). ZoneAdministrators may perform operations on the zoneApex domain and any subdomains. DomainAdministrators may manage only their domain ( authorization does not propagate to any subdomains).
 	</wsdl:documentation>
 	<wsdl:types>
 		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:common" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:tx="urn:tdmx:api:v1.0:sp:common">
@@ -239,21 +239,21 @@
 		</wsdl:operation>
 		<wsdl:operation name="searchDomain">
 			<wsdl:documentation>
-				Bla Bla
+				Search for Domains which belong at or below the ZoneApex. Only callable by ZoneAdministrator.
 			</wsdl:documentation>
 			<wsdl:input message="tns:searchDomainRequest"/>
 			<wsdl:output message="tns:searchDomainResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="createDomain">
 			<wsdl:documentation>
-				Bla Bla
+				Creates a Domain, which is prerequisite to creating DomainAdministrators and other objects belonging to the Domain. Error if domain already esists. Only callable by ZoneAdministrator. 
 			</wsdl:documentation>
 			<wsdl:input message="tns:createDomainRequest"/>
 			<wsdl:output message="tns:createDomainResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="deleteDomain">
 			<wsdl:documentation>
-				Bla Bla
+				Deletes a Domain, which can only be performed once all objects belonging to a domain are deleted. Only callable by ZoneAdministrator.
 			</wsdl:documentation>
 			<wsdl:input message="tns:deleteDomainRequest"/>
 			<wsdl:output message="tns:deleteDomainResponse"/>

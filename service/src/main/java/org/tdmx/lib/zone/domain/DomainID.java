@@ -43,14 +43,14 @@ public class DomainID implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
 	@Column(length = MAX_NAME_LEN, nullable = false)
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
 	 */
 	private String domainName;
-
-	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
-	private String zoneApex;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,8 +60,8 @@ public class DomainID implements Serializable {
 	}
 
 	public DomainID(String domainName, String zoneApex) {
-		this.domainName = domainName;
 		this.zoneApex = zoneApex;
+		this.domainName = domainName;
 	}
 
 	// -------------------------------------------------------------------------
@@ -86,10 +86,10 @@ public class DomainID implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("DomainID [domainName=");
-		builder.append(domainName);
-		builder.append(", zoneApex=");
+		builder.append("DomainID [zoneApex=");
 		builder.append(zoneApex);
+		builder.append(", domainName=");
+		builder.append(domainName);
 		builder.append("]");
 		return builder.toString();
 	}

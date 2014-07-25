@@ -27,6 +27,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 
 public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
@@ -70,9 +71,9 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	}
 
 	@Override
-	public AgentCredential loadById(String sha1fingerprint) {
-		Query query = em.createQuery("from AgentCredential as ac where ac.sha1fingerprint = :id");
-		query.setParameter("id", sha1fingerprint);
+	public AgentCredential loadById(AgentCredentialID id) {
+		Query query = em.createQuery("from AgentCredential as ac where ac.id = :id");
+		query.setParameter("id", id);
 		try {
 			return (AgentCredential) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -83,7 +84,7 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<AgentCredential> loadByZoneApex(String zoneApex) {
-		Query query = em.createQuery("from AgentCredential as ac where ac.zoneApex = :zoneApex");
+		Query query = em.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex");
 		query.setParameter("zoneApex", zoneApex);
 		return query.getResultList();
 	}

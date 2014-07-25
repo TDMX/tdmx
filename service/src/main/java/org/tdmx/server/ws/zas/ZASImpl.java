@@ -99,9 +99,11 @@ import org.tdmx.core.api.v01.sp.zas.report.ReportResponse;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
@@ -117,7 +119,37 @@ public class ZASImpl implements ZAS {
 	private static final Logger log = LoggerFactory.getLogger(ZASImpl.class);
 
 	private AuthenticatedAgentLookupService agentService;
+	private AgentCredentialService credentialService;
 	private DomainService domainService;
+
+	private enum ErrorCode {
+		// authorization errors
+		NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
+		OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
+		// business logic errors
+		DomainNotSpecified(500, "Domain not supplied."),
+		NotNormalizedDomain(500, "Domain not normalized to uppercase."),
+		DomainExists(500, "Domain exists."),
+		DomainNotFound(500, "Domain not found."),
+
+		;
+
+		private final int errorCode;
+		private final String errorDescription;
+
+		public int getErrorCode() {
+			return errorCode;
+		}
+
+		public String getErrorDescription() {
+			return errorDescription;
+		}
+
+		private ErrorCode(int ec, String description) {
+			this.errorCode = ec;
+			this.errorDescription = description;
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -141,8 +173,8 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		Domain domain = getDomainService().findById(id);
 		if (domain != null) {
-			// TODO make a enum for the error response
-			setError(500, "Domain exists.", response);
+			// make a enum for the error response
+			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
@@ -159,8 +191,33 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteDomain")
 	public DeleteDomainResponse deleteDomain(
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteDomainResponse response = new DeleteDomainResponse();
+
+		String zoneApex = checkZoneAuthorization(parameters.getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(id);
+		if (domain == null) {
+			// make a enum for the error response
+			setError(ErrorCode.DomainExists, response);
+			return response;
+		}
+
+		// check the domain is deletable
+		// 1) no credentials DAC/UC on the domain.
+		List<AgentCredential> credentials = getCredentialService().findByZoneApex(zoneApex);
+		// TODO domain and type
+		for (AgentCredential credential : credentials) {
+			log.info("Credential " + credential);
+		}
+		// TODO no addresses on the domain
+
+		getDomainService().delete(domain);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -470,39 +527,40 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private String checkDomainAuthorization(String domain, Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
 
-		String errorDescription = null;
-		if (!StringUtils.hasText(domain)) {
-			// if no domain is passed in then the authenticated agent needs to be a ZAC
-			if (user.isTdmxZoneAdminCertificate()) {
-				return user.getTdmxZoneInfo().getZoneRoot();
-			}
-			errorDescription = "Agent is not a ZAC.";
-		} else {
-			if (!domain.toUpperCase().equals(domain)) {
-				errorDescription = "Domain not normalized to uppercase.";
-			} else if (user.isTdmxZoneAdminCertificate()) {
-				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
-				if (domain.endsWith(zoneApex)) {
-					return zoneApex;
-				}
-				errorDescription = "ZAC only authorized on own subdomains.";
-			} else if (user.isTdmxDomainAdminCertificate()) {
-				// a DAC needs to match the domain exactly, doesn't administer subdomains
-				String dacDomainName = user.getCommonName();
-				if (dacDomainName.equals(domain)) {
-					return user.getTdmxZoneInfo().getZoneRoot();
-				}
-				errorDescription = "DAC only authorized on own domain.";
-			} else {
-				errorDescription = "Agent is not a ZAC or DAC.";
-			}
-		}
-		setError(401, errorDescription, ack);
-		return null;
-	}
+	// private String checkDomainAuthorization(String domain, Acknowledge ack) {
+	// PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+	//
+	// ErrorCode error = null;
+	// if (!StringUtils.hasText(domain)) {
+	// // if no domain is passed in then the authenticated agent needs to be a ZAC
+	// if (user.isTdmxZoneAdminCertificate()) {
+	// return user.getTdmxZoneInfo().getZoneRoot();
+	// }
+	// errorDescription = "Agent is not a ZAC.";
+	// } else {
+	// if (!domain.toUpperCase().equals(domain)) {
+	// errorDescription = "Domain not normalized to uppercase.";
+	// } else if (user.isTdmxZoneAdminCertificate()) {
+	// String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+	// if (domain.endsWith(zoneApex)) {
+	// return zoneApex;
+	// }
+	// errorDescription = "ZAC only authorized on own subdomains.";
+	// } else if (user.isTdmxDomainAdminCertificate()) {
+	// // a DAC needs to match the domain exactly, doesn't administer subdomains
+	// String dacDomainName = user.getCommonName();
+	// if (dacDomainName.equals(domain)) {
+	// return user.getTdmxZoneInfo().getZoneRoot();
+	// }
+	// errorDescription = "DAC only authorized on own domain.";
+	// } else {
+	// errorDescription = "Agent is not a ZAC or DAC.";
+	// }
+	// }
+	// setError(401, errorDescription, ack);
+	// return null;
+	// }
 
 	/**
 	 * Checks the AuthenticatedAgent is a ZAC authorized to perform administration on the domain, and return the agent's
@@ -514,29 +572,30 @@ public class ZASImpl implements ZAS {
 	private String checkZoneAuthorization(String domain, Acknowledge ack) {
 		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
 
-		String errorDescription = null;
+		ErrorCode error = null;
 		if (!StringUtils.hasText(domain)) {
-			errorDescription = "Domain not supplied.";
+			error = ErrorCode.DomainNotSpecified;
 		} else if (!user.isTdmxZoneAdminCertificate()) {
+			error = ErrorCode.NonZoneAdministratorAccess;
 		} else {
 			if (!domain.toUpperCase().equals(domain)) {
-				errorDescription = "Domain not normalized to uppercase.";
+				error = ErrorCode.NotNormalizedDomain;
 			} else {
 				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
 				if (domain.endsWith(zoneApex)) {
 					return zoneApex;
 				}
-				errorDescription = "ZAC only authorized on own subdomains.";
+				error = ErrorCode.OutOfZoneAccess;
 			}
 		}
-		setError(401, errorDescription, ack);
+		setError(error, ack);
 		return null;
 	}
 
-	private void setError(int code, String description, Acknowledge ack) {
+	private void setError(ErrorCode ec, Acknowledge ack) {
 		Error error = new Error();
-		error.setCode(code);
-		error.setDescription(description);
+		error.setCode(ec.getErrorCode());
+		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
 	}
@@ -555,6 +614,14 @@ public class ZASImpl implements ZAS {
 
 	public void setAgentService(AuthenticatedAgentLookupService agentService) {
 		this.agentService = agentService;
+	}
+
+	public AgentCredentialService getCredentialService() {
+		return credentialService;
+	}
+
+	public void setCredentialService(AgentCredentialService credentialService) {
+		this.credentialService = credentialService;
 	}
 
 	public DomainService getDomainService() {

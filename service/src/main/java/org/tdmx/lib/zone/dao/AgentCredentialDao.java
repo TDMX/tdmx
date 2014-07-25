@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.dao;
 import java.util.List;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 
 /**
  * DAO for the AgentCredential Entity.
@@ -38,7 +39,9 @@ public interface AgentCredentialDao {
 
 	public AgentCredential merge(AgentCredential value);
 
-	public AgentCredential loadById(String id);
+	public AgentCredential loadById(AgentCredentialID id);
 
 	public List<AgentCredential> loadByZoneApex(String zoneApex);
+
+	// TODO lookup by type and domain
 }

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 
 /**
  * Transactional CRUD Services for AgentCredential Entity.
@@ -57,7 +58,7 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(AgentCredential agentCredential) {
-		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getSha1fingerprint());
+		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getId());
 		if (storedAgentCredential == null) {
 			getAgentCredentialDao().persist(agentCredential);
 		} else {
@@ -68,19 +69,18 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(AgentCredential agentCredential) {
-		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getSha1fingerprint());
+		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getId());
 		if (storedAgentCredential != null) {
 			getAgentCredentialDao().delete(storedAgentCredential);
 		} else {
-			log.warn("Unable to find AgentCredential to delete with fingerprint "
-					+ agentCredential.getSha1fingerprint());
+			log.warn("Unable to find AgentCredential to delete with fingerprint " + agentCredential.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public AgentCredential findByFingerprint(String fingerprint) {
-		return getAgentCredentialDao().loadById(fingerprint);
+	public AgentCredential findById(AgentCredentialID id) {
+		return getAgentCredentialDao().loadById(id);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.service;
 import java.util.List;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialID;
 
 /**
  * Management Services for a AgentCredential.
@@ -32,7 +33,7 @@ public interface AgentCredentialService {
 
 	public void createOrUpdate(AgentCredential zone);
 
-	public AgentCredential findByFingerprint(String sha1fingerprint);
+	public AgentCredential findById(AgentCredentialID id);
 
 	public List<AgentCredential> findByZoneApex(String zoneApex);
 
