@@ -29,7 +29,7 @@ public interface PartitionIdProvider {
 	/**
 	 * Get the partitionId.
 	 * 
-	 * @return the partitionId.
+	 * @return the partitionId, or null if no partition is known.
 	 */
 	public String getPartitionId();
 

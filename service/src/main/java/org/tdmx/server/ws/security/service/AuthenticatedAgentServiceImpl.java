@@ -41,7 +41,7 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(AuthenticatedAgentServiceImpl.class);
 
-	private final ThreadLocal<AuthorizationResult> TL = new ThreadLocal<AuthorizationResult>();
+	private final ThreadLocal<AuthorizationResult> authStore = new ThreadLocal<AuthorizationResult>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -53,16 +53,13 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 
 	@Override
 	public PKIXCertificate getAuthenticatedAgent() {
-		AuthorizationResult r = TL.get();
-		if (r == null) {
-			throw new IllegalStateException();
-		}
-		return r.getPublicCertificate();
+		AuthorizationResult r = authStore.get();
+		return r != null ? r.getPublicCertificate() : null;
 	}
 
 	@Override
 	public void setAuthenticatedAgent(AuthorizationResult authorization) {
-		if (TL.get() != null) {
+		if (authStore.get() != null) {
 			log.warn("SECURITY WARNING: ThreadLocal not cleared when being set." + authorization);
 			clearAuthenticatedAgent();
 		}
@@ -70,18 +67,18 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 			log.error("Illegal to setAuthenticatedAgent with AuthorizationResult with failurecode.");
 			throw new IllegalStateException();
 		}
-		TL.set(authorization);
+		authStore.set(authorization);
 	}
 
 	@Override
 	public String getZoneDbPartitionId() {
-		AuthorizationResult r = TL.get();
-		return r.getAccountZone().getZonePartitionId();
+		AuthorizationResult r = authStore.get();
+		return r != null ? r.getAccountZone().getZonePartitionId() : null;
 	}
 
 	@Override
 	public void clearAuthenticatedAgent() {
-		TL.remove();
+		authStore.remove();
 	}
 
 	// -------------------------------------------------------------------------

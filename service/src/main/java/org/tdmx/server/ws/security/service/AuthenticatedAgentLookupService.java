@@ -31,18 +31,14 @@ public interface AuthenticatedAgentLookupService {
 	/**
 	 * Returns the authorized agent.
 	 * 
-	 * @return the authorized agent.
-	 * @throws IllegalStateException
-	 *             if there is no authorized agent.
+	 * @return the authorized agent or null if there is none.
 	 */
 	public PKIXCertificate getAuthenticatedAgent();
 
 	/**
 	 * Returns the ZoneDB partition used by the authorized agent.
 	 * 
-	 * @return the ZoneDB partition used by the authorized agent.
-	 * @throws IllegalStateException
-	 *             if there is no authorized agent.
+	 * @return the ZoneDB partition used by the authorized agent or null if there is none.
 	 */
 	public String getZoneDbPartitionId();
 

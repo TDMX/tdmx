@@ -46,6 +46,8 @@ public class DynamicDataSource implements javax.sql.DataSource {
 
 	private static final Log log = LogFactory.getLog(DynamicDataSource.class);
 
+	private static final String VALIDATION_PARTITION_ID = "VALIDATION";
+
 	private DataSourceConfigurationProvider configurationProvider;
 	private final Map<String, DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
 	private final Map<DatabaseConnectionInfo, BasicDataSource> connectionDataSourceMap = new ConcurrentHashMap<DatabaseConnectionInfo, BasicDataSource>();
@@ -86,6 +88,10 @@ public class DynamicDataSource implements javax.sql.DataSource {
 			throw new SQLException("No partitionIdProvider.");
 		}
 		String partitionId = getPartitionIdProvider().getPartitionId();
+		if (partitionId == null) {
+			log.info("Partition defaulting to " + VALIDATION_PARTITION_ID);
+			partitionId = VALIDATION_PARTITION_ID;
+		}
 		DatabaseConnectionInfo ci = getConfigurationProvider().getPartitionInfo(partitionId);
 		if (ci == null) {
 			log.warn("No DatabaseConnectionInfo provided for partitionId " + partitionId);

@@ -124,6 +124,7 @@ public class ZASImpl implements ZAS {
 
 	private enum ErrorCode {
 		// authorization errors
+		MissingCredentials(403, "Missing Credentials."),
 		NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
 		OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 		// business logic errors
@@ -571,7 +572,10 @@ public class ZASImpl implements ZAS {
 	 */
 	private String checkZoneAuthorization(String domain, Acknowledge ack) {
 		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-
+		if (user == null) {
+			setError(ErrorCode.MissingCredentials, ack);
+			return null;
+		}
 		ErrorCode error = null;
 		if (!StringUtils.hasText(domain)) {
 			error = ErrorCode.DomainNotSpecified;
