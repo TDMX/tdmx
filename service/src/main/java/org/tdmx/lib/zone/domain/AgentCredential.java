@@ -26,6 +26,11 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
  * An AgentCredential is the public certificate of a ZAC, DAC or UC.
@@ -64,6 +69,9 @@ public class AgentCredential implements Serializable {
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
 
+	@Transient
+	private PKIXCertificate[] certificateChain;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -75,9 +83,69 @@ public class AgentCredential implements Serializable {
 		this.id = id;
 	}
 
+	public AgentCredential(PKIXCertificate[] certificateChain, AgentCredentialStatus status)
+			throws CryptoCertificateException {
+		PKIXCertificate publicKey = certificateChain[0];
+
+		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
+				publicKey.getFingerprint());
+		setId(id);
+		setCredentialStatus(status);
+
+		if (publicKey.isTdmxZoneAdminCertificate()) {
+			setCredentialType(AgentCredentialType.ZAC);
+		} else if (publicKey.isTdmxDomainAdminCertificate()) {
+			setCredentialType(AgentCredentialType.DAC);
+		} else if (publicKey.isTdmxUserCertificate()) {
+			setCredentialType(AgentCredentialType.UC);
+		}
+
+		setCertificateChain(certificateChain);
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	// TODO getComain / getUserName as fields + DAO filter.
+	public String getDomain() {
+		try {
+			PKIXCertificate publicKey = getPublicKey();
+			if (publicKey != null) {
+				if (AgentCredentialType.DAC == getCredentialType()) {
+					return publicKey.getCommonName();
+				} else if (AgentCredentialType.UC == getCredentialType()) {
+					PKIXCertificate issuerKey = getCertificateChain()[1];
+					return issuerKey.getCommonName();
+				}
+			}
+
+		} catch (CryptoCertificateException e) {
+			throw new IllegalStateException(e);
+		}
+		return null;
+	}
+
+	/**
+	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getCertificateChain() throws CryptoCertificateException {
+		if (certificateChain == null && getCertificateChainPem() != null) {
+			certificateChain = CertificateIOUtils.pemToX509certs(getCertificateChainPem());
+			return certificateChain;
+		}
+		return certificateChain;
+	}
+
+	public PKIXCertificate getPublicKey() throws CryptoCertificateException {
+		if (getCertificateChain() != null && getCertificateChain().length > 0) {
+			return getCertificateChain()[0];
+		}
+		return null;
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -86,6 +154,11 @@ public class AgentCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void setCertificateChain(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+		this.certificateChain = certificateChain;
+		setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -100,6 +100,7 @@ import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
@@ -122,7 +123,7 @@ public class ZASImpl implements ZAS {
 	private AgentCredentialService credentialService;
 	private DomainService domainService;
 
-	private enum ErrorCode {
+	public enum ErrorCode {
 		// authorization errors
 		MissingCredentials(403, "Missing Credentials."),
 		NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
@@ -202,19 +203,28 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		Domain domain = getDomainService().findById(id);
 		if (domain == null) {
-			// make a enum for the error response
-			setError(ErrorCode.DomainExists, response);
+			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
-		// check the domain is deletable
-		// 1) no credentials DAC/UC on the domain.
+		// check the domain can be deleted
+		// 1) no active credentials DAC/UC on the domain.
 		List<AgentCredential> credentials = getCredentialService().findByZoneApex(zoneApex);
 		// TODO domain and type
 		for (AgentCredential credential : credentials) {
-			log.info("Credential " + credential);
+			if (AgentCredentialStatus.ACTIVE == credential.getCredentialStatus()
+					&& parameters.getDomain().equals(credential.getDomain())) {
+				log.info("Active Credential on the domain " + credential);
+				// TODO error credential found UC or DAC
+			}
 		}
 		// TODO no addresses on the domain
+
+		// TODO search domain - do we have "status" of credentials? do we modify dac/uc?
+
+		// TODO denormalize agentcredential to have domain / username for dac/uc
+
+		// TODO delete all (theninactive domain credentials)
 
 		getDomainService().delete(domain);
 		response.setSuccess(true);
@@ -571,29 +581,31 @@ public class ZASImpl implements ZAS {
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
 	private String checkZoneAuthorization(String domain, Acknowledge ack) {
+		if (!StringUtils.hasText(domain)) {
+			setError(ErrorCode.DomainNotSpecified, ack);
+			return null;
+		} else if (!StringUtils.isLowerCase(domain)) {
+			setError(ErrorCode.NotNormalizedDomain, ack);
+			return null;
+		}
+
 		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
 		if (user == null) {
 			setError(ErrorCode.MissingCredentials, ack);
 			return null;
 		}
-		ErrorCode error = null;
-		if (!StringUtils.hasText(domain)) {
-			error = ErrorCode.DomainNotSpecified;
-		} else if (!user.isTdmxZoneAdminCertificate()) {
-			error = ErrorCode.NonZoneAdministratorAccess;
-		} else {
-			if (!domain.toUpperCase().equals(domain)) {
-				error = ErrorCode.NotNormalizedDomain;
-			} else {
-				String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
-				if (domain.endsWith(zoneApex)) {
-					return zoneApex;
-				}
-				error = ErrorCode.OutOfZoneAccess;
-			}
+		if (!user.isTdmxZoneAdminCertificate()) {
+			setError(ErrorCode.NonZoneAdministratorAccess, ack);
+			return null;
 		}
-		setError(error, ack);
-		return null;
+
+		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+
+		if (!StringUtils.isSuffix(domain, zoneApex)) {
+			setError(ErrorCode.OutOfZoneAccess, ack);
+			return null;
+		}
+		return zoneApex;
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

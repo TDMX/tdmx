@@ -51,7 +51,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		zoneApex = "zone.root.test".toUpperCase();
+		zoneApex = "zone.root.test";
 		PKIXCredential za = CredentialFacade.createZAC(zoneApex);
 
 		AccountZone az = AccountZoneFacade.createAccountZone(za.getPublicCert());

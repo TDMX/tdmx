@@ -54,10 +54,13 @@ public class ZoneAdministrationCredentialSpecifier {
 		if (!StringUtils.hasText(zoneRoot)) {
 			throw new IllegalArgumentException("Missing zoneRoot.");
 		}
+		if (!StringUtils.isLowerCase(zoneRoot)) {
+			throw new IllegalArgumentException("Uppercase zoneRoot.");
+		}
 		if (!StringUtils.hasText(mrsUrl)) {
 			throw new IllegalArgumentException("Missing mrsUrl.");
 		}
-		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot.toUpperCase(), mrsUrl);
+		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot, mrsUrl);
 	}
 
 	// -------------------------------------------------------------------------

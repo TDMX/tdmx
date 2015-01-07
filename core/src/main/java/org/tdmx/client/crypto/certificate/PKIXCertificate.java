@@ -41,6 +41,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class PKIXCertificate {
 	// -------------------------------------------------------------------------
@@ -285,7 +286,7 @@ public class PKIXCertificate {
 		// TODO subjectKey == issuerKey identifiers
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
 			return false;
 		}
 
@@ -352,10 +353,13 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
 			return false;
 		}
 
+		if (getCommonName() == null || !StringUtils.isLowerCase(getCommonName())) {
+			return false;
+		}
 		if (!getCommonName().equals(zi.getZoneRoot()) && !getCommonName().endsWith("." + zi.getZoneRoot())) {
 			// domain is subdomain of zone root
 			return false;
@@ -428,21 +432,19 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !zi.getZoneRoot().toUpperCase().equals(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
 			// we must have the zone root normalized to uppercase.
 			return false;
 		}
 
-		// Last OU is the domainName
+		// Last OU is the domainName which must be uppercase too
 		String domainName = getLastRDN(getSubjectName(), BCStyle.OU);
-		if (domainName == null) {
+		if (domainName == null || !StringUtils.isLowerCase(domainName)) {
 			return false;
 		}
-		if (!domainName.equals(zi.getZoneRoot())) {
+		if (!domainName.equals(zi.getZoneRoot()) && !domainName.endsWith("." + zi.getZoneRoot())) {
 			// domain is subdomain of zone root
-			if (!domainName.endsWith("." + zi.getZoneRoot())) {
-				return false;
-			}
+			return false;
 		}
 
 		return true;

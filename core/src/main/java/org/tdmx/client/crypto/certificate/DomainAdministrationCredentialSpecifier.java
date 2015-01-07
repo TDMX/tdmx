@@ -55,6 +55,9 @@ public class DomainAdministrationCredentialSpecifier {
 		if (!StringUtils.hasText(subdomainName)) {
 			throw new IllegalArgumentException("Missing domainName.");
 		}
+		if (!StringUtils.isLowerCase(subdomainName)) {
+			throw new IllegalArgumentException("Uppercase domainName.");
+		}
 		if (zoneAdministratorCredential == null || zoneAdministratorCredential.getPublicCert() == null) {
 			throw new IllegalArgumentException("Missing ZAC.");
 		}
@@ -63,7 +66,7 @@ public class DomainAdministrationCredentialSpecifier {
 		}
 		PKIXCertificate issuer = zoneAdministratorCredential.getPublicCert();
 		String zoneApex = issuer.getTdmxZoneInfo().getZoneRoot();
-		this.domainName = subdomainName.toUpperCase() + "." + zoneApex;
+		this.domainName = subdomainName + "." + zoneApex;
 		this.zoneAdministratorCredential = zoneAdministratorCredential;
 	}
 

@@ -21,13 +21,10 @@ package org.tdmx.lib.zone.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 /**
  * Factory for AgentCredential Entity.
@@ -52,37 +49,23 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 
 	@Override
 	public AgentCredential createAgentCredential(PKIXCertificate[] certificateChain, AgentCredentialStatus status) {
-		if (certificateChain == null || certificateChain.length < 1) {
-			log.error("createAgentCredential called without certificateChain.");
+		if (certificateChain == null || certificateChain.length <= 0) {
+			log.error("certificateChain missing");
 			return null;
 		}
-		PKIXCertificate publicKey = certificateChain[0];
-
-		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
-				publicKey.getFingerprint());
-		AgentCredential c = new AgentCredential(id);
-		c.setCredentialStatus(status);
-
-		if (publicKey.isTdmxZoneAdminCertificate()) {
-			c.setCredentialType(AgentCredentialType.ZAC);
-		} else if (publicKey.isTdmxDomainAdminCertificate()) {
-			c.setCredentialType(AgentCredentialType.DAC);
-		} else if (publicKey.isTdmxUserCertificate()) {
-			c.setCredentialType(AgentCredentialType.UC);
-		} else {
-			log.error("createAgentCredential called with non TDMX certificateChain.");
-			return null;
-		}
-
 		try {
-			c.setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
+			AgentCredential c = new AgentCredential(certificateChain, status);
+			if (c.getCredentialType() == null) {
+				log.error("Invalid AgentCredentialType.");
+				return null;
+			}
+			return c;
 		} catch (CryptoCertificateException e) {
-			log.error("createAgentCredential failed to serialize certificateChain.", e);
-			return null;
+			log.error("Unable to createAgentCredential.", e);
 		}
-
-		return c;
+		return null;
 	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------

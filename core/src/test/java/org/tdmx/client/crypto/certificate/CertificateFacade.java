@@ -73,7 +73,7 @@ public class CertificateFacade {
 
 	public static DomainAdministrationCredentialSpecifier createDACS(PKIXCredential zac, Calendar from, Calendar to) {
 
-		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier("SUBDOMAIN", zac);
+		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier("subdomain", zac);
 		req.setNotBefore(from);
 		req.setNotAfter(to);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);

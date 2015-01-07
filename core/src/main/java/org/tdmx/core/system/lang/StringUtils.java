@@ -61,4 +61,31 @@ public class StringUtils {
 		br.close();
 		return sb.toString();
 	}
+
+	/**
+	 * 
+	 * @param input
+	 * @return true if the input is all in lower case.
+	 */
+	public static boolean isLowerCase(String input) {
+		if (input == null) {
+			return false;
+		}
+		String inputLowerCase = input.toLowerCase();
+		return inputLowerCase.equals(input) ? true : false;
+	}
+
+	/**
+	 * 
+	 * @param input
+	 * @param suffix
+	 * @return true if the input endsWith the suffix
+	 */
+	public static boolean isSuffix(String input, String suffix) {
+		if (input == null || suffix == null) {
+			return false;
+		}
+
+		return input.endsWith(suffix);
+	}
 }

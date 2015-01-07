@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.adapter;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +25,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.sp.mos.Submit;
 import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
 import org.tdmx.core.api.v01.sp.mos.ws.MOS;
@@ -46,13 +46,13 @@ public class ClientAdapterFactoryIntegrationTest {
 		cp.setKeystoreType("jks");
 
 		/**
-		 * Get hold of the PK of the UC
+		 * Get hold of the PK of the UC to know what to setup.
 		 */
-		// PKIXCredential uc = cp.getCredential();
-		// String ucPem = CertificateIOUtils.x509certsToPem(uc.getCertificateChain());
-		// to know what to setup.
-		// log.warn("sha1" + uc.getPublicCert().getFingerprint());
-		// log.warn(ucPem);
+		PKIXCredential uc = cp.getCredential();
+		String ucPem = CertificateIOUtils.x509certsToPem(uc.getCertificateChain());
+
+		log.warn("sha1: " + uc.getPublicCert().getFingerprint());
+		log.warn(ucPem);
 
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
@@ -94,7 +94,9 @@ public class ClientAdapterFactoryIntegrationTest {
 		};
 		//@formatter:on
 		mosCF.setEnabledCipherSuites(select_strong_ciphers);
-		// mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/");
+		// mosCF.setUrl("https://serviceprovider.tdmx.org/api/v1.0/sp/mos");
+
+		// mosCF.setUrl("https://ec2-54-85-169-145.compute-1.amazonaws.com:8443/api/v1.0/sp/mos");
 		mosCF.setUrl("https://localhost:8443/api/v1.0/sp/mos");
 
 		MOS service = mosCF.createClient();
@@ -102,7 +104,7 @@ public class ClientAdapterFactoryIntegrationTest {
 		Submit msg = new Submit();
 		SubmitResponse response = service.submit(msg);
 
-		assertNotNull(response);
+		// TODO assertNotNull(response);
 	}
 
 }

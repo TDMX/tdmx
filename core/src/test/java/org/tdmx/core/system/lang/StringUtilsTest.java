@@ -16,27 +16,33 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.service;
+package org.tdmx.core.system.lang;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-/**
- * Factory Services for AgentCredential.
- * 
- * @author Peter
- * 
- */
-public interface AgentCredentialFactory {
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	/**
-	 * Creates an AgentCredential from the certificate chain.
-	 * 
-	 * @param certChain
-	 * @param status
-	 * @return the AgentCredential or null if there is any problem with the certificateChain.
-	 */
-	public AgentCredential createAgentCredential(PKIXCertificate[] certChain, AgentCredentialStatus status);
+public class StringUtilsTest {
+	private final Logger log = LoggerFactory.getLogger(StringUtilsTest.class);
 
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@Test
+	public void testIsUpperCase() {
+		assertFalse(StringUtils.isLowerCase("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_.;:"));
+		assertTrue(StringUtils.isLowerCase("abcdefghijklmnopqrstuvwxyz0123456789.-_.;:"));
+		assertFalse(StringUtils.isLowerCase("Abcdefghijklmnopqrstuvwxyz0123456789.-_.;:"));
+	}
+
+	@Test
+	public void testIsSuffix() {
+		assertTrue(StringUtils.isSuffix("abcdefg", "efg"));
+		assertFalse(StringUtils.isSuffix("abcdefg", "abc"));
+	}
 }

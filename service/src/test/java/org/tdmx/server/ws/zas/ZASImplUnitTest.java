@@ -55,6 +55,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -172,7 +173,7 @@ public class ZASImplUnitTest {
 		CreateDomainResponse response = zas.createDomain(req);
 		assertNotNull(response);
 		assertFalse(response.isSuccess());
-		assertNotNull(response.getError()); // TODO error code
+		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
 	}
 
 	@Test
@@ -181,11 +182,11 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateDomain req = new CreateDomain();
-		req.setDomain("NOT.A.SUBDOMAIN.COM"); // ZAC can only create subdomains of their root
+		req.setDomain("not.a.subdomain.com"); // ZAC can only create subdomains of their root
 		CreateDomainResponse response = zas.createDomain(req);
 		assertNotNull(response);
 		assertFalse(response.isSuccess());
-		assertNotNull(response.getError()); // TODO error code
+		assertError(ErrorCode.OutOfZoneAccess, response.getError());
 	}
 
 	@Test
@@ -194,24 +195,20 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateDomain req = new CreateDomain();
-		req.setDomain("lowercase." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot()); // domains must be normalized
-																							// uppercase
+		req.setDomain("UPPERCASE." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 		CreateDomainResponse response = zas.createDomain(req);
 		assertNotNull(response);
 		assertFalse(response.isSuccess());
-		assertNotNull(response.getError()); // TODO error code
+		assertError(ErrorCode.NotNormalizedDomain, response.getError());
 	}
 
 	@Test
 	public void testCreateDomain_Success() {
-		// lowercase domain, uppercasedomain
-		// auth agent: null, zac, dac, uc
-
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateDomain req = new CreateDomain();
-		req.setDomain("TEST." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
+		req.setDomain("lowercasesubdomain." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 		CreateDomainResponse response = zas.createDomain(req);
 		assertNotNull(response);
 		assertTrue(response.isSuccess());
@@ -420,6 +417,12 @@ public class ZASImplUnitTest {
 	@Ignore
 	public void testSetDomainService() {
 		fail("Not yet implemented");
+	}
+
+	private void assertError(ErrorCode expected, org.tdmx.core.api.v01.sp.zas.common.Error error) {
+		assertNotNull(error);
+		assertEquals(expected.getErrorCode(), error.getCode());
+		assertEquals(expected.getErrorDescription(), error.getDescription());
 	}
 
 }
