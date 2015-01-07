@@ -48,7 +48,7 @@ mv server.keystore server
 chmod 600 server/*
 
 #-Djavax.net.debug=all
-JAVA_OPTS="-Xmx512m -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
+JAVA_OPTS="-Xmx512m -Djavax.net.debug=all -XX:+UseCompressedOops -XX:+PrintGCTimeStamps -XX:+PrintGCDetails"
 
 echo Starting server....
 echo

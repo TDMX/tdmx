@@ -8,12 +8,7 @@
 #java -Xmx512m -XX:+UseCompressedOops -jar server.jar >> stdout.log 2>&1 &
 #nc -v localhost 8079
 
-if [ $1 == "1" ]; then
-	HOST=ec2-54-85-169-145.compute-1.amazonaws.com
-else
-	HOST=ec2-54-86-75-215.compute-1.amazonaws.com
-fi
-
+HOST=ec2-54-85-169-145.compute-1.amazonaws.com
 
 echo Copy the server configuration to $HOST machine
 scp -i EC2.pem ../service/tdmx-configuration.properties ec2-user@$HOST:tdmx-configuration.properties

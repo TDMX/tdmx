@@ -9,3 +9,5 @@ target
 /deployment/ssl/startssl-intermediate.cer
 /deployment/ssl/server.crt
 /deployment/ssl/server.csr
+/deployment/jce/*.jar
+/deployment/ec2/*.rpm
