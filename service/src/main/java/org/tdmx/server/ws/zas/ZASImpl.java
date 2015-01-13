@@ -104,6 +104,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
@@ -120,8 +121,9 @@ public class ZASImpl implements ZAS {
 	private static final Logger log = LoggerFactory.getLogger(ZASImpl.class);
 
 	private AuthenticatedAgentLookupService agentService;
-	private AgentCredentialService credentialService;
 	private DomainService domainService;
+	private AgentCredentialFactory credentialFactory;
+	private AgentCredentialService credentialService;
 
 	public enum ErrorCode {
 		// authorization errors
@@ -134,7 +136,8 @@ public class ZASImpl implements ZAS {
 		DomainExists(500, "Domain exists."),
 		DomainNotFound(500, "Domain not found."),
 
-		;
+		InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
+		DomainAdministratorCredentialsExist(500, "DAC exists."), ;
 
 		private final int errorCode;
 		private final String errorDescription;
@@ -167,7 +170,7 @@ public class ZASImpl implements ZAS {
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
 		CreateDomainResponse response = new CreateDomainResponse();
-		String zoneApex = checkZoneAuthorization(parameters.getDomain(), response);
+		String zoneApex = checkZoneDomainAuthorization(parameters.getDomain(), response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -195,7 +198,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		DeleteDomainResponse response = new DeleteDomainResponse();
 
-		String zoneApex = checkZoneAuthorization(parameters.getDomain(), response);
+		String zoneApex = checkZoneDomainAuthorization(parameters.getDomain(), response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -213,7 +216,7 @@ public class ZASImpl implements ZAS {
 		// TODO domain and type
 		for (AgentCredential credential : credentials) {
 			if (AgentCredentialStatus.ACTIVE == credential.getCredentialStatus()
-					&& parameters.getDomain().equals(credential.getDomain())) {
+					&& parameters.getDomain().equals(credential.getDomainName())) {
 				log.info("Active Credential on the domain " + credential);
 				// TODO error credential found UC or DAC
 			}
@@ -238,7 +241,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
 
 		SearchDomainResponse response = new SearchDomainResponse();
-		String zoneApex = checkZoneAuthorization(null, response);
+		String zoneApex = checkZACAuthorization(response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -411,8 +414,42 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createAdministrator")
 	public CreateAdministratorResponse createAdministrator(
 			@WebParam(partName = "parameters", name = "createAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAdministrator parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		CreateAdministratorResponse response = new CreateAdministratorResponse();
+		String zoneApex = checkZACAuthorization(response);
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct new DAC given the data provided
+		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
+		if (dac == null) {
+			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
+		}
+		dac.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+
+		// check that the Domain Exists
+		DomainID id = new DomainID(dac.getDomainName(), dac.getId().getZoneApex());
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(id);
+		if (domain == null) {
+			// make a enum for the error response
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
+
+		// check that the DAC credential doesn't already exist
+		AgentCredential existingCred = credentialService.findById(dac.getId());
+		if (existingCred != null) {
+			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
+			return response;
+		}
+
+		// create the DAC
+		credentialService.createOrUpdate(dac);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -574,13 +611,34 @@ public class ZASImpl implements ZAS {
 	// }
 
 	/**
+	 * Checks the AuthenticatedAgent is a ZAC.
+	 * 
+	 * @param ack
+	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 */
+	private String checkZACAuthorization(Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+		if (user == null) {
+			setError(ErrorCode.MissingCredentials, ack);
+			return null;
+		}
+		if (!user.isTdmxZoneAdminCertificate()) {
+			setError(ErrorCode.NonZoneAdministratorAccess, ack);
+			return null;
+		}
+
+		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+		return zoneApex;
+	}
+
+	/**
 	 * Checks the AuthenticatedAgent is a ZAC authorized to perform administration on the domain, and return the agent's
 	 * zoneApex. If the agent is not authorized then the acknowledge's Error info will be set and null returned.
 	 * 
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private String checkZoneAuthorization(String domain, Acknowledge ack) {
+	private String checkZoneDomainAuthorization(String domain, Acknowledge ack) {
 		if (!StringUtils.hasText(domain)) {
 			setError(ErrorCode.DomainNotSpecified, ack);
 			return null;
@@ -630,6 +688,14 @@ public class ZASImpl implements ZAS {
 
 	public void setAgentService(AuthenticatedAgentLookupService agentService) {
 		this.agentService = agentService;
+	}
+
+	public AgentCredentialFactory getCredentialFactory() {
+		return credentialFactory;
+	}
+
+	public void setCredentialFactory(AgentCredentialFactory credentialFactory) {
+		this.credentialFactory = credentialFactory;
 	}
 
 	public AgentCredentialService getCredentialService() {

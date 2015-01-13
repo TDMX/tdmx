@@ -39,8 +39,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
+import org.tdmx.core.api.v01.sp.zas.CreateAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateDomain;
 import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
+import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -49,6 +53,7 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -100,20 +105,20 @@ public class ZASImplUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zac.getCertificateChain(),
-				AgentCredentialStatus.ACTIVE);
+		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zac.getCertificateChain());
+		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
 		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain(),
-				AgentCredentialStatus.ACTIVE);
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
+		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
 		assertNotNull(domainAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(domainAC);
 
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain(),
-				AgentCredentialStatus.ACTIVE);
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
+		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
 		assertEquals(zoneApex, userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
@@ -317,10 +322,50 @@ public class ZASImplUnitTest {
 		fail("Not yet implemented");
 	}
 
-	@Test
 	@Ignore
-	public void testCreateAdministrator() {
-		fail("Not yet implemented");
+	public void testCreateAdministrator_Success() {
+		// TODO figure out a way to make a new DAC
+	}
+
+	@Test
+	public void testCreateAdministrator_DACExists() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// we cannot create a DAC which already exists, setup before
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.createOrUpdate(dacDomain);
+
+		CreateAdministrator ca = new CreateAdministrator();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		Administrator a = new Administrator();
+		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(a);
+		CreateAdministratorResponse response = zas.createAdministrator(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.DomainAdministratorCredentialsExist, response.getError());
+	}
+
+	@Test
+	public void testCreateAdministrator_DomainNotExists() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateAdministrator ca = new CreateAdministrator();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		Administrator a = new Administrator();
+		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(a);
+		CreateAdministratorResponse response = zas.createAdministrator(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.DomainNotFound, response.getError());
 	}
 
 	@Test

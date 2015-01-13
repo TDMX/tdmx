@@ -69,6 +69,10 @@ public class PKIXCredential {
 		return certificateChain != null && certificateChain.length > 0 ? certificateChain[0] : null;
 	}
 
+	public PKIXCertificate getIssuerPublicCert() {
+		return certificateChain != null && certificateChain.length > 1 ? certificateChain[1] : null;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

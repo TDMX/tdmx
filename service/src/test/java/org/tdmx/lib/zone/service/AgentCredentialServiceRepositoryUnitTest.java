@@ -37,6 +37,7 @@ import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -73,20 +74,29 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = factory.createAgentCredential(zac.getCertificateChain(), AgentCredentialStatus.ACTIVE);
+		AgentCredential zoneAC = factory.createAgentCredential(zac.getCertificateChain());
+		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
 		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
+		assertNull(zoneAC.getDomainName());
+		assertNull(zoneAC.getAddressName());
+		assertEquals(AgentCredentialType.ZAC, zoneAC.getCredentialType());
 		service.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = factory.createAgentCredential(dac.getCertificateChain(),
-				AgentCredentialStatus.ACTIVE);
+		AgentCredential domainAC = factory.createAgentCredential(dac.getCertificateChain());
+		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
 		assertNotNull(domainAC.getId().getZoneApex());
+		assertNotNull(domainAC.getDomainName());
+		assertNull(domainAC.getAddressName());
 		service.createOrUpdate(domainAC);
 
-		AgentCredential userAC = factory.createAgentCredential(uc.getCertificateChain(), AgentCredentialStatus.ACTIVE);
+		AgentCredential userAC = factory.createAgentCredential(uc.getCertificateChain());
+		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
 		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertNotNull(userAC.getDomainName());
+		assertNotNull(userAC.getAddressName());
 		service.createOrUpdate(userAC);
 	}
 
@@ -119,6 +129,28 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		AgentCredential userAC = service.findById(id);
 		assertNotNull(userAC);
 		assertEquals(zoneApex, userAC.getId().getZoneApex());
+	}
+
+	@Test
+	public void testLookupByDomain() throws Exception {
+		List<AgentCredential> domainCerts = service.findByZoneDomain(zoneApex, dac.getPublicCert().getCommonName());
+		assertNotNull(domainCerts);
+		assertEquals(2, domainCerts.size()); // DAC, UC
+	}
+
+	@Test
+	public void testLookupByDomainAndType() throws Exception {
+		List<AgentCredential> dacCerts = service.findByZoneDomainAndType(zoneApex, dac.getPublicCert().getCommonName(),
+				AgentCredentialType.DAC);
+		assertNotNull(dacCerts);
+		assertEquals(1, dacCerts.size()); // DAC
+		// TODO prove dac
+
+		List<AgentCredential> ucCerts = service.findByZoneDomainAndType(zoneApex, dac.getPublicCert().getCommonName(),
+				AgentCredentialType.UC);
+		assertNotNull(ucCerts);
+		assertEquals(1, ucCerts.size()); // UC
+		// TODO prove uc
 	}
 
 	@Test

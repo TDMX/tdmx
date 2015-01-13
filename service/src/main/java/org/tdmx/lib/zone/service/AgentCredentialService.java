@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 /**
  * Management Services for a AgentCredential.
@@ -31,12 +32,16 @@ import org.tdmx.lib.zone.domain.AgentCredentialID;
  */
 public interface AgentCredentialService {
 
-	public void createOrUpdate(AgentCredential zone);
+	public void createOrUpdate(AgentCredential agentCredential);
 
 	public AgentCredential findById(AgentCredentialID id);
 
 	public List<AgentCredential> findByZoneApex(String zoneApex);
 
-	public void delete(AgentCredential zone);
+	public List<AgentCredential> findByZoneDomain(String zoneApex, String domainName);
+
+	public List<AgentCredential> findByZoneDomainAndType(String zoneApex, String domainName, AgentCredentialType type);
+
+	public void delete(AgentCredential agentCredential);
 
 }

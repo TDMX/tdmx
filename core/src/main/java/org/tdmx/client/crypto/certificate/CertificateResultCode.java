@@ -42,5 +42,4 @@ public enum CertificateResultCode {
 	ERROR_EXCEPTION,
 	ERROR_ENCODING,
 	ERROR_IO,
-
 }

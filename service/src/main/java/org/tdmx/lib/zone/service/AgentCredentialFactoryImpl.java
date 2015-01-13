@@ -21,10 +21,10 @@ package org.tdmx.lib.zone.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 
 /**
  * Factory for AgentCredential Entity.
@@ -48,13 +48,13 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public AgentCredential createAgentCredential(PKIXCertificate[] certificateChain, AgentCredentialStatus status) {
+	public AgentCredential createAgentCredential(PKIXCertificate[] certificateChain) {
 		if (certificateChain == null || certificateChain.length <= 0) {
 			log.error("certificateChain missing");
 			return null;
 		}
 		try {
-			AgentCredential c = new AgentCredential(certificateChain, status);
+			AgentCredential c = new AgentCredential(certificateChain);
 			if (c.getCredentialType() == null) {
 				log.error("Invalid AgentCredentialType.");
 				return null;
@@ -62,6 +62,25 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 			return c;
 		} catch (CryptoCertificateException e) {
 			log.error("Unable to createAgentCredential.", e);
+		}
+		return null;
+	}
+
+	@Override
+	public AgentCredential createDAC(byte[] domainCert, byte[] zacCert) {
+		try {
+			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
+
+			PKIXCertificate zc = CertificateIOUtils.decodeX509(zacCert);
+
+			AgentCredential c = new AgentCredential(new PKIXCertificate[] { dc, zc });
+			if (c.getCredentialType() == null) {
+				log.info("Invalid AgentCredentialType.");
+				return null;
+			}
+			return c;
+		} catch (CryptoCertificateException e) {
+			log.info("Invalid Certificate " + e.getRc());
 		}
 		return null;
 	}

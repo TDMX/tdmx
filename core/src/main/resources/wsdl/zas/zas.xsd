@@ -491,25 +491,57 @@
 	<!--   REQUEST AND RESPONSE ELEMENTS                                   -->
 	<!--                                               -->
 	<!-- ********************************************* -->
-	<xs:element name="searchDomain" type="searchDomainRequestType"/>
+	<xs:element name="searchDomain" type="searchDomainRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchDomainResponse" type="searchDomainResponseType"/>
-	<xs:element name="createDomain" type="createDomainRequestType"/>
+	<xs:element name="createDomain" type="createDomainRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. Precondition: domain doesn't exist. Postcondition: domain exists.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="createDomainResponse" type="createDomainResponseType"/>
-	<xs:element name="deleteDomain" type="deleteDomainRequestType"/>
+	<xs:element name="deleteDomain" type="deleteDomainRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. Precondition: no DACs, no services, no addresses. Postcondition: domain removed.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteDomainResponse" type="deleteDomainResponseType"/>
 	<xs:element name="searchAdministrator" type="searchAdministratorRequestType"/>
 	<xs:element name="searchAdministratorResponse" type="searchAdministratorResponseType"/>
-	<xs:element name="createAdministrator" type="createAdministratorRequestType"/>
+	<xs:element name="createAdministrator" type="createAdministratorRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. Precondition: DAC doesn't exist, Domain Exists. Postcondition: DAC exists.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="createAdministratorResponse" type="createAdministratorResponseType"/>
-	<xs:element name="modifyAdministrator" type="modifyAdministratorRequestType"/>
+	<xs:element name="modifyAdministrator" type="modifyAdministratorRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. Precondition: DAC exists. Postcondition: DAC status modified.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="modifyAdministratorResponse" type="modifyAdministratorResponseType"/>
-	<xs:element name="deleteAdministrator" type="deleteAdministratorRequestType"/>
+	<xs:element name="deleteAdministrator" type="deleteAdministratorRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. Precondition: DAC exists. Postcondition: DAC deleted.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteAdministratorResponse" type="deleteAdministratorResponseType"/>
 	<xs:element name="searchAddress" type="searchAddressRequestType"/>
 	<xs:element name="searchAddressResponse" type="searchAddressResponseType"/>
-	<xs:element name="createAddress" type="createAddressRequestType"/>
+	<xs:element name="createAddress" type="createAddressRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Address doesn't exists. Postcondition: Address created.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="createAddressResponse" type="createAddressResponseType"/>
-	<xs:element name="deleteAddress" type="deleteAddressRequestType"/>
+	<xs:element name="deleteAddress" type="deleteAddressRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Address exists, no UCs exist. Postcondition: Address deleted</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteAddressResponse" type="deleteAddressResponseType"/>
 	<xs:element name="searchIpZone" type="searchIpZoneRequestType"/>
 	<xs:element name="searchIpZoneResponse" type="searchIpZoneResponseType"/>
@@ -521,11 +553,23 @@
 	<xs:element name="deleteIpZoneResponse" type="deleteIpZoneResponseType"/>
 	<xs:element name="searchUser" type="searchUserRequestType"/>
 	<xs:element name="searchUserResponse" type="searchUserResponseType"/>
-	<xs:element name="createUser" type="createUserRequestType"/>
+	<xs:element name="createUser" type="createUserRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Address exists, UC doesn't exist. Postcondition: UC exists.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="createUserResponse" type="createUserResponseType"/>
-	<xs:element name="modifyUser" type="modifyUserRequestType"/>
+	<xs:element name="modifyUser" type="modifyUserRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: UC exists. Postcondition: UC status modified.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="modifyUserResponse" type="modifyUserResponseType"/>
-	<xs:element name="deleteUser" type="deleteUserRequestType"/>
+	<xs:element name="deleteUser" type="deleteUserRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: UC exists. Postcondition: UC deleted and all FlowTargets and Flows for existing ChannelAuthorizations are deleted.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteUserResponse" type="deleteUserResponseType"/>
 	<xs:element name="searchService" type="searchServiceRequestType"/>
 	<xs:element name="searchServiceResponse" type="searchServiceResponseType"/>
@@ -533,15 +577,27 @@
 	<xs:element name="createServiceResponse" type="createServiceResponseType"/>
 	<xs:element name="modifyService" type="modifyServiceRequestType"/>
 	<xs:element name="modifyServiceResponse" type="modifyServiceResponseType"/>
-	<xs:element name="deleteService" type="deleteServiceRequestType"/>
+	<xs:element name="deleteService" type="deleteServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>no channel authorizations</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>
 	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType"/>
 	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
 	<xs:element name="getChannelAuthorization" type="getChannelAuthorizationRequestType"/>
 	<xs:element name="getChannelAuthorizationResponse" type="getChannelAuthorizationResponseType"/>
-	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType"/>
+	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType">
+		<xs:annotation>
+			<xs:documentation>manages flow targets automatically, allows flow states to instantiate automatically.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="setChannelAuthorizationResponse" type="setChannelAuthorizationResponseType"/>
-	<xs:element name="deleteChannelAuthorization" type="deleteChannelAuthorizationRequestType"/>
+	<xs:element name="deleteChannelAuthorization" type="deleteChannelAuthorizationRequestType">
+		<xs:annotation>
+			<xs:documentation>manages flow targets and flows automatically.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
 	<xs:element name="searchFlowTargetState" type="searchFlowTargetStateRequestType"/>
 	<xs:element name="searchFlowTargetStateResponse" type="searchFlowTargetStateResponseType"/>

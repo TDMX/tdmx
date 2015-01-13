@@ -50,6 +50,8 @@
 	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" >
 		<property name="agentService" ref="server.authenticatedAgentService"/>
 		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 	</bean>
 
 	

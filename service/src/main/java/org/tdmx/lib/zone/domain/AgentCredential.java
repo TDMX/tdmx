@@ -69,6 +69,13 @@ public class AgentCredential implements Serializable {
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
 
+	@Column(length = DomainID.MAX_NAME_LEN)
+	private String domainName; // set when DAC or UC, null if ZAC
+
+	@Column(length = DomainID.MAX_NAME_LEN)
+	// TODO - use definitive DomainObject class Address to determine username length.
+	private String addressName; // set when UC, null if ZAC or DAC
+
 	@Transient
 	private PKIXCertificate[] certificateChain;
 
@@ -83,48 +90,32 @@ public class AgentCredential implements Serializable {
 		this.id = id;
 	}
 
-	public AgentCredential(PKIXCertificate[] certificateChain, AgentCredentialStatus status)
-			throws CryptoCertificateException {
-		PKIXCertificate publicKey = certificateChain[0];
+	public AgentCredential(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+		setCertificateChain(certificateChain);
+		PKIXCertificate publicKey = getPublicKey();
 
 		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
 				publicKey.getFingerprint());
 		setId(id);
-		setCredentialStatus(status);
 
 		if (publicKey.isTdmxZoneAdminCertificate()) {
 			setCredentialType(AgentCredentialType.ZAC);
 		} else if (publicKey.isTdmxDomainAdminCertificate()) {
 			setCredentialType(AgentCredentialType.DAC);
+			setDomainName(publicKey.getCommonName());
 		} else if (publicKey.isTdmxUserCertificate()) {
 			setCredentialType(AgentCredentialType.UC);
+			setAddressName(publicKey.getCommonName());
+
+			PKIXCertificate issuerKey = getIssuerPublicKey();
+			setDomainName(issuerKey.getCommonName());
 		}
 
-		setCertificateChain(certificateChain);
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	// TODO getComain / getUserName as fields + DAO filter.
-	public String getDomain() {
-		try {
-			PKIXCertificate publicKey = getPublicKey();
-			if (publicKey != null) {
-				if (AgentCredentialType.DAC == getCredentialType()) {
-					return publicKey.getCommonName();
-				} else if (AgentCredentialType.UC == getCredentialType()) {
-					PKIXCertificate issuerKey = getCertificateChain()[1];
-					return issuerKey.getCommonName();
-				}
-			}
-
-		} catch (CryptoCertificateException e) {
-			throw new IllegalStateException(e);
-		}
-		return null;
-	}
 
 	/**
 	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
@@ -143,6 +134,13 @@ public class AgentCredential implements Serializable {
 	public PKIXCertificate getPublicKey() throws CryptoCertificateException {
 		if (getCertificateChain() != null && getCertificateChain().length > 0) {
 			return getCertificateChain()[0];
+		}
+		return null;
+	}
+
+	public PKIXCertificate getIssuerPublicKey() throws CryptoCertificateException {
+		if (getCertificateChain() != null && getCertificateChain().length > 1) {
+			return getCertificateChain()[1];
 		}
 		return null;
 	}
@@ -168,7 +166,7 @@ public class AgentCredential implements Serializable {
 		return id;
 	}
 
-	public void setId(AgentCredentialID id) {
+	private void setId(AgentCredentialID id) {
 		this.id = id;
 	}
 
@@ -176,7 +174,7 @@ public class AgentCredential implements Serializable {
 		return credentialType;
 	}
 
-	public void setCredentialType(AgentCredentialType credentialType) {
+	private void setCredentialType(AgentCredentialType credentialType) {
 		this.credentialType = credentialType;
 	}
 
@@ -194,6 +192,22 @@ public class AgentCredential implements Serializable {
 
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChainPem = certificateChainPem;
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	private void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getAddressName() {
+		return addressName;
+	}
+
+	private void setAddressName(String addressName) {
+		this.addressName = addressName;
 	}
 
 }

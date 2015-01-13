@@ -28,6 +28,7 @@ import javax.persistence.Query;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
@@ -86,6 +87,27 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	public List<AgentCredential> loadByZoneApex(String zoneApex) {
 		Query query = em.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex");
 		query.setParameter("zoneApex", zoneApex);
+		return query.getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AgentCredential> loadByZoneDomain(String zoneApex, String domainName) {
+		Query query = em
+				.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex and ac.domainName = :domainName");
+		query.setParameter("zoneApex", zoneApex);
+		query.setParameter("domainName", domainName);
+		return query.getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AgentCredential> loadByZoneDomainAndType(String zoneApex, String domainName, AgentCredentialType type) {
+		Query query = em
+				.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex and ac.credentialType = :type and ac.domainName = :domainName");
+		query.setParameter("zoneApex", zoneApex);
+		query.setParameter("domainName", domainName);
+		query.setParameter("type", type);
 		return query.getResultList();
 	}
 

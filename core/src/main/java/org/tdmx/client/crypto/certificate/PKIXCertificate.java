@@ -486,11 +486,24 @@ public class PKIXCertificate {
 		return certificate.toString();
 	}
 
+	/**
+	 * Check if the X509 ASN1 encoded byte representation of the other cert is the same as this.
+	 * 
+	 * @param other
+	 * @return
+	 */
 	public boolean isIdentical(PKIXCertificate other) {
+		return ByteArray.equals(getX509Encoded(), other.getX509Encoded());
+	}
+
+	/**
+	 * @return the X509 ASN1 encoded byte representation of this certificate
+	 */
+	public byte[] getX509Encoded() {
 		try {
-			return other != null && ByteArray.equals(certificate.getEncoded(), other.getCertificate().getEncoded());
+			return certificate.getEncoded();
 		} catch (CertificateEncodingException e) {
-			return false;
+			return null;
 		}
 	}
 

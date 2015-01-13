@@ -20,7 +20,6 @@ package org.tdmx.lib.zone.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 
 /**
  * Factory Services for AgentCredential.
@@ -34,9 +33,21 @@ public interface AgentCredentialFactory {
 	 * Creates an AgentCredential from the certificate chain.
 	 * 
 	 * @param certChain
-	 * @param status
 	 * @return the AgentCredential or null if there is any problem with the certificateChain.
 	 */
-	public AgentCredential createAgentCredential(PKIXCertificate[] certChain, AgentCredentialStatus status);
+	public AgentCredential createAgentCredential(PKIXCertificate[] certChain);
 
+	/**
+	 * Creates an AgentCredential from certificate byte data - provided by client which is not checked by the TLS stack,
+	 * ie. by WebService.
+	 * 
+	 * TODO validate that domainCert is signed by zacCert
+	 * 
+	 * TODO validate zoneApex is same as authorizedContext
+	 * 
+	 * @param domainCert
+	 * @param zacCert
+	 * @return null if the DAC is invalid, else the DAC.
+	 */
+	public AgentCredential createDAC(byte[] domainCert, byte[] zacCert);
 }
