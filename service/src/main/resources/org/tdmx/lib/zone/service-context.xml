@@ -107,6 +107,16 @@
 			ref="tdmx.lib.zone.dao.DomainDao" />
 	</bean>
 
+	<bean id="tdmx.lib.zone.dao.AddressDao"
+		class="org.tdmx.lib.zone.dao.AddressDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.AddressRepository"
+		class="org.tdmx.lib.zone.service.AddressServiceRepositoryImpl">
+		<property name="addressDao"
+			ref="tdmx.lib.zone.dao.AddressDao" />
+	</bean>
+
 
 
 </beans>

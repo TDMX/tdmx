@@ -151,6 +151,4 @@ public class DomainServiceRepositoryUnitTest {
 
 		assertEquals(d.getId(), d2.getId());
 	}
-
-	// TODO test search
 }

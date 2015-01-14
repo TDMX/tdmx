@@ -505,7 +505,7 @@
 	<xs:element name="createDomainResponse" type="createDomainResponseType"/>
 	<xs:element name="deleteDomain" type="deleteDomainRequestType">
 		<xs:annotation>
-			<xs:documentation>Authorization: ZAC only. Precondition: no DACs, no services, no addresses. Postcondition: domain removed.</xs:documentation>
+			<xs:documentation>Authorization: ZAC only. Precondition: no DACs, no Services, no Addresses. Postcondition: domain removed.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteDomainResponse" type="deleteDomainResponseType"/>
@@ -533,7 +533,7 @@
 	<xs:element name="searchAddressResponse" type="searchAddressResponseType"/>
 	<xs:element name="createAddress" type="createAddressRequestType">
 		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. Precondition: Address doesn't exists. Postcondition: Address created.</xs:documentation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Domain exists, Address doesn't exists. Postcondition: Address created.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="createAddressResponse" type="createAddressResponseType"/>

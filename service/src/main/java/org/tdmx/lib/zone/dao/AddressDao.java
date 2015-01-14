@@ -16,24 +16,31 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.zone.dao;
 
-public class ZoneFacade {
+import java.util.List;
 
-	public static Zone createZone(String zoneApex) throws Exception {
-		Zone z = new Zone();
-		z.setZoneApex(zoneApex);
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.AddressID;
+import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 
-		return z;
-	}
+/**
+ * DAO for the Address Entity.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AddressDao {
 
-	public static Domain createDomain(DomainID id) throws Exception {
-		Domain d = new Domain(id);
-		return d;
-	}
+	public void persist(Address value);
 
-	public static Address createAddress(AddressID id) throws Exception {
-		Address a = new Address(id);
-		return a;
-	}
+	public void delete(Address value);
+
+	public void lock(Address value);
+
+	public Address merge(Address value);
+
+	public Address loadById(AddressID id);
+
+	public List<Address> search(String zoneApex, AddressSearchCriteria criteria);
 }
