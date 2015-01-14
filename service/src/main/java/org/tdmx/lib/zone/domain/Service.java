@@ -25,14 +25,14 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /**
- * An Domain (within a Zone) managed by a ServiceProvider
+ * An Service (within a Domain) managed by a ServiceProvider
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "Domain")
-public class Domain implements Serializable {
+@Table(name = "Service")
+public class Service implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -44,17 +44,17 @@ public class Domain implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@EmbeddedId
-	private DomainID id;
+	private ServiceID id;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Domain() {
+	public Service() {
 
 	}
 
-	public Domain(DomainID id) {
+	public Service(ServiceID id) {
 		this.id = id;
 	}
 
@@ -65,7 +65,7 @@ public class Domain implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Domain [id=");
+		builder.append("Service [id=");
 		builder.append(id);
 		builder.append("]");
 		return builder.toString();
@@ -83,11 +83,11 @@ public class Domain implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public DomainID getId() {
+	public ServiceID getId() {
 		return id;
 	}
 
-	public void setId(DomainID id) {
+	public void setId(ServiceID id) {
 		this.id = id;
 	}
 

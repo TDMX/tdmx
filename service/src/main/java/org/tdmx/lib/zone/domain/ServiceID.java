@@ -19,43 +19,56 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 /**
- * An Domain (within a Zone) managed by a ServiceProvider
+ * An Service is only unique within a domain.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "Domain")
-public class Domain implements Serializable {
+@Embeddable
+public class ServiceID implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@EmbeddedId
-	private DomainID id;
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
+	@Column(length = DomainID.MAX_NAME_LEN, nullable = false)
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	private String domainName;
+
+	@Column(length = MAX_NAME_LEN, nullable = false)
+	/**
+	 * The serviceName part.
+	 */
+	private String serviceName;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Domain() {
-
+	public ServiceID() {
 	}
 
-	public Domain(DomainID id) {
-		this.id = id;
+	public ServiceID(String serviceName, String domainName, String zoneApex) {
+		this.serviceName = serviceName;
+		this.zoneApex = zoneApex;
+		this.domainName = domainName;
 	}
 
 	// -------------------------------------------------------------------------
@@ -63,10 +76,30 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 
 	@Override
+	public int hashCode() {
+		return Objects.hash(zoneApex, domainName, serviceName);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ServiceID) {
+			ServiceID other = (ServiceID) obj;
+			return Objects.equals(zoneApex, other.getZoneApex()) && Objects.equals(domainName, other.getDomainName())
+					&& Objects.equals(serviceName, other.getServiceName());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Domain [id=");
-		builder.append(id);
+		builder.append("ServiceID [zoneApex=");
+		builder.append(zoneApex);
+		builder.append(", domainName=");
+		builder.append(domainName);
+		builder.append(", serviceName=");
+		builder.append(serviceName);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -82,13 +115,28 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public DomainID getId() {
-		return id;
+	public String getDomainName() {
+		return domainName;
 	}
 
-	public void setId(DomainID id) {
-		this.id = id;
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
+	}
+
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
 	}
 
 }

@@ -117,6 +117,16 @@
 			ref="tdmx.lib.zone.dao.AddressDao" />
 	</bean>
 
+	<bean id="tdmx.lib.zone.dao.ServiceDao"
+		class="org.tdmx.lib.zone.dao.ServiceDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.ServiceRepository"
+		class="org.tdmx.lib.zone.service.ServiceServiceRepositoryImpl">
+		<property name="serviceDao"
+			ref="tdmx.lib.zone.dao.ServiceDao" />
+	</bean>
+
 
 
 </beans>

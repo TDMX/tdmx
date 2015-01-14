@@ -21,7 +21,7 @@ package org.tdmx.lib.zone.domain;
 import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * The SearchCriteria for a Domain.
+ * The SearchCriteria for an Address.
  * 
  * @author Peter Klauser
  * 

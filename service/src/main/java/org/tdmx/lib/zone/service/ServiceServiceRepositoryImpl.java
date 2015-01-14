@@ -16,23 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
 
-import java.io.Serializable;
+package org.tdmx.lib.zone.service;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.zone.dao.ServiceDao;
+import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.ServiceID;
+import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 
 /**
- * An Domain (within a Zone) managed by a ServiceProvider
+ * Transactional CRUD Services for Service Entity.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "Domain")
-public class Domain implements Serializable {
+public class ServiceServiceRepositoryImpl implements ServiceService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,34 +44,50 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final Logger log = LoggerFactory.getLogger(ServiceServiceRepositoryImpl.class);
 
-	@EmbeddedId
-	private DomainID id;
+	private ServiceDao serviceDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public Domain() {
-
-	}
-
-	public Domain(DomainID id) {
-		this.id = id;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Domain [id=");
-		builder.append(id);
-		builder.append("]");
-		return builder.toString();
+	@Transactional(value = "ZoneDB")
+	public void createOrUpdate(Service service) {
+		Service storedService = getServiceDao().loadById(service.getId());
+		if (storedService == null) {
+			getServiceDao().persist(service);
+		} else {
+			getServiceDao().merge(service);
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void delete(Service service) {
+		Service storedService = getServiceDao().loadById(service.getId());
+		if (storedService != null) {
+			getServiceDao().delete(storedService);
+		} else {
+			log.warn("Unable to find Service to delete with serviceName " + service.getId());
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<Service> search(String zoneApex, ServiceSearchCriteria criteria) {
+		return getServiceDao().search(zoneApex, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Service findById(ServiceID serviceId) {
+		return getServiceDao().loadById(serviceId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -83,12 +102,12 @@ public class Domain implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public DomainID getId() {
-		return id;
+	public ServiceDao getServiceDao() {
+		return serviceDao;
 	}
 
-	public void setId(DomainID id) {
-		this.id = id;
+	public void setServiceDao(ServiceDao serviceDao) {
+		this.serviceDao = serviceDao;
 	}
 
 }

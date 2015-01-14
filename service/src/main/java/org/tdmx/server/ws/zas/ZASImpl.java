@@ -108,6 +108,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class ZASImpl implements ZAS {
@@ -124,6 +125,8 @@ public class ZASImpl implements ZAS {
 	private AuthenticatedAgentLookupService agentService;
 	private DomainService domainService;
 	private AddressService addressService;
+	private ServiceService serviceService;
+
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
 
@@ -724,4 +727,11 @@ public class ZASImpl implements ZAS {
 		this.addressService = addressService;
 	}
 
+	public ServiceService getServiceService() {
+		return serviceService;
+	}
+
+	public void setServiceService(ServiceService serviceService) {
+		this.serviceService = serviceService;
+	}
 }

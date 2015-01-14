@@ -51,6 +51,7 @@
 		<property name="agentService" ref="server.authenticatedAgentService"/>
 		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 	</bean>

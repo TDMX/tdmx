@@ -44,9 +44,6 @@ public class Address implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@EmbeddedId
-	/**
-	 * The fully qualified address name ( includes the DomainID ).
-	 */
 	private AddressID id;
 
 	// -------------------------------------------------------------------------

@@ -18,21 +18,15 @@
  */
 package org.tdmx.lib.zone.domain;
 
-import java.io.Serializable;
-
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * An Domain (within a Zone) managed by a ServiceProvider
+ * The SearchCriteria for a Service.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "Domain")
-public class Domain implements Serializable {
+public class ServiceSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,35 +35,29 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
 
-	@EmbeddedId
-	private DomainID id;
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	private final PageSpecifier pageSpecifier;
+
+	private String domainName;
+
+	private String serviceName;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public Domain() {
-
-	}
-
-	public Domain(DomainID id) {
-		this.id = id;
+	public ServiceSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Domain [id=");
-		builder.append(id);
-		builder.append("]");
-		return builder.toString();
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -82,13 +70,24 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public DomainID getId() {
-		return id;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setId(DomainID id) {
-		this.id = id;
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
 	}
 
 }

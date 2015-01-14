@@ -20,6 +20,7 @@
 		<class>org.tdmx.lib.zone.domain.Zone</class>
 		<class>org.tdmx.lib.zone.domain.Domain</class>
 		<class>org.tdmx.lib.zone.domain.Address</class>
+		<class>org.tdmx.lib.zone.domain.Service</class>
 		<class>org.tdmx.lib.zone.domain.AgentCredential</class>
 	</persistence-unit>
 
