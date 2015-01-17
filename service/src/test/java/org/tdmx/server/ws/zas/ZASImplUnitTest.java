@@ -45,11 +45,18 @@ import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
 import org.tdmx.core.api.v01.sp.zas.CreateAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateDomain;
 import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.CreateUser;
+import org.tdmx.core.api.v01.sp.zas.CreateUserResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteAddress;
 import org.tdmx.core.api.v01.sp.zas.DeleteAddressResponse;
+import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
+import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.DeleteUser;
+import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
+import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -366,9 +373,39 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testDeleteUser() {
-		fail("Not yet implemented");
+	public void testDeleteUser_ZAS() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteUser ca = new DeleteUser();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		DeleteUserResponse response = zas.deleteUser(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+	}
+
+	@Test
+	public void testDeleteUser_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteUser ca = new DeleteUser();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		DeleteUserResponse response = zas.deleteUser(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
 	}
 
 	@Test
@@ -401,9 +438,10 @@ public class ZASImplUnitTest {
 		fail("Not yet implemented");
 	}
 
+	@Test
 	@Ignore
 	public void testCreateAdministrator_Success() {
-		// TODO figure out a way to make a new DAC
+		fail("Not yet implemented");
 	}
 
 	@Test
@@ -518,9 +556,47 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testCreateUser() {
-		fail("Not yet implemented");
+	public void testCreateUser_UCExists() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// we cannot create a UC which already exists, setup before
+		AddressID addressId = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(),
+				zoneApex);
+		org.tdmx.lib.zone.domain.Address address = new org.tdmx.lib.zone.domain.Address(addressId);
+		addressService.createOrUpdate(address);
+
+		CreateUser ca = new CreateUser();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		CreateUserResponse response = zas.createUser(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.UserCredentialsExist, response.getError());
+	}
+
+	@Test
+	public void testCreateUser_AddressNotExists() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateUser ca = new CreateUser();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		CreateUserResponse response = zas.createUser(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.AddressNotFound, response.getError());
 	}
 
 	@Test
@@ -536,9 +612,20 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testDeleteAdministrator() {
-		fail("Not yet implemented");
+	public void testDeleteAdministrator_ZAC() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteAdministrator ca = new DeleteAdministrator();
+		Administrator u = new Administrator();
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(u);
+		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
 	}
 
 	@Test

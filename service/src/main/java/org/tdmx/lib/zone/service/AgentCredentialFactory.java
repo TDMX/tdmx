@@ -50,4 +50,22 @@ public interface AgentCredentialFactory {
 	 * @return null if the DAC is invalid, else the DAC.
 	 */
 	public AgentCredential createDAC(byte[] domainCert, byte[] zacCert);
+
+	/**
+	 * Creates an AgentCredential from certificate byte data - provided by client which is not checked by the TLS stack,
+	 * ie. by WebService.
+	 * 
+	 * TODO validate that userCert is signed by domainCert
+	 * 
+	 * TODO validate that domainCert is signed by zacCert
+	 * 
+	 * TODO validate zoneApex is same as authorizedContext
+	 * 
+	 * @param userCert
+	 * @param domainCert
+	 * @param zacCert
+	 * @return null if the DAC is invalid, else the DAC.
+	 */
+	public AgentCredential createUC(byte[] userCert, byte[] domainCert, byte[] zacCert);
+
 }

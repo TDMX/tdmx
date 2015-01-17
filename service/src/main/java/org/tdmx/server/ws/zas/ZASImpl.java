@@ -152,7 +152,10 @@ public class ZASImpl implements ZAS {
 
 		InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
 		DomainAdministratorCredentialsExist(500, "DACs exists."),
+		DomainAdministratorCredentialNotFound(500, "DAC not found."),
+		InvalidUserCredentials(500, "Invalid User credentials."),
 		UserCredentialsExist(500, "UCs exists."),
+		UserCredentialNotFound(500, "UC not found."),
 		CredentialsExist(500, "Credentials exists."),
 		AddressesExist(500, "Addresses exists."), ;
 
@@ -404,8 +407,36 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteUser")
 	public DeleteUserResponse deleteUser(
 			@WebParam(partName = "parameters", name = "deleteUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteUser parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteUserResponse response = new DeleteUserResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct the UC given the data provided
+		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
+				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		if (uc == null) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		// check that the UC credential exists
+		AgentCredential existingCred = credentialService.findById(uc.getId());
+		if (existingCred == null) {
+			setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+
+		// delete the UC
+		credentialService.delete(uc);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -601,8 +632,48 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createUser")
 	public CreateUserResponse createUser(
 			@WebParam(partName = "parameters", name = "createUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateUser parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		//
+
+		CreateUserResponse response = new CreateUserResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct new UC given the data provided
+		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
+				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		if (uc == null) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+		uc.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+
+		// check that the Address Exists
+		AddressID id = new AddressID(uc.getAddressName(), uc.getDomainName(), uc.getId().getZoneApex());
+		// check if the address exists already
+		Address address = getAddressService().findById(id);
+		if (address == null) {
+			setError(ErrorCode.AddressNotFound, response);
+			return response;
+		}
+
+		// check that the UC credential doesn't already exist
+		AgentCredential existingCred = credentialService.findById(uc.getId());
+		if (existingCred != null) {
+			setError(ErrorCode.UserCredentialsExist, response);
+			return response;
+		}
+
+		// create the UC
+		credentialService.createOrUpdate(uc);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -628,8 +699,36 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteAdministrator")
 	public DeleteAdministratorResponse deleteAdministrator(
 			@WebParam(partName = "parameters", name = "deleteAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAdministrator parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteAdministratorResponse response = new DeleteAdministratorResponse();
+		PKIXCertificate authorizedUser = checkZACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct the DAC given the data provided
+		AgentCredential uc = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
+		if (uc == null) {
+			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
+		}
+
+		// check that the DAC credential exists
+		AgentCredential existingCred = credentialService.findById(uc.getId());
+		if (existingCred == null) {
+			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
+			return response;
+		}
+
+		// delete the DAC
+		credentialService.delete(uc);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	// -------------------------------------------------------------------------
