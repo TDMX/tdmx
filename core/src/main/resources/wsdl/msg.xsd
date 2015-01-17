@@ -24,7 +24,6 @@
 			<xs:element ref="administrator" minOccurs="0"/>
 			<xs:element ref="domain" minOccurs="0"/>
 			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
-			<xs:element name="whitelist" type="IpAddressList" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="Address">
@@ -474,9 +473,17 @@
 	<xs:element name="rootcertificate" type="x509certificate"/>
 	<xs:element name="domaincertificate" type="x509certificate"/>
 	<xs:element name="usercertificate" type="x509certificate"/>
-	<xs:element name="administrator" type="Administrator"/>
+	<xs:element name="administrator" type="Administrator">
+		<xs:annotation>
+			<xs:documentation>exact credentials matching a single DAC. If provided, then domain and status are ignored.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="administratorstate" type="AdministratorState"/>
-	<xs:element name="user" type="User"/>
+	<xs:element name="user" type="User">
+		<xs:annotation>
+			<xs:documentation>references a specific UC. If provided, then the localname, domain and status are ignred.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="userstate" type="UserState"/>
 	<xs:element name="source" type="User">
 		<xs:annotation>

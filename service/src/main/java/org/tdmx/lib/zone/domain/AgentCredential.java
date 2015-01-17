@@ -122,23 +122,33 @@ public class AgentCredential implements Serializable {
 	 * @return
 	 * @throws CryptoCertificateException
 	 */
-	public PKIXCertificate[] getCertificateChain() throws CryptoCertificateException {
+	public PKIXCertificate[] getCertificateChain() {
 		if (certificateChain == null && getCertificateChainPem() != null) {
-			certificateChain = CertificateIOUtils.pemToX509certs(getCertificateChainPem());
+			certificateChain = CertificateIOUtils.safePemToX509certs(getCertificateChainPem());
 			return certificateChain;
 		}
 		return certificateChain;
 	}
 
-	public PKIXCertificate getPublicKey() throws CryptoCertificateException {
+	public PKIXCertificate getPublicKey() {
 		if (getCertificateChain() != null && getCertificateChain().length > 0) {
 			return getCertificateChain()[0];
 		}
 		return null;
 	}
 
-	public PKIXCertificate getIssuerPublicKey() throws CryptoCertificateException {
+	public PKIXCertificate getIssuerPublicKey() {
 		if (getCertificateChain() != null && getCertificateChain().length > 1) {
+			return getCertificateChain()[1];
+		}
+		return null;
+	}
+
+	public PKIXCertificate getZoneRootPublicKey() {
+		if (getCertificateChain() != null && getCertificateChain().length > 1) {
+			if (getCertificateChain().length > 2) {
+				return getCertificateChain()[2];
+			}
 			return getCertificateChain()[1];
 		}
 		return null;

@@ -148,6 +148,15 @@ public class CertificateIOUtils {
 		return certs[0];
 	}
 
+	public static PKIXCertificate[] safePemToX509certs(String input) {
+		try {
+			return pemToX509certs(input);
+		} catch (CryptoCertificateException e) {
+			log.warn("safePemToX509certs failed to convert input.", e);
+		}
+		return null;
+	}
+
 	public static PKIXCertificate[] pemToX509certs(String input) throws CryptoCertificateException {
 		StringReader sr = new StringReader(input);
 		PEMParser pp = new PEMParser(sr);
@@ -171,6 +180,21 @@ public class CertificateIOUtils {
 			}
 		}
 		return certList.toArray(new PKIXCertificate[0]);
+	}
+
+	/**
+	 * Decode a binary DER encoded X509 certificate into a PKIXCertificate.
+	 * 
+	 * @param x509encodedValue
+	 * @return null if some error took place.
+	 */
+	public static PKIXCertificate safeDecodeX509(byte[] x509encodedValue) {
+		try {
+			return decodeX509(x509encodedValue);
+		} catch (CryptoCertificateException e) {
+			log.warn("safeDecodeX509 failed to decode.", e);
+		}
+		return null;
 	}
 
 	/**

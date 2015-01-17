@@ -98,19 +98,14 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		}
 		// check exact match of the certificates stored and provided - since a SHA1 match is not enough
 		// to prove we "know" the client
-		try {
-			PKIXCertificate storedPublicKey = agentCredential.getPublicKey();
-			if (storedPublicKey == null) {
-				log.warn("Stored public key missing for credential with fingerprint=" + fingerprint);
-				return new AuthorizationResult(AuthorizationFailureCode.SYSTEM);
-
-			} else if (!storedPublicKey.isIdentical(cert)) {
-				log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
-				return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
-			}
-		} catch (CryptoCertificateException e) {
-			log.warn("Could not convert stored certificate chain for credential with fingerprint=" + fingerprint, e);
+		PKIXCertificate storedPublicKey = agentCredential.getPublicKey();
+		if (storedPublicKey == null) {
+			log.warn("Stored public key missing for credential with fingerprint=" + fingerprint);
 			return new AuthorizationResult(AuthorizationFailureCode.SYSTEM);
+
+		} else if (!storedPublicKey.isIdentical(cert)) {
+			log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
+			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
 		return new AuthorizationResult(cert, accountZone);
 	}

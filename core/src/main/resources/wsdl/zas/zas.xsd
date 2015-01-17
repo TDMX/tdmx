@@ -551,7 +551,11 @@
 	<xs:element name="modifyIpZoneResponse" type="modifyIpZoneResponseType"/>
 	<xs:element name="deleteIpZone" type="deleteIpZoneRequestType"/>
 	<xs:element name="deleteIpZoneResponse" type="deleteIpZoneResponseType"/>
-	<xs:element name="searchUser" type="searchUserRequestType"/>
+	<xs:element name="searchUser" type="searchUserRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for UCs within own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchUserResponse" type="searchUserResponseType"/>
 	<xs:element name="createUser" type="createUserRequestType">
 		<xs:annotation>

@@ -53,10 +53,14 @@ import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchUser;
+import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
+import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
+import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -188,9 +192,212 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSearchUser() {
-		fail("Not yet implemented");
+	public void testSearchUser_ZAC_all() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_ZAC_statusOnly() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		uf.setStatus(CredentialStatus.ACTIVE);
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_ZAC_getUser() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(uc.getIssuerPublicCert().getX509Encoded());
+		u.setRootcertificate(uc.getZoneRootPublicCert().getX509Encoded());
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_ZAC_invalidZone() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		uf.setDomain("unknownzone.com");
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+	}
+
+	@Test
+	public void testSearchUser_DAC_all() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_DAC_addressName() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		uf.setLocalname(uc.getPublicCert().getCommonName());
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_DAC_suspended() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		uf.setStatus(CredentialStatus.SUSPENDED);
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(0, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchUser_DAC_invalidDomain() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		uf.setDomain("unknownsubdomain." + zoneApex);
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfDomainAccess, response.getError());
+	}
+
+	@Test
+	public void testSearchUser_DAC_getUser() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchUser req = new SearchUser();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		UserFilter uf = new UserFilter();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(uc.getIssuerPublicCert().getX509Encoded());
+		u.setRootcertificate(uc.getZoneRootPublicCert().getX509Encoded());
+		req.setFilter(uf);
+
+		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getUserstates().size());
 	}
 
 	@Test

@@ -92,6 +92,10 @@ import org.tdmx.core.api.v01.sp.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.core.api.v01.sp.zas.common.Error;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
+import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
+import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
+import org.tdmx.core.api.v01.sp.zas.msg.User;
+import org.tdmx.core.api.v01.sp.zas.msg.Userstate;
 import org.tdmx.core.api.v01.sp.zas.report.Incident;
 import org.tdmx.core.api.v01.sp.zas.report.IncidentResponse;
 import org.tdmx.core.api.v01.sp.zas.report.Report;
@@ -281,8 +285,76 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchUser")
 	public SearchUserResponse searchUser(
 			@WebParam(partName = "parameters", name = "searchUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchUser parameters) {
-		// TODO Auto-generated method stub
-		return null;
+
+		SearchUserResponse response = new SearchUserResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+
+		if (parameters.getFilter().getUser() != null) {
+			// if a user credential is provided then it't not so much a search as a lookup
+			AgentCredential uc = credentialFactory.createUC(parameters.getFilter().getUser().getUsercertificate(),
+					parameters.getFilter().getUser().getDomaincertificate(), parameters.getFilter().getUser()
+							.getRootcertificate());
+			if (uc == null) {
+				setError(ErrorCode.InvalidUserCredentials, response);
+				return response;
+			}
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
+				return response;
+			}
+			AgentCredential c = credentialService.findById(uc.getId());
+			if (c != null) {
+				response.getUserstates().add(mapUserstate(c));
+			}
+		} else {
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
+			if (authorizedUser.isTdmxDomainAdminCertificate()) {
+				if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
+					// we fix the search to search only the DAC's domain.
+					parameters.getFilter().setDomain(authorizedUser.getCommonName());
+				}
+			}
+			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+				// we check that the provided domain is the DAC's domain.
+				if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+					return response;
+				}
+				sc.setDomainName(parameters.getFilter().getDomain());
+			}
+			sc.setAddressName(parameters.getFilter().getLocalname());
+			if (parameters.getFilter().getStatus() != null) {
+				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
+			}
+			sc.setType(AgentCredentialType.UC);
+			List<AgentCredential> credentials = credentialService.search(zoneApex, sc);
+			for (AgentCredential c : credentials) {
+				response.getUserstates().add(mapUserstate(c));
+			}
+		}
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
+	}
+
+	private Userstate mapUserstate(AgentCredential cred) {
+		User u = new User();
+		u.setUsercertificate(cred.getPublicKey().getX509Encoded());
+		u.setDomaincertificate(cred.getIssuerPublicKey().getX509Encoded());
+		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
+
+		Userstate us = new Userstate();
+		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
+		us.setUser(u);
+		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
+		return us;
 	}
 
 	@Override

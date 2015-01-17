@@ -73,6 +73,11 @@ public class PKIXCredential {
 		return certificateChain != null && certificateChain.length > 1 ? certificateChain[1] : null;
 	}
 
+	public PKIXCertificate getZoneRootPublicCert() {
+		return certificateChain != null && certificateChain.length > 2 ? certificateChain[2]
+				: certificateChain.length > 1 ? certificateChain[1] : certificateChain[0];
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
