@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 
 /**
  * DAO for the AgentCredential Entity.
@@ -42,10 +42,6 @@ public interface AgentCredentialDao {
 
 	public AgentCredential loadById(AgentCredentialID id);
 
-	public List<AgentCredential> loadByZoneApex(String zoneApex);
-
-	public List<AgentCredential> loadByZoneDomainAndType(String zoneApex, String domainName, AgentCredentialType type);
-
-	public List<AgentCredential> loadByZoneDomain(String zoneApex, String domainName);
+	public List<AgentCredential> search(String zoneApex, AgentCredentialSearchCriteria criteria);
 
 }

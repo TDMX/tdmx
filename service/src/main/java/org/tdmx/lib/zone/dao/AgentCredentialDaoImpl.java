@@ -19,6 +19,8 @@
 package org.tdmx.lib.zone.dao;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -26,9 +28,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 
 public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
@@ -84,30 +87,33 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<AgentCredential> loadByZoneApex(String zoneApex) {
-		Query query = em.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex");
-		query.setParameter("zoneApex", zoneApex);
-		return query.getResultList();
-	}
+	public List<AgentCredential> search(String zoneApex, AgentCredentialSearchCriteria criteria) {
+		Map<String, Object> parameters = new TreeMap<String, Object>();
+		StringBuilder whereClause = new StringBuilder();
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AgentCredential> loadByZoneDomain(String zoneApex, String domainName) {
-		Query query = em
-				.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex and ac.domainName = :domainName");
-		query.setParameter("zoneApex", zoneApex);
-		query.setParameter("domainName", domainName);
-		return query.getResultList();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AgentCredential> loadByZoneDomainAndType(String zoneApex, String domainName, AgentCredentialType type) {
-		Query query = em
-				.createQuery("from AgentCredential as ac where ac.id.zoneApex = :zoneApex and ac.credentialType = :type and ac.domainName = :domainName");
-		query.setParameter("zoneApex", zoneApex);
-		query.setParameter("domainName", domainName);
-		query.setParameter("type", type);
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			whereClause.append(" and ac.domainName = :d");
+			parameters.put("d", criteria.getDomainName());
+		}
+		if (StringUtils.hasText(criteria.getAddressName())) {
+			whereClause.append(" and ac.addressName = :l");
+			parameters.put("l", criteria.getAddressName());
+		}
+		if (criteria.getStatus() != null) {
+			whereClause.append(" and ac.credentialStatus = :s");
+			parameters.put("s", criteria.getStatus());
+		}
+		if (criteria.getType() != null) {
+			whereClause.append(" and ac.credentialType = :t");
+			parameters.put("t", criteria.getType());
+		}
+		Query query = em.createQuery("from AgentCredential as ac where ac.id.zoneApex = :z" + whereClause.toString());
+		for (String param : parameters.keySet()) {
+			query.setParameter(param, parameters.get(param));
+		}
+		query.setParameter("z", zoneApex);
+		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
+		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
 		return query.getResultList();
 	}
 

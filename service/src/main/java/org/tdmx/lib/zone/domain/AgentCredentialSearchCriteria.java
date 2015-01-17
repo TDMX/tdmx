@@ -21,12 +21,12 @@ package org.tdmx.lib.zone.domain;
 import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * The SearchCriteria for a Domain.
+ * The SearchCriteria for an AgentCredential.
  * 
  * @author Peter Klauser
  * 
  */
-public class DomainSearchCriteria {
+public class AgentCredentialSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,15 +38,24 @@ public class DomainSearchCriteria {
 
 	private final PageSpecifier pageSpecifier;
 
+	private AgentCredentialType type;
+
+	private AgentCredentialStatus status;
+
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
 	 */
 	private String domainName;
 
+	/**
+	 * The address's localName
+	 */
+	private String addressName;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public DomainSearchCriteria(PageSpecifier pageSpecifier) {
+	public AgentCredentialSearchCriteria(PageSpecifier pageSpecifier) {
 		if (pageSpecifier == null) {
 			throw new IllegalArgumentException("Missing pageSpecifier");
 		}
@@ -78,6 +87,30 @@ public class DomainSearchCriteria {
 
 	public void setDomainName(String domainName) {
 		this.domainName = domainName;
+	}
+
+	public String getAddressName() {
+		return addressName;
+	}
+
+	public void setAddressName(String addressName) {
+		this.addressName = addressName;
+	}
+
+	public AgentCredentialType getType() {
+		return type;
+	}
+
+	public void setType(AgentCredentialType type) {
+		this.type = type;
+	}
+
+	public AgentCredentialStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AgentCredentialStatus status) {
+		this.status = status;
 	}
 
 }

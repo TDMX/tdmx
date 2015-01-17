@@ -34,8 +34,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 
@@ -102,7 +104,8 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AgentCredential> list = service.findByZoneApex(zoneApex);
+		List<AgentCredential> list = service.search(zoneApex,
+				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
 			service.delete(ac);
 		}
@@ -133,24 +136,69 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupByDomain() throws Exception {
-		List<AgentCredential> domainCerts = service.findByZoneDomain(zoneApex, dac.getPublicCert().getCommonName());
+		AgentCredentialSearchCriteria sc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setDomainName(dac.getPublicCert().getCommonName());
+		List<AgentCredential> domainCerts = service.search(zoneApex, sc);
 		assertNotNull(domainCerts);
 		assertEquals(2, domainCerts.size()); // DAC, UC
 	}
 
 	@Test
 	public void testLookupByDomainAndType() throws Exception {
-		List<AgentCredential> dacCerts = service.findByZoneDomainAndType(zoneApex, dac.getPublicCert().getCommonName(),
-				AgentCredentialType.DAC);
+		AgentCredentialSearchCriteria dsc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		dsc.setDomainName(dac.getPublicCert().getCommonName());
+		dsc.setType(AgentCredentialType.DAC);
+
+		List<AgentCredential> dacCerts = service.search(zoneApex, dsc);
 		assertNotNull(dacCerts);
 		assertEquals(1, dacCerts.size()); // DAC
 		// TODO prove dac
 
-		List<AgentCredential> ucCerts = service.findByZoneDomainAndType(zoneApex, dac.getPublicCert().getCommonName(),
-				AgentCredentialType.UC);
+		AgentCredentialSearchCriteria usc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		usc.setDomainName(dac.getPublicCert().getCommonName());
+		usc.setType(AgentCredentialType.UC);
+
+		List<AgentCredential> ucCerts = service.search(zoneApex, usc);
 		assertNotNull(ucCerts);
 		assertEquals(1, ucCerts.size()); // UC
 		// TODO prove uc
+	}
+
+	@Test
+	public void testLookupByAddressAndType() throws Exception {
+		AgentCredentialSearchCriteria sc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setDomainName(dac.getPublicCert().getCommonName());
+		sc.setAddressName(uc.getPublicCert().getCommonName());
+		sc.setType(AgentCredentialType.UC);
+
+		List<AgentCredential> ucCerts = service.search(zoneApex, sc);
+		assertNotNull(ucCerts);
+		assertEquals(1, ucCerts.size()); // UC
+		// TODO prove uc
+	}
+
+	@Test
+	public void testLookupByAddressAndTypeAndStatus() throws Exception {
+		AgentCredentialSearchCriteria sc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setDomainName(dac.getPublicCert().getCommonName());
+		sc.setAddressName(uc.getPublicCert().getCommonName());
+		sc.setType(AgentCredentialType.UC);
+		sc.setStatus(AgentCredentialStatus.ACTIVE);
+
+		List<AgentCredential> ucCerts = service.search(zoneApex, sc);
+		assertNotNull(ucCerts);
+		assertEquals(1, ucCerts.size()); // UC
+		// TODO prove uc
+
+		sc.setStatus(AgentCredentialStatus.SUSPENDED);
+		ucCerts = service.search(zoneApex, sc);
+		assertNotNull(ucCerts);
+		assertEquals(0, ucCerts.size());
 	}
 
 	@Test

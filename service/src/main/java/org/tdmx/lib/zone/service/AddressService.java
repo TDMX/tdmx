@@ -32,12 +32,12 @@ import org.tdmx.lib.zone.domain.AddressSearchCriteria;
  */
 public interface AddressService {
 
-	public void createOrUpdate(Address domain);
+	public void createOrUpdate(Address address);
 
-	public Address findById(AddressID domainId);
+	public Address findById(AddressID addressId);
 
 	public List<Address> search(String zoneApex, AddressSearchCriteria criteria);
 
-	public void delete(Address domain);
+	public void delete(Address address);
 
 }

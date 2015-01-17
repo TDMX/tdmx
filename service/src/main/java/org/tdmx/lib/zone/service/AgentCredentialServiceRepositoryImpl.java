@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 
 /**
  * Transactional CRUD Services for AgentCredential Entity.
@@ -86,20 +86,8 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<AgentCredential> findByZoneApex(String zoneApex) {
-		return getAgentCredentialDao().loadByZoneApex(zoneApex);
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<AgentCredential> findByZoneDomainAndType(String zoneApex, String domainName, AgentCredentialType type) {
-		return getAgentCredentialDao().loadByZoneDomainAndType(zoneApex, domainName, type);
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<AgentCredential> findByZoneDomain(String zoneApex, String domainName) {
-		return getAgentCredentialDao().loadByZoneDomain(zoneApex, domainName);
+	public List<AgentCredential> search(String zoneApex, AgentCredentialSearchCriteria criteria) {
+		return getAgentCredentialDao().search(zoneApex, criteria);
 	}
 
 	// -------------------------------------------------------------------------

@@ -99,8 +99,13 @@ import org.tdmx.core.api.v01.sp.zas.report.ReportResponse;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.AddressID;
+import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
@@ -134,15 +139,22 @@ public class ZASImpl implements ZAS {
 		// authorization errors
 		MissingCredentials(403, "Missing Credentials."),
 		NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
+		NonDomainAdministratorAccess(403, "Non DomainAdministrator access."),
 		OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
+		OutOfDomainAccess(403, "DAC only authorized on own domain."),
 		// business logic errors
 		DomainNotSpecified(500, "Domain not supplied."),
 		NotNormalizedDomain(500, "Domain not normalized to uppercase."),
 		DomainExists(500, "Domain exists."),
 		DomainNotFound(500, "Domain not found."),
+		AddressExists(500, "Address exists."),
+		AddressNotFound(500, "Address not found."),
 
 		InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
-		DomainAdministratorCredentialsExist(500, "DAC exists."), ;
+		DomainAdministratorCredentialsExist(500, "DACs exists."),
+		UserCredentialsExist(500, "UCs exists."),
+		CredentialsExist(500, "Credentials exists."),
+		AddressesExist(500, "Addresses exists."), ;
 
 		private final int errorCode;
 		private final String errorDescription;
@@ -175,7 +187,7 @@ public class ZASImpl implements ZAS {
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
 		CreateDomainResponse response = new CreateDomainResponse();
-		String zoneApex = checkZoneDomainAuthorization(parameters.getDomain(), response);
+		String zoneApex = checkZACDomainAuthorization(parameters.getDomain(), response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -183,7 +195,6 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		Domain domain = getDomainService().findById(id);
 		if (domain != null) {
-			// make a enum for the error response
 			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
@@ -203,7 +214,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		DeleteDomainResponse response = new DeleteDomainResponse();
 
-		String zoneApex = checkZoneDomainAuthorization(parameters.getDomain(), response);
+		String zoneApex = checkZACDomainAuthorization(parameters.getDomain(), response);
 		if (zoneApex == null) {
 			return response;
 		}
@@ -215,24 +226,25 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// check the domain can be deleted
-		// 1) no active credentials DAC/UC on the domain.
-		List<AgentCredential> credentials = getCredentialService().findByZoneApex(zoneApex);
-		// TODO domain and type
-		for (AgentCredential credential : credentials) {
-			if (AgentCredentialStatus.ACTIVE == credential.getCredentialStatus()
-					&& parameters.getDomain().equals(credential.getDomainName())) {
-				log.info("Active Credential on the domain " + credential);
-				// TODO error credential found UC or DAC
-			}
+		// check the domain can be deleted if it has no credentials
+		AgentCredentialSearchCriteria dcSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+		dcSc.setDomainName(parameters.getDomain());
+		dcSc.setType(AgentCredentialType.DAC);
+		List<AgentCredential> credentials = getCredentialService().search(zoneApex, dcSc);
+		if (credentials.size() > 0) {
+			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
+			return response;
 		}
-		// TODO no addresses on the domain
 
-		// TODO search domain - do we have "status" of credentials? do we modify dac/uc?
+		// and no addresses
+		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
+		List<Address> addresses = getAddressService().search(zoneApex, sac);
+		if (addresses.size() > 0) {
+			setError(ErrorCode.AddressesExist, response);
+			return response;
+		}
 
-		// TODO denormalize agentcredential to have domain / username for dac/uc
-
-		// TODO delete all (theninactive domain credentials)
+		// TODO and no services
 
 		getDomainService().delete(domain);
 		response.setSuccess(true);
@@ -302,8 +314,35 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createAddress")
 	public CreateAddressResponse createAddress(
 			@WebParam(partName = "parameters", name = "createAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAddress parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		CreateAddressResponse response = new CreateAddressResponse();
+
+		String zoneApex = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+		DomainID domainId = new DomainID(parameters.getAddress().getDomain(), zoneApex);
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(domainId);
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
+
+		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
+				zoneApex);
+		// check if the domain exists already
+		Address a = getAddressService().findById(id);
+		if (a != null) {
+			setError(ErrorCode.AddressExists, response);
+			return response;
+		}
+
+		// create the address
+		a = new Address(id);
+
+		getAddressService().createOrUpdate(a);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -438,7 +477,6 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		Domain domain = getDomainService().findById(id);
 		if (domain == null) {
-			// make a enum for the error response
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
@@ -498,8 +536,37 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteAddress")
 	public DeleteAddressResponse deleteAddress(
 			@WebParam(partName = "parameters", name = "deleteAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAddress parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteAddressResponse response = new DeleteAddressResponse();
+
+		String zoneApex = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+
+		// check if there are any UCs
+		AgentCredentialSearchCriteria acSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+		acSc.setAddressName(parameters.getAddress().getLocalname());
+		acSc.setDomainName(parameters.getAddress().getDomain());
+		acSc.setType(AgentCredentialType.UC);
+		List<AgentCredential> ucs = getCredentialService().search(zoneApex, acSc);
+		if (ucs.size() > 0) {
+			setError(ErrorCode.UserCredentialsExist, response);
+			return response;
+		}
+
+		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
+				zoneApex);
+		// dont allow creation if we find the address exists already
+		Address a = getAddressService().findById(id);
+		if (a == null) {
+			setError(ErrorCode.AddressNotFound, response);
+			return response;
+		}
+
+		// delete the address
+		getAddressService().delete(a);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -615,13 +682,18 @@ public class ZASImpl implements ZAS {
 	// return null;
 	// }
 
-	/**
-	 * Checks the AuthenticatedAgent is a ZAC.
-	 * 
-	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the zoneApex.
-	 */
-	private String checkZACAuthorization(Acknowledge ack) {
+	private boolean checkDomain(String domain, Acknowledge ack) {
+		if (!StringUtils.hasText(domain)) {
+			setError(ErrorCode.DomainNotSpecified, ack);
+			return false;
+		} else if (!StringUtils.isLowerCase(domain)) {
+			setError(ErrorCode.NotNormalizedDomain, ack);
+			return false;
+		}
+		return true;
+	}
+
+	private PKIXCertificate checkZACAuthorized(Acknowledge ack) {
 		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
 		if (user == null) {
 			setError(ErrorCode.MissingCredentials, ack);
@@ -631,9 +703,51 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.NonZoneAdministratorAccess, ack);
 			return null;
 		}
+		return user;
+	}
 
-		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
+	private PKIXCertificate checkZACorDACAuthorized(Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+		if (user == null) {
+			setError(ErrorCode.MissingCredentials, ack);
+			return null;
+		}
+		if (!user.isTdmxZoneAdminCertificate() && !user.isTdmxDomainAdminCertificate()) {
+			setError(ErrorCode.NonDomainAdministratorAccess, ack);
+			return null;
+		}
+		return user;
+	}
+
+	/**
+	 * Checks the AuthenticatedAgent is a ZAC.
+	 * 
+	 * @param ack
+	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 */
+	private String checkZACAuthorization(Acknowledge ack) {
+		PKIXCertificate user = checkZACAuthorized(ack);
+		if (user == null) {
+			return null;
+		}
+		return user.getTdmxZoneInfo().getZoneRoot();
+	}
+
+	private String checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
+		String zoneApex = authorizedAgent.getTdmxZoneInfo().getZoneRoot();
+
+		if (!StringUtils.isSuffix(domain, zoneApex)) {
+			setError(ErrorCode.OutOfZoneAccess, ack);
+			return null;
+		}
+
+		// domain must match domain administrator of authorized user
+		if (authorizedAgent.isTdmxDomainAdminCertificate() && !authorizedAgent.getCommonName().equals(domain)) {
+			setError(ErrorCode.OutOfDomainAccess, ack);
+			return null;
+		}
 		return zoneApex;
+
 	}
 
 	/**
@@ -643,32 +757,35 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private String checkZoneDomainAuthorization(String domain, Acknowledge ack) {
-		if (!StringUtils.hasText(domain)) {
-			setError(ErrorCode.DomainNotSpecified, ack);
-			return null;
-		} else if (!StringUtils.isLowerCase(domain)) {
-			setError(ErrorCode.NotNormalizedDomain, ack);
+	private String checkZACDomainAuthorization(String domain, Acknowledge ack) {
+		if (!checkDomain(domain, ack)) {
 			return null;
 		}
 
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+		PKIXCertificate user = checkZACAuthorized(ack);
 		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
 			return null;
 		}
-		if (!user.isTdmxZoneAdminCertificate()) {
-			setError(ErrorCode.NonZoneAdministratorAccess, ack);
+		return checkDomainAuthorization(user, domain, ack);
+	}
+
+	/**
+	 * Checks the AuthenticatedAgent is a ZAC or DAC, and return the agent's zoneApex. If the agent is not authorized
+	 * then the acknowledge's Error info will be set and null returned.
+	 * 
+	 * @param ack
+	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 */
+	private String checkDomainAuthorization(String domain, Acknowledge ack) {
+		if (!checkDomain(domain, ack)) {
 			return null;
 		}
 
-		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
-
-		if (!StringUtils.isSuffix(domain, zoneApex)) {
-			setError(ErrorCode.OutOfZoneAccess, ack);
+		PKIXCertificate user = checkZACorDACAuthorized(ack);
+		if (user == null) {
 			return null;
 		}
-		return zoneApex;
+		return checkDomainAuthorization(user, domain, ack);
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

@@ -36,11 +36,11 @@ public class AddressSearchCriteria {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	private final PageSpecifier pageSpecifier;
+
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
 	 */
-	private final PageSpecifier pageSpecifier;
-
 	private String domainName;
 
 	private String localName;

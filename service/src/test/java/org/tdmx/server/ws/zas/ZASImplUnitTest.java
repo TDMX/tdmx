@@ -39,10 +39,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.sp.zas.CreateAddress;
+import org.tdmx.core.api.v01.sp.zas.CreateAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
 import org.tdmx.core.api.v01.sp.zas.CreateAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateDomain;
 import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.DeleteAddress;
+import org.tdmx.core.api.v01.sp.zas.DeleteAddressResponse;
+import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
@@ -50,11 +55,13 @@ import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
+import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
@@ -77,6 +84,8 @@ public class ZASImplUnitTest {
 	private AuthenticatedAgentService authenticatedAgentService;
 	@Autowired
 	private DomainService domainService;
+	@Autowired
+	private AddressService addressService;
 
 	@Autowired
 	private ZAS zas;
@@ -133,9 +142,17 @@ public class ZASImplUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AgentCredential> list = agentCredentialService.findByZoneApex(zoneApex);
+		List<AgentCredential> list = agentCredentialService.search(zoneApex,
+				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
+		}
+
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex,
+				new org.tdmx.lib.zone.domain.AddressSearchCriteria(new PageSpecifier(0, 1000)));
+		for (org.tdmx.lib.zone.domain.Address a : addresses) {
+			log.info("Cleanup " + a);
+			addressService.delete(a);
 		}
 
 		List<Domain> domains = domainService.search(zoneApex, new DomainSearchCriteria(new PageSpecifier(0, 1000)));
@@ -151,6 +168,7 @@ public class ZASImplUnitTest {
 		assertNotNull(agentCredentialFactory);
 		assertNotNull(authenticatedAgentService);
 		assertNotNull(domainService);
+		assertNotNull(addressService);
 
 		// the service under test...
 		assertNotNull(zas);
@@ -239,9 +257,70 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testCreateAddress() {
-		fail("Not yet implemented");
+	public void testCreateAddress_ZAC() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// we need the domain to exist before we can create addresses on it.
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.createOrUpdate(dacDomain);
+
+		// create the address
+		Address ucAddress = new Address();
+		ucAddress.setDomain(dac.getPublicCert().getCommonName());
+		ucAddress.setLocalname(uc.getPublicCert().getCommonName());
+
+		CreateAddress ca = new CreateAddress();
+		ca.setAddress(ucAddress);
+
+		CreateAddressResponse response = zas.createAddress(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+	}
+
+	@Test
+	public void testCreateAddress_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// we need the domain to exist before we can create addresses on it.
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.createOrUpdate(dacDomain);
+
+		// create the address
+		Address ucAddress = new Address();
+		ucAddress.setDomain(dac.getPublicCert().getCommonName());
+		ucAddress.setLocalname(uc.getPublicCert().getCommonName());
+
+		CreateAddress ca = new CreateAddress();
+		ca.setAddress(ucAddress);
+
+		CreateAddressResponse response = zas.createAddress(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+	}
+
+	@Test
+	public void testCreateAddress_MissingDomain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// create the address
+		Address ucAddress = new Address();
+		ucAddress.setDomain("unknownsubdomain." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
+		ucAddress.setLocalname(uc.getPublicCert().getCommonName());
+
+		CreateAddress ca = new CreateAddress();
+		ca.setAddress(ucAddress);
+
+		CreateAddressResponse response = zas.createAddress(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.DomainNotFound, response.getError());
 	}
 
 	@Test
@@ -393,9 +472,31 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testDeleteAddress() {
-		fail("Not yet implemented");
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// we cannot create a DAC which already exists, setup before
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.createOrUpdate(dacDomain);
+
+		// create the address so we can delete it
+		AddressID aId = new AddressID("localname", dac.getPublicCert().getCommonName(), zoneApex);
+		org.tdmx.lib.zone.domain.Address ad = new org.tdmx.lib.zone.domain.Address(aId);
+		addressService.createOrUpdate(ad);
+
+		Address a = new Address();
+		a.setDomain(dac.getPublicCert().getCommonName());
+		a.setLocalname("localname");
+
+		DeleteAddress request = new DeleteAddress();
+		request.setAddress(a);
+
+		DeleteAddressResponse response = zas.deleteAddress(request);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
 	}
 
 	@Test
