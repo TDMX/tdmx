@@ -445,6 +445,12 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	@Ignore
+	public void testCreateAdministrator_Success_DefaultStatus() {
+		fail("Not yet implemented");
+	}
+
+	@Test
 	public void testCreateAdministrator_DACExists() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);

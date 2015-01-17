@@ -68,7 +68,7 @@
 			<xs:element ref="msg:administrator"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>if present, the status of the administrator shall be set.</xs:documentation>
+					<xs:documentation>if present, the status of the administrator shall be set. Defaults to ACTIVE.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
@@ -237,7 +237,7 @@
 			<xs:element ref="msg:user"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+					<xs:documentation>if present, the status of the user shall be set. Defaults to ACTIVE.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">

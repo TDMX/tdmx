@@ -501,7 +501,11 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
-		dac.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		if (parameters.getStatus() != null) {
+			dac.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		} else {
+			dac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
+		}
 
 		// check that the Domain Exists
 		DomainID id = new DomainID(dac.getDomainName(), dac.getId().getZoneApex());
@@ -651,7 +655,11 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-		uc.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		if (parameters.getStatus() != null) {
+			uc.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		} else {
+			uc.setCredentialStatus(AgentCredentialStatus.ACTIVE);
+		}
 
 		// check that the Address Exists
 		AddressID id = new AddressID(uc.getAddressName(), uc.getDomainName(), uc.getId().getZoneApex());
