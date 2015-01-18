@@ -406,8 +406,39 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyUser")
 	public ModifyUserResponse modifyUser(
 			@WebParam(partName = "parameters", name = "modifyUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyUser parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		ModifyUserResponse response = new ModifyUserResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct the UC given the data provided
+		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
+				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		if (uc == null) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		// check that the UC credential exists
+		AgentCredential existingCred = credentialService.findById(uc.getId());
+		if (existingCred == null) {
+			setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+		if (parameters.getStatus() != null) {
+			existingCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		}
+
+		// update the existing UC
+		credentialService.createOrUpdate(existingCred);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -747,8 +778,38 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyAdministrator")
 	public ModifyAdministratorResponse modifyAdministrator(
 			@WebParam(partName = "parameters", name = "modifyAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyAdministrator parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		ModifyAdministratorResponse response = new ModifyAdministratorResponse();
+		PKIXCertificate authorizedUser = checkZACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+		// try to constuct the DAC given the data provided
+		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
+		if (dac == null) {
+			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
+		}
+
+		// check that the DAC credential exists
+		AgentCredential existingCred = credentialService.findById(dac.getId());
+		if (existingCred == null) {
+			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
+			return response;
+		}
+		if (parameters.getStatus() != null) {
+			existingCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		}
+		// update the DAC
+		credentialService.createOrUpdate(existingCred);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -856,22 +917,22 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential uc = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
+		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
 				parameters.getAdministrator().getRootcertificate());
-		if (uc == null) {
+		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findById(uc.getId());
+		AgentCredential existingCred = credentialService.findById(dac.getId());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
 		}
 
-		// delete the DAC
-		credentialService.delete(uc);
+		// delete the existing DAC
+		credentialService.delete(existingCred);
 
 		response.setSuccess(true);
 		return response;

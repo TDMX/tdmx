@@ -80,11 +80,7 @@
 	</xs:complexType>
 	<xs:complexType name="createAdministratorResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:administratorstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="modifyAdministratorRequestType">
@@ -107,11 +103,7 @@
 	</xs:complexType>
 	<xs:complexType name="modifyAdministratorResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:administratorstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorRequestType">
@@ -121,11 +113,7 @@
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:administratorstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchAddressRequestType">
@@ -249,11 +237,7 @@
 	</xs:complexType>
 	<xs:complexType name="createUserResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:userstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="modifyUserRequestType">
@@ -276,11 +260,7 @@
 	</xs:complexType>
 	<xs:complexType name="modifyUserResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:userstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteUserRequestType">
@@ -290,11 +270,7 @@
 	</xs:complexType>
 	<xs:complexType name="deleteUserResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:userstate"/>
-				</xs:sequence>
-			</xs:extension>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchServiceRequestType">

@@ -53,6 +53,10 @@ import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
+import org.tdmx.core.api.v01.sp.zas.ModifyAdministrator;
+import org.tdmx.core.api.v01.sp.zas.ModifyAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.ModifyUser;
+import org.tdmx.core.api.v01.sp.zas.ModifyUserResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchAddress;
 import org.tdmx.core.api.v01.sp.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
@@ -863,7 +867,7 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testDeleteUser_ZAS() {
+	public void testDeleteUser_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -881,6 +885,26 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testModiyUser_ZAC_suspended() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ModifyUser ca = new ModifyUser();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		ca.setStatus(CredentialStatus.SUSPENDED);
+		ModifyUserResponse response = zas.modifyUser(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		// TODO check susp.
+	}
+
+	@Test
 	public void testDeleteUser_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -893,6 +917,25 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		DeleteUserResponse response = zas.deleteUser(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+	}
+
+	@Test
+	public void testModiyUser_DAC_suspended() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ModifyUser ca = new ModifyUser();
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		ca.setStatus(CredentialStatus.SUSPENDED);
+		ModifyUserResponse response = zas.modifyUser(ca);
 		assertNotNull(response);
 		assertTrue(response.isSuccess());
 		assertNull(response.getError());
@@ -1170,6 +1213,25 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testModifyAdministrator_ZAC_suspend() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ModifyAdministrator ca = new ModifyAdministrator();
+		Administrator u = new Administrator();
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(u);
+		ca.setStatus(CredentialStatus.SUSPENDED);
+		ModifyAdministratorResponse response = zas.modifyAdministrator(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		// TODO check susp.
+	}
+
+	@Test
 	public void testDeleteAdministrator_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1187,27 +1249,20 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testGetAgentService() {
-		fail("Not yet implemented");
-	}
+	public void testDeleteAdministrator_DAC_notAuthorized() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
 
-	@Test
-	@Ignore
-	public void testSetAgentService() {
-		fail("Not yet implemented");
-	}
+		DeleteAdministrator ca = new DeleteAdministrator();
+		Administrator u = new Administrator();
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-	@Test
-	@Ignore
-	public void testGetDomainService() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Ignore
-	public void testSetDomainService() {
-		fail("Not yet implemented");
+		ca.setAdministrator(u);
+		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
 	}
 
 	private void assertError(ErrorCode expected, org.tdmx.core.api.v01.sp.zas.common.Error error) {
