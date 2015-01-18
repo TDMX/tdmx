@@ -53,15 +53,21 @@ import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchAddress;
+import org.tdmx.core.api.v01.sp.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchDomain;
+import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchUser;
 import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
+import org.tdmx.core.api.v01.sp.zas.msg.AddressFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
+import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
@@ -140,11 +146,20 @@ public class ZASImplUnitTest {
 		assertNotNull(domainAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(domainAC);
 
+		// we create the domain of the dac
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.createOrUpdate(dacDomain);
+
 		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
 		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
 		assertEquals(zoneApex, userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
+
+		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zoneApex);
+		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
+		addressService.createOrUpdate(userAddress);
 
 		accountZone = new AccountZone();
 		accountZone.setAccountId("TEST");
@@ -189,9 +204,68 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSearchDomain() {
-		fail("Not yet implemented");
+	public void testSearchDomain_ZAC_all() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchDomain req = new SearchDomain();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		DomainFilter uf = new DomainFilter();
+		req.setFilter(uf);
+
+		SearchDomainResponse response = zas.searchDomain(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getDomains().size());
+	}
+
+	@Test
+	public void testSearchDomain_ZAC_invalidDomain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchDomain req = new SearchDomain();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		DomainFilter uf = new DomainFilter();
+		uf.setDomain("unknown.sub.domain.com");
+		req.setFilter(uf);
+
+		SearchDomainResponse response = zas.searchDomain(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+	}
+
+	@Test
+	public void testSearchDomain_DAC_notAuthorized() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchDomain req = new SearchDomain();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		DomainFilter uf = new DomainFilter();
+		req.setFilter(uf);
+
+		SearchDomainResponse response = zas.searchDomain(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
 	}
 
 	@Test
@@ -214,6 +288,28 @@ public class ZASImplUnitTest {
 		assertTrue(response.isSuccess());
 		assertNull(response.getError());
 		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchAddress_ZAC_all() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAddress req = new SearchAddress();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AddressFilter uf = new AddressFilter();
+		req.setFilter(uf);
+
+		SearchAddressResponse response = zas.searchAddress(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getAddresses().size());
 	}
 
 	@Test
@@ -288,6 +384,28 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testSearchAddress_ZAC_invalidZone() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAddress req = new SearchAddress();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AddressFilter uf = new AddressFilter();
+		uf.setDomain("unknownzone.com");
+		req.setFilter(uf);
+
+		SearchAddressResponse response = zas.searchAddress(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+	}
+
+	@Test
 	public void testSearchUser_DAC_all() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -307,6 +425,28 @@ public class ZASImplUnitTest {
 		assertTrue(response.isSuccess());
 		assertNull(response.getError());
 		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchAddress_DAC_all() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAddress req = new SearchAddress();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AddressFilter uf = new AddressFilter();
+		req.setFilter(uf);
+
+		SearchAddressResponse response = zas.searchAddress(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getAddresses().size());
 	}
 
 	@Test
@@ -330,6 +470,29 @@ public class ZASImplUnitTest {
 		assertTrue(response.isSuccess());
 		assertNull(response.getError());
 		assertEquals(1, response.getUserstates().size());
+	}
+
+	@Test
+	public void testSearchAddress_DAC_addressName() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAddress req = new SearchAddress();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AddressFilter uf = new AddressFilter();
+		uf.setLocalname(uc.getPublicCert().getCommonName());
+		req.setFilter(uf);
+
+		SearchAddressResponse response = zas.searchAddress(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getAddresses().size());
 	}
 
 	@Test
@@ -372,6 +535,28 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfDomainAccess, response.getError());
+	}
+
+	@Test
+	public void testSearchAddress_DAC_invalidDomain() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAddress req = new SearchAddress();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AddressFilter uf = new AddressFilter();
+		uf.setDomain("unknownsubdomain." + zoneApex);
+		req.setFilter(uf);
+
+		SearchAddressResponse response = zas.searchAddress(req);
 		assertNotNull(response);
 		assertFalse(response.isSuccess());
 		assertError(ErrorCode.OutOfDomainAccess, response.getError());
@@ -583,15 +768,10 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// we need the domain to exist before we can create addresses on it.
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
-		domainService.createOrUpdate(dacDomain);
-
 		// create the address
 		Address ucAddress = new Address();
 		ucAddress.setDomain(dac.getPublicCert().getCommonName());
-		ucAddress.setLocalname(uc.getPublicCert().getCommonName());
+		ucAddress.setLocalname("anewaddressname");
 
 		CreateAddress ca = new CreateAddress();
 		ca.setAddress(ucAddress);
@@ -607,15 +787,10 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// we need the domain to exist before we can create addresses on it.
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
-		domainService.createOrUpdate(dacDomain);
-
 		// create the address
 		Address ucAddress = new Address();
 		ucAddress.setDomain(dac.getPublicCert().getCommonName());
-		ucAddress.setLocalname(uc.getPublicCert().getCommonName());
+		ucAddress.setLocalname("anewaddressname");
 
 		CreateAddress ca = new CreateAddress();
 		ca.setAddress(ucAddress);
@@ -754,26 +929,50 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testCreateAdministrator_Success() {
-		fail("Not yet implemented");
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
+		agentCredentialService.delete(domainAC);
+
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateAdministrator ca = new CreateAdministrator();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		Administrator a = new Administrator();
+		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(a);
+		CreateAdministratorResponse response = zas.createAdministrator(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
 	}
 
 	@Test
-	@Ignore
 	public void testCreateAdministrator_Success_DefaultStatus() {
-		fail("Not yet implemented");
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
+		agentCredentialService.delete(domainAC);
+
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateAdministrator ca = new CreateAdministrator();
+		Administrator a = new Administrator();
+		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setAdministrator(a);
+		CreateAdministratorResponse response = zas.createAdministrator(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
 	}
 
 	@Test
 	public void testCreateAdministrator_DACExists() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		// we cannot create a DAC which already exists, setup before
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
-		domainService.createOrUpdate(dacDomain);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -790,6 +989,11 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_DomainNotExists() {
+		// we delete the domain of the dac and the dac.
+		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(domId);
+		domainService.delete(dacDomain);
+
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -831,23 +1035,17 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testDeleteAddress() {
+	public void testDeleteAddress_ZAC_ok() {
+		// remove UC credentials
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
+		agentCredentialService.delete(userAC);
+
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// we cannot create a DAC which already exists, setup before
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
-		domainService.createOrUpdate(dacDomain);
-
-		// create the address so we can delete it
-		AddressID aId = new AddressID("localname", dac.getPublicCert().getCommonName(), zoneApex);
-		org.tdmx.lib.zone.domain.Address ad = new org.tdmx.lib.zone.domain.Address(aId);
-		addressService.createOrUpdate(ad);
-
 		Address a = new Address();
 		a.setDomain(dac.getPublicCert().getCommonName());
-		a.setLocalname("localname");
+		a.setLocalname(uc.getPublicCert().getCommonName());
 
 		DeleteAddress request = new DeleteAddress();
 		request.setAddress(a);
@@ -856,6 +1054,24 @@ public class ZASImplUnitTest {
 		assertNotNull(response);
 		assertTrue(response.isSuccess());
 		assertNull(response.getError());
+	}
+
+	@Test
+	public void testDeleteAddress_ZAC_UCsExist() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		Address a = new Address();
+		a.setDomain(dac.getPublicCert().getCommonName());
+		a.setLocalname(uc.getPublicCert().getCommonName());
+
+		DeleteAddress request = new DeleteAddress();
+		request.setAddress(a);
+
+		DeleteAddressResponse response = zas.deleteAddress(request);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.UserCredentialsExist, response.getError());
 	}
 
 	@Test
@@ -877,15 +1093,9 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testCreateUser_UCExists() {
+	public void testCreateUser_ZAC_UCExists() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		// we cannot create a UC which already exists, setup before
-		AddressID addressId = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(),
-				zoneApex);
-		org.tdmx.lib.zone.domain.Address address = new org.tdmx.lib.zone.domain.Address(addressId);
-		addressService.createOrUpdate(address);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -902,7 +1112,34 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testCreateUser_ZAC_ok() {
+		// delete the UC setup
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
+		agentCredentialService.delete(userAC);
+
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateUser ca = new CreateUser();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		User u = new User();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUser(u);
+		CreateUserResponse response = zas.createUser(ca);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+	}
+
+	@Test
 	public void testCreateUser_AddressNotExists() {
+		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(), zoneApex);
+		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
+		addressService.delete(userAddress);
+
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 

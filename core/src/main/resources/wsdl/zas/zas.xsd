@@ -493,7 +493,7 @@
 	<!-- ********************************************* -->
 	<xs:element name="searchDomain" type="searchDomainRequestType">
 		<xs:annotation>
-			<xs:documentation>Authorization: ZAC only.</xs:documentation>
+			<xs:documentation>Authorization: ZAC only. If a Domain is provided it must be within the Zone.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="searchDomainResponse" type="searchDomainResponseType"/>
