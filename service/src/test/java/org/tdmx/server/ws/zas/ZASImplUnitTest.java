@@ -53,11 +53,14 @@ import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
+import org.tdmx.core.api.v01.sp.zas.SearchAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchUser;
 import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
+import org.tdmx.core.api.v01.sp.zas.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
@@ -453,9 +456,114 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSearchAdministrator() {
-		fail("Not yet implemented");
+	public void testSearchAdministrator_ZAC_all() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAdministrator req = new SearchAdministrator();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AdministratorFilter uf = new AdministratorFilter();
+		req.setFilter(uf);
+
+		SearchAdministratorResponse response = zas.searchAdministrator(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getAdministratorstates().size());
+	}
+
+	@Test
+	public void testSearchAdministrator_ZAC_domain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAdministrator req = new SearchAdministrator();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AdministratorFilter uf = new AdministratorFilter();
+		uf.setDomain(dac.getPublicCert().getCommonName());
+		req.setFilter(uf);
+
+		SearchAdministratorResponse response = zas.searchAdministrator(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(1, response.getAdministratorstates().size());
+	}
+
+	@Test
+	public void testSearchAdministrator_ZAC_suspended() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAdministrator req = new SearchAdministrator();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AdministratorFilter uf = new AdministratorFilter();
+		uf.setStatus(CredentialStatus.SUSPENDED);
+		req.setFilter(uf);
+
+		SearchAdministratorResponse response = zas.searchAdministrator(req);
+		assertNotNull(response);
+		assertTrue(response.isSuccess());
+		assertNull(response.getError());
+		assertEquals(0, response.getAdministratorstates().size());
+	}
+
+	@Test
+	public void testSearchAdministrator_ZAC_nonsubdomainFails() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAdministrator req = new SearchAdministrator();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AdministratorFilter uf = new AdministratorFilter();
+		uf.setDomain("unknown.domain.com");
+		req.setFilter(uf);
+
+		SearchAdministratorResponse response = zas.searchAdministrator(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+	}
+
+	@Test
+	public void testSearchAdministrator_DAC_notallowed() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchAdministrator req = new SearchAdministrator();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		AdministratorFilter uf = new AdministratorFilter();
+		req.setFilter(uf);
+
+		SearchAdministratorResponse response = zas.searchAdministrator(req);
+		assertNotNull(response);
+		assertFalse(response.isSuccess());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
 	}
 
 	@Test

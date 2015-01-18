@@ -509,7 +509,11 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteDomainResponse" type="deleteDomainResponseType"/>
-	<xs:element name="searchAdministrator" type="searchAdministratorRequestType"/>
+	<xs:element name="searchAdministrator" type="searchAdministratorRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC only. If a Domain is provided it must be within the Zone.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchAdministratorResponse" type="searchAdministratorResponseType"/>
 	<xs:element name="createAdministrator" type="createAdministratorRequestType">
 		<xs:annotation>
@@ -529,7 +533,11 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteAdministratorResponse" type="deleteAdministratorResponseType"/>
-	<xs:element name="searchAddress" type="searchAddressRequestType"/>
+	<xs:element name="searchAddress" type="searchAddressRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for Addresses within own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchAddressResponse" type="searchAddressResponseType"/>
 	<xs:element name="createAddress" type="createAddressRequestType">
 		<xs:annotation>

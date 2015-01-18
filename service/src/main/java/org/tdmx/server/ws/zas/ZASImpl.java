@@ -92,6 +92,8 @@ import org.tdmx.core.api.v01.sp.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.core.api.v01.sp.zas.common.Error;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
+import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
+import org.tdmx.core.api.v01.sp.zas.msg.Administratorstate;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
@@ -357,13 +359,64 @@ public class ZASImpl implements ZAS {
 		return us;
 	}
 
+	private Administratorstate mapAdministratorstate(AgentCredential cred) {
+		Administrator u = new Administrator();
+		u.setDomaincertificate(cred.getIssuerPublicKey().getX509Encoded());
+		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
+
+		Administratorstate us = new Administratorstate();
+		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
+		us.setAdministrator(u);
+		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
+		return us;
+	}
+
 	@Override
 	@WebResult(name = "searchAdministratorResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchAdministrator")
 	public SearchAdministratorResponse searchAdministrator(
 			@WebParam(partName = "parameters", name = "searchAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAdministrator parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchAdministratorResponse response = new SearchAdministratorResponse();
+
+		String zoneApex = checkZACAuthorization(response);
+		if (zoneApex == null) {
+			return response;
+		}
+
+		if (parameters.getFilter().getAdministrator() != null) {
+			// if a DAC credential is provided then it't not so much a search as a lookup
+			AgentCredential uc = credentialFactory.createDAC(parameters.getFilter().getAdministrator()
+					.getDomaincertificate(), parameters.getFilter().getAdministrator().getRootcertificate());
+			if (uc == null) {
+				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+				return response;
+			}
+			AgentCredential c = credentialService.findById(uc.getId());
+			if (c != null) {
+				response.getAdministratorstates().add(mapAdministratorstate(c));
+			}
+		} else {
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
+			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+				// we check that the provided domain is the ZAC's root domain.
+				if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zoneApex)) {
+					setError(ErrorCode.OutOfZoneAccess, response);
+					return response;
+				}
+				sc.setDomainName(parameters.getFilter().getDomain());
+			}
+			if (parameters.getFilter().getStatus() != null) {
+				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
+			}
+			sc.setType(AgentCredentialType.DAC);
+			List<AgentCredential> credentials = credentialService.search(zoneApex, sc);
+			for (AgentCredential c : credentials) {
+				response.getAdministratorstates().add(mapAdministratorstate(c));
+			}
+		}
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
 	}
 
 	@Override
