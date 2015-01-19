@@ -559,15 +559,27 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteUserResponse" type="deleteUserResponseType"/>
-	<xs:element name="searchService" type="searchServiceRequestType"/>
+	<xs:element name="searchService" type="searchServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for Services within own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchServiceResponse" type="searchServiceResponseType"/>
-	<xs:element name="createService" type="createServiceRequestType"/>
+	<xs:element name="createService" type="createServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Domain exists, Service doesn't exist. Postcondition: Service exists.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="createServiceResponse" type="createServiceResponseType"/>
-	<xs:element name="modifyService" type="modifyServiceRequestType"/>
+	<xs:element name="modifyService" type="modifyServiceRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists. Postcondition: Service modified.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="modifyServiceResponse" type="modifyServiceResponseType"/>
 	<xs:element name="deleteService" type="deleteServiceRequestType">
 		<xs:annotation>
-			<xs:documentation>no channel authorizations</xs:documentation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists. Postcondition: Service deleted. TODO:no channel authorizations</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>

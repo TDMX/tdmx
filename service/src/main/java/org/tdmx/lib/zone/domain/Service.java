@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -45,6 +46,9 @@ public class Service implements Serializable {
 
 	@EmbeddedId
 	private ServiceID id;
+
+	@Column(nullable = false)
+	private int concurrencyLimit;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -89,6 +93,14 @@ public class Service implements Serializable {
 
 	public void setId(ServiceID id) {
 		this.id = id;
+	}
+
+	public int getConcurrencyLimit() {
+		return concurrencyLimit;
+	}
+
+	public void setConcurrencyLimit(int concurrencyLimit) {
+		this.concurrencyLimit = concurrencyLimit;
 	}
 
 }

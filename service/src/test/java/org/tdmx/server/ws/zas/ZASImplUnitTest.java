@@ -45,16 +45,24 @@ import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
 import org.tdmx.core.api.v01.sp.zas.CreateAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateDomain;
 import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.CreateService;
+import org.tdmx.core.api.v01.sp.zas.CreateServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.CreateUser;
 import org.tdmx.core.api.v01.sp.zas.CreateUserResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteAddress;
 import org.tdmx.core.api.v01.sp.zas.DeleteAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.DeleteDomain;
+import org.tdmx.core.api.v01.sp.zas.DeleteDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.DeleteService;
+import org.tdmx.core.api.v01.sp.zas.DeleteServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.ModifyService;
+import org.tdmx.core.api.v01.sp.zas.ModifyServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyUser;
 import org.tdmx.core.api.v01.sp.zas.ModifyUserResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchAddress;
@@ -63,8 +71,11 @@ import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchDomain;
 import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchService;
+import org.tdmx.core.api.v01.sp.zas.SearchServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchUser;
 import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
+import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.AddressFilter;
@@ -72,6 +83,8 @@ import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
+import org.tdmx.core.api.v01.sp.zas.msg.Service;
+import org.tdmx.core.api.v01.sp.zas.msg.ServiceFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
@@ -85,10 +98,12 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
 import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
@@ -110,6 +125,8 @@ public class ZASImplUnitTest {
 	private DomainService domainService;
 	@Autowired
 	private AddressService addressService;
+	@Autowired
+	private ServiceService serviceService;
 
 	@Autowired
 	private ZAS zas;
@@ -119,6 +136,9 @@ public class ZASImplUnitTest {
 	private PKIXCredential zac;
 	private PKIXCredential dac;
 	private PKIXCredential uc;
+	private AddressID aid;
+	private ServiceID sid;
+	private DomainID dId;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -151,8 +171,8 @@ public class ZASImplUnitTest {
 		agentCredentialService.createOrUpdate(domainAC);
 
 		// we create the domain of the dac
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
+		dId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
+		Domain dacDomain = new Domain(dId);
 		domainService.createOrUpdate(dacDomain);
 
 		AgentCredential userAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
@@ -161,9 +181,13 @@ public class ZASImplUnitTest {
 		assertEquals(zoneApex, userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
 
-		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zoneApex);
+		aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zoneApex);
 		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
 		addressService.createOrUpdate(userAddress);
+
+		sid = new ServiceID("service", domainAC.getDomainName(), zoneApex);
+		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(sid);
+		serviceService.createOrUpdate(s);
 
 		accountZone = new AccountZone();
 		accountZone.setAccountId("TEST");
@@ -186,6 +210,13 @@ public class ZASImplUnitTest {
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
 			log.info("Cleanup " + a);
 			addressService.delete(a);
+		}
+
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex,
+				new org.tdmx.lib.zone.domain.ServiceSearchCriteria(new PageSpecifier(0, 1000)));
+		for (org.tdmx.lib.zone.domain.Service s : services) {
+			log.info("Cleanup " + s);
+			serviceService.delete(s);
 		}
 
 		List<Domain> domains = domainService.search(zoneApex, new DomainSearchCriteria(new PageSpecifier(0, 1000)));
@@ -223,9 +254,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchDomainResponse response = zas.searchDomain(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getDomains().size());
 	}
 
@@ -246,9 +275,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchDomainResponse response = zas.searchDomain(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+		assertError(ErrorCode.OutOfZoneAccess, response);
 	}
 
 	@Test
@@ -267,9 +294,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchDomainResponse response = zas.searchDomain(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}
 
 	@Test
@@ -288,9 +313,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -310,9 +333,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getAddresses().size());
 	}
 
@@ -333,9 +354,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -359,9 +378,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -382,9 +399,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+		assertError(ErrorCode.OutOfZoneAccess, response);
 	}
 
 	@Test
@@ -404,9 +419,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+		assertError(ErrorCode.OutOfZoneAccess, response);
 	}
 
 	@Test
@@ -425,9 +438,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -447,9 +458,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getAddresses().size());
 	}
 
@@ -470,9 +479,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -493,10 +500,89 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getAddresses().size());
+	}
+
+	@Test
+	public void testSearchService_ZAC_all() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchService req = new SearchService();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ServiceFilter uf = new ServiceFilter();
+		req.setFilter(uf);
+
+		SearchServiceResponse response = zas.searchService(req);
+		assertSuccess(response);
+		assertEquals(1, response.getServicestates().size());
+	}
+
+	@Test
+	public void testSearchService_ZAC_invalidZone() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchService req = new SearchService();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ServiceFilter uf = new ServiceFilter();
+		uf.setDomain("unknownzone.com");
+		req.setFilter(uf);
+
+		SearchServiceResponse response = zas.searchService(req);
+		assertError(ErrorCode.OutOfZoneAccess, response);
+	}
+
+	@Test
+	public void testSearchService_DAC_all() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchService req = new SearchService();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ServiceFilter uf = new ServiceFilter();
+		req.setFilter(uf);
+
+		SearchServiceResponse response = zas.searchService(req);
+		assertSuccess(response);
+		assertEquals(1, response.getServicestates().size());
+	}
+
+	@Test
+	public void testSearchService_DAC_serviceName() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchService req = new SearchService();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ServiceFilter uf = new ServiceFilter();
+		uf.setServicename(sid.getServiceName());
+		req.setFilter(uf);
+
+		SearchServiceResponse response = zas.searchService(req);
+		assertSuccess(response);
+		assertEquals(1, response.getServicestates().size());
 	}
 
 	@Test
@@ -516,9 +602,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(0, response.getUserstates().size());
 	}
 
@@ -539,9 +623,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfDomainAccess, response.getError());
+		assertError(ErrorCode.OutOfDomainAccess, response);
 	}
 
 	@Test
@@ -561,9 +643,27 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfDomainAccess, response.getError());
+		assertError(ErrorCode.OutOfDomainAccess, response);
+	}
+
+	@Test
+	public void testSearchService_DAC_invalidDomain() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchService req = new SearchService();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ServiceFilter uf = new ServiceFilter();
+		uf.setDomain("unknownsubdomain." + zoneApex);
+		req.setFilter(uf);
+
+		SearchServiceResponse response = zas.searchService(req);
+		assertError(ErrorCode.OutOfDomainAccess, response);
 	}
 
 	@Test
@@ -586,9 +686,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getUserstates().size());
 	}
 
@@ -600,9 +698,7 @@ public class ZASImplUnitTest {
 		CreateDomain req = new CreateDomain();
 		req.setDomain(dac.getPublicCert().getCommonName()); // DAC's cn is the domain
 		CreateDomainResponse response = zas.createDomain(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}
 
 	@Test
@@ -613,9 +709,7 @@ public class ZASImplUnitTest {
 		CreateDomain req = new CreateDomain();
 		req.setDomain("not.a.subdomain.com"); // ZAC can only create subdomains of their root
 		CreateDomainResponse response = zas.createDomain(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+		assertError(ErrorCode.OutOfZoneAccess, response);
 	}
 
 	@Test
@@ -626,9 +720,7 @@ public class ZASImplUnitTest {
 		CreateDomain req = new CreateDomain();
 		req.setDomain("UPPERCASE." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 		CreateDomainResponse response = zas.createDomain(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.NotNormalizedDomain, response.getError());
+		assertError(ErrorCode.NotNormalizedDomain, response);
 	}
 
 	@Test
@@ -639,9 +731,7 @@ public class ZASImplUnitTest {
 		CreateDomain req = new CreateDomain();
 		req.setDomain("lowercasesubdomain." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 		CreateDomainResponse response = zas.createDomain(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -660,9 +750,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getAdministratorstates().size());
 	}
 
@@ -683,9 +771,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(1, response.getAdministratorstates().size());
 	}
 
@@ -706,9 +792,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		assertEquals(0, response.getAdministratorstates().size());
 	}
 
@@ -729,9 +813,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.OutOfZoneAccess, response.getError());
+		assertError(ErrorCode.OutOfZoneAccess, response);
 	}
 
 	@Test
@@ -750,21 +832,13 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
-	}
-
-	@Test
-	@Ignore
-	public void testModifyUser() {
-		fail("Not yet implemented");
+		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}
 
 	@Test
 	@Ignore
 	public void testSearchIpZone() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -781,9 +855,7 @@ public class ZASImplUnitTest {
 		ca.setAddress(ucAddress);
 
 		CreateAddressResponse response = zas.createAddress(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -800,13 +872,11 @@ public class ZASImplUnitTest {
 		ca.setAddress(ucAddress);
 
 		CreateAddressResponse response = zas.createAddress(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
-	public void testCreateAddress_MissingDomain() {
+	public void testCreateAddress_ZAC_MissingDomain() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -819,51 +889,193 @@ public class ZASImplUnitTest {
 		ca.setAddress(ucAddress);
 
 		CreateAddressResponse response = zas.createAddress(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.DomainNotFound, response.getError());
+		assertError(ErrorCode.DomainNotFound, response);
+	}
+
+	@Test
+	public void testCreateService_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// create the service
+		Service s = new Service();
+		s.setDomain(dac.getPublicCert().getCommonName());
+		s.setServicename("anewservicename");
+
+		CreateService ca = new CreateService();
+		ca.setService(s);
+		ca.setConcurrencyLimit(1);
+
+		CreateServiceResponse response = zas.createService(ca);
+		assertSuccess(response);
+	}
+
+	@Test
+	public void testCreateService_ZAC_MissingDomain() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// create the service
+		Service service = new Service();
+		service.setDomain("unknownsubdomain." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
+		service.setServicename("anyoldservicename");
+
+		CreateService ca = new CreateService();
+		ca.setService(service);
+		ca.setConcurrencyLimit(10);
+
+		CreateServiceResponse response = zas.createService(ca);
+		assertError(ErrorCode.DomainNotFound, response);
 	}
 
 	@Test
 	@Ignore
 	public void testDeleteChannelAuthorization() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testIncident() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testCreateIpZone() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testDeleteIpZone() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
-	@Ignore
-	public void testDeleteDomain() {
-		fail("Not yet implemented");
+	public void testDeleteDomain_ZAC_DACsExist() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteDomain ca = new DeleteDomain();
+
+		ca.setDomain(dId.getDomainName());
+		DeleteDomainResponse response = zas.deleteDomain(ca);
+		assertError(ErrorCode.DomainAdministratorCredentialsExist, response);
+	}
+
+	@Test
+	public void testDeleteDomain_DAC_notAuthorized() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteDomain ca = new DeleteDomain();
+
+		ca.setDomain(dId.getDomainName());
+		DeleteDomainResponse response = zas.deleteDomain(ca);
+		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+	}
+
+	@Test
+	public void testDeleteDomain_ZAC_AddressesExist() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// delete any DAC on the domain
+		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		dacSc.setDomainName(dId.getDomainName());
+		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		for (AgentCredential ac : list) {
+			agentCredentialService.delete(ac);
+		}
+
+		DeleteDomain ca = new DeleteDomain();
+
+		ca.setDomain(dId.getDomainName());
+		DeleteDomainResponse response = zas.deleteDomain(ca);
+		assertError(ErrorCode.AddressesExist, response);
+	}
+
+	@Test
+	public void testDeleteDomain_ZAC_ServicesExist() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// delete any DAC on the domain
+		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		dacSc.setDomainName(dId.getDomainName());
+		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		for (AgentCredential ac : list) {
+			agentCredentialService.delete(ac);
+		}
+
+		// delete any address on the domain
+		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
+				new PageSpecifier(0, 1000));
+		adSc.setDomainName(dId.getDomainName());
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex, adSc);
+		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
+			addressService.delete(ad);
+		}
+
+		DeleteDomain ca = new DeleteDomain();
+
+		ca.setDomain(dId.getDomainName());
+		DeleteDomainResponse response = zas.deleteDomain(ca);
+		assertError(ErrorCode.ServicesExist, response);
+	}
+
+	@Test
+	public void testDeleteDomain_ZAC_ok() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		// delete any DAC on the domain
+		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		dacSc.setDomainName(dId.getDomainName());
+		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		for (AgentCredential ac : list) {
+			agentCredentialService.delete(ac);
+		}
+
+		// delete any address on the domain
+		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
+				new PageSpecifier(0, 1000));
+		adSc.setDomainName(dId.getDomainName());
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex, adSc);
+		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
+			addressService.delete(ad);
+		}
+
+		// delete any services on the domain
+		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sSc.setDomainName(dId.getDomainName());
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex, sSc);
+		for (org.tdmx.lib.zone.domain.Service s : services) {
+			serviceService.delete(s);
+		}
+
+		DeleteDomain ca = new DeleteDomain();
+
+		ca.setDomain(dId.getDomainName());
+		DeleteDomainResponse response = zas.deleteDomain(ca);
+		assertSuccess(response);
 	}
 
 	@Test
 	@Ignore
 	public void testReport() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testGetChannelAuthorization() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -879,9 +1091,7 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		DeleteUserResponse response = zas.deleteUser(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -898,10 +1108,42 @@ public class ZASImplUnitTest {
 		ca.setUser(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		// TODO check susp.
+	}
+
+	@Test
+	public void testModiyService_ZAC() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ModifyService ca = new ModifyService();
+		Service u = new Service();
+		u.setDomain(sid.getDomainName());
+		u.setServicename(sid.getServiceName());
+
+		ca.setService(u);
+		ca.setConcurrencyLimit(100);
+		ModifyServiceResponse response = zas.modifyService(ca);
+		assertSuccess(response);
+		// TODO check susp.
+	}
+
+	@Test
+	public void testModiyService_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ModifyService ca = new ModifyService();
+		Service u = new Service();
+		u.setDomain(sid.getDomainName());
+		u.setServicename(sid.getServiceName());
+
+		ca.setService(u);
+		ca.setConcurrencyLimit(99);
+		ModifyServiceResponse response = zas.modifyService(ca);
+		assertSuccess(response);
+		// TODO check limit.
 	}
 
 	@Test
@@ -917,9 +1159,7 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		DeleteUserResponse response = zas.deleteUser(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -936,39 +1176,25 @@ public class ZASImplUnitTest {
 		ca.setUser(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
 	@Ignore
 	public void testModifyFlowTargetState() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testModifyIpZone() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Ignore
-	public void testModifyService() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testGetFlowState() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Ignore
-	public void testSearchAddress() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -987,9 +1213,7 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -1007,9 +1231,7 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -1025,9 +1247,7 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.DomainAdministratorCredentialsExist, response.getError());
+		assertError(ErrorCode.DomainAdministratorCredentialsExist, response);
 	}
 
 	@Test
@@ -1048,33 +1268,51 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.DomainNotFound, response.getError());
+		assertError(ErrorCode.DomainNotFound, response);
 	}
 
 	@Test
 	@Ignore
 	public void testSearchFlowTargetState() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
-	@Ignore
-	public void testDeleteService() {
-		fail("Not yet implemented");
+	public void testDeleteService_ZAC() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteService ca = new DeleteService();
+		Service s = new Service();
+		s.setDomain(sid.getDomainName());
+		s.setServicename(sid.getServiceName());
+
+		ca.setService(s);
+
+		DeleteServiceResponse response = zas.deleteService(ca);
+		assertSuccess(response);
+	}
+
+	@Test
+	public void testDeleteService_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteService ca = new DeleteService();
+		Service s = new Service();
+		s.setDomain(sid.getDomainName());
+		s.setServicename(sid.getServiceName());
+
+		ca.setService(s);
+
+		DeleteServiceResponse response = zas.deleteService(ca);
+		assertSuccess(response);
 	}
 
 	@Test
 	@Ignore
 	public void testGetFlowTargetState() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Ignore
-	public void testSearchService() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -1094,9 +1332,7 @@ public class ZASImplUnitTest {
 		request.setAddress(a);
 
 		DeleteAddressResponse response = zas.deleteAddress(request);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -1112,27 +1348,19 @@ public class ZASImplUnitTest {
 		request.setAddress(a);
 
 		DeleteAddressResponse response = zas.deleteAddress(request);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.UserCredentialsExist, response.getError());
-	}
-
-	@Test
-	@Ignore
-	public void testModifyAdministrator() {
-		fail("Not yet implemented");
+		assertError(ErrorCode.UserCredentialsExist, response);
 	}
 
 	@Test
 	@Ignore
 	public void testSearchFlowState() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
 	@Ignore
 	public void testSetChannelAuthorization() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -1149,9 +1377,7 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		CreateUserResponse response = zas.createUser(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.UserCredentialsExist, response.getError());
+		assertError(ErrorCode.UserCredentialsExist, response);
 	}
 
 	@Test
@@ -1172,9 +1398,7 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		CreateUserResponse response = zas.createUser(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -1195,21 +1419,13 @@ public class ZASImplUnitTest {
 
 		ca.setUser(u);
 		CreateUserResponse response = zas.createUser(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.AddressNotFound, response.getError());
+		assertError(ErrorCode.AddressNotFound, response);
 	}
 
 	@Test
 	@Ignore
 	public void testSearchChannelAuthorization() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	@Ignore
-	public void testCreateService() {
-		fail("Not yet implemented");
+		fail("Not yet implemented"); // TODO
 	}
 
 	@Test
@@ -1225,9 +1441,7 @@ public class ZASImplUnitTest {
 		ca.setAdministrator(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyAdministratorResponse response = zas.modifyAdministrator(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 		// TODO check susp.
 	}
 
@@ -1243,9 +1457,7 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
-		assertNotNull(response);
-		assertTrue(response.isSuccess());
-		assertNull(response.getError());
+		assertSuccess(response);
 	}
 
 	@Test
@@ -1260,15 +1472,23 @@ public class ZASImplUnitTest {
 
 		ca.setAdministrator(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
-		assertNotNull(response);
-		assertFalse(response.isSuccess());
-		assertError(ErrorCode.NonZoneAdministratorAccess, response.getError());
+		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}
 
-	private void assertError(ErrorCode expected, org.tdmx.core.api.v01.sp.zas.common.Error error) {
-		assertNotNull(error);
-		assertEquals(expected.getErrorCode(), error.getCode());
-		assertEquals(expected.getErrorDescription(), error.getDescription());
+	private void assertSuccess(Acknowledge ack) {
+		assertNotNull(ack);
+		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";
+		assertTrue("Error " + errorDesc, ack.isSuccess());
+		assertNull(ack.getError());
+	}
+
+	private void assertError(ErrorCode expected, Acknowledge ack) {
+		assertNotNull(ack);
+		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";
+		assertFalse(errorDesc, ack.isSuccess());
+		assertNotNull(ack.getError());
+		assertEquals(expected.getErrorCode(), ack.getError().getCode());
+		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
 }

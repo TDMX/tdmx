@@ -97,6 +97,8 @@ import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.Administratorstate;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
+import org.tdmx.core.api.v01.sp.zas.msg.Service;
+import org.tdmx.core.api.v01.sp.zas.msg.Servicestate;
 import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.msg.Userstate;
 import org.tdmx.core.api.v01.sp.zas.report.Incident;
@@ -115,6 +117,8 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.ServiceID;
+import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -155,6 +159,8 @@ public class ZASImpl implements ZAS {
 		DomainNotFound(500, "Domain not found."),
 		AddressExists(500, "Address exists."),
 		AddressNotFound(500, "Address not found."),
+		ServiceExists(500, "Service exists."),
+		ServiceNotFound(500, "Service not found."),
 
 		InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
 		DomainAdministratorCredentialsExist(500, "DACs exists."),
@@ -163,7 +169,8 @@ public class ZASImpl implements ZAS {
 		UserCredentialsExist(500, "UCs exists."),
 		UserCredentialNotFound(500, "UC not found."),
 		CredentialsExist(500, "Credentials exists."),
-		AddressesExist(500, "Addresses exists."), ;
+		AddressesExist(500, "Addresses exists."),
+		ServicesExist(500, "Addresses exists."), ;
 
 		private final int errorCode;
 		private final String errorDescription;
@@ -247,13 +254,21 @@ public class ZASImpl implements ZAS {
 
 		// and no addresses
 		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
+		sac.setDomainName(id.getDomainName());
 		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zoneApex, sac);
 		if (addresses.size() > 0) {
 			setError(ErrorCode.AddressesExist, response);
 			return response;
 		}
 
-		// TODO and no services
+		// and no services
+		ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
+		ssc.setDomainName(id.getDomainName());
+		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zoneApex, ssc);
+		if (services.size() > 0) {
+			setError(ErrorCode.ServicesExist, response);
+			return response;
+		}
 
 		getDomainService().delete(domain);
 		response.setSuccess(true);
@@ -600,8 +615,32 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyService")
 	public ModifyServiceResponse modifyService(
 			@WebParam(partName = "parameters", name = "modifyService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyService parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		ModifyServiceResponse response = new ModifyServiceResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+
+		// lookup existing service exists
+		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
+				.getDomain(), zoneApex);
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
+		if (existingService == null) {
+			setError(ErrorCode.ServiceNotFound, response);
+			return response;
+		}
+		existingService.setConcurrencyLimit(parameters.getConcurrencyLimit());
+
+		// update the existing service
+		serviceService.createOrUpdate(existingService);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -713,8 +752,31 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteService")
 	public DeleteServiceResponse deleteService(
 			@WebParam(partName = "parameters", name = "deleteService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteService parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteServiceResponse response = new DeleteServiceResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+
+		// lookup existing service exists
+		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
+				.getDomain(), zoneApex);
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
+		if (existingService == null) {
+			setError(ErrorCode.ServiceNotFound, response);
+			return response;
+		}
+
+		// delete the existing service
+		serviceService.delete(existingService);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -731,8 +793,39 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchService")
 	public SearchServiceResponse searchService(
 			@WebParam(partName = "parameters", name = "searchService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchService parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchServiceResponse response = new SearchServiceResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
+		if (zoneApex == null) {
+			return response;
+		}
+
+		ServiceSearchCriteria sc = new ServiceSearchCriteria(mapPage(parameters.getPage()));
+		if (authorizedUser.isTdmxDomainAdminCertificate()) {
+			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
+				// we fix the search to search only the DAC's domain.
+				parameters.getFilter().setDomain(authorizedUser.getCommonName());
+			}
+		}
+		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+				return response;
+			}
+			sc.setDomainName(parameters.getFilter().getDomain());
+		}
+		sc.setServiceName(parameters.getFilter().getServicename());
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex, sc);
+		for (org.tdmx.lib.zone.domain.Service s : services) {
+			response.getServicestates().add(mapService(s));
+		}
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
 	}
 
 	@Override
@@ -897,8 +990,37 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createService")
 	public CreateServiceResponse createService(
 			@WebParam(partName = "parameters", name = "createService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateService parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		CreateServiceResponse response = new CreateServiceResponse();
+
+		String zoneApex = checkDomainAuthorization(parameters.getService().getDomain(), response);
+		if (zoneApex == null) {
+			return response;
+		}
+
+		DomainID domainId = new DomainID(parameters.getService().getDomain(), zoneApex);
+		// check if the domain exists already
+		Domain domain = getDomainService().findById(domainId);
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
+
+		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
+				.getDomain(), zoneApex);
+		// check if the service exists already
+		org.tdmx.lib.zone.domain.Service service = getServiceService().findById(serviceId);
+		if (service != null) {
+			setError(ErrorCode.ServiceExists, response);
+			return response;
+		}
+
+		// create the service
+		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(serviceId);
+		s.setConcurrencyLimit(parameters.getConcurrencyLimit());
+
+		getServiceService().createOrUpdate(s);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -1136,6 +1258,17 @@ public class ZASImpl implements ZAS {
 		a.setDomain(address.getId().getDomainName());
 		a.setLocalname(address.getId().getLocalName());
 		return a;
+	}
+
+	private Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
+		Service s = new Service();
+		s.setDomain(service.getId().getDomainName());
+		s.setServicename(service.getId().getServiceName());
+
+		Servicestate ss = new Servicestate();
+		ss.setService(s);
+		ss.setConcurrencyLimit(service.getConcurrencyLimit());
+		return ss;
 	}
 
 	// -------------------------------------------------------------------------
