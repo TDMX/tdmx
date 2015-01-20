@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.core.system.lang.FileUtils;
@@ -141,14 +140,17 @@ public class CredentialUtilsTest {
 	}
 
 	@Test
-	@Ignore("java.security.cert.CertPathValidatorException: unrecognized critical extension(s)")
-	public void test_PKIXValidation_UC() throws Exception {
-		// TODO
+	public void test_PKIXValidation_DAC_UC() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
 		assertTrue(CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), uc.getPublicCert()));
+		assertTrue(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), dac.getPublicCert()));
+
+		assertFalse(CredentialUtils
+				.isValidUserCertificate(zac.getPublicCert(), uc.getPublicCert(), dac.getPublicCert()));
+		assertFalse(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), uc.getPublicCert()));
 	}
 
 	@Test

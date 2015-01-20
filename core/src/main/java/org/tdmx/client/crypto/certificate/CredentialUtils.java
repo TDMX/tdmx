@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -150,7 +151,7 @@ public class CredentialUtils {
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[] { snSubtree }, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, req.getZoneInfo());
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, req.getZoneInfo());
 
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -250,7 +251,7 @@ public class CredentialUtils {
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[] { snSubtree }, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, issuerPublicCert.getTdmxZoneInfo());
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, issuerPublicCert.getTdmxZoneInfo());
 
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -314,7 +315,7 @@ public class CredentialUtils {
 			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation | KeyUsage.keyEncipherment);
 			certBuilder.addExtension(Extension.keyUsage, false, ku);
 
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, true, issuerPublicCert.getTdmxZoneInfo());
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, issuerPublicCert.getTdmxZoneInfo());
 
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -331,11 +332,42 @@ public class CredentialUtils {
 		}
 	}
 
-	// TODO java.security.cert.CertPathValidatorException: unrecognized critical extension(s)
 	public static boolean isValidUserCertificate(PKIXCertificate zac, PKIXCertificate dac, PKIXCertificate uc)
 			throws CryptoCertificateException {
+
+		// check the TDMX zone info extension exists and the TDMX certs are correctly formed.
+		if (!zac.isTdmxZoneAdminCertificate() || !dac.isTdmxDomainAdminCertificate() || !uc.isTdmxUserCertificate()) {
+			return false;
+		}
+		// check that the zone info is identical in ZAC,DAC,UC
+		ASN1Primitive zi_zac = zac.getTdmxZoneInfo().toASN1Primitive();
+		ASN1Primitive zi_dac = dac.getTdmxZoneInfo().toASN1Primitive();
+		ASN1Primitive zi_uc = uc.getTdmxZoneInfo().toASN1Primitive();
+		if (!zi_zac.equals(zi_dac) || !zi_dac.equals(zi_uc)) {
+			return false;
+		}
+		// check the signing of the chain terminating in the trust root anchor of the zac
 		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
 		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { uc, dac };
+		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
+	}
+
+	public static boolean isValidDomainAdministratorCertificate(PKIXCertificate zac, PKIXCertificate dac)
+			throws CryptoCertificateException {
+
+		// check the TDMX zone info extension exists and the TDMX certs are correctly formed.
+		if (!zac.isTdmxZoneAdminCertificate() || !dac.isTdmxDomainAdminCertificate()) {
+			return false;
+		}
+		// check that the zone info is identical in ZAC,DAC,UC
+		ASN1Primitive zi_zac = zac.getTdmxZoneInfo().toASN1Primitive();
+		ASN1Primitive zi_dac = dac.getTdmxZoneInfo().toASN1Primitive();
+		if (!zi_zac.equals(zi_dac)) {
+			return false;
+		}
+		// check the signing of the chain terminating in the trust root anchor of the zac
+		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
+		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { dac };
 		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
 	}
 

@@ -76,7 +76,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = factory.createAgentCredential(zac.getCertificateChain());
+		AgentCredential zoneAC = factory.createAgentCredential(zoneApex, zac.getCertificateChain());
 		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
 		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
@@ -85,7 +85,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertEquals(AgentCredentialType.ZAC, zoneAC.getCredentialType());
 		service.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = factory.createAgentCredential(dac.getCertificateChain());
+		AgentCredential domainAC = factory.createAgentCredential(zoneApex, dac.getCertificateChain());
 		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
 		assertNotNull(domainAC.getId().getZoneApex());
@@ -93,7 +93,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertNull(domainAC.getAddressName());
 		service.createOrUpdate(domainAC);
 
-		AgentCredential userAC = factory.createAgentCredential(uc.getCertificateChain());
+		AgentCredential userAC = factory.createAgentCredential(zoneApex, uc.getCertificateChain());
 		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
 		assertEquals(zoneApex, userAC.getId().getZoneApex());

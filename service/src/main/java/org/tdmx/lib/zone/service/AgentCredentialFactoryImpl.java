@@ -22,6 +22,7 @@ package org.tdmx.lib.zone.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -49,7 +50,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public AgentCredential createAgentCredential(PKIXCertificate[] certificateChain) {
+	public AgentCredential createAgentCredential(String authorizedZoneApex, PKIXCertificate[] certificateChain) {
 		if (certificateChain == null || certificateChain.length <= 0) {
 			log.error("certificateChain missing");
 			return null;
@@ -60,6 +61,11 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 				log.error("Invalid AgentCredentialType.");
 				return null;
 			}
+			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+				// provided certificate doesn't match the authorized zone
+				log.error("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
+				return null;
+			}
 			return c;
 		} catch (CryptoCertificateException e) {
 			log.error("Unable to createAgentCredential.", e);
@@ -68,15 +74,24 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createDAC(byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createDAC(String authorizedZoneApex, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
 
 			PKIXCertificate zc = CertificateIOUtils.decodeX509(zacCert);
 
+			if (!CredentialUtils.isValidDomainAdministratorCertificate(zc, dc)) {
+				log.info("Invalid DAC PKIX CertificateChain.");
+				return null;
+			}
 			AgentCredential c = new AgentCredential(new PKIXCertificate[] { dc, zc });
 			if (c.getCredentialType() == null || AgentCredentialType.DAC != c.getCredentialType()) {
 				log.info("Invalid AgentCredentialType.");
+				return null;
+			}
+			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+				// provided certificate doesn't match the authorized zone
+				log.info("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
 				return null;
 			}
 			return c;
@@ -87,7 +102,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createUC(byte[] userCert, byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createUC(String authorizedZoneApex, byte[] userCert, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate uc = CertificateIOUtils.decodeX509(userCert);
 
@@ -95,9 +110,18 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 
 			PKIXCertificate zc = CertificateIOUtils.decodeX509(zacCert);
 
+			if (!CredentialUtils.isValidUserCertificate(zc, dc, uc)) {
+				log.info("Invalid User PKIX CertificateChain.");
+				return null;
+			}
 			AgentCredential c = new AgentCredential(new PKIXCertificate[] { uc, dc, zc });
 			if (c.getCredentialType() == null || AgentCredentialType.UC != c.getCredentialType()) {
 				log.info("Invalid AgentCredentialType.");
+				return null;
+			}
+			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+				// provided certificate doesn't match the authorized zone
+				log.info("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
 				return null;
 			}
 			return c;

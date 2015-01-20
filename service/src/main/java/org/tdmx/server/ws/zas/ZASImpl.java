@@ -323,9 +323,9 @@ public class ZASImpl implements ZAS {
 
 		if (parameters.getFilter().getUser() != null) {
 			// if a user credential is provided then it't not so much a search as a lookup
-			AgentCredential uc = credentialFactory.createUC(parameters.getFilter().getUser().getUsercertificate(),
-					parameters.getFilter().getUser().getDomaincertificate(), parameters.getFilter().getUser()
-							.getRootcertificate());
+			AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getFilter().getUser()
+					.getUsercertificate(), parameters.getFilter().getUser().getDomaincertificate(), parameters
+					.getFilter().getUser().getRootcertificate());
 			if (uc == null) {
 				setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
@@ -382,13 +382,13 @@ public class ZASImpl implements ZAS {
 
 		if (parameters.getFilter().getAdministrator() != null) {
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredential uc = credentialFactory.createDAC(parameters.getFilter().getAdministrator()
+			AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getFilter().getAdministrator()
 					.getDomaincertificate(), parameters.getFilter().getAdministrator().getRootcertificate());
-			if (uc == null) {
+			if (dac == null) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
-			AgentCredential c = credentialService.findById(uc.getId());
+			AgentCredential c = credentialService.findById(dac.getId());
 			if (c != null) {
 				response.getAdministratorstates().add(mapAdministratorstate(c));
 			}
@@ -432,8 +432,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
-				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
+				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -571,8 +571,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
-				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
+				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -703,8 +703,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -882,8 +882,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -941,8 +941,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(parameters.getUser().getUsercertificate(), parameters.getUser()
-				.getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
+				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -1039,8 +1039,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;

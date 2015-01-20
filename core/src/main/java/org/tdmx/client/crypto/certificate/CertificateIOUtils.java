@@ -248,6 +248,7 @@ public class CertificateIOUtils {
 			CertPath cp = cf.generateCertPath(mylist);
 
 			PKIXParameters params = new PKIXParameters(trustStore);
+			// TDMX certificates do not have a revocation CRL mechanism
 			params.setRevocationEnabled(false);
 			CertPathValidator cpv = CertPathValidator.getInstance(PKIXCERTIFICATE_PATHVALIDATOR_ALGORITHM);
 			cpv.validate(cp, params);
