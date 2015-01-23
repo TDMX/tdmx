@@ -35,6 +35,8 @@ import org.tdmx.core.api.v01.sp.mos.ws.MOS;
 @Ignore
 public class SoapClientFactoryTest {
 
+	// TODO test
+
 	@Before
 	public void setUp() throws Exception {
 	}

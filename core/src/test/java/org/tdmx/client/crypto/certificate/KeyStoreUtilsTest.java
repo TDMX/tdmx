@@ -54,6 +54,26 @@ public class KeyStoreUtilsTest {
 	}
 
 	@Test
+	public void storeCreateIncorrectClientKeystores() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		PKIXCredential wrongUC = new PKIXCredential(uc.getCertificateChain(), dac.getPrivateKey());
+		PKIXCredential wrongDAC = new PKIXCredential(dac.getCertificateChain(), zac.getPrivateKey());
+		PKIXCredential wrongZAC = new PKIXCredential(zac.getCertificateChain(), uc.getPrivateKey());
+
+		byte[] contents = KeyStoreUtils.saveKeyStore(wrongUC, "jks", "changeme", "client");
+		FileUtils.storeFileContents("wrong-uc.keystore", contents, ".tmp");
+
+		contents = KeyStoreUtils.saveKeyStore(wrongDAC, "jks", "changeme", "client");
+		FileUtils.storeFileContents("wrong-dac.keystore", contents, ".tmp");
+
+		contents = KeyStoreUtils.saveKeyStore(wrongZAC, "jks", "changeme", "client");
+		FileUtils.storeFileContents("wrong-zac.keystore", contents, ".tmp");
+	}
+
+	@Test
 	public void testLoadClientKeystore() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC(10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);

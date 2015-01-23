@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,10 +150,11 @@ public class SslProbeServiceTest {
 	}
 
 	@Test
+	@Ignore("until we have domain working again.")
 	public void test_SSL_pkixvalidationfailed() throws CryptoCertificateException {
 		ConnectionTestResult result = service.testConnection("serviceprovider.tdmx.org", 443);
 		assertNotNull(result);
-		assertEquals(TestStep.COMPLETE, result.getTestStep());
+		assertEquals(TestStep.COMPLETE, result.getTestStep()); // TODO localhost?
 		assertNotNull(result.getServerCertChain());
 		log.info(result.toString());
 	}
