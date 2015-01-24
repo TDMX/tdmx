@@ -20,13 +20,15 @@ package org.tdmx.server.ws.security;
 
 import java.io.IOException;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter
  * 
  */
-public class SessionRemovingHandler extends AbstractHandler {
+public class SessionProhibitionFilter implements Filter {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,7 +48,7 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionRemovingHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(SessionProhibitionFilter.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,14 +59,29 @@ public class SessionRemovingHandler extends AbstractHandler {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		// forcing any created session to invalidate
-		HttpSession session = request.getSession(false);
+	public void init(FilterConfig filterConfig) throws ServletException {
+		log.debug("init");
+	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+			ServletException {
+		log.debug("doFilter");
+
+		chain.doFilter(request, response);
+		log.debug("doFilter control");
+		HttpServletRequest req = (HttpServletRequest) request;
+
+		HttpSession session = req.getSession(false);
 		if (session != null) {
 			log.warn("Session created which should not have been " + session);
 			session.invalidate();
 		}
+	}
+
+	@Override
+	public void destroy() {
+		log.debug("destroy");
 	}
 
 	// -------------------------------------------------------------------------

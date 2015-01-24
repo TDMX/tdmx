@@ -30,6 +30,7 @@
 	</bean>
 	
 	<bean id="server.Container" class="org.tdmx.server.runtime.ServerContainer">
+		<property name="serverAddress" value="${container.serverAddress}" />
 		<property name="httpsPort" value="${container.httpsPort}" />
 		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
 		<property name="httpsProtocols" value="${container.httpsProtocols}"/>
@@ -38,6 +39,7 @@
 		<property name="keyStorePassword" value="${container.keyStorePassword}"/>
 		<property name="connectionIdleTimeoutSec" value="${container.connectionIdleTimeoutSec}"/>
 		
+		<property name="stopAddress" value="${container.stopAddress}" />
 		<property name="stopPort" value="${container.stopPort}" />
 		<property name="stopCommand" value="${container.stopCommand}" />
 

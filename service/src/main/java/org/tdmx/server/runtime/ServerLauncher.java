@@ -32,6 +32,9 @@ public class ServerLauncher {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
+	private ServerLauncher() {
+	}
+
 	public static void main(String[] args) {
 		String javaVersion = System.getProperty("java.version");
 
@@ -62,6 +65,4 @@ public class ServerLauncher {
 		sc.runUntilStopped();
 	}
 
-	private ServerLauncher() {
-	}
 }

@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Jetty handler which sets the Strict-Transport-Security to 90 days including subdomains.
+ * A Jetty handler which sets the Page NotFound error if it is reached.
  * 
  * @author Peter
  * 

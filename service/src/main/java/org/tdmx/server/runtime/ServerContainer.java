@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
@@ -57,7 +58,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.security.RequireClientCertificateFilter;
-import org.tdmx.server.ws.security.SessionRemovingHandler;
+import org.tdmx.server.ws.security.SessionProhibitionFilter;
 
 public class ServerContainer {
 
@@ -70,10 +71,11 @@ public class ServerContainer {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
-	private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
 
 	private Filter agentAuthorizationFilter;
+
+	private String serverAddress;
 
 	private int httpsPort;
 	private String[] httpsCiphers;
@@ -86,6 +88,7 @@ public class ServerContainer {
 
 	private int stopPort;
 	private String stopCommand;
+	private String stopAddress;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -98,7 +101,7 @@ public class ServerContainer {
 	public void runUntilStopped() {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
-		Server server = new Server();
+		Server server = new Server(new InetSocketAddress(getServerAddress(), getHttpsPort()));
 
 		// HTTP Configuration
 		// HttpConfiguration is a collection of configuration information appropriate for http and https. The default
@@ -119,7 +122,7 @@ public class ServerContainer {
 
 		// sslContextFactory.setCertAlias("server");
 		sslContextFactory.setRenegotiationAllowed(isRenegotiationAllowed());
-		// TODO change to NEED
+		// we don't NEED client auth if we want to co-host a Restfull API on this server.
 		sslContextFactory.setWantClientAuth(true);
 
 		sslContextFactory.setIncludeCipherSuites(getHttpsCiphers());
@@ -162,9 +165,8 @@ public class ServerContainer {
 		RequestLogHandler requestLogHandler = new RequestLogHandler();
 		HSTSHandler hstsHandler = new HSTSHandler();
 		NotFoundHandler notfoundHandler = new NotFoundHandler();
-		SessionRemovingHandler sessionHandler = new SessionRemovingHandler();
 
-		handlers.setHandlers(new Handler[] { hstsHandler, contexts, requestLogHandler, notfoundHandler, sessionHandler });
+		handlers.setHandlers(new Handler[] { hstsHandler, contexts, requestLogHandler, notfoundHandler });
 
 		StatisticsHandler stats = new StatisticsHandler();
 		stats.setHandler(handlers);
@@ -188,6 +190,10 @@ public class ServerContainer {
 		context.setInitParameter("contextConfigLocation", "classpath:/empty-context.xml");
 
 		// Add filters
+		FilterHolder sf = new FilterHolder();
+		sf.setFilter(new SessionProhibitionFilter());
+		context.addFilter(sf, "/*", EnumSet.allOf(DispatcherType.class));
+
 		FilterHolder cf = new FilterHolder();
 		cf.setFilter(new RequireClientCertificateFilter());
 		context.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
@@ -211,7 +217,7 @@ public class ServerContainer {
 			// Start the server
 			server.start();
 
-			Thread monitor = new MonitorThread(server, getStopPort(), getStopCommand());
+			Thread monitor = new MonitorThread(server, getStopPort(), getStopCommand(), getStopAddress());
 			monitor.start();
 
 			// Wait for the server to be stopped by the MonitorThread.
@@ -247,12 +253,12 @@ public class ServerContainer {
 		private final Server server;
 		private final String stopCommand;
 
-		public MonitorThread(Server s, int port, String stopCommand) throws IOException {
+		public MonitorThread(Server s, int port, String stopCommand, String localAddr) throws IOException {
 			setDaemon(true);
 			setName("ServerContainer#StopMonitor");
 			this.stopCommand = stopCommand;
 			this.server = s;
-			this.socket = new ServerSocket(port, 1, InetAddress.getByName(LOCAL_IP_ADDRESS));
+			this.socket = new ServerSocket(port, 1, InetAddress.getByName(localAddr));
 		}
 
 		@Override
@@ -390,6 +396,22 @@ public class ServerContainer {
 
 	public void setAgentAuthorizationFilter(Filter agentAuthorizationFilter) {
 		this.agentAuthorizationFilter = agentAuthorizationFilter;
+	}
+
+	public String getServerAddress() {
+		return serverAddress;
+	}
+
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
+	}
+
+	public String getStopAddress() {
+		return stopAddress;
+	}
+
+	public void setStopAddress(String stopAddress) {
+		this.stopAddress = stopAddress;
 	}
 
 }
