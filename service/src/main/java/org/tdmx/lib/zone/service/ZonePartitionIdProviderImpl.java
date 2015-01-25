@@ -22,10 +22,11 @@ package org.tdmx.lib.zone.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.datasource.PartitionIdProvider;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
 
 /**
- * Transactional CRUD Services for AgentCredential Entity.
+ * The PartitionIdProvider for the Zone-DB
  * 
  * @author Peter Klauser
  * 
@@ -43,6 +44,10 @@ public class ZonePartitionIdProviderImpl implements PartitionIdProvider {
 
 	private AuthenticatedAgentService authenticatedAgentService;
 
+	// if a thread stipulates the partition explicitly then this is taken overriding the
+	// authenticated
+	private ThreadLocalPartitionIdProvider threadLocalProvider;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -52,10 +57,14 @@ public class ZonePartitionIdProviderImpl implements PartitionIdProvider {
 	// -------------------------------------------------------------------------
 	@Override
 	public String getPartitionId() {
-		if (getAuthenticatedAgentService() != null) {
-			return getAuthenticatedAgentService().getZoneDbPartitionId();
+		String partitionId = null;
+		if (getThreadLocalProvider() != null) {
+			partitionId = getThreadLocalProvider().getPartitionId();
 		}
-		return null;
+		if (partitionId == null && getAuthenticatedAgentService() != null) {
+			partitionId = getAuthenticatedAgentService().getZoneDbPartitionId();
+		}
+		return partitionId;
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,4 +87,11 @@ public class ZonePartitionIdProviderImpl implements PartitionIdProvider {
 		this.authenticatedAgentService = authenticatedAgentService;
 	}
 
+	public ThreadLocalPartitionIdProvider getThreadLocalProvider() {
+		return threadLocalProvider;
+	}
+
+	public void setThreadLocalProvider(ThreadLocalPartitionIdProvider threadLocalProvider) {
+		this.threadLocalProvider = threadLocalProvider;
+	}
 }

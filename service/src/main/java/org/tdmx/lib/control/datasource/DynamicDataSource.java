@@ -35,10 +35,6 @@ import org.apache.commons.logging.LogFactory;
  * Manages a pooled DataSource per PartitionId. The PartitionId is shared with the DynamicDataSource via ThreadLocal
  * storage since the javax.sql.DataSource does not foresee passing in context.
  * 
- * TODO configure 2 dbs for 2 partitions
- * 
- * TODO unit test with hsql config
- * 
  * @author Peter
  * 
  */
@@ -92,6 +88,7 @@ public class DynamicDataSource implements javax.sql.DataSource {
 			log.info("Partition defaulting to " + VALIDATION_PARTITION_ID);
 			partitionId = VALIDATION_PARTITION_ID;
 		}
+		// must be fast. Caching at the DatabasePartitionServiceRepositoryImpl supports this.
 		DatabaseConnectionInfo ci = getConfigurationProvider().getPartitionInfo(partitionId);
 		if (ci == null) {
 			log.warn("No DatabaseConnectionInfo provided for partitionId " + partitionId);

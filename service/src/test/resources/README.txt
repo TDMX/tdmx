@@ -1,4 +1,93 @@
+setup AccountZone in control-db
+
+insert into Account(accountId) values('A1');
+
+insert into AccountZone(zoneApex, accountId,segment,status,zonePartitionId)
+  values ('zone.root' , 'A1', 'SEG-NORMAL', 'ACTIVE', 'P-001');
+
+
+insert into DatabasePartition (
+        partitionId, activationTimestamp, dbType, deactivationTimestamp, obfuscatedPassword,
+        segment, sizeFactor, url, username )
+ values (
+       'P-001', now(), 'ZONE', null, 'dev',
+       'SEG-NORMAL', 100, 'jdbc:mysql://localhost:3306/zone-001?autoReconnect=true', 'dev' );  
+
+insert into DatabasePartition (
+        partitionId, activationTimestamp, dbType, deactivationTimestamp, obfuscatedPassword,
+        segment, sizeFactor, url, username )
+ values (
+       'P-002', now(), 'ZONE', null, 'dev',
+       'SEG-NORMAL', 100, 'jdbc:mysql://localhost:3306/zone-002?autoReconnect=true', 'dev' );  
+
+Apply to zonedb to remove control tables:
+drop table account;
+drop table accountzone;
+drop table consoleuser;
+drop table databasepartition;
+
+insert into Zone ( zoneApex ) values ('zone.root');
+
+insert into AgentCredential ( sha1fingerprint, zoneApex,credentialStatus, credentialType, certificateChainPem )
+values ( 'a9f1f7919c9b4046e2a8a57ba034c6ce3afe8a3d', 'zone.root', 'ACTIVE', 'ZAC', '-----BEGIN CERTIFICATE-----
+MIIEcjCCA1ygAwIBAgIBATALBgkqhkiG9w0BAQswfjELMAkGA1UEBhMCQ0gxDDAK
+BgNVBAcMA1p1ZzESMBAGA1UECgwJbXljb21wYW55MQswCQYDVQQLDAJJVDEcMBoG
+CSqGSIb3DQEJARYNcGprQGdtYWlsLmNvbTETMBEGA1UEFBMKMDQxNzEwMDAwMDEN
+MAsGA1UEAwwEbmFtZTAeFw0xNTAxMjAyMTIzMjJaFw0yNTAxMjAyMTIzMjJaMH4x
+CzAJBgNVBAYTAkNIMQwwCgYDVQQHDANadWcxEjAQBgNVBAoMCW15Y29tcGFueTEL
+MAkGA1UECwwCSVQxHDAaBgkqhkiG9w0BCQEWDXBqa0BnbWFpbC5jb20xEzARBgNV
+BBQTCjA0MTcxMDAwMDAxDTALBgNVBAMMBG5hbWUwggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQCYH6JpseN43SYTJtzClEyQvFokkiPw3moF33hOY3vpQctE
+oBwxlsiDYd9udl/qCU61AtmpNVruel7ptBU/DQLmdtCri2HDU2Qf0Q9PwjKKCaqK
+wwY2aQ4BKGH4/mucNH3p+Tka0N2AFSETpqNRif8JbiwLeSNeX9PCkDhT8BwId11j
+K/dgyEjzTvsBsO2aq9cmrZMgGD+ldyXF7yAZ4iB+Wc4AHvhviDDW8P1k288HHxB8
+XT+JVYwiiVXOlrX+FKmDbg/4KsWFtHfMXJEUz0Nb5XyEGtWMrPGaqli5WPBxI8ou
+mTv1I4VZeYN2ynTFqKOEBzaVlDfQfPu6rW/xy12nAgMBAAGjgf4wgfswEgYDVR0T
+AQH/BAgwBgEB/wIBATAfBgNVHSMEGDAWgBS6Qhs6zqeqxowKLnMoLrh1V2xSzjAd
+BgNVHQ4EFgQUukIbOs6nqsaMCi5zKC64dVdsUs4wCwYDVR0PBAQDAgKEMGYGA1Ud
+HgEB/wRcMFqgWDBWpFQwUjELMAkGA1UEBhMCQ0gxDDAKBgNVBAcMA1p1ZzESMBAG
+A1UECgwJbXljb21wYW55MQswCQYDVQQLDAJJVDEUMBIGA1UECwwLdGRteC1kb21h
+aW4wMAYIKgMEBQYHCAkEJDAiAgEBFgl6b25lLnJvb3QWEmh0dHBzOi8vbXJzVXJs
+L2FwaTALBgkqhkiG9w0BAQsDggEBAE+2V6clObEzlUhpp5R9Od2McySjLIlnfSjS
+sdhB+IbjGG/mmztyWPNk0j90B28SvfHKsSiKwkfuh2o412PnzNqCKqxoHpvTSMLV
+tMOko+6EfGRHNQXHuKtcWs7ab893ouyc6j2udR1EZh10w5PJd0NdS1aLEEWhR1X5
+3PDazxPDpe+DN3cyR/PSMW/fwz4ipqDKg+gcsiPsDJiUoGO6EqmakoEgCmNi2/Os
+FQybTMQLFbQLDl0NPgpPiRZFeccSxUeY/l9T5vlz5PuT9Ba7i1YwM0kW8vulhIkR
+AiczVGNDFLDACSSc07dx8o61OLOJ7uAsla3siPGlIfoJT7BT+00=
+-----END CERTIFICATE-----'   );
+
+
+
 uc/dac/zac.keystore created by KeyStoreUtilsTest#storeCreateClientKeystores
+logge out using ClientAdapterFactoryIntegrationTest#test_LogZAC
+
+19:26:42.977 [main] WARN  o.t.server.runtime.ServerContainer - zac-sha1: a9f1f7919c9b4046e2a8a57ba034c6ce3afe8a3d
+19:26:42.983 [main] WARN  o.t.server.runtime.ServerContainer - -----BEGIN CERTIFICATE-----
+MIIEcjCCA1ygAwIBAgIBATALBgkqhkiG9w0BAQswfjELMAkGA1UEBhMCQ0gxDDAK
+BgNVBAcMA1p1ZzESMBAGA1UECgwJbXljb21wYW55MQswCQYDVQQLDAJJVDEcMBoG
+CSqGSIb3DQEJARYNcGprQGdtYWlsLmNvbTETMBEGA1UEFBMKMDQxNzEwMDAwMDEN
+MAsGA1UEAwwEbmFtZTAeFw0xNTAxMjAyMTIzMjJaFw0yNTAxMjAyMTIzMjJaMH4x
+CzAJBgNVBAYTAkNIMQwwCgYDVQQHDANadWcxEjAQBgNVBAoMCW15Y29tcGFueTEL
+MAkGA1UECwwCSVQxHDAaBgkqhkiG9w0BCQEWDXBqa0BnbWFpbC5jb20xEzARBgNV
+BBQTCjA0MTcxMDAwMDAxDTALBgNVBAMMBG5hbWUwggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQCYH6JpseN43SYTJtzClEyQvFokkiPw3moF33hOY3vpQctE
+oBwxlsiDYd9udl/qCU61AtmpNVruel7ptBU/DQLmdtCri2HDU2Qf0Q9PwjKKCaqK
+wwY2aQ4BKGH4/mucNH3p+Tka0N2AFSETpqNRif8JbiwLeSNeX9PCkDhT8BwId11j
+K/dgyEjzTvsBsO2aq9cmrZMgGD+ldyXF7yAZ4iB+Wc4AHvhviDDW8P1k288HHxB8
+XT+JVYwiiVXOlrX+FKmDbg/4KsWFtHfMXJEUz0Nb5XyEGtWMrPGaqli5WPBxI8ou
+mTv1I4VZeYN2ynTFqKOEBzaVlDfQfPu6rW/xy12nAgMBAAGjgf4wgfswEgYDVR0T
+AQH/BAgwBgEB/wIBATAfBgNVHSMEGDAWgBS6Qhs6zqeqxowKLnMoLrh1V2xSzjAd
+BgNVHQ4EFgQUukIbOs6nqsaMCi5zKC64dVdsUs4wCwYDVR0PBAQDAgKEMGYGA1Ud
+HgEB/wRcMFqgWDBWpFQwUjELMAkGA1UEBhMCQ0gxDDAKBgNVBAcMA1p1ZzESMBAG
+A1UECgwJbXljb21wYW55MQswCQYDVQQLDAJJVDEUMBIGA1UECwwLdGRteC1kb21h
+aW4wMAYIKgMEBQYHCAkEJDAiAgEBFgl6b25lLnJvb3QWEmh0dHBzOi8vbXJzVXJs
+L2FwaTALBgkqhkiG9w0BAQsDggEBAE+2V6clObEzlUhpp5R9Od2McySjLIlnfSjS
+sdhB+IbjGG/mmztyWPNk0j90B28SvfHKsSiKwkfuh2o412PnzNqCKqxoHpvTSMLV
+tMOko+6EfGRHNQXHuKtcWs7ab893ouyc6j2udR1EZh10w5PJd0NdS1aLEEWhR1X5
+3PDazxPDpe+DN3cyR/PSMW/fwz4ipqDKg+gcsiPsDJiUoGO6EqmakoEgCmNi2/Os
+FQybTMQLFbQLDl0NPgpPiRZFeccSxUeY/l9T5vlz5PuT9Ba7i1YwM0kW8vulhIkR
+AiczVGNDFLDACSSc07dx8o61OLOJ7uAsla3siPGlIfoJT7BT+00=
+-----END CERTIFICATE-----
 
 
 

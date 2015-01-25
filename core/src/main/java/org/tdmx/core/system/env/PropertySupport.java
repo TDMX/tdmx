@@ -45,7 +45,7 @@ public class PropertySupport {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(PropertySupport.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertySupport.class);
 
 	private static PropertySupport instance;
 
@@ -67,7 +67,7 @@ public class PropertySupport {
 		return getInstance().getProperties().getProperty(key);
 	}
 
-	public static final synchronized PropertySupport getInstance() throws RuntimeException {
+	public static final synchronized PropertySupport getInstance() {
 		if (instance == null) {
 			instance = new PropertySupport();
 			instance.load(null);
@@ -75,7 +75,7 @@ public class PropertySupport {
 		return instance;
 	}
 
-	public static final synchronized PropertySupport getInstance(String filename) throws RuntimeException {
+	public static final synchronized PropertySupport getInstance(String filename) {
 		if (instance == null) {
 			instance = new PropertySupport();
 			instance.load(filename);
@@ -90,7 +90,7 @@ public class PropertySupport {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private void load(String filename) throws RuntimeException {
+	private void load(String filename) {
 		Properties props = new Properties();
 
 		if (filename == null) {

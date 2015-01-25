@@ -25,10 +25,13 @@ package org.tdmx.lib.control.datasource;
  */
 public class DatabaseConnectionInfo {
 
-	private String username;
-	private String password;
-	private String url;
-	private String driverClassname;
+	private final String username;
+	private final String password;
+	private final String url;
+	private final String driverClassname;
+
+	// TODO extend to other properties of org.apache.commons.dbcp.BasicDataSource
+	// like maxSize etc.
 
 	public DatabaseConnectionInfo(String username, String password, String url, String driverClassname) {
 		if (username == null) {

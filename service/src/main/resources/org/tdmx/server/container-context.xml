@@ -27,6 +27,7 @@
 		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository" />
 		<property name="agentCredentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 	</bean>
 	
 	<bean id="server.Container" class="org.tdmx.server.runtime.ServerContainer">

@@ -41,6 +41,13 @@ import org.tdmx.lib.control.domain.DatabaseType;
  */
 public class DatabasePartitionServiceRepositoryImpl implements DatabasePartitionService {
 
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionServiceRepositoryImpl.class);
 
 	private DatabasePartitionDao databasePartitionDao;
@@ -51,6 +58,13 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	private Map<String, DatabasePartition> dpidMap = null;
 	private long cacheLoadTimestamp = 0;
 
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(DatabasePartition partition) {
@@ -74,30 +88,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 			getDatabasePartitionDao().merge(partition);
 		}
 		clearCache();
-	}
-
-	/**
-	 * @throws IllegalStateException
-	 *             if try to change immutable fields.
-	 */
-	private void assertSame(String field, Object target, Object actual) {
-		if (target != null) {
-			if (!target.equals(actual)) {
-				throw new IllegalStateException("Field " + field + " is immutable, and cannot be changed or removed.");
-			}
-		} else if (actual != null) {
-			throw new IllegalStateException("Field " + field + " is immutable, and cannot be set.");
-		}
-	}
-
-	/**
-	 * @throws IllegalStateException
-	 *             if try to change immutable fields.
-	 */
-	private void assertSame(String field, int target, int actual) {
-		if (target != actual) {
-			throw new IllegalStateException("Field " + field + " is immutable, and cannot be changed.");
-		}
 	}
 
 	@Override
@@ -146,15 +136,21 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 			Map<String, List<DatabasePartition>> segmentMap = dptsMap.get(type);
 			if (segmentMap != null) {
 				Collection<List<DatabasePartition>> segmentList = segmentMap.values();
-				if (segmentList != null) {
-					for (List<DatabasePartition> list : segmentList) {
-						result.addAll(list);
-					}
+				for (List<DatabasePartition> list : segmentList) {
+					result.addAll(list);
 				}
 			}
 		}
 		return Collections.unmodifiableList(result);
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
 
 	private synchronized void clearCache() {
 		cacheLoadTimestamp = 0;
@@ -193,6 +189,34 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		dpidMap = Collections.unmodifiableMap(localIdMap);
 		dptsMap = Collections.unmodifiableMap(localTypeSegmentMap);
 	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if try to change immutable fields.
+	 */
+	private void assertSame(String field, Object target, Object actual) {
+		if (target != null) {
+			if (!target.equals(actual)) {
+				throw new IllegalStateException("Field is immutable, and cannot be changed or removed." + field);
+			}
+		} else if (actual != null) {
+			throw new IllegalStateException("Field is immutable, and cannot be set." + field);
+		}
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if try to change immutable fields.
+	 */
+	private void assertSame(String field, int target, int actual) {
+		if (target != actual) {
+			throw new IllegalStateException("Field is immutable, and cannot be changed. " + field);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public DatabasePartitionDao getDatabasePartitionDao() {
 		return databasePartitionDao;

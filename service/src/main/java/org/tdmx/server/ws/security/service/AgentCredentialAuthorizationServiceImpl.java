@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -54,6 +55,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 	private AgentCredentialService agentCredentialService;
 	private AgentCredentialFactory agentCredentialFactory;
 	private AccountZoneService accountZoneService;
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -62,7 +64,8 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	// TODO caching
+
+	// TODO #25 implement caching ehCache?
 
 	@Override
 	public AuthorizationResult isAuthorized(X509Certificate[] certChain) {
@@ -89,7 +92,14 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 
 		String fingerprint = cert.getFingerprint();
 		AgentCredentialID id = new AgentCredentialID(zoneApex, fingerprint);
-		AgentCredential agentCredential = getAgentCredentialService().findById(id);
+
+		AgentCredential agentCredential = null;
+		try {
+			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+			agentCredential = getAgentCredentialService().findById(id);
+		} finally {
+			getZonePartitionIdProvider().clearPartitionId();
+		}
 		if (agentCredential == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_AGENT);
 		}
@@ -145,4 +155,13 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 	public void setAgentCredentialFactory(AgentCredentialFactory agentCredentialFactory) {
 		this.agentCredentialFactory = agentCredentialFactory;
 	}
+
+	public ThreadLocalPartitionIdProvider getZonePartitionIdProvider() {
+		return zonePartitionIdProvider;
+	}
+
+	public void setZonePartitionIdProvider(ThreadLocalPartitionIdProvider zonePartitionIdProvider) {
+		this.zonePartitionIdProvider = zonePartitionIdProvider;
+	}
+
 }

@@ -14,8 +14,12 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 
+	<bean id="tdmx.lib.zone.ThreadLocalPartitionIdProvider" class="org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProviderImpl">
+	</bean>
+	
 	<bean id="jdbc.zonedb.PartitionIdProvider" class="org.tdmx.lib.zone.service.ZonePartitionIdProviderImpl">
 		<property name="authenticatedAgentService" ref="server.authenticatedAgentService"/>
+		<property name="threadLocalProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 	</bean>
 	
 	<bean id="jdbc.zonedb.DatabaseConfigurationProvider" class="org.tdmx.lib.control.datasource.DatabasePartitionConfigurationProvider">
