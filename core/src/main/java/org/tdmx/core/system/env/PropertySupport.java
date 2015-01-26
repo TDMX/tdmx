@@ -122,10 +122,9 @@ public class PropertySupport {
 
 					log.info("Property " + entry.getKey() + "=" + value);
 
-					if (value.startsWith(ENCRYPTED_TAG)) {
+					if (ObfuscationSupport.isObfuscated(value)) {
 						log.info("Decrypting encrypted Property " + entry.getKey());
-						value = ObfuscationSupport.getInstance().getEncrypter()
-								.decrypt(value.substring(ENCRYPTED_TAG.length()));
+						value = ObfuscationSupport.deobfuscate(value);
 					}
 					entry.setValue(value);
 				}

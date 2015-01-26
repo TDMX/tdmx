@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a static encryption utility.
+ * Creates a value obfuscation utility.
  */
 public class ObfuscationSupport {
 
@@ -31,34 +31,59 @@ public class ObfuscationSupport {
 	// -------------------------------------------------------------------------
 
 	public static final String CONFIGURATION_PASSPHRASE_PROPERTY = "org.tdmx.core.system.env.obfuscation.passphrase";
-	public static final String STANDARD_PASSPHRASE = "Man this obfuscated stuff is just hiding in plain sight!";
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static Logger log = LoggerFactory.getLogger(ObfuscationSupport.class);
 
+	private static final String STANDARD_PASSPHRASE = "Man this obfuscated stuff is just hiding in plain sight!";
+	private static final String ENCRYPTED_TAG = "OBF:";
+
 	private static ObfuscationSupport instance;
 
-	private StringEncrypter encrypter;
-
-	public StringEncrypter getEncrypter() {
-		return encrypter;
-	}
-
-	public static final String ENCRYPTED_TAG = "!!!ENCRYPTED!!!";
+	private final StringEncrypter encrypter;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	private ObfuscationSupport() {
+	private ObfuscationSupport(StringEncrypter e) {
+		encrypter = e;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public static final synchronized ObfuscationSupport getInstance() throws RuntimeException {
+	public static boolean isObfuscated(String text) {
+		if (text != null) {
+			return text.startsWith(ENCRYPTED_TAG);
+		}
+		return false;
+	}
+
+	public static String deobfuscate(String text) {
+		if (isObfuscated(text)) {
+			return getInstance().getEncrypter().decrypt(text.substring(ENCRYPTED_TAG.length()));
+		}
+		return text;
+	}
+
+	public static String obfuscate(String text) {
+		if (!isObfuscated(text)) {
+			return ENCRYPTED_TAG + getInstance().getEncrypter().encrypt(text);
+		}
+		return text;
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	private static final synchronized ObfuscationSupport getInstance() throws RuntimeException {
 		if (instance == null) {
 			String passphrase = EnvironmentSupport.getProperty(CONFIGURATION_PASSPHRASE_PROPERTY);
 			if (passphrase == null) {
@@ -75,19 +100,11 @@ public class ObfuscationSupport {
 	}
 
 	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------
-	// PRIVATE METHODS
-	// -------------------------------------------------------------------------
-
-	private ObfuscationSupport(StringEncrypter e) {
-		encrypter = e;
-	}
-
-	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public StringEncrypter getEncrypter() {
+		return encrypter;
+	}
 
 }

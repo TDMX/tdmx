@@ -18,28 +18,25 @@
  */
 package org.tdmx.core.system.env;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EncryptDecryptUtil {
+public class ObfuscationSupportUnitTest {
+	private final Logger log = LoggerFactory.getLogger(ObfuscationSupportUnitTest.class);
 
-	private static Logger log = LoggerFactory.getLogger(EncryptDecryptUtil.class);
+	protected String clearText = "This is a simple string which will be encrypted into some other string - silly";
+	protected String obfuscatedText = "OBF:f3/AHJLmZ3SRoSs/T9L1RZMSW7pmW+Qw6dTz2R9q4+u/9CJHl3Mr9SKELbH4weM6gLnMd9Sxr9e521GO1saekVDOxR8zfes7mb6xesrkIy8=";
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		if (args.length != 1) {
-			log.warn("Missing argument.");
-			return;
-		}
-
-		String arg = args[0];
-
-		String decryptedValue = ObfuscationSupport.deobfuscate(arg);
-		log.info("clearText=>" + decryptedValue);
-		String encryptedValue = ObfuscationSupport.obfuscate(arg);
-		log.info("obfuscatedText=>" + encryptedValue);
+	@Test
+	public void testObfuscate() {
+		assertEquals(obfuscatedText, ObfuscationSupport.obfuscate(clearText));
 	}
 
+	@Test
+	public void testDefuscate() {
+		assertEquals(clearText, ObfuscationSupport.deobfuscate(obfuscatedText));
+	}
 }

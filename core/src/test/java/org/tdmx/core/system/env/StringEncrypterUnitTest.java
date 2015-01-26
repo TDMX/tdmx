@@ -18,8 +18,11 @@
  */
 package org.tdmx.core.system.env;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Damien Miller
  * @version 0.2
  */
-public class StringEncrypterUnitTest extends TestCase {
+public class StringEncrypterUnitTest {
 	private final Logger log = LoggerFactory.getLogger(StringEncrypterUnitTest.class);
 
 	protected String clearText = "This is a simple string which will be encrypted into some other string - silly";
@@ -40,6 +43,7 @@ public class StringEncrypterUnitTest extends TestCase {
 	/**
 	 * Test method for 'BCrypt.hashpw(String, String)'
 	 */
+	@Test
 	public void testEncrypt() {
 
 		log.debug("+----------------------------------------+");
@@ -66,6 +70,7 @@ public class StringEncrypterUnitTest extends TestCase {
 		assertEquals(secretString, desDecrypted);
 	}
 
+	@Test
 	public void testDecrypt() throws Exception {
 		assertEquals("secret", devEncrypter.decrypt("sKU8zbk9jHc=="));
 		assertNull(devEncrypter.decrypt("sKU8zabk9jHc=")); // corrupted "secret"
@@ -74,6 +79,7 @@ public class StringEncrypterUnitTest extends TestCase {
 	/**
 	 * The idea of this test is to verify the re-initialization of the cipher after an Exception has been thrown
 	 */
+	@Test
 	public void testReInitCipher() {
 		StringEncrypter enc = new StringEncrypter("n8chtwAy");
 
