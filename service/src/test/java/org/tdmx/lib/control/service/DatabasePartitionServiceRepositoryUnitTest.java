@@ -165,7 +165,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		assertNotNull(zp1.getSegment());
 		assertNotNull(zp1.getUrl());
 		assertNotNull(zp1.getUsername());
-		assertNotNull(zp1.getObfuscatedPassword());
+		assertNotNull(zp1.getPassword());
 		assertEquals(100, zp1.getSizeFactor());
 		assertNotNull(zp1.getActivationTimestamp());
 		assertNull(zp1.getDeactivationTimestamp());
@@ -184,7 +184,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		zp1.setDeactivationTimestamp(new Date());
 		zp1.setUrl("new.url");
 		zp1.setUsername("new.username");
-		zp1.setObfuscatedPassword("new.pwd");
+		zp1.setPassword("new.pwd");
 
 		assertNotNull(zp1);
 		service.createOrUpdate(zp1);
@@ -197,7 +197,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		assertEquals(zp1.getSegment(), zp2.getSegment());
 		assertEquals(zp1.getUrl(), zp2.getUrl());
 		assertEquals(zp1.getUsername(), zp2.getUsername());
-		assertEquals(zp1.getObfuscatedPassword(), zp2.getObfuscatedPassword());
+		assertEquals(zp1.getPassword(), zp2.getPassword());
 		assertEquals(zp1.getSizeFactor(), zp2.getSizeFactor());
 		assertEquals(zp1.getActivationTimestamp(), zp2.getActivationTimestamp());
 		assertEquals(zp1.getDeactivationTimestamp(), zp2.getDeactivationTimestamp());

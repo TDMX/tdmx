@@ -37,7 +37,7 @@ public class DatabasePartitionFacade {
 		p.setSizeFactor(100);
 		p.setUrl("db.url-" + id);
 		p.setUsername("username-" + id);
-		p.setObfuscatedPassword("OBF" + id); // TODO
+		p.setPassword("pwd-" + id);
 
 		p.setActivationTimestamp(new Date()); // currently active
 		p.setDeactivationTimestamp(null);

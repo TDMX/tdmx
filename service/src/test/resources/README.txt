@@ -10,14 +10,14 @@ insert into DatabasePartition (
         partitionId, activationTimestamp, dbType, deactivationTimestamp, obfuscatedPassword,
         segment, sizeFactor, url, username )
  values (
-       'P-001', now(), 'ZONE', null, 'dev',
+       'P-001', now(), 'ZONE', null, 'OBF:wjHIGo8fjQg=',
        'SEG-NORMAL', 100, 'jdbc:mysql://localhost:3306/zone-001?autoReconnect=true', 'dev' );  
 
 insert into DatabasePartition (
         partitionId, activationTimestamp, dbType, deactivationTimestamp, obfuscatedPassword,
         segment, sizeFactor, url, username )
  values (
-       'P-002', now(), 'ZONE', null, 'dev',
+       'P-002', now(), 'ZONE', null, 'OBF:wjHIGo8fjQg=',
        'SEG-NORMAL', 100, 'jdbc:mysql://localhost:3306/zone-002?autoReconnect=true', 'dev' );  
 
 Apply to zonedb to remove control tables:

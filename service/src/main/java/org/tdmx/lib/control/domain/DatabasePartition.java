@@ -27,6 +27,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.tdmx.core.system.env.ObfuscationSupport;
 
 /**
  * A DatabasePartition.
@@ -61,8 +64,14 @@ public class DatabasePartition implements Serializable {
 
 	@Column(length = MAX_USERNAME_LEN, nullable = false)
 	private String username;
+
 	@Column(length = MAX_PASSWORD_LEN, nullable = false)
+	/**
+	 * use {@link #setPassword()} and {@link #getPassword()} 
+	 */
 	private String obfuscatedPassword;
+	@Transient
+	private String password;
 
 	@Column(nullable = false)
 	private int sizeFactor; // immutable
@@ -70,6 +79,18 @@ public class DatabasePartition implements Serializable {
 	private Date activationTimestamp; // immutable
 	@Column
 	private Date deactivationTimestamp; // immutable
+
+	public String getPassword() {
+		if (password == null) {
+			password = ObfuscationSupport.deobfuscate(getObfuscatedPassword());
+		}
+		return password;
+	}
+
+	public void setPassword(String text) {
+		password = text;
+		setObfuscatedPassword(ObfuscationSupport.obfuscate(text));
+	}
 
 	public String getPartitionId() {
 		return partitionId;
@@ -111,11 +132,11 @@ public class DatabasePartition implements Serializable {
 		this.username = username;
 	}
 
-	public String getObfuscatedPassword() {
+	private String getObfuscatedPassword() {
 		return obfuscatedPassword;
 	}
 
-	public void setObfuscatedPassword(String obfuscatedPassword) {
+	private void setObfuscatedPassword(String obfuscatedPassword) {
 		this.obfuscatedPassword = obfuscatedPassword;
 	}
 

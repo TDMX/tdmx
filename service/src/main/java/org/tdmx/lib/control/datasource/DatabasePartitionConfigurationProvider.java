@@ -62,7 +62,7 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 		}
 
 		DatabaseConnectionInfo result = new DatabaseConnectionInfo(partitionInfo.getUsername(),
-				partitionInfo.getObfuscatedPassword(), partitionInfo.getUrl(), getDriverClassname());
+				partitionInfo.getPassword(), partitionInfo.getUrl(), getDriverClassname());
 		return result;
 	}
 
