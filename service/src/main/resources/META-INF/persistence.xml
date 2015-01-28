@@ -13,15 +13,16 @@
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
 		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
+		<class>org.tdmx.lib.control.domain.ControlJobEntry</class>
 	</persistence-unit>
 
 	<persistence-unit name="ZoneDB" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>org.tdmx.lib.zone.domain.Zone</class>
+		<class>org.tdmx.lib.zone.domain.AgentCredential</class>
 		<class>org.tdmx.lib.zone.domain.Domain</class>
 		<class>org.tdmx.lib.zone.domain.Address</class>
 		<class>org.tdmx.lib.zone.domain.Service</class>
-		<class>org.tdmx.lib.zone.domain.AgentCredential</class>
 	</persistence-unit>
 
 </persistence>

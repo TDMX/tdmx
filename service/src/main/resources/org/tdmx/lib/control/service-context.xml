@@ -81,4 +81,16 @@
 			ref="tdmx.lib.control.dao.DatabasePartitionDao" />
 	</bean>
 
+
+	<bean id="tdmx.lib.control.dao.ControlJobEntryDao"
+		class="org.tdmx.lib.control.dao.ControlJobEntryDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.control.ControlJobEntryRepository"
+		class="org.tdmx.lib.control.service.ControlJobEntryServiceRepositoryImpl">
+		<property name="controlJobDao"
+			ref="tdmx.lib.control.dao.ControlJobEntryDao" />
+	</bean>
+
+
 </beans>

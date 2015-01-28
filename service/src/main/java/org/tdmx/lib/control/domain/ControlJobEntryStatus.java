@@ -18,33 +18,12 @@
  */
 package org.tdmx.lib.control.domain;
 
-/**
- * The AccountZoneStatus represents the state of a Zone as defined by the Account. The Account is free to toggle the
- * AccountZone's status at any time. The AccountZoneStatus applies to all Agents of the Zone.
- * 
- * The AccountZoneStatus is not specified by the TDMX specification. How it is changed is defined by the
- * ServiceProvider.
- * 
- * @author Peter
- * 
- */
-public enum AccountZoneStatus {
+public enum ControlJobEntryStatus {
 
-	/**
-	 * The AccountZone is active so that Agents associated with the Zone may interact with the ServiceProvider.
-	 */
-	ACTIVE,
+	NEW,
+	RUN,
+	OK,
+	ERR, ;
 
-	/**
-	 * The AccountZone is closed for maintenance so that Agents associated with the Zone may not interact with the
-	 * ServiceProvider. //TODO zone transfer job
-	 */
-	MAINTENANCE,
-
-	/**
-	 * The AccountZone is blocked so that Agents associated with the Zone may not interact with the ServiceProvider.
-	 */
-	BLOCKED, ;
-
-	public static final int MAX_ACCOUNTZONESTATUS_LEN = 16;
+	public static final int MAX_JOBSTATUS_LEN = 4;
 }
