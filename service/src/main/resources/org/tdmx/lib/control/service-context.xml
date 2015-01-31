@@ -93,4 +93,36 @@
 	</bean>
 
 
+	<!-- JOBS -->
+	<bean id="tdmx.lib.control.task.ZoneTransferJobConverter"
+		class="org.tdmx.lib.control.job.ZoneTransferJobConverterImpl">
+	</bean>
+	<bean id="tdmx.lib.control.task.ZoneTransferJobExecutor"
+		class="org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.task.ZACInstallationJobConverter"
+		class="org.tdmx.lib.control.job.ZACInstallationJobConverterImpl">
+	</bean>
+	<bean id="tdmx.lib.control.task.ZACInstallationJobExecutor"
+		class="org.tdmx.lib.control.job.ZACInstallationJobExecutorImpl">
+	</bean>
+
+	<!-- JOB EXECUTOR -->
+	<bean id="tdmx.lib.control.task.JobExecutionService"
+		class="org.tdmx.lib.control.job.JobExecutionServiceImpl" init-method="init">
+		<property name="jobConverterList">
+			<list value-type="org.tdmx.lib.control.job.JobConverter">
+	            <ref bean="tdmx.lib.control.task.ZoneTransferJobConverter"/>
+	            <ref bean="tdmx.lib.control.task.ZACInstallationJobConverter"/>
+	        </list>
+        </property>
+		<property name="jobExecutorList">
+			<list value-type="org.tdmx.lib.control.job.JobExecutor">
+	            <ref bean="tdmx.lib.control.task.ZoneTransferJobExecutor"/>
+	            <ref bean="tdmx.lib.control.task.ZACInstallationJobExecutor"/>
+	        </list>
+        </property>
+	</bean>
+
 </beans>

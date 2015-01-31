@@ -16,16 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.control.job;
 
-public enum ControlJobEntryStatus {
+public interface JobExecutor<E> {
 
-	NEW,
-	RUN,
-	OK,
-	ERR,
-	DEL, // may be cleaned up
-	;
+	/**
+	 * Get the type of Job which is supported by this executor.
+	 * 
+	 * @return
+	 */
+	public String getType();
 
-	public static final int MAX_JOBSTATUS_LEN = 4;
+	/**
+	 * Execute the command.
+	 * 
+	 * @param entry
+	 */
+	public void execute(E command);
+
 }

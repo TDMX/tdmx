@@ -16,16 +16,32 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.control.job;
 
-public enum ControlJobEntryStatus {
+import javax.xml.bind.JAXBException;
 
-	NEW,
-	RUN,
-	OK,
-	ERR,
-	DEL, // may be cleaned up
-	;
+import org.tdmx.lib.common.domain.Job;
 
-	public static final int MAX_JOBSTATUS_LEN = 4;
+public interface JobConverter<E> {
+
+	/**
+	 * Get the type of Job which is supported by this converter.
+	 * 
+	 * @return
+	 */
+	public String getType();
+
+	/**
+	 * Unmarshal the Job data.
+	 * 
+	 * @param job
+	 */
+	public E getData(Job job) throws JAXBException;
+
+	/**
+	 * Marshal the specific job data into the Job
+	 * 
+	 * @return
+	 */
+	public void setData(Job job, E jobData) throws JAXBException;
 }

@@ -23,7 +23,7 @@ import org.tdmx.lib.control.domain.ControlJobEntry;
 
 public class ControlJobEntryFacade {
 
-	public static ControlJobEntry createJob(Job job) {
+	public static ControlJobEntry createImmediateJob(Job job) {
 		ControlJobEntry j = new ControlJobEntry();
 		j.setJob(job);
 		return j;

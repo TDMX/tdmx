@@ -37,6 +37,9 @@ import org.tdmx.lib.console.domain.ControlJobEntryFacade;
 import org.tdmx.lib.control.domain.ControlJobEntry;
 import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
 import org.tdmx.lib.control.domain.ControlJobEntryStatus;
+import org.tdmx.lib.control.job.JobConverter;
+import org.tdmx.service.control.task.dao.ZoneTransferCommand;
+import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -45,16 +48,26 @@ import org.tdmx.lib.control.domain.ControlJobEntryStatus;
 public class ControlJobEntryServiceRepositoryUnitTest {
 
 	@Autowired
+	private JobConverter<ZoneTransferTask> cmdConverter;
+
+	@Autowired
 	private ControlJobEntryService service;
 
 	private String jobId;
 
 	@Before
 	public void doSetup() throws Exception {
+		ZoneTransferCommand cmd = new ZoneTransferCommand();
+		cmd.setPassword("pwd");
+		cmd.setUsername("un");
+		ZoneTransferTask task = new ZoneTransferTask();
+		task.setCommand(cmd);
+
 		Job j = new Job();
-		j.setType("type");
-		j.setCommand("mycommand");
-		ControlJobEntry je = ControlJobEntryFacade.createJob(j);
+		j.setType(cmdConverter.getType());
+		cmdConverter.setData(j, task);
+
+		ControlJobEntry je = ControlJobEntryFacade.createImmediateJob(j);
 		jobId = je.getJobId();
 
 		service.createOrUpdate(je);

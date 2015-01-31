@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
+<xs:schema xmlns="urn:dao.task.control.service.tdmx.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:dao.task.control.service.tdmx.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation>TDMX storage schema for control tasks</xs:documentation>
+	</xs:annotation>
+	<xs:simpleType name="caseinsensitivetext">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="text">
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:element name="exception" type="ZoneTransferTask"/>
+	<xs:complexType name="ExceptionType">
+		<xs:annotation>
+			<xs:documentation>Represents an Exception with a stack trace.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="type" type="xs:string"/>
+			<xs:element name="message" type="xs:string"/>
+			<xs:element name="stack" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           ZONE TRANSFER  JOB -->
+	<!-- ********************************************* -->
+	<xs:element name="zonetransfer" type="ZoneTransferTask"/>
+	<xs:complexType name="ZoneTransferTask">
+		<xs:annotation>
+			<xs:documentation>Task Container</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="command" type="ZoneTransferCommand"/>
+			<xs:element name="result" type="ZoneTransferResult" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZoneTransferCommand">
+		<xs:annotation>
+			<xs:documentation>Task Command Object</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="username" type="text"/>
+			<xs:element name="password" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZoneTransferResult">
+		<xs:annotation>
+			<xs:documentation>Task Result Object</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="username" type="text"/>
+			<xs:element name="password" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           ZAC INSTALLATION  JOB -->
+	<!-- ********************************************* -->
+	<xs:element name="zacinstallation" type="ZoneTransferTask"/>
+	<xs:complexType name="ZacInstallationTask">
+		<xs:annotation>
+			<xs:documentation>Task Container</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="command" type="ZacInstallationCommand"/>
+			<xs:element name="result" type="ZacInstallationResult" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZacInstallationCommand">
+		<xs:annotation>
+			<xs:documentation>Task Command Object</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="username" type="text"/>
+			<xs:element name="password" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZacInstallationResult">
+		<xs:annotation>
+			<xs:documentation>Task Result Object</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="username" type="text"/>
+			<xs:element name="password" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

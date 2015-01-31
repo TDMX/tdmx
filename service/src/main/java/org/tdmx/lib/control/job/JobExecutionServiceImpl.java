@@ -16,69 +16,85 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.common.domain;
 
-import java.io.Serializable;
-import java.util.Date;
+package org.tdmx.lib.control.job;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * An Job describes some asynchronously executed task.
+ * 
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class Job implements Serializable {
+public class JobExecutionServiceImpl implements Runnable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_TYPE_LEN = 128;
-
-	public static final int MAX_DATA_LEN = 16000;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final Logger log = LoggerFactory.getLogger(JobExecutionServiceImpl.class);
 
-	@Column(length = MAX_TYPE_LEN, nullable = false)
-	private String type;
+	private List<JobConverter<?>> jobConverterList;
 
-	@Column
-	private Date startTimestamp;
+	private List<JobExecutor<?>> jobExecutorList;
 
-	@Column
-	private Date endTimestamp;
+	/**
+	 * Delay in seconds.
+	 */
+	private int fixedDelay = 5;
 
-	@Column(length = MAX_DATA_LEN, nullable = false)
-	private byte[] data;
-
-	@Column(length = MAX_DATA_LEN)
-	private byte[] exception;
+	// internal //
+	private final Map<String, JobExecutor<?>> jobExecutorMap = new HashMap<>();
+	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
+	private ScheduledExecutorService scheduledThreadPool = null;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Job() {
-
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public void init() {
+		if (jobConverterList != null) {
+			for (JobConverter<?> c : jobConverterList) {
+				jobConverterMap.put(c.getType(), c);
+			}
+		}
+		if (jobExecutorList != null) {
+			for (JobExecutor<?> e : jobExecutorList) {
+				jobExecutorMap.put(e.getType(), e);
+			}
+		}
+
+		scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
+		scheduledThreadPool.scheduleWithFixedDelay(this, getFixedDelay(), getFixedDelay(), TimeUnit.SECONDS);
+	}
+
 	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Job [type=");
-		builder.append(type);
-		builder.append("]");
-		return builder.toString();
+	public void run() {
+		log.info("run start.");
+		// TODO
+		try {
+			Thread.sleep(10000l);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		log.info("run finish.");
 	}
 
 	// -------------------------------------------------------------------------
@@ -93,44 +109,28 @@ public class Job implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getType() {
-		return type;
+	public List<JobConverter<?>> getJobConverterList() {
+		return jobConverterList;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setJobConverterList(List<JobConverter<?>> jobConverterList) {
+		this.jobConverterList = jobConverterList;
 	}
 
-	public byte[] getData() {
-		return data;
+	public List<JobExecutor<?>> getJobExecutorList() {
+		return jobExecutorList;
 	}
 
-	public void setData(byte[] data) {
-		this.data = data;
+	public void setJobExecutorList(List<JobExecutor<?>> jobExecutorList) {
+		this.jobExecutorList = jobExecutorList;
 	}
 
-	public Date getStartTimestamp() {
-		return startTimestamp;
+	public int getFixedDelay() {
+		return fixedDelay;
 	}
 
-	public void setStartTimestamp(Date startTimestamp) {
-		this.startTimestamp = startTimestamp;
-	}
-
-	public Date getEndTimestamp() {
-		return endTimestamp;
-	}
-
-	public void setEndTimestamp(Date endTimestamp) {
-		this.endTimestamp = endTimestamp;
-	}
-
-	public byte[] getException() {
-		return exception;
-	}
-
-	public void setException(byte[] exception) {
-		this.exception = exception;
+	public void setFixedDelay(int fixedDelay) {
+		this.fixedDelay = fixedDelay;
 	}
 
 }

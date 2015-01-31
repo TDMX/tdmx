@@ -16,16 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.common.domain;
 
-public enum ControlJobEntryStatus {
+public enum JobResultStatus {
 
-	NEW,
-	RUN,
 	OK,
-	ERR,
-	DEL, // may be cleaned up
-	;
+	EXC, ;
 
-	public static final int MAX_JOBSTATUS_LEN = 4;
+	public static final int MAX_JOBRESULTSTATUS_LEN = 3;
 }
