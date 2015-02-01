@@ -93,6 +93,17 @@
 	</bean>
 
 
+	<bean id="tdmx.lib.control.dao.LockDao"
+		class="org.tdmx.lib.control.dao.LockDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.control.LockRepository"
+		class="org.tdmx.lib.control.service.LockServiceRepositoryImpl">
+		<property name="lockDao"
+			ref="tdmx.lib.control.dao.LockDao" />
+	</bean>
+
+
 	<!-- JOBS -->
 	<bean id="tdmx.lib.control.task.ZoneTransferJobConverter"
 		class="org.tdmx.lib.control.job.ZoneTransferJobConverterImpl">
