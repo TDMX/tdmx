@@ -16,27 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-
 package org.tdmx.lib.control.job;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * 
- * NOTE: each JobExecution.run method is called without a DB-Transaction.
- * 
- * @author Peter Klauser
- * 
- */
-public class JobExecutionServiceImpl implements Runnable {
+public class NamedThreadFactory implements ThreadFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -45,59 +30,33 @@ public class JobExecutionServiceImpl implements Runnable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(JobExecutionServiceImpl.class);
-
-	private List<JobConverter<?>> jobConverterList;
-
-	private List<JobExecutor<?>> jobExecutorList;
-
-	/**
-	 * Delay in seconds.
-	 */
-	private int fixedDelay = 5;
-
-	// internal //
-	private final Map<String, JobExecutor<?>> jobExecutorMap = new HashMap<>();
-	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
-	private ScheduledExecutorService scheduledThreadPool = null;
+	private final ThreadGroup group;
+	private final AtomicInteger threadNumber = new AtomicInteger(1);
+	private final String namePrefix;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public NamedThreadFactory(String name) {
+		SecurityManager s = System.getSecurityManager();
+		group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+		namePrefix = name;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void init() {
-		if (jobConverterList != null) {
-			for (JobConverter<?> c : jobConverterList) {
-				jobConverterMap.put(c.getType(), c);
-			}
-		}
-		if (jobExecutorList != null) {
-			for (JobExecutor<?> e : jobExecutorList) {
-				jobExecutorMap.put(e.getType(), e);
-			}
-		}
-
-		scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("JobExecutionService"));
-		scheduledThreadPool.scheduleWithFixedDelay(this, getFixedDelay(), getFixedDelay(), TimeUnit.SECONDS);
-	}
-
 	@Override
-	public void run() {
-		log.info("run start.");
-		// TODO
-		try {
-			Thread.sleep(10000l);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		log.info("run finish.");
+	public Thread newThread(Runnable r) {
+		Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+		if (t.isDaemon())
+			t.setDaemon(false);
+		if (t.getPriority() != Thread.NORM_PRIORITY)
+			t.setPriority(Thread.NORM_PRIORITY);
+		return t;
 	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -109,29 +68,5 @@ public class JobExecutionServiceImpl implements Runnable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public List<JobConverter<?>> getJobConverterList() {
-		return jobConverterList;
-	}
-
-	public void setJobConverterList(List<JobConverter<?>> jobConverterList) {
-		this.jobConverterList = jobConverterList;
-	}
-
-	public List<JobExecutor<?>> getJobExecutorList() {
-		return jobExecutorList;
-	}
-
-	public void setJobExecutorList(List<JobExecutor<?>> jobExecutorList) {
-		this.jobExecutorList = jobExecutorList;
-	}
-
-	public int getFixedDelay() {
-		return fixedDelay;
-	}
-
-	public void setFixedDelay(int fixedDelay) {
-		this.fixedDelay = fixedDelay;
-	}
 
 }
