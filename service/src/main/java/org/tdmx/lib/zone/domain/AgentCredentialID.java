@@ -36,7 +36,6 @@ public class AgentCredentialID implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 255;
 	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
 
 	// -------------------------------------------------------------------------

@@ -16,27 +16,50 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.control.domain;
 
-import org.tdmx.service.control.task.dao.ZacInstallationResult;
-import org.tdmx.service.control.task.dao.ZacInstallationStatus;
-import org.tdmx.service.control.task.dao.ZacInstallationTask;
+import java.io.Serializable;
+import java.util.Objects;
 
-public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallationTask> {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+/**
+ * A AccountZoneAdministrationCredentialID is the primary key of the AccountZoneAdministrationCredential in the
+ * Control-DB.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+@Embeddable
+public class AccountZoneAdministrationCredentialID implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final long serialVersionUID = -128859602084626282L;
+
+	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
+	private String accountId;
+
+	@Column(length = MAX_SHA1FINGERPRINT_LEN, nullable = false)
+	private String sha1fingerprint;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ZACInstallationJobExecutorImpl() {
+	public AccountZoneAdministrationCredentialID() {
+	}
+
+	public AccountZoneAdministrationCredentialID(String accountId, String sha1fingerprint) {
+		this.accountId = accountId;
+		this.sha1fingerprint = sha1fingerprint;
 	}
 
 	// -------------------------------------------------------------------------
@@ -44,17 +67,30 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getType() {
-		return ZacInstallationTask.class.getName();
+	public int hashCode() {
+		return Objects.hash(accountId, sha1fingerprint);
 	}
 
 	@Override
-	public void execute(ZacInstallationTask task) {
-		ZacInstallationResult r = new ZacInstallationResult();
-		// TODO
-		r.setMessage("ok");
-		r.setStatus(ZacInstallationStatus.OK);
-		task.setResult(r);
+	public boolean equals(Object obj) {
+		if (obj instanceof AccountZoneAdministrationCredentialID) {
+			AccountZoneAdministrationCredentialID other = (AccountZoneAdministrationCredentialID) obj;
+			return Objects.equals(accountId, other.getAccountId())
+					&& Objects.equals(sha1fingerprint, other.getSha1fingerprint());
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AgentCredentialID [accountId=");
+		builder.append(accountId);
+		builder.append(", sha1fingerprint=");
+		builder.append(sha1fingerprint);
+		builder.append("]");
+		return builder.toString();
 	}
 
 	// -------------------------------------------------------------------------
@@ -68,5 +104,21 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getSha1fingerprint() {
+		return sha1fingerprint;
+	}
+
+	public void setSha1fingerprint(String sha1fingerprint) {
+		this.sha1fingerprint = sha1fingerprint;
+	}
 
 }

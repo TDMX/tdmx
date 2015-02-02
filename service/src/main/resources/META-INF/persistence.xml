@@ -12,6 +12,7 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
+		<class>org.tdmx.lib.control.domain.AccountZoneAdministrationCredential</class>
 		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
 		<class>org.tdmx.lib.control.domain.ControlJobEntry</class>
 		<class>org.tdmx.lib.control.domain.Lock</class>

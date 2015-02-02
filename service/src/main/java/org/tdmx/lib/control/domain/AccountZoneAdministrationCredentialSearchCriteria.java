@@ -16,13 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.control.domain;
 
-import org.tdmx.service.control.task.dao.ZacInstallationResult;
-import org.tdmx.service.control.task.dao.ZacInstallationStatus;
-import org.tdmx.service.control.task.dao.ZacInstallationTask;
+import org.tdmx.lib.common.domain.PageSpecifier;
 
-public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallationTask> {
+/**
+ * The SearchCriteria for an AccountZoneAdministrationCredential.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class AccountZoneAdministrationCredentialSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -32,30 +36,25 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	private final PageSpecifier pageSpecifier;
+
+	private String accountId;
+
+	private AccountZoneAdministrationCredentialStatus status;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public ZACInstallationJobExecutorImpl() {
+	public AccountZoneAdministrationCredentialSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public String getType() {
-		return ZacInstallationTask.class.getName();
-	}
-
-	@Override
-	public void execute(ZacInstallationTask task) {
-		ZacInstallationResult r = new ZacInstallationResult();
-		// TODO
-		r.setMessage("ok");
-		r.setStatus(ZacInstallationStatus.OK);
-		task.setResult(r);
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -68,5 +67,24 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
+	}
+
+	public AccountZoneAdministrationCredentialStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AccountZoneAdministrationCredentialStatus status) {
+		this.status = status;
+	}
+
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
 
 }

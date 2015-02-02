@@ -186,6 +186,11 @@ public class PKIXCertificate {
 		return certificate;
 	}
 
+	/**
+	 * Get the SHA1 fingerprint of this certificate.
+	 * 
+	 * @return the SHA1 fingerprint of this certificate.
+	 */
 	public String getFingerprint() {
 		return fingerprint;
 	}

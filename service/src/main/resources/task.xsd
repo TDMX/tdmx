@@ -58,7 +58,7 @@
 	<xs:element name="zacinstallation" type="ZoneTransferTask"/>
 	<xs:complexType name="ZacInstallationTask">
 		<xs:annotation>
-			<xs:documentation>Task Container</xs:documentation>
+			<xs:documentation>ZAC installation checks the DNS trust of the certificate and if this is ok, the it allows the ZAC to be installed in the correct Zone-DB partition.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="command" type="ZacInstallationCommand"/>
@@ -70,8 +70,8 @@
 			<xs:documentation>Task Command Object</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="username" type="text"/>
-			<xs:element name="password" type="text"/>
+			<xs:element name="accountId" type="text"/>
+			<xs:element name="sha1fingerprint" type="text"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ZacInstallationResult">
@@ -79,8 +79,15 @@
 			<xs:documentation>Task Result Object</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="username" type="text"/>
-			<xs:element name="password" type="text"/>
+			<xs:element name="status" type="ZacInstallationStatus"/>
+			<xs:element name="message" type="text" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:simpleType name="ZacInstallationStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="OK"/>
+			<xs:enumeration value="DNS_NOT_TRUSTED"/>
+			<xs:enumeration value="SYSTEM_ERROR"/>
+		</xs:restriction>
+	</xs:simpleType>
 </xs:schema>

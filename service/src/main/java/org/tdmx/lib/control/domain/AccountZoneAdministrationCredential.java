@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,8 +42,8 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
  * 
  */
 @Entity
-@Table(name = "AgentCredential")
-public class AgentCredential implements Serializable {
+@Table(name = "AccountZoneAdministrationCredential")
+public class AccountZoneAdministrationCredential implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -56,24 +57,17 @@ public class AgentCredential implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	private AgentCredentialID id;
+	private AccountZoneAdministrationCredentialID id;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = AgentCredentialType.MAX_CREDENTIALTYPE_LEN, nullable = false)
-	private AgentCredentialType credentialType;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = AgentCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
-	private AgentCredentialStatus credentialStatus;
+	@Column(length = AccountZoneAdministrationCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
+	private AccountZoneAdministrationCredentialStatus credentialStatus;
 
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
 
-	@Column(length = DomainID.MAX_NAME_LEN)
-	private String domainName; // set when DAC or UC, null if ZAC
-
-	@Column(length = AddressID.MAX_NAME_LEN)
-	private String addressName; // set when UC, null if ZAC or DAC
+	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
+	private String zoneApex;
 
 	@Transient
 	private PKIXCertificate[] certificateChain;
@@ -82,28 +76,39 @@ public class AgentCredential implements Serializable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public AgentCredential() {
+	public AccountZoneAdministrationCredential() {
 	}
 
-	public AgentCredential(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
-		setCertificateChain(certificateChain);
-		PKIXCertificate publicKey = getPublicKey();
+	public AccountZoneAdministrationCredential(AccountZoneAdministrationCredentialID id) {
+		this.id = id;
+	}
 
-		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
-				publicKey.getFingerprint());
-		setId(id);
+	public AccountZoneAdministrationCredential(String accountId, String pem) throws CryptoCertificateException {
+		setCertificateChainPem(pem);
 
-		if (publicKey.isTdmxZoneAdminCertificate()) {
-			setCredentialType(AgentCredentialType.ZAC);
-		} else if (publicKey.isTdmxDomainAdminCertificate()) {
-			setCredentialType(AgentCredentialType.DAC);
-			setDomainName(publicKey.getCommonName());
-		} else if (publicKey.isTdmxUserCertificate()) {
-			setCredentialType(AgentCredentialType.UC);
-			setAddressName(publicKey.getCommonName());
+		PKIXCertificate[] certificateChain = CertificateIOUtils.safePemToX509certs(pem);
+		if (certificateChain != null) {
+			setCertificateChain(certificateChain);
 
-			PKIXCertificate issuerKey = getIssuerPublicKey();
-			setDomainName(issuerKey.getCommonName());
+			PKIXCertificate publicKey = getPublicKey();
+
+			AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId,
+					publicKey.getFingerprint());
+			setId(id);
+			// an invalid cert might be missing the ZI
+			if (publicKey.getTdmxZoneInfo() != null) {
+				setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+				setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING);
+			} else {
+				setZoneApex(null);
+				setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_TDMX);
+			}
+		} else {
+			AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId, UUID
+					.randomUUID().toString());
+			setId(id);
+			setZoneApex(null);
+			setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_PEM);
 		}
 
 	}
@@ -160,34 +165,33 @@ public class AgentCredential implements Serializable {
 
 	private void setCertificateChain(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
 		this.certificateChain = certificateChain;
-		setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AgentCredentialID getId() {
+	public AccountZoneAdministrationCredentialID getId() {
 		return id;
 	}
 
-	private void setId(AgentCredentialID id) {
+	private void setId(AccountZoneAdministrationCredentialID id) {
 		this.id = id;
 	}
 
-	public AgentCredentialType getCredentialType() {
-		return credentialType;
+	public String getZoneApex() {
+		return zoneApex;
 	}
 
-	private void setCredentialType(AgentCredentialType credentialType) {
-		this.credentialType = credentialType;
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
-	public AgentCredentialStatus getCredentialStatus() {
+	public AccountZoneAdministrationCredentialStatus getCredentialStatus() {
 		return credentialStatus;
 	}
 
-	public void setCredentialStatus(AgentCredentialStatus credentialStatus) {
+	public void setCredentialStatus(AccountZoneAdministrationCredentialStatus credentialStatus) {
 		this.credentialStatus = credentialStatus;
 	}
 
@@ -197,22 +201,6 @@ public class AgentCredential implements Serializable {
 
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChainPem = certificateChainPem;
-	}
-
-	public String getDomainName() {
-		return domainName;
-	}
-
-	private void setDomainName(String domainName) {
-		this.domainName = domainName;
-	}
-
-	public String getAddressName() {
-		return addressName;
-	}
-
-	private void setAddressName(String addressName) {
-		this.addressName = addressName;
 	}
 
 }
