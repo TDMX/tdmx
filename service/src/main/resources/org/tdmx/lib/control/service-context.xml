@@ -59,6 +59,17 @@
 	</bean>
 
 
+	<bean id="tdmx.lib.control.dao.AccountDao"
+		class="org.tdmx.lib.control.dao.AccountDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.AccountRepository"
+		class="org.tdmx.lib.control.service.AccountServiceRepositoryImpl">
+		<property name="accountDao"
+			ref="tdmx.lib.control.dao.AccountDao" />
+	</bean>
+
+
 	<bean id="tdmx.lib.control.dao.AccountZoneDao"
 		class="org.tdmx.lib.control.dao.AccountZoneDaoImpl">
 	</bean>
