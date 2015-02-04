@@ -40,9 +40,6 @@ public class AccountServiceRepositoryUnitTest {
 	@Autowired
 	private AccountService service;
 
-	// @Autowired
-	// private AuthorizedAgentDao dao;
-
 	private String accountId;
 
 	@Before

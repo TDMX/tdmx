@@ -98,6 +98,8 @@ public class ServerContainer {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	// TODO give back
+
 	public void runUntilStopped() {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
@@ -179,30 +181,29 @@ public class ServerContainer {
 		requestLog.setRetainDays(7);
 		requestLogHandler.setRequestLog(requestLog);
 
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SECURITY
+		ServletContextHandler wsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
 				| ServletContextHandler.NO_SESSIONS);
-		contexts.addHandler(context);
-		context.setContextPath("/api");
+		wsContext.setContextPath("/api");
 		// Setup Spring context
-		context.addEventListener(new org.springframework.web.context.ContextLoaderListener());
-		context.setInitParameter("parentContextKey", "applicationContext");
-		context.setInitParameter("locatorFactorySelector", "classpath*:beanRefContext.xml");
-		context.setInitParameter("contextConfigLocation", "classpath:/empty-context.xml");
+		wsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
+		wsContext.setInitParameter("parentContextKey", "applicationContext");
+		wsContext.setInitParameter("locatorFactorySelector", "classpath*:beanRefContext.xml");
+		wsContext.setInitParameter("contextConfigLocation", "classpath:/ws-context.xml");
 
 		// Add filters
 		FilterHolder sf = new FilterHolder();
 		sf.setFilter(new SessionProhibitionFilter());
-		context.addFilter(sf, "/*", EnumSet.allOf(DispatcherType.class));
+		wsContext.addFilter(sf, "/*", EnumSet.allOf(DispatcherType.class));
 
 		FilterHolder cf = new FilterHolder();
 		cf.setFilter(new RequireClientCertificateFilter());
-		context.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
+		wsContext.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
 
 		FilterHolder fh = new FilterHolder();
 		fh.setFilter(getAgentAuthorizationFilter());
-		context.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
-		context.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
-		context.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
+		wsContext.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
+		wsContext.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
+		wsContext.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
 		// the MRS endpoint is not filtered by any authorization filter because
 		// each ServiceProvider is automatically "authorized" but only to operate
 		// sending data which is signed to be relevant to that service provider, so service
@@ -211,8 +212,29 @@ public class ServerContainer {
 		// Add servlets
 		ServletHolder sh = new ServletHolder(CXFServlet.class);
 		sh.setInitOrder(1);
-		context.addServlet(sh, "/*");
+		wsContext.addServlet(sh, "/*");
 
+		ServletContextHandler rsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
+				| ServletContextHandler.SESSIONS);
+		rsContext.setContextPath("/rs");
+		// Setup Spring context
+		rsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
+		rsContext.setInitParameter("parentContextKey", "applicationContext");
+		rsContext.setInitParameter("locatorFactorySelector", "classpath*:beanRefContext.xml");
+		rsContext.setInitParameter("contextConfigLocation", "classpath:/rs-context.xml");
+
+		// Add filters
+		/*
+		 * FilterHolder rsfh = new FilterHolder(); rsfh.setFilter(getAgentAuthorizationFilter());
+		 * rsContext.addFilter(rsfh, "/sas/*", EnumSet.of(DispatcherType.REQUEST));
+		 */
+		// Add servlets
+		ServletHolder rsSh = new ServletHolder(CXFServlet.class);
+		rsSh.setInitOrder(1);
+		rsContext.addServlet(rsSh, "/*");
+
+		contexts.addHandler(wsContext);
+		contexts.addHandler(rsContext);
 		try {
 			// Start the server
 			server.start();

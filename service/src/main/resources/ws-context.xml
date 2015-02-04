@@ -12,23 +12,35 @@
 		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
 		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+		
+		
+
+	<jaxws:endpoint id="mdsEndpoint_V01" implementor="#ws.MDS" address="/v1.0/sp/mds">
 	
-	<!-- JAX-WS server configuration goes here! -->
+	</jaxws:endpoint>
+
+
+
 
 	
-
-	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" >
-		<property name="agentService" ref="server.authenticatedAgentService"/>
-		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
-		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
-		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
-		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-	</bean>
-
-	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSImpl" />
-
-	<bean id="ws.MOS" class="org.tdmx.server.ws.mos.MOSImpl" />
-	<bean id="ws.MDS" class="org.tdmx.server.ws.mds.MDSImpl" />
+	<jaxws:endpoint id="mosEndpoint_V01" implementor="#ws.MOS" address="/v1.0/sp/mos">
 	
+	</jaxws:endpoint>
+
+
+
+
+
+	<jaxws:endpoint id="mrsEndpoint_V01" implementor="#ws.MRS" address="/v1.0/sp/mrs">
+	
+	</jaxws:endpoint>
+
+
+
+
+
+	<jaxws:endpoint id="zasEndpoint_V01" implementor="#ws.ZAS" address="/v1.0/sp/zas">
+	
+	</jaxws:endpoint>
+
 </beans>

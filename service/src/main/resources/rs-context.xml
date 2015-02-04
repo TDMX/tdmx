@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+
+	<util:map id="propertiesMap">
+		<entry key="jaxb.formatted.output">
+			<value type="java.lang.Boolean">true</value>
+		</entry>
+	</util:map>
+
+	<util:map id="jaxbElementClassMap">
+		<entry key="org.tdmx.service.control.rs.sas" value="AccountResource" />
+	</util:map> 
+	<!-- 
+	<util:map id="collectionWrapperMap">
+		<entry key="plugon.poc.domain.Location" value="Locations" />
+	</util:map> 
+	 -->
+	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
+		<property name="marshallerProperties" ref="propertiesMap" />
+		<property name="jaxbElementClassMap" ref="jaxbElementClassMap"/>
+		<!-- 
+		<property name="collectionWrapperMap" ref="collectionWrapperMap"/>
+		 -->
+	</bean>
+
+	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
+		<property name="jaxbElementClassMap" ref="jaxbElementClassMap"/>
+		<!-- 
+		<property name="collectionWrapperMap" ref="collectionWrapperMap"/>
+		 -->
+ 		   <property name="dropRootElement" value="true"/>
+           <property name="dropCollectionWrapperElement" value="true"/>
+           <property name="serializeAsArray" value="true"/>
+           <property name="supportUnwrapped" value="true"/>		 
+	</bean>
+	
+	<jaxrs:server id="services" address="/sp">
+		<jaxrs:serviceBeans>
+			<ref bean="rs.SAS" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jsonProvider" />
+			<ref bean="jaxbProvider" />
+			<!-- 
+			<bean class="plugon.poc.jaxrs.SecurityExceptionMapper" />
+			 -->
+		</jaxrs:providers>
+		<jaxrs:extensionMappings>
+			<entry key="json" value="application/json" />
+			<entry key="xml" value="application/xml" />
+		</jaxrs:extensionMappings>
+		<jaxrs:features>
+			<cxf:logging />
+		</jaxrs:features>
+	</jaxrs:server>
+
+	
+
+
+</beans>
