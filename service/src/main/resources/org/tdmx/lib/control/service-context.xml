@@ -136,6 +136,14 @@
 	</bean>
 
 
+	<!-- NON TRANSACTIONAL / HIGHER SERVICES -->
+
+	<bean id="tdmx.lib.control.ObjectIdService"
+		class="org.tdmx.lib.control.service.ObjectIdServiceImpl" init-method="init">
+		<property name="maxValueService"
+			ref="tdmx.lib.control.MaxValueRepository" />
+	</bean>
+
 
 	<!-- JOBS -->
 	<bean id="tdmx.lib.control.task.ZoneTransferJobConverter"
