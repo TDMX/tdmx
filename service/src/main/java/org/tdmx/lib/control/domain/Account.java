@@ -45,6 +45,8 @@ public class Account implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
+	// TODO separate ID
+
 	@Id
 	@Column(length = MAX_ACCOUNTID_LEN)
 	private String accountId;

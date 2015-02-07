@@ -56,6 +56,8 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
+	// TODO separate ID
+
 	@Id
 	private AccountZoneAdministrationCredentialID id;
 

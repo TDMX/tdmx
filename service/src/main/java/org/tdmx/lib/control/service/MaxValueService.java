@@ -16,12 +16,28 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.common.domain;
+package org.tdmx.lib.control.service;
 
-public enum JobResultStatus {
+import java.util.List;
 
-	OK,
-	EXC, ;
+import org.tdmx.lib.control.domain.MaxValue;
 
-	public static final int MAX_JOBRESULTSTATUS_LEN = 3;
+/**
+ * The MaxValueService.
+ * 
+ * @author Peter
+ * 
+ */
+public interface MaxValueService {
+
+	public MaxValue increment(String key, int increment);
+
+	public void createOrUpdate(MaxValue value);
+
+	public MaxValue findById(String key);
+
+	public void delete(MaxValue value);
+
+	public List<MaxValue> findAll();
+
 }

@@ -33,6 +33,8 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class Job implements Serializable {
 
+	// TODO do we really need separation here?
+
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------

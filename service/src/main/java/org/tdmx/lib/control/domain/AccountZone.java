@@ -50,6 +50,8 @@ public class AccountZone implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
+	// TODO separate ID
+
 	@Id
 	@Column(length = MAX_ZONEAPEX_LEN)
 	private String zoneApex;

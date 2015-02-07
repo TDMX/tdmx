@@ -19,13 +19,9 @@
 package org.tdmx.lib.control.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
 import org.junit.After;
@@ -35,37 +31,40 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.MaxValue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 // @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
 // @Transactional("ControlDB")
-public class LockServiceRepositoryUnitTest {
+public class MaxValueServiceRepositoryUnitTest {
 
 	@Autowired
-	private LockService service;
+	private MaxValueService service;
 
 	// @Autowired
 	// private AuthorizedAgentDao dao;
 
-	private String lockId;
+	private String key;
+	private Long initialValue;
 
 	@Before
 	public void doSetup() throws Exception {
-		lockId = UUID.randomUUID().toString();
+		key = UUID.randomUUID().toString().substring(0, 8);
+		initialValue = 1000l;
 
-		LockEntry l = new LockEntry();
-		l.setLockId(lockId);
+		MaxValue m = new MaxValue();
+		m.setKey(key);
+		m.setValue(initialValue);
 
-		service.createOrUpdate(l);
+		service.createOrUpdate(m);
 	}
 
 	@After
 	public void doTeardown() {
-		LockEntry l = service.findById(lockId);
-		if (l != null) {
-			service.delete(l);
+		MaxValue m = service.findById(key);
+		if (m != null) {
+			service.delete(m);
 		}
 	}
 
@@ -76,60 +75,56 @@ public class LockServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		LockEntry l = service.findById(lockId);
+		MaxValue l = service.findById(key);
 		assertNotNull(l);
-		assertNotNull(l.getLockId());
+		assertNotNull(l.getKey());
+		assertEquals(key, l.getKey());
+		assertEquals(initialValue, l.getValue());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		LockEntry l = service.findById("gugus");
-		assertNull(l);
+		MaxValue m = service.findById("gugus");
+		assertNull(m);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Date d = new Date();
-		LockEntry l = service.findById(lockId);
-		l.setLockedBy("me");
-		l.setLockedUntilTime(d);
+		MaxValue l = service.findById(key);
+		l.setValue(2000l);
 		service.createOrUpdate(l);
 
-		LockEntry l2 = service.findById(lockId);
+		MaxValue l2 = service.findById(key);
 
-		assertEquals(d, l2.getLockedUntilTime());
-		assertEquals(l.getLockId(), l2.getLockId());
-		assertEquals(l.getLockedBy(), l2.getLockedBy());
+		assertEquals(l.getKey(), l2.getKey());
+		assertEquals(l.getValue(), l2.getValue());
 	}
 
 	@Test
-	public void testAquireLock() throws Exception {
-		String holderIdentitifier = UUID.randomUUID().toString();
+	public void testIncrement() throws Exception {
+		int increment = 1000;
+		Long initialValue = service.findById(key).getValue();
+		Long expectedValue = initialValue + increment;
 
-		assertTrue(service.acquireLock(lockId, holderIdentitifier));
+		service.increment(key, 1000);
 
-		String holderIdentitifier2 = UUID.randomUUID().toString();
+		Long incrementedValue = service.findById(key).getValue();
 
-		assertFalse(service.acquireLock(lockId, holderIdentitifier2));
-
-		service.releaseLock(lockId, holderIdentitifier, null);
-
-		assertTrue(service.acquireLock(lockId, holderIdentitifier2));
-
-		Calendar futureDate = Calendar.getInstance();
-		futureDate.add(Calendar.DATE, 1);
-
-		service.releaseLock(lockId, holderIdentitifier2, futureDate.getTime());
-
-		// cannot get lock because of time locking
-		assertFalse(service.acquireLock(lockId, holderIdentitifier));
-
-		// release for some time in the past
-		Calendar pastDate = Calendar.getInstance();
-		pastDate.add(Calendar.DATE, -1);
-		service.releaseLock(lockId, holderIdentitifier2, pastDate.getTime());
-
-		assertTrue(service.acquireLock(lockId, holderIdentitifier));
+		assertEquals(expectedValue, incrementedValue);
 	}
 
+	@Test
+	public void testRepeatedIncrement() throws Exception {
+		int increment = 100;
+		int loops = 1000;
+		Long initialValue = service.findById(key).getValue();
+		Long expectedValue = initialValue + (increment * loops);
+
+		for (int i = 0; i < loops; i++) {
+			service.increment(key, increment);
+		}
+		Long incrementedValue = service.findById(key).getValue();
+
+		assertEquals(expectedValue, incrementedValue);
+	}
 }

@@ -20,31 +20,18 @@ package org.tdmx.lib.control.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.MaxValue;
 
-public interface LockDao {
+public interface MaxValueDao {
 
-	public void persist(LockEntry value);
+	public void persist(MaxValue value);
 
-	public void delete(LockEntry value);
+	public void merge(MaxValue value);
 
-	public void lock(LockEntry value);
+	public void delete(MaxValue value);
 
-	public LockEntry merge(LockEntry value);
+	public MaxValue lockById(String key);
 
-	public LockEntry loadById(String lockId);
-
-	public List<LockEntry> loadAll();
-
-	/**
-	 * Returns the Lock ( with a pessimistic DB lock on it ) if it is available for locking. The entity must be
-	 * immediately updated and saved with the lockedBy set to the lockers' identity.
-	 * 
-	 * ie. the lockedBy is null and the lockedUntilTime is null or < NOW()
-	 * 
-	 * @param lockId
-	 * @return
-	 */
-	public LockEntry conditionalLock(String lockId);
+	public List<MaxValue> loadAll();
 
 }

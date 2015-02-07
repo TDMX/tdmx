@@ -20,61 +20,47 @@ package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.tdmx.lib.common.domain.Job;
-
 /**
- * An JobEntry is a Job scheduled for execution at some time.
+ * A LockEntry can be lockedBy some ID for some time.
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "ControlJob")
-public class ControlJobEntry implements Serializable {
+@Table(name = "LockEntry")
+public class LockEntry implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_ID_LEN = 32;
+	public static final int MAX_LOCKEDBY_LEN = 32;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO separate ID from maxvalue service
-
 	@Id
 	@Column(length = MAX_ID_LEN)
-	private String jobId;
+	private String lockId;
 
-	@Column(nullable = false)
-	private Date scheduledTime;
+	@Column
+	private Date lockedUntilTime;
 
-	@Enumerated(EnumType.STRING)
-	@Column(length = ControlJobEntryStatus.MAX_JOBSTATUS_LEN, nullable = false)
-	private ControlJobEntryStatus status;
-
-	@Embedded
-	private Job job;
+	@Column(length = MAX_LOCKEDBY_LEN)
+	private String lockedBy;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ControlJobEntry() {
-		jobId = UUID.randomUUID().toString();
-		status = ControlJobEntryStatus.NEW;
-		scheduledTime = new Date();
+	public LockEntry() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -93,36 +79,28 @@ public class ControlJobEntry implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getJobId() {
-		return jobId;
+	public String getLockId() {
+		return lockId;
 	}
 
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
+	public void setLockId(String lockId) {
+		this.lockId = lockId;
 	}
 
-	public Date getScheduledTime() {
-		return scheduledTime;
+	public Date getLockedUntilTime() {
+		return lockedUntilTime;
 	}
 
-	public void setScheduledTime(Date scheduledTime) {
-		this.scheduledTime = scheduledTime;
+	public void setLockedUntilTime(Date lockedUntilTime) {
+		this.lockedUntilTime = lockedUntilTime;
 	}
 
-	public ControlJobEntryStatus getStatus() {
-		return status;
+	public String getLockedBy() {
+		return lockedBy;
 	}
 
-	public void setStatus(ControlJobEntryStatus status) {
-		this.status = status;
-	}
-
-	public Job getJob() {
-		return job;
-	}
-
-	public void setJob(Job job) {
-		this.job = job;
+	public void setLockedBy(String lockedBy) {
+		this.lockedBy = lockedBy;
 	}
 
 }

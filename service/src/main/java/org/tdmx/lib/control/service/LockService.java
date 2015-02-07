@@ -21,7 +21,7 @@ package org.tdmx.lib.control.service;
 import java.util.Date;
 import java.util.List;
 
-import org.tdmx.lib.control.domain.Lock;
+import org.tdmx.lib.control.domain.LockEntry;
 
 /**
  * The LockService.
@@ -51,13 +51,13 @@ public interface LockService {
 	 */
 	public void releaseLock(String lockId, String holderIdentitifier, Date reserveUntil);
 
-	public void createOrUpdate(Lock partition);
+	public void createOrUpdate(LockEntry value);
 
 	// a partition can only be deleted if it is not yet activated.
-	public void delete(Lock partition);
+	public void delete(LockEntry value);
 
-	public Lock findById(String lockId);
+	public LockEntry findById(String lockId);
 
-	public List<Lock> findAll();
+	public List<LockEntry> findAll();
 
 }

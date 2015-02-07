@@ -6,15 +6,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "account")
-@XmlType(name = "Account")
-public class AccountResource {
+@XmlRootElement(name = "accountzone")
+@XmlType(name = "AccountZone")
+public class AccountZoneResource {
 
 	private Long id;
 	private String accountId;
-	private String firstname;
-	private String lastname;
-	private String email;
+	protected String zoneApex;
 
 	public Long getId() {
 		return id;
@@ -32,28 +30,12 @@ public class AccountResource {
 		this.accountId = accountId;
 	}
 
-	public String getFirstname() {
-		return firstname;
+	public String getZoneApex() {
+		return zoneApex;
 	}
 
-	public void setFirstname(String value) {
-		this.firstname = value;
-	}
-
-	public String getLastname() {
-		return lastname;
-	}
-
-	public void setLastname(String value) {
-		this.lastname = value;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String value) {
-		this.email = value;
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
 }

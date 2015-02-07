@@ -59,6 +59,28 @@
 	</bean>
 
 
+	<bean id="tdmx.lib.control.dao.LockDao"
+		class="org.tdmx.lib.control.dao.LockDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.control.LockRepository"
+		class="org.tdmx.lib.control.service.LockServiceRepositoryImpl">
+		<property name="lockDao"
+			ref="tdmx.lib.control.dao.LockDao" />
+	</bean>
+
+
+	<bean id="tdmx.lib.control.dao.MaxValueDao"
+		class="org.tdmx.lib.control.dao.MaxValueDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.control.MaxValueRepository"
+		class="org.tdmx.lib.control.service.MaxValueServiceRepositoryImpl">
+		<property name="maxValueDao"
+			ref="tdmx.lib.control.dao.MaxValueDao" />
+	</bean>
+
+
 	<bean id="tdmx.lib.control.dao.AccountDao"
 		class="org.tdmx.lib.control.dao.AccountDaoImpl">
 	</bean>
@@ -113,16 +135,6 @@
 			ref="tdmx.lib.control.dao.ControlJobEntryDao" />
 	</bean>
 
-
-	<bean id="tdmx.lib.control.dao.LockDao"
-		class="org.tdmx.lib.control.dao.LockDaoImpl">
-	</bean>
-	
-	<bean id="tdmx.lib.control.LockRepository"
-		class="org.tdmx.lib.control.service.LockServiceRepositoryImpl">
-		<property name="lockDao"
-			ref="tdmx.lib.control.dao.LockDao" />
-	</bean>
 
 
 	<!-- JOBS -->

@@ -15,7 +15,7 @@
 		<class>org.tdmx.lib.control.domain.AccountZoneAdministrationCredential</class>
 		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
 		<class>org.tdmx.lib.control.domain.ControlJobEntry</class>
-		<class>org.tdmx.lib.control.domain.Lock</class>
+		<class>org.tdmx.lib.control.domain.LockEntry</class>
 	</persistence-unit>
 
 	<persistence-unit name="ZoneDB" transaction-type="RESOURCE_LOCAL">

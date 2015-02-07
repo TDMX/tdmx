@@ -19,7 +19,6 @@
 package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,20 +26,19 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * A Lock can be lockedBy some ID for some time.
+ * A MaxValue holds a current max value for a set of keys.
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "Lock")
-public class Lock implements Serializable {
+@Table(name = "MaxValue")
+public class MaxValue implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ID_LEN = 32;
-	public static final int MAX_LOCKEDBY_LEN = 32;
+	public static final int MAX_KEY_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -48,19 +46,16 @@ public class Lock implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@Column(length = MAX_ID_LEN)
-	private String lockId;
+	@Column(length = MAX_KEY_LEN)
+	private String key;
 
-	@Column
-	private Date lockedUntilTime;
-
-	@Column(length = MAX_LOCKEDBY_LEN)
-	private String lockedBy;
+	@Column(nullable = false)
+	private Long value;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public Lock() {
+	public MaxValue() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -79,28 +74,20 @@ public class Lock implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getLockId() {
-		return lockId;
+	public String getKey() {
+		return key;
 	}
 
-	public void setLockId(String lockId) {
-		this.lockId = lockId;
+	public void setKey(String key) {
+		this.key = key;
 	}
 
-	public Date getLockedUntilTime() {
-		return lockedUntilTime;
+	public Long getValue() {
+		return value;
 	}
 
-	public void setLockedUntilTime(Date lockedUntilTime) {
-		this.lockedUntilTime = lockedUntilTime;
-	}
-
-	public String getLockedBy() {
-		return lockedBy;
-	}
-
-	public void setLockedBy(String lockedBy) {
-		this.lockedBy = lockedBy;
+	public void setValue(Long value) {
+		this.value = value;
 	}
 
 }

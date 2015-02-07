@@ -19,14 +19,13 @@
 
 package org.tdmx.lib.control.service;
 
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.lib.control.dao.LockDao;
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.dao.MaxValueDao;
+import org.tdmx.lib.control.domain.MaxValue;
 
 /**
  * A transactional service managing Locks.
@@ -34,7 +33,7 @@ import org.tdmx.lib.control.domain.LockEntry;
  * @author Peter Klauser
  * 
  */
-public class LockServiceRepositoryImpl implements LockService {
+public class MaxValueServiceRepositoryImpl implements MaxValueService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -43,9 +42,9 @@ public class LockServiceRepositoryImpl implements LockService {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(LockServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(MaxValueServiceRepositoryImpl.class);
 
-	private LockDao lockDao;
+	private MaxValueDao maxValueDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -56,62 +55,48 @@ public class LockServiceRepositoryImpl implements LockService {
 	// -------------------------------------------------------------------------
 	@Override
 	@Transactional(value = "ControlDB")
-	public void createOrUpdate(LockEntry lock) {
-		LockEntry storedLock = getLockDao().loadById(lock.getLockId());
-		if (storedLock == null) {
-			getLockDao().persist(lock);
+	public MaxValue increment(String key, int increment) {
+		MaxValue storedValue = getMaxValueDao().lockById(key);
+		if (storedValue != null) {
+			// we MUST have a pessimistic lock on the value
+			storedValue.setValue(storedValue.getValue() + increment);
+		}
+		// auto-commit immediately.
+		return storedValue;
+	}
+
+	@Override
+	@Transactional(value = "ControlDB")
+	public void createOrUpdate(MaxValue value) {
+		MaxValue storedValue = getMaxValueDao().lockById(value.getKey());
+		if (storedValue == null) {
+			getMaxValueDao().persist(value);
 		} else {
-			getLockDao().merge(lock);
+			getMaxValueDao().merge(value);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public void delete(LockEntry lock) {
-		LockEntry storedLock = getLockDao().loadById(lock.getLockId());
-		if (storedLock != null) {
-			getLockDao().delete(storedLock);
+	public void delete(MaxValue value) {
+		MaxValue storedValue = getMaxValueDao().lockById(value.getKey());
+		if (storedValue != null) {
+			getMaxValueDao().delete(storedValue);
 		} else {
-			log.warn("Unable to find Lock to delete with id " + lock.getLockId());
+			log.warn("Unable to find MaxValue to delete with id " + value.getKey());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public LockEntry findById(String lockId) {
-		return getLockDao().loadById(lockId);
+	public MaxValue findById(String key) {
+		return getMaxValueDao().lockById(key);
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public List<LockEntry> findAll() {
-		return getLockDao().loadAll();
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public boolean acquireLock(String lockId, String holderIdentitifier) {
-		LockEntry l = getLockDao().conditionalLock(lockId);
-		if (l != null) {
-			// all right: we have the lock
-			l.setLockedBy(holderIdentitifier);
-			l.setLockedUntilTime(null);
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void releaseLock(String lockId, String holderIdentitifier, Date reserveUntil) {
-		LockEntry l = findById(lockId);
-		if (l != null) {
-			if (holderIdentitifier != null && !holderIdentitifier.equals(l.getLockedBy())) {
-				log.warn("Lock released by non holder " + holderIdentitifier + " held by " + l.getLockedBy());
-			}
-			l.setLockedBy(null);
-			l.setLockedUntilTime(reserveUntil);
-		}
+	public List<MaxValue> findAll() {
+		return getMaxValueDao().loadAll();
 	}
 
 	// -------------------------------------------------------------------------
@@ -126,12 +111,12 @@ public class LockServiceRepositoryImpl implements LockService {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public LockDao getLockDao() {
-		return lockDao;
+	public MaxValueDao getMaxValueDao() {
+		return maxValueDao;
 	}
 
-	public void setLockDao(LockDao lockDao) {
-		this.lockDao = lockDao;
+	public void setMaxValueDao(MaxValueDao maxValueDao) {
+		this.maxValueDao = maxValueDao;
 	}
 
 }

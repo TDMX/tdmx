@@ -18,7 +18,6 @@
  */
 package org.tdmx.lib.control.dao;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -27,39 +26,35 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.MaxValue;
 
-public class LockDaoImpl implements LockDao {
+public class MaxValueDaoImpl implements MaxValueDao {
 
 	@PersistenceContext(unitName = "ControlDB")
 	private EntityManager em;
 
 	@Override
-	public void persist(LockEntry value) {
+	public void persist(MaxValue value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(LockEntry value) {
+	public void merge(MaxValue value) {
+		em.merge(value);
+	}
+
+	@Override
+	public void delete(MaxValue value) {
 		em.remove(value);
 	}
 
 	@Override
-	public void lock(LockEntry value) {
-		em.lock(value, LockModeType.WRITE);
-	}
-
-	@Override
-	public LockEntry merge(LockEntry value) {
-		return em.merge(value);
-	}
-
-	@Override
-	public LockEntry loadById(String id) {
-		Query query = em.createQuery("from LockEntry as l where l.lockId = :id");
+	public MaxValue lockById(String id) {
+		Query query = em.createQuery("from MaxValue as m where m.key = :id");
 		query.setParameter("id", id);
+		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 		try {
-			return (LockEntry) query.getSingleResult();
+			return (MaxValue) query.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -67,24 +62,9 @@ public class LockDaoImpl implements LockDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<LockEntry> loadAll() {
-		Query query = em.createQuery("from LockEntry as l");
+	public List<MaxValue> loadAll() {
+		Query query = em.createQuery("from MaxValue as m");
 		return query.getResultList();
-	}
-
-	@Override
-	public LockEntry conditionalLock(String lockId) {
-		Date now = new Date();
-		Query query = em
-				.createQuery("from LockEntry as l where l.lockId = :id and l.lockedBy is null and ( l.lockedUntilTime is null or l.lockedUntilTime < :n )");
-		query.setParameter("id", lockId);
-		query.setParameter("n", now);
-		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-		try {
-			return (LockEntry) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
 	}
 
 }
