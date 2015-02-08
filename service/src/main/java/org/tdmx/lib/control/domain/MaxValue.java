@@ -32,7 +32,7 @@ import javax.persistence.Table;
  * 
  */
 @Entity
-@Table(name = "MaxValue")
+@Table(name = "MaxValueEntry")
 public class MaxValue implements Serializable {
 
 	// -------------------------------------------------------------------------
@@ -46,7 +46,7 @@ public class MaxValue implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@Column(length = MAX_KEY_LEN)
+	@Column(name = "name", length = MAX_KEY_LEN)
 	private String key;
 
 	@Column(nullable = false)

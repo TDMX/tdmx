@@ -18,8 +18,12 @@
  */
 package org.tdmx.lib.control.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.After;
@@ -29,7 +33,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountSearchCriteria;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -40,27 +46,61 @@ public class AccountServiceRepositoryUnitTest {
 	@Autowired
 	private AccountService service;
 
-	private String accountId;
+	private Account a;
+
+	@Test
+	public void testAutoWire() throws Exception {
+		assertNotNull(service);
+	}
 
 	@Before
 	public void doSetup() throws Exception {
-		accountId = UUID.randomUUID().toString();
-		Account a = new Account();
-		a.setAccountId(accountId);
+		a = new Account();
+		a.setId(new Random().nextLong());
+		a.setAccountId(UUID.randomUUID().toString());
+		a.setFirstName("peter");
+		a.setLastName("Klauser");
+		a.setEmail("pjklauser@gmail.com");
+
 		service.createOrUpdate(a);
 	}
 
 	@After
 	public void doTeardown() {
-		Account a = service.findById(accountId);
-		if (a != null) {
-			service.delete(a);
+		Account ac = service.findById(a.getId());
+		if (ac != null) {
+			service.delete(ac);
 		}
 	}
 
 	@Test
-	public void testAutoWire() throws Exception {
-		assertNotNull(service);
+	public void testSearch_Email() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setEmail(a.getEmail());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(a.getAccountId(), accounts.get(0).getAccountId());
+	}
+
+	@Test
+	public void testSearch_NotFoundAccountId() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setAccountId(UUID.randomUUID().toString());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(0, accounts.size());
+	}
+
+	@Test
+	public void testSearch_All() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertTrue(accounts.size() > 0);
 	}
 
 }

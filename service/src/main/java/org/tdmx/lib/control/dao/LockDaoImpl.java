@@ -27,7 +27,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.Lock;
 
 public class LockDaoImpl implements LockDao {
 
@@ -35,31 +35,31 @@ public class LockDaoImpl implements LockDao {
 	private EntityManager em;
 
 	@Override
-	public void persist(LockEntry value) {
+	public void persist(Lock value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(LockEntry value) {
+	public void delete(Lock value) {
 		em.remove(value);
 	}
 
 	@Override
-	public void lock(LockEntry value) {
+	public void lock(Lock value) {
 		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override
-	public LockEntry merge(LockEntry value) {
+	public Lock merge(Lock value) {
 		return em.merge(value);
 	}
 
 	@Override
-	public LockEntry loadById(String id) {
+	public Lock loadById(String id) {
 		Query query = em.createQuery("from LockEntry as l where l.lockId = :id");
 		query.setParameter("id", id);
 		try {
-			return (LockEntry) query.getSingleResult();
+			return (Lock) query.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -67,13 +67,13 @@ public class LockDaoImpl implements LockDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<LockEntry> loadAll() {
+	public List<Lock> loadAll() {
 		Query query = em.createQuery("from LockEntry as l");
 		return query.getResultList();
 	}
 
 	@Override
-	public LockEntry conditionalLock(String lockId) {
+	public Lock conditionalLock(String lockId) {
 		Date now = new Date();
 		Query query = em
 				.createQuery("from LockEntry as l where l.lockId = :id and l.lockedBy is null and ( l.lockedUntilTime is null or l.lockedUntilTime < :n )");
@@ -81,7 +81,7 @@ public class LockDaoImpl implements LockDao {
 		query.setParameter("n", now);
 		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 		try {
-			return (LockEntry) query.getSingleResult();
+			return (Lock) query.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}

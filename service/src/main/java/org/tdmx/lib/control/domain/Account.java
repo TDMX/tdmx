@@ -39,19 +39,29 @@ public class Account implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_ACCOUNTID_LEN = 16;
+	public static final int MAX_FIRSTNAME_LEN = 45;
+	public static final int MAX_LASTNAME_LEN = 45;
+	public static final int MAX_EMAIL_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
-	// TODO separate ID
-
 	@Id
-	@Column(length = MAX_ACCOUNTID_LEN)
+	private Long id;
+
+	@Column(length = MAX_ACCOUNTID_LEN, nullable = false)
 	private String accountId;
 
-	// TODO account fields - address / company etc.
+	@Column(length = MAX_FIRSTNAME_LEN)
+	private String firstName;
+
+	@Column(length = MAX_LASTNAME_LEN)
+	private String lastName;
+
+	@Column(length = MAX_EMAIL_LEN)
+	private String email;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -73,12 +83,44 @@ public class Account implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	public String getAccountId() {
 		return accountId;
 	}
 
 	public void setAccountId(String accountId) {
 		this.accountId = accountId;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }

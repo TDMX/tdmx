@@ -20,21 +20,21 @@ package org.tdmx.lib.control.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.Lock;
 
 public interface LockDao {
 
-	public void persist(LockEntry value);
+	public void persist(Lock value);
 
-	public void delete(LockEntry value);
+	public void delete(Lock value);
 
-	public void lock(LockEntry value);
+	public void lock(Lock value);
 
-	public LockEntry merge(LockEntry value);
+	public Lock merge(Lock value);
 
-	public LockEntry loadById(String lockId);
+	public Lock loadById(String lockId);
 
-	public List<LockEntry> loadAll();
+	public List<Lock> loadAll();
 
 	/**
 	 * Returns the Lock ( with a pessimistic DB lock on it ) if it is available for locking. The entity must be
@@ -45,6 +45,6 @@ public interface LockDao {
 	 * @param lockId
 	 * @return
 	 */
-	public LockEntry conditionalLock(String lockId);
+	public Lock conditionalLock(String lockId);
 
 }

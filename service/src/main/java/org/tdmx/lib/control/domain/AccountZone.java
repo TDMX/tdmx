@@ -50,10 +50,11 @@ public class AccountZone implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
-	// TODO separate ID
-
 	@Id
-	@Column(length = MAX_ZONEAPEX_LEN)
+	private Long id;
+
+	// TODO index zoneApex for agent authentication service
+	@Column(length = MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 
 	@Enumerated(EnumType.STRING)
@@ -94,6 +95,14 @@ public class AccountZone implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getZoneApex() {
 		return zoneApex;

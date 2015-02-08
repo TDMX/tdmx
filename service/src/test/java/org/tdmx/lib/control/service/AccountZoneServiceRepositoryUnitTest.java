@@ -21,6 +21,10 @@ package org.tdmx.lib.control.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,9 +34,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.console.domain.AccountZoneFacade;
 import org.tdmx.lib.console.domain.CredentialFacade;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -44,26 +50,20 @@ public class AccountZoneServiceRepositoryUnitTest {
 	@Autowired
 	private AccountZoneService service;
 
-	// @Autowired
-	// private AuthorizedAgentDao dao;
-
-	private String zoneApex;
+	private AccountZone az;
 
 	@Before
 	public void doSetup() throws Exception {
-		zoneApex = "zone.root.test";
-		PKIXCredential za = CredentialFacade.createZAC(zoneApex);
-
-		AccountZone az = AccountZoneFacade.createAccountZone(za.getPublicCert());
-
+		PKIXCredential za = CredentialFacade.createZAC("zone.root.test");
+		az = AccountZoneFacade.createAccountZone(new Random().nextLong(), za.getPublicCert());
 		service.createOrUpdate(az);
 	}
 
 	@After
 	public void doTeardown() {
-		AccountZone az = service.findByZoneApex(zoneApex);
-		if (az != null) {
-			service.delete(az);
+		AccountZone a = service.findById(az.getId());
+		if (a != null) {
+			service.delete(a);
 		}
 	}
 
@@ -74,35 +74,44 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		AccountZone az = service.findByZoneApex(zoneApex);
-		assertNotNull(az);
-		assertNotNull(az.getAccountId());
-		assertNotNull(az.getStatus());
-		assertNotNull(az.getSegment());
-		assertEquals(zoneApex, az.getZoneApex());
-		assertNotNull(az.getZonePartitionId());
-
+		AccountZone a = service.findByZoneApex(az.getZoneApex());
+		assertNotNull(a);
+		assertNotNull(a.getAccountId());
+		assertNotNull(a.getStatus());
+		assertNotNull(a.getSegment());
+		assertEquals(az.getZoneApex(), a.getZoneApex());
+		assertNotNull(a.getZonePartitionId());
+		assertEquals(az.getZonePartitionId(), a.getZonePartitionId());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		AccountZone az = service.findByZoneApex("gugus");
-		assertNull(az);
+		AccountZone a = service.findByZoneApex("gugus");
+		assertNull(a);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		AccountZone az = service.findByZoneApex(zoneApex);
-		az.setStatus(AccountZoneStatus.BLOCKED);
-		service.createOrUpdate(az);
+		AccountZone a = service.findByZoneApex(az.getZoneApex());
+		a.setStatus(AccountZoneStatus.BLOCKED);
+		service.createOrUpdate(a);
 
-		AccountZone az2 = service.findByZoneApex(zoneApex);
-		assertEquals(AccountZoneStatus.BLOCKED, az2.getStatus());
+		AccountZone a2 = service.findByZoneApex(az.getZoneApex());
+		assertEquals(AccountZoneStatus.BLOCKED, a2.getStatus());
 
-		assertEquals(az.getAccountId(), az2.getAccountId());
-		assertEquals(az.getSegment(), az2.getSegment());
-		assertEquals(az.getZoneApex(), az2.getZoneApex());
-		assertEquals(az.getZonePartitionId(), az2.getZonePartitionId());
+		assertEquals(a.getAccountId(), a2.getAccountId());
+		assertEquals(a.getSegment(), a2.getSegment());
+		assertEquals(a.getZoneApex(), a2.getZoneApex());
+		assertEquals(a.getZonePartitionId(), a2.getZonePartitionId());
+	}
+
+	@Test
+	public void testSearch_All() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertTrue(accounts.size() > 0);
 	}
 
 }

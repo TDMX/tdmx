@@ -19,11 +19,14 @@
 
 package org.tdmx.lib.control.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.control.dao.AccountDao;
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountSearchCriteria;
 
 /**
  * Management of the Account via transactional services.
@@ -55,7 +58,7 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(Account account) {
-		Account storedAccount = getAccountDao().loadById(account.getAccountId());
+		Account storedAccount = getAccountDao().loadById(account.getId());
 		if (storedAccount == null) {
 			getAccountDao().persist(account);
 		} else {
@@ -66,18 +69,24 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void delete(Account account) {
-		Account storedAccount = getAccountDao().loadById(account.getAccountId());
+		Account storedAccount = getAccountDao().loadById(account.getId());
 		if (storedAccount != null) {
 			getAccountDao().delete(storedAccount);
 		} else {
-			log.warn("Unable to find Account to delete with root " + account.getAccountId());
+			log.warn("Unable to find Account to delete with root " + account.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public Account findById(String id) {
+	public Account findById(Long id) {
 		return getAccountDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public List<Account> search(AccountSearchCriteria criteria) {
+		return getAccountDao().search(criteria);
 	}
 
 	// -------------------------------------------------------------------------

@@ -16,103 +16,56 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
+package org.tdmx.lib.control.domain;
 
-package org.tdmx.lib.control.service;
-
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.lib.control.dao.LockDao;
-import org.tdmx.lib.control.domain.Lock;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * A transactional service managing Locks.
+ * A LockEntry can be lockedBy some ID for some time.
  * 
  * @author Peter Klauser
  * 
  */
-public class LockServiceRepositoryImpl implements LockService {
+@Entity
+@Table(name = "LockEntry")
+public class Lock implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_ID_LEN = 32;
+	public static final int MAX_LOCKEDBY_LEN = 32;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(LockServiceRepositoryImpl.class);
+	private static final long serialVersionUID = -128859602084626282L;
 
-	private LockDao lockDao;
+	@Id
+	@Column(length = MAX_ID_LEN)
+	private String lockId;
+
+	@Column
+	private Date lockedUntilTime;
+
+	@Column(length = MAX_LOCKEDBY_LEN)
+	private String lockedBy;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	public Lock() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	@Override
-	@Transactional(value = "ControlDB")
-	public void createOrUpdate(Lock lock) {
-		Lock storedLock = getLockDao().loadById(lock.getLockId());
-		if (storedLock == null) {
-			getLockDao().persist(lock);
-		} else {
-			getLockDao().merge(lock);
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void delete(Lock lock) {
-		Lock storedLock = getLockDao().loadById(lock.getLockId());
-		if (storedLock != null) {
-			getLockDao().delete(storedLock);
-		} else {
-			log.warn("Unable to find Lock to delete with id " + lock.getLockId());
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public Lock findById(String lockId) {
-		return getLockDao().loadById(lockId);
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public List<Lock> findAll() {
-		return getLockDao().loadAll();
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public boolean acquireLock(String lockId, String holderIdentitifier) {
-		Lock l = getLockDao().conditionalLock(lockId);
-		if (l != null) {
-			// all right: we have the lock
-			l.setLockedBy(holderIdentitifier);
-			l.setLockedUntilTime(null);
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void releaseLock(String lockId, String holderIdentitifier, Date reserveUntil) {
-		Lock l = findById(lockId);
-		if (l != null) {
-			if (holderIdentitifier != null && !holderIdentitifier.equals(l.getLockedBy())) {
-				log.warn("Lock released by non holder " + holderIdentitifier + " held by " + l.getLockedBy());
-			}
-			l.setLockedBy(null);
-			l.setLockedUntilTime(reserveUntil);
-		}
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -126,12 +79,28 @@ public class LockServiceRepositoryImpl implements LockService {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public LockDao getLockDao() {
-		return lockDao;
+	public String getLockId() {
+		return lockId;
 	}
 
-	public void setLockDao(LockDao lockDao) {
-		this.lockDao = lockDao;
+	public void setLockId(String lockId) {
+		this.lockId = lockId;
+	}
+
+	public Date getLockedUntilTime() {
+		return lockedUntilTime;
+	}
+
+	public void setLockedUntilTime(Date lockedUntilTime) {
+		this.lockedUntilTime = lockedUntilTime;
+	}
+
+	public String getLockedBy() {
+		return lockedBy;
+	}
+
+	public void setLockedBy(String lockedBy) {
+		this.lockedBy = lockedBy;
 	}
 
 }

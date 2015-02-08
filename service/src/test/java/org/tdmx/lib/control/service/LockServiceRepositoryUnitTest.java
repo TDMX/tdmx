@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.control.domain.LockEntry;
+import org.tdmx.lib.control.domain.Lock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -55,7 +55,7 @@ public class LockServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 		lockId = UUID.randomUUID().toString();
 
-		LockEntry l = new LockEntry();
+		Lock l = new Lock();
 		l.setLockId(lockId);
 
 		service.createOrUpdate(l);
@@ -63,7 +63,7 @@ public class LockServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		LockEntry l = service.findById(lockId);
+		Lock l = service.findById(lockId);
 		if (l != null) {
 			service.delete(l);
 		}
@@ -76,26 +76,26 @@ public class LockServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		LockEntry l = service.findById(lockId);
+		Lock l = service.findById(lockId);
 		assertNotNull(l);
 		assertNotNull(l.getLockId());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		LockEntry l = service.findById("gugus");
+		Lock l = service.findById("gugus");
 		assertNull(l);
 	}
 
 	@Test
 	public void testModify() throws Exception {
 		Date d = new Date();
-		LockEntry l = service.findById(lockId);
+		Lock l = service.findById(lockId);
 		l.setLockedBy("me");
 		l.setLockedUntilTime(d);
 		service.createOrUpdate(l);
 
-		LockEntry l2 = service.findById(lockId);
+		Lock l2 = service.findById(lockId);
 
 		assertEquals(d, l2.getLockedUntilTime());
 		assertEquals(l.getLockId(), l2.getLockId());

@@ -24,10 +24,11 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 public class AccountZoneFacade {
 
-	public static AccountZone createAccountZone(PKIXCertificate zoneAdminCert) throws Exception {
+	public static AccountZone createAccountZone(Long id, PKIXCertificate zoneAdminCert) throws Exception {
 		AccountZone az = new AccountZone();
-		az.setZoneApex(zoneAdminCert.getTdmxZoneInfo().getZoneRoot());
+		az.setId(id);
 
+		az.setZoneApex(zoneAdminCert.getTdmxZoneInfo().getZoneRoot());
 		az.setAccountId("1234");
 		az.setStatus(AccountZoneStatus.ACTIVE);
 		az.setSegment("test");

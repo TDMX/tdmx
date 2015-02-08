@@ -18,13 +18,19 @@
  */
 package org.tdmx.lib.control.dao;
 
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 
 public class AccountZoneDaoImpl implements AccountZoneDao {
 
@@ -68,14 +74,55 @@ public class AccountZoneDaoImpl implements AccountZoneDao {
 	}
 
 	@Override
-	public AccountZone loadById(String id) {
-		Query query = em.createQuery("from AccountZone as az where az.zoneApex = :id");
+	public AccountZone loadById(Long id) {
+		Query query = em.createQuery("from AccountZone as az where az.id = :id");
 		query.setParameter("id", id);
 		try {
 			return (AccountZone) query.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountZone> search(AccountZoneSearchCriteria criteria) {
+		Map<String, Object> parameters = new TreeMap<String, Object>();
+		StringBuilder whereClause = new StringBuilder();
+		boolean isFirstClause = true;
+		if (StringUtils.hasText(criteria.getZoneApex())) {
+			isFirstClause = andClause(isFirstClause, "az.zoneApex = :z", "z", criteria.getZoneApex(), whereClause,
+					parameters);
+		}
+		if (criteria.getStatus() != null) {
+			isFirstClause = andClause(isFirstClause, "az.status = :s", "s", criteria.getStatus(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getAccountId())) {
+			isFirstClause = andClause(isFirstClause, "az.accountId = :l", "l", criteria.getAccountId(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getSegment())) {
+			isFirstClause = andClause(isFirstClause, "az.segment = :p", "p", criteria.getSegment(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getZonePartitionId())) {
+			isFirstClause = andClause(isFirstClause, "az.zonePartitionId = :zp", "zp", criteria.getZonePartitionId(),
+					whereClause, parameters);
+		}
+		StringBuilder sql = new StringBuilder();
+		sql.append("from AccountZone as az");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
+		}
+		Query query = em.createQuery(sql.toString());
+		for (String param : parameters.keySet()) {
+			query.setParameter(param, parameters.get(param));
+		}
+		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
+		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
+		return query.getResultList();
 	}
 
 	// -------------------------------------------------------------------------
@@ -85,6 +132,16 @@ public class AccountZoneDaoImpl implements AccountZoneDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

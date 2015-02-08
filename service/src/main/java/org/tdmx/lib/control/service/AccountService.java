@@ -18,7 +18,10 @@
  */
 package org.tdmx.lib.control.service;
 
+import java.util.List;
+
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountSearchCriteria;
 
 /**
  * AccountService provides access to the control information about an Account in the ControlDB.
@@ -30,8 +33,10 @@ public interface AccountService {
 
 	public void createOrUpdate(Account accountZone);
 
-	public Account findById(String id);
+	public Account findById(Long id);
 
 	public void delete(Account accountZone);
+
+	public List<Account> search(AccountSearchCriteria criteria);
 
 }

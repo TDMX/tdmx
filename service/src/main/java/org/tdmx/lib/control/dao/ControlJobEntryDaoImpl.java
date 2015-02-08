@@ -84,16 +84,6 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 		}
 	}
 
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<ControlJobEntry> fetch(ControlJobEntrySearchCriteria criteria, LockModeType lockMode) {
@@ -112,7 +102,13 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 			isFirstClause = andClause(isFirstClause, "cje.job.type = :jt", "jt", criteria.getJobType(), whereClause,
 					parameters);
 		}
-		Query query = em.createQuery("from ControlJobEntry as cje where" + whereClause.toString());
+		StringBuilder sql = new StringBuilder();
+		sql.append("from ControlJobEntry as cje");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
+		}
+		Query query = em.createQuery(sql.toString());
 		for (String param : parameters.keySet()) {
 			query.setParameter(param, parameters.get(param));
 		}
@@ -129,6 +125,16 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

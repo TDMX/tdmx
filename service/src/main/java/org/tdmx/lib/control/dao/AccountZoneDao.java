@@ -18,7 +18,10 @@
  */
 package org.tdmx.lib.control.dao;
 
+import java.util.List;
+
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 
 /**
  * DAO for AccountZone entity.
@@ -36,6 +39,8 @@ public interface AccountZoneDao {
 
 	public AccountZone merge(AccountZone value);
 
-	public AccountZone loadById(String id);
+	public AccountZone loadById(Long id);
+
+	public List<AccountZone> search(AccountZoneSearchCriteria criteria);
 
 }

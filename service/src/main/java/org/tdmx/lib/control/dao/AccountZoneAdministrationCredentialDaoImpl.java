@@ -90,20 +90,22 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria) {
 		Map<String, Object> parameters = new TreeMap<String, Object>();
 		StringBuilder whereClause = new StringBuilder();
-
+		boolean isFirstClause = true;
 		if (StringUtils.hasText(criteria.getAccountId())) {
-			whereClause.append(" and ac.id.accountId = :l");
-			parameters.put("l", criteria.getAccountId());
+			isFirstClause = andClause(isFirstClause, "ac.id.accountId = :l", "l", criteria.getAccountId(), whereClause,
+					parameters);
 		}
 		if (criteria.getStatus() != null) {
-			whereClause.append(" and ac.credentialStatus = :s");
-			parameters.put("s", criteria.getStatus());
+			isFirstClause = andClause(isFirstClause, "ac.credentialStatus = :s", "s", criteria.getStatus(),
+					whereClause, parameters);
 		}
-		String where = whereClause.toString();
-		if (StringUtils.hasText(where)) {
-			where = " where " + where;
+		StringBuilder sql = new StringBuilder();
+		sql.append("from AccountZoneAdministrationCredential as ac");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
 		}
-		Query query = em.createQuery("from AccountZoneAdministrationCredential as ac" + where);
+		Query query = em.createQuery(sql.toString());
 		for (String param : parameters.keySet()) {
 			query.setParameter(param, parameters.get(param));
 		}
@@ -119,6 +121,16 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -18,49 +18,40 @@
  */
 package org.tdmx.lib.control.domain;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * A LockEntry can be lockedBy some ID for some time.
+ * The SearchCriteria for an AccountZone.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "LockEntry")
-public class LockEntry implements Serializable {
+public class AccountZoneSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ID_LEN = 32;
-	public static final int MAX_LOCKEDBY_LEN = 32;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
 
-	@Id
-	@Column(length = MAX_ID_LEN)
-	private String lockId;
+	private final PageSpecifier pageSpecifier;
 
-	@Column
-	private Date lockedUntilTime;
-
-	@Column(length = MAX_LOCKEDBY_LEN)
-	private String lockedBy;
+	private String zoneApex;
+	private AccountZoneStatus status;
+	private String accountId;
+	private String segment;
+	private String zonePartitionId;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public LockEntry() {
+	public AccountZoneSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,29 +69,47 @@ public class LockEntry implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getLockId() {
-		return lockId;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setLockId(String lockId) {
-		this.lockId = lockId;
+	public String getZoneApex() {
+		return zoneApex;
 	}
 
-	public Date getLockedUntilTime() {
-		return lockedUntilTime;
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
-	public void setLockedUntilTime(Date lockedUntilTime) {
-		this.lockedUntilTime = lockedUntilTime;
+	public AccountZoneStatus getStatus() {
+		return status;
 	}
 
-	public String getLockedBy() {
-		return lockedBy;
+	public void setStatus(AccountZoneStatus status) {
+		this.status = status;
 	}
 
-	public void setLockedBy(String lockedBy) {
-		this.lockedBy = lockedBy;
+	public String getAccountId() {
+		return accountId;
 	}
 
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getSegment() {
+		return segment;
+	}
+
+	public void setSegment(String segment) {
+		this.segment = segment;
+	}
+
+	public String getZonePartitionId() {
+		return zonePartitionId;
+	}
+
+	public void setZonePartitionId(String zonePartitionId) {
+		this.zonePartitionId = zonePartitionId;
+	}
 }

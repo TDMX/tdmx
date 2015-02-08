@@ -18,13 +18,19 @@
  */
 package org.tdmx.lib.control.dao;
 
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountSearchCriteria;
 
 public class AccountDaoImpl implements AccountDao {
 
@@ -68,7 +74,7 @@ public class AccountDaoImpl implements AccountDao {
 	}
 
 	@Override
-	public Account loadById(String id) {
+	public Account loadById(Long id) {
 		Query query = em.createQuery("from Account as a where a.id = :id");
 		query.setParameter("id", id);
 		try {
@@ -78,6 +84,42 @@ public class AccountDaoImpl implements AccountDao {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Account> search(AccountSearchCriteria criteria) {
+		Map<String, Object> parameters = new TreeMap<String, Object>();
+		StringBuilder whereClause = new StringBuilder();
+		boolean isFirstClause = true;
+		if (StringUtils.hasText(criteria.getAccountId())) {
+			isFirstClause = andClause(isFirstClause, "a.accountId = :s", "s", criteria.getAccountId(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getFirstName())) {
+			isFirstClause = andClause(isFirstClause, "a.firstName = :fn", "fn", criteria.getFirstName(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getLastName())) {
+			isFirstClause = andClause(isFirstClause, "a.lastName = :ln", "ln", criteria.getLastName(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getEmail())) {
+			isFirstClause = andClause(isFirstClause, "a.email = :e", "e", criteria.getEmail(), whereClause, parameters);
+		}
+		StringBuilder sql = new StringBuilder();
+		sql.append("from Account as a");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
+		}
+		Query query = em.createQuery(sql.toString());
+		for (String param : parameters.keySet()) {
+			query.setParameter(param, parameters.get(param));
+		}
+		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
+		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
+		return query.getResultList();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -85,6 +127,16 @@ public class AccountDaoImpl implements AccountDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -77,9 +77,10 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AccountZoneAdministrationCredential> list = service
-				.search(new org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria(
-						new PageSpecifier(0, 1000)));
+		org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria sc = new org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setAccountId(accountId);
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
 		for (AccountZoneAdministrationCredential ac : list) {
 			service.delete(ac);
 		}

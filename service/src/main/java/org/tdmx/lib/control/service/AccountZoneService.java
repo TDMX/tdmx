@@ -18,7 +18,10 @@
  */
 package org.tdmx.lib.control.service;
 
+import java.util.List;
+
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 
 /**
  * AccountZoneService provides access to the control information about a Zone in the ControlDB.
@@ -30,8 +33,12 @@ public interface AccountZoneService {
 
 	public void createOrUpdate(AccountZone accountZone);
 
+	public AccountZone findById(Long id);
+
 	public AccountZone findByZoneApex(String zoneApex);
 
 	public void delete(AccountZone accountZone);
+
+	public List<AccountZone> search(AccountZoneSearchCriteria criteria);
 
 }

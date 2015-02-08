@@ -16,26 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
+package org.tdmx.lib.control.domain;
 
-package org.tdmx.lib.control.service;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.control.dao.AccountZoneDao;
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 
 /**
- * Management of the AccountZone via transactional services.
+ * The SearchCriteria for an Account.
  * 
  * @author Peter Klauser
  * 
  */
-public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
+public class AccountSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -44,63 +35,27 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AccountZoneServiceRepositoryImpl.class);
 
-	private AccountZoneDao accountZoneDao;
+	private final PageSpecifier pageSpecifier;
+
+	private String accountId;
+	private String firstName;
+	private String lastName;
+	private String email;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	public AccountSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void createOrUpdate(AccountZone accountZone) {
-		AccountZone storedZone = getAccountZoneDao().loadById(accountZone.getId());
-		if (storedZone == null) {
-			getAccountZoneDao().persist(accountZone);
-		} else {
-			getAccountZoneDao().merge(accountZone);
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
-	public void delete(AccountZone accountZone) {
-		AccountZone storedZone = getAccountZoneDao().loadById(accountZone.getId());
-		if (storedZone != null) {
-			getAccountZoneDao().delete(storedZone);
-		} else {
-			log.warn("Unable to find AccountZone to delete with id " + accountZone.getId());
-		}
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public AccountZone findById(Long id) {
-		return getAccountZoneDao().loadById(id);
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public AccountZone findByZoneApex(String zoneApex) {
-		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 1));
-		sc.setZoneApex(zoneApex);
-		List<AccountZone> accounts = getAccountZoneDao().search(sc);
-		if (accounts.isEmpty()) {
-			return null;
-		}
-		return accounts.get(0);
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public List<AccountZone> search(AccountZoneSearchCriteria criteria) {
-		return getAccountZoneDao().search(criteria);
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -113,13 +68,40 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public AccountZoneDao getAccountZoneDao() {
-		return accountZoneDao;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setAccountZoneDao(AccountZoneDao accountZoneDao) {
-		this.accountZoneDao = accountZoneDao;
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }
