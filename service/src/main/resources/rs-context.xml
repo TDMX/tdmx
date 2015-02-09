@@ -54,9 +54,9 @@
 		<jaxrs:providers>
 			<ref bean="jsonProvider" />
 			<ref bean="jaxbProvider" />
-			<!-- 
-			<bean class="plugon.poc.jaxrs.SecurityExceptionMapper" />
-			 -->
+			<bean class="org.tdmx.server.rs.exception.SecurityExceptionMapper" />
+			<bean class="org.tdmx.server.rs.exception.ValidationExceptionMapper" />
+			<bean class="org.tdmx.server.rs.exception.RuntimeExceptionMapper" />
 		</jaxrs:providers>
 		<jaxrs:extensionMappings>
 			<entry key="json" value="application/json" />
