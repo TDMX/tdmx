@@ -12,7 +12,9 @@ public class AccountZoneResource {
 
 	private Long id;
 	private String accountId;
-	protected String zoneApex;
+	private String zoneApex;
+	private String segment;
+	private String zonePartitionId;
 
 	public Long getId() {
 		return id;
@@ -36,6 +38,22 @@ public class AccountZoneResource {
 
 	public void setZoneApex(String zoneApex) {
 		this.zoneApex = zoneApex;
+	}
+
+	public String getSegment() {
+		return segment;
+	}
+
+	public void setSegment(String segment) {
+		this.segment = segment;
+	}
+
+	public String getZonePartitionId() {
+		return zonePartitionId;
+	}
+
+	public void setZonePartitionId(String zonePartitionId) {
+		this.zonePartitionId = zonePartitionId;
 	}
 
 }

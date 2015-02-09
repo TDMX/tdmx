@@ -21,12 +21,12 @@ public interface SAS {
 	 */
 	@POST
 	@Path("/accounts")
-	Response createAccount(AccountResource account);
+	AccountResource createAccount(AccountResource account);
 
 	@GET
 	@Path("/accounts")
 	List<AccountResource> searchAccount(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("email") String email);
 
 	@GET
 	@Path("/accounts/{aid}")
@@ -45,7 +45,7 @@ public interface SAS {
 	 */
 	@POST
 	@Path("/accounts/{aid}/zones")
-	Response createAccountZone(@PathParam("aid") Long aId, AccountZoneResource accountZone);
+	AccountZoneResource createAccountZone(@PathParam("aid") Long aId, AccountZoneResource accountZone);
 
 	@GET
 	@Path("/accounts/{aid}/zones")
@@ -69,26 +69,28 @@ public interface SAS {
 	 */
 	@POST
 	@Path("/accounts/{aid}/zones/{zid}/zacs")
-	Response createAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
-			AccountZoneAdministrationCredentialResource zac);
+	AccountZoneAdministrationCredentialResource createAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
+			@PathParam("zid") Long zId, AccountZoneAdministrationCredentialResource zac);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}/zacs")
-	List<AccountZoneResource> searchAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
-			@QueryParam("pageNumber") Integer pageNo, @QueryParam("pageSize") Integer pageSize);
+	List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(
+			@PathParam("aid") Long aId, @PathParam("zid") Long zId, @QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
-	AccountZoneResource getAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
-			@PathParam("zcid") Long zcId);
+	AccountZoneAdministrationCredentialResource getAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
+			@PathParam("zid") Long zId, @PathParam("zcid") Long zcId);
 
 	@PUT
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
-	Response updateAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId, @PathParam("zcid") Long zcId,
-			AccountZoneAdministrationCredentialResource zac);
+	Response updateAccountZoneAdministrationCredential(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
+			@PathParam("zcid") Long zcId, AccountZoneAdministrationCredentialResource zac);
 
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
-	Response deleteAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId, @PathParam("zcid") Long zcId);
+	Response deleteAccountZoneAdministrationCredential(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
+			@PathParam("zcid") Long zcId);
 
 }

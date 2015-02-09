@@ -18,6 +18,7 @@
 	<bean id="rs.SAS" class="org.tdmx.server.rs.sas.SASImpl" >
 		<property name="objectIdService" ref="tdmx.lib.control.ObjectIdService" />
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository" />
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
 		
 	</bean>
 
