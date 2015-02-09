@@ -21,7 +21,6 @@ package org.tdmx.lib.control.service;
 import java.util.List;
 
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialID;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
 /**
@@ -34,7 +33,7 @@ public interface AccountZoneAdministrationCredentialService {
 
 	public void createOrUpdate(AccountZoneAdministrationCredential accountCredential);
 
-	public AccountZoneAdministrationCredential findById(AccountZoneAdministrationCredentialID id);
+	public AccountZoneAdministrationCredential findById(Long id);
 
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria);
 

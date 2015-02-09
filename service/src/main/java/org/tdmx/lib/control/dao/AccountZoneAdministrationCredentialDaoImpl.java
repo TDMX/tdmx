@@ -30,7 +30,6 @@ import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialID;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
 public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAdministrationCredentialDao {
@@ -75,7 +74,7 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	}
 
 	@Override
-	public AccountZoneAdministrationCredential loadById(AccountZoneAdministrationCredentialID id) {
+	public AccountZoneAdministrationCredential loadById(Long id) {
 		Query query = em.createQuery("from AccountZoneAdministrationCredential as ac where ac.id = :id");
 		query.setParameter("id", id);
 		try {
@@ -92,8 +91,12 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 		StringBuilder whereClause = new StringBuilder();
 		boolean isFirstClause = true;
 		if (StringUtils.hasText(criteria.getAccountId())) {
-			isFirstClause = andClause(isFirstClause, "ac.id.accountId = :l", "l", criteria.getAccountId(), whereClause,
+			isFirstClause = andClause(isFirstClause, "ac.accountId = :l", "l", criteria.getAccountId(), whereClause,
 					parameters);
+		}
+		if (StringUtils.hasText(criteria.getFingerprint())) {
+			isFirstClause = andClause(isFirstClause, "ac.fingerprint = :f", "f", criteria.getFingerprint(),
+					whereClause, parameters);
 		}
 		if (criteria.getStatus() != null) {
 			isFirstClause = andClause(isFirstClause, "ac.credentialStatus = :s", "s", criteria.getStatus(),

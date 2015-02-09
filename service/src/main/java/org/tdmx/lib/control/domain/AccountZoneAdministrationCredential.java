@@ -48,18 +48,16 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
 	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
+	public static final int MAX_FINGERPRINT_LEN = 64;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -988419614813872556L;
 
-	// TODO separate ID
-
 	@Id
-	private AccountZoneAdministrationCredentialID id;
+	private Long id;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = AccountZoneAdministrationCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
@@ -71,6 +69,12 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 
+	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
+	private String accountId;
+
+	@Column(length = MAX_FINGERPRINT_LEN, nullable = false)
+	private String fingerprint;
+
 	@Transient
 	private PKIXCertificate[] certificateChain;
 
@@ -81,22 +85,17 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public AccountZoneAdministrationCredential() {
 	}
 
-	public AccountZoneAdministrationCredential(AccountZoneAdministrationCredentialID id) {
-		this.id = id;
-	}
-
-	public AccountZoneAdministrationCredential(String accountId, String pem) throws CryptoCertificateException {
+	public AccountZoneAdministrationCredential(Long id, String accountId, String pem) throws CryptoCertificateException {
+		setId(id);
 		setCertificateChainPem(pem);
+		setAccountId(accountId);
 
 		PKIXCertificate[] certificateChain = CertificateIOUtils.safePemToX509certs(pem);
 		if (certificateChain != null) {
 			setCertificateChain(certificateChain);
 
 			PKIXCertificate publicKey = getPublicKey();
-
-			AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId,
-					publicKey.getFingerprint());
-			setId(id);
+			setFingerprint(publicKey.getFingerprint());
 			// an invalid cert might be missing the ZI
 			if (publicKey.getTdmxZoneInfo() != null) {
 				setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
@@ -106,8 +105,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 				setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_TDMX);
 			}
 		} else {
-			AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId, UUID
-					.randomUUID().toString());
+			setFingerprint(UUID.randomUUID().toString());
 			setId(id);
 			setZoneApex(null);
 			setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_PEM);
@@ -173,12 +171,28 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AccountZoneAdministrationCredentialID getId() {
+	public Long getId() {
 		return id;
 	}
 
-	private void setId(AccountZoneAdministrationCredentialID id) {
+	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getFingerprint() {
+		return fingerprint;
+	}
+
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
 	}
 
 	public String getZoneApex() {

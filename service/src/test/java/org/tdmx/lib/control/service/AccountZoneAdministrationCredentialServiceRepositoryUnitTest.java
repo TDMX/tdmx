@@ -21,8 +21,10 @@ package org.tdmx.lib.control.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.After;
@@ -39,7 +41,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialID;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -53,23 +55,25 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	// @Autowired
 	// private AuthorizedAgentDao dao;
-	private String accountId;
-	private PKIXCredential zac;
+	private AccountZoneAdministrationCredential zoneAC = null;
+	private PKIXCredential zac = null;
 
 	@Before
 	public void doSetup() throws Exception {
-		accountId = UUID.randomUUID().toString();
+		String accountId = UUID.randomUUID().toString();
+		Long id = new Random().nextLong();
 		byte[] zacFile = FileUtils.getFileContents("src/test/resources/zac.keystore");
 		assertNotNull(zacFile);
 		zac = KeyStoreUtils.getPrivateCredential(zacFile, "jks", "changeme", "client");
 		String pem = CertificateIOUtils.x509certToPem(zac.getPublicCert());
 
-		AccountZoneAdministrationCredential zoneAC = new AccountZoneAdministrationCredential(accountId, pem);
+		zoneAC = new AccountZoneAdministrationCredential(id, accountId, pem);
 
 		assertNotNull(zoneAC);
 		assertNotNull(zoneAC.getId());
-		assertEquals(accountId, zoneAC.getId().getAccountId());
-		assertEquals(zac.getPublicCert().getFingerprint(), zoneAC.getId().getSha1fingerprint());
+		assertEquals(accountId, zoneAC.getAccountId());
+		assertEquals(id, zoneAC.getId());
+		assertEquals(zac.getPublicCert().getFingerprint(), zoneAC.getFingerprint());
 		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zoneAC.getZoneApex());
 		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING, zoneAC.getCredentialStatus());
 		service.createOrUpdate(zoneAC);
@@ -77,9 +81,9 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria sc = new org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria(
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
-		sc.setAccountId(accountId);
+		sc.setAccountId(zoneAC.getAccountId());
 		List<AccountZoneAdministrationCredential> list = service.search(sc);
 		for (AccountZoneAdministrationCredential ac : list) {
 			service.delete(ac);
@@ -92,20 +96,37 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testLookupById() throws Exception {
-		AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId, zac
-				.getPublicCert().getFingerprint());
-		AccountZoneAdministrationCredential zoneAC = service.findById(id);
-		assertNotNull(zoneAC);
-		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zoneAC.getZoneApex());
+	public void testSearch_AccountId() {
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setAccountId(zoneAC.getAccountId());
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
+		assertNotNull(list);
+		assertTrue(list.size() > 0);
 	}
 
 	@Test
-	public void testLookup_NotFound() throws Exception {
-		AccountZoneAdministrationCredentialID id = new AccountZoneAdministrationCredentialID(accountId, UUID
-				.randomUUID().toString());
+	public void testSearch_Fingerprint() {
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setFingerprint(zoneAC.getFingerprint());
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
+		assertNotNull(list);
+		assertTrue(list.size() > 0);
+	}
 
-		AccountZoneAdministrationCredential az = service.findById(id);
+	@Test
+	public void testLookup_Id() throws Exception {
+		AccountZoneAdministrationCredential zC = service.findById(zoneAC.getId());
+		assertNotNull(zC);
+		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zC.getZoneApex());
+	}
+
+	@Test
+	public void testLookup_IdNotFound() throws Exception {
+		Long rndId = new Random().nextLong();
+
+		AccountZoneAdministrationCredential az = service.findById(rndId);
 		assertNull(az);
 	}
 

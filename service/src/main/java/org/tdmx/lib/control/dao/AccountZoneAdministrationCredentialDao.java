@@ -21,7 +21,6 @@ package org.tdmx.lib.control.dao;
 import java.util.List;
 
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialID;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
 /**
@@ -40,7 +39,7 @@ public interface AccountZoneAdministrationCredentialDao {
 
 	public AccountZoneAdministrationCredential merge(AccountZoneAdministrationCredential value);
 
-	public AccountZoneAdministrationCredential loadById(AccountZoneAdministrationCredentialID id);
+	public AccountZoneAdministrationCredential loadById(Long id);
 
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria);
 

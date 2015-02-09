@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialID;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
 /**
@@ -85,7 +84,7 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public AccountZoneAdministrationCredential findById(AccountZoneAdministrationCredentialID id) {
+	public AccountZoneAdministrationCredential findById(Long id) {
 		return getAccountCredentialDao().loadById(id);
 	}
 
