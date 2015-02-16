@@ -90,9 +90,9 @@ public class AccountZoneAdministrationCredential implements Serializable {
 		setCertificateChainPem(pem);
 		setAccountId(accountId);
 
-		PKIXCertificate[] certificateChain = CertificateIOUtils.safePemToX509certs(pem);
-		if (certificateChain != null) {
-			setCertificateChain(certificateChain);
+		PKIXCertificate[] certChain = CertificateIOUtils.safePemToX509certs(pem);
+		if (certChain != null) {
+			setCertificateChain(certChain);
 
 			PKIXCertificate publicKey = getPublicKey();
 			setFingerprint(publicKey.getFingerprint());

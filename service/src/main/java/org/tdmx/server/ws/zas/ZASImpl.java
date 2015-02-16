@@ -247,7 +247,7 @@ public class ZASImpl implements ZAS {
 		dcSc.setDomainName(parameters.getDomain());
 		dcSc.setType(AgentCredentialType.DAC);
 		List<AgentCredential> credentials = getCredentialService().search(zoneApex, dcSc);
-		if (credentials.size() > 0) {
+		if (!credentials.isEmpty()) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
 		}
@@ -256,7 +256,7 @@ public class ZASImpl implements ZAS {
 		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
 		sac.setDomainName(id.getDomainName());
 		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zoneApex, sac);
-		if (addresses.size() > 0) {
+		if (!addresses.isEmpty()) {
 			setError(ErrorCode.AddressesExist, response);
 			return response;
 		}
@@ -265,7 +265,7 @@ public class ZASImpl implements ZAS {
 		ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
 		ssc.setDomainName(id.getDomainName());
 		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zoneApex, ssc);
-		if (services.size() > 0) {
+		if (!services.isEmpty()) {
 			setError(ErrorCode.ServicesExist, response);
 			return response;
 		}
@@ -846,7 +846,7 @@ public class ZASImpl implements ZAS {
 		acSc.setDomainName(parameters.getAddress().getDomain());
 		acSc.setType(AgentCredentialType.UC);
 		List<AgentCredential> ucs = getCredentialService().search(zoneApex, acSc);
-		if (ucs.size() > 0) {
+		if (!ucs.isEmpty()) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}

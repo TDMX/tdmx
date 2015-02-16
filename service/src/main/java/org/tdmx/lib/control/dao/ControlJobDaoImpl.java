@@ -20,6 +20,7 @@ package org.tdmx.lib.control.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
@@ -109,8 +110,8 @@ public class ControlJobDaoImpl implements ControlJobDao {
 			sql.append(whereClause.toString());
 		}
 		Query query = em.createQuery(sql.toString());
-		for (String param : parameters.keySet()) {
-			query.setParameter(param, parameters.get(param));
+		for (Entry<String, Object> param : parameters.entrySet()) {
+			query.setParameter(param.getKey(), param.getValue());
 		}
 		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
 		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());

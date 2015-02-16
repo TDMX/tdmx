@@ -90,7 +90,7 @@ public class JobExecutionServiceImpl implements Runnable {
 		log.info("run start.");
 		// TODO
 		try {
-			Thread.sleep(10000l);
+			Thread.sleep(10000L);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

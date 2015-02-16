@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
@@ -108,8 +109,8 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 			parameters.put("t", criteria.getType());
 		}
 		Query query = em.createQuery("from AgentCredential as ac where ac.id.zoneApex = :z" + whereClause.toString());
-		for (String param : parameters.keySet()) {
-			query.setParameter(param, parameters.get(param));
+		for (Entry<String, Object> param : parameters.entrySet()) {
+			query.setParameter(param.getKey(), param.getValue());
 		}
 		query.setParameter("z", zoneApex);
 		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());

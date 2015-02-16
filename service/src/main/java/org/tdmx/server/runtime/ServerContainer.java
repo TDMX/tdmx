@@ -104,18 +104,18 @@ public class ServerContainer {
 		// directly we'll be setting ports on those connectors.
 		Server server = new Server();
 
-		TrustingSslContextFactory ssl_ext = new TrustingSslContextFactory();
+		TrustingSslContextFactory sslExt = new TrustingSslContextFactory();
 		// we trust all client certs, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
-		ssl_ext.setRenegotiationAllowed(isRenegotiationAllowed());
+		sslExt.setRenegotiationAllowed(isRenegotiationAllowed());
 		// we don't NEED client auth if we want to co-host a Restfull API on this server.
-		ssl_ext.setWantClientAuth(true);
+		sslExt.setWantClientAuth(true);
 
-		ssl_ext.setIncludeCipherSuites(getHttpsCiphers());
-		ssl_ext.setIncludeProtocols(getHttpsProtocols());
-		ssl_ext.setKeyStoreType("jks");
-		ssl_ext.setKeyStorePath(getKeyStoreFile());
-		ssl_ext.setKeyStorePassword(getKeyStorePassword());
+		sslExt.setIncludeCipherSuites(getHttpsCiphers());
+		sslExt.setIncludeProtocols(getHttpsProtocols());
+		sslExt.setKeyStoreType("jks");
+		sslExt.setKeyStorePath(getKeyStoreFile());
+		sslExt.setKeyStorePassword(getKeyStorePassword());
 		// TODO check if needed
 		// sslContextFactory.setKeyManagerPassword("changeme");
 
@@ -124,58 +124,58 @@ public class ServerContainer {
 		// argument to effectively clone the contents. On this HttpConfiguration object we add a
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty Server.
-		HttpConfiguration https_config_ext = new HttpConfiguration();
-		https_config_ext.setSecureScheme("https");
-		https_config_ext.setSecurePort(getHttpsPort());
-		https_config_ext.setOutputBufferSize(32768);
-		https_config_ext.addCustomizer(new SecureRequestCustomizer());
+		HttpConfiguration httpsConfigExt = new HttpConfiguration();
+		httpsConfigExt.setSecureScheme("https");
+		httpsConfigExt.setSecurePort(getHttpsPort());
+		httpsConfigExt.setOutputBufferSize(32768);
+		httpsConfigExt.addCustomizer(new SecureRequestCustomizer());
 
 		// HTTPS connector
 		// We create a second ServerConnector, passing in the http configuration we just made along with the
 		// previously created ssl context factory. Next we set the port and a longer idle timeout.
-		ServerConnector https_ext = new ServerConnector(server, new SslConnectionFactory(ssl_ext, "http/1.1"),
-				new HttpConnectionFactory(https_config_ext));
-		https_ext.setPort(getHttpsPort());
-		https_ext.setHost(getServerAddress());
-		https_ext.setIdleTimeout(getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
+		ServerConnector httpsExt = new ServerConnector(server, new SslConnectionFactory(sslExt, "http/1.1"),
+				new HttpConnectionFactory(httpsConfigExt));
+		httpsExt.setPort(getHttpsPort());
+		httpsExt.setHost(getServerAddress());
+		httpsExt.setIdleTimeout(getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
 
-		TrustingSslContextFactory ssl_int = new TrustingSslContextFactory();
+		TrustingSslContextFactory sslInt = new TrustingSslContextFactory();
 		// we trust all client certs, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
-		ssl_int.setRenegotiationAllowed(isRenegotiationAllowed());
+		sslInt.setRenegotiationAllowed(isRenegotiationAllowed());
 		// we don't want client auth on internal apis
-		ssl_int.setWantClientAuth(false);
+		sslInt.setWantClientAuth(false);
 
-		ssl_int.setIncludeCipherSuites(getHttpsCiphers());
-		ssl_int.setIncludeProtocols(getHttpsProtocols());
-		ssl_int.setKeyStoreType("jks");
-		ssl_int.setKeyStorePath(getKeyStoreFile());
-		ssl_int.setKeyStorePassword(getKeyStorePassword());
+		sslInt.setIncludeCipherSuites(getHttpsCiphers());
+		sslInt.setIncludeProtocols(getHttpsProtocols());
+		sslInt.setKeyStoreType("jks");
+		sslInt.setKeyStorePath(getKeyStoreFile());
+		sslInt.setKeyStorePassword(getKeyStorePassword());
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an
 		// argument to effectively clone the contents. On this HttpConfiguration object we add a
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty Server.
-		HttpConfiguration https_config_int = new HttpConfiguration();
-		https_config_int.setSecureScheme("https");
-		https_config_int.setSecurePort(getHttpsPort() + 1);
-		https_config_int.setOutputBufferSize(32768);
-		https_config_int.addCustomizer(new SecureRequestCustomizer());
+		HttpConfiguration httpsConfigInt = new HttpConfiguration();
+		httpsConfigInt.setSecureScheme("https");
+		httpsConfigInt.setSecurePort(getHttpsPort() + 1);
+		httpsConfigInt.setOutputBufferSize(32768);
+		httpsConfigInt.addCustomizer(new SecureRequestCustomizer());
 
 		// HTTPS connector
-		ServerConnector https_int = new ServerConnector(server, new SslConnectionFactory(ssl_int, "http/1.1"),
-				new HttpConnectionFactory(https_config_int));
-		https_int.setPort(getHttpsPort() + 1);
-		https_int.setHost(getServerAddress());
-		https_int.setIdleTimeout(getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
+		ServerConnector httpsInt = new ServerConnector(server, new SslConnectionFactory(sslInt, "http/1.1"),
+				new HttpConnectionFactory(httpsConfigInt));
+		httpsInt.setPort(getHttpsPort() + 1);
+		httpsInt.setHost(getServerAddress());
+		httpsInt.setIdleTimeout(getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
 
 		// Here you see the server having multiple connectors registered with it, now requests can flow into the server
 		// from both http and https urls to their respective ports and be processed accordingly by jetty. A simple
 		// handler is also registered with the server so the example has something to pass requests off to.
 
 		// Set the connectors
-		server.setConnectors(new Connector[] { https_ext, https_int });
+		server.setConnectors(new Connector[] { httpsExt, httpsInt });
 
 		// The following section adds some handlers, deployers and webapp providers.
 		// See: http://www.eclipse.org/jetty/documentation/current/advanced-embedding.html for details.

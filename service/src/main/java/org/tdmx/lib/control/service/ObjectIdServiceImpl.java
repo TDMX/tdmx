@@ -62,7 +62,7 @@ public class ObjectIdServiceImpl implements ObjectIdService {
 		if (mv == null) {
 			mv = new MaxValue();
 			mv.setKey(getMaxValueKey());
-			mv.setValue(1000000000l); // 9 digit
+			mv.setValue(1000000000L); // 9 digit
 			getMaxValueService().createOrUpdate(mv);
 		}
 	}
