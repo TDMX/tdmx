@@ -125,14 +125,14 @@
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.ControlJobEntryDao"
-		class="org.tdmx.lib.control.dao.ControlJobEntryDaoImpl">
+	<bean id="tdmx.lib.control.dao.ControlJobDao"
+		class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
 	</bean>
 	
-	<bean id="tdmx.lib.control.ControlJobEntryRepository"
-		class="org.tdmx.lib.control.service.ControlJobEntryServiceRepositoryImpl">
+	<bean id="tdmx.lib.control.ControlJobRepository"
+		class="org.tdmx.lib.control.service.ControlJobServiceRepositoryImpl">
 		<property name="controlJobDao"
-			ref="tdmx.lib.control.dao.ControlJobEntryDao" />
+			ref="tdmx.lib.control.dao.ControlJobDao" />
 	</bean>
 
 

@@ -28,10 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.control.dao.ControlJobEntryDao;
-import org.tdmx.lib.control.domain.ControlJobEntry;
-import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
-import org.tdmx.lib.control.domain.ControlJobEntryStatus;
+import org.tdmx.lib.control.dao.ControlJobDao;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
+import org.tdmx.lib.control.domain.ControlJobStatus;
 
 /**
  * Transactional CRUD Services for ControlJobEntry Entity.
@@ -39,7 +39,7 @@ import org.tdmx.lib.control.domain.ControlJobEntryStatus;
  * @author Peter Klauser
  * 
  */
-public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryService {
+public class ControlJobServiceRepositoryImpl implements ControlJobService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -48,9 +48,9 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ControlJobEntryServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ControlJobServiceRepositoryImpl.class);
 
-	private ControlJobEntryDao controlJobDao;
+	private ControlJobDao controlJobDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -62,14 +62,14 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public void createOrUpdate(ControlJobEntry job) {
+	public void createOrUpdate(ControlJob job) {
 		if (job == null) {
 			throw new IllegalArgumentException("missing job entry");
 		}
 		if (job.getJob() == null) {
 			throw new IllegalArgumentException("missing job");
 		}
-		ControlJobEntry storedAddress = getControlJobDao().loadById(job.getJobId());
+		ControlJob storedAddress = getControlJobDao().loadById(job.getJobId());
 		if (storedAddress == null) {
 			getControlJobDao().persist(job);
 		} else {
@@ -79,8 +79,8 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public void delete(ControlJobEntry job) {
-		ControlJobEntry storedJob = getControlJobDao().loadById(job.getJobId());
+	public void delete(ControlJob job) {
+		ControlJob storedJob = getControlJobDao().loadById(job.getJobId());
 		if (storedJob != null) {
 			getControlJobDao().delete(storedJob);
 		} else {
@@ -90,19 +90,19 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public List<ControlJobEntry> search(ControlJobEntrySearchCriteria criteria) {
+	public List<ControlJob> search(ControlJobSearchCriteria criteria) {
 		return getControlJobDao().fetch(criteria, LockModeType.NONE);
 	}
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public List<ControlJobEntry> reserve(int maxJobs) {
-		ControlJobEntrySearchCriteria sc = new ControlJobEntrySearchCriteria(new PageSpecifier(0, maxJobs));
-		sc.setStatus(ControlJobEntryStatus.NEW);
+	public List<ControlJob> reserve(int maxJobs) {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, maxJobs));
+		sc.setStatus(ControlJobStatus.NEW);
 		sc.setScheduledTimeBefore(new Date());
-		List<ControlJobEntry> result = getControlJobDao().fetch(sc, LockModeType.PESSIMISTIC_WRITE);
-		for (ControlJobEntry e : result) {
-			e.setStatus(ControlJobEntryStatus.RUN);
+		List<ControlJob> result = getControlJobDao().fetch(sc, LockModeType.PESSIMISTIC_WRITE);
+		for (ControlJob e : result) {
+			e.setStatus(ControlJobStatus.RUN);
 		}
 		// we rely on the transaction finishing on exit and persisting the data without us calling dao explicitly
 		// later the caller shall call createOrUpdate to persist further job changes after running the job.
@@ -111,7 +111,7 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public ControlJobEntry findById(String jobId) {
+	public ControlJob findById(String jobId) {
 		return getControlJobDao().loadById(jobId);
 	}
 
@@ -127,11 +127,11 @@ public class ControlJobEntryServiceRepositoryImpl implements ControlJobEntryServ
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ControlJobEntryDao getControlJobDao() {
+	public ControlJobDao getControlJobDao() {
 		return controlJobDao;
 	}
 
-	public void setControlJobDao(ControlJobEntryDao controlJobDao) {
+	public void setControlJobDao(ControlJobDao controlJobDao) {
 		this.controlJobDao = controlJobDao;
 	}
 

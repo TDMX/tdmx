@@ -19,12 +19,12 @@
 package org.tdmx.lib.console.domain;
 
 import org.tdmx.lib.common.domain.Job;
-import org.tdmx.lib.control.domain.ControlJobEntry;
+import org.tdmx.lib.control.domain.ControlJob;
 
 public class ControlJobEntryFacade {
 
-	public static ControlJobEntry createImmediateJob(Job job) {
-		ControlJobEntry j = new ControlJobEntry();
+	public static ControlJob createImmediateJob(Job job) {
+		ControlJob j = new ControlJob();
 		j.setJob(job);
 		return j;
 	}

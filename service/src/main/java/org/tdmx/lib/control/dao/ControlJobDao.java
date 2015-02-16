@@ -22,8 +22,8 @@ import java.util.List;
 
 import javax.persistence.LockModeType;
 
-import org.tdmx.lib.control.domain.ControlJobEntry;
-import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 
 /**
  * DAO for JobEntry entity.
@@ -31,17 +31,17 @@ import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
  * @author Peter
  * 
  */
-public interface ControlJobEntryDao {
+public interface ControlJobDao {
 
-	public void persist(ControlJobEntry value);
+	public void persist(ControlJob value);
 
-	public void delete(ControlJobEntry value);
+	public void delete(ControlJob value);
 
-	public void lock(ControlJobEntry value);
+	public void lock(ControlJob value);
 
-	public ControlJobEntry merge(ControlJobEntry value);
+	public ControlJob merge(ControlJob value);
 
-	public ControlJobEntry loadById(String id);
+	public ControlJob loadById(String id);
 
-	public List<ControlJobEntry> fetch(ControlJobEntrySearchCriteria criteria, LockModeType lockMode);
+	public List<ControlJob> fetch(ControlJobSearchCriteria criteria, LockModeType lockMode);
 }

@@ -29,10 +29,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.domain.ControlJobEntry;
-import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 
-public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
+public class ControlJobDaoImpl implements ControlJobDao {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -54,31 +54,31 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void persist(ControlJobEntry value) {
+	public void persist(ControlJob value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(ControlJobEntry value) {
+	public void delete(ControlJob value) {
 		em.remove(value);
 	}
 
 	@Override
-	public void lock(ControlJobEntry value) {
+	public void lock(ControlJob value) {
 		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override
-	public ControlJobEntry merge(ControlJobEntry value) {
+	public ControlJob merge(ControlJob value) {
 		return em.merge(value);
 	}
 
 	@Override
-	public ControlJobEntry loadById(String id) {
-		Query query = em.createQuery("from ControlJobEntry as cje where cje.jobId = :id");
+	public ControlJob loadById(String id) {
+		Query query = em.createQuery("from ControlJob as cje where cje.jobId = :id");
 		query.setParameter("id", id);
 		try {
-			return (ControlJobEntry) query.getSingleResult();
+			return (ControlJob) query.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -86,7 +86,7 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ControlJobEntry> fetch(ControlJobEntrySearchCriteria criteria, LockModeType lockMode) {
+	public List<ControlJob> fetch(ControlJobSearchCriteria criteria, LockModeType lockMode) {
 		Map<String, Object> parameters = new TreeMap<String, Object>();
 		StringBuilder whereClause = new StringBuilder();
 		boolean isFirstClause = true;
@@ -103,7 +103,7 @@ public class ControlJobEntryDaoImpl implements ControlJobEntryDao {
 					parameters);
 		}
 		StringBuilder sql = new StringBuilder();
-		sql.append("from ControlJobEntry as cje");
+		sql.append("from ControlJob as cje");
 		if (!isFirstClause) {
 			sql.append(" where");
 			sql.append(whereClause.toString());

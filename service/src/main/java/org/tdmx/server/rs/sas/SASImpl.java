@@ -48,19 +48,19 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountResource createAccount(AccountResource account) {
 		validatePresent("account", account);
-		Account a = mapTo(account);
+		Account a = AccountResource.mapTo(account);
 		validateNotPresent("id", a.getId());
 		validateNotPresent("accountId", a.getAccountId());
 
 		a.setId(getObjectIdService().getNextObjectId());
-		a.setAccountId(UUID.randomUUID().toString());
+		a.setAccountId(UUID.randomUUID().toString()); // TODO maxvalue "accountId"
 
 		a.setEmail(account.getEmail());
 		a.setFirstName(account.getFirstname());
 		a.setLastName(account.getLastname());
 
 		getAccountService().createOrUpdate(a);
-		return mapTo(a);
+		return AccountResource.mapTo(a);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class SASImpl implements SAS {
 
 		List<AccountResource> result = new ArrayList<>();
 		for (Account a : accounts) {
-			result.add(mapTo(a));
+			result.add(AccountResource.mapTo(a));
 		}
 		return result;
 	}
@@ -79,17 +79,17 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountResource getAccount(Long aId) {
 		validateObjectId("aId", aId);
-		return mapTo(getAccountService().findById(aId));
+		return AccountResource.mapTo(getAccountService().findById(aId));
 	}
 
 	@Override
-	public Response updateAccount(AccountResource account) {
+	public AccountResource updateAccount(AccountResource account) {
 		validatePresent("account", account);
-		Account a = mapTo(account);
+		Account a = AccountResource.mapTo(account);
 		validateObjectId("id", a.getId());
 		validatePresent("accountId", a.getAccountId());
 		getAccountService().createOrUpdate(a);
-		return Response.ok().build();
+		return AccountResource.mapTo(a);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneResource createAccountZone(Long aId, AccountZoneResource accountZone) {
 		validateObjectId("aId", aId);
-		AccountZone az = mapTo(accountZone);
+		AccountZone az = AccountZoneResource.mapTo(accountZone);
 
 		// check that the account exists and accountId same
 		Account a = getAccountService().findById(aId);
@@ -111,11 +111,18 @@ public class SASImpl implements SAS {
 		validateEquals("accountId", a.getAccountId(), az.getAccountId());
 
 		validatePresent("status", az.getStatus());
-		// TODO zonepartitionId exists
+		validateNotPresent("id", az.getId());
+		az.setId(getObjectIdService().getNextObjectId());
 
-		// TODO segment exists.
+		// TODO segment value valid.
+		validatePresent("segment", az.getSegment());
+		validateNotPresent("zonePartitionId", az.getZonePartitionId());
+		// TODO select zonepartitionId from service.
+		az.setZonePartitionId("TODO");
+
 		getAccountZoneService().createOrUpdate(az);
-		return mapTo(az);
+
+		return AccountZoneResource.mapTo(az);
 	}
 
 	@Override
@@ -135,7 +142,7 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public Response updateAccountZone(Long aId, Long zId, AccountResource account) {
+	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource account) {
 		validateObjectId("aId", aId);
 		validateObjectId("zId", zId);
 		// TODO Auto-generated method stub
@@ -182,8 +189,8 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public Response updateAccountZoneAdministrationCredential(Long aId, Long zId, Long zcId,
-			AccountZoneAdministrationCredentialResource zac) {
+	public AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(Long aId, Long zId,
+			Long zcId, AccountZoneAdministrationCredentialResource zac) {
 		validateObjectId("aId", aId);
 		validateObjectId("zId", zId);
 		validateObjectId("zcId", zcId);
@@ -214,62 +221,6 @@ public class SASImpl implements SAS {
 		int pageSz = pageSize != null ? pageSize : 10;
 		return new PageSpecifier(pageNumber, pageSz);
 
-	}
-
-	private AccountZone mapTo(AccountZoneResource az) {
-		if (az == null) {
-			return null;
-		}
-		AccountZone a = new AccountZone();
-		a.setId(az.getId());
-		a.setAccountId(az.getAccountId());
-		a.setZoneApex(az.getZoneApex());
-
-		a.setSegment(az.getSegment());
-		a.setZonePartitionId(az.getZonePartitionId());
-		return a;
-	}
-
-	private AccountZoneResource mapTo(AccountZone az) {
-		if (az == null) {
-			return null;
-		}
-		AccountZoneResource a = new AccountZoneResource();
-		a.setId(az.getId());
-		a.setAccountId(az.getAccountId());
-		a.setZoneApex(az.getZoneApex());
-
-		a.setSegment(az.getSegment());
-		a.setZonePartitionId(az.getZonePartitionId());
-		return a;
-	}
-
-	private Account mapTo(AccountResource account) {
-		if (account == null) {
-			return null;
-		}
-		Account a = new Account();
-		a.setId(account.getId());
-		a.setAccountId(account.getAccountId());
-
-		a.setEmail(account.getEmail());
-		a.setFirstName(account.getFirstname());
-		a.setLastName(account.getLastname());
-		return a;
-	}
-
-	private AccountResource mapTo(Account account) {
-		if (account == null) {
-			return null;
-		}
-		AccountResource a = new AccountResource();
-		a.setId(account.getId());
-		a.setAccountId(account.getAccountId());
-
-		a.setEmail(account.getEmail());
-		a.setFirstname(account.getFirstName());
-		a.setLastname(account.getLastName());
-		return a;
 	}
 
 	private ValidationException createVE(FieldValidationErrorType type, String fieldName) {

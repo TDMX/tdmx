@@ -16,16 +16,35 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.lib.control.service;
 
-public enum ControlJobEntryStatus {
+import java.util.List;
 
-	NEW,
-	RUN,
-	OK,
-	ERR,
-	DEL, // may be cleaned up
-	;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 
-	public static final int MAX_JOBSTATUS_LEN = 4;
+/**
+ * Management Services for a ControlJobEntry.
+ * 
+ * @author Peter
+ * 
+ */
+public interface ControlJobService {
+
+	public void createOrUpdate(ControlJob job);
+
+	public ControlJob findById(String jobId);
+
+	public List<ControlJob> search(ControlJobSearchCriteria criteria);
+
+	/**
+	 * Pessimistically lock and update status from NEW to RUN for up to maxJobs which have scheduledTime in the past.
+	 * 
+	 * @param maxJobs
+	 * @return
+	 */
+	public List<ControlJob> reserve(int maxJobs);
+
+	public void delete(ControlJob address);
+
 }

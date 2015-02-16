@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<!-- CONFIGURATION -->
+	<import resource="classpath:/org/tdmx/core/system/env/test-config-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
+	
+	<!-- LIBRARY SPRING CONFIG -->
+	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
+
+	<!-- WS SPRING CONFIG -->
+	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
+	
+	<bean id="jdbc.zonedb.PartitionIdProvider" class="org.tdmx.lib.zone.service.FixedZonePartitionIdProvider">
+		<property name="zonePartitionId" value="pid"/>
+	</bean>
+
+	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">
+	</bean>
+
+</beans>

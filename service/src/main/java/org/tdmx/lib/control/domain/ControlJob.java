@@ -40,7 +40,7 @@ import org.tdmx.lib.common.domain.Job;
  */
 @Entity
 @Table(name = "ControlJob")
-public class ControlJobEntry implements Serializable {
+public class ControlJob implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -62,8 +62,8 @@ public class ControlJobEntry implements Serializable {
 	private Date scheduledTime;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = ControlJobEntryStatus.MAX_JOBSTATUS_LEN, nullable = false)
-	private ControlJobEntryStatus status;
+	@Column(length = ControlJobStatus.MAX_JOBSTATUS_LEN, nullable = false)
+	private ControlJobStatus status;
 
 	@Embedded
 	private Job job;
@@ -71,9 +71,9 @@ public class ControlJobEntry implements Serializable {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ControlJobEntry() {
+	public ControlJob() {
 		jobId = UUID.randomUUID().toString();
-		status = ControlJobEntryStatus.NEW;
+		status = ControlJobStatus.NEW;
 		scheduledTime = new Date();
 	}
 
@@ -109,11 +109,11 @@ public class ControlJobEntry implements Serializable {
 		this.scheduledTime = scheduledTime;
 	}
 
-	public ControlJobEntryStatus getStatus() {
+	public ControlJobStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(ControlJobEntryStatus status) {
+	public void setStatus(ControlJobStatus status) {
 		this.status = status;
 	}
 

@@ -28,7 +28,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
  * @author Peter Klauser
  * 
  */
-public class ControlJobEntrySearchCriteria {
+public class ControlJobSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,14 +40,14 @@ public class ControlJobEntrySearchCriteria {
 
 	private final PageSpecifier pageSpecifier;
 
-	private ControlJobEntryStatus status;
+	private ControlJobStatus status;
 	private Date scheduledTimeBefore;
 	private String jobType;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ControlJobEntrySearchCriteria(PageSpecifier pageSpecifier) {
+	public ControlJobSearchCriteria(PageSpecifier pageSpecifier) {
 		if (pageSpecifier == null) {
 			throw new IllegalArgumentException("Missing pageSpecifier");
 		}
@@ -73,11 +73,11 @@ public class ControlJobEntrySearchCriteria {
 		return pageSpecifier;
 	}
 
-	public ControlJobEntryStatus getStatus() {
+	public ControlJobStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(ControlJobEntryStatus status) {
+	public void setStatus(ControlJobStatus status) {
 		this.status = status;
 	}
 

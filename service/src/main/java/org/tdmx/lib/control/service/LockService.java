@@ -26,6 +26,10 @@ import org.tdmx.lib.control.domain.Lock;
 /**
  * The LockService.
  * 
+ * Used to control concurrent access from multiple JVMs running the same code concurrently - like polling for ready jobs
+ * every X seconds.
+ * 
+ * 
  * @author Peter
  * 
  */

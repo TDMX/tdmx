@@ -37,7 +37,7 @@ public enum AccountZoneStatus {
 
 	/**
 	 * The AccountZone is closed for maintenance so that Agents associated with the Zone may not interact with the
-	 * ServiceProvider. //TODO zone transfer job
+	 * ServiceProvider. //TODO zone transfer job - state must keep record of whether blocked or active
 	 */
 	MAINTENANCE,
 

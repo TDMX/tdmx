@@ -16,6 +16,16 @@ import javax.ws.rs.core.Response;
 @Produces({ "application/json" })
 public interface SAS {
 
+	// TODO configuration value (admin all, user - some)
+
+	// TODO maxvalue (admin only)
+
+	// TODO control job (admin only)
+
+	// TODO databasepartition (admin only)
+
+	// TODO lock (admin only)
+
 	/*
 	 * RESTFUL service for Account
 	 */
@@ -34,7 +44,7 @@ public interface SAS {
 
 	@PUT
 	@Path("/accounts/{aid}")
-	Response updateAccount(AccountResource account);
+	AccountResource updateAccount(AccountResource account);
 
 	@DELETE
 	@Path("/accounts/{aid}")
@@ -58,7 +68,8 @@ public interface SAS {
 
 	@PUT
 	@Path("/accounts/{aid}/zones/{zid}")
-	Response updateAccountZone(@PathParam("aid") Long aid, @PathParam("zid") Long zId, AccountResource account);
+	AccountZoneResource updateAccountZone(@PathParam("aid") Long aid, @PathParam("zid") Long zId,
+			AccountZoneResource account);
 
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}")
@@ -85,8 +96,8 @@ public interface SAS {
 
 	@PUT
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
-	Response updateAccountZoneAdministrationCredential(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
-			@PathParam("zcid") Long zcId, AccountZoneAdministrationCredentialResource zac);
+	AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
+			@PathParam("zid") Long zId, @PathParam("zcid") Long zcId, AccountZoneAdministrationCredentialResource zac);
 
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")

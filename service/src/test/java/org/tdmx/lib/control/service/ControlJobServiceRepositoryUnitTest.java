@@ -34,9 +34,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.console.domain.ControlJobEntryFacade;
-import org.tdmx.lib.control.domain.ControlJobEntry;
-import org.tdmx.lib.control.domain.ControlJobEntrySearchCriteria;
-import org.tdmx.lib.control.domain.ControlJobEntryStatus;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
+import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.job.JobConverter;
 import org.tdmx.service.control.task.dao.ZoneTransferCommand;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
@@ -45,13 +45,13 @@ import org.tdmx.service.control.task.dao.ZoneTransferTask;
 @ContextConfiguration
 // @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
 // @Transactional("ControlDB")
-public class ControlJobEntryServiceRepositoryUnitTest {
+public class ControlJobServiceRepositoryUnitTest {
 
 	@Autowired
 	private JobConverter<ZoneTransferTask> cmdConverter;
 
 	@Autowired
-	private ControlJobEntryService service;
+	private ControlJobService service;
 
 	private String jobId;
 
@@ -67,7 +67,7 @@ public class ControlJobEntryServiceRepositoryUnitTest {
 		j.setType(cmdConverter.getType());
 		cmdConverter.setData(j, task);
 
-		ControlJobEntry je = ControlJobEntryFacade.createImmediateJob(j);
+		ControlJob je = ControlJobEntryFacade.createImmediateJob(j);
 		jobId = je.getJobId();
 
 		service.createOrUpdate(je);
@@ -75,7 +75,7 @@ public class ControlJobEntryServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		ControlJobEntry je = service.findById(jobId);
+		ControlJob je = service.findById(jobId);
 		if (je != null) {
 			service.delete(je);
 		}
@@ -88,38 +88,38 @@ public class ControlJobEntryServiceRepositoryUnitTest {
 
 	@Test
 	public void testFetchStatus() throws Exception {
-		ControlJobEntrySearchCriteria sc = new ControlJobEntrySearchCriteria(new PageSpecifier(0, 10));
-		sc.setStatus(ControlJobEntryStatus.ERR);
-		List<ControlJobEntry> l = service.search(sc);
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setStatus(ControlJobStatus.ERR);
+		List<ControlJob> l = service.search(sc);
 		assertEquals(0, l.size());
 
-		sc.setStatus(ControlJobEntryStatus.NEW);
+		sc.setStatus(ControlJobStatus.NEW);
 		l = service.search(sc);
 		assertEquals(1, l.size());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		ControlJobEntry je = service.findById("gugus");
+		ControlJob je = service.findById("gugus");
 		assertNull(je);
 	}
 
 	@Test
 	public void testReserveAndModify() throws Exception {
-		List<ControlJobEntry> runnable = service.reserve(1);
+		List<ControlJob> runnable = service.reserve(1);
 		assertEquals(1, runnable.size());
 
 		Thread.sleep(1000);
 
-		ControlJobEntry j = runnable.get(0);
+		ControlJob j = runnable.get(0);
 		assertEquals(jobId, j.getJobId());
-		assertEquals(ControlJobEntryStatus.RUN, j.getStatus());
+		assertEquals(ControlJobStatus.RUN, j.getStatus());
 
-		j.setStatus(ControlJobEntryStatus.OK);
+		j.setStatus(ControlJobStatus.OK);
 		service.createOrUpdate(j);
 
 		j = service.findById(jobId);
-		assertEquals(ControlJobEntryStatus.OK, j.getStatus());
+		assertEquals(ControlJobStatus.OK, j.getStatus());
 	}
 
 }

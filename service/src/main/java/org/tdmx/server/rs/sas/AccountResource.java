@@ -5,6 +5,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.lib.control.domain.Account;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "account")
 @XmlType(name = "Account")
@@ -15,6 +17,34 @@ public class AccountResource {
 	private String firstname;
 	private String lastname;
 	private String email;
+
+	public static Account mapTo(AccountResource account) {
+		if (account == null) {
+			return null;
+		}
+		Account a = new Account();
+		a.setId(account.getId());
+		a.setAccountId(account.getAccountId());
+
+		a.setEmail(account.getEmail());
+		a.setFirstName(account.getFirstname());
+		a.setLastName(account.getLastname());
+		return a;
+	}
+
+	public static AccountResource mapTo(Account account) {
+		if (account == null) {
+			return null;
+		}
+		AccountResource a = new AccountResource();
+		a.setId(account.getId());
+		a.setAccountId(account.getAccountId());
+
+		a.setEmail(account.getEmail());
+		a.setFirstname(account.getFirstName());
+		a.setLastname(account.getLastName());
+		return a;
+	}
 
 	public Long getId() {
 		return id;
