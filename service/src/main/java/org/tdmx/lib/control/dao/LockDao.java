@@ -32,7 +32,9 @@ public interface LockDao {
 
 	public Lock merge(Lock value);
 
-	public Lock loadById(String lockId);
+	public Lock loadById(Long lockId);
+
+	public Lock loadByName(String lockName);
 
 	public List<Lock> loadAll();
 
@@ -42,9 +44,9 @@ public interface LockDao {
 	 * 
 	 * ie. the lockedBy is null and the lockedUntilTime is null or < NOW()
 	 * 
-	 * @param lockId
+	 * @param lockName
 	 * @return
 	 */
-	public Lock conditionalLock(String lockId);
+	public Lock conditionalLock(String lockName);
 
 }

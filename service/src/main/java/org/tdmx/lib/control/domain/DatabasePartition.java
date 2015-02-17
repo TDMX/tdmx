@@ -41,15 +41,25 @@ import org.tdmx.core.system.env.ObfuscationSupport;
 @Table(name = "DatabasePartition")
 public class DatabasePartition implements Serializable {
 
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
 	public static final int MAX_PARTITIONID_LEN = 16;
 	public static final int MAX_URL_LEN = 255;
 	public static final int MAX_USERNAME_LEN = 255;
 	public static final int MAX_PASSWORD_LEN = 255;
 
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@Column(length = MAX_PARTITIONID_LEN)
+	private Long id;
+
+	@Column(length = MAX_PARTITIONID_LEN, unique = true)
 	private String partitionId;
 
 	@Enumerated(EnumType.STRING)
@@ -80,6 +90,42 @@ public class DatabasePartition implements Serializable {
 	@Column
 	private Date deactivationTimestamp; // immutable
 
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getPartitionId() {
+		return partitionId;
+	}
+
+	public void setPartitionId(String partitionId) {
+		this.partitionId = partitionId;
+	}
+
 	public String getPassword() {
 		if (password == null) {
 			password = ObfuscationSupport.deobfuscate(getObfuscatedPassword());
@@ -90,14 +136,6 @@ public class DatabasePartition implements Serializable {
 	public void setPassword(String text) {
 		password = text;
 		setObfuscatedPassword(ObfuscationSupport.obfuscate(text));
-	}
-
-	public String getPartitionId() {
-		return partitionId;
-	}
-
-	public void setPartitionId(String partitionId) {
-		this.partitionId = partitionId;
 	}
 
 	public String getUrl() {

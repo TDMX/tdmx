@@ -106,7 +106,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_All() throws Exception {
+	public void testSearch_None() throws Exception {
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
 		List<AccountZone> accounts = service.search(sc);
 
@@ -114,4 +114,63 @@ public class AccountZoneServiceRepositoryUnitTest {
 		assertTrue(accounts.size() > 0);
 	}
 
+	@Test
+	public void testSearch_AccountId() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		sc.setAccountId(az.getAccountId());
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearch_AccountIdStatus() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		sc.setAccountId(az.getAccountId());
+		sc.setStatus(az.getStatus());
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearch_AccountIdStatusApex() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		sc.setAccountId(az.getAccountId());
+		sc.setStatus(az.getStatus());
+		sc.setZoneApex(az.getZoneApex());
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearch_AccountIdStatusApexSegment() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		sc.setAccountId(az.getAccountId());
+		sc.setStatus(az.getStatus());
+		sc.setZoneApex(az.getZoneApex());
+		sc.setSegment(az.getSegment());
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearch_AccountIdStatusApexSegmentPartitionId() throws Exception {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 100));
+		sc.setAccountId(az.getAccountId());
+		sc.setStatus(az.getStatus());
+		sc.setZoneApex(az.getZoneApex());
+		sc.setSegment(az.getSegment());
+		sc.setZonePartitionId(az.getZonePartitionId());
+		List<AccountZone> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+	}
 }

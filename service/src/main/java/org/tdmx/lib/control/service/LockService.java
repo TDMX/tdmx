@@ -38,11 +38,11 @@ public interface LockService {
 	/**
 	 * Acquire a lock and reserve it in the name of the holderIdentifier.
 	 * 
-	 * @param lockId
+	 * @param lockName
 	 * @param holderIdentitifier
 	 * @return true if the lock is held by the caller, false if the lock is not aquireable.
 	 */
-	public boolean acquireLock(String lockId, String holderIdentitifier);
+	public boolean acquireLock(String lockName, String holderIdentitifier);
 
 	/**
 	 * Release a lock held by the holderIdentifier until the resrveUntil date.
@@ -53,14 +53,14 @@ public interface LockService {
 	 * @param reserveUntil
 	 *            null if release immediately, or some future date.
 	 */
-	public void releaseLock(String lockId, String holderIdentitifier, Date reserveUntil);
+	public void releaseLock(String lockName, String holderIdentitifier, Date reserveUntil);
 
 	public void createOrUpdate(Lock value);
 
 	// a partition can only be deleted if it is not yet activated.
 	public void delete(Lock value);
 
-	public Lock findById(String lockId);
+	public Lock findByName(String lockName);
 
 	public List<Lock> findAll();
 

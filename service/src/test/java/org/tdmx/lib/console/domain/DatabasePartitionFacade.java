@@ -25,19 +25,19 @@ import org.tdmx.lib.control.domain.DatabaseType;
 
 public class DatabasePartitionFacade {
 
-	public static DatabasePartition createDatabasePartition(String id, DatabaseType dbType, String segment)
-			throws Exception {
+	public static DatabasePartition createDatabasePartition(Long id, String partitionId, DatabaseType dbType,
+			String segment) throws Exception {
 		DatabasePartition p = new DatabasePartition();
-
-		p.setPartitionId(id);
+		p.setId(id); // TODO remove
+		p.setPartitionId(partitionId);
 
 		p.setDbType(dbType);
 		p.setSegment(segment);
 
 		p.setSizeFactor(100);
-		p.setUrl("db.url-" + id);
-		p.setUsername("username-" + id);
-		p.setPassword("pwd-" + id);
+		p.setUrl("db.url-" + partitionId);
+		p.setUsername("username-" + partitionId);
+		p.setPassword("pwd-" + partitionId);
 
 		p.setActivationTimestamp(new Date()); // currently active
 		p.setDeactivationTimestamp(null);

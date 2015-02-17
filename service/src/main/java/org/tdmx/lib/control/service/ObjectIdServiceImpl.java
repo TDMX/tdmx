@@ -113,7 +113,8 @@ public class ObjectIdServiceImpl implements ObjectIdService {
 	// -------------------------------------------------------------------------
 
 	private int calculateCheckDigit(long value) {
-		String oid = "" + value + " "; // note space needed because it is the place of the check digit when we check.
+		String oid = "" + value + " ";
+		// note space needed because it is the place of the check digit when we check.
 		char[] chars = oid.toCharArray();
 		return calculateCheckDigit(chars);
 	}

@@ -55,7 +55,7 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 			log.info("Called getPartitionInfo without partitionId - providing default connection.");
 			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
 		}
-		DatabasePartition partitionInfo = getPartitionService().findById(partitionId);
+		DatabasePartition partitionInfo = getPartitionService().findByPartitionId(partitionId);
 		if (partitionInfo == null) {
 			log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
 			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());

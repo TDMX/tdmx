@@ -32,7 +32,9 @@ public interface DatabasePartitionDao {
 
 	public DatabasePartition merge(DatabasePartition value);
 
-	public DatabasePartition loadById(String partitionId);
+	public DatabasePartition loadById(Long id);
+
+	public DatabasePartition loadByPartitionId(String partitionId);
 
 	public List<DatabasePartition> loadAll();
 

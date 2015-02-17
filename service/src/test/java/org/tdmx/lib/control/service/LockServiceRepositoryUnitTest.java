@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.After;
@@ -49,21 +50,22 @@ public class LockServiceRepositoryUnitTest {
 	// @Autowired
 	// private AuthorizedAgentDao dao;
 
-	private String lockId;
+	private String lockName;
 
 	@Before
 	public void doSetup() throws Exception {
-		lockId = UUID.randomUUID().toString();
+		lockName = UUID.randomUUID().toString();
 
 		Lock l = new Lock();
-		l.setLockId(lockId);
+		l.setId(new Random().nextLong());
+		l.setLockName(lockName);
 
 		service.createOrUpdate(l);
 	}
 
 	@After
 	public void doTeardown() {
-		Lock l = service.findById(lockId);
+		Lock l = service.findByName(lockName);
 		if (l != null) {
 			service.delete(l);
 		}
@@ -76,29 +78,31 @@ public class LockServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Lock l = service.findById(lockId);
+		Lock l = service.findByName(lockName);
 		assertNotNull(l);
-		assertNotNull(l.getLockId());
+		assertNotNull(l.getId());
+		assertNotNull(l.getLockName());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Lock l = service.findById("gugus");
+		Lock l = service.findByName("gugus");
 		assertNull(l);
 	}
 
 	@Test
 	public void testModify() throws Exception {
 		Date d = new Date();
-		Lock l = service.findById(lockId);
+		Lock l = service.findByName(lockName);
 		l.setLockedBy("me");
 		l.setLockedUntilTime(d);
 		service.createOrUpdate(l);
 
-		Lock l2 = service.findById(lockId);
+		Lock l2 = service.findByName(lockName);
 
 		assertEquals(d, l2.getLockedUntilTime());
-		assertEquals(l.getLockId(), l2.getLockId());
+		assertEquals(l.getId(), l2.getId());
+		assertEquals(l.getLockName(), l2.getLockName());
 		assertEquals(l.getLockedBy(), l2.getLockedBy());
 	}
 
@@ -106,30 +110,30 @@ public class LockServiceRepositoryUnitTest {
 	public void testAquireLock() throws Exception {
 		String holderIdentitifier = UUID.randomUUID().toString();
 
-		assertTrue(service.acquireLock(lockId, holderIdentitifier));
+		assertTrue(service.acquireLock(lockName, holderIdentitifier));
 
 		String holderIdentitifier2 = UUID.randomUUID().toString();
 
-		assertFalse(service.acquireLock(lockId, holderIdentitifier2));
+		assertFalse(service.acquireLock(lockName, holderIdentitifier2));
 
-		service.releaseLock(lockId, holderIdentitifier, null);
+		service.releaseLock(lockName, holderIdentitifier, null);
 
-		assertTrue(service.acquireLock(lockId, holderIdentitifier2));
+		assertTrue(service.acquireLock(lockName, holderIdentitifier2));
 
 		Calendar futureDate = Calendar.getInstance();
 		futureDate.add(Calendar.DATE, 1);
 
-		service.releaseLock(lockId, holderIdentitifier2, futureDate.getTime());
+		service.releaseLock(lockName, holderIdentitifier2, futureDate.getTime());
 
 		// cannot get lock because of time locking
-		assertFalse(service.acquireLock(lockId, holderIdentitifier));
+		assertFalse(service.acquireLock(lockName, holderIdentitifier));
 
 		// release for some time in the past
 		Calendar pastDate = Calendar.getInstance();
 		pastDate.add(Calendar.DATE, -1);
-		service.releaseLock(lockId, holderIdentitifier2, pastDate.getTime());
+		service.releaseLock(lockName, holderIdentitifier2, pastDate.getTime());
 
-		assertTrue(service.acquireLock(lockId, holderIdentitifier));
+		assertTrue(service.acquireLock(lockName, holderIdentitifier));
 	}
 
 }

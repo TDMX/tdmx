@@ -39,7 +39,7 @@ public class Lock implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ID_LEN = 32;
+	public static final int MAX_NAME_LEN = 32;
 	public static final int MAX_LOCKEDBY_LEN = 32;
 
 	// -------------------------------------------------------------------------
@@ -48,8 +48,10 @@ public class Lock implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@Column(length = MAX_ID_LEN)
-	private String lockId;
+	private Long id;
+
+	@Column(length = MAX_NAME_LEN, unique = true)
+	private String lockName;
 
 	@Column
 	private Date lockedUntilTime;
@@ -79,12 +81,20 @@ public class Lock implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getLockId() {
-		return lockId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setLockId(String lockId) {
-		this.lockId = lockId;
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getLockName() {
+		return lockName;
+	}
+
+	public void setLockName(String lockName) {
+		this.lockName = lockName;
 	}
 
 	public Date getLockedUntilTime() {

@@ -44,7 +44,7 @@ public interface DatabasePartitionService {
 	 * @param partitionId
 	 * @return the DatabasePartition or null if not found.
 	 */
-	public DatabasePartition findById(String partitionId);
+	public DatabasePartition findByPartitionId(String partitionId);
 
 	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type, String segment);
 

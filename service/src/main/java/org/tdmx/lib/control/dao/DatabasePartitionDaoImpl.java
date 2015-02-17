@@ -54,9 +54,20 @@ public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 	}
 
 	@Override
-	public DatabasePartition loadById(String id) {
-		Query query = em.createQuery("from DatabasePartition as dp where dp.partitionId = :id");
+	public DatabasePartition loadById(Long id) {
+		Query query = em.createQuery("from DatabasePartition as dp where dp.id = :id");
 		query.setParameter("id", id);
+		try {
+			return (DatabasePartition) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public DatabasePartition loadByPartitionId(String partitionId) {
+		Query query = em.createQuery("from DatabasePartition as dp where dp.partitionId = :id");
+		query.setParameter("id", partitionId);
 		try {
 			return (DatabasePartition) query.getSingleResult();
 		} catch (NoResultException e) {

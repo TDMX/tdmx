@@ -74,6 +74,52 @@ public class AccountServiceRepositoryUnitTest {
 	}
 
 	@Test
+	public void testSearch_NotFoundAccountId() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setAccountId(UUID.randomUUID().toString());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(0, accounts.size());
+	}
+
+	@Test
+	public void testSearch_FirstName() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setFirstName(a.getFirstName());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(a.getAccountId(), accounts.get(0).getAccountId());
+	}
+
+	@Test
+	public void testSearch_LastName() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setLastName(a.getLastName());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(a.getAccountId(), accounts.get(0).getAccountId());
+	}
+
+	@Test
+	public void testSearch_AllFields() throws Exception {
+		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
+		sc.setLastName(a.getLastName());
+		sc.setFirstName(a.getFirstName());
+		sc.setEmail(a.getEmail());
+		sc.setAccountId(a.getAccountId());
+		List<Account> accounts = service.search(sc);
+
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(a.getAccountId(), accounts.get(0).getAccountId());
+	}
+
+	@Test
 	public void testSearch_Email() throws Exception {
 		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
 		sc.setEmail(a.getEmail());
@@ -85,17 +131,7 @@ public class AccountServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_NotFoundAccountId() throws Exception {
-		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
-		sc.setAccountId(UUID.randomUUID().toString());
-		List<Account> accounts = service.search(sc);
-
-		assertNotNull(accounts);
-		assertEquals(0, accounts.size());
-	}
-
-	@Test
-	public void testSearch_All() throws Exception {
+	public void testSearch_None() throws Exception {
 		AccountSearchCriteria sc = new AccountSearchCriteria(new PageSpecifier(0, 10));
 		List<Account> accounts = service.search(sc);
 

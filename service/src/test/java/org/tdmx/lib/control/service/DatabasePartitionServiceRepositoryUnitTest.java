@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,43 +52,43 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1",
-					DatabaseType.ZONE, "segment1");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment1-id1", DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2",
-					DatabaseType.ZONE, "segment1");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment1-id2", DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3",
-					DatabaseType.ZONE, "segment1");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment1-id3", DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp3);
 		}
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id1",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment2-id1", DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id2",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment2-id2", DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id3",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"z-segment2-id3", DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp3);
 		}
 
 		{
-			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id1",
-					DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"m-segment1-id1", DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p1);
 
-			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id2",
-					DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"m-segment1-id2", DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p2);
 
-			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id3",
-					DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
+					"m-segment1-id3", DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p3);
 		}
 	}
@@ -95,55 +96,55 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	@After
 	public void doTeardown() {
 		{
-			DatabasePartition p = service.findById("z-segment1-id1");
+			DatabasePartition p = service.findByPartitionId("z-segment1-id1");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("z-segment1-id2");
+			DatabasePartition p = service.findByPartitionId("z-segment1-id2");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("z-segment1-id3");
+			DatabasePartition p = service.findByPartitionId("z-segment1-id3");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("z-segment2-id1");
+			DatabasePartition p = service.findByPartitionId("z-segment2-id1");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("z-segment2-id2");
+			DatabasePartition p = service.findByPartitionId("z-segment2-id2");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("z-segment2-id3");
+			DatabasePartition p = service.findByPartitionId("z-segment2-id3");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("m-segment1-id1");
+			DatabasePartition p = service.findByPartitionId("m-segment1-id1");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("m-segment1-id2");
+			DatabasePartition p = service.findByPartitionId("m-segment1-id2");
 			if (p != null) {
 				service.delete(p);
 			}
 		}
 		{
-			DatabasePartition p = service.findById("m-segment1-id3");
+			DatabasePartition p = service.findByPartitionId("m-segment1-id3");
 			if (p != null) {
 				service.delete(p);
 			}
@@ -157,7 +158,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		DatabasePartition zp1 = service.findById("z-segment1-id1");
+		DatabasePartition zp1 = service.findByPartitionId("z-segment1-id1");
 		assertNotNull(zp1);
 		assertNotNull(zp1.getPartitionId());
 		assertEquals("z-segment1-id1", zp1.getPartitionId());
@@ -173,13 +174,13 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		DatabasePartition zp1 = service.findById("gugus");
+		DatabasePartition zp1 = service.findByPartitionId("gugus");
 		assertNull(zp1);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		DatabasePartition zp1 = service.findById("z-segment1-id1");
+		DatabasePartition zp1 = service.findByPartitionId("z-segment1-id1");
 		// only these 4 fields can be changed. ( activationDate too if null )
 		zp1.setDeactivationTimestamp(new Date());
 		zp1.setUrl("new.url");
@@ -189,7 +190,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		assertNotNull(zp1);
 		service.createOrUpdate(zp1);
 
-		DatabasePartition zp2 = service.findById("z-segment1-id1");
+		DatabasePartition zp2 = service.findByPartitionId("z-segment1-id1");
 
 		assertTrue(zp1 != zp2);
 		assertEquals(zp1.getPartitionId(), zp2.getPartitionId());
@@ -205,7 +206,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testModify_Failure() throws Exception {
-		DatabasePartition zp1 = service.findById("z-segment1-id1");
+		DatabasePartition zp1 = service.findByPartitionId("z-segment1-id1");
 		assertNotNull(zp1);
 
 		// several fields are immutable once active only

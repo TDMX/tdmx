@@ -68,7 +68,7 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(DatabasePartition partition) {
-		DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getPartitionId());
+		DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getId());
 		if (storedPartition == null) {
 			getDatabasePartitionDao().persist(partition);
 		} else {
@@ -93,18 +93,18 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB")
 	public void delete(DatabasePartition partition) {
-		DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getPartitionId());
+		DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getId());
 		if (storedPartition != null) {
 			getDatabasePartitionDao().delete(storedPartition);
 		} else {
-			log.warn("Unable to find DatabasePartition to delete with id " + partition.getPartitionId());
+			log.warn("Unable to find DatabasePartition to delete with id " + partition.getId());
 		}
 		clearCache();
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public DatabasePartition findById(String partitionId) {
+	public DatabasePartition findByPartitionId(String partitionId) {
 		conditionalRefreshCache();
 
 		return dpidMap != null ? dpidMap.get(partitionId) : null;

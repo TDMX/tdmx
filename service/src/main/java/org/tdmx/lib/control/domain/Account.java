@@ -51,7 +51,9 @@ public class Account implements Serializable {
 	@Id
 	private Long id;
 
-	@Column(length = MAX_ACCOUNTID_LEN, nullable = false)
+	// TODO id generator
+
+	@Column(length = MAX_ACCOUNTID_LEN, nullable = false, unique = true)
 	private String accountId;
 
 	@Column(length = MAX_FIRSTNAME_LEN)

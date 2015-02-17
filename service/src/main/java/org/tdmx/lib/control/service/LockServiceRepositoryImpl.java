@@ -57,7 +57,7 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(Lock lock) {
-		Lock storedLock = getLockDao().loadById(lock.getLockId());
+		Lock storedLock = getLockDao().loadById(lock.getId());
 		if (storedLock == null) {
 			getLockDao().persist(lock);
 		} else {
@@ -68,18 +68,18 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void delete(Lock lock) {
-		Lock storedLock = getLockDao().loadById(lock.getLockId());
+		Lock storedLock = getLockDao().loadById(lock.getId());
 		if (storedLock != null) {
 			getLockDao().delete(storedLock);
 		} else {
-			log.warn("Unable to find Lock to delete with id " + lock.getLockId());
+			log.warn("Unable to find Lock to delete with id " + lock.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public Lock findById(String lockId) {
-		return getLockDao().loadById(lockId);
+	public Lock findByName(String lockName) {
+		return getLockDao().loadByName(lockName);
 	}
 
 	@Override
@@ -103,8 +103,8 @@ public class LockServiceRepositoryImpl implements LockService {
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public void releaseLock(String lockId, String holderIdentitifier, Date reserveUntil) {
-		Lock l = findById(lockId);
+	public void releaseLock(String lockName, String holderIdentitifier, Date reserveUntil) {
+		Lock l = findByName(lockName);
 		if (l != null) {
 			if (holderIdentitifier != null && !holderIdentitifier.equals(l.getLockedBy())) {
 				log.warn("Lock released by non holder " + holderIdentitifier + " held by " + l.getLockedBy());

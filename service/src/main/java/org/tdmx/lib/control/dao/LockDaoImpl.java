@@ -55,9 +55,20 @@ public class LockDaoImpl implements LockDao {
 	}
 
 	@Override
-	public Lock loadById(String id) {
-		Query query = em.createQuery("from Lock as l where l.lockId = :id");
+	public Lock loadById(Long id) {
+		Query query = em.createQuery("from Lock as l where l.id = :id");
 		query.setParameter("id", id);
+		try {
+			return (Lock) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public Lock loadByName(String lockName) {
+		Query query = em.createQuery("from Lock as l where l.lockName = :n");
+		query.setParameter("n", lockName);
 		try {
 			return (Lock) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -73,12 +84,12 @@ public class LockDaoImpl implements LockDao {
 	}
 
 	@Override
-	public Lock conditionalLock(String lockId) {
+	public Lock conditionalLock(String lockName) {
 		Date now = new Date();
 		Query query = em
-				.createQuery("from Lock as l where l.lockId = :id and l.lockedBy is null and ( l.lockedUntilTime is null or l.lockedUntilTime < :n )");
-		query.setParameter("id", lockId);
-		query.setParameter("n", now);
+				.createQuery("from Lock as l where l.lockName = :n and l.lockedBy is null and ( l.lockedUntilTime is null or l.lockedUntilTime < :t )");
+		query.setParameter("n", lockName);
+		query.setParameter("t", now);
 		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
 		try {
 			return (Lock) query.getSingleResult();
