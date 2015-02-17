@@ -75,8 +75,8 @@ public class ControlJobDaoImpl implements ControlJobDao {
 	}
 
 	@Override
-	public ControlJob loadById(String id) {
-		Query query = em.createQuery("from ControlJob as cje where cje.jobId = :id");
+	public ControlJob loadById(Long id) {
+		Query query = em.createQuery("from ControlJob as cje where cje.id = :id");
 		query.setParameter("id", id);
 		try {
 			return (ControlJob) query.getSingleResult();

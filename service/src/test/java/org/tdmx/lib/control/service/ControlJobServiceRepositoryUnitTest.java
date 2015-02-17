@@ -22,7 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +35,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.console.domain.ControlJobEntryFacade;
+import org.tdmx.lib.console.domain.ControlJobFacade;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJobStatus;
@@ -52,8 +54,10 @@ public class ControlJobServiceRepositoryUnitTest {
 
 	@Autowired
 	private ControlJobService service;
+	@Autowired
+	private ObjectIdService idService;
 
-	private String jobId;
+	private Long jobId;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -67,8 +71,9 @@ public class ControlJobServiceRepositoryUnitTest {
 		j.setType(cmdConverter.getType());
 		cmdConverter.setData(j, task);
 
-		ControlJob je = ControlJobEntryFacade.createImmediateJob(j);
-		jobId = je.getJobId();
+		ControlJob je = ControlJobFacade.createImmediateJob(idService.getNextObjectId(), ControlJobStatus.NEW, j);
+
+		jobId = je.getId();
 
 		service.createOrUpdate(je);
 	}
@@ -87,7 +92,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testFetchStatus() throws Exception {
+	public void testSearch_Status() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
 		sc.setStatus(ControlJobStatus.ERR);
 		List<ControlJob> l = service.search(sc);
@@ -99,8 +104,35 @@ public class ControlJobServiceRepositoryUnitTest {
 	}
 
 	@Test
+	public void testSearch_TypeStatus() throws Exception {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobType(cmdConverter.getType());
+		sc.setStatus(ControlJobStatus.ERR);
+		List<ControlJob> l = service.search(sc);
+		assertEquals(0, l.size());
+
+		sc.setStatus(ControlJobStatus.NEW);
+		l = service.search(sc);
+		assertEquals(1, l.size());
+	}
+
+	@Test
+	public void testSearch_TypeTimeStatus() throws Exception {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobType(cmdConverter.getType());
+		sc.setScheduledTimeBefore(new Date());
+		sc.setStatus(ControlJobStatus.ERR);
+		List<ControlJob> l = service.search(sc);
+		assertEquals(0, l.size());
+
+		sc.setStatus(ControlJobStatus.NEW);
+		l = service.search(sc);
+		assertEquals(1, l.size());
+	}
+
+	@Test
 	public void testLookup_NotFound() throws Exception {
-		ControlJob je = service.findById("gugus");
+		ControlJob je = service.findById(new Random().nextLong());
 		assertNull(je);
 	}
 
@@ -112,7 +144,7 @@ public class ControlJobServiceRepositoryUnitTest {
 		Thread.sleep(1000);
 
 		ControlJob j = runnable.get(0);
-		assertEquals(jobId, j.getJobId());
+		assertEquals(jobId, j.getId());
 		assertEquals(ControlJobStatus.RUN, j.getStatus());
 
 		j.setStatus(ControlJobStatus.OK);

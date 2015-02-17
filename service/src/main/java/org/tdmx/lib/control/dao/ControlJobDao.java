@@ -41,7 +41,7 @@ public interface ControlJobDao {
 
 	public ControlJob merge(ControlJob value);
 
-	public ControlJob loadById(String id);
+	public ControlJob loadById(Long id);
 
 	public List<ControlJob> fetch(ControlJobSearchCriteria criteria, LockModeType lockMode);
 }

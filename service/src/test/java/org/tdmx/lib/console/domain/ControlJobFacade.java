@@ -18,13 +18,19 @@
  */
 package org.tdmx.lib.console.domain;
 
+import java.util.Date;
+
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobStatus;
 
-public class ControlJobEntryFacade {
+public class ControlJobFacade {
 
-	public static ControlJob createImmediateJob(Job job) {
+	public static ControlJob createImmediateJob(Long id, ControlJobStatus status, Job job) {
 		ControlJob j = new ControlJob();
+		j.setId(id);
+		j.setStatus(status);
+		j.setScheduledTime(new Date());
 		j.setJob(job);
 		return j;
 	}

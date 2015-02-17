@@ -69,7 +69,7 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 		if (job.getJob() == null) {
 			throw new IllegalArgumentException("missing job");
 		}
-		ControlJob storedAddress = getControlJobDao().loadById(job.getJobId());
+		ControlJob storedAddress = getControlJobDao().loadById(job.getId());
 		if (storedAddress == null) {
 			getControlJobDao().persist(job);
 		} else {
@@ -80,11 +80,11 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void delete(ControlJob job) {
-		ControlJob storedJob = getControlJobDao().loadById(job.getJobId());
+		ControlJob storedJob = getControlJobDao().loadById(job.getId());
 		if (storedJob != null) {
 			getControlJobDao().delete(storedJob);
 		} else {
-			log.warn("Unable to find ControlJobEntry to delete with jobId " + job.getJobId());
+			log.warn("Unable to find ControlJobEntry to delete with id " + job.getId());
 		}
 	}
 
@@ -111,8 +111,8 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public ControlJob findById(String jobId) {
-		return getControlJobDao().loadById(jobId);
+	public ControlJob findById(Long id) {
+		return getControlJobDao().loadById(id);
 	}
 
 	// -------------------------------------------------------------------------

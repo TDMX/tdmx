@@ -20,7 +20,6 @@ package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -45,18 +44,14 @@ public class ControlJob implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ID_LEN = 32;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO separate ID from maxvalue service
-
 	@Id
-	@Column(length = MAX_ID_LEN)
-	private String jobId;
+	private Long id;
 
 	@Column(nullable = false)
 	private Date scheduledTime;
@@ -71,11 +66,6 @@ public class ControlJob implements Serializable {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ControlJob() {
-		jobId = UUID.randomUUID().toString();
-		status = ControlJobStatus.NEW;
-		scheduledTime = new Date();
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -93,12 +83,12 @@ public class ControlJob implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getJobId() {
-		return jobId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Date getScheduledTime() {

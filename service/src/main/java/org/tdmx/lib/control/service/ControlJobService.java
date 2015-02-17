@@ -33,7 +33,7 @@ public interface ControlJobService {
 
 	public void createOrUpdate(ControlJob job);
 
-	public ControlJob findById(String jobId);
+	public ControlJob findById(Long id);
 
 	public List<ControlJob> search(ControlJobSearchCriteria criteria);
 
