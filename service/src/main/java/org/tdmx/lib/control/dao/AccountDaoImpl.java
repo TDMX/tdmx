@@ -85,6 +85,17 @@ public class AccountDaoImpl implements AccountDao {
 		}
 	}
 
+	@Override
+	public Account loadByAccountId(String accountId) {
+		Query query = em.createQuery("from Account as a where a.accountId = :aid");
+		query.setParameter("aid", accountId);
+		try {
+			return (Account) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Account> search(AccountSearchCriteria criteria) {

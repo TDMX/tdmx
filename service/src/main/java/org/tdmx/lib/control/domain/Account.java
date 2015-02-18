@@ -22,8 +22,11 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 /**
  * An Account describes a legal entity which has a commercial relationship with the ServiceProvider.
@@ -49,9 +52,9 @@ public class Account implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountIdGen")
+	@TableGenerator(name = "AccountIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
-
-	// TODO id generator
 
 	@Column(length = MAX_ACCOUNTID_LEN, nullable = false, unique = true)
 	private String accountId;

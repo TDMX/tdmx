@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,13 +54,13 @@ public class AccountZoneServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		PKIXCredential za = CredentialFacade.createZAC("zone.root.test");
-		az = AccountZoneFacade.createAccountZone(new Random().nextLong(), za.getPublicCert());
+		az = AccountZoneFacade.createAccountZone(za.getPublicCert());
 		service.createOrUpdate(az);
 	}
 
 	@After
 	public void doTeardown() {
-		AccountZone a = service.findById(az.getId());
+		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
 		if (a != null) {
 			service.delete(a);
 		}
@@ -74,7 +73,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		AccountZone a = service.findByZoneApex(az.getZoneApex());
+		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
 		assertNotNull(a);
 		assertNotNull(a.getAccountId());
 		assertNotNull(a.getStatus());
@@ -85,18 +84,24 @@ public class AccountZoneServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testLookup_NotFound() throws Exception {
-		AccountZone a = service.findByZoneApex("gugus");
+	public void testLookup_NotFound_Zone() throws Exception {
+		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), "gugus");
+		assertNull(a);
+	}
+
+	@Test
+	public void testLookup_NotFound_AccountId() throws Exception {
+		AccountZone a = service.findByAccountIdZoneApex("gugus", az.getZoneApex());
 		assertNull(a);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		AccountZone a = service.findByZoneApex(az.getZoneApex());
+		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
 		a.setStatus(AccountZoneStatus.BLOCKED);
 		service.createOrUpdate(a);
 
-		AccountZone a2 = service.findByZoneApex(az.getZoneApex());
+		AccountZone a2 = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
 		assertEquals(AccountZoneStatus.BLOCKED, a2.getStatus());
 
 		assertEquals(a.getAccountId(), a2.getAccountId());

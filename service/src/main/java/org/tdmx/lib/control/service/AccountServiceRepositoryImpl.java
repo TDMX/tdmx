@@ -58,11 +58,15 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(Account account) {
-		Account storedAccount = getAccountDao().loadById(account.getId());
-		if (storedAccount == null) {
-			getAccountDao().persist(account);
+		if (account.getId() != null) {
+			Account storedAccount = getAccountDao().loadById(account.getId());
+			if (storedAccount != null) {
+				getAccountDao().merge(account);
+			} else {
+				log.warn("Unable to find Account with id " + account.getId());
+			}
 		} else {
-			getAccountDao().merge(account);
+			getAccountDao().persist(account);
 		}
 	}
 
@@ -73,7 +77,7 @@ public class AccountServiceRepositoryImpl implements AccountService {
 		if (storedAccount != null) {
 			getAccountDao().delete(storedAccount);
 		} else {
-			log.warn("Unable to find Account to delete with root " + account.getId());
+			log.warn("Unable to find Account to delete with id " + account.getId());
 		}
 	}
 
@@ -81,6 +85,12 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Transactional(value = "ControlDB", readOnly = true)
 	public Account findById(Long id) {
 		return getAccountDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public Account findByAccountId(String accountId) {
+		return getAccountDao().loadByAccountId(accountId);
 	}
 
 	@Override

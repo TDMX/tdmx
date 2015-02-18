@@ -20,10 +20,10 @@ package org.tdmx.lib.control.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import org.junit.After;
@@ -56,7 +56,6 @@ public class AccountServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		a = new Account();
-		a.setId(new Random().nextLong());
 		a.setAccountId(UUID.randomUUID().toString());
 		a.setFirstName("peter");
 		a.setLastName("Klauser");
@@ -67,10 +66,17 @@ public class AccountServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		Account ac = service.findById(a.getId());
+		Account ac = service.findByAccountId(a.getAccountId());
 		if (ac != null) {
 			service.delete(ac);
 		}
+	}
+
+	@Test
+	public void testLookup_NotFoundAccountId() throws Exception {
+		Account accounts = service.findByAccountId(UUID.randomUUID().toString());
+
+		assertNull(accounts);
 	}
 
 	@Test

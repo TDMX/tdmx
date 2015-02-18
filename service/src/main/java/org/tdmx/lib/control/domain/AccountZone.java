@@ -24,8 +24,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 /**
  * An AccountZone describes a Zone at a ServiceProvider and points to the Zone's DatabasePartition.
@@ -51,9 +54,12 @@ public class AccountZone implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountZoneIdGen")
+	@TableGenerator(name = "AccountZoneIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	// TODO index zoneApex for agent authentication service
+	// TODO unique constraint on accountId and zoneApex
 	@Column(length = MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 

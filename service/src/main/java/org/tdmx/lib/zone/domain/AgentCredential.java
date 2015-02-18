@@ -88,7 +88,7 @@ public class AgentCredential implements Serializable {
 	public AgentCredential(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
 		setCertificateChain(certificateChain);
 		PKIXCertificate publicKey = getPublicKey();
-
+		// TODO fixme
 		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
 				publicKey.getFingerprint());
 		setId(id);

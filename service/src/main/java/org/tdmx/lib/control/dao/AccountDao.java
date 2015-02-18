@@ -41,5 +41,7 @@ public interface AccountDao {
 
 	public Account loadById(Long id);
 
+	public Account loadByAccountId(String id);
+
 	public List<Account> search(AccountSearchCriteria criteria);
 }

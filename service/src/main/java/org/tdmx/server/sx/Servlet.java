@@ -25,8 +25,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HttpServletBean;
@@ -35,7 +35,7 @@ public class Servlet extends HttpServletBean {
 
 	private static final long serialVersionUID = -7863212380245590483L;
 
-	private static Log log = LogFactory.getLog(Servlet.class);
+	private static final Logger log = LoggerFactory.getLogger(Servlet.class);
 
 	@Override
 	public void initServletBean() {

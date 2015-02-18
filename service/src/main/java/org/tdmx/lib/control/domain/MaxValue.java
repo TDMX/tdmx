@@ -49,7 +49,7 @@ public class MaxValue implements Serializable {
 	@Column(name = "name", length = MAX_KEY_LEN)
 	private String key;
 
-	@Column(nullable = false)
+	@Column(name = "value", nullable = false)
 	private Long value;
 
 	// -------------------------------------------------------------------------

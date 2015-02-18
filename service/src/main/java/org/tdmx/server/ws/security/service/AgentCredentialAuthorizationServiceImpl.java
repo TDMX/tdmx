@@ -20,14 +20,17 @@
 package org.tdmx.server.ws.security.service;
 
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialID;
@@ -84,23 +87,36 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		if (cert.getTdmxZoneInfo() == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.NON_TDMX);
 		}
+		String fingerprint = cert.getFingerprint();
+
 		String zoneApex = cert.getTdmxZoneInfo().getZoneRoot();
-		AccountZone accountZone = accountZoneService.findByZoneApex(zoneApex);
-		if (accountZone == null) {
+
+		// different accounts could have the same zone on different zoneDBs
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 4));
+		sc.setZoneApex(zoneApex);
+		List<AccountZone> accountZones = accountZoneService.search(sc);
+		if (accountZones.isEmpty()) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_ZONE);
 		}
 
-		String fingerprint = cert.getFingerprint();
-		AgentCredentialID id = new AgentCredentialID(zoneApex, fingerprint);
-
 		AgentCredential agentCredential = null;
-		try {
-			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
-			agentCredential = getAgentCredentialService().findById(id);
-		} finally {
-			getZonePartitionIdProvider().clearPartitionId();
+		AccountZone agentAccountZone = null;
+		for (AccountZone accountZone : accountZones) {
+			AgentCredentialID id = new AgentCredentialID(zoneApex, fingerprint);
+
+			try {
+				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+				agentCredential = getAgentCredentialService().findById(id);
+				if (agentCredential == null) {
+					continue;
+				}
+				agentAccountZone = accountZone;
+				break;
+			} finally {
+				getZonePartitionIdProvider().clearPartitionId();
+			}
 		}
-		if (agentCredential == null) {
+		if (agentCredential == null || agentAccountZone == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_AGENT);
 		}
 		if (AgentCredentialStatus.ACTIVE != agentCredential.getCredentialStatus()) {
@@ -117,7 +133,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 			log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
-		return new AuthorizationResult(cert, accountZone);
+		return new AuthorizationResult(cert, agentAccountZone);
 	}
 
 	// -------------------------------------------------------------------------

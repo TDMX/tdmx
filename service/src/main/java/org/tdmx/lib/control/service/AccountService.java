@@ -35,6 +35,8 @@ public interface AccountService {
 
 	public Account findById(Long id);
 
+	public Account findByAccountId(String accountId);
+
 	public void delete(Account accountZone);
 
 	public List<Account> search(AccountSearchCriteria criteria);

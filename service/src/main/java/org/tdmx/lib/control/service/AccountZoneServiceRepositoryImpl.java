@@ -59,11 +59,15 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(AccountZone accountZone) {
-		AccountZone storedZone = getAccountZoneDao().loadById(accountZone.getId());
-		if (storedZone == null) {
-			getAccountZoneDao().persist(accountZone);
+		if (accountZone.getId() != null) {
+			AccountZone storedAccount = getAccountZoneDao().loadById(accountZone.getId());
+			if (storedAccount != null) {
+				getAccountZoneDao().merge(accountZone);
+			} else {
+				log.warn("Unable to find AccountZone with id " + accountZone.getId());
+			}
 		} else {
-			getAccountZoneDao().merge(accountZone);
+			getAccountZoneDao().persist(accountZone);
 		}
 	}
 
@@ -86,8 +90,9 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public AccountZone findByZoneApex(String zoneApex) {
+	public AccountZone findByAccountIdZoneApex(String accountId, String zoneApex) {
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 1));
+		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);
 		List<AccountZone> accounts = getAccountZoneDao().search(sc);
 		if (accounts.isEmpty()) {

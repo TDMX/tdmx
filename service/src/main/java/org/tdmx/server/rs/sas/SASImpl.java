@@ -35,7 +35,6 @@ import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
-import org.tdmx.lib.control.service.ObjectIdService;
 import org.tdmx.server.rs.exception.ApplicationValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
@@ -51,7 +50,6 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(SASImpl.class);
 
-	private ObjectIdService objectIdService;
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
 
@@ -70,7 +68,6 @@ public class SASImpl implements SAS {
 		validateNotPresent("id", a.getId());
 		validateNotPresent("accountId", a.getAccountId());
 
-		a.setId(getObjectIdService().getNextObjectId());
 		a.setAccountId(UUID.randomUUID().toString()); // TODO maxvalue "accountId"
 
 		a.setEmail(account.getEmail());
@@ -78,7 +75,10 @@ public class SASImpl implements SAS {
 		a.setLastName(account.getLastname());
 
 		getAccountService().createOrUpdate(a);
-		return AccountResource.mapTo(a);
+
+		// the ID is only created on commit of the createOrUpdate above
+		Account storedAccount = getAccountService().findByAccountId(a.getAccountId());
+		return AccountResource.mapTo(storedAccount);
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountResource getAccount(Long aId) {
-		validateObjectId("aId", aId);
+		validatePresent("aId", aId);
 		return AccountResource.mapTo(getAccountService().findById(aId));
 	}
 
@@ -104,7 +104,7 @@ public class SASImpl implements SAS {
 	public AccountResource updateAccount(AccountResource account) {
 		validatePresent("account", account);
 		Account a = AccountResource.mapTo(account);
-		validateObjectId("id", a.getId());
+		validatePresent("id", a.getId());
 		validatePresent("accountId", a.getAccountId());
 		getAccountService().createOrUpdate(a);
 		return AccountResource.mapTo(a);
@@ -112,7 +112,7 @@ public class SASImpl implements SAS {
 
 	@Override
 	public Response deleteAccount(Long aId) {
-		validateObjectId("aId", aId);
+		validatePresent("aId", aId);
 		Account a = getAccountService().findById(aId);
 		getAccountService().delete(a);
 		return Response.ok().build();
@@ -120,7 +120,7 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountZoneResource createAccountZone(Long aId, AccountZoneResource accountZone) {
-		validateObjectId("aId", aId);
+		validatePresent("aId", aId);
 		AccountZone az = AccountZoneResource.mapTo(accountZone);
 
 		// check that the account exists and accountId same
@@ -128,9 +128,9 @@ public class SASImpl implements SAS {
 		validatePresent("account", a);
 		validateEquals("accountId", a.getAccountId(), az.getAccountId());
 
+		validatePresent("zoneApex", az.getZoneApex());
 		validatePresent("status", az.getStatus());
 		validateNotPresent("id", az.getId());
-		az.setId(getObjectIdService().getNextObjectId());
 
 		// TODO segment value valid.
 		validatePresent("segment", az.getSegment());
@@ -140,20 +140,23 @@ public class SASImpl implements SAS {
 
 		getAccountZoneService().createOrUpdate(az);
 
-		return AccountZoneResource.mapTo(az);
+		// the ID is only created on commit of the createOrUpdate above
+		AccountZone storedAccountZone = getAccountZoneService().findByAccountIdZoneApex(az.getAccountId(),
+				az.getZoneApex());
+		return AccountZoneResource.mapTo(storedAccountZone);
 	}
 
 	@Override
 	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize) {
-		validateObjectId("aId", aId);
+		validatePresent("aId", aId);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public AccountZoneResource getAccountZone(Long aId, Long zId) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
 
 		// TODO Auto-generated method stub
 		return null;
@@ -161,8 +164,8 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource account) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
 		// TODO Auto-generated method stub
 
 		// change partitionId - store jobId
@@ -172,8 +175,8 @@ public class SASImpl implements SAS {
 
 	@Override
 	public Response deleteAccountZone(Long aId, Long zId) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -181,8 +184,8 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource createAccountZoneAdministrationCredential(Long aId, Long zId,
 			AccountZoneAdministrationCredentialResource zac) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -190,8 +193,8 @@ public class SASImpl implements SAS {
 	@Override
 	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Long aId,
 			Long zId, Integer pageNo, Integer pageSize) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -199,9 +202,9 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource getAccountZoneAdministrationCredential(Long aId, Long zId,
 			Long zcId) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
-		validateObjectId("zcId", zcId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
+		validatePresent("zcId", zcId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -209,18 +212,18 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(Long aId, Long zId,
 			Long zcId, AccountZoneAdministrationCredentialResource zac) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
-		validateObjectId("zcId", zcId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
+		validatePresent("zcId", zcId);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Response deleteAccountZoneAdministrationCredential(Long aId, Long zId, Long zcId) {
-		validateObjectId("aId", aId);
-		validateObjectId("zId", zId);
-		validateObjectId("zcId", zcId);
+		validatePresent("aId", aId);
+		validatePresent("zId", zId);
+		validatePresent("zcId", zcId);
 
 		// TODO Auto-generated method stub
 		return null;
@@ -276,26 +279,9 @@ public class SASImpl implements SAS {
 		}
 	}
 
-	private void validateObjectId(String fieldId, Long oId) {
-		if (oId == null) {
-			throw createVE(FieldValidationErrorType.MISSING, fieldId);
-		}
-		if (!getObjectIdService().isValid(oId)) {
-			throw createVE(FieldValidationErrorType.INVALID, fieldId);
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ObjectIdService getObjectIdService() {
-		return objectIdService;
-	}
-
-	public void setObjectIdService(ObjectIdService objectIdService) {
-		this.objectIdService = objectIdService;
-	}
 
 	public AccountService getAccountService() {
 		return accountService;
