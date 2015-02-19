@@ -25,8 +25,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -57,6 +60,8 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountZoneCredentialIdGen")
+	@TableGenerator(name = "AccountZoneCredentialIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Enumerated(EnumType.STRING)
@@ -85,8 +90,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public AccountZoneAdministrationCredential() {
 	}
 
-	public AccountZoneAdministrationCredential(Long id, String accountId, String pem) throws CryptoCertificateException {
-		setId(id);
+	public AccountZoneAdministrationCredential(String accountId, String pem) throws CryptoCertificateException {
 		setCertificateChainPem(pem);
 		setAccountId(accountId);
 
@@ -106,7 +110,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 			}
 		} else {
 			setFingerprint(UUID.randomUUID().toString());
-			setId(id);
 			setZoneApex(null);
 			setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_PEM);
 		}

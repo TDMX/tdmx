@@ -61,18 +61,16 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		String accountId = UUID.randomUUID().toString();
-		Long id = new Random().nextLong();
 		byte[] zacFile = FileUtils.getFileContents("src/test/resources/zac.keystore");
 		assertNotNull(zacFile);
 		zac = KeyStoreUtils.getPrivateCredential(zacFile, "jks", "changeme", "client");
 		String pem = CertificateIOUtils.x509certToPem(zac.getPublicCert());
 
-		zoneAC = new AccountZoneAdministrationCredential(id, accountId, pem);
+		zoneAC = new AccountZoneAdministrationCredential(accountId, pem);
 
 		assertNotNull(zoneAC);
-		assertNotNull(zoneAC.getId());
+		assertNull(zoneAC.getId());
 		assertEquals(accountId, zoneAC.getAccountId());
-		assertEquals(id, zoneAC.getId());
 		assertEquals(zac.getPublicCert().getFingerprint(), zoneAC.getFingerprint());
 		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zoneAC.getZoneApex());
 		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING, zoneAC.getCredentialStatus());
@@ -93,6 +91,16 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(service);
+	}
+
+	@Test
+	public void testSearch_AccountIdNotFound() {
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setAccountId("gugus");
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
+		assertNotNull(list);
+		assertEquals(0, list.size());
 	}
 
 	@Test
