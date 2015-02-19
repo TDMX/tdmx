@@ -25,8 +25,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 
 import org.tdmx.core.system.env.ObfuscationSupport;
@@ -57,6 +60,8 @@ public class DatabasePartition implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DatabasePartitionIdGen")
+	@TableGenerator(name = "DatabasePartitionIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = MAX_PARTITIONID_LEN, unique = true)

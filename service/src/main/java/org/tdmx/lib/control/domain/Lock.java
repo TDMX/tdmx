@@ -23,8 +23,11 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 /**
  * A LockEntry can be lockedBy some ID for some time.
@@ -48,6 +51,8 @@ public class Lock implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "LockIdGen")
+	@TableGenerator(name = "LockIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = MAX_NAME_LEN, unique = true)

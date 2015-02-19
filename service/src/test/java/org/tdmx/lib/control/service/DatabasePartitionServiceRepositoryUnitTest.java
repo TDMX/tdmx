@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -52,43 +51,43 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment1-id1", DatabaseType.ZONE, "segment1");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1",
+					DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment1-id2", DatabaseType.ZONE, "segment1");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2",
+					DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment1-id3", DatabaseType.ZONE, "segment1");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3",
+					DatabaseType.ZONE, "segment1");
 			service.createOrUpdate(zp3);
 		}
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment2-id1", DatabaseType.ZONE, "segment2");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id1",
+					DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment2-id2", DatabaseType.ZONE, "segment2");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id2",
+					DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"z-segment2-id3", DatabaseType.ZONE, "segment2");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id3",
+					DatabaseType.ZONE, "segment2");
 			service.createOrUpdate(zp3);
 		}
 
 		{
-			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"m-segment1-id1", DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id1",
+					DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p1);
 
-			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"m-segment1-id2", DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id2",
+					DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p2);
 
-			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition(new Random().nextLong(),
-					"m-segment1-id3", DatabaseType.MESSAGE, "segment1");
+			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id3",
+					DatabaseType.MESSAGE, "segment1");
 			service.createOrUpdate(p3);
 		}
 	}

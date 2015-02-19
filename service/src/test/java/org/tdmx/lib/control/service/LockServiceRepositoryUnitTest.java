@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 import org.junit.After;
@@ -57,7 +56,6 @@ public class LockServiceRepositoryUnitTest {
 		lockName = UUID.randomUUID().toString();
 
 		Lock l = new Lock();
-		l.setId(new Random().nextLong());
 		l.setLockName(lockName);
 
 		service.createOrUpdate(l);

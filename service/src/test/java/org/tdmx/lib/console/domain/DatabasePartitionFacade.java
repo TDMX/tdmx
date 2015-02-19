@@ -25,10 +25,9 @@ import org.tdmx.lib.control.domain.DatabaseType;
 
 public class DatabasePartitionFacade {
 
-	public static DatabasePartition createDatabasePartition(Long id, String partitionId, DatabaseType dbType,
-			String segment) throws Exception {
+	public static DatabasePartition createDatabasePartition(String partitionId, DatabaseType dbType, String segment)
+			throws Exception {
 		DatabasePartition p = new DatabasePartition();
-		p.setId(id); // TODO remove
 		p.setPartitionId(partitionId);
 
 		p.setDbType(dbType);
