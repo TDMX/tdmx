@@ -45,7 +45,7 @@ import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
-import org.tdmx.lib.control.service.ObjectIdService;
+import org.tdmx.lib.control.service.AccountIdService;
 import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -67,7 +67,7 @@ public class SASImplUnitTest {
 	@Autowired
 	private MaxValueService maxValueService;
 	@Autowired
-	private ObjectIdService objectIdService;
+	private AccountIdService objectIdService;
 
 	@Autowired
 	private SAS sas;

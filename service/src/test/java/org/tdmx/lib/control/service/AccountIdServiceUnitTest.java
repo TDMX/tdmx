@@ -30,10 +30,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class ObjectIdServiceUnitTest {
+public class AccountIdServiceUnitTest {
 
 	@Autowired
-	private ObjectIdService service;
+	private AccountIdService service;
 
 	@Test
 	public void testAutoWire() throws Exception {
@@ -42,13 +42,13 @@ public class ObjectIdServiceUnitTest {
 
 	@Test
 	public void testSequentialLookup() throws Exception {
-		Long initialValue = service.getNextObjectId();
+		String initialValue = service.getNextAccountId();
 		assertTrue(service.isValid(initialValue));
 
 		for (int i = 0; i < 10000; i++) {
-			Long nextValue = service.getNextObjectId();
+			String nextValue = service.getNextAccountId();
 
-			assertTrue(nextValue > initialValue);
+			assertTrue(Long.parseLong(nextValue) > Long.parseLong(initialValue));
 			assertTrue(service.isValid(nextValue));
 			initialValue = nextValue;
 		}
@@ -56,7 +56,7 @@ public class ObjectIdServiceUnitTest {
 
 	@Test
 	public void testValidate() throws Exception {
-		Long badValue = 12345678l;
+		String badValue = "12345678";
 		assertFalse(service.isValid(badValue));
 
 	}

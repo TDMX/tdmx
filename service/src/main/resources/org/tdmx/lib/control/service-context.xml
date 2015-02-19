@@ -138,8 +138,8 @@
 
 	<!-- NON TRANSACTIONAL / HIGHER SERVICES -->
 
-	<bean id="tdmx.lib.control.ObjectIdService"
-		class="org.tdmx.lib.control.service.ObjectIdServiceImpl" init-method="init">
+	<bean id="tdmx.lib.control.AccountIdService"
+		class="org.tdmx.lib.control.service.AccountIdServiceImpl" init-method="init">
 		<property name="maxValueService"
 			ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>

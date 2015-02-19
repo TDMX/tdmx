@@ -56,7 +56,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Autowired
 	private ControlJobService service;
 	@Autowired
-	private ObjectIdService idService;
+	private AccountIdService idService;
 
 	private ControlJob je;
 

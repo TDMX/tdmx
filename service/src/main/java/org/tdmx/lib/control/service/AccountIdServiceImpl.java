@@ -21,15 +21,16 @@ package org.tdmx.lib.control.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.tdmx.lib.control.domain.MaxValue;
 
 /**
- * The implementation of {@link ObjectIdService}.
+ * The implementation of {@link AccountIdService}.
  * 
  * @author Peter Klauser
  * 
  */
-public class ObjectIdServiceImpl implements ObjectIdService {
+public class AccountIdServiceImpl implements AccountIdService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,11 +40,11 @@ public class ObjectIdServiceImpl implements ObjectIdService {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ObjectIdServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(AccountIdServiceImpl.class);
 
 	private MaxValueService maxValueService;
-	private int batchSize = 1000;
-	private String maxValueKey = "objectId";
+	private int batchSize = 10;
+	private String maxValueKey = "accountId";
 
 	private final Object syncObject = new Object();
 	private long cachedMaxValue = 0;
@@ -62,13 +63,13 @@ public class ObjectIdServiceImpl implements ObjectIdService {
 		if (mv == null) {
 			mv = new MaxValue();
 			mv.setKey(getMaxValueKey());
-			mv.setValue(1000000000L); // 9 digit
+			mv.setValue(100000000L); // 8 digit
 			getMaxValueService().createOrUpdate(mv);
 		}
 	}
 
 	@Override
-	public Long getNextObjectId() {
+	public String getNextAccountId() {
 		long result = 0;
 		synchronized (syncObject) {
 			if (cachedMaxValue == 0 || cachedMaxValue >= lastCachedMaxValue) {
@@ -82,19 +83,15 @@ public class ObjectIdServiceImpl implements ObjectIdService {
 		}
 		int checkDigit = calculateCheckDigit(result);
 		Long oid = (result * DIGIT) + checkDigit;
-		if (!isValid(oid)) {
-			log.error("Invalid oid " + oid);
-			throw new IllegalArgumentException();
-		}
-		return oid;
+		return oid.toString();
 	}
 
 	@Override
-	public boolean isValid(Long objectId) {
-		if (objectId == null) {
+	public boolean isValid(String accountId) {
+		if (!StringUtils.hasText(accountId)) {
 			return false;
 		}
-		String oid = "" + objectId;
+		String oid = accountId;
 		char[] chars = oid.toCharArray();
 		if (chars.length <= 1) {
 			return false;
