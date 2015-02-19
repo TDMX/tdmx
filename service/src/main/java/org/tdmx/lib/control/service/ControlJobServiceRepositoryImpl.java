@@ -27,6 +27,7 @@ import javax.persistence.LockModeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.ControlJobDao;
 import org.tdmx.lib.control.domain.ControlJob;
@@ -69,11 +70,19 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 		if (job.getJob() == null) {
 			throw new IllegalArgumentException("missing job");
 		}
-		ControlJob storedAddress = getControlJobDao().loadById(job.getId());
-		if (storedAddress == null) {
-			getControlJobDao().persist(job);
+		if (!StringUtils.hasText(job.getJob().getJobId())) {
+			throw new IllegalArgumentException("missing jobId");
+		}
+
+		if (job.getId() != null) {
+			ControlJob storedAccount = getControlJobDao().loadById(job.getId());
+			if (storedAccount != null) {
+				getControlJobDao().merge(job);
+			} else {
+				log.warn("Unable to find ControlJob with id " + job.getId());
+			}
 		} else {
-			getControlJobDao().merge(job);
+			getControlJobDao().persist(job);
 		}
 	}
 
@@ -84,7 +93,7 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 		if (storedJob != null) {
 			getControlJobDao().delete(storedJob);
 		} else {
-			log.warn("Unable to find ControlJobEntry to delete with id " + job.getId());
+			log.warn("Unable to find ControlJob to delete with id " + job.getId());
 		}
 	}
 

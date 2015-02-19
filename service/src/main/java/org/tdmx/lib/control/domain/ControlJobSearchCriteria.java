@@ -40,6 +40,7 @@ public class ControlJobSearchCriteria {
 
 	private final PageSpecifier pageSpecifier;
 
+	private String jobId;
 	private ControlJobStatus status;
 	private Date scheduledTimeBefore;
 	private String jobType;
@@ -71,6 +72,14 @@ public class ControlJobSearchCriteria {
 	// -------------------------------------------------------------------------
 	public PageSpecifier getPageSpecifier() {
 		return pageSpecifier;
+	}
+
+	public String getJobId() {
+		return jobId;
+	}
+
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
 	}
 
 	public ControlJobStatus getStatus() {

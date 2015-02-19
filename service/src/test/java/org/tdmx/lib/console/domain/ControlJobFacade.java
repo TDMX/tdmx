@@ -26,9 +26,8 @@ import org.tdmx.lib.control.domain.ControlJobStatus;
 
 public class ControlJobFacade {
 
-	public static ControlJob createImmediateJob(Long id, ControlJobStatus status, Job job) {
+	public static ControlJob createImmediateJob(ControlJobStatus status, Job job) {
 		ControlJob j = new ControlJob();
-		j.setId(id);
 		j.setStatus(status);
 		j.setScheduledTime(new Date());
 		j.setJob(job);

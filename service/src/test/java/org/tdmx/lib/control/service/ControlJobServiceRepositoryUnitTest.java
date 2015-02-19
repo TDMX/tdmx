@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Autowired
 	private ObjectIdService idService;
 
-	private Long jobId;
+	private ControlJob je;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -68,21 +69,22 @@ public class ControlJobServiceRepositoryUnitTest {
 		task.setCommand(cmd);
 
 		Job j = new Job();
+		j.setJobId(UUID.randomUUID().toString());
 		j.setType(cmdConverter.getType());
 		cmdConverter.setData(j, task);
 
-		ControlJob je = ControlJobFacade.createImmediateJob(idService.getNextObjectId(), ControlJobStatus.NEW, j);
-
-		jobId = je.getId();
+		je = ControlJobFacade.createImmediateJob(ControlJobStatus.NEW, j);
 
 		service.createOrUpdate(je);
 	}
 
 	@After
 	public void doTeardown() {
-		ControlJob je = service.findById(jobId);
-		if (je != null) {
-			service.delete(je);
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobId(je.getJob().getJobId());
+		List<ControlJob> jobs = service.search(sc);
+		for (ControlJob j : jobs) {
+			service.delete(j);
 		}
 	}
 
@@ -144,13 +146,13 @@ public class ControlJobServiceRepositoryUnitTest {
 		Thread.sleep(1000);
 
 		ControlJob j = runnable.get(0);
-		assertEquals(jobId, j.getId());
+		assertEquals(je.getJob().getJobId(), j.getJob().getJobId());
 		assertEquals(ControlJobStatus.RUN, j.getStatus());
 
 		j.setStatus(ControlJobStatus.OK);
 		service.createOrUpdate(j);
 
-		j = service.findById(jobId);
+		j = service.findById(j.getId());
 		assertEquals(ControlJobStatus.OK, j.getStatus());
 	}
 

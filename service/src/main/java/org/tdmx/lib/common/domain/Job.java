@@ -33,13 +33,11 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class Job implements Serializable {
 
-	// TODO do we really need separation here?
-
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_TYPE_LEN = 128;
-
+	public static final int MAX_JOBID_LEN = 32;
 	public static final int MAX_DATA_LEN = 16000;
 
 	// -------------------------------------------------------------------------
@@ -47,10 +45,14 @@ public class Job implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
+	@Column(length = MAX_JOBID_LEN, nullable = false, unique = true)
+	private String jobId;
+
 	@Column(length = MAX_TYPE_LEN, nullable = false)
 	private String type;
 
 	@Column
+	// TODO temporal
 	private Date startTimestamp;
 
 	@Column
@@ -77,8 +79,9 @@ public class Job implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Job [type=");
-		builder.append(type);
+		builder.append("Job [");
+		builder.append("jobId=").append(jobId);
+		builder.append(" type=").append(type);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -94,6 +97,14 @@ public class Job implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public String getJobId() {
+		return jobId;
+	}
+
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
+	}
 
 	public String getType() {
 		return type;

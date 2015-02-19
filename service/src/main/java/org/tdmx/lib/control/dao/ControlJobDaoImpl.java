@@ -103,6 +103,10 @@ public class ControlJobDaoImpl implements ControlJobDao {
 			isFirstClause = andClause(isFirstClause, "cje.job.type = :jt", "jt", criteria.getJobType(), whereClause,
 					parameters);
 		}
+		if (StringUtils.hasText(criteria.getJobId())) {
+			isFirstClause = andClause(isFirstClause, "cje.job.jobId = :ji", "ji", criteria.getJobId(), whereClause,
+					parameters);
+		}
 		StringBuilder sql = new StringBuilder();
 		sql.append("from ControlJob as cje");
 		if (!isFirstClause) {

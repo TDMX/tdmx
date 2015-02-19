@@ -26,8 +26,11 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 import org.tdmx.lib.common.domain.Job;
 
@@ -51,6 +54,8 @@ public class ControlJob implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ControlJobIdGen")
+	@TableGenerator(name = "ControlJobIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(nullable = false)
