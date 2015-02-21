@@ -60,12 +60,16 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(AccountZoneAdministrationCredential accountCredential) {
-		AccountZoneAdministrationCredential storedAccountCredential = getAccountCredentialDao().loadById(
-				accountCredential.getId());
-		if (storedAccountCredential == null) {
-			getAccountCredentialDao().persist(accountCredential);
+		if (accountCredential.getId() != null) {
+			AccountZoneAdministrationCredential storedCredential = getAccountCredentialDao().loadById(
+					accountCredential.getId());
+			if (storedCredential != null) {
+				getAccountCredentialDao().merge(accountCredential);
+			} else {
+				log.warn("Unable to find AccountZoneAdministrationCredential with id " + accountCredential.getId());
+			}
 		} else {
-			getAccountCredentialDao().merge(accountCredential);
+			getAccountCredentialDao().persist(accountCredential);
 		}
 	}
 
@@ -77,7 +81,7 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 		if (storedAccountCredential != null) {
 			getAccountCredentialDao().delete(storedAccountCredential);
 		} else {
-			log.warn("Unable to find AccountZoneAdministrationCredential to delete with fingerprint "
+			log.warn("Unable to find AccountZoneAdministrationCredential to delete with id "
 					+ accountCredential.getId());
 		}
 	}

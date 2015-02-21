@@ -36,6 +36,8 @@ public interface ZoneDao {
 
 	public Zone merge(Zone value);
 
-	public Zone loadById(String id);
+	public Zone loadById(Long id);
+
+	public Zone loadByZoneApex(Long tenantId, String zoneApex);
 
 }

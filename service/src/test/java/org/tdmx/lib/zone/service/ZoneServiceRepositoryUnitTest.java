@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Random;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,19 +47,21 @@ public class ZoneServiceRepositoryUnitTest {
 	// private AuthorizedAgentDao dao;
 
 	private String zoneApex;
+	private Long tenantId;
 
 	@Before
 	public void doSetup() throws Exception {
+		tenantId = new Random().nextLong();
 		zoneApex = "zone.root.test";
 
-		Zone az = ZoneFacade.createZone(zoneApex);
+		Zone az = ZoneFacade.createZone(tenantId, zoneApex);
 
 		service.createOrUpdate(az);
 	}
 
 	@After
 	public void doTeardown() {
-		Zone az = service.findByZoneApex(zoneApex);
+		Zone az = service.findByZoneApex(tenantId, zoneApex);
 		if (az != null) {
 			service.delete(az);
 		}
@@ -70,23 +74,23 @@ public class ZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Zone az = service.findByZoneApex(zoneApex);
+		Zone az = service.findByZoneApex(tenantId, zoneApex);
 		assertNotNull(az);
 		assertEquals(zoneApex, az.getZoneApex());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Zone az = service.findByZoneApex("gugus");
+		Zone az = service.findByZoneApex(tenantId, "gugus");
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Zone az = service.findByZoneApex(zoneApex);
+		Zone az = service.findByZoneApex(tenantId, zoneApex);
 		service.createOrUpdate(az);
 
-		Zone az2 = service.findByZoneApex(zoneApex);
+		Zone az2 = service.findByZoneApex(tenantId, zoneApex);
 
 		assertEquals(az.getZoneApex(), az2.getZoneApex());
 	}

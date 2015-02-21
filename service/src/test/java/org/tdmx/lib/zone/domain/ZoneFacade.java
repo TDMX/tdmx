@@ -20,8 +20,9 @@ package org.tdmx.lib.zone.domain;
 
 public class ZoneFacade {
 
-	public static Zone createZone(String zoneApex) throws Exception {
+	public static Zone createZone(Long tenantId, String zoneApex) throws Exception {
 		Zone z = new Zone();
+		z.setTenantId(tenantId);
 		z.setZoneApex(zoneApex);
 
 		return z;

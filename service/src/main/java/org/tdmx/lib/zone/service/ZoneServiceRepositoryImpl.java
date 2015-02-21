@@ -55,29 +55,33 @@ public class ZoneServiceRepositoryImpl implements ZoneService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(Zone zone) {
-		Zone storedZone = getZoneDao().loadById(zone.getZoneApex());
-		if (storedZone == null) {
-			getZoneDao().persist(zone);
+		if (zone.getId() != null) {
+			Zone storedZone = getZoneDao().loadById(zone.getId());
+			if (storedZone != null) {
+				getZoneDao().merge(zone);
+			} else {
+				log.warn("Unable to find Zone with id " + zone.getId());
+			}
 		} else {
-			getZoneDao().merge(zone);
+			getZoneDao().persist(zone);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(Zone zone) {
-		Zone storedZone = getZoneDao().loadById(zone.getZoneApex());
+		Zone storedZone = getZoneDao().loadById(zone.getId());
 		if (storedZone != null) {
 			getZoneDao().delete(storedZone);
 		} else {
-			log.warn("Unable to find Zone to delete with root " + zone.getZoneApex());
+			log.warn("Unable to find Zone to delete with id " + zone.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Zone findByZoneApex(String zoneApex) {
-		return getZoneDao().loadById(zoneApex);
+	public Zone findByZoneApex(Long tenantId, String zoneApex) {
+		return getZoneDao().loadByZoneApex(tenantId, zoneApex);
 	}
 
 	// -------------------------------------------------------------------------

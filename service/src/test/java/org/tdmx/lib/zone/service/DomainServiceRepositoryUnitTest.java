@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,14 +52,17 @@ public class DomainServiceRepositoryUnitTest {
 	private DomainService domainService;
 
 	private DomainID id = null;
+	private Long tenantId;
 
 	@Before
 	public void doSetup() throws Exception {
+		tenantId = new Random().nextLong();
+
 		id = new DomainID();
 		id.setZoneApex("ZONE.ROOT.TEST");
 		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
 
-		Zone az = ZoneFacade.createZone(id.getZoneApex());
+		Zone az = ZoneFacade.createZone(tenantId, id.getZoneApex());
 
 		zoneService.createOrUpdate(az);
 
@@ -72,7 +76,7 @@ public class DomainServiceRepositoryUnitTest {
 		if (d != null) {
 			domainService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(id.getZoneApex());
+		Zone az = zoneService.findByZoneApex(tenantId, id.getZoneApex());
 		if (az != null) {
 			zoneService.delete(az);
 		}

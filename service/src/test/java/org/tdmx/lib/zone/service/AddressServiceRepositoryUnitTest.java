@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,15 +52,18 @@ public class AddressServiceRepositoryUnitTest {
 	private AddressService addressService;
 
 	private AddressID id = null;
+	private Long tenantId;
 
 	@Before
 	public void doSetup() throws Exception {
+		tenantId = new Random().nextLong();
+
 		id = new AddressID();
 		id.setZoneApex("ZONE.ROOT.TEST");
 		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
 		id.setLocalName("addressName");
 
-		Zone az = ZoneFacade.createZone(id.getZoneApex());
+		Zone az = ZoneFacade.createZone(tenantId, id.getZoneApex());
 
 		zoneService.createOrUpdate(az);
 
@@ -73,7 +77,7 @@ public class AddressServiceRepositoryUnitTest {
 		if (d != null) {
 			addressService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(id.getZoneApex());
+		Zone az = zoneService.findByZoneApex(tenantId, id.getZoneApex());
 		if (az != null) {
 			zoneService.delete(az);
 		}

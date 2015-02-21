@@ -68,9 +68,21 @@ public class ZoneDaoImpl implements ZoneDao {
 	}
 
 	@Override
-	public Zone loadById(String id) {
-		Query query = em.createQuery("from Zone as z where z.zoneApex = :id");
+	public Zone loadById(Long id) {
+		Query query = em.createQuery("from Zone as z where z.id = :id");
 		query.setParameter("id", id);
+		try {
+			return (Zone) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public Zone loadByZoneApex(Long tenantId, String zoneApex) {
+		Query query = em.createQuery("from Zone as z where z.tenantId = :tid and z.zoneApex = :a");
+		query.setParameter("tid", tenantId);
+		query.setParameter("a", zoneApex);
 		try {
 			return (Zone) query.getSingleResult();
 		} catch (NoResultException e) {

@@ -30,7 +30,7 @@ public interface ZoneService {
 
 	public void createOrUpdate(Zone zone);
 
-	public Zone findByZoneApex(String zoneApex);
+	public Zone findByZoneApex(Long tenantId, String zoneApex);
 
 	public void delete(Zone zone);
 

@@ -61,7 +61,7 @@ public class DatabasePartition implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DatabasePartitionIdGen")
-	@TableGenerator(name = "DatabasePartitionIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "objectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "DatabasePartitionIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = MAX_PARTITIONID_LEN, unique = true)
