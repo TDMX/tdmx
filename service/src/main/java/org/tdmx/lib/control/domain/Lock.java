@@ -28,6 +28,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * A LockEntry can be lockedBy some ID for some time.
@@ -58,6 +60,7 @@ public class Lock implements Serializable {
 	@Column(length = MAX_NAME_LEN, unique = true)
 	private String lockName;
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column
 	private Date lockedUntilTime;
 

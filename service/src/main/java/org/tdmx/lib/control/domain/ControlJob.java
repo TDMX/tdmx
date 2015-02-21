@@ -31,6 +31,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.tdmx.lib.common.domain.Job;
 
@@ -59,6 +61,7 @@ public class ControlJob implements Serializable {
 	private Long id;
 
 	@Column(nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date scheduledTime;
 
 	@Enumerated(EnumType.STRING)

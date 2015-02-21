@@ -43,9 +43,6 @@ public class ZoneServiceRepositoryUnitTest {
 	@Autowired
 	private ZoneService service;
 
-	// @Autowired
-	// private AuthorizedAgentDao dao;
-
 	private String zoneApex;
 	private Long tenantId;
 

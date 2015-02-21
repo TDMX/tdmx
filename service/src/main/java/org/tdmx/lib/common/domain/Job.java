@@ -23,6 +23,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * An Job describes some asynchronously executed task.
@@ -52,10 +54,11 @@ public class Job implements Serializable {
 	private String type;
 
 	@Column
-	// TODO temporal
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date startTimestamp;
 
 	@Column
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date endTimestamp;
 
 	@Column(length = MAX_DATA_LEN, nullable = false)

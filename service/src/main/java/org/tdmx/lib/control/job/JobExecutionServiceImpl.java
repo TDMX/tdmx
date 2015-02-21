@@ -88,11 +88,10 @@ public class JobExecutionServiceImpl implements Runnable {
 	@Override
 	public void run() {
 		log.info("run start.");
-		// TODO
+		// TODO lock service?
 		try {
 			Thread.sleep(10000L);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		log.info("run finish.");

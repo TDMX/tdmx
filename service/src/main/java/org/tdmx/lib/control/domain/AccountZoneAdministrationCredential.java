@@ -64,6 +64,16 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@TableGenerator(name = "AccountZoneCredentialIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
+	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
+	private String accountId;
+
+	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
+	private String zoneApex;
+
+	// TODO sha2 fingerprint should be unique over all certs.
+	@Column(length = MAX_FINGERPRINT_LEN, nullable = false, unique = true)
+	private String fingerprint;
+
 	@Enumerated(EnumType.STRING)
 	@Column(length = AccountZoneAdministrationCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
 	private AccountZoneAdministrationCredentialStatus credentialStatus;
@@ -71,17 +81,15 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
 
-	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
-	private String zoneApex;
-
-	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
-	private String accountId;
-
-	@Column(length = MAX_FINGERPRINT_LEN, nullable = false)
-	private String fingerprint;
-
 	@Transient
 	private PKIXCertificate[] certificateChain;
+
+	/**
+	 * If a Job is pending on the Account's ZoneCredential (like check/setup ) then this is the link to the jobId. The
+	 * Job is responsible to remove this record once it has completed.
+	 */
+	@Column
+	private Long jobId;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -220,6 +228,14 @@ public class AccountZoneAdministrationCredential implements Serializable {
 
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChainPem = certificateChainPem;
+	}
+
+	public Long getJobId() {
+		return jobId;
+	}
+
+	public void setJobId(Long jobId) {
+		this.jobId = jobId;
 	}
 
 }

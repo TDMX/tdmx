@@ -107,11 +107,10 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 			try {
 				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
 				agentCredential = getAgentCredentialService().findById(id);
-				if (agentCredential == null) {
-					continue;
+				if (agentCredential != null) {
+					agentAccountZone = accountZone;
+					break;
 				}
-				agentAccountZone = accountZone;
-				break;
 			} finally {
 				getZonePartitionIdProvider().clearPartitionId();
 			}

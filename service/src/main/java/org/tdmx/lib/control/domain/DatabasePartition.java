@@ -30,6 +30,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.tdmx.core.system.env.ObfuscationSupport;
@@ -91,8 +93,10 @@ public class DatabasePartition implements Serializable {
 	@Column(nullable = false)
 	private int sizeFactor; // immutable
 	@Column
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date activationTimestamp; // immutable
 	@Column
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date deactivationTimestamp; // immutable
 
 	// -------------------------------------------------------------------------

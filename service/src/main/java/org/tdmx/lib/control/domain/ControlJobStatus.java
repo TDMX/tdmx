@@ -20,11 +20,18 @@ package org.tdmx.lib.control.domain;
 
 public enum ControlJobStatus {
 
+	// newly inserted not yet running
 	NEW,
+
+	// running
 	RUN,
-	OK,
+
+	// run but failed
 	ERR,
-	DEL, // may be cleaned up
+
+	// run successfully ( probably deleted )
+	OK,
+
 	;
 
 	public static final int MAX_JOBSTATUS_LEN = 4;
