@@ -16,52 +16,40 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.common.domain;
 
-import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-
 /**
- * A DomainID is only unique within a zone.
+ * An ZoneReference is the information you need to reference a Zone in the ZoneDB.
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class DomainID implements Serializable {
+public class ZoneReference {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
-	private String zoneApex;
-
-	@Column(length = MAX_NAME_LEN, nullable = false)
 	/**
-	 * The fully qualified domain name ( includes the zoneApex ).
+	 * The tenantId is the entityID of the AccountZone in ControlDB.
 	 */
-	private String domainName;
+	private final Long tenantId;
+
+	private final String zoneApex;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public DomainID() {
-	}
-
-	public DomainID(String domainName, String zoneApex) {
+	public ZoneReference(Long tenantId, String zoneApex) {
+		this.tenantId = tenantId;
 		this.zoneApex = zoneApex;
-		this.domainName = domainName;
 	}
 
 	// -------------------------------------------------------------------------
@@ -70,14 +58,14 @@ public class DomainID implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(zoneApex, domainName);
+		return Objects.hash(tenantId, zoneApex);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof DomainID) {
-			DomainID other = (DomainID) obj;
-			return Objects.equals(zoneApex, other.getZoneApex()) && Objects.equals(domainName, other.getDomainName());
+		if (obj instanceof ZoneReference) {
+			ZoneReference other = (ZoneReference) obj;
+			return Objects.equals(tenantId, other.getTenantId()) && Objects.equals(zoneApex, other.getZoneApex());
 		} else {
 			return false;
 		}
@@ -86,10 +74,10 @@ public class DomainID implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("DomainID [zoneApex=");
+		builder.append("ZoneRef [zoneApex=");
 		builder.append(zoneApex);
-		builder.append(", domainName=");
-		builder.append(domainName);
+		builder.append(", tenantId=");
+		builder.append(tenantId);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -105,20 +93,13 @@ public class DomainID implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public String getDomainName() {
-		return domainName;
-	}
 
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public Long getTenantId() {
+		return tenantId;
 	}
 
 	public String getZoneApex() {
 		return zoneApex;
-	}
-
-	public void setZoneApex(String zoneApex) {
-		this.zoneApex = zoneApex;
 	}
 
 }

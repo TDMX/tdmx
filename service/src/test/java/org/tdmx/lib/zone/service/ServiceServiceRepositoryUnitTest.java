@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
@@ -52,18 +53,18 @@ public class ServiceServiceRepositoryUnitTest {
 	private ServiceService serviceService;
 
 	private ServiceID id = null;
-	private Long tenantId;
+	private ZoneReference zone;
 
 	@Before
 	public void doSetup() throws Exception {
-		tenantId = new Random().nextLong();
 
 		id = new ServiceID();
 		id.setZoneApex("ZONE.ROOT.TEST");
 		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
 		id.setServiceName("serviceName");
 
-		Zone az = ZoneFacade.createZone(tenantId, id.getZoneApex());
+		zone = new ZoneReference(new Random().nextLong(), id.getZoneApex());
+		Zone az = ZoneFacade.createZone(zone);
 
 		zoneService.createOrUpdate(az);
 
@@ -77,7 +78,7 @@ public class ServiceServiceRepositoryUnitTest {
 		if (d != null) {
 			serviceService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(tenantId, id.getZoneApex());
+		Zone az = zoneService.findByZoneApex(zone);
 		if (az != null) {
 			zoneService.delete(az);
 		}

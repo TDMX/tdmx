@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -90,13 +91,13 @@ import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.service.AddressService;
@@ -131,24 +132,24 @@ public class ZASImplUnitTest {
 	@Autowired
 	private ZAS zas;
 
-	private String zoneApex;
+	private ZoneReference zone;
 	private AccountZone accountZone;
 	private PKIXCredential zac;
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 	private AddressID aid;
 	private ServiceID sid;
-	private DomainID dId;
+	private String domainName;
 
 	@Before
 	public void doSetup() throws Exception {
 		// uc/dac/zac.keystore created by KeyStoreUtilsTest#storeCreateClientKeystores
-
 		byte[] zacFile = FileUtils.getFileContents("src/test/resources/zac.keystore");
 		assertNotNull(zacFile);
 		zac = KeyStoreUtils.getPrivateCredential(zacFile, "jks", "changeme", "client");
 		// ZAC, DAC and UC need to be all on the same zoneApex
-		zoneApex = zac.getPublicCert().getTdmxZoneInfo().getZoneRoot();
+
+		zone = new ZoneReference(new Random().nextLong(), zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 
 		byte[] dacFile = FileUtils.getFileContents("src/test/resources/dac.keystore");
 		assertNotNull(dacFile);
@@ -158,38 +159,44 @@ public class ZASImplUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zoneApex, zac.getCertificateChain());
+		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				zac.getCertificateChain());
 		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
-		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
+		assertEquals(zone.getZoneApex(), zoneAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zoneApex, dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				dac.getCertificateChain());
 		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
 		assertNotNull(domainAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(domainAC);
 
 		// we create the domain of the dac
-		dId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(dId);
+		Domain dacDomain = new Domain();
+		dacDomain.setZoneReference(zone);
+		domainName = dac.getPublicCert().getCommonName();
+		dacDomain.setDomainName(domainName);
 		domainService.createOrUpdate(dacDomain);
 
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zoneApex, uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				uc.getCertificateChain());
 		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
-		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertEquals(zone.getZoneApex(), userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
 
-		aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zoneApex);
+		aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zone.getZoneApex());
 		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
 		addressService.createOrUpdate(userAddress);
 
-		sid = new ServiceID("service", domainAC.getDomainName(), zoneApex);
+		sid = new ServiceID("service", domainAC.getDomainName(), zone.getZoneApex());
 		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(sid);
 		serviceService.createOrUpdate(s);
 
 		accountZone = new AccountZone();
+		accountZone.setId(zone.getTenantId());
 		accountZone.setAccountId("TEST");
 		accountZone.setZoneApex(zoneAC.getId().getZoneApex());
 		accountZone.setStatus(AccountZoneStatus.ACTIVE);
@@ -199,27 +206,27 @@ public class ZASImplUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AgentCredential> list = agentCredentialService.search(zoneApex,
+		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(),
 				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
 
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex,
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(),
 				new org.tdmx.lib.zone.domain.AddressSearchCriteria(new PageSpecifier(0, 1000)));
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
 			log.info("Cleanup " + a);
 			addressService.delete(a);
 		}
 
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex,
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone.getZoneApex(),
 				new org.tdmx.lib.zone.domain.ServiceSearchCriteria(new PageSpecifier(0, 1000)));
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			log.info("Cleanup " + s);
 			serviceService.delete(s);
 		}
 
-		List<Domain> domains = domainService.search(zoneApex, new DomainSearchCriteria(new PageSpecifier(0, 1000)));
+		List<Domain> domains = domainService.search(zone, new DomainSearchCriteria(new PageSpecifier(0, 1000)));
 		for (Domain d : domains) {
 			log.info("Cleanup " + d);
 			domainService.delete(d);
@@ -619,7 +626,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		UserFilter uf = new UserFilter();
-		uf.setDomain("unknownsubdomain." + zoneApex);
+		uf.setDomain("unknownsubdomain." + zone.getZoneApex());
 		req.setFilter(uf);
 
 		SearchUserResponse response = zas.searchUser(req);
@@ -639,7 +646,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		AddressFilter uf = new AddressFilter();
-		uf.setDomain("unknownsubdomain." + zoneApex);
+		uf.setDomain("unknownsubdomain." + zone.getZoneApex());
 		req.setFilter(uf);
 
 		SearchAddressResponse response = zas.searchAddress(req);
@@ -659,7 +666,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		ServiceFilter uf = new ServiceFilter();
-		uf.setDomain("unknownsubdomain." + zoneApex);
+		uf.setDomain("unknownsubdomain." + zone.getZoneApex());
 		req.setFilter(uf);
 
 		SearchServiceResponse response = zas.searchService(req);
@@ -959,7 +966,7 @@ public class ZASImplUnitTest {
 
 		DeleteDomain ca = new DeleteDomain();
 
-		ca.setDomain(dId.getDomainName());
+		ca.setDomain(domainName);
 		DeleteDomainResponse response = zas.deleteDomain(ca);
 		assertError(ErrorCode.DomainAdministratorCredentialsExist, response);
 	}
@@ -971,7 +978,7 @@ public class ZASImplUnitTest {
 
 		DeleteDomain ca = new DeleteDomain();
 
-		ca.setDomain(dId.getDomainName());
+		ca.setDomain(domainName);
 		DeleteDomainResponse response = zas.deleteDomain(ca);
 		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}
@@ -984,15 +991,15 @@ public class ZASImplUnitTest {
 		// delete any DAC on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(dId.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		dacSc.setDomainName(domainName);
+		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
 
 		DeleteDomain ca = new DeleteDomain();
 
-		ca.setDomain(dId.getDomainName());
+		ca.setDomain(domainName);
 		DeleteDomainResponse response = zas.deleteDomain(ca);
 		assertError(ErrorCode.AddressesExist, response);
 	}
@@ -1005,8 +1012,8 @@ public class ZASImplUnitTest {
 		// delete any DAC on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(dId.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		dacSc.setDomainName(domainName);
+		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
@@ -1014,15 +1021,15 @@ public class ZASImplUnitTest {
 		// delete any address on the domain
 		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
 				new PageSpecifier(0, 1000));
-		adSc.setDomainName(dId.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex, adSc);
+		adSc.setDomainName(domainName);
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(), adSc);
 		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
 			addressService.delete(ad);
 		}
 
 		DeleteDomain ca = new DeleteDomain();
 
-		ca.setDomain(dId.getDomainName());
+		ca.setDomain(domainName);
 		DeleteDomainResponse response = zas.deleteDomain(ca);
 		assertError(ErrorCode.ServicesExist, response);
 	}
@@ -1035,8 +1042,8 @@ public class ZASImplUnitTest {
 		// delete any DAC on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(dId.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zoneApex, dacSc);
+		dacSc.setDomainName(domainName);
+		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
@@ -1044,8 +1051,8 @@ public class ZASImplUnitTest {
 		// delete any address on the domain
 		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
 				new PageSpecifier(0, 1000));
-		adSc.setDomainName(dId.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex, adSc);
+		adSc.setDomainName(domainName);
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(), adSc);
 		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
 			addressService.delete(ad);
 		}
@@ -1053,15 +1060,15 @@ public class ZASImplUnitTest {
 		// delete any services on the domain
 		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
 				new PageSpecifier(0, 1000));
-		sSc.setDomainName(dId.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex, sSc);
+		sSc.setDomainName(domainName);
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone.getZoneApex(), sSc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			serviceService.delete(s);
 		}
 
 		DeleteDomain ca = new DeleteDomain();
 
-		ca.setDomain(dId.getDomainName());
+		ca.setDomain(domainName);
 		DeleteDomainResponse response = zas.deleteDomain(ca);
 		assertSuccess(response);
 	}
@@ -1199,7 +1206,8 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success() {
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zoneApex, dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				dac.getCertificateChain());
 		agentCredentialService.delete(domainAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1218,7 +1226,8 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success_DefaultStatus() {
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zoneApex, dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				dac.getCertificateChain());
 		agentCredentialService.delete(domainAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1253,8 +1262,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_DomainNotExists() {
 		// we delete the domain of the dac and the dac.
-		DomainID domId = new DomainID(dac.getPublicCert().getCommonName(), zoneApex);
-		Domain dacDomain = new Domain(domId);
+		Domain dacDomain = domainService.findByDomainName(zone, domainName);
 		domainService.delete(dacDomain);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1318,7 +1326,8 @@ public class ZASImplUnitTest {
 	@Test
 	public void testDeleteAddress_ZAC_ok() {
 		// remove UC credentials
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zoneApex, uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				uc.getCertificateChain());
 		agentCredentialService.delete(userAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1383,7 +1392,8 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateUser_ZAC_ok() {
 		// delete the UC setup
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zoneApex, uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
+				uc.getCertificateChain());
 		agentCredentialService.delete(userAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1403,7 +1413,8 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateUser_AddressNotExists() {
-		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(), zoneApex);
+		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(),
+				zone.getZoneApex());
 		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
 		addressService.delete(userAddress);
 

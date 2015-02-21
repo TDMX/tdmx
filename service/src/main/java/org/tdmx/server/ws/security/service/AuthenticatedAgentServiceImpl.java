@@ -22,6 +22,7 @@ package org.tdmx.server.ws.security.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 
 /**
@@ -74,6 +75,12 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	public String getZoneDbPartitionId() {
 		AuthorizationResult r = authStore.get();
 		return r != null ? r.getAccountZone().getZonePartitionId() : null;
+	}
+
+	@Override
+	public ZoneReference getZoneReference() {
+		AuthorizationResult r = authStore.get();
+		return r != null ? r.getAccountZone().getZoneReference() : null;
 	}
 
 	@Override

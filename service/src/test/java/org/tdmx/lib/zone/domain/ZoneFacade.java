@@ -18,18 +18,21 @@
  */
 package org.tdmx.lib.zone.domain;
 
+import org.tdmx.lib.common.domain.ZoneReference;
+
 public class ZoneFacade {
 
-	public static Zone createZone(Long tenantId, String zoneApex) throws Exception {
+	public static Zone createZone(ZoneReference zone) throws Exception {
 		Zone z = new Zone();
-		z.setTenantId(tenantId);
-		z.setZoneApex(zoneApex);
+		z.setZoneReference(zone);
 
 		return z;
 	}
 
-	public static Domain createDomain(DomainID id) throws Exception {
-		Domain d = new Domain(id);
+	public static Domain createDomain(ZoneReference zone, String domain) throws Exception {
+		Domain d = new Domain();
+		d.setZoneReference(zone);
+		d.setDomainName(domain);
 		return d;
 	}
 

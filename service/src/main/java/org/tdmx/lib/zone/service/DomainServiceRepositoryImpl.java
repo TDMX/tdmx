@@ -24,9 +24,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.DomainDao;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
 /**
@@ -59,11 +60,15 @@ public class DomainServiceRepositoryImpl implements DomainService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(Domain domain) {
-		Domain storedDomain = getDomainDao().loadById(domain.getId());
-		if (storedDomain == null) {
-			getDomainDao().persist(domain);
+		if (domain.getId() != null) {
+			Domain storedDomain = getDomainDao().loadById(domain.getId());
+			if (storedDomain != null) {
+				getDomainDao().merge(domain);
+			} else {
+				log.warn("Unable to find Domain with id " + domain.getId());
+			}
 		} else {
-			getDomainDao().merge(domain);
+			getDomainDao().persist(domain);
 		}
 	}
 
@@ -80,14 +85,24 @@ public class DomainServiceRepositoryImpl implements DomainService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria) {
-		return getDomainDao().search(zoneApex, criteria);
+	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria) {
+		return getDomainDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Domain findById(DomainID domainId) {
-		return getDomainDao().loadById(domainId);
+	public Domain findById(Long id) {
+		return getDomainDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Domain findByDomainName(ZoneReference zone, String domainName) {
+		DomainSearchCriteria sc = new DomainSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(domainName);
+		List<Domain> domains = getDomainDao().search(zone, sc);
+
+		return domains.isEmpty() ? null : domains.get(0);
 	}
 
 	// -------------------------------------------------------------------------

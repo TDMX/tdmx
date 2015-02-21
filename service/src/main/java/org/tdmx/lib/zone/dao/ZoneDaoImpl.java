@@ -24,6 +24,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 
 public class ZoneDaoImpl implements ZoneDao {
@@ -79,10 +80,10 @@ public class ZoneDaoImpl implements ZoneDao {
 	}
 
 	@Override
-	public Zone loadByZoneApex(Long tenantId, String zoneApex) {
+	public Zone loadByZoneApex(ZoneReference zone) {
 		Query query = em.createQuery("from Zone as z where z.tenantId = :tid and z.zoneApex = :a");
-		query.setParameter("tid", tenantId);
-		query.setParameter("a", zoneApex);
+		query.setParameter("tid", zone.getTenantId());
+		query.setParameter("a", zone.getZoneApex());
 		try {
 			return (Zone) query.getSingleResult();
 		} catch (NoResultException e) {

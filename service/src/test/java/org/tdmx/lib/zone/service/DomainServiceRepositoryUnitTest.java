@@ -33,8 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
@@ -51,32 +51,29 @@ public class DomainServiceRepositoryUnitTest {
 	@Autowired
 	private DomainService domainService;
 
-	private DomainID id = null;
-	private Long tenantId;
+	private ZoneReference zone;
+	private String domainName;
 
 	@Before
 	public void doSetup() throws Exception {
-		tenantId = new Random().nextLong();
+		zone = new ZoneReference(new Random().nextLong(), "ZONE.ROOT.TEST");
 
-		id = new DomainID();
-		id.setZoneApex("ZONE.ROOT.TEST");
-		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
-
-		Zone az = ZoneFacade.createZone(tenantId, id.getZoneApex());
+		Zone az = ZoneFacade.createZone(zone);
 
 		zoneService.createOrUpdate(az);
 
-		Domain d = ZoneFacade.createDomain(id);
+		domainName = "SUBDOMAIN." + zone.getZoneApex();
+		Domain d = ZoneFacade.createDomain(zone, domainName);
 		domainService.createOrUpdate(d);
 	}
 
 	@After
 	public void doTeardown() {
-		Domain d = domainService.findById(id);
+		Domain d = domainService.findByDomainName(zone, domainName);
 		if (d != null) {
 			domainService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(tenantId, id.getZoneApex());
+		Zone az = zoneService.findByZoneApex(zone);
 		if (az != null) {
 			zoneService.delete(az);
 		}
@@ -90,41 +87,43 @@ public class DomainServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Domain d = domainService.findById(id);
+		Domain d = domainService.findByDomainName(zone, domainName);
 		assertNotNull(d);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
+		assertEquals(domainName, d.getDomainName());
+		assertEquals(zone, d.getZoneReference());
 	}
 
 	@Test
-	public void testSearch_Zone() throws Exception {
-		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
-		List<Domain> domains = domainService.search(id.getZoneApex(), criteria);
-		assertNotNull(domains);
-		assertEquals(1, domains.size());
-		Domain d = domains.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
+	public void testLookup_NotFoundDomain() throws Exception {
+		Domain d = domainService.findByDomainName(zone, "gugus");
+		assertNull(d);
 	}
 
 	@Test
-	public void testSearch_ZoneAndDomain() throws Exception {
-		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
+	public void testLookup_NotFoundZone() throws Exception {
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		Domain d = domainService.findByDomainName(gugus, domainName);
+		assertNull(d);
+	}
 
-		List<Domain> domains = domainService.search(id.getZoneApex(), criteria);
+	@Test
+	public void testSearch_DomainName() throws Exception {
+		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
+		List<Domain> domains = domainService.search(zone, criteria);
 		assertNotNull(domains);
 		assertEquals(1, domains.size());
 		Domain d = domains.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
+		assertEquals(zone, d.getZoneReference());
+		assertEquals(domainName, d.getDomainName());
 	}
 
 	@Test
 	public void testSearch_UnknownZoneAndDomain() throws Exception {
 		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
+		criteria.setDomainName(domainName);
 
-		List<Domain> domains = domainService.search("gugusZone", criteria);
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		List<Domain> domains = domainService.search(gugus, criteria);
 		assertNotNull(domains);
 		assertEquals(0, domains.size());
 	}
@@ -134,24 +133,18 @@ public class DomainServiceRepositoryUnitTest {
 		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
 		criteria.setDomainName("gugusdomain");
 
-		List<Domain> domains = domainService.search("gugusZone", criteria);
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		List<Domain> domains = domainService.search(gugus, criteria);
 		assertNotNull(domains);
 		assertEquals(0, domains.size());
 	}
 
 	@Test
-	public void testLookup_NotFound() throws Exception {
-		DomainID gugusID = new DomainID("gugus", id.getZoneApex());
-		Domain d = domainService.findById(gugusID);
-		assertNull(d);
-	}
-
-	@Test
 	public void testModify() throws Exception {
-		Domain d = domainService.findById(id);
+		Domain d = domainService.findByDomainName(zone, domainName);
 		domainService.createOrUpdate(d);
 
-		Domain d2 = domainService.findById(id);
+		Domain d2 = domainService.findByDomainName(zone, domainName);
 
 		assertEquals(d.getId(), d2.getId());
 	}

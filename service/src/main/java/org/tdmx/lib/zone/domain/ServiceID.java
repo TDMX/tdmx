@@ -46,7 +46,7 @@ public class ServiceID implements Serializable {
 	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
 	private String zoneApex;
 
-	@Column(length = DomainID.MAX_NAME_LEN, nullable = false)
+	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
 	 */

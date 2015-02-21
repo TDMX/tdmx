@@ -20,9 +20,15 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.EmbeddedId;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
+
+import org.tdmx.lib.common.domain.ZoneReference;
 
 /**
  * An Domain (within a Zone) managed by a ServiceProvider
@@ -37,14 +43,32 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@EmbeddedId
-	private DomainID id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DomainIdGen")
+	@TableGenerator(name = "DomainIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	private Long id;
+
+	/**
+	 * The tenantId is the entityID of the AccountZone in ControlDB.
+	 */
+	@Column(nullable = false)
+	private Long tenantId;
+
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	@Column(length = MAX_NAME_LEN, nullable = false)
+	private String domainName;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,10 +76,6 @@ public class Domain implements Serializable {
 
 	public Domain() {
 
-	}
-
-	public Domain(DomainID id) {
-		this.id = id;
 	}
 
 	// -------------------------------------------------------------------------
@@ -67,6 +87,8 @@ public class Domain implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Domain [id=");
 		builder.append(id);
+		builder.append(" name=");
+		builder.append(domainName);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -83,12 +105,29 @@ public class Domain implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public DomainID getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(DomainID id) {
+	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public void setZoneReference(ZoneReference zone) {
+		this.tenantId = zone.getTenantId();
+		this.zoneApex = zone.getZoneApex();
+	}
+
+	public ZoneReference getZoneReference() {
+		return new ZoneReference(this.tenantId, this.zoneApex);
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
 	}
 
 }

@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
 /**
@@ -40,7 +40,7 @@ public interface DomainDao {
 
 	public Domain merge(Domain value);
 
-	public Domain loadById(DomainID id);
+	public Domain loadById(Long id);
 
-	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria);
+	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria);
 }

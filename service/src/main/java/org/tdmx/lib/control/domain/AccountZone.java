@@ -30,6 +30,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.lib.common.domain.ZoneReference;
+
 /**
  * An AccountZone describes a Zone at a ServiceProvider and points to the Zone's DatabasePartition.
  * 
@@ -97,6 +99,10 @@ public class AccountZone implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public ZoneReference getZoneReference() {
+		return new ZoneReference(getId(), getZoneApex());
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

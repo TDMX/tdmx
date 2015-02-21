@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 
@@ -43,22 +44,20 @@ public class ZoneServiceRepositoryUnitTest {
 	@Autowired
 	private ZoneService service;
 
-	private String zoneApex;
-	private Long tenantId;
+	private ZoneReference zone;
 
 	@Before
 	public void doSetup() throws Exception {
-		tenantId = new Random().nextLong();
-		zoneApex = "zone.root.test";
+		zone = new ZoneReference(new Random().nextLong(), "zone.root.test");
 
-		Zone az = ZoneFacade.createZone(tenantId, zoneApex);
+		Zone az = ZoneFacade.createZone(zone);
 
 		service.createOrUpdate(az);
 	}
 
 	@After
 	public void doTeardown() {
-		Zone az = service.findByZoneApex(tenantId, zoneApex);
+		Zone az = service.findByZoneApex(zone);
 		if (az != null) {
 			service.delete(az);
 		}
@@ -71,25 +70,26 @@ public class ZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Zone az = service.findByZoneApex(tenantId, zoneApex);
+		Zone az = service.findByZoneApex(zone);
 		assertNotNull(az);
-		assertEquals(zoneApex, az.getZoneApex());
+		assertEquals(zone, az.getZoneReference());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Zone az = service.findByZoneApex(tenantId, "gugus");
+		ZoneReference r = new ZoneReference(zone.getTenantId(), "gugus");
+		Zone az = service.findByZoneApex(r);
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Zone az = service.findByZoneApex(tenantId, zoneApex);
+		Zone az = service.findByZoneApex(zone);
 		service.createOrUpdate(az);
 
-		Zone az2 = service.findByZoneApex(tenantId, zoneApex);
+		Zone az2 = service.findByZoneApex(zone);
 
-		assertEquals(az.getZoneApex(), az2.getZoneApex());
+		assertEquals(az.getZoneReference(), az2.getZoneReference());
 	}
 
 }

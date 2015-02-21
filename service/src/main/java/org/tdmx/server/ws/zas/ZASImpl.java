@@ -108,6 +108,7 @@ import org.tdmx.core.api.v01.sp.zas.report.ReportResponse;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -115,7 +116,6 @@ import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
@@ -203,20 +203,21 @@ public class ZASImpl implements ZAS {
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
 		CreateDomainResponse response = new CreateDomainResponse();
-		String zoneApex = checkZACDomainAuthorization(parameters.getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
-		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
 		// check if the domain exists already
-		Domain domain = getDomainService().findById(id);
-		if (domain != null) {
+		Domain existingDomain = getDomainService().findByDomainName(zone, parameters.getDomain());
+		if (existingDomain != null) {
 			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
 		// create the domain
-		domain = new Domain(id);
+		Domain domain = new Domain();
+		domain.setZoneReference(zone);
+		domain.setDomainName(parameters.getDomain());
 
 		getDomainService().createOrUpdate(domain);
 		response.setSuccess(true);
@@ -230,13 +231,12 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		DeleteDomainResponse response = new DeleteDomainResponse();
 
-		String zoneApex = checkZACDomainAuthorization(parameters.getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
-		DomainID id = new DomainID(parameters.getDomain(), zoneApex);
 		// check if the domain exists already
-		Domain domain = getDomainService().findById(id);
+		Domain domain = getDomainService().findByDomainName(zone, parameters.getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
@@ -246,7 +246,7 @@ public class ZASImpl implements ZAS {
 		AgentCredentialSearchCriteria dcSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
 		dcSc.setDomainName(parameters.getDomain());
 		dcSc.setType(AgentCredentialType.DAC);
-		List<AgentCredential> credentials = getCredentialService().search(zoneApex, dcSc);
+		List<AgentCredential> credentials = getCredentialService().search(zone.getZoneApex(), dcSc);
 		if (!credentials.isEmpty()) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
@@ -254,8 +254,8 @@ public class ZASImpl implements ZAS {
 
 		// and no addresses
 		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
-		sac.setDomainName(id.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zoneApex, sac);
+		sac.setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone.getZoneApex(), sac);
 		if (!addresses.isEmpty()) {
 			setError(ErrorCode.AddressesExist, response);
 			return response;
@@ -263,8 +263,8 @@ public class ZASImpl implements ZAS {
 
 		// and no services
 		ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
-		ssc.setDomainName(id.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zoneApex, ssc);
+		ssc.setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone.getZoneApex(), ssc);
 		if (!services.isEmpty()) {
 			setError(ErrorCode.ServicesExist, response);
 			return response;
@@ -282,22 +282,22 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
 
 		SearchDomainResponse response = new SearchDomainResponse();
-		String zoneApex = checkZACAuthorization(response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkZACAuthorization(response);
+		if (zone == null) {
 			return response;
 		}
 		DomainSearchCriteria criteria = new DomainSearchCriteria(mapPage(parameters.getPage()));
 		// make sure client stipulates a domain which is within the zone.
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
-			if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zoneApex)) {
+			if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
 				setError(ErrorCode.OutOfZoneAccess, response);
 				return response;
 			}
 			criteria.setDomainName(parameters.getFilter().getDomain());
 		}
-		List<Domain> domains = domainService.search(zoneApex, criteria);
+		List<Domain> domains = domainService.search(zone, criteria);
 		for (Domain d : domains) {
-			response.getDomains().add(d.getId().getDomainName());
+			response.getDomains().add(d.getDomainName());
 		}
 		response.setPage(parameters.getPage());
 		response.setSuccess(true);
@@ -375,15 +375,16 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAdministrator parameters) {
 		SearchAdministratorResponse response = new SearchAdministratorResponse();
 
-		String zoneApex = checkZACAuthorization(response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkZACAuthorization(response);
+		if (zone == null) {
 			return response;
 		}
 
 		if (parameters.getFilter().getAdministrator() != null) {
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getFilter().getAdministrator()
-					.getDomaincertificate(), parameters.getFilter().getAdministrator().getRootcertificate());
+			AgentCredential dac = credentialFactory.createDAC(zone.getZoneApex(), parameters.getFilter()
+					.getAdministrator().getDomaincertificate(), parameters.getFilter().getAdministrator()
+					.getRootcertificate());
 			if (dac == null) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
@@ -396,7 +397,7 @@ public class ZASImpl implements ZAS {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
 			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we check that the provided domain is the ZAC's root domain.
-				if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zoneApex)) {
+				if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
 					setError(ErrorCode.OutOfZoneAccess, response);
 					return response;
 				}
@@ -406,7 +407,7 @@ public class ZASImpl implements ZAS {
 				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
 			}
 			sc.setType(AgentCredentialType.DAC);
-			List<AgentCredential> credentials = credentialService.search(zoneApex, sc);
+			List<AgentCredential> credentials = credentialService.search(zone.getZoneApex(), sc);
 			for (AgentCredential c : credentials) {
 				response.getAdministratorstates().add(mapAdministratorstate(c));
 			}
@@ -472,20 +473,19 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "createAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAddress parameters) {
 		CreateAddressResponse response = new CreateAddressResponse();
 
-		String zoneApex = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
-		DomainID domainId = new DomainID(parameters.getAddress().getDomain(), zoneApex);
 		// check if the domain exists already
-		Domain domain = getDomainService().findById(domainId);
+		Domain domain = getDomainService().findByDomainName(zone, parameters.getAddress().getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
-				zoneApex);
+				zone.getZoneApex());
 		// check if the domain exists already
 		org.tdmx.lib.zone.domain.Address a = getAddressService().findById(id);
 		if (a != null) {
@@ -621,14 +621,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
 
 		// lookup existing service exists
 		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zoneApex);
+				.getDomain(), zone.getZoneApex());
 		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
@@ -698,12 +698,12 @@ public class ZASImpl implements ZAS {
 	public CreateAdministratorResponse createAdministrator(
 			@WebParam(partName = "parameters", name = "createAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAdministrator parameters) {
 		CreateAdministratorResponse response = new CreateAdministratorResponse();
-		String zoneApex = checkZACAuthorization(response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkZACAuthorization(response);
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
+		AgentCredential dac = credentialFactory.createDAC(zone.getZoneApex(), parameters.getAdministrator()
 				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
@@ -715,10 +715,8 @@ public class ZASImpl implements ZAS {
 			dac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		}
 
-		// check that the Domain Exists
-		DomainID id = new DomainID(dac.getDomainName(), dac.getId().getZoneApex());
 		// check if the domain exists already
-		Domain domain = getDomainService().findById(id);
+		Domain domain = getDomainService().findByDomainName(zone, dac.getDomainName());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
@@ -758,14 +756,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
 
 		// lookup existing service exists
 		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zoneApex);
+				.getDomain(), zone.getZoneApex());
 		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
@@ -835,8 +833,8 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAddress parameters) {
 		DeleteAddressResponse response = new DeleteAddressResponse();
 
-		String zoneApex = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
 
@@ -845,14 +843,14 @@ public class ZASImpl implements ZAS {
 		acSc.setAddressName(parameters.getAddress().getLocalname());
 		acSc.setDomainName(parameters.getAddress().getDomain());
 		acSc.setType(AgentCredentialType.UC);
-		List<AgentCredential> ucs = getCredentialService().search(zoneApex, acSc);
+		List<AgentCredential> ucs = getCredentialService().search(zone.getZoneApex(), acSc);
 		if (!ucs.isEmpty()) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}
 
 		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
-				zoneApex);
+				zone.getZoneApex());
 		// dont allow creation if we find the address exists already
 		org.tdmx.lib.zone.domain.Address a = getAddressService().findById(id);
 		if (a == null) {
@@ -992,21 +990,20 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "createService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateService parameters) {
 		CreateServiceResponse response = new CreateServiceResponse();
 
-		String zoneApex = checkDomainAuthorization(parameters.getService().getDomain(), response);
-		if (zoneApex == null) {
+		ZoneReference zone = checkDomainAuthorization(parameters.getService().getDomain(), response);
+		if (zone == null) {
 			return response;
 		}
 
-		DomainID domainId = new DomainID(parameters.getService().getDomain(), zoneApex);
 		// check if the domain exists already
-		Domain domain = getDomainService().findById(domainId);
+		Domain domain = getDomainService().findByDomainName(zone, parameters.getService().getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zoneApex);
+				.getDomain(), zone.getZoneApex());
 		// check if the service exists already
 		org.tdmx.lib.zone.domain.Service service = getServiceService().findById(serviceId);
 		if (service != null) {
@@ -1151,20 +1148,20 @@ public class ZASImpl implements ZAS {
 	 * Checks the AuthenticatedAgent is a ZAC.
 	 * 
 	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 * @return null if not authorized, setting ack.Error, else the zone.
 	 */
-	private String checkZACAuthorization(Acknowledge ack) {
+	private ZoneReference checkZACAuthorization(Acknowledge ack) {
 		PKIXCertificate user = checkZACAuthorized(ack);
 		if (user == null) {
 			return null;
 		}
-		return user.getTdmxZoneInfo().getZoneRoot();
+		return getAgentService().getZoneReference();
 	}
 
-	private String checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
-		String zoneApex = authorizedAgent.getTdmxZoneInfo().getZoneRoot();
+	private ZoneReference checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
+		ZoneReference zone = getAgentService().getZoneReference();
 
-		if (!StringUtils.isSuffix(domain, zoneApex)) {
+		if (!StringUtils.isSuffix(domain, zone.getZoneApex())) {
 			setError(ErrorCode.OutOfZoneAccess, ack);
 			return null;
 		}
@@ -1174,7 +1171,7 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.OutOfDomainAccess, ack);
 			return null;
 		}
-		return zoneApex;
+		return zone;
 
 	}
 
@@ -1185,7 +1182,7 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private String checkZACDomainAuthorization(String domain, Acknowledge ack) {
+	private ZoneReference checkZACDomainAuthorization(String domain, Acknowledge ack) {
 		if (!checkDomain(domain, ack)) {
 			return null;
 		}
@@ -1204,7 +1201,7 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private String checkDomainAuthorization(String domain, Acknowledge ack) {
+	private ZoneReference checkDomainAuthorization(String domain, Acknowledge ack) {
 		if (!checkDomain(domain, ack)) {
 			return null;
 		}

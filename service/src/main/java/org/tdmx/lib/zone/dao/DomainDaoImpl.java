@@ -19,6 +19,9 @@
 package org.tdmx.lib.zone.dao;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -27,8 +30,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.DomainID;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 
 public class DomainDaoImpl implements DomainDao {
@@ -72,7 +75,7 @@ public class DomainDaoImpl implements DomainDao {
 	}
 
 	@Override
-	public Domain loadById(DomainID id) {
+	public Domain loadById(Long id) {
 		Query query = em.createQuery("from Domain as d where d.id = :d");
 		query.setParameter("d", id);
 		try {
@@ -84,15 +87,32 @@ public class DomainDaoImpl implements DomainDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Domain> search(String zoneApex, DomainSearchCriteria criteria) {
-		Query query = null;
-		if (StringUtils.hasText(criteria.getDomainName())) {
-			query = em.createQuery("from Domain as d where d.id.domainName = :d and d.id.zoneApex = :z");
-			query.setParameter("d", criteria.getDomainName());
-		} else {
-			query = em.createQuery("from Domain as d where d.id.zoneApex = :z");
+	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria) {
+		Map<String, Object> parameters = new TreeMap<String, Object>();
+		StringBuilder whereClause = new StringBuilder();
+		boolean isFirstClause = true;
+		if (zone.getTenantId() != null) {
+			isFirstClause = andClause(isFirstClause, "d.tenantId = :t", "t", zone.getTenantId(), whereClause,
+					parameters);
 		}
-		query.setParameter("z", zoneApex);
+		if (StringUtils.hasText(zone.getZoneApex())) {
+			isFirstClause = andClause(isFirstClause, "d.zoneApex = :z", "z", zone.getZoneApex(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			isFirstClause = andClause(isFirstClause, "domainName = :d", "d", criteria.getDomainName(), whereClause,
+					parameters);
+		}
+		StringBuilder sql = new StringBuilder();
+		sql.append("from Domain as d");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
+		}
+		Query query = em.createQuery(sql.toString());
+		for (Entry<String, Object> param : parameters.entrySet()) {
+			query.setParameter(param.getKey(), param.getValue());
+		}
 		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
 		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
 		return query.getResultList();
@@ -105,6 +125,15 @@ public class DomainDaoImpl implements DomainDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

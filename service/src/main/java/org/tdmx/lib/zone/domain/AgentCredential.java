@@ -69,7 +69,7 @@ public class AgentCredential implements Serializable {
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
 
-	@Column(length = DomainID.MAX_NAME_LEN)
+	@Column(length = Domain.MAX_NAME_LEN)
 	private String domainName; // set when DAC or UC, null if ZAC
 
 	@Column(length = AddressID.MAX_NAME_LEN)
