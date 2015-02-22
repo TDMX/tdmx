@@ -72,7 +72,7 @@ public class AgentCredential implements Serializable {
 	@Column(length = Domain.MAX_NAME_LEN)
 	private String domainName; // set when DAC or UC, null if ZAC
 
-	@Column(length = AddressID.MAX_NAME_LEN)
+	@Column(length = Address.MAX_NAME_LEN)
 	private String addressName; // set when UC, null if ZAC or DAC
 
 	@Transient

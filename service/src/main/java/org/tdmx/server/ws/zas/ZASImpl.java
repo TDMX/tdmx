@@ -109,7 +109,6 @@ import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
@@ -253,7 +252,7 @@ public class ZASImpl implements ZAS {
 		// and no addresses
 		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
 		sac.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone.getZoneApex(), sac);
+		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone, sac);
 		if (!addresses.isEmpty()) {
 			setError(ErrorCode.AddressesExist, response);
 			return response;
@@ -482,17 +481,18 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
-				zone.getZoneApex());
 		// check if the domain exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findById(id);
+		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(zone, parameters.getAddress().getDomain(),
+				parameters.getAddress().getLocalname());
 		if (a != null) {
 			setError(ErrorCode.AddressExists, response);
 			return response;
 		}
 
 		// create the address
-		a = new org.tdmx.lib.zone.domain.Address(id);
+		a = new org.tdmx.lib.zone.domain.Address(zone);
+		a.setDomainName(parameters.getAddress().getDomain());
+		a.setLocalName(parameters.getAddress().getLocalname());
 
 		getAddressService().createOrUpdate(a);
 		response.setSuccess(true);
@@ -660,8 +660,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 
@@ -680,7 +680,7 @@ public class ZASImpl implements ZAS {
 			sc.setDomainName(parameters.getFilter().getDomain());
 		}
 		sc.setLocalName(parameters.getFilter().getLocalname());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zoneApex, sc);
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
 			response.getAddresses().add(mapAddress(a));
 		}
@@ -845,10 +845,9 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		AddressID id = new AddressID(parameters.getAddress().getLocalname(), parameters.getAddress().getDomain(),
-				zone.getZoneApex());
 		// dont allow creation if we find the address exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findById(id);
+		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(zone, parameters.getAddress().getDomain(),
+				parameters.getAddress().getLocalname());
 		if (a == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
@@ -930,13 +929,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct new UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
-				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zone.getZoneApex(), parameters.getUser().getUsercertificate(),
+				parameters.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -947,10 +946,9 @@ public class ZASImpl implements ZAS {
 			uc.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		}
 
-		// check that the Address Exists
-		AddressID id = new AddressID(uc.getAddressName(), uc.getDomainName(), uc.getId().getZoneApex());
 		// check if the address exists already
-		org.tdmx.lib.zone.domain.Address address = getAddressService().findById(id);
+		org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(zone, uc.getDomainName(),
+				uc.getAddressName());
 		if (address == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
@@ -1249,8 +1247,8 @@ public class ZASImpl implements ZAS {
 
 	private Address mapAddress(org.tdmx.lib.zone.domain.Address address) {
 		Address a = new Address();
-		a.setDomain(address.getId().getDomainName());
-		a.setLocalname(address.getId().getLocalName());
+		a.setDomain(address.getDomainName());
+		a.setLocalname(address.getLocalName());
 		return a;
 	}
 

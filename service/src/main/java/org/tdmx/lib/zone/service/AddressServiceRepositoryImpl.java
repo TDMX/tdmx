@@ -24,9 +24,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.AddressDao;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 
 /**
@@ -80,14 +81,25 @@ public class AddressServiceRepositoryImpl implements AddressService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Address> search(String zoneApex, AddressSearchCriteria criteria) {
-		return getAddressDao().search(zoneApex, criteria);
+	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria) {
+		return getAddressDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Address findById(AddressID addressId) {
-		return getAddressDao().loadById(addressId);
+	public Address findByName(ZoneReference zone, String domainName, String localName) {
+		AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(domainName);
+		sc.setLocalName(localName);
+		List<Address> addresses = getAddressDao().search(zone, sc);
+
+		return addresses.isEmpty() ? null : addresses.get(0);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Address findById(Long id) {
+		return getAddressDao().loadById(id);
 	}
 
 	// -------------------------------------------------------------------------

@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 
 /**
@@ -34,9 +34,11 @@ public interface AddressService {
 
 	public void createOrUpdate(Address address);
 
-	public Address findById(AddressID addressId);
+	public Address findById(Long id);
 
-	public List<Address> search(String zoneApex, AddressSearchCriteria criteria);
+	public Address findByName(ZoneReference zone, String domainName, String localName);
+
+	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria);
 
 	public void delete(Address address);
 

@@ -35,7 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
@@ -52,29 +51,27 @@ public class AddressServiceRepositoryUnitTest {
 	@Autowired
 	private AddressService addressService;
 
-	private AddressID id = null;
+	private String domainName;
+	private String localName;
 	private ZoneReference zone;
 
 	@Before
 	public void doSetup() throws Exception {
 
-		id = new AddressID();
-		id.setZoneApex("ZONE.ROOT.TEST");
-		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
-		id.setLocalName("addressName");
+		zone = new ZoneReference(new Random().nextLong(), "ZONE.ROOT.TEST");
+		domainName = "SUBDOMAIN." + zone.getZoneApex();
+		localName = "addressName";
 
-		zone = new ZoneReference(new Random().nextLong(), id.getZoneApex());
 		Zone az = ZoneFacade.createZone(zone);
-
 		zoneService.createOrUpdate(az);
 
-		Address d = ZoneFacade.createAddress(id);
+		Address d = ZoneFacade.createAddress(zone, domainName, localName);
 		addressService.createOrUpdate(d);
 	}
 
 	@After
 	public void doTeardown() {
-		Address d = addressService.findById(id);
+		Address d = addressService.findByName(zone, domainName, localName);
 		if (d != null) {
 			addressService.delete(d);
 		}
@@ -92,101 +89,110 @@ public class AddressServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Address d = addressService.findById(id);
-		assertNotNull(d);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getLocalName(), d.getId().getLocalName());
+		Address a = addressService.findByName(zone, domainName, localName);
+		assertNotNull(a);
+		assertEquals(zone, a.getZoneReference());
+		assertEquals(domainName, a.getDomainName());
+		assertEquals(localName, a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_Zone() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		List<Address> addresss = addressService.search(id.getZoneApex(), criteria);
+		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
-		Address d = addresss.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getLocalName(), d.getId().getLocalName());
+		Address a = addresss.get(0);
+		assertNotNull(a);
+		assertEquals(zone, a.getZoneReference());
+		assertEquals(domainName, a.getDomainName());
+		assertEquals(localName, a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setLocalName(id.getLocalName());
+		criteria.setLocalName(localName);
 
-		List<Address> addresss = addressService.search(id.getZoneApex(), criteria);
+		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
-		Address d = addresss.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getLocalName(), d.getId().getLocalName());
+		Address a = addresss.get(0);
+		assertNotNull(a);
+		assertEquals(zone, a.getZoneReference());
+		assertEquals(domainName, a.getDomainName());
+		assertEquals(localName, a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainAndAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
-		criteria.setLocalName(id.getLocalName());
+		criteria.setDomainName(domainName);
+		criteria.setLocalName(localName);
 
-		List<Address> addresss = addressService.search(id.getZoneApex(), criteria);
+		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
-		Address d = addresss.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getLocalName(), d.getId().getLocalName());
+		Address a = addresss.get(0);
+		assertNotNull(a);
+		assertEquals(zone, a.getZoneReference());
+		assertEquals(domainName, a.getDomainName());
+		assertEquals(localName, a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainOnly() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
+		criteria.setDomainName(domainName);
 
-		List<Address> addresss = addressService.search(id.getZoneApex(), criteria);
+		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
-		Address d = addresss.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getLocalName(), d.getId().getLocalName());
+		Address a = addresss.get(0);
+		assertNotNull(a);
+		assertEquals(zone, a.getZoneReference());
+		assertEquals(domainName, a.getDomainName());
+		assertEquals(localName, a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_UnknownZoneAndAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setLocalName(id.getLocalName());
+		criteria.setLocalName(localName);
 
-		List<Address> addresss = addressService.search("gugusZone", criteria);
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		List<Address> addresss = addressService.search(gugus, criteria);
+		assertNotNull(addresss);
+		assertEquals(0, addresss.size());
+
+		gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
+		addresss = addressService.search(gugus, criteria);
 		assertNotNull(addresss);
 		assertEquals(0, addresss.size());
 	}
 
 	@Test
-	public void testSearch_UnknownZoneAndUnknownAddress() throws Exception {
+	public void testSearch_UnknownAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setLocalName(id.getLocalName());
+		criteria.setLocalName("gugus");
 
-		List<Address> addresss = addressService.search("gugusZone", criteria);
+		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(0, addresss.size());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		AddressID gugusID = new AddressID("gugus", id.getDomainName(), id.getZoneApex());
-		Address d = addressService.findById(gugusID);
+		Address d = addressService.findByName(zone, domainName, "gugus");
 		assertNull(d);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Address d = addressService.findById(id);
+		Address d = addressService.findByName(zone, domainName, localName);
 		addressService.createOrUpdate(d);
 
-		Address d2 = addressService.findById(id);
+		Address d2 = addressService.findByName(zone, domainName, localName);
 
 		assertEquals(d.getId(), d2.getId());
 	}

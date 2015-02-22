@@ -94,7 +94,6 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
@@ -136,7 +135,7 @@ public class ZASImplUnitTest {
 	private PKIXCredential zac;
 	private PKIXCredential dac;
 	private PKIXCredential uc;
-	private AddressID aid;
+	private String localName;
 	private String serviceName;
 	private String domainName;
 
@@ -185,8 +184,10 @@ public class ZASImplUnitTest {
 		assertEquals(zone.getZoneApex(), userAC.getId().getZoneApex());
 		agentCredentialService.createOrUpdate(userAC);
 
-		aid = new AddressID(uc.getPublicCert().getCommonName(), domainAC.getDomainName(), zone.getZoneApex());
-		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
+		localName = uc.getPublicCert().getCommonName();
+		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(zone);
+		userAddress.setDomainName(domainName);
+		userAddress.setLocalName(localName);
 		addressService.createOrUpdate(userAddress);
 
 		serviceName = "service";
@@ -213,7 +214,7 @@ public class ZASImplUnitTest {
 			agentCredentialService.delete(ac);
 		}
 
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(),
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone,
 				new org.tdmx.lib.zone.domain.AddressSearchCriteria(new PageSpecifier(0, 1000)));
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
 			log.info("Cleanup " + a);
@@ -1023,7 +1024,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
 				new PageSpecifier(0, 1000));
 		adSc.setDomainName(domainName);
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(), adSc);
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
 		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
 			addressService.delete(ad);
 		}
@@ -1053,7 +1054,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
 				new PageSpecifier(0, 1000));
 		adSc.setDomainName(domainName);
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone.getZoneApex(), adSc);
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
 		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
 			addressService.delete(ad);
 		}
@@ -1414,9 +1415,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateUser_AddressNotExists() {
-		AddressID aid = new AddressID(uc.getPublicCert().getCommonName(), dac.getPublicCert().getCommonName(),
-				zone.getZoneApex());
-		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
+		org.tdmx.lib.zone.domain.Address userAddress = addressService.findByName(zone, domainName, localName);
 		addressService.delete(userAddress);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);

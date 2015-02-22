@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AddressID;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 
 /**
@@ -40,7 +40,7 @@ public interface AddressDao {
 
 	public Address merge(Address value);
 
-	public Address loadById(AddressID id);
+	public Address loadById(Long id);
 
-	public List<Address> search(String zoneApex, AddressSearchCriteria criteria);
+	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria);
 }

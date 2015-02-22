@@ -33,8 +33,10 @@ public class ZoneFacade {
 		return d;
 	}
 
-	public static Address createAddress(AddressID id) throws Exception {
-		Address a = new Address(id);
+	public static Address createAddress(ZoneReference zone, String domainName, String localName) throws Exception {
+		Address a = new Address(zone);
+		a.setDomainName(domainName);
+		a.setLocalName(localName);
 		return a;
 	}
 
