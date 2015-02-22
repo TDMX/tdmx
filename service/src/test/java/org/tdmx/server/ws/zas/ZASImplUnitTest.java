@@ -174,8 +174,7 @@ public class ZASImplUnitTest {
 		agentCredentialService.createOrUpdate(domainAC);
 
 		// we create the domain of the dac
-		Domain dacDomain = new Domain();
-		dacDomain.setZoneReference(zone);
+		Domain dacDomain = new Domain(zone);
 		domainName = dac.getPublicCert().getCommonName();
 		dacDomain.setDomainName(domainName);
 		domainService.createOrUpdate(dacDomain);

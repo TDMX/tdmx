@@ -68,6 +68,13 @@ public class Zone implements Serializable {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	Zone() {
+	}
+
+	public Zone(ZoneReference zone) {
+		this.tenantId = zone.getTenantId();
+		this.zoneApex = zone.getZoneApex();
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -91,11 +98,6 @@ public class Zone implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public void setZoneReference(ZoneReference zone) {
-		this.tenantId = zone.getTenantId();
-		this.zoneApex = zone.getZoneApex();
 	}
 
 	public ZoneReference getZoneReference() {

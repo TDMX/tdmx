@@ -74,8 +74,12 @@ public class Domain implements Serializable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Domain() {
+	Domain() {
+	}
 
+	public Domain(ZoneReference zone) {
+		this.tenantId = zone.getTenantId();
+		this.zoneApex = zone.getZoneApex();
 	}
 
 	// -------------------------------------------------------------------------
@@ -111,11 +115,6 @@ public class Domain implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public void setZoneReference(ZoneReference zone) {
-		this.tenantId = zone.getTenantId();
-		this.zoneApex = zone.getZoneApex();
 	}
 
 	public ZoneReference getZoneReference() {

@@ -23,15 +23,12 @@ import org.tdmx.lib.common.domain.ZoneReference;
 public class ZoneFacade {
 
 	public static Zone createZone(ZoneReference zone) throws Exception {
-		Zone z = new Zone();
-		z.setZoneReference(zone);
-
+		Zone z = new Zone(zone);
 		return z;
 	}
 
 	public static Domain createDomain(ZoneReference zone, String domain) throws Exception {
-		Domain d = new Domain();
-		d.setZoneReference(zone);
+		Domain d = new Domain(zone);
 		d.setDomainName(domain);
 		return d;
 	}

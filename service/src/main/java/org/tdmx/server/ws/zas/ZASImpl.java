@@ -215,8 +215,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// create the domain
-		Domain domain = new Domain();
-		domain.setZoneReference(zone);
+		Domain domain = new Domain(zone);
 		domain.setDomainName(parameters.getDomain());
 
 		getDomainService().createOrUpdate(domain);
