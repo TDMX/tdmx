@@ -19,6 +19,9 @@
 package org.tdmx.lib.zone.dao;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -27,8 +30,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 
 public class ServiceDaoImpl implements ServiceDao {
@@ -72,7 +75,7 @@ public class ServiceDaoImpl implements ServiceDao {
 	}
 
 	@Override
-	public Service loadById(ServiceID id) {
+	public Service loadById(Long id) {
 		Query query = em.createQuery("from Service as a where a.id = :d");
 		query.setParameter("d", id);
 		try {
@@ -84,26 +87,36 @@ public class ServiceDaoImpl implements ServiceDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Service> search(String zoneApex, ServiceSearchCriteria criteria) {
-		Query query = null;
-		if (StringUtils.hasText(criteria.getDomainName())) {
-			if (StringUtils.hasText(criteria.getServiceName())) {
-				query = em
-						.createQuery("from Service as s where s.id.serviceName = :l and s.id.domainName = :d and s.id.zoneApex = :z");
-				query.setParameter("d", criteria.getDomainName());
-				query.setParameter("l", criteria.getServiceName());
-			} else {
-				query = em.createQuery("from Service as s where s.id.domainName = :d and s.id.zoneApex = :z");
-				query.setParameter("d", criteria.getDomainName());
-			}
-		} else if (StringUtils.hasText(criteria.getServiceName())) {
-			query = em.createQuery("from Service as s where s.id.serviceName = :l and s.id.zoneApex = :z");
-			query.setParameter("l", criteria.getServiceName());
-
-		} else {
-			query = em.createQuery("from Service as s where s.id.zoneApex = :z");
+	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria) {
+		Map<String, Object> parameters = new TreeMap<String, Object>();
+		StringBuilder whereClause = new StringBuilder();
+		boolean isFirstClause = true;
+		if (zone.getTenantId() != null) {
+			isFirstClause = andClause(isFirstClause, "s.tenantId = :t", "t", zone.getTenantId(), whereClause,
+					parameters);
 		}
-		query.setParameter("z", zoneApex);
+		if (StringUtils.hasText(zone.getZoneApex())) {
+			isFirstClause = andClause(isFirstClause, "s.zoneApex = :z", "z", zone.getZoneApex(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			isFirstClause = andClause(isFirstClause, "s.domainName = :d", "d", criteria.getDomainName(), whereClause,
+					parameters);
+		}
+		if (StringUtils.hasText(criteria.getServiceName())) {
+			isFirstClause = andClause(isFirstClause, "s.serviceName = :r", "r", criteria.getServiceName(), whereClause,
+					parameters);
+		}
+		StringBuilder sql = new StringBuilder();
+		sql.append("from Service as s");
+		if (!isFirstClause) {
+			sql.append(" where");
+			sql.append(whereClause.toString());
+		}
+		Query query = em.createQuery(sql.toString());
+		for (Entry<String, Object> param : parameters.entrySet()) {
+			query.setParameter(param.getKey(), param.getValue());
+		}
 		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
 		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
 		return query.getResultList();
@@ -116,6 +129,15 @@ public class ServiceDaoImpl implements ServiceDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
+			StringBuilder whereClause, Map<String, Object> parameters) {
+		if (!isFirstClause) {
+			whereClause.append(" and");
+		}
+		whereClause.append(" ").append(condition);
+		parameters.put(parameterName, parameter);
+		return false;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

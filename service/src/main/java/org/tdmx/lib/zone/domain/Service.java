@@ -21,9 +21,14 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
+
+import org.tdmx.lib.common.domain.ZoneReference;
 
 /**
  * An Service (within a Domain) managed by a ServiceProvider
@@ -38,14 +43,38 @@ public class Service implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@EmbeddedId
-	private ServiceID id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ServiceIdGen")
+	@TableGenerator(name = "ServiceIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	private Long id;
+
+	/**
+	 * The tenantId is the entityID of the AccountZone in ControlDB.
+	 */
+	@Column(nullable = false)
+	private Long tenantId;
+
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
+	/**
+	 * The fully qualified domain name ( includes the zoneApex ).
+	 */
+	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
+	private String domainName;
+
+	/**
+	 * The serviceName part.
+	 */
+	@Column(length = MAX_NAME_LEN, nullable = false)
+	private String serviceName;
 
 	@Column(nullable = false)
 	private int concurrencyLimit;
@@ -54,12 +83,12 @@ public class Service implements Serializable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Service() {
-
+	Service() {
 	}
 
-	public Service(ServiceID id) {
-		this.id = id;
+	public Service(ZoneReference zone) {
+		this.tenantId = zone.getTenantId();
+		this.zoneApex = zone.getZoneApex();
 	}
 
 	// -------------------------------------------------------------------------
@@ -71,6 +100,10 @@ public class Service implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Service [id=");
 		builder.append(id);
+		builder.append(", domainName=");
+		builder.append(domainName);
+		builder.append(", serviceName=");
+		builder.append(serviceName);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -87,12 +120,32 @@ public class Service implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServiceID getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(ServiceID id) {
+	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public ZoneReference getZoneReference() {
+		return new ZoneReference(this.tenantId, this.zoneApex);
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
 	}
 
 	public int getConcurrencyLimit() {

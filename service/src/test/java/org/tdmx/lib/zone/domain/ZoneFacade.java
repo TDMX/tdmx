@@ -27,9 +27,9 @@ public class ZoneFacade {
 		return z;
 	}
 
-	public static Domain createDomain(ZoneReference zone, String domain) throws Exception {
+	public static Domain createDomain(ZoneReference zone, String domainName) throws Exception {
 		Domain d = new Domain(zone);
-		d.setDomainName(domain);
+		d.setDomainName(domainName);
 		return d;
 	}
 
@@ -38,8 +38,12 @@ public class ZoneFacade {
 		return a;
 	}
 
-	public static Service createService(ServiceID id) throws Exception {
-		Service s = new Service(id);
+	public static Service createService(ZoneReference zone, String domainName, String serviceName, int concurrencyLimit)
+			throws Exception {
+		Service s = new Service(zone);
+		s.setDomainName(domainName);
+		s.setServiceName(serviceName);
+		s.setConcurrencyLimit(concurrencyLimit);
 		return s;
 	}
 }

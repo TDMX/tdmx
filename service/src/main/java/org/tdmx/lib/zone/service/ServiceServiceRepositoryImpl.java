@@ -24,9 +24,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 
 /**
@@ -80,14 +81,24 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Service> search(String zoneApex, ServiceSearchCriteria criteria) {
-		return getServiceDao().search(zoneApex, criteria);
+	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria) {
+		return getServiceDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Service findById(ServiceID serviceId) {
-		return getServiceDao().loadById(serviceId);
+	public Service findByName(ZoneReference zone, String domainName, String serviceName) {
+		ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(domainName);
+		sc.setServiceName(serviceName);
+		List<Service> services = getServiceDao().search(zone, sc);
+		return services.isEmpty() ? null : services.get(0);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Service findById(Long id) {
+		return getServiceDao().loadById(id);
 	}
 
 	// -------------------------------------------------------------------------

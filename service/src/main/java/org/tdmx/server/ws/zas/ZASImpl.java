@@ -117,7 +117,6 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -263,7 +262,7 @@ public class ZASImpl implements ZAS {
 		// and no services
 		ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
 		ssc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone.getZoneApex(), ssc);
+		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone, ssc);
 		if (!services.isEmpty()) {
 			setError(ErrorCode.ServicesExist, response);
 			return response;
@@ -626,9 +625,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// lookup existing service exists
-		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zone.getZoneApex());
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(zone,
+				parameters.getService().getDomain(), parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
 			return response;
@@ -761,9 +759,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// lookup existing service exists
-		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zone.getZoneApex());
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findById(serviceId);
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(zone,
+				parameters.getService().getDomain(), parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
 			return response;
@@ -796,8 +793,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 
@@ -816,7 +813,7 @@ public class ZASImpl implements ZAS {
 			sc.setDomainName(parameters.getFilter().getDomain());
 		}
 		sc.setServiceName(parameters.getFilter().getServicename());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zoneApex, sc);
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			response.getServicestates().add(mapService(s));
 		}
@@ -1001,17 +998,18 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ServiceID serviceId = new ServiceID(parameters.getService().getServicename(), parameters.getService()
-				.getDomain(), zone.getZoneApex());
 		// check if the service exists already
-		org.tdmx.lib.zone.domain.Service service = getServiceService().findById(serviceId);
+		org.tdmx.lib.zone.domain.Service service = getServiceService().findByName(zone,
+				parameters.getService().getDomain(), parameters.getService().getServicename());
 		if (service != null) {
 			setError(ErrorCode.ServiceExists, response);
 			return response;
 		}
 
 		// create the service
-		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(serviceId);
+		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(zone);
+		s.setDomainName(parameters.getService().getDomain());
+		s.setServiceName(parameters.getService().getServicename());
 		s.setConcurrencyLimit(parameters.getConcurrencyLimit());
 
 		getServiceService().createOrUpdate(s);
@@ -1258,8 +1256,8 @@ public class ZASImpl implements ZAS {
 
 	private Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
 		Service s = new Service();
-		s.setDomain(service.getId().getDomainName());
-		s.setServicename(service.getId().getServiceName());
+		s.setDomain(service.getDomainName());
+		s.setServicename(service.getServiceName());
 
 		Servicestate ss = new Servicestate();
 		ss.setService(s);

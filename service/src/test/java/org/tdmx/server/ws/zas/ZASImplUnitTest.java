@@ -99,7 +99,6 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -138,7 +137,7 @@ public class ZASImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 	private AddressID aid;
-	private ServiceID sid;
+	private String serviceName;
 	private String domainName;
 
 	@Before
@@ -190,8 +189,11 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.Address userAddress = new org.tdmx.lib.zone.domain.Address(aid);
 		addressService.createOrUpdate(userAddress);
 
-		sid = new ServiceID("service", domainAC.getDomainName(), zone.getZoneApex());
-		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(sid);
+		serviceName = "service";
+		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(zone);
+		s.setDomainName(domainName);
+		s.setServiceName(serviceName);
+		s.setConcurrencyLimit(10);
 		serviceService.createOrUpdate(s);
 
 		accountZone = new AccountZone();
@@ -218,7 +220,7 @@ public class ZASImplUnitTest {
 			addressService.delete(a);
 		}
 
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone.getZoneApex(),
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone,
 				new org.tdmx.lib.zone.domain.ServiceSearchCriteria(new PageSpecifier(0, 1000)));
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			log.info("Cleanup " + s);
@@ -583,7 +585,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		ServiceFilter uf = new ServiceFilter();
-		uf.setServicename(sid.getServiceName());
+		uf.setServicename(serviceName);
 		req.setFilter(uf);
 
 		SearchServiceResponse response = zas.searchService(req);
@@ -1060,7 +1062,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
 				new PageSpecifier(0, 1000));
 		sSc.setDomainName(domainName);
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone.getZoneApex(), sSc);
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			serviceService.delete(s);
 		}
@@ -1125,8 +1127,8 @@ public class ZASImplUnitTest {
 
 		ModifyService ca = new ModifyService();
 		Service u = new Service();
-		u.setDomain(sid.getDomainName());
-		u.setServicename(sid.getServiceName());
+		u.setDomain(domainName);
+		u.setServicename(serviceName);
 
 		ca.setService(u);
 		ca.setConcurrencyLimit(100);
@@ -1142,8 +1144,8 @@ public class ZASImplUnitTest {
 
 		ModifyService ca = new ModifyService();
 		Service u = new Service();
-		u.setDomain(sid.getDomainName());
-		u.setServicename(sid.getServiceName());
+		u.setDomain(domainName);
+		u.setServicename(serviceName);
 
 		ca.setService(u);
 		ca.setConcurrencyLimit(99);
@@ -1291,8 +1293,8 @@ public class ZASImplUnitTest {
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
-		s.setDomain(sid.getDomainName());
-		s.setServicename(sid.getServiceName());
+		s.setDomain(domainName);
+		s.setServicename(serviceName);
 
 		ca.setService(s);
 
@@ -1307,8 +1309,8 @@ public class ZASImplUnitTest {
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
-		s.setDomain(sid.getDomainName());
-		s.setServicename(sid.getServiceName());
+		s.setDomain(domainName);
+		s.setServicename(serviceName);
 
 		ca.setService(s);
 

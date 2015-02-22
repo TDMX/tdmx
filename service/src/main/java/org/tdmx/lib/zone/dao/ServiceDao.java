@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 
 /**
@@ -40,7 +40,7 @@ public interface ServiceDao {
 
 	public Service merge(Service value);
 
-	public Service loadById(ServiceID id);
+	public Service loadById(Long id);
 
-	public List<Service> search(String zoneApex, ServiceSearchCriteria criteria);
+	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria);
 }

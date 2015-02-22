@@ -35,7 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
@@ -52,29 +51,27 @@ public class ServiceServiceRepositoryUnitTest {
 	@Autowired
 	private ServiceService serviceService;
 
-	private ServiceID id = null;
+	private String domainName;
+	private String serviceName;
 	private ZoneReference zone;
 
 	@Before
 	public void doSetup() throws Exception {
 
-		id = new ServiceID();
-		id.setZoneApex("ZONE.ROOT.TEST");
-		id.setDomainName("SUBDOMAIN." + id.getZoneApex());
-		id.setServiceName("serviceName");
+		zone = new ZoneReference(new Random().nextLong(), "ZONE.ROOT.TEST");
+		domainName = "SUBDOMAIN." + zone.getZoneApex();
+		serviceName = "serviceName";
 
-		zone = new ZoneReference(new Random().nextLong(), id.getZoneApex());
 		Zone az = ZoneFacade.createZone(zone);
-
 		zoneService.createOrUpdate(az);
 
-		Service d = ZoneFacade.createService(id);
+		Service d = ZoneFacade.createService(zone, domainName, serviceName, 10);
 		serviceService.createOrUpdate(d);
 	}
 
 	@After
 	public void doTeardown() {
-		Service d = serviceService.findById(id);
+		Service d = serviceService.findByName(zone, domainName, serviceName);
 		if (d != null) {
 			serviceService.delete(d);
 		}
@@ -92,74 +89,75 @@ public class ServiceServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Service d = serviceService.findById(id);
-		assertNotNull(d);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getServiceName(), d.getId().getServiceName());
+		Service s = serviceService.findByName(zone, domainName, serviceName);
+		assertNotNull(s);
+		assertEquals(zone, s.getZoneReference());
+		assertEquals(domainName, s.getDomainName());
+		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_Zone() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		List<Service> services = serviceService.search(id.getZoneApex(), criteria);
+		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
-		Service d = services.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getServiceName(), d.getId().getServiceName());
+		Service s = services.get(0);
+		assertEquals(zone, s.getZoneReference());
+		assertEquals(domainName, s.getDomainName());
+		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndService() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(id.getServiceName());
+		criteria.setServiceName(serviceName);
 
-		List<Service> services = serviceService.search(id.getZoneApex(), criteria);
+		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
-		Service d = services.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getServiceName(), d.getId().getServiceName());
+		Service s = services.get(0);
+		assertEquals(zone, s.getZoneReference());
+		assertEquals(domainName, s.getDomainName());
+		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainAndService() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
-		criteria.setServiceName(id.getServiceName());
+		criteria.setDomainName(domainName);
+		criteria.setServiceName(serviceName);
 
-		List<Service> services = serviceService.search(id.getZoneApex(), criteria);
+		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
-		Service d = services.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getServiceName(), d.getId().getServiceName());
+		Service s = services.get(0);
+		assertEquals(zone, s.getZoneReference());
+		assertEquals(domainName, s.getDomainName());
+		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainOnly() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(id.getDomainName());
+		criteria.setDomainName(domainName);
 
-		List<Service> services = serviceService.search(id.getZoneApex(), criteria);
+		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
-		Service d = services.get(0);
-		assertEquals(id.getZoneApex(), d.getId().getZoneApex());
-		assertEquals(id.getDomainName(), d.getId().getDomainName());
-		assertEquals(id.getServiceName(), d.getId().getServiceName());
+		Service s = services.get(0);
+		assertEquals(zone, s.getZoneReference());
+		assertEquals(domainName, s.getDomainName());
+		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_UnknownZoneAndService() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(id.getServiceName());
+		criteria.setServiceName(serviceName);
 
-		List<Service> services = serviceService.search("gugusZone", criteria);
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		List<Service> services = serviceService.search(gugus, criteria);
 		assertNotNull(services);
 		assertEquals(0, services.size());
 	}
@@ -167,28 +165,32 @@ public class ServiceServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_UnknownZoneAndUnknownService() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(id.getServiceName());
+		criteria.setServiceName(serviceName);
 
-		List<Service> services = serviceService.search("gugusZone", criteria);
+		ZoneReference gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
+		List<Service> services = serviceService.search(gugus, criteria);
 		assertNotNull(services);
 		assertEquals(0, services.size());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		ServiceID gugusID = new ServiceID("gugus", id.getDomainName(), id.getZoneApex());
-		Service d = serviceService.findById(gugusID);
+		Service d = serviceService.findByName(zone, domainName, "gugus");
 		assertNull(d);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Service d = serviceService.findById(id);
+		Service d = serviceService.findByName(zone, domainName, serviceName);
+		d.setConcurrencyLimit(20);
 		serviceService.createOrUpdate(d);
 
-		Service d2 = serviceService.findById(id);
+		Service d2 = serviceService.findByName(zone, domainName, serviceName);
 
-		assertEquals(d.getId(), d2.getId());
+		assertEquals(d.getZoneReference(), d2.getZoneReference());
+		assertEquals(d.getDomainName(), d2.getDomainName());
+		assertEquals(d.getServiceName(), d2.getServiceName());
+		assertEquals(d.getConcurrencyLimit(), d2.getConcurrencyLimit());
 	}
 
 }

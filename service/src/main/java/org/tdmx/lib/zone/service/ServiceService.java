@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.ServiceID;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 
 /**
@@ -32,12 +32,14 @@ import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
  */
 public interface ServiceService {
 
-	public void createOrUpdate(Service domain);
+	public void createOrUpdate(Service service);
 
-	public Service findById(ServiceID domainId);
+	public Service findById(Long id);
 
-	public List<Service> search(String zoneApex, ServiceSearchCriteria criteria);
+	public Service findByName(ZoneReference zone, String domainName, String serviceName);
 
-	public void delete(Service domain);
+	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria);
+
+	public void delete(Service service);
 
 }
