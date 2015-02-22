@@ -24,13 +24,17 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.common.domain.ZoneReference;
 
 /**
  * An AgentCredential is the public certificate of a ZAC, DAC or UC.
@@ -56,7 +60,22 @@ public class AgentCredential implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	private AgentCredentialID id;
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "CredentialIdGen")
+	@TableGenerator(name = "CredentialIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	private Long id;
+
+	/**
+	 * The tenantId is the entityID of the AccountZone in ControlDB.
+	 */
+	@Column(nullable = false)
+	private Long tenantId;
+
+	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
+	private String zoneApex;
+
+	// TODO index fingerprint
+	@Column(length = MAX_SHA1FINGERPRINT_LEN, nullable = false)
+	private String sha1fingerprint;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = AgentCredentialType.MAX_CREDENTIALTYPE_LEN, nullable = false)
@@ -82,17 +101,16 @@ public class AgentCredential implements Serializable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public AgentCredential() {
+	AgentCredential() {
 	}
 
-	public AgentCredential(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+	public AgentCredential(ZoneReference zone, PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+		this.tenantId = zone.getTenantId();
+		this.zoneApex = zone.getZoneApex();
 		setCertificateChain(certificateChain);
 		PKIXCertificate publicKey = getPublicKey();
+		setSha1fingerprint(publicKey.getFingerprint());
 		// TODO fixme
-		AgentCredentialID id = new AgentCredentialID(publicKey.getTdmxZoneInfo().getZoneRoot(),
-				publicKey.getFingerprint());
-		setId(id);
-
 		if (publicKey.isTdmxZoneAdminCertificate()) {
 			setCredentialType(AgentCredentialType.ZAC);
 		} else if (publicKey.isTdmxDomainAdminCertificate()) {
@@ -111,6 +129,19 @@ public class AgentCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Credential [id=");
+		builder.append(id);
+		builder.append(" zoneApex=");
+		builder.append(zoneApex);
+		builder.append(", fingerprint=");
+		builder.append(sha1fingerprint);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	/**
 	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
@@ -167,12 +198,24 @@ public class AgentCredential implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AgentCredentialID getId() {
+	public Long getId() {
 		return id;
 	}
 
-	private void setId(AgentCredentialID id) {
+	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public ZoneReference getZoneReference() {
+		return new ZoneReference(this.tenantId, this.zoneApex);
+	}
+
+	public String getSha1fingerprint() {
+		return sha1fingerprint;
+	}
+
+	public void setSha1fingerprint(String sha1fingerprint) {
+		this.sha1fingerprint = sha1fingerprint;
 	}
 
 	public AgentCredentialType getCredentialType() {

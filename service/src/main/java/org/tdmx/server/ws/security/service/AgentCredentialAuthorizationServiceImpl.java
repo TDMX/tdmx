@@ -33,7 +33,6 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -102,11 +101,10 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		AgentCredential agentCredential = null;
 		AccountZone agentAccountZone = null;
 		for (AccountZone accountZone : accountZones) {
-			AgentCredentialID id = new AgentCredentialID(zoneApex, fingerprint);
-
 			try {
 				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
-				agentCredential = getAgentCredentialService().findById(id);
+				agentCredential = getAgentCredentialService().findByFingerprint(accountZone.getZoneReference(),
+						fingerprint);
 				if (agentCredential != null) {
 					agentAccountZone = accountZone;
 					break;

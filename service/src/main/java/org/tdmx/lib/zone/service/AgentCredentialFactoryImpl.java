@@ -25,6 +25,7 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 
@@ -50,20 +51,21 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public AgentCredential createAgentCredential(String authorizedZoneApex, PKIXCertificate[] certificateChain) {
+	public AgentCredential createAgentCredential(ZoneReference authorizedZone, PKIXCertificate[] certificateChain) {
 		if (certificateChain == null || certificateChain.length <= 0) {
 			log.error("certificateChain missing");
 			return null;
 		}
 		try {
-			AgentCredential c = new AgentCredential(certificateChain);
+			AgentCredential c = new AgentCredential(authorizedZone, certificateChain);
 			if (c.getCredentialType() == null) {
 				log.error("Invalid AgentCredentialType.");
 				return null;
 			}
-			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
 				// provided certificate doesn't match the authorized zone
-				log.error("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
+				log.error("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
+						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
 				return null;
 			}
 			return c;
@@ -74,7 +76,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createDAC(String authorizedZoneApex, byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createDAC(ZoneReference authorizedZone, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
 
@@ -84,14 +86,15 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 				log.info("Invalid DAC PKIX CertificateChain.");
 				return null;
 			}
-			AgentCredential c = new AgentCredential(new PKIXCertificate[] { dc, zc });
+			AgentCredential c = new AgentCredential(authorizedZone, new PKIXCertificate[] { dc, zc });
 			if (c.getCredentialType() == null || AgentCredentialType.DAC != c.getCredentialType()) {
 				log.info("Invalid AgentCredentialType.");
 				return null;
 			}
-			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
 				// provided certificate doesn't match the authorized zone
-				log.info("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
+				log.info("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
+						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
 				return null;
 			}
 			return c;
@@ -102,7 +105,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createUC(String authorizedZoneApex, byte[] userCert, byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createUC(ZoneReference authorizedZone, byte[] userCert, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate uc = CertificateIOUtils.decodeX509(userCert);
 
@@ -114,14 +117,15 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 				log.info("Invalid User PKIX CertificateChain.");
 				return null;
 			}
-			AgentCredential c = new AgentCredential(new PKIXCertificate[] { uc, dc, zc });
+			AgentCredential c = new AgentCredential(authorizedZone, new PKIXCertificate[] { uc, dc, zc });
 			if (c.getCredentialType() == null || AgentCredentialType.UC != c.getCredentialType()) {
 				log.info("Invalid AgentCredentialType.");
 				return null;
 			}
-			if (!authorizedZoneApex.equals(c.getId().getZoneApex())) {
+			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
 				// provided certificate doesn't match the authorized zone
-				log.info("Unauthorized zoneApex " + authorizedZoneApex + " was " + c.getId().getZoneApex());
+				log.info("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
+						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
 				return null;
 			}
 			return c;

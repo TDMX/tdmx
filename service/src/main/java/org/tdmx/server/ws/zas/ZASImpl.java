@@ -243,7 +243,7 @@ public class ZASImpl implements ZAS {
 		AgentCredentialSearchCriteria dcSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
 		dcSc.setDomainName(parameters.getDomain());
 		dcSc.setType(AgentCredentialType.DAC);
-		List<AgentCredential> credentials = getCredentialService().search(zone.getZoneApex(), dcSc);
+		List<AgentCredential> credentials = getCredentialService().search(zone, dcSc);
 		if (!credentials.isEmpty()) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
@@ -313,16 +313,16 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 
 		if (parameters.getFilter().getUser() != null) {
 			// if a user credential is provided then it't not so much a search as a lookup
-			AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getFilter().getUser()
-					.getUsercertificate(), parameters.getFilter().getUser().getDomaincertificate(), parameters
-					.getFilter().getUser().getRootcertificate());
+			AgentCredential uc = credentialFactory.createUC(zone,
+					parameters.getFilter().getUser().getUsercertificate(), parameters.getFilter().getUser()
+							.getDomaincertificate(), parameters.getFilter().getUser().getRootcertificate());
 			if (uc == null) {
 				setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
@@ -331,7 +331,7 @@ public class ZASImpl implements ZAS {
 			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
 				return response;
 			}
-			AgentCredential c = credentialService.findById(uc.getId());
+			AgentCredential c = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
 			if (c != null) {
 				response.getUserstates().add(mapUserstate(c));
 			}
@@ -355,7 +355,7 @@ public class ZASImpl implements ZAS {
 				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
 			}
 			sc.setType(AgentCredentialType.UC);
-			List<AgentCredential> credentials = credentialService.search(zoneApex, sc);
+			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
 				response.getUserstates().add(mapUserstate(c));
 			}
@@ -379,14 +379,13 @@ public class ZASImpl implements ZAS {
 
 		if (parameters.getFilter().getAdministrator() != null) {
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredential dac = credentialFactory.createDAC(zone.getZoneApex(), parameters.getFilter()
-					.getAdministrator().getDomaincertificate(), parameters.getFilter().getAdministrator()
-					.getRootcertificate());
+			AgentCredential dac = credentialFactory.createDAC(zone, parameters.getFilter().getAdministrator()
+					.getDomaincertificate(), parameters.getFilter().getAdministrator().getRootcertificate());
 			if (dac == null) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
-			AgentCredential c = credentialService.findById(dac.getId());
+			AgentCredential c = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
 			if (c != null) {
 				response.getAdministratorstates().add(mapAdministratorstate(c));
 			}
@@ -404,7 +403,7 @@ public class ZASImpl implements ZAS {
 				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
 			}
 			sc.setType(AgentCredentialType.DAC);
-			List<AgentCredential> credentials = credentialService.search(zone.getZoneApex(), sc);
+			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
 				response.getAdministratorstates().add(mapAdministratorstate(c));
 			}
@@ -425,12 +424,12 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
 				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
@@ -438,7 +437,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findById(uc.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -564,12 +563,12 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zoneApex, parameters.getUser().getUsercertificate(), parameters
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
 				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
@@ -577,7 +576,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findById(uc.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -700,8 +699,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zone.getZoneApex(), parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -720,7 +719,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the DAC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findById(dac.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
@@ -839,7 +838,7 @@ public class ZASImpl implements ZAS {
 		acSc.setAddressName(parameters.getAddress().getLocalname());
 		acSc.setDomainName(parameters.getAddress().getDomain());
 		acSc.setType(AgentCredentialType.UC);
-		List<AgentCredential> ucs = getCredentialService().search(zone.getZoneApex(), acSc);
+		List<AgentCredential> ucs = getCredentialService().search(zone, acSc);
 		if (!ucs.isEmpty()) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
@@ -870,20 +869,20 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findById(dac.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
@@ -934,8 +933,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone.getZoneApex(), parameters.getUser().getUsercertificate(),
-				parameters.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
+				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -955,7 +954,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findById(uc.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
@@ -1026,20 +1025,20 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		String zoneApex = authorizedUser.getTdmxZoneInfo().getZoneRoot();
-		if (zoneApex == null) {
+		ZoneReference zone = getAgentService().getZoneReference();
+		if (zone == null) {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zoneApex, parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
+				parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findById(dac.getId());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;

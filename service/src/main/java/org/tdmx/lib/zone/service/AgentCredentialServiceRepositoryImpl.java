@@ -24,9 +24,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 
 /**
@@ -59,11 +60,15 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(AgentCredential agentCredential) {
-		AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getId());
-		if (storedAgentCredential == null) {
-			getAgentCredentialDao().persist(agentCredential);
+		if (agentCredential.getId() != null) {
+			AgentCredential storedAgentCredential = getAgentCredentialDao().loadById(agentCredential.getId());
+			if (storedAgentCredential != null) {
+				getAgentCredentialDao().merge(agentCredential);
+			} else {
+				log.warn("Unable to find AgentCredential with id " + agentCredential.getId());
+			}
 		} else {
-			getAgentCredentialDao().merge(agentCredential);
+			getAgentCredentialDao().persist(agentCredential);
 		}
 	}
 
@@ -80,14 +85,24 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public AgentCredential findById(AgentCredentialID id) {
+	public AgentCredential findById(Long id) {
 		return getAgentCredentialDao().loadById(id);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<AgentCredential> search(String zoneApex, AgentCredentialSearchCriteria criteria) {
-		return getAgentCredentialDao().search(zoneApex, criteria);
+	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria) {
+		return getAgentCredentialDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public AgentCredential findByFingerprint(ZoneReference zone, String fingerprint) {
+		AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+		sc.setFingerprint(fingerprint);
+		List<AgentCredential> credentials = getAgentCredentialDao().search(zone, sc);
+
+		return credentials.isEmpty() ? null : credentials.get(0);
 	}
 
 	// -------------------------------------------------------------------------

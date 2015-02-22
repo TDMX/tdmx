@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 
 /**
@@ -40,8 +40,8 @@ public interface AgentCredentialDao {
 
 	public AgentCredential merge(AgentCredential value);
 
-	public AgentCredential loadById(AgentCredentialID id);
+	public AgentCredential loadById(Long id);
 
-	public List<AgentCredential> search(String zoneApex, AgentCredentialSearchCriteria criteria);
+	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria);
 
 }

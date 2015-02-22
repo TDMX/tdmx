@@ -60,11 +60,15 @@ public class AddressServiceRepositoryImpl implements AddressService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(Address address) {
-		Address storedAddress = getAddressDao().loadById(address.getId());
-		if (storedAddress == null) {
-			getAddressDao().persist(address);
+		if (address.getId() != null) {
+			Address storedAddress = getAddressDao().loadById(address.getId());
+			if (storedAddress != null) {
+				getAddressDao().merge(address);
+			} else {
+				log.warn("Unable to find Address with id " + address.getId());
+			}
 		} else {
-			getAddressDao().merge(address);
+			getAddressDao().persist(address);
 		}
 	}
 

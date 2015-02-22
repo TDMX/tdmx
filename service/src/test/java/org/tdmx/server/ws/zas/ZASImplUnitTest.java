@@ -157,18 +157,16 @@ public class ZASImplUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				zac.getCertificateChain());
+		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zone, zac.getCertificateChain());
 		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
-		assertEquals(zone.getZoneApex(), zoneAC.getId().getZoneApex());
+		assertEquals(zone, zoneAC.getZoneReference());
 		agentCredentialService.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
 		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
-		assertNotNull(domainAC.getId().getZoneApex());
+		assertEquals(zone, domainAC.getZoneReference());
 		agentCredentialService.createOrUpdate(domainAC);
 
 		// we create the domain of the dac
@@ -177,11 +175,10 @@ public class ZASImplUnitTest {
 		dacDomain.setDomainName(domainName);
 		domainService.createOrUpdate(dacDomain);
 
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
 		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
-		assertEquals(zone.getZoneApex(), userAC.getId().getZoneApex());
+		assertEquals(zone, userAC.getZoneReference());
 		agentCredentialService.createOrUpdate(userAC);
 
 		localName = uc.getPublicCert().getCommonName();
@@ -200,7 +197,7 @@ public class ZASImplUnitTest {
 		accountZone = new AccountZone();
 		accountZone.setId(zone.getTenantId());
 		accountZone.setAccountId("TEST");
-		accountZone.setZoneApex(zoneAC.getId().getZoneApex());
+		accountZone.setZoneApex(zone.getZoneApex());
 		accountZone.setStatus(AccountZoneStatus.ACTIVE);
 		accountZone.setSegment("test");
 		accountZone.setZonePartitionId("default");
@@ -208,7 +205,7 @@ public class ZASImplUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(),
+		List<AgentCredential> list = agentCredentialService.search(zone,
 				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
@@ -994,7 +991,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		dacSc.setDomainName(domainName);
-		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
+		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
@@ -1015,7 +1012,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		dacSc.setDomainName(domainName);
-		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
+		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
@@ -1045,7 +1042,7 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		dacSc.setDomainName(domainName);
-		List<AgentCredential> list = agentCredentialService.search(zone.getZoneApex(), dacSc);
+		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
 		}
@@ -1208,8 +1205,8 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success() {
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				dac.getCertificateChain());
+		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
 		agentCredentialService.delete(domainAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1228,8 +1225,8 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success_DefaultStatus() {
-		AgentCredential domainAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				dac.getCertificateChain());
+		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
 		agentCredentialService.delete(domainAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1328,8 +1325,8 @@ public class ZASImplUnitTest {
 	@Test
 	public void testDeleteAddress_ZAC_ok() {
 		// remove UC credentials
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				uc.getCertificateChain());
+		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
 		agentCredentialService.delete(userAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
@@ -1394,8 +1391,8 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateUser_ZAC_ok() {
 		// delete the UC setup
-		AgentCredential userAC = agentCredentialFactory.createAgentCredential(zone.getZoneApex(),
-				uc.getCertificateChain());
+		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
+		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
 		agentCredentialService.delete(userAC);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);

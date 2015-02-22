@@ -60,11 +60,15 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(Service service) {
-		Service storedService = getServiceDao().loadById(service.getId());
-		if (storedService == null) {
-			getServiceDao().persist(service);
+		if (service.getId() != null) {
+			Service storedService = getServiceDao().loadById(service.getId());
+			if (storedService != null) {
+				getServiceDao().merge(service);
+			} else {
+				log.warn("Unable to find Service with id " + service.getId());
+			}
 		} else {
-			getServiceDao().merge(service);
+			getServiceDao().persist(service);
 		}
 	}
 

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,8 +36,8 @@ import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialID;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
@@ -53,7 +54,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 	@Autowired
 	private AgentCredentialFactory factory;
 
-	private String zoneApex;
+	private ZoneReference zone;
 	private PKIXCredential zac;
 	private PKIXCredential dac;
 	private PKIXCredential uc;
@@ -66,7 +67,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertNotNull(zacFile);
 		zac = KeyStoreUtils.getPrivateCredential(zacFile, "jks", "changeme", "client");
 		// ZAC, DAC and UC need to be all on the same zoneApex
-		zoneApex = zac.getPublicCert().getTdmxZoneInfo().getZoneRoot();
+		zone = new ZoneReference(new Random().nextLong(), zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
 
 		byte[] dacFile = FileUtils.getFileContents("src/test/resources/dac.keystore");
 		assertNotNull(dacFile);
@@ -76,27 +77,30 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
 
-		AgentCredential zoneAC = factory.createAgentCredential(zoneApex, zac.getCertificateChain());
+		AgentCredential zoneAC = factory.createAgentCredential(zone, zac.getCertificateChain());
 		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(zoneAC);
-		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
+		assertNull(zoneAC.getId());
+		assertEquals(zone, zoneAC.getZoneReference());
 		assertNull(zoneAC.getDomainName());
 		assertNull(zoneAC.getAddressName());
 		assertEquals(AgentCredentialType.ZAC, zoneAC.getCredentialType());
 		service.createOrUpdate(zoneAC);
 
-		AgentCredential domainAC = factory.createAgentCredential(zoneApex, dac.getCertificateChain());
+		AgentCredential domainAC = factory.createAgentCredential(zone, dac.getCertificateChain());
 		domainAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(domainAC);
-		assertNotNull(domainAC.getId().getZoneApex());
+		assertNull(domainAC.getId());
+		assertEquals(zone, domainAC.getZoneReference());
 		assertNotNull(domainAC.getDomainName());
 		assertNull(domainAC.getAddressName());
 		service.createOrUpdate(domainAC);
 
-		AgentCredential userAC = factory.createAgentCredential(zoneApex, uc.getCertificateChain());
+		AgentCredential userAC = factory.createAgentCredential(zone, uc.getCertificateChain());
 		userAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		assertNotNull(userAC);
-		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertNull(userAC.getId());
+		assertEquals(zone, userAC.getZoneReference());
 		assertNotNull(userAC.getDomainName());
 		assertNotNull(userAC.getAddressName());
 		service.createOrUpdate(userAC);
@@ -104,8 +108,8 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		List<AgentCredential> list = service.search(zoneApex,
-				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
+		List<AgentCredential> list = service.search(zone, new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
 			service.delete(ac);
 		}
@@ -118,20 +122,17 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupById() throws Exception {
-		AgentCredentialID id = new AgentCredentialID(zoneApex, zac.getPublicCert().getFingerprint());
-		AgentCredential zoneAC = service.findById(id);
+		AgentCredential zoneAC = service.findByFingerprint(zone, zac.getPublicCert().getFingerprint());
 		assertNotNull(zoneAC);
-		assertEquals(zoneApex, zoneAC.getId().getZoneApex());
+		assertEquals(zone, zoneAC.getZoneReference());
 
-		id = new AgentCredentialID(zoneApex, dac.getPublicCert().getFingerprint());
-		AgentCredential domainAC = service.findById(id);
+		AgentCredential domainAC = service.findByFingerprint(zone, dac.getPublicCert().getFingerprint());
 		assertNotNull(domainAC);
-		assertEquals(zoneApex, domainAC.getId().getZoneApex());
+		assertEquals(zone, domainAC.getZoneReference());
 
-		id = new AgentCredentialID(zoneApex, uc.getPublicCert().getFingerprint());
-		AgentCredential userAC = service.findById(id);
+		AgentCredential userAC = service.findByFingerprint(zone, uc.getPublicCert().getFingerprint());
 		assertNotNull(userAC);
-		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertEquals(zone, userAC.getZoneReference());
 	}
 
 	@Test
@@ -139,7 +140,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		AgentCredentialSearchCriteria sc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		sc.setDomainName(dac.getPublicCert().getCommonName());
-		List<AgentCredential> domainCerts = service.search(zoneApex, sc);
+		List<AgentCredential> domainCerts = service.search(zone, sc);
 		assertNotNull(domainCerts);
 		assertEquals(2, domainCerts.size()); // DAC, UC
 	}
@@ -151,7 +152,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		dsc.setDomainName(dac.getPublicCert().getCommonName());
 		dsc.setType(AgentCredentialType.DAC);
 
-		List<AgentCredential> dacCerts = service.search(zoneApex, dsc);
+		List<AgentCredential> dacCerts = service.search(zone, dsc);
 		assertNotNull(dacCerts);
 		assertEquals(1, dacCerts.size()); // DAC
 		// TODO prove dac
@@ -161,7 +162,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		usc.setDomainName(dac.getPublicCert().getCommonName());
 		usc.setType(AgentCredentialType.UC);
 
-		List<AgentCredential> ucCerts = service.search(zoneApex, usc);
+		List<AgentCredential> ucCerts = service.search(zone, usc);
 		assertNotNull(ucCerts);
 		assertEquals(1, ucCerts.size()); // UC
 		// TODO prove uc
@@ -175,7 +176,7 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		sc.setAddressName(uc.getPublicCert().getCommonName());
 		sc.setType(AgentCredentialType.UC);
 
-		List<AgentCredential> ucCerts = service.search(zoneApex, sc);
+		List<AgentCredential> ucCerts = service.search(zone, sc);
 		assertNotNull(ucCerts);
 		assertEquals(1, ucCerts.size()); // UC
 		// TODO prove uc
@@ -190,41 +191,53 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		sc.setType(AgentCredentialType.UC);
 		sc.setStatus(AgentCredentialStatus.ACTIVE);
 
-		List<AgentCredential> ucCerts = service.search(zoneApex, sc);
+		List<AgentCredential> ucCerts = service.search(zone, sc);
 		assertNotNull(ucCerts);
 		assertEquals(1, ucCerts.size()); // UC
 		// TODO prove uc
 
 		sc.setStatus(AgentCredentialStatus.SUSPENDED);
-		ucCerts = service.search(zoneApex, sc);
+		ucCerts = service.search(zone, sc);
 		assertNotNull(ucCerts);
 		assertEquals(0, ucCerts.size());
 	}
 
 	@Test
-	public void testLookup_NotFound() throws Exception {
-		AgentCredentialID id = new AgentCredentialID(zoneApex, "gugus");
+	public void testSearch_ZoneNotFound() throws Exception {
+		AgentCredentialSearchCriteria sc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setDomainName(dac.getPublicCert().getCommonName());
 
-		AgentCredential az = service.findById(id);
+		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		List<AgentCredential> domainCerts = service.search(gugus, sc);
+		assertNotNull(domainCerts);
+		assertEquals(0, domainCerts.size());
+
+		gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
+		domainCerts = service.search(gugus, sc);
+		assertNotNull(domainCerts);
+		assertEquals(0, domainCerts.size());
+	}
+
+	@Test
+	public void testLookup_NotFound() throws Exception {
+		AgentCredential az = service.findByFingerprint(zone, "gugus");
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify_Status() throws Exception {
-		AgentCredentialID id = new AgentCredentialID(zoneApex, uc.getPublicCert().getFingerprint());
-
-		AgentCredential userAC = service.findById(id);
+		AgentCredential userAC = service.findByFingerprint(zone, uc.getPublicCert().getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(AgentCredentialStatus.ACTIVE, userAC.getCredentialStatus());
-		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertEquals(zone, userAC.getZoneReference());
 
 		userAC.setCredentialStatus(AgentCredentialStatus.SUSPENDED);
 		service.createOrUpdate(userAC);
 
-		userAC = service.findById(id);
+		userAC = service.findByFingerprint(zone, uc.getPublicCert().getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(AgentCredentialStatus.SUSPENDED, userAC.getCredentialStatus());
-		assertEquals(zoneApex, userAC.getId().getZoneApex());
+		assertEquals(zone, userAC.getZoneReference());
 	}
-
 }

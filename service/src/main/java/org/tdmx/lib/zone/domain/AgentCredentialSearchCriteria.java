@@ -52,6 +52,8 @@ public class AgentCredentialSearchCriteria {
 	 */
 	private String addressName;
 
+	private String fingerprint;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -111,6 +113,14 @@ public class AgentCredentialSearchCriteria {
 
 	public void setStatus(AgentCredentialStatus status) {
 		this.status = status;
+	}
+
+	public String getFingerprint() {
+		return fingerprint;
+	}
+
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
 	}
 
 }
