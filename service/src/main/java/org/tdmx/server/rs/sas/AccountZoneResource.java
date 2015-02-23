@@ -32,6 +32,27 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 @XmlType(name = "AccountZone")
 public class AccountZoneResource {
 
+	public enum FIELD {
+		ID("id"),
+		ACCOUNTID("accountId"),
+		ZONEAPEX("zoneApex"),
+		SEGMENT("segment"),
+		ZONEPARTITIONID("zonePartitionId"),
+		ACCESSSTATUS("accessStatus"),
+		JOBID("jobId"), ;
+
+		private FIELD(String n) {
+			this.n = n;
+		}
+
+		private final String n;
+
+		@Override
+		public String toString() {
+			return this.n;
+		}
+	}
+
 	private Long id;
 	private String accountId;
 	private String zoneApex;

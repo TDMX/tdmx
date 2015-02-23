@@ -82,7 +82,7 @@ public class AccountZone implements Serializable {
 	/**
 	 * Each zone is assigned into a DatabasePartition at creation time.
 	 */
-	@Column(length = DatabasePartition.MAX_URL_LEN, nullable = false)
+	@Column(length = DatabasePartition.MAX_PARTITIONID_LEN, nullable = false)
 	private String zonePartitionId;
 
 	/**

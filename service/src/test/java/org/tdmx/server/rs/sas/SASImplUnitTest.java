@@ -39,13 +39,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
+import org.tdmx.lib.console.domain.DatabasePartitionFacade;
+import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.service.AccountIdService;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
-import org.tdmx.lib.control.service.AccountIdService;
 import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -77,6 +80,18 @@ public class SASImplUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
+		DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment-id1", DatabaseType.ZONE,
+				"segment");
+		databasePartitionService.createOrUpdate(zp1);
+
+		DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment-id2", DatabaseType.ZONE,
+				"segment");
+		databasePartitionService.createOrUpdate(zp2);
+
+		DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment-id3", DatabaseType.ZONE,
+				"segment");
+		databasePartitionService.createOrUpdate(zp3);
+
 		accountResource = new AccountResource();
 		accountResource.setEmail("email@gmail.com");
 		accountResource.setFirstname("firstName");
@@ -99,6 +114,18 @@ public class SASImplUnitTest {
 
 	@After
 	public void doTeardown() {
+		DatabasePartition zp1 = databasePartitionService.findByPartitionId("z-segment-id1");
+		if (zp1 != null) {
+			databasePartitionService.delete(zp1);
+		}
+		DatabasePartition zp2 = databasePartitionService.findByPartitionId("z-segment-id2");
+		if (zp2 != null) {
+			databasePartitionService.delete(zp2);
+		}
+		DatabasePartition zp3 = databasePartitionService.findByPartitionId("z-segment-id3");
+		if (zp3 != null) {
+			databasePartitionService.delete(zp3);
+		}
 	}
 
 	@Test

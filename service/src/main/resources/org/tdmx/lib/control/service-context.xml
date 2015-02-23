@@ -138,6 +138,12 @@
 
 	<!-- NON TRANSACTIONAL / HIGHER SERVICES -->
 
+	<bean id="tdmx.lib.control.ZonePartitionAllocationService"
+		class="org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationServiceImpl">
+		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
+	</bean>
+
+
 	<bean id="tdmx.lib.control.AccountIdService"
 		class="org.tdmx.lib.control.service.AccountIdServiceImpl" init-method="init">
 		<property name="maxValueService"

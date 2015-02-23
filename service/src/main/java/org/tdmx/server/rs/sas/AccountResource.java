@@ -30,6 +30,25 @@ import org.tdmx.lib.control.domain.Account;
 @XmlType(name = "Account")
 public class AccountResource {
 
+	public enum FIELD {
+		ID("id"),
+		ACCOUNTID("accountId"),
+		FIRSTNAME("firstname"),
+		LASTNAME("lastname"),
+		EMAIL("email");
+
+		private FIELD(String n) {
+			this.n = n;
+		}
+
+		private final String n;
+
+		@Override
+		public String toString() {
+			return this.n;
+		}
+	}
+
 	private Long id;
 	private String accountId;
 	private String firstname;

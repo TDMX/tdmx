@@ -90,6 +90,10 @@ public class DatabasePartition implements Serializable {
 	@Transient
 	private String password;
 
+	/**
+	 * The sizeFactor determines the space in a DB partition relative to other partitions. The calculation must remain
+	 * consistent like being the number of GB in the DB.
+	 */
 	@Column(nullable = false)
 	private int sizeFactor; // immutable
 	@Column

@@ -20,7 +20,6 @@ package org.tdmx.server.rs.sas;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.ValidationException;
 import javax.ws.rs.core.Response;
@@ -33,8 +32,10 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.service.AccountIdService;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
 import org.tdmx.server.rs.exception.ApplicationValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
@@ -44,14 +45,34 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public enum PARAM {
+		AID("aId"),
+		ACCOUNT("account"),
+		ZID("zId"),
+		ZCID("zcId"), ;
+
+		private PARAM(String n) {
+			this.n = n;
+		}
+
+		private final String n;
+
+		@Override
+		public String toString() {
+			return this.n;
+		}
+
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(SASImpl.class);
 
+	private AccountIdService accountIdService;
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
+	private ZoneDatabasePartitionAllocationService zonePartitionService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,17 +84,17 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountResource createAccount(AccountResource account) {
-		validatePresent("account", account);
+		validatePresent(AccountResource.FIELD.ACCOUNTID, account);
 		Account a = AccountResource.mapTo(account);
-		validateNotPresent("id", a.getId());
-		validateNotPresent("accountId", a.getAccountId());
+		validateNotPresent(AccountResource.FIELD.ID, a.getId());
+		validateNotPresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 
-		a.setAccountId(UUID.randomUUID().toString()); // TODO maxvalue "accountId"
-
+		a.setAccountId(getAccountIdService().getNextAccountId());
 		a.setEmail(account.getEmail());
 		a.setFirstName(account.getFirstname());
 		a.setLastName(account.getLastname());
 
+		log.info("Creating accountId " + a.getAccountId() + " for " + a.getEmail());
 		getAccountService().createOrUpdate(a);
 
 		// the ID is only created on commit of the createOrUpdate above
@@ -96,23 +117,23 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountResource getAccount(Long aId) {
-		validatePresent("aId", aId);
+		validatePresent(PARAM.AID, aId);
 		return AccountResource.mapTo(getAccountService().findById(aId));
 	}
 
 	@Override
 	public AccountResource updateAccount(AccountResource account) {
-		validatePresent("account", account);
+		validatePresent(PARAM.ACCOUNT, account);
 		Account a = AccountResource.mapTo(account);
-		validatePresent("id", a.getId());
-		validatePresent("accountId", a.getAccountId());
+		validatePresent(AccountResource.FIELD.ID, a.getId());
+		validatePresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 		getAccountService().createOrUpdate(a);
 		return AccountResource.mapTo(a);
 	}
 
 	@Override
 	public Response deleteAccount(Long aId) {
-		validatePresent("aId", aId);
+		validatePresent(PARAM.AID, aId);
 		Account a = getAccountService().findById(aId);
 		getAccountService().delete(a);
 		return Response.ok().build();
@@ -120,24 +141,28 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountZoneResource createAccountZone(Long aId, AccountZoneResource accountZone) {
-		validatePresent("aId", aId);
+		validatePresent(PARAM.AID, aId);
 		AccountZone az = AccountZoneResource.mapTo(accountZone);
 
 		// check that the account exists and accountId same
 		Account a = getAccountService().findById(aId);
-		validatePresent("account", a);
-		validateEquals("accountId", a.getAccountId(), az.getAccountId());
+		validatePresent(PARAM.ACCOUNT, a);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
-		validatePresent("zoneApex", az.getZoneApex());
-		validatePresent("status", az.getStatus());
-		validateNotPresent("id", az.getId());
+		validatePresent(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex());
+		validatePresent(AccountZoneResource.FIELD.ACCESSSTATUS, az.getStatus());
+		validateNotPresent(AccountZoneResource.FIELD.ID, az.getId());
 
 		// TODO segment value valid.
-		validatePresent("segment", az.getSegment());
-		validateNotPresent("zonePartitionId", az.getZonePartitionId());
-		// TODO select zonepartitionId from service.
-		az.setZonePartitionId("TODO");
+		validatePresent(AccountZoneResource.FIELD.SEGMENT, az.getSegment());
+		validateNotPresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
+		String partitionId = getZonePartitionService().getZonePartitionId(a.getAccountId(), az.getZoneApex(),
+				az.getSegment());
+		az.setZonePartitionId(partitionId);
+		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
+
+		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
 		getAccountZoneService().createOrUpdate(az);
 
 		// the ID is only created on commit of the createOrUpdate above
@@ -148,15 +173,15 @@ public class SASImpl implements SAS {
 
 	@Override
 	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize) {
-		validatePresent("aId", aId);
+		validatePresent(PARAM.AID, aId);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public AccountZoneResource getAccountZone(Long aId, Long zId) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
 
 		// TODO Auto-generated method stub
 		return null;
@@ -164,8 +189,8 @@ public class SASImpl implements SAS {
 
 	@Override
 	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource account) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
 		// TODO Auto-generated method stub
 
 		// change partitionId - store jobId
@@ -175,8 +200,8 @@ public class SASImpl implements SAS {
 
 	@Override
 	public Response deleteAccountZone(Long aId, Long zId) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -184,8 +209,8 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource createAccountZoneAdministrationCredential(Long aId, Long zId,
 			AccountZoneAdministrationCredentialResource zac) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -193,8 +218,8 @@ public class SASImpl implements SAS {
 	@Override
 	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Long aId,
 			Long zId, Integer pageNo, Integer pageSize) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -202,9 +227,9 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource getAccountZoneAdministrationCredential(Long aId, Long zId,
 			Long zcId) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
-		validatePresent("zcId", zcId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
+		validatePresent(PARAM.ZCID, zcId);
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -212,18 +237,18 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(Long aId, Long zId,
 			Long zcId, AccountZoneAdministrationCredentialResource zac) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
-		validatePresent("zcId", zcId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
+		validatePresent(PARAM.ZCID, zcId);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Response deleteAccountZoneAdministrationCredential(Long aId, Long zId, Long zcId) {
-		validatePresent("aId", aId);
-		validatePresent("zId", zId);
-		validatePresent("zcId", zcId);
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.ZID, zId);
+		validatePresent(PARAM.ZCID, zcId);
 
 		// TODO Auto-generated method stub
 		return null;
@@ -247,41 +272,54 @@ public class SASImpl implements SAS {
 	private ValidationException createVE(FieldValidationErrorType type, String fieldName) {
 		List<ApplicationValidationError> errors = new ArrayList<>();
 		errors.add(new FieldValidationError(type, fieldName));
-		ValidationException ve = new javax.ws.rs.ValidationException(Status.BAD_REQUEST, errors);
-		return ve;
+		return new javax.ws.rs.ValidationException(Status.BAD_REQUEST, errors);
 	}
 
-	private void validateEquals(String fieldId, String expectedValue, String fieldValue) {
+	private void validateEquals(Enum<?> fieldId, String expectedValue, String fieldValue) {
 		if (StringUtils.hasText(expectedValue) && StringUtils.hasText(fieldValue)) {
 			if (!expectedValue.equals(fieldValue)) {
-				throw createVE(FieldValidationErrorType.PRESENT, fieldId);
+				throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
 			}
 		} else if (StringUtils.hasText(expectedValue)) {
-			throw createVE(FieldValidationErrorType.MISSING, fieldId);
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
 		}
 	}
 
-	private void validateNotPresent(String fieldId, String fieldValue) {
+	private void validateNotPresent(Enum<?> fieldId, String fieldValue) {
 		if (StringUtils.hasText(fieldValue)) {
-			throw createVE(FieldValidationErrorType.PRESENT, fieldId);
+			throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
 		}
 	}
 
-	private void validateNotPresent(String fieldId, Object fieldValue) {
+	private void validateNotPresent(Enum<?> fieldId, Object fieldValue) {
 		if (fieldValue != null) {
-			throw createVE(FieldValidationErrorType.PRESENT, fieldId);
+			throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
 		}
 	}
 
-	private void validatePresent(String fieldId, Object fieldValue) {
+	private void validatePresent(Enum<?> fieldId, Object fieldValue) {
 		if (fieldValue == null) {
-			throw createVE(FieldValidationErrorType.MISSING, fieldId);
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+	}
+
+	private void validatePresent(Enum<?> fieldId, String fieldValue) {
+		if (!StringUtils.hasText(fieldValue)) {
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
 		}
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public AccountIdService getAccountIdService() {
+		return accountIdService;
+	}
+
+	public void setAccountIdService(AccountIdService accountIdService) {
+		this.accountIdService = accountIdService;
+	}
 
 	public AccountService getAccountService() {
 		return accountService;
@@ -297,6 +335,14 @@ public class SASImpl implements SAS {
 
 	public void setAccountZoneService(AccountZoneService accountZoneService) {
 		this.accountZoneService = accountZoneService;
+	}
+
+	public ZoneDatabasePartitionAllocationService getZonePartitionService() {
+		return zonePartitionService;
+	}
+
+	public void setZonePartitionService(ZoneDatabasePartitionAllocationService zonePartitionService) {
+		this.zonePartitionService = zonePartitionService;
 	}
 
 }
