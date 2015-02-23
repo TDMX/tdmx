@@ -25,12 +25,12 @@ import org.springframework.util.StringUtils;
 import org.tdmx.lib.control.domain.MaxValue;
 
 /**
- * The implementation of {@link AccountIdService}.
+ * The implementation of {@link UniqueIdService}.
  * 
  * @author Peter Klauser
  * 
  */
-public class AccountIdServiceImpl implements AccountIdService {
+public class UniqueIdServiceImpl implements UniqueIdService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,11 +40,12 @@ public class AccountIdServiceImpl implements AccountIdService {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AccountIdServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(UniqueIdServiceImpl.class);
 
 	private MaxValueService maxValueService;
-	private int batchSize = 10;
-	private String maxValueKey = "accountId";
+	private int batchSize;
+	private String maxValueKey;
+	private long initialLowValue;
 
 	private final Object syncObject = new Object();
 	private long cachedMaxValue = 0;
@@ -63,13 +64,13 @@ public class AccountIdServiceImpl implements AccountIdService {
 		if (mv == null) {
 			mv = new MaxValue();
 			mv.setKey(getMaxValueKey());
-			mv.setValue(100000000L); // 8 digit
+			mv.setValue(getInitialLowValue());
 			getMaxValueService().createOrUpdate(mv);
 		}
 	}
 
 	@Override
-	public String getNextAccountId() {
+	public String getNextId() {
 		long result = 0;
 		synchronized (syncObject) {
 			if (cachedMaxValue == 0 || cachedMaxValue >= lastCachedMaxValue) {
@@ -83,7 +84,10 @@ public class AccountIdServiceImpl implements AccountIdService {
 		}
 		int checkDigit = calculateCheckDigit(result);
 		Long oid = (result * DIGIT) + checkDigit;
-		return oid.toString();
+
+		String id = oid.toString();
+		log.info("Generated " + getMaxValueKey() + "=" + id);
+		return id;
 	}
 
 	@Override
@@ -155,6 +159,14 @@ public class AccountIdServiceImpl implements AccountIdService {
 
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	public long getInitialLowValue() {
+		return initialLowValue;
+	}
+
+	public void setInitialLowValue(long initialLowValue) {
+		this.initialLowValue = initialLowValue;
 	}
 
 }

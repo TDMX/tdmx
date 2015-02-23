@@ -19,28 +19,28 @@
 package org.tdmx.lib.control.service;
 
 /**
- * The AccountIdService.
+ * The UniqueIdService.
  * 
- * AccountId's are generated of the MaxValue[accountId]+UPC-check-digit. The service uses caching and bulk incrementing
- * of the MaxValue for scalability.
+ * UniqueId's are generated of the MaxValue[name]+UPC-check-digit. The service uses caching and bulk incrementing of the
+ * MaxValue for scalability.
  * 
  * @author Peter
  * 
  */
-public interface AccountIdService {
+public interface UniqueIdService {
 
 	/**
-	 * Gets a unique accountId.
+	 * Gets a uniqueId.
 	 * 
 	 * @return
 	 */
-	public String getNextAccountId();
+	public String getNextId();
 
 	/**
-	 * Use UPC algorithm to determine if the accountId is valid.
+	 * Use UPC algorithm to determine if the uniqueId is valid.
 	 * 
-	 * @param accountId
+	 * @param uniqueId
 	 * @return
 	 */
-	public boolean isValid(String accountId);
+	public boolean isValid(String uniqueId);
 }

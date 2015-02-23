@@ -32,7 +32,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.service.AccountIdService;
+import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
@@ -69,7 +69,7 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(SASImpl.class);
 
-	private AccountIdService accountIdService;
+	private UniqueIdService accountIdService;
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
@@ -89,7 +89,7 @@ public class SASImpl implements SAS {
 		validateNotPresent(AccountResource.FIELD.ID, a.getId());
 		validateNotPresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 
-		a.setAccountId(getAccountIdService().getNextAccountId());
+		a.setAccountId(getAccountIdService().getNextId());
 		a.setEmail(account.getEmail());
 		a.setFirstName(account.getFirstname());
 		a.setLastName(account.getLastname());
@@ -313,11 +313,11 @@ public class SASImpl implements SAS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AccountIdService getAccountIdService() {
+	public UniqueIdService getAccountIdService() {
 		return accountIdService;
 	}
 
-	public void setAccountIdService(AccountIdService accountIdService) {
+	public void setAccountIdService(UniqueIdService accountIdService) {
 		this.accountIdService = accountIdService;
 	}
 

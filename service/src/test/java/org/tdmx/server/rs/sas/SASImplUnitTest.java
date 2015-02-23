@@ -36,19 +36,20 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.lib.console.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
-import org.tdmx.lib.control.service.AccountIdService;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
+import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -70,7 +71,8 @@ public class SASImplUnitTest {
 	@Autowired
 	private MaxValueService maxValueService;
 	@Autowired
-	private AccountIdService objectIdService;
+	@Qualifier("tdmx.lib.control.AccountIdService")
+	private UniqueIdService objectIdService;
 
 	@Autowired
 	private SAS sas;

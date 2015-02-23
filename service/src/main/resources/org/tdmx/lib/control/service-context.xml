@@ -145,7 +145,19 @@
 
 
 	<bean id="tdmx.lib.control.AccountIdService"
-		class="org.tdmx.lib.control.service.AccountIdServiceImpl" init-method="init">
+		class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
+		<property name="maxValueKey" value="accountId"/>
+		<property name="batchSize" value="10"/>
+		<property name="initialLowValue" value="100000000"/>
+		<property name="maxValueService"
+			ref="tdmx.lib.control.MaxValueRepository" />
+	</bean>
+
+	<bean id="tdmx.lib.control.JobIdService"
+		class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
+		<property name="maxValueKey" value="jobId"/>
+		<property name="batchSize" value="10"/>
+		<property name="initialLowValue" value="1000000"/>
 		<property name="maxValueService"
 			ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>

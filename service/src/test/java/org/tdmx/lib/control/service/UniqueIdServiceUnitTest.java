@@ -25,15 +25,17 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class AccountIdServiceUnitTest {
+public class UniqueIdServiceUnitTest {
 
 	@Autowired
-	private AccountIdService service;
+	@Qualifier("tdmx.lib.control.JobIdService")
+	private UniqueIdService service;
 
 	@Test
 	public void testAutoWire() throws Exception {
@@ -42,11 +44,11 @@ public class AccountIdServiceUnitTest {
 
 	@Test
 	public void testSequentialLookup() throws Exception {
-		String initialValue = service.getNextAccountId();
+		String initialValue = service.getNextId();
 		assertTrue(service.isValid(initialValue));
 
 		for (int i = 0; i < 10000; i++) {
-			String nextValue = service.getNextAccountId();
+			String nextValue = service.getNextId();
 
 			assertTrue(Long.parseLong(nextValue) > Long.parseLong(initialValue));
 			assertTrue(service.isValid(nextValue));

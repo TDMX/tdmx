@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.Job;
@@ -56,7 +57,8 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Autowired
 	private ControlJobService service;
 	@Autowired
-	private AccountIdService idService;
+	@Qualifier("tdmx.lib.control.JobIdService")
+	private UniqueIdService idService;
 
 	private ControlJob je;
 
