@@ -26,8 +26,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.bind.JAXBException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.common.domain.Job;
+import org.tdmx.lib.control.service.UniqueIdService;
 
 /**
  * 
@@ -36,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter Klauser
  * 
  */
-public class JobExecutionServiceImpl implements Runnable {
+public class JobExecutionServiceImpl implements Runnable, JobFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,8 +51,8 @@ public class JobExecutionServiceImpl implements Runnable {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(JobExecutionServiceImpl.class);
 
+	private UniqueIdService jobIdService;
 	private List<JobConverter<?>> jobConverterList;
-
 	private List<JobExecutor<?>> jobExecutorList;
 
 	/**
@@ -85,6 +89,27 @@ public class JobExecutionServiceImpl implements Runnable {
 		scheduledThreadPool.scheduleWithFixedDelay(this, getFixedDelay(), getFixedDelay(), TimeUnit.SECONDS);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Job createJob(Object task) {
+		if (task == null) {
+			throw new IllegalArgumentException("missing task");
+		}
+		JobConverter converter = jobConverterMap.get(task.getClass().getName());
+		if (converter == null) {
+			throw new IllegalArgumentException("no converter for " + task);
+		}
+		Job job = new Job();
+		job.setJobId(getJobIdService().getNextId());
+		job.setType(converter.getType());
+		try {
+			converter.setData(job, task);
+		} catch (JAXBException e) {
+			throw new IllegalArgumentException(e);
+		}
+		return job;
+	}
+
 	@Override
 	public void run() {
 		log.info("run start.");
@@ -108,6 +133,14 @@ public class JobExecutionServiceImpl implements Runnable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public UniqueIdService getJobIdService() {
+		return jobIdService;
+	}
+
+	public void setJobIdService(UniqueIdService jobIdService) {
+		this.jobIdService = jobIdService;
+	}
 
 	public List<JobConverter<?>> getJobConverterList() {
 		return jobConverterList;

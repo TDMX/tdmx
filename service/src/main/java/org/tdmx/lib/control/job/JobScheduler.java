@@ -18,24 +18,19 @@
  */
 package org.tdmx.lib.control.job;
 
-public interface JobExecutor<E> {
+import org.tdmx.lib.common.domain.Job;
+import org.tdmx.lib.control.domain.ControlJob;
+
+public interface JobScheduler {
 
 	/**
-	 * Get the type of Job which is supported by this executor.
+	 * Create and schedule a ControlJob for immediate execution.
 	 * 
-	 * @return
+	 * The ControlJob will have an id on return.
+	 * 
+	 * @param task
+	 * @return the immediately scheduled ControlJob
 	 */
-	public String getType();
-
-	/**
-	 * Execute the command.
-	 * 
-	 * Note: do not access ControlJob, this is the responsibility of the {@link JobExecutionServiceImpl}
-	 * 
-	 * @param id
-	 *            of the ControlJob being executed.
-	 * @param entry
-	 */
-	public void execute(Long id, E command);
+	public ControlJob scheduleImmediate(Job task);
 
 }

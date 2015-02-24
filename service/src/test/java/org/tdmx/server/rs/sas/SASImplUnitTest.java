@@ -112,6 +112,7 @@ public class SASImplUnitTest {
 		accountZoneResource = sas.createAccountZone(accountResource.getId(), accountZoneResource);
 
 		assertNotNull(accountZoneResource.getId());
+		assertNotNull(accountZoneResource.getJobId());
 	}
 
 	@After

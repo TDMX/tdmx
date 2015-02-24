@@ -22,6 +22,19 @@
 		</xs:sequence>
 	</xs:complexType>
 	<!-- ********************************************* -->
+	<!--           ZONE INSTALLATION  JOB -->
+	<!-- ********************************************* -->
+	<xs:element name="zoneinstall" type="ZoneInstallTask"/>
+	<xs:complexType name="ZoneInstallTask">
+		<xs:annotation>
+			<xs:documentation>Task to install a Zone in a ZoneDB partition corresponding to an AccountZone in the ControlDB.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountId" type="text"/>
+			<xs:element name="zoneApex" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
 	<!--           ZONE TRANSFER  JOB -->
 	<!-- ********************************************* -->
 	<xs:element name="zonetransfer" type="ZoneTransferTask"/>

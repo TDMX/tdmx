@@ -28,17 +28,22 @@ import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.service.UniqueIdService;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.job.JobFactory;
+import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
 import org.tdmx.server.rs.exception.ApplicationValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
+import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
 public class SASImpl implements SAS {
 
@@ -73,6 +78,8 @@ public class SASImpl implements SAS {
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
+	private JobFactory jobFactory;
+	private JobScheduler jobScheduler;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -162,12 +169,24 @@ public class SASImpl implements SAS {
 		az.setZonePartitionId(partitionId);
 		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
+		ZoneInstallTask installTask = new ZoneInstallTask();
+		installTask.setAccountId(az.getAccountId());
+		installTask.setZoneApex(az.getZoneApex());
+		Job installJob = getJobFactory().createJob(installTask);
+
 		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
 		getAccountZoneService().createOrUpdate(az);
 
 		// the ID is only created on commit of the createOrUpdate above
 		AccountZone storedAccountZone = getAccountZoneService().findByAccountIdZoneApex(az.getAccountId(),
 				az.getZoneApex());
+
+		// schedule the job to install the Zone in the ZoneDB partition.
+		ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+
+		storedAccountZone.setJobId(j.getId());
+
+		getAccountZoneService().createOrUpdate(storedAccountZone);
 		return AccountZoneResource.mapTo(storedAccountZone);
 	}
 
@@ -343,6 +362,22 @@ public class SASImpl implements SAS {
 
 	public void setZonePartitionService(ZoneDatabasePartitionAllocationService zonePartitionService) {
 		this.zonePartitionService = zonePartitionService;
+	}
+
+	public JobFactory getJobFactory() {
+		return jobFactory;
+	}
+
+	public void setJobFactory(JobFactory jobFactory) {
+		this.jobFactory = jobFactory;
+	}
+
+	public JobScheduler getJobScheduler() {
+		return jobScheduler;
+	}
+
+	public void setJobScheduler(JobScheduler jobScheduler) {
+		this.jobScheduler = jobScheduler;
 	}
 
 }

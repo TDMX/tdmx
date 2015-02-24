@@ -18,11 +18,12 @@
  */
 package org.tdmx.lib.control.job;
 
-import org.tdmx.service.control.task.dao.ZacInstallationResult;
-import org.tdmx.service.control.task.dao.ZacInstallationStatus;
-import org.tdmx.service.control.task.dao.ZacInstallationTask;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
-public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallationTask> {
+public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,12 +32,15 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private ThreadLocalPartitionIdProvider zonePartition;
+	private AccountZoneService accountZoneService;
+	private ZoneService zoneService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ZACInstallationJobExecutorImpl() {
+	public ZoneInstallJobExecutorImpl() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -45,16 +49,21 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 
 	@Override
 	public String getType() {
-		return ZacInstallationTask.class.getName();
+		return ZoneInstallTask.class.getName();
 	}
 
 	@Override
-	public void execute(Long id, ZacInstallationTask task) {
-		ZacInstallationResult r = new ZacInstallationResult();
+	public void execute(Long id, ZoneInstallTask task) {
 		// TODO
-		r.setMessage("ok");
-		r.setStatus(ZacInstallationStatus.OK);
-		task.setResult(r);
+
+		// tx1: (r/o) lookup AccountZone in ControlDB to figure out the partition to provision the Zone to.
+		// check that the AccountZone has our jobId so we have effectively the "lock" to update it later.
+
+		// set the partition
+
+		// tx2: (w) create the ZoneDB's zone in the partition
+
+		// tx3: (w) remove our jobId from the AccountZone
 	}
 
 	// -------------------------------------------------------------------------
@@ -68,5 +77,29 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ThreadLocalPartitionIdProvider getZonePartition() {
+		return zonePartition;
+	}
+
+	public void setZonePartition(ThreadLocalPartitionIdProvider zonePartition) {
+		this.zonePartition = zonePartition;
+	}
+
+	public AccountZoneService getAccountZoneService() {
+		return accountZoneService;
+	}
+
+	public void setAccountZoneService(AccountZoneService accountZoneService) {
+		this.accountZoneService = accountZoneService;
+	}
+
+	public ZoneService getZoneService() {
+		return zoneService;
+	}
+
+	public void setZoneService(ZoneService zoneService) {
+		this.zoneService = zoneService;
+	}
 
 }

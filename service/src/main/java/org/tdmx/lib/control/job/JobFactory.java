@@ -18,24 +18,17 @@
  */
 package org.tdmx.lib.control.job;
 
-public interface JobExecutor<E> {
+import org.tdmx.lib.common.domain.Job;
+
+public interface JobFactory {
 
 	/**
-	 * Get the type of Job which is supported by this executor.
+	 * Creates a Job with a jobId and then marshals the task object to XML bytes and stores in the job data.
+	 * {@link Job#setData(byte[])}
 	 * 
-	 * @return
+	 * @param job
+	 * @param task
 	 */
-	public String getType();
-
-	/**
-	 * Execute the command.
-	 * 
-	 * Note: do not access ControlJob, this is the responsibility of the {@link JobExecutionServiceImpl}
-	 * 
-	 * @param id
-	 *            of the ControlJob being executed.
-	 * @param entry
-	 */
-	public void execute(Long id, E command);
+	public Job createJob(Object jobData);
 
 }

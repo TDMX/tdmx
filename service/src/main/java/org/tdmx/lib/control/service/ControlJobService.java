@@ -35,6 +35,8 @@ public interface ControlJobService {
 
 	public ControlJob findById(Long id);
 
+	public ControlJob findByJobId(String jobId);
+
 	public List<ControlJob> search(ControlJobSearchCriteria criteria);
 
 	/**

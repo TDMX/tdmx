@@ -20,6 +20,8 @@
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService" />
 		<property name="zonePartitionService" ref="tdmx.lib.control.ZonePartitionAllocationService" />
+		<property name="jobFactory" ref="tdmx.lib.control.job.JobExecutor" />
+		<property name="jobScheduler" ref="tdmx.lib.control.job.JobScheduler" />
 		
 	</bean>
 

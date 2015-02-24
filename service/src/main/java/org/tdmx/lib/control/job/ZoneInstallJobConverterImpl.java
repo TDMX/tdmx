@@ -18,11 +18,14 @@
  */
 package org.tdmx.lib.control.job;
 
-import org.tdmx.service.control.task.dao.ZacInstallationResult;
-import org.tdmx.service.control.task.dao.ZacInstallationStatus;
-import org.tdmx.service.control.task.dao.ZacInstallationTask;
+import javax.xml.bind.JAXBException;
+import javax.xml.namespace.QName;
 
-public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallationTask> {
+import org.tdmx.core.system.lang.JaxbMarshaller;
+import org.tdmx.lib.common.domain.Job;
+import org.tdmx.service.control.task.dao.ZoneInstallTask;
+
+public class ZoneInstallJobConverterImpl implements JobConverter<ZoneInstallTask> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -32,11 +35,14 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	private final JaxbMarshaller<ZoneInstallTask> marshaller = new JaxbMarshaller<>(ZoneInstallTask.class, new QName(
+			"urn:dao.task.control.service.tdmx.org", "zoneinstall"));
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ZACInstallationJobExecutorImpl() {
+	public ZoneInstallJobConverterImpl() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -45,16 +51,17 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 
 	@Override
 	public String getType() {
-		return ZacInstallationTask.class.getName();
+		return ZoneInstallTask.class.getName();
 	}
 
 	@Override
-	public void execute(Long id, ZacInstallationTask task) {
-		ZacInstallationResult r = new ZacInstallationResult();
-		// TODO
-		r.setMessage("ok");
-		r.setStatus(ZacInstallationStatus.OK);
-		task.setResult(r);
+	public ZoneInstallTask getData(Job job) throws JAXBException {
+		return marshaller.unmarshal(job.getData());
+	}
+
+	@Override
+	public void setData(Job job, ZoneInstallTask jobData) throws JAXBException {
+		job.setData(marshaller.marshal(jobData));
 	}
 
 	// -------------------------------------------------------------------------

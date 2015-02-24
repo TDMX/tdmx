@@ -16,13 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
+
 package org.tdmx.lib.control.job;
 
-import org.tdmx.service.control.task.dao.ZacInstallationResult;
-import org.tdmx.service.control.task.dao.ZacInstallationStatus;
-import org.tdmx.service.control.task.dao.ZacInstallationTask;
+import java.util.Date;
 
-public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallationTask> {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.lib.common.domain.Job;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.service.ControlJobService;
+
+/**
+ * Transactional CRUD Services for ControlJobEntry Entity.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class JobSchedulerImpl implements JobScheduler {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,30 +43,31 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(JobSchedulerImpl.class);
+
+	private ControlJobService controlJobService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public ZACInstallationJobExecutorImpl() {
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getType() {
-		return ZacInstallationTask.class.getName();
-	}
+	public ControlJob scheduleImmediate(Job task) {
+		log.info("Scheduling task " + task);
 
-	@Override
-	public void execute(Long id, ZacInstallationTask task) {
-		ZacInstallationResult r = new ZacInstallationResult();
-		// TODO
-		r.setMessage("ok");
-		r.setStatus(ZacInstallationStatus.OK);
-		task.setResult(r);
+		ControlJob j = new ControlJob();
+		j.setJob(task);
+		j.setScheduledTime(new Date());
+		j.setStatus(ControlJobStatus.NEW);
+		getControlJobService().createOrUpdate(j);
+
+		// lookup after transaction to fetch the ID.
+		j = getControlJobService().findByJobId(task.getJobId());
+		return j;
 	}
 
 	// -------------------------------------------------------------------------
@@ -68,5 +81,13 @@ public class ZACInstallationJobExecutorImpl implements JobExecutor<ZacInstallati
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ControlJobService getControlJobService() {
+		return controlJobService;
+	}
+
+	public void setControlJobService(ControlJobService controlJobService) {
+		this.controlJobService = controlJobService;
+	}
 
 }

@@ -104,6 +104,15 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 	}
 
 	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public ControlJob findByJobId(String jobId) {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 1));
+		sc.setJobId(jobId);
+		List<ControlJob> jobs = getControlJobDao().fetch(sc, LockModeType.NONE);
+		return jobs.isEmpty() ? null : jobs.get(0);
+	}
+
+	@Override
 	@Transactional(value = "ControlDB")
 	public List<ControlJob> reserve(int maxJobs) {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, maxJobs));

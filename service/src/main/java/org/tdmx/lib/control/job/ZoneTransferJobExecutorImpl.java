@@ -48,7 +48,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	}
 
 	@Override
-	public void execute(ZoneTransferTask task) {
+	public void execute(Long id, ZoneTransferTask task) {
 		ZoneTransferResult r = new ZoneTransferResult();
 		// TODO
 		r.setUsername(task.getCommand().getUsername());
