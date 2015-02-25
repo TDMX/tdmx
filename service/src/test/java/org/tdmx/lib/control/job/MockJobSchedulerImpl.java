@@ -20,21 +20,21 @@
 package org.tdmx.lib.control.job;
 
 import java.util.Date;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
-import org.tdmx.lib.control.service.ControlJobService;
 
 /**
- * Transactional CRUD Services for ControlJobEntry Entity.
+ * Spring Mock for JobScheduler
  * 
  * @author Peter Klauser
  * 
  */
-public class JobSchedulerImpl implements JobScheduler {
+public class MockJobSchedulerImpl implements MockJobScheduler {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -43,9 +43,9 @@ public class JobSchedulerImpl implements JobScheduler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MockJobSchedulerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(JobSchedulerImpl.class);
 
-	private ControlJobService controlJobService;
+	private ControlJob lastImmediateScheduledJob;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,11 +63,22 @@ public class JobSchedulerImpl implements JobScheduler {
 		j.setJob(task);
 		j.setScheduledTime(new Date());
 		j.setStatus(ControlJobStatus.NEW);
-		getControlJobService().createOrUpdate(j);
 
 		// lookup after transaction to fetch the ID.
-		j = getControlJobService().findByJobId(task.getJobId());
+		j.setId(new Random().nextLong());
+
+		lastImmediateScheduledJob = j;
 		return j;
+	}
+
+	@Override
+	public ControlJob getLastImmediateScheduledJob() {
+		return lastImmediateScheduledJob;
+	}
+
+	@Override
+	public void clearLastImmediateScheduledJob() {
+		lastImmediateScheduledJob = null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -81,13 +92,5 @@ public class JobSchedulerImpl implements JobScheduler {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ControlJobService getControlJobService() {
-		return controlJobService;
-	}
-
-	public void setControlJobService(ControlJobService controlJobService) {
-		this.controlJobService = controlJobService;
-	}
 
 }

@@ -43,6 +43,7 @@ import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.lib.console.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
@@ -73,6 +74,8 @@ public class SASImplUnitTest {
 	@Autowired
 	@Qualifier("tdmx.lib.control.AccountIdService")
 	private UniqueIdService objectIdService;
+	@Autowired
+	private MockJobScheduler jobScheduler;
 
 	@Autowired
 	private SAS sas;
@@ -113,10 +116,13 @@ public class SASImplUnitTest {
 
 		assertNotNull(accountZoneResource.getId());
 		assertNotNull(accountZoneResource.getJobId());
+		assertNotNull(jobScheduler.getLastImmediateScheduledJob());
 	}
 
 	@After
 	public void doTeardown() {
+		jobScheduler.clearLastImmediateScheduledJob();
+
 		DatabasePartition zp1 = databasePartitionService.findByPartitionId("z-segment-id1");
 		if (zp1 != null) {
 			databasePartitionService.delete(zp1);
