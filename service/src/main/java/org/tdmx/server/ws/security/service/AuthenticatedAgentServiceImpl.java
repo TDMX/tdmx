@@ -61,7 +61,7 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	@Override
 	public void setAuthenticatedAgent(AuthorizationResult authorization) {
 		if (authStore.get() != null) {
-			log.warn("SECURITY WARNING: ThreadLocal not cleared when being set." + authorization);
+			log.warn("SECURITY WARNING: ThreadLocal not cleared when being set.");
 			clearAuthenticatedAgent();
 		}
 		if (authorization.getFailureCode() != null) {

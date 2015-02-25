@@ -44,8 +44,8 @@
 		<property name="persistenceUnitName" value="ZoneDB" />
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="generateDdl" value="true" />
-				<property name="showSql" value="true" />
+				<property name="generateDdl" value="${jdbc.zonedb.hibernate.generateDdl}" />
+				<property name="showSql" value="${jdbc.zonedb.hibernate.showSql}" />
 				<property name="databasePlatform" value="${jdbc.zonedb.hibernate.dialect}" />
 			</bean>
 		</property>

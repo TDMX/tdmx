@@ -27,8 +27,8 @@
 		<property name="persistenceUnitName" value="ControlDB" />
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="generateDdl" value="true" />
-				<property name="showSql" value="true" />
+				<property name="generateDdl" value="${jdbc.controldb.hibernate.generateDdl}" />
+				<property name="showSql" value="${jdbc.controldb.hibernate.showSql}" />
 				<property name="databasePlatform" value="${jdbc.controldb.hibernate.dialect}" />
 			</bean>
 		</property>

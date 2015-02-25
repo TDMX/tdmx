@@ -47,6 +47,6 @@ public interface ControlJobService {
 	 */
 	public List<ControlJob> reserve(int maxJobs);
 
-	public void delete(ControlJob address);
+	public void delete(ControlJob job);
 
 }

@@ -33,6 +33,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
@@ -193,8 +194,14 @@ public class SASImpl implements SAS {
 	@Override
 	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize) {
 		validatePresent(PARAM.AID, aId);
-		// TODO Auto-generated method stub
-		return null;
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
+		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+
+		List<AccountZoneResource> result = new ArrayList<>();
+		for (AccountZone az : accountzones) {
+			result.add(AccountZoneResource.mapTo(az));
+		}
+		return result;
 	}
 
 	@Override
@@ -202,7 +209,13 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
-		// TODO Auto-generated method stub
+		Account a = getAccountService().findById(aId);
+		if (a != null) {
+			AccountZone az = getAccountZoneService().findById(zId);
+			if (az != null && a.getAccountId().equals(az.getAccountId())) {
+				return AccountZoneResource.mapTo(az);
+			}
+		}
 		return null;
 	}
 
@@ -221,8 +234,14 @@ public class SASImpl implements SAS {
 	public Response deleteAccountZone(Long aId, Long zId) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
-		// TODO Auto-generated method stub
-		return null;
+		Account a = getAccountService().findById(aId);
+		if (a != null) {
+			AccountZone az = getAccountZoneService().findById(zId);
+			if (az != null && a.getAccountId().equals(az.getAccountId())) {
+				getAccountZoneService().delete(az);
+			}
+		}
+		return Response.ok().build();
 	}
 
 	@Override

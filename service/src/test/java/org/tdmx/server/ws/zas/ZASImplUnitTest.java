@@ -205,6 +205,10 @@ public class ZASImplUnitTest {
 
 	@After
 	public void doTeardown() {
+		if (authenticatedAgentService.getAuthenticatedAgent() != null) {
+			authenticatedAgentService.clearAuthenticatedAgent();
+		}
+
 		List<AgentCredential> list = agentCredentialService.search(zone,
 				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {

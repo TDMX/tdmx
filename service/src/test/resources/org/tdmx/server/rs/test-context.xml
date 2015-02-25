@@ -23,7 +23,7 @@
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	
 	<bean id="jdbc.zonedb.PartitionIdProvider" class="org.tdmx.lib.zone.service.FixedZonePartitionIdProvider">
-		<property name="zonePartitionId" value="pid"/>
+		<property name="zonePartitionId" value="UNITTEST"/>
 	</bean>
 
 	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">

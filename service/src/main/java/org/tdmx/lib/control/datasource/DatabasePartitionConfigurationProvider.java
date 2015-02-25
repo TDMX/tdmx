@@ -57,7 +57,9 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 		}
 		DatabasePartition partitionInfo = getPartitionService().findByPartitionId(partitionId);
 		if (partitionInfo == null) {
-			log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
+			if (!"UNITTEST".equals(partitionId)) {
+				log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
+			}
 			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
 		}
 
