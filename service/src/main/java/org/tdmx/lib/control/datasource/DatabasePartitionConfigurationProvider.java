@@ -51,16 +51,14 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 	// -------------------------------------------------------------------------
 	@Override
 	public DatabaseConnectionInfo getPartitionInfo(String partitionId) {
-		if (partitionId == null) {
-			log.info("Called getPartitionInfo without partitionId - providing default connection.");
-			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
-		}
 		DatabasePartition partitionInfo = getPartitionService().findByPartitionId(partitionId);
 		if (partitionInfo == null) {
-			if (!"UNITTEST".equals(partitionId)) {
-				log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
+			if (DynamicDataSource.UNITTEST_PARTITION_ID.equals(partitionId)
+					|| DynamicDataSource.VALIDATION_PARTITION_ID.equals(partitionId)) {
+				return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
 			}
-			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
+			log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
+			return null;
 		}
 
 		DatabaseConnectionInfo result = new DatabaseConnectionInfo(partitionInfo.getUsername(),

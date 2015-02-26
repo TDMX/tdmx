@@ -40,9 +40,18 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DynamicDataSource implements javax.sql.DataSource {
 
-	private static final Log log = LogFactory.getLog(DynamicDataSource.class);
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
 
-	private static final String VALIDATION_PARTITION_ID = "VALIDATION";
+	public static final String VALIDATION_PARTITION_ID = "VALIDATION";
+	public static final String UNITTEST_PARTITION_ID = "UNITTEST";
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+
+	private static final Log log = LogFactory.getLog(DynamicDataSource.class);
 
 	private DataSourceConfigurationProvider configurationProvider;
 	private final Map<String, DatabaseConnectionInfo> partitionConnectionInfoMap = new ConcurrentHashMap<String, DatabaseConnectionInfo>();
@@ -54,6 +63,14 @@ public class DynamicDataSource implements javax.sql.DataSource {
 	 * The PrintWriter to which log messages should be directed.
 	 */
 	protected PrintWriter logWriter = new PrintWriter(System.out);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	private synchronized void createDataSource(DatabaseConnectionInfo dci) throws SQLException {
 		// race condition avoidance
@@ -73,11 +90,6 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		connectionDataSourceMap.put(dci, bds);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.DataSource#getConnection()
-	 */
 	@Override
 	public Connection getConnection() throws SQLException {
 		if (getPartitionIdProvider() == null) {
@@ -91,7 +103,7 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		// must be fast. Caching at the DatabasePartitionServiceRepositoryImpl supports this.
 		DatabaseConnectionInfo ci = getConfigurationProvider().getPartitionInfo(partitionId);
 		if (ci == null) {
-			log.warn("No DatabaseConnectionInfo provided for partitionId " + partitionId);
+			throw new SQLException("No DatabaseConnectionInfo provided for partitionId " + partitionId);
 		}
 		DatabaseConnectionInfo existingCi = partitionConnectionInfoMap.get(partitionId);
 		if (existingCi == null) {
@@ -113,41 +125,21 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		return bds.getConnection();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
-	 */
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new SQLException("DynamicDataSource is not a wrapper.");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
-	 */
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.CommonDataSource#getLogWriter()
-	 */
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {
 		return logWriter;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
-	 */
 	@Override
 	public void setLogWriter(PrintWriter logWriter) throws SQLException {
 		this.logWriter = logWriter;
@@ -158,11 +150,6 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
-	 */
 	@Override
 	public void setLoginTimeout(int seconds) throws SQLException {
 		// This method isn't supported by the PoolingDataSource returned by
@@ -170,11 +157,6 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.CommonDataSource#getLoginTimeout()
-	 */
 	@Override
 	public int getLoginTimeout() throws SQLException {
 		// This method isn't supported by the PoolingDataSource returned by
@@ -182,17 +164,24 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		// This method isn't supported by the PoolingDataSource returned by
 		// the createDataSource
 		throw new UnsupportedOperationException("Not supported by DynamicDataSource");
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	public DataSourceConfigurationProvider getConfigurationProvider() {
 		return configurationProvider;

@@ -166,6 +166,23 @@ public class AccountZoneAdministrationCredential implements Serializable {
 		return null;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AccountZoneAdministrationCredential [id=");
+		builder.append(id);
+		builder.append(", accountId=");
+		builder.append(accountId);
+		builder.append(", zoneApex=");
+		builder.append(zoneApex);
+		builder.append(", fingerprint=");
+		builder.append(fingerprint);
+		builder.append(", credentialStatus=");
+		builder.append(credentialStatus);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

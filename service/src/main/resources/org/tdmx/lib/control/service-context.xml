@@ -13,7 +13,6 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-
 	<bean id="jdbc.controldb.dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<property name="url" value="${jdbc.controldb.url}" />
 		<property name="driverClassName" value="${jdbc.controldb.driverClassName}" />
@@ -136,8 +135,9 @@
 	</bean>
 
 
-	<!-- NON TRANSACTIONAL / HIGHER SERVICES -->
-
+	<!-- NON TRANSACTIONAL HIGHER SERVICES -->
+	
+	
 	<bean id="tdmx.lib.control.ZonePartitionAllocationService"
 		class="org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationServiceImpl">
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
@@ -163,51 +163,5 @@
 	</bean>
 
 
-	<!-- JOBS -->
-	<bean id="tdmx.lib.control.task.ZoneInstallJobConverter"
-		class="org.tdmx.lib.control.job.ZoneInstallJobConverterImpl">
-	</bean>
-	<bean id="tdmx.lib.control.task.ZoneInstallJobExecutor"
-		class="org.tdmx.lib.control.job.ZoneInstallJobExecutorImpl">
-	</bean>
-
-	<bean id="tdmx.lib.control.task.ZoneTransferJobConverter"
-		class="org.tdmx.lib.control.job.ZoneTransferJobConverterImpl">
-	</bean>
-	<bean id="tdmx.lib.control.task.ZoneTransferJobExecutor"
-		class="org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl">
-	</bean>
-
-	<bean id="tdmx.lib.control.task.ZACInstallationJobConverter"
-		class="org.tdmx.lib.control.job.ZACInstallationJobConverterImpl">
-	</bean>
-	<bean id="tdmx.lib.control.task.ZACInstallationJobExecutor"
-		class="org.tdmx.lib.control.job.ZACInstallationJobExecutorImpl">
-	</bean>
-
-	<!-- JOB EXECUTOR AND SCHEDULER -->
-	<bean id="tdmx.lib.control.job.JobScheduler"
-		class="org.tdmx.lib.control.job.JobSchedulerImpl">
-		<property name="controlJobService" ref="tdmx.lib.control.ControlJobRepository"/>
-	</bean>
-	
-	<bean id="tdmx.lib.control.job.JobExecutor"
-		class="org.tdmx.lib.control.job.JobExecutionServiceImpl" init-method="init">
-		<property name="jobIdService" ref="tdmx.lib.control.JobIdService"/>
-		<property name="jobConverterList">
-			<list value-type="org.tdmx.lib.control.job.JobConverter">
-	            <ref bean="tdmx.lib.control.task.ZoneInstallJobConverter"/>
-	            <ref bean="tdmx.lib.control.task.ZoneTransferJobConverter"/>
-	            <ref bean="tdmx.lib.control.task.ZACInstallationJobConverter"/>
-	        </list>
-        </property>
-		<property name="jobExecutorList">
-			<list value-type="org.tdmx.lib.control.job.JobExecutor">
-	            <ref bean="tdmx.lib.control.task.ZoneInstallJobExecutor"/>
-	            <ref bean="tdmx.lib.control.task.ZoneTransferJobExecutor"/>
-	            <ref bean="tdmx.lib.control.task.ZACInstallationJobExecutor"/>
-	        </list>
-        </property>
-	</bean>
 
 </beans>

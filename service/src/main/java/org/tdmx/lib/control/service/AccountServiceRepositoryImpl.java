@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.dao.AccountDao;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
@@ -90,6 +91,10 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public Account findByAccountId(String accountId) {
+		if (!StringUtils.hasText(accountId)) {
+			log.warn("findByAccountId missing parameter.");
+			return null;
+		}
 		return getAccountDao().loadByAccountId(accountId);
 	}
 

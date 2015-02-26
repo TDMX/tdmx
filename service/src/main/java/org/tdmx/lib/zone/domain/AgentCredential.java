@@ -110,7 +110,7 @@ public class AgentCredential implements Serializable {
 		setCertificateChain(certificateChain);
 		PKIXCertificate publicKey = getPublicKey();
 		setSha1fingerprint(publicKey.getFingerprint());
-		// TODO fixme
+
 		if (publicKey.isTdmxZoneAdminCertificate()) {
 			setCredentialType(AgentCredentialType.ZAC);
 		} else if (publicKey.isTdmxDomainAdminCertificate()) {

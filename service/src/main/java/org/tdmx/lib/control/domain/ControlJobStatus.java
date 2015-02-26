@@ -29,7 +29,7 @@ public enum ControlJobStatus {
 	// run but failed
 	ERR,
 
-	// run successfully ( probably deleted )
+	// run successfully
 	OK,
 
 	;

@@ -20,8 +20,6 @@ package org.tdmx.server.ws.security.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.common.domain.ZoneReference;
-import org.tdmx.lib.common.domain.ZoneReference;
-import org.tdmx.lib.common.domain.ZoneReference;
 
 /**
  * The Service to use to lookup the authenticated agent's certificate and zone DB partition information.

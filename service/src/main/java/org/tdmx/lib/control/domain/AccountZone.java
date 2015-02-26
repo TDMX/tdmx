@@ -104,6 +104,23 @@ public class AccountZone implements Serializable {
 		return new ZoneReference(getId(), getZoneApex());
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("AccountZone [id=");
+		builder.append(id);
+		builder.append(", accountId=");
+		builder.append(accountId);
+		builder.append(", zoneApex=");
+		builder.append(zoneApex);
+		builder.append(", segment=");
+		builder.append(segment);
+		builder.append(", zonePartitionId=");
+		builder.append(zonePartitionId);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

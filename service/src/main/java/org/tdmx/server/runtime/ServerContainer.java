@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.cert.CRL;
 import java.util.Collection;
@@ -71,6 +72,8 @@ public class ServerContainer {
 	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
+	private static final String HTTP_1_1 = "http/1.1";
+	private static final String HTTPS = "https";
 
 	private Filter agentAuthorizationFilter;
 
@@ -96,8 +99,6 @@ public class ServerContainer {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	// TODO give back
 
 	public void runUntilStopped() {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
@@ -125,7 +126,7 @@ public class ServerContainer {
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty Server.
 		HttpConfiguration httpsConfigExt = new HttpConfiguration();
-		httpsConfigExt.setSecureScheme("https");
+		httpsConfigExt.setSecureScheme(HTTPS);
 		httpsConfigExt.setSecurePort(getHttpsPort());
 		httpsConfigExt.setOutputBufferSize(32768);
 		httpsConfigExt.addCustomizer(new SecureRequestCustomizer());
@@ -133,7 +134,7 @@ public class ServerContainer {
 		// HTTPS connector
 		// We create a second ServerConnector, passing in the http configuration we just made along with the
 		// previously created ssl context factory. Next we set the port and a longer idle timeout.
-		ServerConnector httpsExt = new ServerConnector(server, new SslConnectionFactory(sslExt, "http/1.1"),
+		ServerConnector httpsExt = new ServerConnector(server, new SslConnectionFactory(sslExt, HTTP_1_1),
 				new HttpConnectionFactory(httpsConfigExt));
 		httpsExt.setPort(getHttpsPort());
 		httpsExt.setHost(getServerAddress());
@@ -158,13 +159,13 @@ public class ServerContainer {
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty Server.
 		HttpConfiguration httpsConfigInt = new HttpConfiguration();
-		httpsConfigInt.setSecureScheme("https");
+		httpsConfigInt.setSecureScheme(HTTPS);
 		httpsConfigInt.setSecurePort(getHttpsPort() + 1);
 		httpsConfigInt.setOutputBufferSize(32768);
 		httpsConfigInt.addCustomizer(new SecureRequestCustomizer());
 
 		// HTTPS connector
-		ServerConnector httpsInt = new ServerConnector(server, new SslConnectionFactory(sslInt, "http/1.1"),
+		ServerConnector httpsInt = new ServerConnector(server, new SslConnectionFactory(sslInt, HTTP_1_1),
 				new HttpConnectionFactory(httpsConfigInt));
 		httpsInt.setPort(getHttpsPort() + 1);
 		httpsInt.setHost(getServerAddress());
@@ -311,7 +312,8 @@ public class ServerContainer {
 					log.info("accepting stop connections on " + socket.getLocalPort());
 					accept = socket.accept();
 					log.info("accepted a stop connection.");
-					BufferedReader reader = new BufferedReader(new InputStreamReader(accept.getInputStream()));
+					BufferedReader reader = new BufferedReader(new InputStreamReader(accept.getInputStream(),
+							Charset.forName("UTF-8")));
 					// read just a single line
 					String line = reader.readLine();
 					// IMPROVEMENT: read only enough bytes to cover the content of the stopCommand + \n

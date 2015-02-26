@@ -32,10 +32,8 @@ public interface DataSourceConfigurationProvider {
 	/**
 	 * Get DatabaseConnectionInfo for a partition.
 	 * 
-	 * NOTE: called with NULL during Hibernate startup.
-	 * 
 	 * @param partitionId
-	 * @return
+	 * @return the connection info or null if no configuration exists for the partitionId.
 	 */
 	public DatabaseConnectionInfo getPartitionInfo(String partitionId);
 

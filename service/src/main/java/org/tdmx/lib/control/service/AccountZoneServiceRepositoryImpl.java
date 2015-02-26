@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.AccountZoneDao;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -91,6 +92,11 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public AccountZone findByAccountIdZoneApex(String accountId, String zoneApex) {
+		if (!StringUtils.hasText(accountId) || !StringUtils.hasText(zoneApex)) {
+			log.warn("findByAccountIdZoneApex missing parameter.");
+			return null;
+		}
+
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 1));
 		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);

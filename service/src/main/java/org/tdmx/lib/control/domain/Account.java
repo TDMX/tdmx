@@ -76,6 +76,19 @@ public class Account implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Account [id=");
+		builder.append(id);
+		builder.append(", accountId=");
+		builder.append(accountId);
+		builder.append(", email=");
+		builder.append(email);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

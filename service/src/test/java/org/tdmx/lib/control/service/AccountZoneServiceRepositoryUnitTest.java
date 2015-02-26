@@ -42,8 +42,6 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class AccountZoneServiceRepositoryUnitTest {
 
 	@Autowired
@@ -54,7 +52,8 @@ public class AccountZoneServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		PKIXCredential za = CredentialFacade.createZAC("zone.root.test");
-		az = AccountZoneFacade.createAccountZone(za.getPublicCert());
+		az = AccountZoneFacade.createAccountZone("1234", za.getPublicCert().getTdmxZoneInfo().getZoneRoot(), "test",
+				"partitionId");
 		service.createOrUpdate(az);
 	}
 

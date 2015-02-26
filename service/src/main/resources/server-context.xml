@@ -19,6 +19,9 @@
 	<import resource="classpath:/org/tdmx/lib/console/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
+	
+	<!-- JOBS -->
+	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 
 	<!-- WS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>

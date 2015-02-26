@@ -17,6 +17,7 @@
 	
 	<!-- LIBRARY SPRING CONFIG -->
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/lib/control/job/test-job-context.xml"/>
 
 	
 </beans>

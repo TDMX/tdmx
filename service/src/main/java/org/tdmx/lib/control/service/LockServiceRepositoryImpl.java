@@ -25,6 +25,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.dao.LockDao;
 import org.tdmx.lib.control.domain.Lock;
 
@@ -79,6 +80,10 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public Lock findByName(String lockName) {
+		if (!StringUtils.hasText(lockName)) {
+			log.warn("findByName missing parameter.");
+			return null;
+		}
 		return getLockDao().loadByName(lockName);
 	}
 
@@ -90,8 +95,12 @@ public class LockServiceRepositoryImpl implements LockService {
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public boolean acquireLock(String lockId, String holderIdentitifier) {
-		Lock l = getLockDao().conditionalLock(lockId);
+	public boolean acquireLock(String lockName, String holderIdentitifier) {
+		if (!StringUtils.hasText(lockName) || !StringUtils.hasText(holderIdentitifier)) {
+			log.warn("acquireLock missing parameter.");
+			return false;
+		}
+		Lock l = getLockDao().conditionalLock(lockName);
 		if (l != null) {
 			// all right: we have the lock
 			l.setLockedBy(holderIdentitifier);
@@ -104,6 +113,10 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void releaseLock(String lockName, String holderIdentitifier, Date reserveUntil) {
+		if (!StringUtils.hasText(lockName) || !StringUtils.hasText(holderIdentitifier)) {
+			log.warn("releaseLock missing parameter.");
+			return;
+		}
 		Lock l = findByName(lockName);
 		if (l != null) {
 			if (holderIdentitifier != null && !holderIdentitifier.equals(l.getLockedBy())) {
@@ -111,6 +124,8 @@ public class LockServiceRepositoryImpl implements LockService {
 			}
 			l.setLockedBy(null);
 			l.setLockedUntilTime(reserveUntil);
+		} else {
+			log.warn("No lock with name " + lockName);
 		}
 	}
 

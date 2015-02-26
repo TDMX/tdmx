@@ -18,12 +18,22 @@
  */
 package org.tdmx.lib.control.datasource;
 
+import java.util.Objects;
+
 /**
  * 
  * A ValueObject representing a Database Schema and Login.
  * 
  */
 public class DatabaseConnectionInfo {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 
 	private final String username;
 	private final String password;
@@ -32,6 +42,10 @@ public class DatabaseConnectionInfo {
 
 	// TODO extend to other properties of org.apache.commons.dbcp.BasicDataSource
 	// like maxSize etc.
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
 
 	public DatabaseConnectionInfo(String username, String password, String url, String driverClassname) {
 		if (username == null) {
@@ -52,61 +66,37 @@ public class DatabaseConnectionInfo {
 		this.driverClassname = driverClassname;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (password == null ? 0 : password.hashCode());
-		result = prime * result + (url == null ? 0 : url.hashCode());
-		result = prime * result + (username == null ? 0 : username.hashCode());
-		return result;
+		return Objects.hash(url, username, password);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
+		if (obj instanceof DatabaseConnectionInfo) {
+			DatabaseConnectionInfo other = (DatabaseConnectionInfo) obj;
+			return Objects.equals(url, other.getUrl()) && Objects.equals(username, other.getUsername())
+					&& Objects.equals(password, other.getPassword());
+		} else {
 			return false;
 		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		DatabaseConnectionInfo other = (DatabaseConnectionInfo) obj;
-		if (password == null) {
-			if (other.password != null) {
-				return false;
-			}
-		} else if (!password.equals(other.password)) {
-			return false;
-		}
-		if (url == null) {
-			if (other.url != null) {
-				return false;
-			}
-		} else if (!url.equals(other.url)) {
-			return false;
-		}
-		if (username == null) {
-			if (other.username != null) {
-				return false;
-			}
-		} else if (!username.equals(other.username)) {
-			return false;
-		}
-		return true;
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 
 	/**
 	 * @return the username

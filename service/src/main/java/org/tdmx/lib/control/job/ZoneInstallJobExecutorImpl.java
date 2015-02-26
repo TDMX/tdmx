@@ -18,8 +18,12 @@
  */
 package org.tdmx.lib.control.job;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
@@ -32,8 +36,10 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private ThreadLocalPartitionIdProvider zonePartition;
+	private static final Logger log = LoggerFactory.getLogger(ZoneInstallJobExecutorImpl.class);
+
 	private AccountZoneService accountZoneService;
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	private ZoneService zoneService;
 
 	// -------------------------------------------------------------------------
@@ -54,16 +60,28 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 
 	@Override
 	public void execute(Long id, ZoneInstallTask task) {
-		// TODO
-
 		// tx1: (r/o) lookup AccountZone in ControlDB to figure out the partition to provision the Zone to.
 		// check that the AccountZone has our jobId so we have effectively the "lock" to update it later.
-
+		AccountZone az = getAccountZoneService().findByAccountIdZoneApex(task.getAccountId(), task.getZoneApex());
+		if (az == null) {
+			throw new IllegalArgumentException("AccountZone not found.");
+		}
+		if (!id.equals(az.getJobId())) {
+			throw new IllegalStateException("AccountZone#jobId mismatch.");
+		}
+		log.info("Installing " + az);
 		// set the partition
+		String zoneDbPartitionId = az.getZonePartitionId();
+		getZonePartitionIdProvider().setPartitionId(zoneDbPartitionId);
 
 		// tx2: (w) create the ZoneDB's zone in the partition
+		Zone z = new Zone(az.getZoneReference());
+		getZoneService().createOrUpdate(z);
 
 		// tx3: (w) remove our jobId from the AccountZone
+		az = getAccountZoneService().findById(az.getId());
+		az.setJobId(null);
+		getAccountZoneService().createOrUpdate(az);
 	}
 
 	// -------------------------------------------------------------------------
@@ -77,14 +95,6 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ThreadLocalPartitionIdProvider getZonePartition() {
-		return zonePartition;
-	}
-
-	public void setZonePartition(ThreadLocalPartitionIdProvider zonePartition) {
-		this.zonePartition = zonePartition;
-	}
 
 	public AccountZoneService getAccountZoneService() {
 		return accountZoneService;
@@ -100,6 +110,14 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 
 	public void setZoneService(ZoneService zoneService) {
 		this.zoneService = zoneService;
+	}
+
+	public ThreadLocalPartitionIdProvider getZonePartitionIdProvider() {
+		return zonePartitionIdProvider;
+	}
+
+	public void setZonePartitionIdProvider(ThreadLocalPartitionIdProvider zonePartitionIdProvider) {
+		this.zonePartitionIdProvider = zonePartitionIdProvider;
 	}
 
 }

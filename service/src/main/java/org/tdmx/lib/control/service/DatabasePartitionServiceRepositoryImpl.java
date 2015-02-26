@@ -29,6 +29,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.dao.DatabasePartitionDao;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
@@ -105,6 +106,10 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public DatabasePartition findByPartitionId(String partitionId) {
+		if (!StringUtils.hasText(partitionId)) {
+			log.warn("findByPartitionId missing parameter.");
+			return null;
+		}
 		conditionalRefreshCache();
 
 		return dpidMap != null ? dpidMap.get(partitionId) : null;
@@ -113,6 +118,10 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type, String segment) {
+		if (type == null || !StringUtils.hasText(segment)) {
+			log.warn("findByTypeAndSegment missing parameter.");
+			return null;
+		}
 		conditionalRefreshCache();
 
 		if (dptsMap != null) {
