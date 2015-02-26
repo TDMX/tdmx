@@ -29,7 +29,7 @@ import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.service.ControlJobService;
 
 /**
- * Transactional CRUD Services for ControlJobEntry Entity.
+ * Non transaction implementation of a JobScheduler.
  * 
  * @author Peter Klauser
  * 
@@ -43,7 +43,7 @@ public class JobSchedulerImpl implements JobScheduler {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(MockJobSchedulerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(JobSchedulerImpl.class);
 
 	private ControlJobService controlJobService;
 
