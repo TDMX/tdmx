@@ -23,10 +23,20 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
+/**
+ * The ZoneInstallJobExecutorImpl creates the Zone in the ZoneDB corresponding to the AccountZone in the ControlDB.
+ * 
+ * The ZoneDB partition used is that stated by the AccountZone, determined prior by
+ * {@link ZoneDatabasePartitionAllocationService}.
+ * 
+ * @author Peter
+ * 
+ */
 public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> {
 
 	// -------------------------------------------------------------------------

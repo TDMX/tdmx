@@ -18,8 +18,10 @@
  */
 package org.tdmx.lib.control.job;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Random;
 
@@ -30,9 +32,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.console.domain.AccountZoneFacade;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -45,6 +51,10 @@ public class ZoneInstallJobUnitTest {
 	private JobFactory jobFactory;
 	@Autowired
 	private JobExecutor<ZoneInstallTask> executor;
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	@Autowired
+	private ZoneService zoneService;
 
 	private AccountZone az;
 	private Long jobId;
@@ -70,19 +80,54 @@ public class ZoneInstallJobUnitTest {
 	public void testAutoWire() throws Exception {
 		assertNotNull(accountZoneService);
 		assertNotNull(jobFactory);
+		assertNotNull(executor);
+		assertNotNull(zonePartitionIdProvider);
+		assertNotNull(zoneService);
 	}
 
 	@Test
 	public void test_Success() throws Exception {
 		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId("1");
-		task.setZoneApex("z");
+		task.setAccountId(az.getAccountId());
+		task.setZoneApex(az.getZoneApex());
 
 		executor.execute(jobId, task);
 
 		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
 		assertNotNull(storedAZ);
 		assertNull(storedAZ.getJobId());
+
+		zonePartitionIdProvider.setPartitionId(az.getZonePartitionId());
+		Zone z = zoneService.findByZoneApex(new ZoneReference(az.getId(), az.getZoneApex()));
+		assertNotNull(z);
+		assertEquals(az.getZoneReference(), z.getZoneReference());
 	}
 
+	@Test
+	public void test_Failure_AccountIdNotFound() throws Exception {
+		ZoneInstallTask task = new ZoneInstallTask();
+		task.setAccountId("gugus");
+		task.setZoneApex(az.getZoneApex());
+
+		try {
+			executor.execute(jobId, task);
+			fail();
+		} catch (IllegalArgumentException e) {
+
+		}
+	}
+
+	@Test
+	public void test_Failure_JobIdMismatch() throws Exception {
+		ZoneInstallTask task = new ZoneInstallTask();
+		task.setAccountId(az.getAccountId());
+		task.setZoneApex(az.getZoneApex());
+
+		try {
+			executor.execute(new Random().nextLong(), task);
+			fail();
+		} catch (IllegalStateException e) {
+
+		}
+	}
 };
