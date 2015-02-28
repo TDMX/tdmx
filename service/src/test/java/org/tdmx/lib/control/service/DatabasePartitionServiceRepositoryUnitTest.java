@@ -52,15 +52,15 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 		{
 			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1",
-					DatabaseType.ZONE, "segment1");
+					DatabaseType.ZONE, "unittest-segment-1");
 			service.createOrUpdate(zp1);
 
 			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2",
-					DatabaseType.ZONE, "segment1");
+					DatabaseType.ZONE, "unittest-segment-1");
 			service.createOrUpdate(zp2);
 
 			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3",
-					DatabaseType.ZONE, "segment1");
+					DatabaseType.ZONE, "unittest-segment-1");
 			service.createOrUpdate(zp3);
 		}
 		{
@@ -79,15 +79,15 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 		{
 			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id1",
-					DatabaseType.MESSAGE, "segment1");
+					DatabaseType.MESSAGE, "unittest-segment-1");
 			service.createOrUpdate(p1);
 
 			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id2",
-					DatabaseType.MESSAGE, "segment1");
+					DatabaseType.MESSAGE, "unittest-segment-1");
 			service.createOrUpdate(p2);
 
 			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id3",
-					DatabaseType.MESSAGE, "segment1");
+					DatabaseType.MESSAGE, "unittest-segment-1");
 			service.createOrUpdate(p3);
 		}
 	}
@@ -223,7 +223,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	public void testLookupCache_ByTypeOnly() throws Exception {
 		List<DatabasePartition> zonelist = service.findByType(DatabaseType.ZONE);
 		assertNotNull(zonelist);
-		assertEquals(6, zonelist.size());
+		assertTrue(zonelist.size() > 6);
 
 		List<DatabasePartition> messagelist = service.findByType(DatabaseType.MESSAGE);
 		assertNotNull(messagelist);
@@ -239,11 +239,11 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeAndSegment() throws Exception {
-		List<DatabasePartition> zonelist = service.findByTypeAndSegment(DatabaseType.ZONE, "segment1");
+		List<DatabasePartition> zonelist = service.findByTypeAndSegment(DatabaseType.ZONE, "unittest-segment-1");
 		assertNotNull(zonelist);
 		assertEquals(3, zonelist.size());
 
-		List<DatabasePartition> zonelist2 = service.findByTypeAndSegment(DatabaseType.ZONE, "segment1");
+		List<DatabasePartition> zonelist2 = service.findByTypeAndSegment(DatabaseType.ZONE, "unittest-segment-1");
 		assertNotNull(zonelist2);
 		assertEquals(3, zonelist2.size());
 

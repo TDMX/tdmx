@@ -19,5 +19,11 @@
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/control/job/test-job-context.xml"/>
 
+	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">
+	</bean>
+
+	<bean class="org.tdmx.lib.zone.service.MockZonePartitionIdInstaller" init-method="init">
+		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
+	</bean>
 	
 </beans>

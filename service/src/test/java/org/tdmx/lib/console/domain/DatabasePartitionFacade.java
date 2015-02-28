@@ -27,6 +27,22 @@ public class DatabasePartitionFacade {
 
 	public static DatabasePartition createDatabasePartition(String partitionId, DatabaseType dbType, String segment)
 			throws Exception {
+		/*
+		 * jdbc.zonedb.url=jdbc:hsqldb:mem:zone
+		 * 
+		 * jdbc.zonedb.driverClassName=org.hsqldb.jdbcDriver
+		 * 
+		 * jdbc.zonedb.username=sa
+		 * 
+		 * jdbc.zonedb.password=
+		 * 
+		 * jdbc.zonedb.hibernate.dialect=org.hibernate.dialect.HSQLDialect
+		 * 
+		 * jdbc.zonedb.hibernate.showSql=false
+		 * 
+		 * jdbc.zonedb.hibernate.generateDdl=true
+		 */
+
 		DatabasePartition p = new DatabasePartition();
 		p.setPartitionId(partitionId);
 
@@ -34,9 +50,9 @@ public class DatabasePartitionFacade {
 		p.setSegment(segment);
 
 		p.setSizeFactor(100);
-		p.setUrl("db.url-" + partitionId);
-		p.setUsername("username-" + partitionId);
-		p.setPassword("pwd-" + partitionId);
+		p.setUrl("jdbc:hsqldb:mem:" + partitionId);
+		p.setUsername("sa");
+		p.setPassword("");
 
 		p.setActivationTimestamp(new Date()); // currently active
 		p.setDeactivationTimestamp(null);

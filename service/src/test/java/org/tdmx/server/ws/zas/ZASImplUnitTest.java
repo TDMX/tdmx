@@ -92,6 +92,7 @@ import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -102,6 +103,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
@@ -117,6 +119,8 @@ public class ZASImplUnitTest {
 	private AgentCredentialService agentCredentialService;
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
 	@Autowired
 	private AuthenticatedAgentService authenticatedAgentService;
@@ -156,6 +160,9 @@ public class ZASImplUnitTest {
 		byte[] ucFile = FileUtils.getFileContents("src/test/resources/uc.keystore");
 		assertNotNull(ucFile);
 		uc = KeyStoreUtils.getPrivateCredential(ucFile, "jks", "changeme", "client");
+
+		// we setup the test on the ZP1_S1 ZoneDB partition
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 
 		AgentCredential zoneAC = agentCredentialFactory.createAgentCredential(zone, zac.getCertificateChain());
 		zoneAC.setCredentialStatus(AgentCredentialStatus.ACTIVE);
@@ -199,8 +206,10 @@ public class ZASImplUnitTest {
 		accountZone.setAccountId("TEST");
 		accountZone.setZoneApex(zone.getZoneApex());
 		accountZone.setStatus(AccountZoneStatus.ACTIVE);
-		accountZone.setSegment("test");
-		accountZone.setZonePartitionId("default");
+		accountZone.setSegment(MockZonePartitionIdInstaller.S1);
+		accountZone.setZonePartitionId(MockZonePartitionIdInstaller.ZP1_S1);
+
+		zonePartitionIdProvider.clearPartitionId();
 	}
 
 	@After
@@ -209,6 +218,7 @@ public class ZASImplUnitTest {
 			authenticatedAgentService.clearAuthenticatedAgent();
 		}
 
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		List<AgentCredential> list = agentCredentialService.search(zone,
 				new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(new PageSpecifier(0, 1000)));
 		for (AgentCredential ac : list) {
@@ -234,6 +244,7 @@ public class ZASImplUnitTest {
 			log.info("Cleanup " + d);
 			domainService.delete(d);
 		}
+		zonePartitionIdProvider.clearPartitionId();
 	}
 
 	@Test
@@ -1210,8 +1221,10 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_Success() {
 		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
 		agentCredentialService.delete(domainAC);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1230,8 +1243,10 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_Success_DefaultStatus() {
 		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
 		agentCredentialService.delete(domainAC);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1265,8 +1280,10 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_DomainNotExists() {
 		// we delete the domain of the dac and the dac.
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		Domain dacDomain = domainService.findByDomainName(zone, domainName);
 		domainService.delete(dacDomain);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1330,8 +1347,10 @@ public class ZASImplUnitTest {
 	public void testDeleteAddress_ZAC_ok() {
 		// remove UC credentials
 		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
 		agentCredentialService.delete(userAC);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1396,8 +1415,10 @@ public class ZASImplUnitTest {
 	public void testCreateUser_ZAC_ok() {
 		// delete the UC setup
 		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
 		agentCredentialService.delete(userAC);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1416,8 +1437,10 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateUser_AddressNotExists() {
+		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		org.tdmx.lib.zone.domain.Address userAddress = addressService.findByName(zone, domainName, localName);
 		addressService.delete(userAddress);
+		zonePartitionIdProvider.clearPartitionId();
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone);
 		authenticatedAgentService.setAuthenticatedAgent(r);

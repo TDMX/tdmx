@@ -21,9 +21,4 @@
 		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
 	</bean>
 	
-	<bean id="jdbc.zonedb.PartitionIdProvider" class="org.tdmx.lib.zone.service.FixedZonePartitionIdProvider">
-		<property name="zonePartitionId" value="UNITTEST"/>
-	</bean>
-
-	
 </beans>

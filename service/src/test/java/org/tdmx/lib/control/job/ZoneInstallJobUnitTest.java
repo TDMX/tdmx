@@ -38,6 +38,7 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
@@ -63,7 +64,8 @@ public class ZoneInstallJobUnitTest {
 	public void doSetup() throws Exception {
 		jobId = new Random().nextLong();
 
-		az = AccountZoneFacade.createAccountZone("1234", "zoneApex", "segment", "partitionId");
+		az = AccountZoneFacade.createAccountZone("1234", "zoneApex", MockZonePartitionIdInstaller.S1,
+				MockZonePartitionIdInstaller.ZP1_S1);
 		az.setJobId(jobId);
 		accountZoneService.createOrUpdate(az);
 	}
