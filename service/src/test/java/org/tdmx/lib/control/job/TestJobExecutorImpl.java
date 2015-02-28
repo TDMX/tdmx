@@ -37,7 +37,7 @@ import org.tdmx.service.control.task.dao.ZoneInstallTask;
  * @author Peter
  * 
  */
-public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> {
+public class TestJobExecutorImpl implements JobExecutor<ZoneInstallTask> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,7 +46,7 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(TestJobExecutorImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ZoneInstallJobExecutorImpl.class);
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -56,7 +56,7 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ZoneInstallJobExecutorImpl() {
+	public TestJobExecutorImpl() {
 	}
 
 	// -------------------------------------------------------------------------

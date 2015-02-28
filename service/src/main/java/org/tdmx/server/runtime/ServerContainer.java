@@ -29,6 +29,7 @@ import java.security.KeyStore;
 import java.security.cert.CRL;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.net.ssl.TrustManager;
 import javax.servlet.DispatcherType;
@@ -55,6 +56,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.job.Manageable;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.security.RequireClientCertificateFilter;
@@ -91,6 +93,8 @@ public class ServerContainer {
 	private int stopPort;
 	private String stopCommand;
 	private String stopAddress;
+
+	private List<Manageable> manageables;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -256,6 +260,9 @@ public class ServerContainer {
 		contexts.addHandler(wsContext);
 		contexts.addHandler(rsContext);
 		try {
+			// start jobs
+			actionOnManageables(true);
+
 			// Start the server
 			server.start();
 
@@ -277,6 +284,19 @@ public class ServerContainer {
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
+	void actionOnManageables(boolean start) {
+		List<Manageable> manageables = getManageables();
+		if (manageables != null) {
+			for (Manageable m : manageables) {
+				if (start) {
+					m.start();
+				} else {
+					m.stop();
+				}
+			}
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
@@ -288,8 +308,8 @@ public class ServerContainer {
 		}
 	}
 
-	private static class MonitorThread extends Thread {
-		private static final Logger log = LoggerFactory.getLogger(MonitorThread.class);
+	private class MonitorThread extends Thread {
+		private final Logger log = LoggerFactory.getLogger(MonitorThread.class);
 
 		private final ServerSocket socket;
 		private final Server server;
@@ -342,6 +362,9 @@ public class ServerContainer {
 					}
 				}
 			}
+
+			// stop all dependents
+			actionOnManageables(false);
 
 			try {
 				server.stop();
@@ -455,6 +478,14 @@ public class ServerContainer {
 
 	public void setStopAddress(String stopAddress) {
 		this.stopAddress = stopAddress;
+	}
+
+	public List<Manageable> getManageables() {
+		return manageables;
+	}
+
+	public void setManageables(List<Manageable> manageables) {
+		this.manageables = manageables;
 	}
 
 }

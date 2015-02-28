@@ -45,6 +45,13 @@
 		<property name="stopCommand" value="${container.stopCommand}" />
 
 		<property name="agentAuthorizationFilter" ref="server.authorizationFilter"/>
+		
+		<property name="manageables">
+			<list value-type="org.tdmx.lib.control.job.Manageable">
+	            <ref bean="tdmx.lib.control.job.JobExecutor"/>
+	        </list>
+        </property>
+		
 	</bean>
 
 	

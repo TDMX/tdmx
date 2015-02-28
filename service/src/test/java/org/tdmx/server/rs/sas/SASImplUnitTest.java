@@ -40,17 +40,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
-import org.tdmx.lib.console.domain.DatabasePartitionFacade;
-import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
-import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
 import org.tdmx.lib.control.service.UniqueIdService;
+import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -65,8 +62,6 @@ public class SASImplUnitTest {
 	private AccountZoneService accountZoneService;
 	@Autowired
 	private AccountZoneAdministrationCredentialService accountZoneAdministrationCredentialService;
-	@Autowired
-	private DatabasePartitionService databasePartitionService;
 	@Autowired
 	private LockService lockService;
 	@Autowired
@@ -85,17 +80,6 @@ public class SASImplUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment-id1", DatabaseType.ZONE,
-				"segment");
-		databasePartitionService.createOrUpdate(zp1);
-
-		DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment-id2", DatabaseType.ZONE,
-				"segment");
-		databasePartitionService.createOrUpdate(zp2);
-
-		DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment-id3", DatabaseType.ZONE,
-				"segment");
-		databasePartitionService.createOrUpdate(zp3);
 
 		accountResource = new AccountResource();
 		accountResource.setEmail("email@gmail.com");
@@ -108,7 +92,7 @@ public class SASImplUnitTest {
 
 		accountZoneResource = new AccountZoneResource();
 		accountZoneResource.setAccountId(accountResource.getAccountId());
-		accountZoneResource.setSegment("segment");
+		accountZoneResource.setSegment(MockZonePartitionIdInstaller.S1);
 		accountZoneResource.setZoneApex("zone.apex");
 		accountZoneResource.setAccessStatus("ACTIVE");
 
@@ -123,18 +107,6 @@ public class SASImplUnitTest {
 	public void doTeardown() {
 		jobScheduler.clearLastImmediateScheduledJob();
 
-		DatabasePartition zp1 = databasePartitionService.findByPartitionId("z-segment-id1");
-		if (zp1 != null) {
-			databasePartitionService.delete(zp1);
-		}
-		DatabasePartition zp2 = databasePartitionService.findByPartitionId("z-segment-id2");
-		if (zp2 != null) {
-			databasePartitionService.delete(zp2);
-		}
-		DatabasePartition zp3 = databasePartitionService.findByPartitionId("z-segment-id3");
-		if (zp3 != null) {
-			databasePartitionService.delete(zp3);
-		}
 	}
 
 	@Test
@@ -142,7 +114,6 @@ public class SASImplUnitTest {
 		assertNotNull(accountService);
 		assertNotNull(accountZoneService);
 		assertNotNull(accountZoneAdministrationCredentialService);
-		assertNotNull(databasePartitionService);
 		assertNotNull(lockService);
 		assertNotNull(maxValueService);
 		assertNotNull(objectIdService);

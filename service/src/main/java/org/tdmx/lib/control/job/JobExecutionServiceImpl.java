@@ -19,10 +19,15 @@
 
 package org.tdmx.lib.control.job;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +36,9 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.common.domain.Job;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.UniqueIdService;
 
 /**
@@ -40,7 +48,7 @@ import org.tdmx.lib.control.service.UniqueIdService;
  * @author Peter Klauser
  * 
  */
-public class JobExecutionServiceImpl implements Runnable, JobFactory {
+public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -52,18 +60,35 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 	private static final Logger log = LoggerFactory.getLogger(JobExecutionServiceImpl.class);
 
 	private UniqueIdService jobIdService;
+	private ControlJobService jobService;
+
 	private List<JobConverter<?>> jobConverterList;
 	private List<JobExecutor<?>> jobExecutorList;
 
 	/**
 	 * Delay in seconds.
 	 */
-	private int fixedDelay = 5;
+	private int longPollIntervalSec = 5;
+
+	/**
+	 * The max number of concurrent jobs running;
+	 */
+	private int maxConcurrentJobs = 5;
+
+	/**
+	 * The time to wait after a job is finished to start a new poll
+	 */
+	private int fastTriggerDelayMillis = 100;
 
 	// internal //
+	private boolean started = false;
 	private final Map<String, JobExecutor<?>> jobExecutorMap = new HashMap<>();
 	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
 	private ScheduledExecutorService scheduledThreadPool = null;
+	private ExecutorService jobRunners = null;
+	private final LinkedList<Future<?>> jobStatus = new LinkedList<>();
+	private final Object syncObject = new Object();
+	private Future<?> fastTrigger = null;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -86,7 +111,26 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 		}
 
 		scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("JobExecutionService"));
-		scheduledThreadPool.scheduleWithFixedDelay(this, getFixedDelay(), getFixedDelay(), TimeUnit.SECONDS);
+
+		jobRunners = Executors.newFixedThreadPool(getMaxConcurrentJobs(), new NamedThreadFactory("JobRunner"));
+	}
+
+	@Override
+	public void start() {
+		started = true;
+		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
+				TimeUnit.SECONDS);
+	}
+
+	@Override
+	public void stop() {
+		started = false;
+		scheduledThreadPool.shutdown();
+		try {
+			scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
+		}
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -97,7 +141,7 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 		}
 		JobConverter converter = jobConverterMap.get(task.getClass().getName());
 		if (converter == null) {
-			throw new IllegalArgumentException("no converter for " + task);
+			throw new IllegalArgumentException("no JobConverter for " + task);
 		}
 		Job job = new Job();
 		job.setJobId(getJobIdService().getNextId());
@@ -113,11 +157,19 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 	@Override
 	public void run() {
 		log.info("run start.");
-		// TODO lock service?
-		try {
-			Thread.sleep(10000L);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+
+		synchronized (syncObject) {
+			int freeSlots = cleanFinishedJobs();
+			log.info("free slots " + freeSlots);
+
+			if (freeSlots > 0) {
+				List<ControlJob> jobsToRun = jobService.reserve(freeSlots);
+				for (ControlJob j : jobsToRun) {
+					Future<?> r = jobRunners.submit(new JobRunner(j));
+					jobStatus.add(r);
+				}
+			}
+
 		}
 		log.info("run finish.");
 	}
@@ -130,6 +182,85 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void fastTrigger() {
+		if (fastTrigger != null & fastTrigger.isDone()) {
+			fastTrigger = null;
+		}
+		if (fastTrigger == null && started) {
+			// there is a tiny race condition here which we don't really care about, if it fails here
+			// we just get 2 polls on the scheduledThread
+			fastTrigger = scheduledThreadPool.schedule(this, 100, TimeUnit.MILLISECONDS);
+		}
+	}
+
+	private int cleanFinishedJobs() {
+		// we throw out any finished job and find out the max number of free slots
+		Iterator<Future<?>> i = jobStatus.iterator();
+		while (i.hasNext()) {
+			Future<?> f = i.next();
+			if (f.isDone()) {
+				i.remove();
+			}
+		}
+		return maxConcurrentJobs - jobStatus.size();
+	}
+
+	/**
+	 * The JobRunner calls a JobExecutor with the Task information. Runs outside any transaction.
+	 * 
+	 * @author Peter
+	 * 
+	 */
+	private class JobRunner implements Runnable {
+		private final ControlJob job;
+
+		public JobRunner(ControlJob job) {
+			this.job = job;
+		}
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@Override
+		public void run() {
+			Job j = job.getJob();
+			j.setStartTimestamp(new Date());
+			try {
+				JobConverter jc = jobConverterMap.get(j.getType());
+				if (jc == null) {
+					throw new IllegalArgumentException("no JobConverter for " + job);
+				}
+				JobExecutor je = jobExecutorMap.get(j.getType());
+				if (je == null) {
+					throw new IllegalArgumentException("no JobExecutor for " + job);
+				}
+				Object task = jc.getData(j);
+				je.execute(job.getId(), task);
+
+				// the data in task will change during execute
+				jc.setData(j, task);
+				j.setEndTimestamp(new Date());
+
+				job.setStatus(ControlJobStatus.OK);
+				job.setJob(j);
+			} catch (Exception e) {
+				Throwable problem = e.getCause() != null ? e.getCause() : e;
+				log.warn("Job " + job + " failed with reason=" + problem.getMessage(), e);
+
+				// TODO marshall stacktrace to job
+				problem.getStackTrace();
+
+				j.setEndTimestamp(new Date());
+				job.setStatus(ControlJobStatus.ERR);
+				job.setJob(j);
+
+			}
+			jobService.createOrUpdate(job);
+
+			// we triggerfast scheduling of the next poll
+			fastTrigger();
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -140,6 +271,14 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 
 	public void setJobIdService(UniqueIdService jobIdService) {
 		this.jobIdService = jobIdService;
+	}
+
+	public ControlJobService getJobService() {
+		return jobService;
+	}
+
+	public void setJobService(ControlJobService jobService) {
+		this.jobService = jobService;
 	}
 
 	public List<JobConverter<?>> getJobConverterList() {
@@ -158,12 +297,28 @@ public class JobExecutionServiceImpl implements Runnable, JobFactory {
 		this.jobExecutorList = jobExecutorList;
 	}
 
-	public int getFixedDelay() {
-		return fixedDelay;
+	public int getLongPollIntervalSec() {
+		return longPollIntervalSec;
 	}
 
-	public void setFixedDelay(int fixedDelay) {
-		this.fixedDelay = fixedDelay;
+	public void setLongPollIntervalSec(int longPollIntervalSec) {
+		this.longPollIntervalSec = longPollIntervalSec;
+	}
+
+	public int getMaxConcurrentJobs() {
+		return maxConcurrentJobs;
+	}
+
+	public void setMaxConcurrentJobs(int maxConcurrentJobs) {
+		this.maxConcurrentJobs = maxConcurrentJobs;
+	}
+
+	public int getFastTriggerDelayMillis() {
+		return fastTriggerDelayMillis;
+	}
+
+	public void setFastTriggerDelayMillis(int fastTriggerDelayMillis) {
+		this.fastTriggerDelayMillis = fastTriggerDelayMillis;
 	}
 
 }
