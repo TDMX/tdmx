@@ -46,7 +46,7 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(TestJobExecutorImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ZoneInstallJobExecutorImpl.class);
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;

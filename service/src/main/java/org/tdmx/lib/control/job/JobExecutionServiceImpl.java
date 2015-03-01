@@ -64,6 +64,7 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 
 	private List<JobConverter<?>> jobConverterList;
 	private List<JobExecutor<?>> jobExecutorList;
+	private JobExceptionConverter exceptionConverter;
 
 	/**
 	 * Delay in seconds.
@@ -183,13 +184,13 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 	// -------------------------------------------------------------------------
 
 	private void fastTrigger() {
-		if (fastTrigger != null & fastTrigger.isDone()) {
+		if (fastTrigger != null && fastTrigger.isDone()) {
 			fastTrigger = null;
 		}
 		if (fastTrigger == null && started) {
 			// there is a tiny race condition here which we don't really care about, if it fails here
 			// we just get 2 polls on the scheduledThread
-			fastTrigger = scheduledThreadPool.schedule(this, 100, TimeUnit.MILLISECONDS);
+			fastTrigger = scheduledThreadPool.schedule(this, fastTriggerDelayMillis, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -245,8 +246,7 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 				Throwable problem = e.getCause() != null ? e.getCause() : e;
 				log.warn("Job " + job + " failed with reason=" + problem.getMessage(), e);
 
-				// TODO marshall stacktrace to job
-				problem.getStackTrace();
+				exceptionConverter.setException(j, problem);
 
 				j.setEndTimestamp(new Date());
 				job.setStatus(ControlJobStatus.ERR);
@@ -279,6 +279,14 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 
 	public void setJobService(ControlJobService jobService) {
 		this.jobService = jobService;
+	}
+
+	public JobExceptionConverter getExceptionConverter() {
+		return exceptionConverter;
+	}
+
+	public void setExceptionConverter(JobExceptionConverter exceptionConverter) {
+		this.exceptionConverter = exceptionConverter;
 	}
 
 	public List<JobConverter<?>> getJobConverterList() {

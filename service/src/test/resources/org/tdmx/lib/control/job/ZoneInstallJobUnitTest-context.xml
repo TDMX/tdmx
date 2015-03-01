@@ -11,14 +11,6 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<import resource="classpath:/org/tdmx/lib/control/test-context.xml"/>
-	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
-
-	<bean id="tdmx.lib.control.task.ZoneInstallJobExecutor"
-		class="org.tdmx.lib.control.job.ZoneInstallJobExecutorImpl">
-		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
-		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
-		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
-	</bean>
+	<import resource="classpath:/org/tdmx/test-context.xml"/>
 	
 </beans>

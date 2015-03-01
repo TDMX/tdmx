@@ -24,6 +24,20 @@
 	<!-- ********************************************* -->
 	<!--           ZONE INSTALLATION  JOB -->
 	<!-- ********************************************* -->
+	<xs:element name="test" type="ZoneInstallTask"/>
+	<xs:complexType name="TestTask">
+		<xs:annotation>
+			<xs:documentation>Task to test the JobExecutionService.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="processTimeMs" type="xs:int"/>
+			<xs:element name="processMessage" type="text" minOccurs="0"/>
+			<xs:element name="exceptionMessage" type="text" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ********************************************* -->
+	<!--           ZONE INSTALLATION  JOB -->
+	<!-- ********************************************* -->
 	<xs:element name="zoneinstall" type="ZoneInstallTask"/>
 	<xs:complexType name="ZoneInstallTask">
 		<xs:annotation>

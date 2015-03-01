@@ -17,8 +17,13 @@
 	
 	<!-- LIBRARY SPRING CONFIG -->
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
 
+	<!-- WS SPRING CONFIG -->
+	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
+	
 	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">
 	</bean>
 

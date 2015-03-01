@@ -11,7 +11,7 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<import resource="classpath:/org/tdmx/server/rs/test-context.xml"/>
+	<import resource="classpath:/org/tdmx/test-context.xml"/>
 
 	<bean id="tdmx.lib.control.job.JobScheduler"
 		class="org.tdmx.lib.control.job.MockJobSchedulerImpl">

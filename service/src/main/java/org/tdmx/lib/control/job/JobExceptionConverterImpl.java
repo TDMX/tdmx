@@ -18,19 +18,16 @@
  */
 package org.tdmx.lib.control.job;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.namespace.QName;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-import org.tdmx.service.control.task.dao.TestTask;
+import org.tdmx.core.system.lang.JaxbMarshaller;
+import org.tdmx.lib.common.domain.Job;
+import org.tdmx.service.control.task.dao.ExceptionType;
 
-/**
- * The TestJobExecutorImpl will process a test task and sleep for the duration and then either succeed or throw a
- * runtime exception with the error message.
- * 
- * @author Peter
- * 
- */
-public class TestJobExecutorImpl implements JobExecutor<TestTask> {
+public class JobExceptionConverterImpl implements JobExceptionConverter {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,13 +36,16 @@ public class TestJobExecutorImpl implements JobExecutor<TestTask> {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(TestJobExecutorImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(JobExceptionConverterImpl.class);
+
+	private final JaxbMarshaller<ExceptionType> marshaller = new JaxbMarshaller<>(ExceptionType.class, new QName(
+			"urn:dao.task.control.service.tdmx.org", "exception"));
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public TestJobExecutorImpl() {
+	public JobExceptionConverterImpl() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -53,31 +53,32 @@ public class TestJobExecutorImpl implements JobExecutor<TestTask> {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getType() {
-		return TestTask.class.getName();
+	public ExceptionType getException(Job job) {
+		if (job.getException() != null) {
+			try {
+				return marshaller.unmarshal(job.getException());
+			} catch (JAXBException e) {
+				log.warn("Problem unmarshalling exception message jobId=" + job.getJobId());
+			}
+		}
+		return null;
 	}
 
 	@Override
-	public void execute(Long id, TestTask task) {
-		if (StringUtils.hasText(task.getExceptionMessage())) {
-			log.info("FAILURE task " + id + " with " + task.getProcessTimeMs() + "ms delay - "
-					+ task.getExceptionMessage());
-		} else {
-			log.info("SUCCESS task " + id + " with " + task.getProcessTimeMs() + "ms delay");
-		}
-		if (task.getProcessTimeMs() > 0) {
-			try {
-				Thread.sleep(task.getProcessTimeMs());
-			} catch (InterruptedException e) {
-				// ignore ie.
+	public void setException(Job job, Throwable t) {
+		if (t != null) {
+			ExceptionType et = new ExceptionType();
+			et.setMessage(t.getMessage());
+			et.setType(t.getClass().getName());
+			StackTraceElement[] st = t.getStackTrace();
+			for (StackTraceElement e : st) {
+				et.getStack().add(e.toString());
 			}
-		}
-		task.setProcessMessage("" + id);
-		if (StringUtils.hasText(task.getExceptionMessage())) {
-			// usually the problem comes from deeper in the service layer.
-			Exception causingException = new Exception(task.getExceptionMessage());
-			causingException.fillInStackTrace();
-			throw new RuntimeException("Some Problem Occured.", causingException);
+			try {
+				job.setException(marshaller.marshal(et));
+			} catch (JAXBException e1) {
+				log.warn("Problem marshalling exception message jobId=" + job.getJobId(), t);
+			}
 		}
 	}
 

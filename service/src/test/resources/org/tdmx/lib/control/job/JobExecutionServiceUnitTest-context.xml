@@ -11,7 +11,6 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<import resource="classpath:/org/tdmx/lib/control/test-context.xml"/>
-	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/test-context.xml"/>
 
 </beans>

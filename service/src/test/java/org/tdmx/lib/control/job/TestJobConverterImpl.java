@@ -23,9 +23,9 @@ import javax.xml.namespace.QName;
 
 import org.tdmx.core.system.lang.JaxbMarshaller;
 import org.tdmx.lib.common.domain.Job;
-import org.tdmx.service.control.task.dao.ZoneInstallTask;
+import org.tdmx.service.control.task.dao.TestTask;
 
-public class TestJobConverterImpl implements JobConverter<ZoneInstallTask> {
+public class TestJobConverterImpl implements JobConverter<TestTask> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,8 +35,8 @@ public class TestJobConverterImpl implements JobConverter<ZoneInstallTask> {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private final JaxbMarshaller<ZoneInstallTask> marshaller = new JaxbMarshaller<>(ZoneInstallTask.class, new QName(
-			"urn:dao.task.control.service.tdmx.org", "zoneinstall"));
+	private final JaxbMarshaller<TestTask> marshaller = new JaxbMarshaller<>(TestTask.class, new QName(
+			"urn:dao.task.control.service.tdmx.org", "test"));
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -51,16 +51,16 @@ public class TestJobConverterImpl implements JobConverter<ZoneInstallTask> {
 
 	@Override
 	public String getType() {
-		return ZoneInstallTask.class.getName();
+		return TestTask.class.getName();
 	}
 
 	@Override
-	public ZoneInstallTask getData(Job job) throws JAXBException {
+	public TestTask getData(Job job) throws JAXBException {
 		return marshaller.unmarshal(job.getData());
 	}
 
 	@Override
-	public void setData(Job job, ZoneInstallTask jobData) throws JAXBException {
+	public void setData(Job job, TestTask jobData) throws JAXBException {
 		job.setData(marshaller.marshal(jobData));
 	}
 

@@ -14,6 +14,7 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 	<!-- JOBS -->
+	
 	<bean id="tdmx.lib.control.task.ZoneInstallJobConverter"
 		class="org.tdmx.lib.control.job.ZoneInstallJobConverterImpl">
 	</bean>
@@ -39,6 +40,10 @@
 	</bean>
 
 	<!-- JOB EXECUTOR AND SCHEDULER -->
+	<bean id="tdmx.lib.control.job.JobExceptionConverter"
+		class="org.tdmx.lib.control.job.JobExceptionConverterImpl">
+	</bean>
+	
 	<bean id="tdmx.lib.control.job.JobScheduler"
 		class="org.tdmx.lib.control.job.JobSchedulerImpl">
 		<property name="controlJobService" ref="tdmx.lib.control.ControlJobRepository"/>
@@ -47,6 +52,7 @@
 	<bean id="tdmx.lib.control.job.JobExecutor"
 		class="org.tdmx.lib.control.job.JobExecutionServiceImpl" init-method="init">
 		<property name="jobIdService" ref="tdmx.lib.control.JobIdService"/>
+		<property name="jobService" ref="tdmx.lib.control.ControlJobRepository"/>
 		<property name="jobConverterList">
 			<list value-type="org.tdmx.lib.control.job.JobConverter">
 	            <ref bean="tdmx.lib.control.task.ZoneInstallJobConverter"/>
@@ -61,6 +67,10 @@
 	            <ref bean="tdmx.lib.control.task.ZACInstallationJobExecutor"/>
 	        </list>
         </property>
+        <property name="exceptionConverter" ref="tdmx.lib.control.job.JobExceptionConverter" />
+        <property name="longPollIntervalSec" value="10"/>
+        <property name="maxConcurrentJobs" value="5"/>
+        <property name="fastTriggerDelayMillis" value="100"/>
 	</bean>
 
 </beans>
