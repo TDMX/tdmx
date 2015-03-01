@@ -31,4 +31,23 @@
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>
 
+
+	<bean id="test.data.generator"
+		class="org.tdmx.lib.control.job.TestDataGeneratorImpl">
+		
+		
+		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
+		<property name="accountService" ref="tdmx.lib.control.AccountRepository"/>
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="accountZoneAdminCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository"/>
+		
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		
+	</bean>
+
 </beans>
