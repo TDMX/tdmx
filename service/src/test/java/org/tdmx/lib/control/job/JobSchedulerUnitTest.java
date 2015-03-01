@@ -37,7 +37,6 @@ import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
-import org.tdmx.service.control.task.dao.ZoneTransferCommand;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -88,10 +87,9 @@ public class JobSchedulerUnitTest {
 	@Test
 	public void testSchedule_Immediate_ZoneTransferTask() throws Exception {
 		ZoneTransferTask task = new ZoneTransferTask();
-		ZoneTransferCommand cmd = new ZoneTransferCommand();
-		cmd.setUsername("u");
-		cmd.setPassword("p");
-		task.setCommand(cmd);
+		task.setAccountId("1");
+		task.setZoneApex("z");
+		task.setZoneDbPartitionId("az-pid-1");
 		Job j = jobFactory.createJob(task);
 		je = jobScheduler.scheduleImmediate(j);
 

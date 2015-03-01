@@ -42,13 +42,10 @@ import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.job.JobConverter;
-import org.tdmx.service.control.task.dao.ZoneTransferCommand;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class ControlJobServiceRepositoryUnitTest {
 
 	@Autowired
@@ -64,11 +61,10 @@ public class ControlJobServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		ZoneTransferCommand cmd = new ZoneTransferCommand();
-		cmd.setPassword("pwd");
-		cmd.setUsername("un");
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setCommand(cmd);
+		task.setAccountId("1");
+		task.setZoneApex("z");
+		task.setZoneDbPartitionId("pid");
 
 		Job j = new Job();
 		j.setJobId(UUID.randomUUID().toString());

@@ -41,8 +41,6 @@ import org.tdmx.lib.zone.domain.ZoneFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.zone.TransactionManager")
-// @Transactional("ZoneDB")
 public class DomainServiceRepositoryUnitTest {
 
 	@Autowired

@@ -39,8 +39,6 @@ import org.tdmx.lib.control.domain.Lock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class LockServiceRepositoryUnitTest {
 
 	@Autowired

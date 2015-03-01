@@ -44,8 +44,6 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.zone.TransactionManager")
-// @Transactional("ZoneDB")
 public class AgentCredentialServiceRepositoryUnitTest {
 
 	@Autowired

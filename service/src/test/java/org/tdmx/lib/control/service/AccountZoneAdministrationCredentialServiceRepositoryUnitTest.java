@@ -46,15 +46,11 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	@Autowired
 	private AccountZoneAdministrationCredentialService service;
 
-	// @Autowired
-	// private AuthorizedAgentDao dao;
 	private AccountZoneAdministrationCredential zoneAC = null;
 	private PKIXCredential zac = null;
 

@@ -40,8 +40,6 @@ import org.tdmx.lib.control.domain.DatabaseType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Autowired

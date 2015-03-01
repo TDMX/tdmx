@@ -30,6 +30,17 @@
 	</bean>
 	<bean id="tdmx.lib.control.task.ZoneTransferJobExecutor"
 		class="org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl">
+		
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+
+		<property name="batchSize" value="1000"/>
+		
 	</bean>
 
 	<bean id="tdmx.lib.control.task.ZACInstallationJobConverter"

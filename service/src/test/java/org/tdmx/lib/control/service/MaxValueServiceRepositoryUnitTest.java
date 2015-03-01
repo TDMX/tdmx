@@ -35,8 +35,6 @@ import org.tdmx.lib.control.domain.MaxValue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class MaxValueServiceRepositoryUnitTest {
 
 	@Autowired
