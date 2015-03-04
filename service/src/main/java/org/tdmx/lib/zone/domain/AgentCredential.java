@@ -133,12 +133,16 @@ public class AgentCredential implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Credential [id=");
+		builder.append("AgentCredential [id=");
 		builder.append(id);
-		builder.append(" zoneApex=");
+		builder.append(" ,zoneApex=");
 		builder.append(zoneApex);
 		builder.append(", fingerprint=");
 		builder.append(sha1fingerprint);
+		builder.append(" ,type=");
+		builder.append(credentialType);
+		builder.append(" ,status=");
+		builder.append(credentialStatus);
 		builder.append("]");
 		return builder.toString();
 	}

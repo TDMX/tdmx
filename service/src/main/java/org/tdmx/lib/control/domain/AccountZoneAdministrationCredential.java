@@ -244,6 +244,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	}
 
 	public void setCertificateChainPem(String certificateChainPem) {
+		this.certificateChain = null;
 		this.certificateChainPem = certificateChainPem;
 	}
 

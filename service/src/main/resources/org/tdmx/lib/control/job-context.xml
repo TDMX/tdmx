@@ -43,11 +43,17 @@
 		
 	</bean>
 
-	<bean id="tdmx.lib.control.task.ZACInstallationJobConverter"
-		class="org.tdmx.lib.control.job.ZACInstallationJobConverterImpl">
+	<bean id="tdmx.lib.control.task.ZACInstallJobConverter"
+		class="org.tdmx.lib.control.job.ZACInstallJobConverterImpl">
 	</bean>
-	<bean id="tdmx.lib.control.task.ZACInstallationJobExecutor"
-		class="org.tdmx.lib.control.job.ZACInstallationJobExecutorImpl">
+	<bean id="tdmx.lib.control.task.ZACInstallJobExecutor"
+		class="org.tdmx.lib.control.job.ZACInstallJobExecutorImpl">
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="accountZoneAdministrationCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository"/>
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+
 	</bean>
 
 	<!-- JOB EXECUTOR AND SCHEDULER -->
@@ -67,15 +73,15 @@
 		<property name="jobConverterList">
 			<list value-type="org.tdmx.lib.control.job.JobConverter">
 	            <ref bean="tdmx.lib.control.task.ZoneInstallJobConverter"/>
+	            <ref bean="tdmx.lib.control.task.ZACInstallJobConverter"/>
 	            <ref bean="tdmx.lib.control.task.ZoneTransferJobConverter"/>
-	            <ref bean="tdmx.lib.control.task.ZACInstallationJobConverter"/>
 	        </list>
         </property>
 		<property name="jobExecutorList">
 			<list value-type="org.tdmx.lib.control.job.JobExecutor">
 	            <ref bean="tdmx.lib.control.task.ZoneInstallJobExecutor"/>
+	            <ref bean="tdmx.lib.control.task.ZACInstallJobExecutor"/>
 	            <ref bean="tdmx.lib.control.task.ZoneTransferJobExecutor"/>
-	            <ref bean="tdmx.lib.control.task.ZACInstallationJobExecutor"/>
 	        </list>
         </property>
         <property name="exceptionConverter" ref="tdmx.lib.control.job.JobExceptionConverter" />
