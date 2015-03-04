@@ -68,8 +68,13 @@ public class ZoneTransferJobUnitTest {
 	public void doSetup() throws Exception {
 		jobId = new Random().nextLong();
 
-		input = new TestDataGeneratorInput("ZONE.APEX." + System.currentTimeMillis(),
+		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
 				MockZonePartitionIdInstaller.ZP1_S1);
+		input.setNumZACs(3);
+		input.setNumDomains(2);
+		input.setNumDACsPerDomain(2);
+		input.setNumAddressesPerDomain(10);
+
 		data = dataGenerator.generate(input);
 
 		AccountZone az = data.getAccountZone();
@@ -101,6 +106,13 @@ public class ZoneTransferJobUnitTest {
 		task.setZoneDbPartitionId(newPartitionId);
 
 		executor.execute(jobId, task);
+		assertEquals(input.getNumDomains(), task.getNumDomains().intValue());
+		assertEquals(input.getNumDomains() * input.getNumServicesPerDomain(), task.getNumServices().intValue());
+		assertEquals(input.getNumDomains() * input.getNumAddressesPerDomain(), task.getNumAddresses().intValue());
+		assertEquals(
+				input.getNumZACs() + (input.getNumDomains() * input.getNumDACsPerDomain())
+						+ (input.getNumDomains() * input.getNumAddressesPerDomain() * input.getNumUsersPerAddress()),
+				task.getNumAgentCredentials().intValue());
 
 		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(data.getAccountZone().getAccountId(), data
 				.getAccountZone().getZoneApex());
@@ -115,6 +127,7 @@ public class ZoneTransferJobUnitTest {
 		assertEquals(data.getAccountZone().getZoneReference(), z.getZoneReference());
 
 		// TODO check ALL the generated data is in the NEW partition.
+
 	}
 
 	@Test

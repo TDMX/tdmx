@@ -39,6 +39,7 @@ public class AccountZoneAdministrationCredentialSearchCriteria {
 	private final PageSpecifier pageSpecifier;
 
 	private String accountId;
+	private String zoneApex;
 	private String fingerprint;
 	private AccountZoneAdministrationCredentialStatus status;
 
@@ -77,6 +78,14 @@ public class AccountZoneAdministrationCredentialSearchCriteria {
 
 	public void setStatus(AccountZoneAdministrationCredentialStatus status) {
 		this.status = status;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
 	}
 
 	public String getFingerprint() {

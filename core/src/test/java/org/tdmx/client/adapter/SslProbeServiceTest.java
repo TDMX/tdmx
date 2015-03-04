@@ -44,7 +44,7 @@ public class SslProbeServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		final PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 

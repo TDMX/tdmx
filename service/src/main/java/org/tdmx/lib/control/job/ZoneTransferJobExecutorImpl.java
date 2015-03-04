@@ -107,7 +107,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 		log.info("Transferring " + zone + " from " + oldPartitionId + " to " + newPartitionId);
 
-		// 1) disables access to the AccountZone TODO
+		// 1) TODO disables access to the AccountZone
 		// 2) wait for some quarantine time / distribute cache clear instruction for the access revocation. TODO
 
 		// 3) transfer the Zone
@@ -130,7 +130,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		// update the AccountZone to state the new partition is active.
 		az.setZonePartitionId(newPartitionId);
 		az.setJobId(null);
-		// TODO updates the AccountZone to allow access again
+		// TODO updates the AccountZone status to allow access again
+		getAccountZoneService().createOrUpdate(az);
 
 		// delete the old data
 		deleteZoneDataInSource(zone, oldPartitionId);
@@ -269,8 +270,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private int transferDomains(ZoneReference zone, String oldPartitionId, String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
-		while (more) {
-			DomainSearchCriteria sc = new DomainSearchCriteria(new PageSpecifier(0, getBatchSize()));
+		for (int pageNo = 0; more; pageNo++) {
+			DomainSearchCriteria sc = new DomainSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
 			List<Domain> domains = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
@@ -302,8 +303,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private int transferAddresses(ZoneReference zone, String oldPartitionId, String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
-		while (more) {
-			AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(0, getBatchSize()));
+		for (int pageNo = 0; more; pageNo++) {
+			AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
 			List<Address> addresses = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
@@ -335,8 +336,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private int transferServices(ZoneReference zone, String oldPartitionId, String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
-		while (more) {
-			ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(0, getBatchSize()));
+		for (int pageNo = 0; more; pageNo++) {
+			ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
 			List<Service> services = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
@@ -368,8 +369,9 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private int transferAgentCredentials(ZoneReference zone, String oldPartitionId, String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
-		while (more) {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(0, getBatchSize()));
+		for (int pageNo = 0; more; pageNo++) {
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
+					getBatchSize()));
 			List<AgentCredential> credentials = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {

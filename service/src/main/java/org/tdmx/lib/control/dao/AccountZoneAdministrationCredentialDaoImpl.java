@@ -95,6 +95,10 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 			isFirstClause = andClause(isFirstClause, "ac.accountId = :l", "l", criteria.getAccountId(), whereClause,
 					parameters);
 		}
+		if (StringUtils.hasText(criteria.getZoneApex())) {
+			isFirstClause = andClause(isFirstClause, "ac.zoneApex = :z", "z", criteria.getZoneApex(), whereClause,
+					parameters);
+		}
 		if (StringUtils.hasText(criteria.getFingerprint())) {
 			isFirstClause = andClause(isFirstClause, "ac.fingerprint = :f", "f", criteria.getFingerprint(),
 					whereClause, parameters);

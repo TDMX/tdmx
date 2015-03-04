@@ -120,6 +120,27 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 	}
 
 	@Test
+	public void testSearch_ZoneApex() {
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setZoneApex(zoneAC.getZoneApex());
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
+		assertNotNull(list);
+		assertTrue(list.size() > 0);
+	}
+
+	@Test
+	public void testSearch_ZoneApexAccountId() {
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sc.setZoneApex(zoneAC.getZoneApex());
+		sc.setAccountId(zoneAC.getAccountId());
+		List<AccountZoneAdministrationCredential> list = service.search(sc);
+		assertNotNull(list);
+		assertTrue(list.size() > 0);
+	}
+
+	@Test
 	public void testLookup_Id() throws Exception {
 		AccountZoneAdministrationCredential zC = service.findById(zoneAC.getId());
 		assertNotNull(zC);

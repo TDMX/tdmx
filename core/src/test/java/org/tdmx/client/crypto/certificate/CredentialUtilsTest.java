@@ -75,7 +75,7 @@ public class CredentialUtilsTest {
 
 	@Test
 	public void testCreateDomainAdminCert() throws Exception {
-		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 
 		PKIXCertificate issuer = zac.getPublicCert();
 
@@ -109,7 +109,7 @@ public class CredentialUtilsTest {
 
 	@Test
 	public void testUserCert() throws Exception {
-		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		PKIXCertificate issuer = dac.getPublicCert();
 
@@ -141,7 +141,7 @@ public class CredentialUtilsTest {
 
 	@Test
 	public void test_PKIXValidation_DAC_UC() throws Exception {
-		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
 
@@ -155,7 +155,7 @@ public class CredentialUtilsTest {
 
 	@Test
 	public void dumpUserCert() throws Exception {
-		PKIXCredential zac = CertificateFacade.createZAC(10);
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		byte[] bs = CertificateIOUtils.encodeX509(zac.getCertificateChain()[0]);
 		FileUtils.storeFileContents("za.crt", bs, ".tmp");
 

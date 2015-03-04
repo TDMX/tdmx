@@ -37,6 +37,7 @@
 		
 		
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
+		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService"/>
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
 		<property name="accountZoneAdminCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository"/>

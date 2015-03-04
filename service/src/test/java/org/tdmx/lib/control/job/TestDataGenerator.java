@@ -18,6 +18,7 @@
  */
 package org.tdmx.lib.control.job;
 
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.lib.console.domain.TestDataGeneratorInput;
 import org.tdmx.lib.console.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.domain.Account;
@@ -30,7 +31,7 @@ import org.tdmx.lib.control.domain.AccountZone;
  */
 public interface TestDataGenerator {
 
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input);
+	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException;
 
 	/**
 	 * Remove the Account and all AccountZone information in the ControlDB and ZoneDB.

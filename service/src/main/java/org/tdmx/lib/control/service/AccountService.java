@@ -31,13 +31,13 @@ import org.tdmx.lib.control.domain.AccountSearchCriteria;
  */
 public interface AccountService {
 
-	public void createOrUpdate(Account accountZone);
+	public void createOrUpdate(Account account);
 
 	public Account findById(Long id);
 
 	public Account findByAccountId(String accountId);
 
-	public void delete(Account accountZone);
+	public void delete(Account account);
 
 	public List<Account> search(AccountSearchCriteria criteria);
 

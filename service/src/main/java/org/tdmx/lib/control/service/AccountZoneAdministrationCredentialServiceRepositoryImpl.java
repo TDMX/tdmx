@@ -24,6 +24,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
@@ -96,6 +98,20 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 	@Transactional(value = "ControlDB", readOnly = true)
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria) {
 		return getAccountCredentialDao().search(criteria);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public AccountZoneAdministrationCredential findByFingerprint(String fingerprint) {
+		if (!StringUtils.hasText(fingerprint)) {
+			throw new IllegalArgumentException("missing fingerprint");
+		}
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				new PageSpecifier(0, 1));
+		sc.setFingerprint(fingerprint);
+		List<AccountZoneAdministrationCredential> zacs = getAccountCredentialDao().search(sc);
+
+		return zacs.isEmpty() ? null : zacs.get(0);
 	}
 
 	// -------------------------------------------------------------------------

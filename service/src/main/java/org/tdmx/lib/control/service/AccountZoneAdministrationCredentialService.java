@@ -35,6 +35,8 @@ public interface AccountZoneAdministrationCredentialService {
 
 	public AccountZoneAdministrationCredential findById(Long id);
 
+	public AccountZoneAdministrationCredential findByFingerprint(String fingerprint);
+
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria);
 
 	public void delete(AccountZoneAdministrationCredential accountCredential);

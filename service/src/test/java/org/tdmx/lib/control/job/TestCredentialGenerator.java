@@ -16,16 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.crypto.certificate;
+package org.tdmx.lib.control.job;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.DomainAdministrationCredentialSpecifier;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.TdmxZoneInfo;
+import org.tdmx.client.crypto.certificate.UserCredentialSpecifier;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 
-public class CertificateFacade {
-	private CertificateFacade() {
+public class TestCredentialGenerator {
+	private TestCredentialGenerator() {
 	}
 
 	public static Calendar getNow() {
