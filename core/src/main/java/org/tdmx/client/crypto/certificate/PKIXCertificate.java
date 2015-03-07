@@ -55,7 +55,7 @@ public class PKIXCertificate {
 	private JcaX509CertificateHolder holder;
 
 	/**
-	 * The SHA1 fingerprint
+	 * The SHA384 fingerprint
 	 */
 	private String fingerprint;
 
@@ -81,7 +81,7 @@ public class PKIXCertificate {
 			holder = new JcaX509CertificateHolder(certificate);
 			{
 				byte[] tbsCert = cert.getTBSCertificate();
-				byte[] sha1 = DigestAlgorithm.SHA_1.kdf(tbsCert);
+				byte[] sha1 = DigestAlgorithm.SHA_384.kdf(tbsCert);
 				fingerprint = ByteArray.asHex(sha1);
 			}
 
@@ -187,9 +187,9 @@ public class PKIXCertificate {
 	}
 
 	/**
-	 * Get the SHA1 fingerprint of this certificate.
+	 * Get the SHA384 fingerprint of this certificate.
 	 * 
-	 * @return the SHA1 fingerprint of this certificate.
+	 * @return the SHA384 fingerprint of this certificate.
 	 */
 	public String getFingerprint() {
 		return fingerprint;

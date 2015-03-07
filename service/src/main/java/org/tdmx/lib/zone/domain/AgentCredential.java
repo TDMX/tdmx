@@ -51,7 +51,7 @@ public class AgentCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_SHA1FINGERPRINT_LEN = 64;
+	public static final int MAX_FINGERPRINT_LEN = 64;
 	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
 
 	// -------------------------------------------------------------------------
@@ -74,8 +74,8 @@ public class AgentCredential implements Serializable {
 	private String zoneApex;
 
 	// TODO index fingerprint
-	@Column(length = MAX_SHA1FINGERPRINT_LEN, nullable = false)
-	private String sha1fingerprint;
+	@Column(length = MAX_FINGERPRINT_LEN, nullable = false)
+	private String fingerprint;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = AgentCredentialType.MAX_CREDENTIALTYPE_LEN, nullable = false)
@@ -109,7 +109,7 @@ public class AgentCredential implements Serializable {
 		this.zoneApex = zone.getZoneApex();
 		setCertificateChain(certificateChain);
 		PKIXCertificate publicKey = getPublicKey();
-		setSha1fingerprint(publicKey.getFingerprint());
+		setFingerprint(publicKey.getFingerprint());
 
 		if (publicKey.isTdmxZoneAdminCertificate()) {
 			setCredentialType(AgentCredentialType.ZAC);
@@ -138,7 +138,7 @@ public class AgentCredential implements Serializable {
 		builder.append(" ,zoneApex=");
 		builder.append(zoneApex);
 		builder.append(", fingerprint=");
-		builder.append(sha1fingerprint);
+		builder.append(fingerprint);
 		builder.append(" ,type=");
 		builder.append(credentialType);
 		builder.append(" ,status=");
@@ -214,12 +214,12 @@ public class AgentCredential implements Serializable {
 		return new ZoneReference(this.tenantId, this.zoneApex);
 	}
 
-	public String getSha1fingerprint() {
-		return sha1fingerprint;
+	public String getFingerprint() {
+		return fingerprint;
 	}
 
-	public void setSha1fingerprint(String sha1fingerprint) {
-		this.sha1fingerprint = sha1fingerprint;
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
 	}
 
 	public AgentCredentialType getCredentialType() {

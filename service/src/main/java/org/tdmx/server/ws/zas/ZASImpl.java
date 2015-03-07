@@ -331,7 +331,7 @@ public class ZASImpl implements ZAS {
 			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
 				return response;
 			}
-			AgentCredential c = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
+			AgentCredential c = credentialService.findByFingerprint(zone, uc.getFingerprint());
 			if (c != null) {
 				response.getUserstates().add(mapUserstate(c));
 			}
@@ -385,7 +385,7 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
-			AgentCredential c = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
+			AgentCredential c = credentialService.findByFingerprint(zone, dac.getFingerprint());
 			if (c != null) {
 				response.getAdministratorstates().add(mapAdministratorstate(c));
 			}
@@ -437,7 +437,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -576,7 +576,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -719,7 +719,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the DAC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getFingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
@@ -882,7 +882,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
@@ -954,7 +954,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the UC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, uc.getFingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
@@ -1038,7 +1038,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getSha1fingerprint());
+		AgentCredential existingCred = credentialService.findByFingerprint(zone, dac.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;

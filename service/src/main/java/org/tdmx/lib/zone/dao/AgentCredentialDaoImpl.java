@@ -117,7 +117,7 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 					parameters);
 		}
 		if (StringUtils.hasText(criteria.getFingerprint())) {
-			isFirstClause = andClause(isFirstClause, "ac.sha1fingerprint = :f", "f", criteria.getFingerprint(),
+			isFirstClause = andClause(isFirstClause, "ac.fingerprint = :f", "f", criteria.getFingerprint(),
 					whereClause, parameters);
 		}
 		StringBuilder sql = new StringBuilder();

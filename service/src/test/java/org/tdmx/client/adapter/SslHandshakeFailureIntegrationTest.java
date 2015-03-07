@@ -53,7 +53,7 @@ public class SslHandshakeFailureIntegrationTest {
 		PKIXCredential uc = cp.getCredential();
 		String ucPem = CertificateIOUtils.x509certsToPem(uc.getCertificateChain());
 
-		log.warn("sha1: " + uc.getPublicCert().getFingerprint());
+		log.warn("fingerprint: " + uc.getPublicCert().getFingerprint());
 		log.warn(ucPem);
 
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();

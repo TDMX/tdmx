@@ -57,7 +57,7 @@ public class ClientAdapterFactoryIntegrationTest {
 		String zacPem = CertificateIOUtils.x509certsToPem(zac.getCertificateChain());
 
 		log.warn("zac-zone: " + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
-		log.warn("zac-sha1: " + zac.getPublicCert().getFingerprint());
+		log.warn("zac-fingerprint: " + zac.getPublicCert().getFingerprint());
 		log.warn(zacPem);
 
 	}

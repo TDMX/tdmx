@@ -1222,7 +1222,7 @@ public class ZASImplUnitTest {
 	public void testCreateAdministrator_Success() {
 		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getFingerprint());
 		agentCredentialService.delete(domainAC);
 		zonePartitionIdProvider.clearPartitionId();
 
@@ -1244,7 +1244,7 @@ public class ZASImplUnitTest {
 	public void testCreateAdministrator_Success_DefaultStatus() {
 		AgentCredential dAC = agentCredentialFactory.createAgentCredential(zone, dac.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getSha1fingerprint());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getFingerprint());
 		agentCredentialService.delete(domainAC);
 		zonePartitionIdProvider.clearPartitionId();
 
@@ -1348,7 +1348,7 @@ public class ZASImplUnitTest {
 		// remove UC credentials
 		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
+		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getFingerprint());
 		agentCredentialService.delete(userAC);
 		zonePartitionIdProvider.clearPartitionId();
 
@@ -1416,7 +1416,7 @@ public class ZASImplUnitTest {
 		// delete the UC setup
 		AgentCredential uAC = agentCredentialFactory.createAgentCredential(zone, uc.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getSha1fingerprint());
+		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getFingerprint());
 		agentCredentialService.delete(userAC);
 		zonePartitionIdProvider.clearPartitionId();
 

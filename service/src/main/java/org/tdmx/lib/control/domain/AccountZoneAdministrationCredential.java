@@ -70,7 +70,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 
-	// TODO sha2 fingerprint should be unique over all certs.
 	@Column(length = MAX_FINGERPRINT_LEN, nullable = false, unique = true)
 	private String fingerprint;
 

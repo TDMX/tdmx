@@ -31,7 +31,7 @@
         credentialStatus varchar(12) not null,
         credentialType varchar(4) not null,
         domainName varchar(255),
-        sha1fingerprint varchar(64) not null,
+        fingerprint varchar(64) not null,
         tenantId bigint not null,
         zoneApex varchar(255) not null,
         primary key (id)

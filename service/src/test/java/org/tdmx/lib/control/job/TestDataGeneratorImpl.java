@@ -389,7 +389,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		ac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		agentCredentialService.createOrUpdate(ac);
 
-		return agentCredentialService.findByFingerprint(zone, ac.getSha1fingerprint());
+		return agentCredentialService.findByFingerprint(zone, ac.getFingerprint());
 	}
 
 	private void createAccountZone(Account a, String zoneApex, String partitionId, TestDataGeneratorOutput result) {
