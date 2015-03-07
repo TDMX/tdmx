@@ -58,12 +58,12 @@ public class JobExecutionServiceUnitTest {
 	private JobExceptionConverter exceptionConverter;
 
 	private JobConverter<TestTask> testJobConverter;
-	private JobExecutionServiceImpl service;
+	private JobExecutionProcessImpl service;
 
 	@Before
 	public void doSetup() throws Exception {
 
-		service = new JobExecutionServiceImpl();
+		service = new JobExecutionProcessImpl();
 		service.setJobIdService(jobIdService);
 		service.setJobService(jobService);
 		service.setFastTriggerDelayMillis(100);

@@ -48,7 +48,7 @@ import org.tdmx.lib.control.service.UniqueIdService;
  * @author Peter Klauser
  * 
  */
-public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory {
+public class JobExecutionProcessImpl implements Process, JobFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -57,7 +57,7 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(JobExecutionServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(JobExecutionProcessImpl.class);
 
 	private UniqueIdService jobIdService;
 	private ControlJobService jobService;
@@ -118,6 +118,7 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 
 	@Override
 	public void start() {
+		init();
 		started = true;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
 				TimeUnit.SECONDS);
@@ -131,6 +132,12 @@ public class JobExecutionServiceImpl implements Runnable, Manageable, JobFactory
 			scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
+		}
+		jobRunners.shutdown();
+		try {
+			jobRunners.awaitTermination(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted whilst waiting for termination of jobRunners.", e);
 		}
 	}
 

@@ -18,24 +18,7 @@
  */
 package org.tdmx.lib.control.job;
 
-public interface JobExecutor<E> {
 
-	/**
-	 * Get the type of Job which is supported by this executor.
-	 * 
-	 * @return
-	 */
-	public String getType();
-
-	/**
-	 * Execute the command.
-	 * 
-	 * Note: do not access ControlJob, this is the responsibility of the {@link JobExecutionProcessImpl}
-	 * 
-	 * @param id
-	 *            of the ControlJob being executed.
-	 * @param entry
-	 */
-	public void execute(Long id, E command);
+public interface Process extends Runnable, Manageable {
 
 }

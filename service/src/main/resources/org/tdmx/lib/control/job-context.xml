@@ -67,7 +67,7 @@
 	</bean>
 	
 	<bean id="tdmx.lib.control.job.JobExecutor"
-		class="org.tdmx.lib.control.job.JobExecutionServiceImpl" init-method="init">
+		class="org.tdmx.lib.control.job.JobExecutionProcessImpl" init-method="init">
 		<property name="jobIdService" ref="tdmx.lib.control.JobIdService"/>
 		<property name="jobService" ref="tdmx.lib.control.ControlJobRepository"/>
 		<property name="jobConverterList">
