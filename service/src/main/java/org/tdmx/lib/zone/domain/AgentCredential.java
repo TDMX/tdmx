@@ -51,7 +51,7 @@ public class AgentCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_FINGERPRINT_LEN = 64;
+	public static final int MAX_SHA256FINGERPRINT_LEN = 64;
 	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
 
 	// -------------------------------------------------------------------------
@@ -74,7 +74,7 @@ public class AgentCredential implements Serializable {
 	private String zoneApex;
 
 	// TODO index fingerprint
-	@Column(length = MAX_FINGERPRINT_LEN, nullable = false)
+	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false)
 	private String fingerprint;
 
 	@Enumerated(EnumType.STRING)

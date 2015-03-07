@@ -52,7 +52,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
-	public static final int MAX_FINGERPRINT_LEN = 64;
+	public static final int MAX_SHA256FINGERPRINT_LEN = 64;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -70,7 +70,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
 	private String zoneApex;
 
-	@Column(length = MAX_FINGERPRINT_LEN, nullable = false, unique = true)
+	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false, unique = true)
 	private String fingerprint;
 
 	@Enumerated(EnumType.STRING)
