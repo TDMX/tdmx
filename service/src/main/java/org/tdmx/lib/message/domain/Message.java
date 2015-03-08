@@ -21,8 +21,10 @@ package org.tdmx.lib.message.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -102,20 +104,21 @@ public class Message implements Serializable {
 	// PAYLOAD FIELDS
 	// -------------------------------------------------------------------------
 	@Column(nullable = false)
-	protected short chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
+	private short chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
 
 	@Column(nullable = false)
-	protected long payloadLength; // total encrypted length = SUM length chunks
+	private long payloadLength; // total encrypted length = SUM length chunks
 
+	@Basic(fetch = FetchType.EAGER)
 	@Column(nullable = false)
 	@Lob
-	protected byte[] encryptionContext; // sender input to encryption scheme
+	private byte[] encryptionContext; // sender input to encryption scheme
 
 	@Column(nullable = false)
-	protected long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
+	private long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
 
 	@Column(length = MAX_CRCMANIFEST_LEN, nullable = false)
-	protected String chunksCRC; // manifest of checksums for each chunk.
+	private String chunksCRC; // manifest of checksums for each chunk.
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -156,16 +159,8 @@ public class Message implements Serializable {
 		return msgId;
 	}
 
-	public void setMsgId(String msgId) {
-		this.msgId = msgId;
-	}
-
 	public Date getTxTS() {
 		return txTS;
-	}
-
-	public void setTxTS(Date txTS) {
-		this.txTS = txTS;
 	}
 
 	public Date getLiveUntilTS() {

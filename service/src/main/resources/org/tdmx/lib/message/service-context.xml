@@ -68,5 +68,14 @@
 			ref="tdmx.lib.message.dao.MessageDao" />
 	</bean>
 
+	<bean id="tdmx.lib.message.dao.ChunkDao"
+		class="org.tdmx.lib.message.dao.ChunkDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.message.ChunkRepository"
+		class="org.tdmx.lib.message.service.ChunkServiceRepositoryImpl">
+		<property name="chunkDao"
+			ref="tdmx.lib.message.dao.ChunkDao" />
+	</bean>
 
 </beans>

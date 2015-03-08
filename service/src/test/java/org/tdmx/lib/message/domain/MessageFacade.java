@@ -24,11 +24,9 @@ import java.util.UUID;
 public class MessageFacade {
 
 	public static Message createMessage(Long flowId) throws Exception {
-		Message m = new Message();
+		Message m = new Message(UUID.randomUUID().toString(), new Date());
 
 		// Header fields.
-		m.setMsgId(UUID.randomUUID().toString());
-		m.setTxTS(new Date());
 		m.setLiveUntilTS(new Date());
 		m.setFlowId(flowId);
 		m.setExternalReference("External Reference Text");
@@ -47,4 +45,10 @@ public class MessageFacade {
 		return m;
 	}
 
+	public static Chunk createChunk(String msgId, short pos) throws Exception {
+		Chunk c = new Chunk(msgId, pos);
+		c.setMac("1234");
+		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
+		return c;
+	}
 }

@@ -31,6 +31,7 @@
 	<persistence-unit name="MessageDB" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>org.tdmx.lib.message.domain.Message</class>
+		<class>org.tdmx.lib.message.domain.Chunk</class>
 	</persistence-unit>
 
 </persistence>
