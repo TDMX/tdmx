@@ -16,23 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.console.domain;
+package org.tdmx.lib.message.service;
 
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AccountZoneStatus;
+import org.tdmx.lib.message.domain.Message;
 
-public class AccountZoneFacade {
+/**
+ * Management Services for a Message.
+ * 
+ * @author Peter
+ * 
+ */
+public interface MessageService {
 
-	public static AccountZone createAccountZone(String accountId, String zoneApex, String segment,
-			String zonePartitionId) throws Exception {
-		AccountZone az = new AccountZone();
+	public void createOrUpdate(Message message);
 
-		az.setAccountId(accountId);
-		az.setZoneApex(zoneApex);
-		az.setStatus(AccountZoneStatus.ACTIVE);
-		az.setSegment(segment);
-		az.setZonePartitionId(zonePartitionId);
-		return az;
-	}
+	public Message findByMsgId(String msgId);
+
+	public void delete(Message message);
 
 }

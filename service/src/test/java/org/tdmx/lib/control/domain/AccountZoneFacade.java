@@ -16,34 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.control.domain;
 
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.TestDataGeneratorInput;
-import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import org.tdmx.lib.control.domain.AccountZoneStatus;
 
-/**
- * 
- * @author Peter
- * 
- */
-public interface TestDataGenerator {
+public class AccountZoneFacade {
 
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException;
+	public static AccountZone createAccountZone(String accountId, String zoneApex, String segment,
+			String zonePartitionId) throws Exception {
+		AccountZone az = new AccountZone();
 
-	/**
-	 * Remove the Account and all AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param account
-	 */
-	public void tearDown(Account account);
+		az.setAccountId(accountId);
+		az.setZoneApex(zoneApex);
+		az.setStatus(AccountZoneStatus.ACTIVE);
+		az.setSegment(segment);
+		az.setZonePartitionId(zonePartitionId);
+		return az;
+	}
 
-	/**
-	 * Remove the AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param zone
-	 */
-	public void tearDown(AccountZone zone);
 }

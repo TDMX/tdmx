@@ -5,7 +5,7 @@
              
 	<persistence-unit name="ConsoleDB" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<class>org.tdmx.lib.console.domain.ConsoleUser</class>
+		<class>org.tdmx.lib.control.domain.ConsoleUser</class>
 	</persistence-unit>
 
 	<persistence-unit name="ControlDB" transaction-type="RESOURCE_LOCAL">
@@ -26,6 +26,11 @@
 		<class>org.tdmx.lib.zone.domain.Domain</class>
 		<class>org.tdmx.lib.zone.domain.Address</class>
 		<class>org.tdmx.lib.zone.domain.Service</class>
+	</persistence-unit>
+
+	<persistence-unit name="MessageDB" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>org.tdmx.lib.message.domain.Message</class>
 	</persistence-unit>
 
 </persistence>

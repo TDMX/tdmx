@@ -440,10 +440,9 @@
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="signature">
-		<xs:annotation>
-			<xs:documentation>DigitalSignature value.</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:base64Binary"/>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="128"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="timestamp">
 		<xs:restriction base="xs:dateTime"/>
@@ -604,7 +603,7 @@
 			</xs:element>
 			<xs:element name="headerSignature" type="signature">
 				<xs:annotation>
-					<xs:documentation>the signature value for all header elements, issued by the flow source.</xs:documentation>
+					<xs:documentation>the signature value for all header elements, issued by the flow source. { msgId +  timestamp + ttl + src.credential + trg.credential + serviceName + externalRefrence + sendAuthSig + recvAuthSig + sessionSig + payloadSig }</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -633,7 +632,7 @@
 			</xs:element>
 			<xs:element name="chunksCRC" type="crc32concatenation">
 				<xs:annotation>
-					<xs:documentation>CRC32 checksum concatenation of each chunk's checksum. This is used as a simple ( non cryptograhic MAC ) of the entire payload, with each 4bytes representing one chunk.</xs:documentation>
+					<xs:documentation>CRC32 checksum concatenation of each chunk's checksum. This is used as a simple ( non cryptograhic MAC ) of the entire payload, with each 8chars representing one crc32 as hex for one chunk.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -673,21 +672,34 @@
 		<xs:annotation>
 			<xs:documentation>Message Authentication Code - SHA1.</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:base64Binary"/>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="40"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="crc32">
+		<xs:annotation>
+			<xs:documentation>CRC32 (32-bit) as hex chars.</xs:documentation>
+		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:length value="8"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="crc32concatenation">
+		<xs:annotation>
+			<xs:documentation>A concatenation of up to 1000 CRC32 checksums.</xs:documentation>
+		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:minLength value="8"/>
 			<xs:maxLength value="8000"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="messageId">
-		<xs:restriction base="common:text"/>
+		<xs:annotation>
+			<xs:documentation>a SHA-256 fingerprint.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="common:text">
+			<xs:maxLength value="64"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="permission">
 		<xs:annotation>
@@ -706,7 +718,7 @@
 	<xs:element name="header" type="Header"/>
 	<xs:element name="msgId" type="messageId">
 		<xs:annotation>
-			<xs:documentation>the SHA-1 thumbprint of timestamp+source.credential+target.credential+send/+recvAuthorizationSignature+payloadSignature </xs:documentation>
+			<xs:documentation>the SHA-256 fingerprint of { timestamp+source.credential+target.credential+serviceName + send/+recvAuthorizationSignature +payloadSignature }</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="payload" type="Payload"/>

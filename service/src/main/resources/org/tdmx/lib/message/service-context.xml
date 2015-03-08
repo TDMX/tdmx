@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<bean id="jdbc.messagedb.dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="url" value="${jdbc.messagedb.url}" />
+		<property name="driverClassName" value="${jdbc.messagedb.driverClassName}" />
+		<property name="username" value="${jdbc.messagedb.username}" />
+		<property name="password" value="${jdbc.messagedb.password}" />
+	</bean>
+
+	<bean id="tdmx.lib.message.EntityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="jdbc.messagedb.dataSource"/>
+		<property name="persistenceUnitName" value="MessageDB" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="generateDdl" value="${jdbc.messagedb.hibernate.generateDdl}" />
+				<property name="showSql" value="${jdbc.messagedb.hibernate.showSql}" />
+				<property name="databasePlatform" value="${jdbc.messagedb.hibernate.dialect}" />
+			</bean>
+		</property>
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="hibernate.cache.use_second_level_cache" value="false"/>
+				<entry key="hibernate.cache.use_query_cache" value="false"/>
+				<!-- 
+				<entry key="hibernate.cache.region.factory_class" value="org.hibernate.cache.jbc2.MultiplexedJBossCacheRegionFactory"/>
+				<entry key="hibernate.cache.region.jbc2.configs" value="${hb.jbc2.configs}" />
+				<entry key="hibernate.cache.region.jbc2.cfg.entity" value="${hb.jbc2.entity}" />
+				<entry key="hibernate.transaction.manager_lookup_class" value="com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup"/>
+				<entry key="hibernate.hbm2ddl.auto" value="${db.ddl-create}"/>
+				<entry key="hibernate.connection.autocommit" value="false" />
+				<entry key="hibernate.connection.release_mode" value="after_transaction"/>
+				 -->
+			</map>
+		</property>	
+		</bean>
+
+	<tx:annotation-driven transaction-manager="tdmx.lib.message.TransactionManager"/>
+	
+	<context:annotation-config />
+	
+	<bean id="tdmx.lib.message.TransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<qualifier value="MessageDB"/>
+		<property name="entityManagerFactory" ref="tdmx.lib.message.EntityManagerFactory" />
+	</bean>
+
+
+	<bean id="tdmx.lib.message.dao.MessageDao"
+		class="org.tdmx.lib.message.dao.MessageDaoImpl">
+	</bean>
+	
+	<bean id="tdmx.lib.message.MessageRepository"
+		class="org.tdmx.lib.message.service.MessageServiceRepositoryImpl">
+		<property name="messageDao"
+			ref="tdmx.lib.message.dao.MessageDao" />
+	</bean>
+
+
+</beans>

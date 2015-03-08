@@ -16,34 +16,35 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.message.domain;
 
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.lib.control.domain.Account;
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.TestDataGeneratorInput;
-import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import java.util.Date;
+import java.util.UUID;
 
-/**
- * 
- * @author Peter
- * 
- */
-public interface TestDataGenerator {
+public class MessageFacade {
 
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException;
+	public static Message createMessage(Long flowId) throws Exception {
+		Message m = new Message();
 
-	/**
-	 * Remove the Account and all AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param account
-	 */
-	public void tearDown(Account account);
+		// Header fields.
+		m.setMsgId(UUID.randomUUID().toString());
+		m.setTxTS(new Date());
+		m.setLiveUntilTS(new Date());
+		m.setFlowId(flowId);
+		m.setExternalReference("External Reference Text");
+		m.setRecvAuthSignature("12345");
+		m.setSendAuthSignature("12345");
+		m.setSessionSignature("12345");
+		m.setHeaderSignature("12345");
 
-	/**
-	 * Remove the AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param zone
-	 */
-	public void tearDown(AccountZone zone);
+		// payload fields
+		m.setChunksCRC("12345678");
+		m.setChunkSizeFactor((short) 8);
+		m.setEncryptionContext(new byte[] { 1, 2, 3 });
+		m.setPayloadLength(1024);
+		m.setPayloadSignature("1234");
+		m.setPlaintextLength(8000);
+		return m;
+	}
+
 }

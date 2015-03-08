@@ -20,8 +20,8 @@ package org.tdmx.lib.zone.service;
 
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.tdmx.lib.console.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 

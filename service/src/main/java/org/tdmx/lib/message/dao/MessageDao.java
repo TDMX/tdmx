@@ -16,34 +16,28 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.message.dao;
 
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.lib.control.domain.Account;
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.TestDataGeneratorInput;
-import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import org.tdmx.lib.message.domain.Message;
 
 /**
+ * DAO for the Message Entity.
  * 
  * @author Peter
  * 
  */
-public interface TestDataGenerator {
+public interface MessageDao {
 
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException;
+	public void persist(Message value);
 
-	/**
-	 * Remove the Account and all AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param account
-	 */
-	public void tearDown(Account account);
+	public void delete(Message value);
 
-	/**
-	 * Remove the AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param zone
-	 */
-	public void tearDown(AccountZone zone);
+	public void lock(Message value);
+
+	public Message merge(Message value);
+
+	public Message loadById(Long id);
+
+	public Message loadByMsgId(String msgId);
+
 }

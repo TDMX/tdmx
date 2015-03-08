@@ -34,11 +34,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.console.domain.AccountZoneFacade;
-import org.tdmx.lib.console.domain.CredentialFacade;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneFacade;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
+import org.tdmx.lib.control.domain.CredentialFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

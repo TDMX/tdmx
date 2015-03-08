@@ -34,8 +34,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.console.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabaseType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
