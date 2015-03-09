@@ -1234,7 +1234,7 @@ public class ZASImpl implements ZAS {
 
 	private Administratorstate mapAdministratorstate(AgentCredential cred) {
 		Administrator u = new Administrator();
-		u.setDomaincertificate(cred.getIssuerPublicKey().getX509Encoded());
+		u.setDomaincertificate(cred.getPublicKey().getX509Encoded());
 		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
 
 		Administratorstate us = new Administratorstate();

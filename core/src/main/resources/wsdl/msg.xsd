@@ -199,10 +199,12 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ChannelEndpointAuthorization">
+		<xs:annotation>
+			<xs:documentation>A DomainAdministrator provides and certifies a channel endpoint authorization. Signature fields are { origin.{ localname + domain + serviceprovider } + destination.{serviceName + localname + domain + serviceprovider } + permission + maxPlaintextSize + notValidAfter + admin.pem + timestamp }</xs:documentation>
+		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="channel"/>
 			<xs:element name="permission" type="permission"/>
-			<xs:element name="maxPlaintextSize" type="xs:unsignedInt"/>
+			<xs:element name="maxPlaintextSizeBytes" type="xs:unsignedLong"/>
 			<xs:element name="notValidAfter" type="xs:date">
 				<xs:annotation>
 					<xs:documentation>the time at which the authorization is revoked. An authorization is valid for at most 1 year duration, which is required to handle DNS ownership changes (and whois expiration info not authoritative), whilst having long validity durations of clients.</xs:documentation>
@@ -227,6 +229,7 @@
 	</xs:complexType>
 	<xs:complexType name="ChannelAuthorization">
 		<xs:sequence>
+			<xs:element ref="channel"/>
 			<xs:element name="origin" type="ChannelEndpointAuthorization" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
@@ -379,8 +382,7 @@
 	<xs:complexType name="UserSignature">
 		<xs:sequence>
 			<xs:element ref="user"/>
-			<xs:element name="timestamp" type="timestamp"/>
-			<xs:element name="signature" type="signature"/>
+			<xs:element ref="signaturevalue"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:element name="usersignature" type="UserSignature">
@@ -391,10 +393,29 @@
 	<xs:complexType name="AdministratorSignature">
 		<xs:sequence>
 			<xs:element ref="administrator"/>
-			<xs:element name="timestamp" type="timestamp"/>
-			<xs:element name="signature" type="signature"/>
+			<xs:element ref="signaturevalue"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="SignatureValue">
+		<xs:sequence>
+			<xs:element name="timestamp" type="timestamp">
+				<xs:annotation>
+					<xs:documentation>signature timestamp - accurate to seconds.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="signature" type="signature">
+				<xs:annotation>
+					<xs:documentation>hex value of the signature.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="signatureAlgorithm" type="signatureAlgorithm">
+				<xs:annotation>
+					<xs:documentation>the signature algorithm.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="signaturevalue" type="SignatureValue"/>
 	<xs:element name="administratorsignature" type="AdministratorSignature">
 		<xs:annotation>
 			<xs:documentation>digital signature created by a domain administrator.</xs:documentation>
@@ -405,8 +426,8 @@
 			<xs:documentation>A directed communication path for messages between two Addresses via a Service.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="high" type="xs:unsignedShort"/>
-			<xs:element name="low" type="xs:unsignedShort"/>
+			<xs:element name="highBytes" type="xs:unsignedLong"/>
+			<xs:element name="lowBytes" type="xs:unsignedShort"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="localname">
@@ -444,6 +465,16 @@
 			<xs:maxLength value="128"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="signatureAlgorithm">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SHA256withRSA"/>
+			<xs:enumeration value="SHA384withRSA"/>
+			<xs:enumeration value="SHA512withRSA"/>
+			<xs:enumeration value="SHA256withECDSA"/>
+			<xs:enumeration value="SHA384withECDSA"/>
+			<xs:enumeration value="SHA512withECDSA"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:simpleType name="timestamp">
 		<xs:restriction base="xs:dateTime"/>
 	</xs:simpleType>
@@ -453,12 +484,15 @@
 			<xs:enumeration value="CLOSED"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="url">
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
 	<xs:element name="localname" type="localname"/>
 	<xs:element name="domain" type="domainname"/>
 	<xs:element name="address" type="Address"/>
 	<xs:element name="origin" type="ChannelOrigin"/>
 	<xs:element name="destination" type="ChannelDestination"/>
-	<xs:element name="serviceprovider" type="domainname"/>
+	<xs:element name="serviceprovider" type="url"/>
 	<xs:element name="servicename" type="servicename"/>
 	<xs:element name="service" type="Service"/>
 	<xs:element name="servicestate" type="ServiceState"/>
@@ -474,7 +508,7 @@
 	<xs:element name="usercertificate" type="x509certificate"/>
 	<xs:element name="administrator" type="Administrator">
 		<xs:annotation>
-			<xs:documentation>exact credentials matching a single DAC. If provided, then domain and status are ignored.</xs:documentation>
+			<xs:documentation>exact public credentials of a single DAC.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="administratorstate" type="AdministratorState"/>
