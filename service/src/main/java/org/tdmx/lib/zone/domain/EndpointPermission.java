@@ -52,8 +52,8 @@ public class EndpointPermission implements Serializable {
 	@Column(name = "grant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)
 	private EndpointPermissionGrant grant;
 
-	@Column(name = "highMarkBytes")
-	private BigInteger highMarkBytes;
+	@Column(name = "maxPlaintextSizeBytes")
+	private BigInteger maxPlaintextSizeBytes;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "validUntil")
@@ -76,8 +76,8 @@ public class EndpointPermission implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelAuthorization [id=");
-		builder.append("");
+		builder.append("ChannelAuthorization [grant=").append(grant);
+		builder.append(", validUntil=").append(validUntil);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -108,6 +108,22 @@ public class EndpointPermission implements Serializable {
 
 	public void setGrant(EndpointPermissionGrant grant) {
 		this.grant = grant;
+	}
+
+	public Date getValidUntil() {
+		return validUntil;
+	}
+
+	public void setValidUntil(Date validUntil) {
+		this.validUntil = validUntil;
+	}
+
+	public BigInteger getMaxPlaintextSizeBytes() {
+		return maxPlaintextSizeBytes;
+	}
+
+	public void setMaxPlaintextSizeBytes(BigInteger maxPlaintextSizeBytes) {
+		this.maxPlaintextSizeBytes = maxPlaintextSizeBytes;
 	}
 
 }

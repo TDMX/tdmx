@@ -214,7 +214,7 @@
 		<xs:sequence>
 			<xs:element name="permission" type="permission"/>
 			<xs:element name="maxPlaintextSizeBytes" type="xs:unsignedLong"/>
-			<xs:element name="notValidAfter" type="xs:date">
+			<xs:element name="validUntil" type="xs:date">
 				<xs:annotation>
 					<xs:documentation>the time at which the authorization is revoked. An authorization is valid for at most 1 year duration, which is required to handle DNS ownership changes (and whois expiration info not authoritative), whilst having long validity durations of clients.</xs:documentation>
 				</xs:annotation>
