@@ -25,6 +25,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
@@ -43,28 +45,30 @@ public class AgentSignature implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_SIGNATURE_LEN = 128; // large enough for SHA512 as hex
+	public static final int MAX_SIG_ALG_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)
+	@Column(name = "certificateChainPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)
 	private String certificateChainPem;
 
-	@Column
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "signatureDate")
 	private Date signatureDate;
 
 	/**
 	 * The hex representation of the signature.
 	 */
-	@Column
+	@Column(name = "signatureValue", length = MAX_SIGNATURE_LEN)
 	private String value;
 
 	/**
 	 * The signature algorithm.
 	 */
-	@Column
+	@Column(name = "signatureAlgorithm", length = MAX_SIG_ALG_LEN)
 	@Enumerated(EnumType.STRING)
 	private SignatureAlgorithm algorithm;
 

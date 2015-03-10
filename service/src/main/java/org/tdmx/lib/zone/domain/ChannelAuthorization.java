@@ -78,10 +78,45 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "serviceProvider", column = @Column(name = "destSP")) })
 	private ChannelDestination destination;
 
-	// TODO send EndpointAuthorization
-	// TODO recv EndpointAuthorization
-	// TODO requested send EndpointAuthorization
-	// TODO requested recv EndpointAuthorization
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "grant", column = @Column(name = "sendGrant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)),
+			@AttributeOverride(name = "highMarkBytes", column = @Column(name = "sendHighMarkBytes")),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "sendSignDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "sendSignerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "sendSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "sendSignAlg", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private EndpointPermission sendAuthorization;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "grant", column = @Column(name = "recvGrant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)),
+			@AttributeOverride(name = "highMarkBytes", column = @Column(name = "recvHighMarkBytes")),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "recvSignDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "recvSignerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "recvSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "recvSignAlg", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private EndpointPermission recvAuthorization;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "grant", column = @Column(name = "reqSendGrant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)),
+			@AttributeOverride(name = "highMarkBytes", column = @Column(name = "reqSendHighMarkBytes")),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "reqSendSignDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "reqSendSignerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "reqSendSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "reqSendSignAlg", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private EndpointPermission reqSendAuthorization;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "grant", column = @Column(name = "reqRecvGrant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)),
+			@AttributeOverride(name = "highMarkBytes", column = @Column(name = "reqRecvHighMarkBytes")),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "reqRecvSignDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "reqRecvSignerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "reqRecvSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "reqRecvSignAlg", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private EndpointPermission reqRecvAuthorization;
 
 	@Embedded
 	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh")),

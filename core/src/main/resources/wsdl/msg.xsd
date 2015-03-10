@@ -199,6 +199,15 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ChannelEndpointAuthorization">
+		<xs:complexContent>
+			<xs:extension base="EndpointPermission">
+				<xs:sequence>
+					<xs:element ref="channel"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="EndpointPermission">
 		<xs:annotation>
 			<xs:documentation>A DomainAdministrator provides and certifies a channel endpoint authorization. Signature fields are { origin.{ localname + domain + serviceprovider } + destination.{serviceName + localname + domain + serviceprovider } + permission + maxPlaintextSize + notValidAfter + admin.pem + timestamp }</xs:documentation>
 		</xs:annotation>
@@ -215,12 +224,12 @@
 	</xs:complexType>
 	<xs:complexType name="RequestedChannelAuthorization">
 		<xs:sequence>
-			<xs:element name="origin" type="ChannelEndpointAuthorization" minOccurs="0">
+			<xs:element name="origin" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="destination" type="ChannelEndpointAuthorization" minOccurs="0">
+			<xs:element name="destination" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the destination. </xs:documentation>
 				</xs:annotation>
@@ -230,12 +239,12 @@
 	<xs:complexType name="ChannelAuthorization">
 		<xs:sequence>
 			<xs:element ref="channel"/>
-			<xs:element name="origin" type="ChannelEndpointAuthorization" minOccurs="0">
+			<xs:element name="origin" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="destination" type="ChannelEndpointAuthorization" minOccurs="0">
+			<xs:element name="destination" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the destination. </xs:documentation>
 				</xs:annotation>

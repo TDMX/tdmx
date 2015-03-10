@@ -18,20 +18,15 @@
  */
 package org.tdmx.lib.zone.domain;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * A FlowLimit is a high/low watermark for either the unsent buffer or undelivered buffer limitation.
+ * The SearchCriteria for an ChannelAuthorization.
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class FlowLimit implements Serializable {
+public class ChannelAuthorizationSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,35 +35,38 @@ public class FlowLimit implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(name = "highMarkBytes")
-	private BigInteger highMarkBytes;
+	private final PageSpecifier pageSpecifier;
 
-	@Column(name = "lowMarkBytes")
-	private BigInteger lowMarkBytes;
+	/**
+	 * Specify the each individual field of of the ChannelOrigin to search for.
+	 */
+	private ChannelOrigin origin = new ChannelOrigin();
+
+	/**
+	 * Specify the each individual field of of the ChannelDestination to search for.
+	 */
+	private ChannelDestination destination = new ChannelDestination();
+
+	/**
+	 * If Boolean.TRUE then search only unconfirmed ChannelAuthorizations, else if Boolean.FALSE then only search for
+	 * confirmed ChannelAuthorizations, else if null find confirmed OR unconfirmed.
+	 */
+	private Boolean unconfirmed;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public FlowLimit() {
-
+	public ChannelAuthorizationSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("FlowLimit [");
-		builder.append("highMarkBytes=").append(highMarkBytes);
-		builder.append(", lowMarkBytes=").append(lowMarkBytes);
-		builder.append("]");
-		return builder.toString();
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -81,21 +79,34 @@ public class FlowLimit implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public BigInteger getHighMarkBytes() {
-		return highMarkBytes;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setHighMarkBytes(BigInteger highMarkBytes) {
-		this.highMarkBytes = highMarkBytes;
+	public ChannelOrigin getOrigin() {
+		return origin;
 	}
 
-	public BigInteger getLowMarkBytes() {
-		return lowMarkBytes;
+	@SuppressWarnings("unused")
+	private void setOrigin(ChannelOrigin origin) {
+		this.origin = origin;
 	}
 
-	public void setLowMarkBytes(BigInteger lowMarkBytes) {
-		this.lowMarkBytes = lowMarkBytes;
+	public ChannelDestination getDestination() {
+		return destination;
+	}
+
+	@SuppressWarnings("unused")
+	private void setDestination(ChannelDestination destination) {
+		this.destination = destination;
+	}
+
+	public Boolean getUnconfirmed() {
+		return unconfirmed;
+	}
+
+	public void setUnconfirmed(Boolean unconfirmed) {
+		this.unconfirmed = unconfirmed;
 	}
 
 }

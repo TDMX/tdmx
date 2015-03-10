@@ -20,18 +20,24 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
- * A FlowLimit is a high/low watermark for either the unsent buffer or undelivered buffer limitation.
+ * An EndpointPermission specifies the send/recv/requestedSend/requestedRecv Authorization of a Channel.
  * 
  * @author Peter Klauser
  * 
  */
 @Embeddable
-public class FlowLimit implements Serializable {
+public class EndpointPermission implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,20 +46,27 @@ public class FlowLimit implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = 1L;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "grant", length = EndpointPermissionGrant.MAX_PERMISSION_LEN)
+	private EndpointPermissionGrant grant;
 
 	@Column(name = "highMarkBytes")
 	private BigInteger highMarkBytes;
 
-	@Column(name = "lowMarkBytes")
-	private BigInteger lowMarkBytes;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "validUntil")
+	private Date validUntil;
+
+	@Embedded
+	private AgentSignature signature;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public FlowLimit() {
-
+	EndpointPermission() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -63,9 +76,8 @@ public class FlowLimit implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("FlowLimit [");
-		builder.append("highMarkBytes=").append(highMarkBytes);
-		builder.append(", lowMarkBytes=").append(lowMarkBytes);
+		builder.append("ChannelAuthorization [id=");
+		builder.append("");
 		builder.append("]");
 		return builder.toString();
 	}
@@ -82,20 +94,20 @@ public class FlowLimit implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public BigInteger getHighMarkBytes() {
-		return highMarkBytes;
+	public AgentSignature getSignature() {
+		return signature;
 	}
 
-	public void setHighMarkBytes(BigInteger highMarkBytes) {
-		this.highMarkBytes = highMarkBytes;
+	public void setSignature(AgentSignature signature) {
+		this.signature = signature;
 	}
 
-	public BigInteger getLowMarkBytes() {
-		return lowMarkBytes;
+	public EndpointPermissionGrant getGrant() {
+		return grant;
 	}
 
-	public void setLowMarkBytes(BigInteger lowMarkBytes) {
-		this.lowMarkBytes = lowMarkBytes;
+	public void setGrant(EndpointPermissionGrant grant) {
+		this.grant = grant;
 	}
 
 }
