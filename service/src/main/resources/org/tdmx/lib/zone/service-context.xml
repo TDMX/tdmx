@@ -131,6 +131,16 @@
 			ref="tdmx.lib.zone.dao.ServiceDao" />
 	</bean>
 
+	<bean id="tdmx.lib.zone.dao.ChannelAuthorizationDao"
+		class="org.tdmx.lib.zone.dao.ChannelAuthorizationDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.zone.ChannelAuthorizationRepository"
+		class="org.tdmx.lib.zone.service.ChannelAuthorizationServiceRepositoryImpl">
+		<property name="channelAuthorizationDao"
+			ref="tdmx.lib.zone.dao.ChannelAuthorizationDao" />
+	</bean>
+
 
 
 </beans>

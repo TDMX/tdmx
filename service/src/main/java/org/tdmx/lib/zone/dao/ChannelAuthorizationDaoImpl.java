@@ -18,18 +18,24 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
+
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ZoneReference;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 
-public class ZoneDaoImpl implements ZoneDao {
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
 
+public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -50,54 +56,71 @@ public class ZoneDaoImpl implements ZoneDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void persist(Zone value) {
+	public void persist(ChannelAuthorization value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(Zone value) {
+	public void delete(ChannelAuthorization value) {
 		em.remove(value);
 	}
 
 	@Override
-	public void lock(Zone value) {
+	public void lock(ChannelAuthorization value) {
 		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override
-	public Zone merge(Zone value) {
+	public ChannelAuthorization merge(ChannelAuthorization value) {
 		return em.merge(value);
 	}
 
 	@Override
-	public Zone loadById(Long id) {
-		Query query = em.createQuery("from Zone as z where z.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Zone) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+	public ChannelAuthorization loadById(Long id) {
+		return new JPAQuery(em).from(channelAuthorization).where(channelAuthorization.id.eq(id))
+				.uniqueResult(channelAuthorization);
 	}
 
 	@Override
-	public Zone loadByZoneApex(ZoneReference zone) {
+	public List<ChannelAuthorization> search(ZoneReference zone, ChannelAuthorizationSearchCriteria criteria) {
 		if (zone.getTenantId() == null) {
 			throw new IllegalArgumentException("missing tenantId");
 		}
 		if (!StringUtils.hasText(zone.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		Query query = em.createQuery("from Zone as z where z.tenantId = :tid and z.zoneApex = :a");
-		query.setParameter("tid", zone.getTenantId());
-		query.setParameter("a", zone.getZoneApex());
-		try {
-			return (Zone) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
-	}
+		JPAQuery query = new JPAQuery(em).from(channelAuthorization);
 
+		BooleanExpression where = channelAuthorization.tenantId.eq(zone.getTenantId()).and(
+				channelAuthorization.zoneApex.eq(zone.getZoneApex()));
+
+		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
+			where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
+			where.and(channelAuthorization.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getServiceProvider())) {
+			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+			where.and(channelAuthorization.origin.localName.eq(criteria.getDestination().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+			where.and(channelAuthorization.origin.domainName.eq(criteria.getDestination().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
+			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination().getServiceName()));
+		}
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(channelAuthorization);
+	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

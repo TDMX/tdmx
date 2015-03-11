@@ -93,7 +93,7 @@ public class UniqueIdServiceImpl implements UniqueIdService {
 	@Override
 	public boolean isValid(String accountId) {
 		if (!StringUtils.hasText(accountId)) {
-			return false;
+			throw new IllegalArgumentException("missing accountId");
 		}
 		String oid = accountId;
 		char[] chars = oid.toCharArray();

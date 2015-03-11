@@ -88,6 +88,12 @@ public class AddressDaoImpl implements AddressDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria) {
+		if (zone.getTenantId() == null) {
+			throw new IllegalArgumentException("missing tenantId");
+		}
+		if (!StringUtils.hasText(zone.getZoneApex())) {
+			throw new IllegalArgumentException("missing zoneApex");
+		}
 		Map<String, Object> parameters = new TreeMap<String, Object>();
 		StringBuilder whereClause = new StringBuilder();
 		boolean isFirstClause = true;

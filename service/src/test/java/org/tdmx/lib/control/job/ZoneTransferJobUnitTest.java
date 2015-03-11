@@ -73,7 +73,8 @@ public class ZoneTransferJobUnitTest {
 		input.setNumZACs(3);
 		input.setNumDomains(2);
 		input.setNumDACsPerDomain(2);
-		input.setNumAddressesPerDomain(10);
+		input.setNumAddressesPerDomain(5);
+		input.setNumUsersPerAddress(2);
 
 		data = dataGenerator.generate(input);
 

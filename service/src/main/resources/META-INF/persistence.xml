@@ -5,7 +5,7 @@
              
 	<persistence-unit name="ConsoleDB" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<class>org.tdmx.lib.control.domain.ConsoleUser</class>
+		<class>org.tdmx.lib.console.domain.ConsoleUser</class>
 	</persistence-unit>
 
 	<persistence-unit name="ControlDB" transaction-type="RESOURCE_LOCAL">

@@ -88,6 +88,12 @@ public class ServiceDaoImpl implements ServiceDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria) {
+		if (zone.getTenantId() == null) {
+			throw new IllegalArgumentException("missing tenantId");
+		}
+		if (!StringUtils.hasText(zone.getZoneApex())) {
+			throw new IllegalArgumentException("missing zoneApex");
+		}
 		Map<String, Object> parameters = new TreeMap<String, Object>();
 		StringBuilder whereClause = new StringBuilder();
 		boolean isFirstClause = true;

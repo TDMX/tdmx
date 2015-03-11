@@ -69,7 +69,7 @@ public class ChannelDestination implements Serializable {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ChannelOrigin [");
-		builder.append("serviceName=").append(serviceName);
+		builder.append(" serviceName=").append(serviceName);
 		builder.append(" localName=").append(localName);
 		builder.append(" domainName=").append(domainName);
 		builder.append(" serviceProvider=").append(serviceProvider);
@@ -111,6 +111,14 @@ public class ChannelDestination implements Serializable {
 
 	public void setServiceProvider(String serviceProvider) {
 		this.serviceProvider = serviceProvider;
+	}
+
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
 	}
 
 }

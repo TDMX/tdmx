@@ -92,11 +92,12 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public AccountZone findByAccountIdZoneApex(String accountId, String zoneApex) {
-		if (!StringUtils.hasText(accountId) || !StringUtils.hasText(zoneApex)) {
-			log.warn("findByAccountIdZoneApex missing parameter.");
-			return null;
+		if (!StringUtils.hasText(accountId)) {
+			throw new IllegalArgumentException("missing accountId");
 		}
-
+		if (!StringUtils.hasText(zoneApex)) {
+			throw new IllegalArgumentException("missing zoneApex");
+		}
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 1));
 		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);

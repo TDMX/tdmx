@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.lib.control.domain.Account;
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Domain;
@@ -38,11 +35,7 @@ public class TestDataGeneratorOutput {
 	private Zone zone;
 
 	private final List<ZACHolder> zacs = new ArrayList<>();
-	private final List<Domain> domains = new ArrayList<>();
-	private final List<DACHolder> dacs = new ArrayList<>();
-	private final List<Address> addresses = new ArrayList<>();
-	private final List<UCHolder> ucs = new ArrayList<>();
-	private final List<Service> services = new ArrayList<>();
+	private final List<DomainHolder> domains = new ArrayList<>();
 
 	public static class ZACHolder {
 		private final AccountZoneAdministrationCredential ac;
@@ -70,20 +63,60 @@ public class TestDataGeneratorOutput {
 
 	}
 
-	public static class DACHolder {
-		private final String domainName;
+	public static class DomainHolder {
+		private final Domain domain;
+		private final List<Service> services = new ArrayList<>();
+		private final List<DACHolder> dacs = new ArrayList<>();
+		private final List<AddressHolder> addresses = new ArrayList<>();
 
+		public DomainHolder(Domain domain) {
+			this.domain = domain;
+		}
+
+		public Domain getDomain() {
+			return domain;
+		}
+
+		public List<Service> getServices() {
+			return services;
+		}
+
+		public List<DACHolder> getDacs() {
+			return dacs;
+		}
+
+		public List<AddressHolder> getAddresses() {
+			return addresses;
+		}
+
+	}
+
+	public static class AddressHolder {
+		private final Address address;
+
+		private final List<UCHolder> ucs = new ArrayList<>();
+
+		public AddressHolder(Address address) {
+			this.address = address;
+		}
+
+		public Address getAddress() {
+			return address;
+		}
+
+		public List<UCHolder> getUcs() {
+			return ucs;
+		}
+
+	}
+
+	public static class DACHolder {
 		private final AgentCredential ag;
 		private final PKIXCredential credential;
 
-		public DACHolder(String domainName, AgentCredential ag, PKIXCredential credential) {
-			this.domainName = domainName;
+		public DACHolder(AgentCredential ag, PKIXCredential credential) {
 			this.ag = ag;
 			this.credential = credential;
-		}
-
-		public String getDomainName() {
-			return domainName;
 		}
 
 		public AgentCredential getAg() {
@@ -156,24 +189,8 @@ public class TestDataGeneratorOutput {
 		return zacs;
 	}
 
-	public List<Domain> getDomains() {
+	public List<DomainHolder> getDomains() {
 		return domains;
-	}
-
-	public List<DACHolder> getDacs() {
-		return dacs;
-	}
-
-	public List<Address> getAddresses() {
-		return addresses;
-	}
-
-	public List<UCHolder> getUcs() {
-		return ucs;
-	}
-
-	public List<Service> getServices() {
-		return services;
 	}
 
 }

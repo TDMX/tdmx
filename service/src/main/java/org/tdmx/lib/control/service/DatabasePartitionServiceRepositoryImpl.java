@@ -107,8 +107,7 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Transactional(value = "ControlDB", readOnly = true)
 	public DatabasePartition findByPartitionId(String partitionId) {
 		if (!StringUtils.hasText(partitionId)) {
-			log.warn("findByPartitionId missing parameter.");
-			return null;
+			throw new IllegalArgumentException("missing partitionId");
 		}
 		conditionalRefreshCache();
 
@@ -118,9 +117,11 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type, String segment) {
-		if (type == null || !StringUtils.hasText(segment)) {
-			log.warn("findByTypeAndSegment missing parameter.");
-			return null;
+		if (!StringUtils.hasText(segment)) {
+			throw new IllegalArgumentException("missing segment");
+		}
+		if (type == null) {
+			throw new IllegalArgumentException("missing type");
 		}
 		conditionalRefreshCache();
 

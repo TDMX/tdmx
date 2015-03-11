@@ -153,7 +153,7 @@ public class ZACInstallJobUnitTest {
 
 	@Test
 	public void test_DAC_Invalid() throws Exception {
-		PKIXCredential dac = data.getDacs().get(0).getCredential();
+		PKIXCredential dac = data.getDomains().get(0).getDacs().get(0).getCredential();
 		// replace the ZAC PEM with a DAC's PEM.
 		AccountZoneAdministrationCredential storedZAC = accountZoneAdministrationCredentialService
 				.findByFingerprint(fingerprint);

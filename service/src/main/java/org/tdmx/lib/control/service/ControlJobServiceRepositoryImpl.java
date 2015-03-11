@@ -106,6 +106,9 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public ControlJob findByJobId(String jobId) {
+		if (!StringUtils.hasText(jobId)) {
+			throw new IllegalArgumentException("missing jobId");
+		}
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 1));
 		sc.setJobId(jobId);
 		List<ControlJob> jobs = getControlJobDao().fetch(sc, LockModeType.NONE);

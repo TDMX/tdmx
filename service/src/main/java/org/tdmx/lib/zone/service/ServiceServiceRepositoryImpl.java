@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.ServiceDao;
@@ -79,7 +80,7 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 		if (storedService != null) {
 			getServiceDao().delete(storedService);
 		} else {
-			log.warn("Unable to find Service to delete with serviceName " + service.getId());
+			log.warn("Unable to find Service to delete with id " + service.getId());
 		}
 	}
 
@@ -92,6 +93,12 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public Service findByName(ZoneReference zone, String domainName, String serviceName) {
+		if (!StringUtils.hasText(domainName)) {
+			throw new IllegalArgumentException("missing domainName");
+		}
+		if (!StringUtils.hasText(serviceName)) {
+			throw new IllegalArgumentException("missing serviceName");
+		}
 		ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomainName(domainName);
 		sc.setServiceName(serviceName);

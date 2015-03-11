@@ -92,8 +92,7 @@ public class AccountServiceRepositoryImpl implements AccountService {
 	@Transactional(value = "ControlDB", readOnly = true)
 	public Account findByAccountId(String accountId) {
 		if (!StringUtils.hasText(accountId)) {
-			log.warn("findByAccountId missing parameter.");
-			return null;
+			throw new IllegalArgumentException("missing accountId");
 		}
 		return getAccountDao().loadByAccountId(accountId);
 	}

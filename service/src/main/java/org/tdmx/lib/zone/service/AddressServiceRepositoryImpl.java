@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.AddressDao;
@@ -92,6 +93,12 @@ public class AddressServiceRepositoryImpl implements AddressService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public Address findByName(ZoneReference zone, String domainName, String localName) {
+		if (!StringUtils.hasText(domainName)) {
+			throw new IllegalArgumentException("missing domainName");
+		}
+		if (!StringUtils.hasText(localName)) {
+			throw new IllegalArgumentException("missing localName");
+		}
 		AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomainName(domainName);
 		sc.setLocalName(localName);

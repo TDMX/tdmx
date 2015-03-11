@@ -37,7 +37,9 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import org.tdmx.lib.control.domain.TestDataGeneratorOutput.AddressHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.DACHolder;
+import org.tdmx.lib.control.domain.TestDataGeneratorOutput.DomainHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.UCHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.ZACHolder;
 import org.tdmx.lib.control.service.AccountService;
@@ -137,7 +139,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			// domains
 			for (int i = 0; i < input.getNumDomains(); i++) {
 				Domain domain = createDomain(zone);
-				result.getDomains().add(domain);
+				DomainHolder dh = new DomainHolder(domain);
+				result.getDomains().add(dh);
 
 				PKIXCredential dac = null;
 				// per domain DAC
@@ -147,19 +150,20 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 					// create the AgentCredential for the ZAC in ZoneDB
 					AgentCredential ac = createAgentCredential(zone, dac);
-					result.getDacs().add(new DACHolder(domain.getDomainName(), ac, dac));
+					dh.getDacs().add(new DACHolder(ac, dac));
 				}
 
 				// per domain Service
 				for (int si = 0; si < input.getNumServicesPerDomain(); si++) {
 					Service svc = createService(zone, domain.getDomainName());
-					result.getServices().add(svc);
-
+					dh.getServices().add(svc);
 				}
+
 				// per domain Address
 				for (int si = 0; si < input.getNumAddressesPerDomain(); si++) {
 					Address add = createAddress(zone, domain.getDomainName());
-					result.getAddresses().add(add);
+					AddressHolder ah = new AddressHolder(add);
+					dh.getAddresses().add(ah);
 
 					// per domain Address UC
 					for (int ui = 0; dac != null && ui < input.getNumUsersPerAddress(); ui++) {
@@ -168,10 +172,12 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 						// create the AgentCredential for the ZAC in ZoneDB
 						AgentCredential ac = createAgentCredential(zone, uc);
-						result.getUcs().add(new UCHolder(add.getDomainName(), add.getLocalName(), ac, uc));
+						ah.getUcs().add(new UCHolder(add.getDomainName(), add.getLocalName(), ac, uc));
 					}
 				}
 			}
+
+			// TODO ChannelAuths
 
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
@@ -218,6 +224,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		ZoneReference zone = accountZone.getZoneReference();
 		try {
 			zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+
+			// TODO delete ChannelAuths
+
 			// delete AgentCredentials in ZoneDB
 			deleteAgentCredentials(zone);
 

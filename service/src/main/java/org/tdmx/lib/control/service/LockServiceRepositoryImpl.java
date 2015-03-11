@@ -81,8 +81,7 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Transactional(value = "ControlDB", readOnly = true)
 	public Lock findByName(String lockName) {
 		if (!StringUtils.hasText(lockName)) {
-			log.warn("findByName missing parameter.");
-			return null;
+			throw new IllegalArgumentException("missing lockName");
 		}
 		return getLockDao().loadByName(lockName);
 	}
@@ -96,9 +95,11 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public boolean acquireLock(String lockName, String holderIdentitifier) {
-		if (!StringUtils.hasText(lockName) || !StringUtils.hasText(holderIdentitifier)) {
-			log.warn("acquireLock missing parameter.");
-			return false;
+		if (!StringUtils.hasText(lockName)) {
+			throw new IllegalArgumentException("missing lockName");
+		}
+		if (!StringUtils.hasText(holderIdentitifier)) {
+			throw new IllegalArgumentException("missing holderIdentitifier");
 		}
 		Lock l = getLockDao().conditionalLock(lockName);
 		if (l != null) {
@@ -113,9 +114,11 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void releaseLock(String lockName, String holderIdentitifier, Date reserveUntil) {
-		if (!StringUtils.hasText(lockName) || !StringUtils.hasText(holderIdentitifier)) {
-			log.warn("releaseLock missing parameter.");
-			return;
+		if (!StringUtils.hasText(lockName)) {
+			throw new IllegalArgumentException("missing lockName");
+		}
+		if (!StringUtils.hasText(holderIdentitifier)) {
+			throw new IllegalArgumentException("missing holderIdentitifier");
 		}
 		Lock l = findByName(lockName);
 		if (l != null) {
