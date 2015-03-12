@@ -18,20 +18,21 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QAccount.account;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
+
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
 
 public class AccountDaoImpl implements AccountDao {
 
@@ -76,60 +77,40 @@ public class AccountDaoImpl implements AccountDao {
 
 	@Override
 	public Account loadById(Long id) {
-		Query query = em.createQuery("from Account as a where a.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Account) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(account).where(account.id.eq(id)).uniqueResult(account);
 	}
 
 	@Override
 	public Account loadByAccountId(String accountId) {
-		Query query = em.createQuery("from Account as a where a.accountId = :aid");
-		query.setParameter("aid", accountId);
-		try {
-			return (Account) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(account).where(account.accountId.eq(accountId)).uniqueResult(account);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Account> search(AccountSearchCriteria criteria) {
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
+		JPAQuery query = new JPAQuery(em).from(account);
+
+		BooleanExpression where = null;
 		if (StringUtils.hasText(criteria.getAccountId())) {
-			isFirstClause = andClause(isFirstClause, "a.accountId = :s", "s", criteria.getAccountId(), whereClause,
-					parameters);
+			BooleanExpression e = account.accountId.eq(criteria.getAccountId());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getFirstName())) {
-			isFirstClause = andClause(isFirstClause, "a.firstName = :fn", "fn", criteria.getFirstName(), whereClause,
-					parameters);
+			BooleanExpression e = account.firstName.eq(criteria.getFirstName());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getLastName())) {
-			isFirstClause = andClause(isFirstClause, "a.lastName = :ln", "ln", criteria.getLastName(), whereClause,
-					parameters);
+			BooleanExpression e = account.lastName.eq(criteria.getLastName());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getEmail())) {
-			isFirstClause = andClause(isFirstClause, "a.email = :e", "e", criteria.getEmail(), whereClause, parameters);
+			BooleanExpression e = account.email.eq(criteria.getEmail());
+			where = where != null ? where.and(e) : e;
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from Account as a");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(account);
 	}
 
 	// -------------------------------------------------------------------------
@@ -139,16 +120,6 @@ public class AccountDaoImpl implements AccountDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

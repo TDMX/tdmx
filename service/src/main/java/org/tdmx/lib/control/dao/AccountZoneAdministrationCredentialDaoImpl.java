@@ -33,6 +33,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
+// TODO querydsl
 public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAdministrationCredentialDao {
 
 	// -------------------------------------------------------------------------

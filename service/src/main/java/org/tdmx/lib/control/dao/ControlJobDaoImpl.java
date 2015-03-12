@@ -33,6 +33,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 
+// TODO querydsl
 public class ControlJobDaoImpl implements ControlJobDao {
 
 	// -------------------------------------------------------------------------

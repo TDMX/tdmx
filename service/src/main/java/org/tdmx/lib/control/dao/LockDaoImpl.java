@@ -29,6 +29,7 @@ import javax.persistence.Query;
 
 import org.tdmx.lib.control.domain.Lock;
 
+// TODO querydsl
 public class LockDaoImpl implements LockDao {
 
 	@PersistenceContext(unitName = "ControlDB")

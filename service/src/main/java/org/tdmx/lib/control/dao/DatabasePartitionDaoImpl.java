@@ -28,6 +28,7 @@ import javax.persistence.Query;
 
 import org.tdmx.lib.control.domain.DatabasePartition;
 
+// TODO querydsl
 public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 
 	@PersistenceContext(unitName = "ControlDB")
