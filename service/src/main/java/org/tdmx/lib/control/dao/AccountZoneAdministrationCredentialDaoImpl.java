@@ -18,22 +18,22 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QAccountZoneAdministrationCredential.accountZoneAdministrationCredential;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
-// TODO querydsl
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
+
 public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAdministrationCredentialDao {
 
 	// -------------------------------------------------------------------------
@@ -77,50 +77,36 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 
 	@Override
 	public AccountZoneAdministrationCredential loadById(Long id) {
-		Query query = em.createQuery("from AccountZoneAdministrationCredential as ac where ac.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (AccountZoneAdministrationCredential) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(accountZoneAdministrationCredential)
+				.where(accountZoneAdministrationCredential.id.eq(id)).uniqueResult(accountZoneAdministrationCredential);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria) {
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
+		JPAQuery query = new JPAQuery(em).from(accountZoneAdministrationCredential);
+
+		BooleanExpression where = null;
 		if (StringUtils.hasText(criteria.getAccountId())) {
-			isFirstClause = andClause(isFirstClause, "ac.accountId = :l", "l", criteria.getAccountId(), whereClause,
-					parameters);
+			BooleanExpression e = accountZoneAdministrationCredential.accountId.eq(criteria.getAccountId());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getZoneApex())) {
-			isFirstClause = andClause(isFirstClause, "ac.zoneApex = :z", "z", criteria.getZoneApex(), whereClause,
-					parameters);
+			BooleanExpression e = accountZoneAdministrationCredential.zoneApex.eq(criteria.getZoneApex());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getFingerprint())) {
-			isFirstClause = andClause(isFirstClause, "ac.fingerprint = :f", "f", criteria.getFingerprint(),
-					whereClause, parameters);
+			BooleanExpression e = accountZoneAdministrationCredential.fingerprint.eq(criteria.getFingerprint());
+			where = where != null ? where.and(e) : e;
 		}
 		if (criteria.getStatus() != null) {
-			isFirstClause = andClause(isFirstClause, "ac.credentialStatus = :s", "s", criteria.getStatus(),
-					whereClause, parameters);
+			BooleanExpression e = accountZoneAdministrationCredential.credentialStatus.eq(criteria.getStatus());
+			where = where != null ? where.and(e) : e;
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from AccountZoneAdministrationCredential as ac");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(accountZoneAdministrationCredential);
 	}
 
 	// -------------------------------------------------------------------------
@@ -130,16 +116,6 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
