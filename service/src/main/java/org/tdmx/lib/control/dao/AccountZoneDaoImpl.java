@@ -18,22 +18,22 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QAccountZone.accountZone;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 
-// TODO querydsl
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
+
 public class AccountZoneDaoImpl implements AccountZoneDao {
 
 	// -------------------------------------------------------------------------
@@ -77,54 +77,39 @@ public class AccountZoneDaoImpl implements AccountZoneDao {
 
 	@Override
 	public AccountZone loadById(Long id) {
-		Query query = em.createQuery("from AccountZone as az where az.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (AccountZone) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(accountZone).where(accountZone.id.eq(id)).uniqueResult(accountZone);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<AccountZone> search(AccountZoneSearchCriteria criteria) {
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
+		JPAQuery query = new JPAQuery(em).from(accountZone);
+
+		BooleanExpression where = null;
+		if (StringUtils.hasText(criteria.getAccountId())) {
+			BooleanExpression e = accountZone.accountId.eq(criteria.getAccountId());
+			where = where != null ? where.and(e) : e;
+		}
 		if (StringUtils.hasText(criteria.getZoneApex())) {
-			isFirstClause = andClause(isFirstClause, "az.zoneApex = :z", "z", criteria.getZoneApex(), whereClause,
-					parameters);
+			BooleanExpression e = accountZone.zoneApex.eq(criteria.getZoneApex());
+			where = where != null ? where.and(e) : e;
 		}
 		if (criteria.getStatus() != null) {
-			isFirstClause = andClause(isFirstClause, "az.status = :s", "s", criteria.getStatus(), whereClause,
-					parameters);
-		}
-		if (StringUtils.hasText(criteria.getAccountId())) {
-			isFirstClause = andClause(isFirstClause, "az.accountId = :l", "l", criteria.getAccountId(), whereClause,
-					parameters);
+			BooleanExpression e = accountZone.status.eq(criteria.getStatus());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getSegment())) {
-			isFirstClause = andClause(isFirstClause, "az.segment = :p", "p", criteria.getSegment(), whereClause,
-					parameters);
+			BooleanExpression e = accountZone.segment.eq(criteria.getSegment());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getZonePartitionId())) {
-			isFirstClause = andClause(isFirstClause, "az.zonePartitionId = :zp", "zp", criteria.getZonePartitionId(),
-					whereClause, parameters);
+			BooleanExpression e = accountZone.zonePartitionId.eq(criteria.getZonePartitionId());
+			where = where != null ? where.and(e) : e;
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from AccountZone as az");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(accountZone);
 	}
 
 	// -------------------------------------------------------------------------
@@ -134,16 +119,6 @@ public class AccountZoneDaoImpl implements AccountZoneDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

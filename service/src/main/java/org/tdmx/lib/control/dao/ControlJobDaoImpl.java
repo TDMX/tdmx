@@ -18,22 +18,22 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QControlJob.controlJob;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 
-// TODO querydsl
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
+
 public class ControlJobDaoImpl implements ControlJobDao {
 
 	// -------------------------------------------------------------------------
@@ -77,51 +77,35 @@ public class ControlJobDaoImpl implements ControlJobDao {
 
 	@Override
 	public ControlJob loadById(Long id) {
-		Query query = em.createQuery("from ControlJob as cje where cje.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (ControlJob) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(controlJob).where(controlJob.id.eq(id)).uniqueResult(controlJob);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<ControlJob> fetch(ControlJobSearchCriteria criteria, LockModeType lockMode) {
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
+		JPAQuery query = new JPAQuery(em).from(controlJob);
+
+		BooleanExpression where = null;
 		if (criteria.getStatus() != null) {
-			isFirstClause = andClause(isFirstClause, "cje.status = :s", "s", criteria.getStatus(), whereClause,
-					parameters);
+			BooleanExpression e = controlJob.status.eq(criteria.getStatus());
+			where = where != null ? where.and(e) : e;
 		}
-		if (criteria.getScheduledTimeBefore() != null) {
-			isFirstClause = andClause(isFirstClause, "cje.scheduledTime <= :t", "t", criteria.getScheduledTimeBefore(),
-					whereClause, parameters);
+		if (criteria.getScheduledTimeBefore() != null) { // <=
+			BooleanExpression e = controlJob.scheduledTime.loe(criteria.getScheduledTimeBefore());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getJobType())) {
-			isFirstClause = andClause(isFirstClause, "cje.job.type = :jt", "jt", criteria.getJobType(), whereClause,
-					parameters);
+			BooleanExpression e = controlJob.job.type.eq(criteria.getJobType());
+			where = where != null ? where.and(e) : e;
 		}
 		if (StringUtils.hasText(criteria.getJobId())) {
-			isFirstClause = andClause(isFirstClause, "cje.job.jobId = :ji", "ji", criteria.getJobId(), whereClause,
-					parameters);
+			BooleanExpression e = controlJob.job.jobId.eq(criteria.getJobId());
+			where = where != null ? where.and(e) : e;
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from ControlJob as cje");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		query.setLockMode(lockMode);
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(controlJob);
 	}
 
 	// -------------------------------------------------------------------------
@@ -131,16 +115,6 @@ public class ControlJobDaoImpl implements ControlJobDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -18,17 +18,18 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QDatabasePartition.databasePartition;
+
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.lib.control.domain.DatabasePartition;
 
-// TODO querydsl
+import com.mysema.query.jpa.impl.JPAQuery;
+
 public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 
 	@PersistenceContext(unitName = "ControlDB")
@@ -56,31 +57,19 @@ public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 
 	@Override
 	public DatabasePartition loadById(Long id) {
-		Query query = em.createQuery("from DatabasePartition as dp where dp.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (DatabasePartition) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(databasePartition).where(databasePartition.id.eq(id))
+				.uniqueResult(databasePartition);
 	}
 
 	@Override
 	public DatabasePartition loadByPartitionId(String partitionId) {
-		Query query = em.createQuery("from DatabasePartition as dp where dp.partitionId = :id");
-		query.setParameter("id", partitionId);
-		try {
-			return (DatabasePartition) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(databasePartition).where(databasePartition.partitionId.eq(partitionId))
+				.uniqueResult(databasePartition);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<DatabasePartition> loadAll() {
-		Query query = em.createQuery("from DatabasePartition as dp");
-		return query.getResultList();
+		return new JPAQuery(em).from(databasePartition).list(databasePartition);
 	}
 
 }

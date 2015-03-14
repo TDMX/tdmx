@@ -69,24 +69,31 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(DatabasePartition partition) {
-		DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getId());
-		if (storedPartition == null) {
-			getDatabasePartitionDao().persist(partition);
-		} else {
-			assertSame("dbType", storedPartition.getDbType(), partition.getDbType());
-			assertSame("segment", storedPartition.getSegment(), partition.getSegment());
-			if (storedPartition.getActivationTimestamp() != null) {
-				// active partitions cannot change some fields.
-				assertSame("sizeFactor", storedPartition.getSizeFactor(), partition.getSizeFactor());
-				assertSame("activationTimestamp", storedPartition.getActivationTimestamp(),
-						partition.getActivationTimestamp());
-				if (storedPartition.getDeactivationTimestamp() != null) {
-					assertSame("deactivationTimestamp", storedPartition.getDeactivationTimestamp(),
-							partition.getDeactivationTimestamp());
+		if (partition == null) {
+			throw new IllegalArgumentException("missing partition");
+		}
+		if (partition.getId() != null) {
+			DatabasePartition storedPartition = getDatabasePartitionDao().loadById(partition.getId());
+			if (storedPartition != null) {
+				assertSame("dbType", storedPartition.getDbType(), partition.getDbType());
+				assertSame("segment", storedPartition.getSegment(), partition.getSegment());
+				if (storedPartition.getActivationTimestamp() != null) {
+					// active partitions cannot change some fields.
+					assertSame("sizeFactor", storedPartition.getSizeFactor(), partition.getSizeFactor());
+					assertSame("activationTimestamp", storedPartition.getActivationTimestamp(),
+							partition.getActivationTimestamp());
+					if (storedPartition.getDeactivationTimestamp() != null) {
+						assertSame("deactivationTimestamp", storedPartition.getDeactivationTimestamp(),
+								partition.getDeactivationTimestamp());
+					}
 				}
-			}
+				getDatabasePartitionDao().merge(partition);
 
-			getDatabasePartitionDao().merge(partition);
+			} else {
+				log.warn("Unable to find DatabasePartition with id " + partition.getId());
+			}
+		} else {
+			getDatabasePartitionDao().persist(partition);
 		}
 		clearCache();
 	}
