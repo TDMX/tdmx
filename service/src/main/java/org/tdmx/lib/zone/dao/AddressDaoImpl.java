@@ -18,21 +18,22 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QAddress.address;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
 
 public class AddressDaoImpl implements AddressDao {
 	// -------------------------------------------------------------------------
@@ -76,16 +77,9 @@ public class AddressDaoImpl implements AddressDao {
 
 	@Override
 	public Address loadById(Long id) {
-		Query query = em.createQuery("from Address as a where a.id = :d");
-		query.setParameter("d", id);
-		try {
-			return (Address) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(address).where(address.id.eq(id)).uniqueResult(address);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria) {
 		if (zone.getTenantId() == null) {
@@ -94,38 +88,21 @@ public class AddressDaoImpl implements AddressDao {
 		if (!StringUtils.hasText(zone.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
-		if (zone.getTenantId() != null) {
-			isFirstClause = andClause(isFirstClause, "a.tenantId = :t", "t", zone.getTenantId(), whereClause,
-					parameters);
-		}
-		if (StringUtils.hasText(zone.getZoneApex())) {
-			isFirstClause = andClause(isFirstClause, "a.zoneApex = :z", "z", zone.getZoneApex(), whereClause,
-					parameters);
-		}
+		JPAQuery query = new JPAQuery(em).from(address);
+
+		BooleanExpression where = address.tenantId.eq(zone.getTenantId()).and(address.zoneApex.eq(zone.getZoneApex()));
+
 		if (StringUtils.hasText(criteria.getDomainName())) {
-			isFirstClause = andClause(isFirstClause, "a.domainName = :d", "d", criteria.getDomainName(), whereClause,
-					parameters);
+			where = where.and(address.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getLocalName())) {
-			isFirstClause = andClause(isFirstClause, "a.localName = :r", "r", criteria.getLocalName(), whereClause,
-					parameters);
+			where = where.and(address.localName.eq(criteria.getLocalName()));
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from Address as a");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(address);
 	}
 
 	// -------------------------------------------------------------------------
@@ -135,15 +112,6 @@ public class AddressDaoImpl implements AddressDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

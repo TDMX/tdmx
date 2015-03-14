@@ -18,15 +18,17 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QZone.zone;
+
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
+
+import com.mysema.query.jpa.impl.JPAQuery;
 
 public class ZoneDaoImpl implements ZoneDao {
 
@@ -71,31 +73,21 @@ public class ZoneDaoImpl implements ZoneDao {
 
 	@Override
 	public Zone loadById(Long id) {
-		Query query = em.createQuery("from Zone as z where z.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Zone) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(zone).where(zone.id.eq(id)).uniqueResult(zone);
 	}
 
 	@Override
-	public Zone loadByZoneApex(ZoneReference zone) {
-		if (zone.getTenantId() == null) {
+	public Zone loadByZoneApex(ZoneReference zoneReference) {
+		if (zoneReference.getTenantId() == null) {
 			throw new IllegalArgumentException("missing tenantId");
 		}
-		if (!StringUtils.hasText(zone.getZoneApex())) {
+		if (!StringUtils.hasText(zoneReference.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		Query query = em.createQuery("from Zone as z where z.tenantId = :tid and z.zoneApex = :a");
-		query.setParameter("tid", zone.getTenantId());
-		query.setParameter("a", zone.getZoneApex());
-		try {
-			return (Zone) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em)
+				.from(zone)
+				.where(zone.tenantId.eq(zoneReference.getTenantId()).and(zone.zoneApex.eq(zoneReference.getZoneApex())))
+				.uniqueResult(zone);
 	}
 
 	// -------------------------------------------------------------------------

@@ -95,25 +95,28 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 				channelAuthorization.zoneApex.eq(zone.getZoneApex()));
 
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
-			where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));
+			where = where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
-			where.and(channelAuthorization.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+			where = where.and(channelAuthorization.origin.domainName.eq(criteria.getOrigin().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getServiceProvider())) {
-			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
+			where = where
+					.and(channelAuthorization.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-			where.and(channelAuthorization.origin.localName.eq(criteria.getDestination().getLocalName()));
+			where = where.and(channelAuthorization.origin.localName.eq(criteria.getDestination().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-			where.and(channelAuthorization.origin.domainName.eq(criteria.getDestination().getDomainName()));
+			where = where.and(channelAuthorization.origin.domainName.eq(criteria.getDestination().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
-			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination().getServiceProvider()));
+			where = where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination()
+					.getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-			where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination().getServiceName()));
+			where = where.and(channelAuthorization.origin.serviceProvider
+					.eq(criteria.getDestination().getServiceName()));
 		}
 
 		query.where(where);

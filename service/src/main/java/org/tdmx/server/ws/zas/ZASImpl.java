@@ -583,7 +583,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// delete the UC
-		credentialService.delete(uc);
+		credentialService.delete(existingCred);
 
 		response.setSuccess(true);
 		return response;

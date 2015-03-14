@@ -18,21 +18,22 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+
+import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
 
 public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
@@ -77,16 +78,9 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 
 	@Override
 	public AgentCredential loadById(Long id) {
-		Query query = em.createQuery("from AgentCredential as ac where ac.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (AgentCredential) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(agentCredential).where(agentCredential.id.eq(id)).uniqueResult(agentCredential);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria) {
 		if (zone.getTenantId() == null) {
@@ -95,50 +89,31 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 		if (!StringUtils.hasText(zone.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		Map<String, Object> parameters = new TreeMap<String, Object>();
-		StringBuilder whereClause = new StringBuilder();
-		boolean isFirstClause = true;
-		if (zone.getTenantId() != null) {
-			isFirstClause = andClause(isFirstClause, "ac.tenantId = :t", "t", zone.getTenantId(), whereClause,
-					parameters);
-		}
-		if (StringUtils.hasText(zone.getZoneApex())) {
-			isFirstClause = andClause(isFirstClause, "ac.zoneApex = :z", "z", zone.getZoneApex(), whereClause,
-					parameters);
-		}
+		JPAQuery query = new JPAQuery(em).from(agentCredential);
+
+		BooleanExpression where = agentCredential.tenantId.eq(zone.getTenantId()).and(
+				agentCredential.zoneApex.eq(zone.getZoneApex()));
+
 		if (StringUtils.hasText(criteria.getDomainName())) {
-			isFirstClause = andClause(isFirstClause, "ac.domainName = :d", "d", criteria.getDomainName(), whereClause,
-					parameters);
+			where = where.and(agentCredential.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getAddressName())) {
-			isFirstClause = andClause(isFirstClause, "ac.addressName = :l", "l", criteria.getAddressName(),
-					whereClause, parameters);
+			where = where.and(agentCredential.addressName.eq(criteria.getAddressName()));
 		}
 		if (criteria.getStatus() != null) {
-			isFirstClause = andClause(isFirstClause, "ac.credentialStatus = :cs", "cs", criteria.getStatus(),
-					whereClause, parameters);
+			where = where.and(agentCredential.credentialStatus.eq(criteria.getStatus()));
 		}
 		if (criteria.getType() != null) {
-			isFirstClause = andClause(isFirstClause, "ac.credentialType = :ct", "ct", criteria.getType(), whereClause,
-					parameters);
+			where = where.and(agentCredential.credentialType.eq(criteria.getType()));
 		}
 		if (StringUtils.hasText(criteria.getFingerprint())) {
-			isFirstClause = andClause(isFirstClause, "ac.fingerprint = :f", "f", criteria.getFingerprint(),
-					whereClause, parameters);
+			where = where.and(agentCredential.fingerprint.eq(criteria.getFingerprint()));
 		}
-		StringBuilder sql = new StringBuilder();
-		sql.append("from AgentCredential as ac");
-		if (!isFirstClause) {
-			sql.append(" where");
-			sql.append(whereClause.toString());
-		}
-		Query query = em.createQuery(sql.toString());
-		for (Entry<String, Object> param : parameters.entrySet()) {
-			query.setParameter(param.getKey(), param.getValue());
-		}
-		query.setFirstResult(criteria.getPageSpecifier().getFirstResult());
-		query.setMaxResults(criteria.getPageSpecifier().getMaxResults());
-		return query.getResultList();
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(agentCredential);
 	}
 
 	// -------------------------------------------------------------------------
@@ -148,15 +123,6 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private boolean andClause(boolean isFirstClause, String condition, String parameterName, Object parameter,
-			StringBuilder whereClause, Map<String, Object> parameters) {
-		if (!isFirstClause) {
-			whereClause.append(" and");
-		}
-		whereClause.append(" ").append(condition);
-		parameters.put(parameterName, parameter);
-		return false;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

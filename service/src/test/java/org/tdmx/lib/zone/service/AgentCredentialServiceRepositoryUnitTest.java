@@ -123,14 +123,17 @@ public class AgentCredentialServiceRepositoryUnitTest {
 		AgentCredential zoneAC = service.findByFingerprint(zone, zac.getPublicCert().getFingerprint());
 		assertNotNull(zoneAC);
 		assertEquals(zone, zoneAC.getZoneReference());
+		assertEquals(AgentCredentialType.ZAC, zoneAC.getCredentialType());
 
 		AgentCredential domainAC = service.findByFingerprint(zone, dac.getPublicCert().getFingerprint());
 		assertNotNull(domainAC);
 		assertEquals(zone, domainAC.getZoneReference());
+		assertEquals(AgentCredentialType.DAC, domainAC.getCredentialType());
 
 		AgentCredential userAC = service.findByFingerprint(zone, uc.getPublicCert().getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(zone, userAC.getZoneReference());
+		assertEquals(AgentCredentialType.UC, userAC.getCredentialType());
 	}
 
 	@Test
