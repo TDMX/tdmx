@@ -18,17 +18,18 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QMaxValue.maxValue;
+
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.lib.control.domain.MaxValue;
 
-// TODO querydsl
+import com.mysema.query.jpa.impl.JPAQuery;
+
 public class MaxValueDaoImpl implements MaxValueDao {
 
 	@PersistenceContext(unitName = "ControlDB")
@@ -51,21 +52,14 @@ public class MaxValueDaoImpl implements MaxValueDao {
 
 	@Override
 	public MaxValue lockById(String id) {
-		Query query = em.createQuery("from MaxValue as m where m.key = :id");
-		query.setParameter("id", id);
+		JPAQuery query = new JPAQuery(em).from(maxValue).where(maxValue.key.eq(id));
 		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-		try {
-			return (MaxValue) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return query.uniqueResult(maxValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<MaxValue> loadAll() {
-		Query query = em.createQuery("from MaxValue as m");
-		return query.getResultList();
+		return new JPAQuery(em).from(maxValue).list(maxValue);
 	}
 
 }

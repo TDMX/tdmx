@@ -58,11 +58,18 @@ public class LockServiceRepositoryImpl implements LockService {
 	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(Lock lock) {
-		Lock storedLock = getLockDao().loadById(lock.getId());
-		if (storedLock == null) {
-			getLockDao().persist(lock);
+		if (lock == null) {
+			throw new IllegalArgumentException("missing lock");
+		}
+		if (lock.getId() != null) {
+			Lock storedLock = getLockDao().loadById(lock.getId());
+			if (storedLock != null) {
+				getLockDao().merge(lock);
+			} else {
+				log.warn("Unable to find Lock with id " + lock.getId());
+			}
 		} else {
-			getLockDao().merge(lock);
+			getLockDao().persist(lock);
 		}
 	}
 

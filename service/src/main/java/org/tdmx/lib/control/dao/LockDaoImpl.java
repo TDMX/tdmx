@@ -18,18 +18,19 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QLock.lock;
+
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.lib.control.domain.Lock;
 
-// TODO querydsl
+import com.mysema.query.jpa.impl.JPAQuery;
+
 public class LockDaoImpl implements LockDao {
 
 	@PersistenceContext(unitName = "ControlDB")
@@ -57,46 +58,29 @@ public class LockDaoImpl implements LockDao {
 
 	@Override
 	public Lock loadById(Long id) {
-		Query query = em.createQuery("from Lock as l where l.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Lock) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(lock).where(lock.id.eq(id)).uniqueResult(lock);
 	}
 
 	@Override
 	public Lock loadByName(String lockName) {
-		Query query = em.createQuery("from Lock as l where l.lockName = :n");
-		query.setParameter("n", lockName);
-		try {
-			return (Lock) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(lock).where(lock.lockName.eq(lockName)).uniqueResult(lock);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Lock> loadAll() {
-		Query query = em.createQuery("from Lock as l");
-		return query.getResultList();
+		return new JPAQuery(em).from(lock).list(lock);
 	}
 
 	@Override
 	public Lock conditionalLock(String lockName) {
+
 		Date now = new Date();
-		Query query = em
-				.createQuery("from Lock as l where l.lockName = :n and l.lockedBy is null and ( l.lockedUntilTime is null or l.lockedUntilTime < :t )");
-		query.setParameter("n", lockName);
-		query.setParameter("t", now);
+
+		JPAQuery query = new JPAQuery(em).from(lock).where(
+				lock.lockName.eq(lockName).and(lock.lockedBy.isNull())
+						.and(lock.lockedUntilTime.isNull().or(lock.lockedUntilTime.lt(now))));
 		query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-		try {
-			return (Lock) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return query.uniqueResult(lock);
 	}
 
 }
