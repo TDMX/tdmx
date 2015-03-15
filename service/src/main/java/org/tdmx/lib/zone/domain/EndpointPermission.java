@@ -66,7 +66,7 @@ public class EndpointPermission implements Serializable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	EndpointPermission() {
+	public EndpointPermission() {
 	}
 
 	// -------------------------------------------------------------------------

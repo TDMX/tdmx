@@ -37,8 +37,6 @@
 
 	<bean id="test.data.generator"
 		class="org.tdmx.lib.control.job.TestDataGeneratorImpl">
-		
-		
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService"/>
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository"/>
@@ -51,6 +49,7 @@
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
 		
 	</bean>
 

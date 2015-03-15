@@ -67,15 +67,18 @@ public class ChannelAuthorization implements Serializable {
 	private String zoneApex;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "localName", column = @Column(name = "originAddress")),
-			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain")),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "originSP")) })
+	@AttributeOverrides({
+			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false)),
+			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)),
+			@AttributeOverride(name = "serviceProvider", column = @Column(name = "originSP", nullable = false)) })
 	private ChannelOrigin origin;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "localName", column = @Column(name = "destAddress")),
-			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain")),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "destSP")) })
+	@AttributeOverrides({
+			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false)),
+			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false)),
+			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)),
+			@AttributeOverride(name = "serviceProvider", column = @Column(name = "destSP", nullable = false)) })
 	private ChannelDestination destination;
 
 	@Embedded
@@ -133,6 +136,11 @@ public class ChannelAuthorization implements Serializable {
 	private FlowLimit undeliveredBuffer;
 
 	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "signatureDate", column = @Column(name = "signatureDate", nullable = false)),
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "signerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)),
+			@AttributeOverride(name = "value", column = @Column(name = "signature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "signatureAlg", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)) })
 	private AgentSignature signature;
 
 	// -------------------------------------------------------------------------
@@ -158,6 +166,7 @@ public class ChannelAuthorization implements Serializable {
 		builder.append(id);
 		builder.append(" origin=").append(origin);
 		builder.append(" destination=").append(destination);
+		// TODO
 		builder.append("]");
 		return builder.toString();
 	}
@@ -200,6 +209,38 @@ public class ChannelAuthorization implements Serializable {
 
 	public void setDestination(ChannelDestination destination) {
 		this.destination = destination;
+	}
+
+	public EndpointPermission getSendAuthorization() {
+		return sendAuthorization;
+	}
+
+	public void setSendAuthorization(EndpointPermission sendAuthorization) {
+		this.sendAuthorization = sendAuthorization;
+	}
+
+	public EndpointPermission getRecvAuthorization() {
+		return recvAuthorization;
+	}
+
+	public void setRecvAuthorization(EndpointPermission recvAuthorization) {
+		this.recvAuthorization = recvAuthorization;
+	}
+
+	public EndpointPermission getReqSendAuthorization() {
+		return reqSendAuthorization;
+	}
+
+	public void setReqSendAuthorization(EndpointPermission reqSendAuthorization) {
+		this.reqSendAuthorization = reqSendAuthorization;
+	}
+
+	public EndpointPermission getReqRecvAuthorization() {
+		return reqRecvAuthorization;
+	}
+
+	public void setReqRecvAuthorization(EndpointPermission reqRecvAuthorization) {
+		this.reqRecvAuthorization = reqRecvAuthorization;
 	}
 
 	public FlowLimit getUnsentBuffer() {

@@ -40,6 +40,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.AddressHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.DACHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.DomainHolder;
+import org.tdmx.lib.control.domain.TestDataGeneratorOutput.ServiceHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.UCHolder;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput.ZACHolder;
 import org.tdmx.lib.control.service.AccountService;
@@ -52,13 +53,19 @@ import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -90,6 +97,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private ServiceService serviceService;
 	private AddressService addressService;
 	private AgentCredentialService agentCredentialService;
+	private ChannelAuthorizationService channelAuthorizationService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -156,7 +164,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				// per domain Service
 				for (int si = 0; si < input.getNumServicesPerDomain(); si++) {
 					Service svc = createService(zone, domain.getDomainName());
-					dh.getServices().add(svc);
+					ServiceHolder sh = new ServiceHolder(svc);
+					dh.getServices().add(sh);
 				}
 
 				// per domain Address
@@ -167,7 +176,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 					// per domain Address UC
 					for (int ui = 0; dac != null && ui < input.getNumUsersPerAddress(); ui++) {
-						// create the DAC
+						// create the UC
 						PKIXCredential uc = TestCredentialGenerator.createUC(dac, 2);
 
 						// create the AgentCredential for the ZAC in ZoneDB
@@ -177,7 +186,31 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				}
 			}
 
-			// TODO ChannelAuths
+			// we create channelauthorizations between all the addresses of the 1st domain and the 2nd domain if there
+			// is more than
+			// one domain, else between all the addresses of the only domain.
+			DomainHolder fromDomain = result.getDomains().get(0);
+			DomainHolder toDomain = result.getDomains().size() > 1 ? result.getDomains().get(1) : fromDomain;
+			for (AddressHolder fromAddressHolder : fromDomain.getAddresses()) {
+				Address from = fromAddressHolder.getAddress();
+				for (ServiceHolder serviceHolder : toDomain.getServices()) {
+					Service service = serviceHolder.getService();
+					for (AddressHolder toAddressHolder : toDomain.getAddresses()) {
+						Address to = toAddressHolder.getAddress();
+
+						// TODO serviceprovider url from AccountZone to Zone
+						ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(), from.getDomainName(),
+								"SP");
+						ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(),
+								to.getDomainName(), service.getServiceName(), "SP");
+
+						ChannelAuthorization ca = ZoneFacade.createChannelAuthorization(zone, co, cd);
+						channelAuthorizationService.createOrUpdate(ca);
+
+						serviceHolder.getAuths().add(ca);
+					}
+				}
+			}
 
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
@@ -222,10 +255,11 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			throw new IllegalArgumentException("missing zonePartitionId");
 		}
 		ZoneReference zone = accountZone.getZoneReference();
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
-			zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 
-			// TODO delete ChannelAuths
+			// delete ChannelAuthorizations in ZoneDB
+			deleteChannelAuthorizations(zone);
 
 			// delete AgentCredentials in ZoneDB
 			deleteAgentCredentials(zone);
@@ -249,6 +283,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 		// delete AccountZone
 		deleteAccountZone(accountZone);
+
 	}
 
 	// -------------------------------------------------------------------------
@@ -339,6 +374,22 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			} else {
 				for (AgentCredential ac : agentcredentials) {
 					agentCredentialService.delete(ac);
+				}
+			}
+		}
+	}
+
+	private void deleteChannelAuthorizations(ZoneReference zone) {
+		boolean more = true;
+		while (more) {
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+
+			List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, sc);
+			if (channelAuths.isEmpty()) {
+				more = false;
+			} else {
+				for (ChannelAuthorization ca : channelAuths) {
+					channelAuthorizationService.delete(ca);
 				}
 			}
 		}
@@ -561,6 +612,14 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 	public void setAgentCredentialService(AgentCredentialService agentCredentialService) {
 		this.agentCredentialService = agentCredentialService;
+	}
+
+	public ChannelAuthorizationService getChannelAuthorizationService() {
+		return channelAuthorizationService;
+	}
+
+	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
+		this.channelAuthorizationService = channelAuthorizationService;
 	}
 
 }
