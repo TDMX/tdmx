@@ -164,9 +164,16 @@ public class ChannelAuthorization implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ChannelAuthorization [id=");
 		builder.append(id);
-		builder.append(" origin=").append(origin);
-		builder.append(" destination=").append(destination);
-		// TODO
+		builder.append(", zoneApex=").append(zoneApex);
+		builder.append(", origin=").append(origin);
+		builder.append(", destination=").append(destination);
+		builder.append(", sendAuthorization=").append(sendAuthorization);
+		builder.append(", recvAuthorization=").append(recvAuthorization);
+		builder.append(", reqSendAuthorization=").append(reqSendAuthorization);
+		builder.append(", reqRecvAuthorization=").append(reqRecvAuthorization);
+		builder.append(", undeliveredBuffer=").append(undeliveredBuffer);
+		builder.append(", unsentBuffer=").append(unsentBuffer);
+		builder.append(", signature=").append(signature);
 		builder.append("]");
 		return builder.toString();
 	}

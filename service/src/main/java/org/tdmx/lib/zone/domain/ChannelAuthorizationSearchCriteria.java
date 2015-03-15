@@ -87,7 +87,6 @@ public class ChannelAuthorizationSearchCriteria {
 		return origin;
 	}
 
-	@SuppressWarnings("unused")
 	private void setOrigin(ChannelOrigin origin) {
 		this.origin = origin;
 	}

@@ -93,6 +93,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
 	public ChannelAuthorization findByChannel(ZoneReference zone, ChannelOrigin origin, ChannelDestination dest) {
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");

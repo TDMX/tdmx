@@ -18,9 +18,12 @@
  */
 package org.tdmx.lib.zone.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.math.BigInteger;
+import java.util.List;
 import java.util.Random;
 
 import org.junit.After;
@@ -30,11 +33,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ZoneReference;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -43,6 +49,8 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Autowired
 	private TestDataGenerator dataGenerator;
 
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ChannelAuthorizationService channelAuthorizationService;
 
@@ -58,6 +66,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 				MockZonePartitionIdInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(1);
+		input.setNumServicesPerDomain(1);
 		input.setNumDACsPerDomain(1);
 		input.setNumAddressesPerDomain(1);
 		input.setNumUsersPerAddress(1);
@@ -65,11 +74,16 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		data = dataGenerator.generate(input);
 
 		zone = data.getAccountZone().getZoneReference();
+
+		zonePartitionIdProvider.setPartitionId(input.getZonePartitionId());
 	}
 
 	@After
 	public void doTeardown() {
+		zonePartitionIdProvider.clearPartitionId();
+
 		dataGenerator.tearDown(data.getAccount());
+
 	}
 
 	@Test
@@ -84,113 +98,104 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		assertNull(c);
 	}
 
-	//@formatter:off
-/*
 	@Test
-	public void testLookup() throws Exception {
-		Service s = serviceService.findByName(zone, domainName, serviceName);
-		assertNotNull(s);
-		assertEquals(zone, s.getZoneReference());
-		assertEquals(domainName, s.getDomainName());
-		assertEquals(serviceName, s.getServiceName());
+	public void testSearch_None() throws Exception {
+		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		assertNotNull(channelAuths);
+		assertEquals(1, channelAuths.size());
 	}
 
 	@Test
-	public void testSearch_Zone() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		List<Service> services = serviceService.search(zone, criteria);
-		assertNotNull(services);
-		assertEquals(1, services.size());
-		Service s = services.get(0);
-		assertEquals(zone, s.getZoneReference());
-		assertEquals(domainName, s.getDomainName());
-		assertEquals(serviceName, s.getServiceName());
+	public void testSearch_OriginAll() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+
+		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
+		criteria.getOrigin().setDomainName(ca.getOrigin().getDomainName());
+		criteria.getOrigin().setServiceProvider(ca.getOrigin().getServiceProvider());
+
+		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		assertNotNull(channelAuths);
+		assertEquals(1, channelAuths.size());
 	}
 
 	@Test
-	public void testSearch_ZoneAndService() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(serviceName);
+	public void testSearch_DestinationAll() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
 
-		List<Service> services = serviceService.search(zone, criteria);
-		assertNotNull(services);
-		assertEquals(1, services.size());
-		Service s = services.get(0);
-		assertEquals(zone, s.getZoneReference());
-		assertEquals(domainName, s.getDomainName());
-		assertEquals(serviceName, s.getServiceName());
+		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getDestination().setLocalName(ca.getDestination().getLocalName());
+		criteria.getDestination().setDomainName(ca.getDestination().getDomainName());
+		criteria.getDestination().setServiceName(ca.getDestination().getServiceName());
+		criteria.getDestination().setServiceProvider(ca.getDestination().getServiceProvider());
+
+		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		assertNotNull(channelAuths);
+		assertEquals(1, channelAuths.size());
 	}
 
 	@Test
-	public void testSearch_ZoneAndDomainAndService() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
-		criteria.setServiceName(serviceName);
+	public void testSearch_OriginAndDestinationAll() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
 
-		List<Service> services = serviceService.search(zone, criteria);
-		assertNotNull(services);
-		assertEquals(1, services.size());
-		Service s = services.get(0);
-		assertEquals(zone, s.getZoneReference());
-		assertEquals(domainName, s.getDomainName());
-		assertEquals(serviceName, s.getServiceName());
+		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
+		criteria.getOrigin().setDomainName(ca.getOrigin().getDomainName());
+		criteria.getOrigin().setServiceProvider(ca.getOrigin().getServiceProvider());
+		criteria.getDestination().setLocalName(ca.getDestination().getLocalName());
+		criteria.getDestination().setDomainName(ca.getDestination().getDomainName());
+		criteria.getDestination().setServiceName(ca.getDestination().getServiceName());
+		criteria.getDestination().setServiceProvider(ca.getDestination().getServiceProvider());
+
+		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		assertNotNull(channelAuths);
+		assertEquals(1, channelAuths.size());
 	}
 
 	@Test
-	public void testSearch_ZoneAndDomainOnly() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
-
-		List<Service> services = serviceService.search(zone, criteria);
-		assertNotNull(services);
-		assertEquals(1, services.size());
-		Service s = services.get(0);
-		assertEquals(zone, s.getZoneReference());
-		assertEquals(domainName, s.getDomainName());
-		assertEquals(serviceName, s.getServiceName());
+	public void testLookup_FindByChannel() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
+				ca.getDestination());
+		assertNotNull(storedCA);
 	}
 
 	@Test
-	public void testSearch_UnknownZoneAndService() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(serviceName);
+	public void testSearch_UnknownZone() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
 
-		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
-		List<Service> services = serviceService.search(gugus, criteria);
-		assertNotNull(services);
-		assertEquals(0, services.size());
-	}
-
-	@Test
-	public void testSearch_UnknownZoneAndUnknownService() throws Exception {
-		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setServiceName(serviceName);
+		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
 
 		ZoneReference gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
-		List<Service> services = serviceService.search(gugus, criteria);
-		assertNotNull(services);
-		assertEquals(0, services.size());
-	}
-
-	@Test
-	public void testLookup_NotFound() throws Exception {
-		Service d = serviceService.findByName(zone, domainName, "gugus");
-		assertNull(d);
+		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(gugus, criteria);
+		assertNotNull(channelAuths);
+		assertEquals(0, channelAuths.size());
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Service d = serviceService.findByName(zone, domainName, serviceName);
-		d.setConcurrencyLimit(20);
-		serviceService.createOrUpdate(d);
+		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
+				ca.getDestination());
+		assertNotNull(storedCA);
+		storedCA.getUndeliveredBuffer().setHighMarkBytes(BigInteger.TEN);
+		storedCA.getUndeliveredBuffer().setLowMarkBytes(BigInteger.ONE);
+		storedCA.getUnsentBuffer().setHighMarkBytes(BigInteger.TEN);
+		storedCA.getUnsentBuffer().setLowMarkBytes(BigInteger.ONE);
+		channelAuthorizationService.createOrUpdate(storedCA);
 
-		Service d2 = serviceService.findByName(zone, domainName, serviceName);
+		ChannelAuthorization modifiedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
+				ca.getDestination());
+		assertNotNull(modifiedCA);
+		assertEquals(storedCA.getUndeliveredBuffer().getHighMarkBytes(), modifiedCA.getUndeliveredBuffer()
+				.getHighMarkBytes());
+		assertEquals(storedCA.getUndeliveredBuffer().getLowMarkBytes(), modifiedCA.getUndeliveredBuffer()
+				.getLowMarkBytes());
+		assertEquals(storedCA.getUnsentBuffer().getHighMarkBytes(), modifiedCA.getUnsentBuffer().getHighMarkBytes());
+		assertEquals(storedCA.getUnsentBuffer().getLowMarkBytes(), modifiedCA.getUnsentBuffer().getLowMarkBytes());
 
-		assertEquals(d.getZoneReference(), d2.getZoneReference());
-		assertEquals(d.getDomainName(), d2.getDomainName());
-		assertEquals(d.getServiceName(), d2.getServiceName());
-		assertEquals(d.getConcurrencyLimit(), d2.getConcurrencyLimit());
 	}
-*/
-	//@formatter:on
+
 }

@@ -105,18 +105,19 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 					.and(channelAuthorization.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-			where = where.and(channelAuthorization.origin.localName.eq(criteria.getDestination().getLocalName()));
+			where = where.and(channelAuthorization.destination.localName.eq(criteria.getDestination().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-			where = where.and(channelAuthorization.origin.domainName.eq(criteria.getDestination().getDomainName()));
+			where = where
+					.and(channelAuthorization.destination.domainName.eq(criteria.getDestination().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
-			where = where.and(channelAuthorization.origin.serviceProvider.eq(criteria.getDestination()
+			where = where.and(channelAuthorization.destination.serviceProvider.eq(criteria.getDestination()
 					.getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-			where = where.and(channelAuthorization.origin.serviceProvider
-					.eq(criteria.getDestination().getServiceName()));
+			where = where.and(channelAuthorization.destination.serviceName.eq(criteria.getDestination()
+					.getServiceName()));
 		}
 
 		query.where(where);
