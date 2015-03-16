@@ -116,16 +116,16 @@
 			<xs:element name="whitelist" type="IpAddressList"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="User">
+	<xs:complexType name="UserIdentity">
 		<xs:sequence>
 			<xs:element ref="usercertificate"/>
 			<xs:element ref="domaincertificate"/>
 			<xs:element ref="rootcertificate"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="UserState">
+	<xs:complexType name="User">
 		<xs:sequence>
-			<xs:element ref="user"/>
+			<xs:element ref="userIdentity"/>
 			<xs:element name="status" type="credentialStatus"/>
 			<xs:element name="whitelist" type="IpAddressList"/>
 		</xs:sequence>
@@ -135,7 +135,7 @@
 			<xs:documentation>A filter criteria for searching for Users.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="user" minOccurs="0"/>
+			<xs:element ref="userIdentity" minOccurs="0"/>
 			<xs:element ref="localname" minOccurs="0"/>
 			<xs:element ref="domain" minOccurs="0"/>
 			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
@@ -236,7 +236,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ChannelAuthorization">
+	<xs:complexType name="CurrentChannelAuthorization">
 		<xs:sequence>
 			<xs:element ref="channel"/>
 			<xs:element name="origin" type="EndpointPermission" minOccurs="0">
@@ -257,9 +257,9 @@
 			<xs:element ref="administratorsignature"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ChannelAuthorizationState">
+	<xs:complexType name="ChannelAuthorization">
 		<xs:sequence>
-			<xs:element name="current" type="ChannelAuthorization">
+			<xs:element name="current" type="CurrentChannelAuthorization">
 				<xs:annotation>
 					<xs:documentation>the current authorization of the channel.</xs:documentation>
 				</xs:annotation>
@@ -285,12 +285,16 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="FlowTarget">
+	<xs:complexType name="FlowDestination">
 		<xs:annotation>
 			<xs:documentation>The delivery endpoint of messages destined for a Destination Agent at a ServiceAddress.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="target"/>
+			<xs:element name="target" type="UserIdentity">
+				<xs:annotation>
+					<xs:documentation>the destination agent's identity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element ref="servicename"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -300,11 +304,15 @@
 			<xs:element ref="servicename" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="Flow">
+	<xs:complexType name="FlowChannel">
 		<xs:complexContent>
-			<xs:extension base="FlowTarget">
+			<xs:extension base="FlowDestination">
 				<xs:sequence>
-					<xs:element ref="source"/>
+					<xs:element name="source" type="UserIdentity">
+						<xs:annotation>
+							<xs:documentation>the source user agent's identity.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -314,12 +322,6 @@
 			<xs:element name="source" type="UserFilter" minOccurs="0"/>
 			<xs:element name="target" type="UserFilter" minOccurs="0"/>
 			<xs:element ref="servicename" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="FlowControlPolicy">
-		<xs:sequence>
-			<xs:element name="flow" type="Flow"/>
-			<xs:element name="limit" type="FlowControlLimit"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FlowControlLimit">
@@ -334,9 +336,9 @@
 			<xs:element name="undeliveredBuffer" type="xs:unsignedInt" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="FlowState">
+	<xs:complexType name="Flow">
 		<xs:complexContent>
-			<xs:extension base="Flow">
+			<xs:extension base="FlowChannel">
 				<xs:sequence>
 					<xs:element ref="flowcontrolstatus"/>
 					<xs:element name="level" type="FlowControlLevel">
@@ -349,20 +351,23 @@
 							<xs:documentation>the flow control limits for high mark and low mark set by channel authorization affects all flows.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
+					<xs:element ref="flowtargetsession" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="FlowTargetSession">
+		<xs:annotation>
+			<xs:documentation>flowtargetsession is signed by the flow's target user and contains { channel.originAddress+Domain+ServiceProvider+channel.destination.Address+DomainName+ServiceProvider+serviceName + { flowsession.sessionKey+validFrom+scheme }1..2 + signaturevalue.timestamp</xs:documentation>
+		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="service"/>
 			<xs:element ref="flowsession" maxOccurs="2"/>
-			<xs:element ref="usersignature"/>
+			<xs:element ref="signaturevalue"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="FlowTargetState">
+	<xs:complexType name="FlowTarget">
 		<xs:complexContent>
-			<xs:extension base="FlowTarget">
+			<xs:extension base="FlowDestination">
 				<xs:sequence>
 					<xs:element name="concurrencyLimit" type="xs:unsignedShort">
 						<xs:annotation>
@@ -374,6 +379,7 @@
 							<xs:documentation>the current number of concurrent receivers of the target credential.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
+					<xs:element ref="flowtargetsession" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -388,9 +394,18 @@
 			<xs:element name="scheme" type="cryptoscheme"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="TargetSession">
+		<xs:complexContent>
+			<xs:extension base="FlowDestination">
+				<xs:sequence>
+					<xs:element ref="flowtargetsession"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 	<xs:complexType name="UserSignature">
 		<xs:sequence>
-			<xs:element ref="user"/>
+			<xs:element ref="userIdentity"/>
 			<xs:element ref="signaturevalue"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -521,32 +536,23 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="administratorstate" type="AdministratorState"/>
-	<xs:element name="user" type="User">
+	<xs:element name="userIdentity" type="UserIdentity">
 		<xs:annotation>
 			<xs:documentation>references a specific UC. If provided, then the localname, domain and status are ignred.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="userstate" type="UserState"/>
-	<xs:element name="source" type="User">
-		<xs:annotation>
-			<xs:documentation>the source user agent's identity.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="target" type="User">
-		<xs:annotation>
-			<xs:documentation>the destination agent's identity.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="flow" type="Flow"/>
+	<xs:element name="user" type="User"/>
+	<xs:element name="flowchannel" type="FlowChannel"/>
 	<xs:element name="flowsession" type="FlowSession"/>
-	<xs:element name="flowstate" type="FlowState"/>
+	<xs:element name="flow" type="Flow"/>
 	<xs:element name="flowcontrolstatus" type="flowcontrolstatus">
 		<xs:annotation>
 			<xs:documentation>whether flow control is active - meaning the flow is CLOSED, or inactive meaning the flow is OPEN. When CLOSED, message relay is blocked by destination-SP, and the originating-SP will prohibit new messages being sent.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="flowdestination" type="FlowDestination"/>
 	<xs:element name="flowtarget" type="FlowTarget"/>
-	<xs:element name="targetsession" type="FlowTargetSession">
+	<xs:element name="flowtargetsession" type="FlowTargetSession">
 		<xs:annotation>
 			<xs:documentation>the destination credential can maintain up to 2 "transient" session public keys. Message originators must sent using a sessionKey which is valid for the sendTimestamp of the message. If there is no flow session set by the destination then sending is not possible. Allowing >1 session at a time helps pre-propagate the "next" session prior to it's validity time to the sources.</xs:documentation>
 		</xs:annotation>
@@ -556,9 +562,19 @@
 			<xs:documentation>a channel authorization.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="currentchannelauthorization" type="CurrentChannelAuthorization">
+		<xs:annotation>
+			<xs:documentation>a channel authorization.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="authorization" type="ChannelEndpointAuthorization">
 		<xs:annotation>
 			<xs:documentation>a channel endpoint authorization.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="targetsession" type="TargetSession">
+		<xs:annotation>
+			<xs:documentation>relayed target session information.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<!-- ********************************************* -->
@@ -614,11 +630,7 @@
 					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="flow" type="Flow">
-				<xs:annotation>
-					<xs:documentation>source </xs:documentation>
-				</xs:annotation>
-			</xs:element>
+			<xs:element ref="flowchannel"/>
 			<xs:element name="externalReference" type="common:longtext">
 				<xs:annotation>
 					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>

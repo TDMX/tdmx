@@ -86,8 +86,8 @@ import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
 import org.tdmx.core.api.v01.sp.zas.msg.ServiceFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.User;
 import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
+import org.tdmx.core.api.v01.sp.zas.msg.UserIdentity;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -335,7 +335,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -376,7 +376,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -392,7 +392,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		UserFilter uf = new UserFilter();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(uc.getIssuerPublicCert().getX509Encoded());
 		u.setRootcertificate(uc.getZoneRootPublicCert().getX509Encoded());
@@ -400,7 +400,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -460,7 +460,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -501,7 +501,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -624,7 +624,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(0, response.getUserstates().size());
+		assertEquals(0, response.getUsers().size());
 	}
 
 	@Test
@@ -700,7 +700,7 @@ public class ZASImplUnitTest {
 		req.setPage(p);
 
 		UserFilter uf = new UserFilter();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(uc.getIssuerPublicCert().getX509Encoded());
 		u.setRootcertificate(uc.getZoneRootPublicCert().getX509Encoded());
@@ -708,7 +708,7 @@ public class ZASImplUnitTest {
 
 		SearchUserResponse response = zas.searchUser(req);
 		assertSuccess(response);
-		assertEquals(1, response.getUserstates().size());
+		assertEquals(1, response.getUsers().size());
 	}
 
 	@Test
@@ -1105,12 +1105,12 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		DeleteUser ca = new DeleteUser();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		DeleteUserResponse response = zas.deleteUser(ca);
 		assertSuccess(response);
 	}
@@ -1121,12 +1121,12 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		ModifyUser ca = new ModifyUser();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(ca);
 		assertSuccess(response);
@@ -1173,12 +1173,12 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		DeleteUser ca = new DeleteUser();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		DeleteUserResponse response = zas.deleteUser(ca);
 		assertSuccess(response);
 	}
@@ -1189,12 +1189,12 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		ModifyUser ca = new ModifyUser();
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(ca);
 		assertSuccess(response);
@@ -1401,12 +1401,12 @@ public class ZASImplUnitTest {
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		CreateUserResponse response = zas.createUser(ca);
 		assertError(ErrorCode.UserCredentialsExist, response);
 	}
@@ -1425,12 +1425,12 @@ public class ZASImplUnitTest {
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		CreateUserResponse response = zas.createUser(ca);
 		assertSuccess(response);
 	}
@@ -1447,12 +1447,12 @@ public class ZASImplUnitTest {
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		User u = new User();
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setUser(u);
+		ca.setUserIdentity(u);
 		CreateUserResponse response = zas.createUser(ca);
 		assertError(ErrorCode.AddressNotFound, response);
 	}

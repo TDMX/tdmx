@@ -35,17 +35,11 @@
 	<wsdl:message name="listAuthorizedChannelDestinationResponse">
 		<wsdl:part name="parameters" element="mos:listAuthorizedChannelDestinationResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowStateRequest">
-		<wsdl:part name="parameters" element="mos:listFlowState"/>
+	<wsdl:message name="listFlowRequest">
+		<wsdl:part name="parameters" element="mos:listFlow"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowStateResponse">
-		<wsdl:part name="parameters" element="mos:listFlowStateResponse"/>
-	</wsdl:message>
-	<wsdl:message name="getFlowTargetSessionRequest">
-		<wsdl:part name="parameters" element="mos:getFlowTargetSession"/>
-	</wsdl:message>
-	<wsdl:message name="getFlowTargetSessionResponse">
-		<wsdl:part name="parameters" element="mos:getFlowTargetSessionResponse"/>
+	<wsdl:message name="listFlowResponse">
+		<wsdl:part name="parameters" element="mos:listFlowResponse"/>
 	</wsdl:message>
 	<wsdl:message name="getMessageDeliveryStatusRequest">
 		<wsdl:part name="parameters" element="mos:getMessageDeliveryStatus"/>
@@ -120,19 +114,12 @@
 			<wsdl:input message="tns:listAuthorizedChannelDestinationRequest"/>
 			<wsdl:output message="tns:listAuthorizedChannelDestinationResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listFlowState">
+		<wsdl:operation name="listFlow">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listFlowStateRequest"/>
-			<wsdl:output message="tns:listFlowStateResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="getFlowTargetSession">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getFlowTargetSessionRequest"/>
-			<wsdl:output message="tns:getFlowTargetSessionResponse"/>
+			<wsdl:input message="tns:listFlowRequest"/>
+			<wsdl:output message="tns:listFlowResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="getMessageDeliveryStatus">
 			<wsdl:documentation>
@@ -220,17 +207,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listFlowState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/listFlowState"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="getFlowTargetSession">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/getFlowTargetSession"/>
+		<wsdl:operation name="listFlow">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/listFlow"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

@@ -55,14 +55,8 @@ import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.sp.zas.GetChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.GetChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.sp.zas.GetFlowState;
-import org.tdmx.core.api.v01.sp.zas.GetFlowStateResponse;
-import org.tdmx.core.api.v01.sp.zas.GetFlowTargetState;
-import org.tdmx.core.api.v01.sp.zas.GetFlowTargetStateResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministratorResponse;
-import org.tdmx.core.api.v01.sp.zas.ModifyFlowTargetState;
-import org.tdmx.core.api.v01.sp.zas.ModifyFlowTargetStateResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyIpZone;
 import org.tdmx.core.api.v01.sp.zas.ModifyIpZoneResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyService;
@@ -77,10 +71,6 @@ import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchDomain;
 import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowState;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowStateResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowTargetState;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowTargetStateResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchIpZone;
 import org.tdmx.core.api.v01.sp.zas.SearchIpZoneResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchService;
@@ -99,8 +89,7 @@ import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
 import org.tdmx.core.api.v01.sp.zas.msg.Servicestate;
-import org.tdmx.core.api.v01.sp.zas.msg.User;
-import org.tdmx.core.api.v01.sp.zas.msg.Userstate;
+import org.tdmx.core.api.v01.sp.zas.msg.UserIdentity;
 import org.tdmx.core.api.v01.sp.zas.report.Incident;
 import org.tdmx.core.api.v01.sp.zas.report.IncidentResponse;
 import org.tdmx.core.api.v01.sp.zas.report.Report;
@@ -318,11 +307,11 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		if (parameters.getFilter().getUser() != null) {
+		if (parameters.getFilter().getUserIdentity() != null) {
 			// if a user credential is provided then it't not so much a search as a lookup
-			AgentCredential uc = credentialFactory.createUC(zone,
-					parameters.getFilter().getUser().getUsercertificate(), parameters.getFilter().getUser()
-							.getDomaincertificate(), parameters.getFilter().getUser().getRootcertificate());
+			AgentCredential uc = credentialFactory.createUC(zone, parameters.getFilter().getUserIdentity()
+					.getUsercertificate(), parameters.getFilter().getUserIdentity().getDomaincertificate(), parameters
+					.getFilter().getUserIdentity().getRootcertificate());
 			if (uc == null) {
 				setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
@@ -333,7 +322,7 @@ public class ZASImpl implements ZAS {
 			}
 			AgentCredential c = credentialService.findByFingerprint(zone, uc.getFingerprint());
 			if (c != null) {
-				response.getUserstates().add(mapUserstate(c));
+				response.getUsers().add(mapUserstate(c));
 			}
 		} else {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
@@ -357,7 +346,7 @@ public class ZASImpl implements ZAS {
 			sc.setType(AgentCredentialType.UC);
 			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
-				response.getUserstates().add(mapUserstate(c));
+				response.getUsers().add(mapUserstate(c));
 			}
 		}
 		response.setSuccess(true);
@@ -429,8 +418,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
-				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
+				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -568,8 +557,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
-				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
+				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -587,15 +576,6 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	@WebResult(name = "modifyFlowTargetStateResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTargetState")
-	public ModifyFlowTargetStateResponse modifyFlowTargetState(
-			@WebParam(partName = "parameters", name = "modifyFlowTargetState", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyFlowTargetState parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -637,15 +617,6 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	@WebResult(name = "getFlowStateResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlowState")
-	public GetFlowStateResponse getFlowState(
-			@WebParam(partName = "parameters", name = "getFlowState", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") GetFlowState parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -733,15 +704,6 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchFlowTargetStateResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTargetState")
-	public SearchFlowTargetStateResponse searchFlowTargetState(
-			@WebParam(partName = "parameters", name = "searchFlowTargetState", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchFlowTargetState parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	@WebResult(name = "deleteServiceResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteService")
 	public DeleteServiceResponse deleteService(
@@ -770,15 +732,6 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	@WebResult(name = "getFlowTargetStateResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlowTargetState")
-	public GetFlowTargetStateResponse getFlowTargetState(
-			@WebParam(partName = "parameters", name = "getFlowTargetState", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") GetFlowTargetState parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -898,15 +851,6 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchFlowStateResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlowState")
-	public SearchFlowStateResponse searchFlowState(
-			@WebParam(partName = "parameters", name = "searchFlowState", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchFlowState parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	@WebResult(name = "setChannelAuthorizationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization")
 	public SetChannelAuthorizationResponse setChannelAuthorization(
@@ -933,8 +877,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUser().getUsercertificate(), parameters
-				.getUser().getDomaincertificate(), parameters.getUser().getRootcertificate());
+		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
+				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -1049,6 +993,49 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
+	}
+
+	@Override
+	@WebResult(name = "getFlowResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlow")
+	public org.tdmx.core.api.v01.sp.zas.GetFlowResponse getFlow(
+			@WebParam(partName = "parameters", name = "getFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.GetFlow parameters) {
+		return null;// TODO
+	}
+
+	@Override
+	@WebResult(name = "searchFlowResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlow")
+	public org.tdmx.core.api.v01.sp.zas.SearchFlowResponse searchFlow(
+			@WebParam(partName = "parameters", name = "searchFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.SearchFlow parameters) {
+		// TODO
+		return null;
+	}
+
+	@Override
+	@WebResult(name = "getFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlowTarget")
+	public org.tdmx.core.api.v01.sp.zas.GetFlowTargetResponse getFlowTarget(
+			@WebParam(partName = "parameters", name = "getFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.GetFlowTarget parameters) {
+		// TODO
+		return null;
+	}
+
+	@Override
+	@WebResult(name = "searchFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTarget")
+	public org.tdmx.core.api.v01.sp.zas.SearchFlowTargetResponse searchFlowTarget(
+			@WebParam(partName = "parameters", name = "searchFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.SearchFlowTarget parameters) {
+		// TODO
+		return null;
+	}
+
+	@Override
+	@WebResult(name = "modifyFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget")
+	public org.tdmx.core.api.v01.sp.zas.ModifyFlowTargetResponse modifyFlowTarget(
+			@WebParam(partName = "parameters", name = "modifyFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.ModifyFlowTarget parameters) {
+		return null;// TODO
 	}
 
 	// -------------------------------------------------------------------------
@@ -1219,15 +1206,15 @@ public class ZASImpl implements ZAS {
 		return new PageSpecifier(p.getNumber(), p.getSize());
 	}
 
-	private Userstate mapUserstate(AgentCredential cred) {
-		User u = new User();
+	private org.tdmx.core.api.v01.sp.zas.msg.User mapUserstate(AgentCredential cred) {
+		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(cred.getPublicKey().getX509Encoded());
 		u.setDomaincertificate(cred.getIssuerPublicKey().getX509Encoded());
 		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
 
-		Userstate us = new Userstate();
+		org.tdmx.core.api.v01.sp.zas.msg.User us = new org.tdmx.core.api.v01.sp.zas.msg.User();
+		us.setUserIdentity(u);
 		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setUser(u);
 		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
 		return us;
 	}
@@ -1313,4 +1300,5 @@ public class ZASImpl implements ZAS {
 	public void setServiceService(ServiceService serviceService) {
 		this.serviceService = serviceService;
 	}
+
 }

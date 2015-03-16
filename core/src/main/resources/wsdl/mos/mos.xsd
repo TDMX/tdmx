@@ -72,38 +72,21 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="listFlowStateRequestType">
+	<xs:complexType name="listFlowRequestType">
 		<xs:annotation>
-			<xs:documentation>list the flow state of every flow of a channel.</xs:documentation>
+			<xs:documentation>list the flow state of every flow of a channel. The origin of the channel is implicitly the User's address.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="msg:destination"/>
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="listFlowStateResponseType">
+	<xs:complexType name="listFlowResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flowstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:flow" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="getFlowTargetSessionRequestType">
-		<xs:annotation>
-			<xs:documentation>get the session of a flow target.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:flowtarget"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getFlowTargetSessionResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:targetsession"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -161,10 +144,8 @@
 	<xs:element name="listServiceResponse" type="listServiceResponseType"/>
 	<xs:element name="listAuthorizedChannelDestination" type="listAuthorizedChannelDestinationRequestType"/>
 	<xs:element name="listAuthorizedChannelDestinationResponse" type="listAuthorizedChannelDestinationResponseType"/>
-	<xs:element name="listFlowState" type="listFlowStateRequestType"/>
-	<xs:element name="listFlowStateResponse" type="listFlowStateResponseType"/>
-	<xs:element name="getFlowTargetSession" type="getFlowTargetSessionRequestType"/>
-	<xs:element name="getFlowTargetSessionResponse" type="getFlowTargetSessionResponseType"/>
+	<xs:element name="listFlow" type="listFlowRequestType"/>
+	<xs:element name="listFlowResponse" type="listFlowResponseType"/>
 	<xs:element name="getMessageDeliveryStatus" type="getMessageDeliveryStatusRequestType"/>
 	<xs:element name="getMessageDeliveryStatusResponse" type="getMessageDeliveryStatusResponseType"/>
 	<xs:element name="submit" type="submitRequestType"/>

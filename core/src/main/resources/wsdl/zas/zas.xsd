@@ -214,7 +214,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:userstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:user" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
@@ -222,7 +222,7 @@
 	</xs:complexType>
 	<xs:complexType name="createUserRequestType">
 		<xs:sequence>
-			<xs:element ref="msg:user"/>
+			<xs:element ref="msg:userIdentity"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>if present, the status of the user shall be set. Defaults to ACTIVE.</xs:documentation>
@@ -245,7 +245,7 @@
 			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="msg:user"/>
+			<xs:element ref="msg:userIdentity"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
@@ -265,7 +265,7 @@
 	</xs:complexType>
 	<xs:complexType name="deleteUserRequestType">
 		<xs:sequence>
-			<xs:element ref="msg:user"/>
+			<xs:element ref="msg:userIdentity"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="deleteUserResponseType">
@@ -339,7 +339,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element name="authorizationstate" type="msg:ChannelAuthorizationState" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:channelauthorization" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
@@ -354,14 +354,14 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element name="authorizationstate" type="msg:ChannelAuthorizationState"/>
+					<xs:element ref="msg:channelauthorization"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationRequestType">
 		<xs:sequence>
-			<xs:element ref="msg:channelauthorization"/>
+			<xs:element ref="msg:currentchannelauthorization"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationResponseType">
@@ -379,42 +379,42 @@
 			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="searchFlowTargetStateRequestType">
+	<xs:complexType name="searchFlowTargetRequestType">
 		<xs:sequence>
 			<xs:element name="filter" type="msg:FlowTargetFilter"/>
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="searchFlowTargetStateResponseType">
+	<xs:complexType name="searchFlowTargetResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element name="flowtarget" type="msg:FlowTargetState" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:flowtarget" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="getFlowTargetStateRequestType">
+	<xs:complexType name="getFlowTargetRequestType">
 		<xs:sequence>
-			<xs:element name="flowtarget" type="msg:FlowTarget"/>
+			<xs:element ref="msg:flowdestination"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="getFlowTargetStateResponseType">
+	<xs:complexType name="getFlowTargetResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element name="flowtargetstate" type="msg:FlowTargetState"/>
+					<xs:element ref="msg:flowtarget"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="modifyFlowTargetStateRequestType">
+	<xs:complexType name="modifyFlowTargetRequestType">
 		<xs:sequence>
 			<xs:element name="flowtarget">
 				<xs:complexType>
 					<xs:complexContent>
-						<xs:extension base="msg:FlowTarget">
+						<xs:extension base="msg:FlowDestination">
 							<xs:sequence>
 								<xs:element name="concurrencyLimit" type="xs:unsignedShort">
 									<xs:annotation>
@@ -428,37 +428,37 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="modifyFlowTargetStateResponseType">
+	<xs:complexType name="modifyFlowTargetResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="searchFlowStateRequestType">
+	<xs:complexType name="searchFlowRequestType">
 		<xs:sequence>
 			<xs:element name="filter" type="msg:FlowFilter"/>
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="searchFlowStateResponseType">
+	<xs:complexType name="searchFlowResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flowstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:flow" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="getFlowStateRequestType">
+	<xs:complexType name="getFlowRequestType">
 		<xs:sequence>
-			<xs:element name="flow" type="msg:Flow"/>
+			<xs:element ref="msg:flowchannel"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="getFlowStateResponseType">
+	<xs:complexType name="getFlowResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flowstate"/>
+					<xs:element ref="msg:flow"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -599,14 +599,14 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
-	<xs:element name="searchFlowTargetState" type="searchFlowTargetStateRequestType"/>
-	<xs:element name="searchFlowTargetStateResponse" type="searchFlowTargetStateResponseType"/>
-	<xs:element name="getFlowTargetState" type="getFlowTargetStateRequestType"/>
-	<xs:element name="getFlowTargetStateResponse" type="getFlowTargetStateResponseType"/>
-	<xs:element name="modifyFlowTargetState" type="modifyFlowTargetStateRequestType"/>
-	<xs:element name="modifyFlowTargetStateResponse" type="modifyFlowTargetStateResponseType"/>
-	<xs:element name="searchFlowState" type="searchFlowStateRequestType"/>
-	<xs:element name="searchFlowStateResponse" type="searchFlowStateResponseType"/>
-	<xs:element name="getFlowState" type="getFlowStateRequestType"/>
-	<xs:element name="getFlowStateResponse" type="getFlowStateResponseType"/>
+	<xs:element name="searchFlowTarget" type="searchFlowTargetRequestType"/>
+	<xs:element name="searchFlowTargetResponse" type="searchFlowTargetResponseType"/>
+	<xs:element name="getFlowTarget" type="getFlowTargetRequestType"/>
+	<xs:element name="getFlowTargetResponse" type="getFlowTargetResponseType"/>
+	<xs:element name="modifyFlowTarget" type="modifyFlowTargetRequestType"/>
+	<xs:element name="modifyFlowTargetResponse" type="modifyFlowTargetResponseType"/>
+	<xs:element name="searchFlow" type="searchFlowRequestType"/>
+	<xs:element name="searchFlowResponse" type="searchFlowResponseType"/>
+	<xs:element name="getFlow" type="getFlowRequestType"/>
+	<xs:element name="getFlowResponse" type="getFlowResponseType"/>
 </xs:schema>

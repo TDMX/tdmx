@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:zas-definition" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:zas="urn:tdmx:api:v1.0:sp:zas" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" xmlns:report="urn:tdmx:api:v1.0:sp:report" targetNamespace="urn:tdmx:api:v1.0:sp:zas-definition" name="ZAS">
 	<wsdl:documentation>
 		Administration of a Zone at a ServiceProvider. Callers are either ZoneAdministratorCredentials (ZAC) or DomainAdministratorCredentials (DAC). ZoneAdministrators may perform operations on the zoneApex domain and any subdomains. DomainAdministrators may manage only their domain ( authorization does not propagate to any subdomains).
@@ -189,35 +188,35 @@
 	<wsdl:message name="deleteChannelAuthorizationResponse">
 		<wsdl:part name="parameters" element="zas:deleteChannelAuthorizationResponse"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowTargetStateRequest">
-		<wsdl:part name="parameters" element="zas:searchFlowTargetState"/>
+	<wsdl:message name="searchFlowTargetRequest">
+		<wsdl:part name="parameters" element="zas:searchFlowTarget"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowTargetStateResponse">
-		<wsdl:part name="parameters" element="zas:searchFlowTargetStateResponse"/>
+	<wsdl:message name="searchFlowTargetResponse">
+		<wsdl:part name="parameters" element="zas:searchFlowTargetResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getFlowTargetStateRequest">
-		<wsdl:part name="parameters" element="zas:getFlowTargetState"/>
+	<wsdl:message name="getFlowTargetRequest">
+		<wsdl:part name="parameters" element="zas:getFlowTarget"/>
 	</wsdl:message>
-	<wsdl:message name="getFlowTargetStateResponse">
-		<wsdl:part name="parameters" element="zas:getFlowTargetStateResponse"/>
+	<wsdl:message name="getFlowTargetResponse">
+		<wsdl:part name="parameters" element="zas:getFlowTargetResponse"/>
 	</wsdl:message>
-	<wsdl:message name="modifyFlowTargetStateRequest">
-		<wsdl:part name="parameters" element="zas:modifyFlowTargetState"/>
+	<wsdl:message name="modifyFlowTargetRequest">
+		<wsdl:part name="parameters" element="zas:modifyFlowTarget"/>
 	</wsdl:message>
-	<wsdl:message name="modifyFlowTargetStateResponse">
-		<wsdl:part name="parameters" element="zas:modifyFlowTargetStateResponse"/>
+	<wsdl:message name="modifyFlowTargetResponse">
+		<wsdl:part name="parameters" element="zas:modifyFlowTargetResponse"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowStateRequest">
-		<wsdl:part name="parameters" element="zas:searchFlowState"/>
+	<wsdl:message name="searchFlowRequest">
+		<wsdl:part name="parameters" element="zas:searchFlow"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowStateResponse">
-		<wsdl:part name="parameters" element="zas:searchFlowStateResponse"/>
+	<wsdl:message name="searchFlowResponse">
+		<wsdl:part name="parameters" element="zas:searchFlowResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getFlowStateRequest">
-		<wsdl:part name="parameters" element="zas:getFlowState"/>
+	<wsdl:message name="getFlowRequest">
+		<wsdl:part name="parameters" element="zas:getFlow"/>
 	</wsdl:message>
-	<wsdl:message name="getFlowStateResponse">
-		<wsdl:part name="parameters" element="zas:getFlowStateResponse"/>
+	<wsdl:message name="getFlowResponse">
+		<wsdl:part name="parameters" element="zas:getFlowResponse"/>
 	</wsdl:message>
 	<wsdl:portType name="ZAS">
 		<wsdl:documentation>
@@ -419,40 +418,40 @@
 			<wsdl:input message="tns:deleteChannelAuthorizationRequest"/>
 			<wsdl:output message="tns:deleteChannelAuthorizationResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowTargetState">
+		<wsdl:operation name="searchFlowTarget">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:searchFlowTargetStateRequest"/>
-			<wsdl:output message="tns:searchFlowTargetStateResponse"/>
+			<wsdl:input message="tns:searchFlowTargetRequest"/>
+			<wsdl:output message="tns:searchFlowTargetResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowTargetState">
+		<wsdl:operation name="getFlowTarget">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:getFlowTargetStateRequest"/>
-			<wsdl:output message="tns:getFlowTargetStateResponse"/>
+			<wsdl:input message="tns:getFlowTargetRequest"/>
+			<wsdl:output message="tns:getFlowTargetResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="modifyFlowTargetState">
+		<wsdl:operation name="modifyFlowTarget">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:modifyFlowTargetStateRequest"/>
-			<wsdl:output message="tns:modifyFlowTargetStateResponse"/>
+			<wsdl:input message="tns:modifyFlowTargetRequest"/>
+			<wsdl:output message="tns:modifyFlowTargetResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowState">
+		<wsdl:operation name="searchFlow">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:searchFlowStateRequest"/>
-			<wsdl:output message="tns:searchFlowStateResponse"/>
+			<wsdl:input message="tns:searchFlowRequest"/>
+			<wsdl:output message="tns:searchFlowResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowState">
+		<wsdl:operation name="getFlow">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:getFlowStateRequest"/>
-			<wsdl:output message="tns:getFlowStateResponse"/>
+			<wsdl:input message="tns:getFlowRequest"/>
+			<wsdl:output message="tns:getFlowResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="ZASBinding" type="tns:ZAS">
@@ -709,8 +708,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowTargetState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTargetState"/>
+		<wsdl:operation name="searchFlowTarget">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTarget"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -718,8 +717,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowTargetState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowTargetState"/>
+		<wsdl:operation name="getFlowTarget">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowTarget"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -727,8 +726,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="modifyFlowTargetState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTargetState"/>
+		<wsdl:operation name="modifyFlowTarget">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -736,8 +735,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowState"/>
+		<wsdl:operation name="searchFlow">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlow"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -745,8 +744,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowState"/>
+		<wsdl:operation name="getFlow">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlow"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

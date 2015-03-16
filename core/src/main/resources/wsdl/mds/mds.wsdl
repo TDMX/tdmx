@@ -35,17 +35,17 @@
 	<wsdl:message name="listAuthorizedChannelOriginResponse">
 		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOriginResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowStateRequest">
-		<wsdl:part name="parameters" element="mds:listFlowState"/>
+	<wsdl:message name="listFlowRequest">
+		<wsdl:part name="parameters" element="mds:listFlow"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowStateResponse">
-		<wsdl:part name="parameters" element="mds:listFlowStateResponse"/>
+	<wsdl:message name="listFlowResponse">
+		<wsdl:part name="parameters" element="mds:listFlowResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getTargetSessionRequest">
-		<wsdl:part name="parameters" element="mds:getTargetSession"/>
+	<wsdl:message name="getFlowTargetRequest">
+		<wsdl:part name="parameters" element="mds:getFlowTarget"/>
 	</wsdl:message>
-	<wsdl:message name="getTargetSessionResponse">
-		<wsdl:part name="parameters" element="mds:getTargetSessionResponse"/>
+	<wsdl:message name="getFlowTargetResponse">
+		<wsdl:part name="parameters" element="mds:getFlowTargetResponse"/>
 	</wsdl:message>
 	<wsdl:message name="setTargetSessionRequest">
 		<wsdl:part name="parameters" element="mds:setTargetSession"/>
@@ -120,19 +120,19 @@
 			<wsdl:input message="tns:listAuthorizedChannelOriginRequest"/>
 			<wsdl:output message="tns:listAuthorizedChannelOriginResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listFlowState">
+		<wsdl:operation name="listFlow">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listFlowStateRequest"/>
-			<wsdl:output message="tns:listFlowStateResponse"/>
+			<wsdl:input message="tns:listFlowRequest"/>
+			<wsdl:output message="tns:listFlowResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="getTargetSession">
+		<wsdl:operation name="getFlowTarget">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:getTargetSessionRequest"/>
-			<wsdl:output message="tns:getTargetSessionResponse"/>
+			<wsdl:input message="tns:getFlowTargetRequest"/>
+			<wsdl:output message="tns:getFlowTargetResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="setTargetSession">
 			<wsdl:documentation>
@@ -220,8 +220,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listFlowState">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listFlowState"/>
+		<wsdl:operation name="listFlow">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listFlow"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -229,8 +229,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="getTargetSession">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getTargetSession"/>
+		<wsdl:operation name="getFlowTarget">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getFlowTarget"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
