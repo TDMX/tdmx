@@ -17,17 +17,17 @@
 			<xsd:include schemaLocation="mds.xsd"/>
 		</xsd:schema>
 	</wsdl:types>
-	<wsdl:message name="getAddressRequest">
-		<wsdl:part name="parameters" element="mds:getAddress"/>
+	<wsdl:message name="getDestinationAddressRequest">
+		<wsdl:part name="parameters" element="mds:getDestinationAddress"/>
 	</wsdl:message>
-	<wsdl:message name="getAddressResponse">
-		<wsdl:part name="parameters" element="mds:getAddressResponse"/>
+	<wsdl:message name="getDestinationAddressResponse">
+		<wsdl:part name="parameters" element="mds:getDestinationAddressResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listServiceRequest">
-		<wsdl:part name="parameters" element="mds:listService"/>
+	<wsdl:message name="listAuthorizedServiceRequest">
+		<wsdl:part name="parameters" element="mds:listAuthorizedService"/>
 	</wsdl:message>
-	<wsdl:message name="listServiceResponse">
-		<wsdl:part name="parameters" element="mds:listServiceResponse"/>
+	<wsdl:message name="listAuthorizedServiceResponse">
+		<wsdl:part name="parameters" element="mds:listAuthorizedServiceResponse"/>
 	</wsdl:message>
 	<wsdl:message name="listAuthorizedChannelOriginRequest">
 		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOrigin"/>
@@ -99,19 +99,19 @@
 		<wsdl:documentation>
 				Bla Bla
 		</wsdl:documentation>
-		<wsdl:operation name="getAddress">
+		<wsdl:operation name="getDestinationAddress">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:getAddressRequest"/>
-			<wsdl:output message="tns:getAddressResponse"/>
+			<wsdl:input message="tns:getDestinationAddressRequest"/>
+			<wsdl:output message="tns:getDestinationAddressResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listService">
+		<wsdl:operation name="listAuthorizedService">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listServiceRequest"/>
-			<wsdl:output message="tns:listServiceResponse"/>
+			<wsdl:input message="tns:listAuthorizedServiceRequest"/>
+			<wsdl:output message="tns:listAuthorizedServiceResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="listAuthorizedChannelOrigin">
 			<wsdl:documentation>
@@ -193,8 +193,8 @@
 	</wsdl:portType>
 	<wsdl:binding name="MDSBinding" type="tns:MDS">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="getAddress">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getAddress"/>
+		<wsdl:operation name="getDestinationAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getDestinationAddress"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -202,8 +202,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listService">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listService"/>
+		<wsdl:operation name="listAuthorizedService">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listAuthorizedService"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

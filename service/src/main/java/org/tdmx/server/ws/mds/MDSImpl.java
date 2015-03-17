@@ -22,16 +22,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.sp.mds.Download;
 import org.tdmx.core.api.v01.sp.mds.DownloadResponse;
-import org.tdmx.core.api.v01.sp.mds.GetAddress;
-import org.tdmx.core.api.v01.sp.mds.GetAddressResponse;
+import org.tdmx.core.api.v01.sp.mds.GetDestinationAddress;
+import org.tdmx.core.api.v01.sp.mds.GetDestinationAddressResponse;
 import org.tdmx.core.api.v01.sp.mds.GetFlowTarget;
 import org.tdmx.core.api.v01.sp.mds.GetFlowTargetResponse;
 import org.tdmx.core.api.v01.sp.mds.ListAuthorizedChannelOrigin;
 import org.tdmx.core.api.v01.sp.mds.ListAuthorizedChannelOriginResponse;
+import org.tdmx.core.api.v01.sp.mds.ListAuthorizedService;
+import org.tdmx.core.api.v01.sp.mds.ListAuthorizedServiceResponse;
 import org.tdmx.core.api.v01.sp.mds.ListFlow;
 import org.tdmx.core.api.v01.sp.mds.ListFlowResponse;
-import org.tdmx.core.api.v01.sp.mds.ListService;
-import org.tdmx.core.api.v01.sp.mds.ListServiceResponse;
 import org.tdmx.core.api.v01.sp.mds.Receive;
 import org.tdmx.core.api.v01.sp.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.sp.mds.SetTargetSession;
@@ -74,7 +74,7 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public ListServiceResponse listService(ListService parameters) {
+	public ListAuthorizedServiceResponse listAuthorizedService(ListAuthorizedService parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -98,7 +98,7 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public GetAddressResponse getAddress(GetAddress parameters) {
+	public GetDestinationAddressResponse getDestinationAddress(GetDestinationAddress parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}

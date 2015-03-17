@@ -54,7 +54,7 @@
 			<xs:documentation>list the authorized channels associated with the source credential.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="destination" type="msg:ServiceAddressFilter">
+			<xs:element name="destination" type="msg:ChannelDestinationFilter">
 				<xs:annotation>
 					<xs:documentation>a filter criteria of the channel destination.</xs:documentation>
 				</xs:annotation>

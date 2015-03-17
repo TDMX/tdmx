@@ -75,22 +75,6 @@
 			<xs:element ref="domain" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ServiceAddress">
-		<xs:complexContent>
-			<xs:extension base="Service">
-				<xs:sequence>
-					<xs:element ref="localname"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="ServiceAddressFilter">
-		<xs:sequence>
-			<xs:element ref="localname" minOccurs="0"/>
-			<xs:element ref="servicename" minOccurs="0"/>
-			<xs:element ref="domain" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="IpZone">
 		<xs:sequence>
 			<xs:element name="name" type="ipzonename"/>
@@ -141,7 +125,7 @@
 			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="ChannelOrigin">
+	<xs:complexType name="ChannelEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Address">
 				<xs:sequence>
@@ -150,7 +134,7 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="ChannelOriginFilter">
+	<xs:complexType name="ChannelEndpointFilter">
 		<xs:annotation>
 			<xs:documentation>A filter criteria for searching for Channel Origins.</xs:documentation>
 		</xs:annotation>
@@ -162,23 +146,21 @@
 	</xs:complexType>
 	<xs:complexType name="ChannelDestination">
 		<xs:complexContent>
-			<xs:extension base="ServiceAddress">
+			<xs:extension base="ChannelEndpoint">
 				<xs:sequence>
-					<xs:element ref="serviceprovider"/>
+					<xs:element ref="servicename"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="ChannelDestinationFilter">
-		<xs:annotation>
-			<xs:documentation>A filter criteria for searching for Channel Destinations.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="localname" minOccurs="0"/>
-			<xs:element ref="servicename" minOccurs="0"/>
-			<xs:element ref="domain" minOccurs="0"/>
-			<xs:element ref="serviceprovider" minOccurs="0"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="ChannelEndpointFilter">
+				<xs:sequence>
+					<xs:element ref="servicename" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Channel">
 		<xs:annotation>
@@ -194,7 +176,7 @@
 			<xs:documentation>A filter criteria for searching for Channels.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="origin" type="ChannelOriginFilter" minOccurs="0"/>
+			<xs:element name="origin" type="ChannelEndpointFilter" minOccurs="0"/>
 			<xs:element name="destination" type="ChannelDestinationFilter" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -514,7 +496,7 @@
 	<xs:element name="localname" type="localname"/>
 	<xs:element name="domain" type="domainname"/>
 	<xs:element name="address" type="Address"/>
-	<xs:element name="origin" type="ChannelOrigin"/>
+	<xs:element name="origin" type="ChannelEndpoint"/>
 	<xs:element name="destination" type="ChannelDestination"/>
 	<xs:element name="serviceprovider" type="url"/>
 	<xs:element name="servicename" type="servicename"/>
