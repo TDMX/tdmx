@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * AuthorizationService for ZoneCredentials.
@@ -74,17 +75,20 @@ public interface AgentCredentialAuthorizationService {
 		private final AuthorizationFailureCode failureCode;
 		private final PKIXCertificate publicCertificate;
 		private final AccountZone accountZone;
+		private final Zone zone;
 
-		public AuthorizationResult(PKIXCertificate publicCertificate, AccountZone accountZone) {
+		public AuthorizationResult(PKIXCertificate publicCertificate, AccountZone accountZone, Zone zone) {
 			this.publicCertificate = publicCertificate;
 			this.failureCode = null;
 			this.accountZone = accountZone;
+			this.zone = zone;
 		}
 
 		public AuthorizationResult(AuthorizationFailureCode failureCode) {
 			this.publicCertificate = null;
 			this.failureCode = failureCode;
 			this.accountZone = null;
+			this.zone = null;
 		}
 
 		/**
@@ -103,6 +107,15 @@ public interface AgentCredentialAuthorizationService {
 		 */
 		public AccountZone getAccountZone() {
 			return accountZone;
+		}
+
+		/**
+		 * The Zone holds the root entity of the zone data.
+		 * 
+		 * @return
+		 */
+		public Zone getZone() {
+			return zone;
 		}
 
 		/**

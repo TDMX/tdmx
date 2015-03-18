@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-import org.tdmx.lib.common.domain.ZoneReference;
 
 public class ZoneFacade {
 
@@ -33,25 +32,25 @@ public class ZoneFacade {
 
 	public static final String DUMMY_SP_URL = "https://localhost:9000/api/mrs/v1.0";
 
-	public static Zone createZone(ZoneReference zone) throws Exception {
-		Zone z = new Zone(zone);
+	public static Zone createZone(Long accountZoneId, String zoneApex) throws Exception {
+		Zone z = new Zone(accountZoneId, zoneApex);
 		return z;
 	}
 
-	public static Domain createDomain(ZoneReference zone, String domainName) throws Exception {
+	public static Domain createDomain(Zone zone, String domainName) throws Exception {
 		Domain d = new Domain(zone);
 		d.setDomainName(domainName);
 		return d;
 	}
 
-	public static Address createAddress(ZoneReference zone, String domainName, String localName) throws Exception {
+	public static Address createAddress(Zone zone, String domainName, String localName) throws Exception {
 		Address a = new Address(zone);
 		a.setDomainName(domainName);
 		a.setLocalName(localName);
 		return a;
 	}
 
-	public static Service createService(ZoneReference zone, String domainName, String serviceName, int concurrencyLimit)
+	public static Service createService(Zone zone, String domainName, String serviceName, int concurrencyLimit)
 			throws Exception {
 		Service s = new Service(zone);
 		s.setDomainName(domainName);
@@ -79,7 +78,7 @@ public class ZoneFacade {
 	}
 
 	// TODO give DAC to be able to construct correct signatures
-	public static ChannelAuthorization createChannelAuthorization(ZoneReference zone, ChannelOrigin origin,
+	public static ChannelAuthorization createChannelAuthorization(Zone zone, ChannelOrigin origin,
 			ChannelDestination dest) {
 		ChannelAuthorization c = new ChannelAuthorization(zone);
 		c.setOrigin(origin);

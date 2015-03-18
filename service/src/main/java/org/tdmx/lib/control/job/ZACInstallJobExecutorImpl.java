@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
@@ -76,7 +75,6 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}
-		ZoneReference zone = az.getZoneReference();
 		String partitionId = az.getZonePartitionId();
 		if (!StringUtils.hasText(partitionId)) {
 			throw new IllegalStateException("AccountZone#zonePartitionId missing.");
@@ -96,9 +94,10 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 
 		// make sure the Zone is present in the ZoneDB
 		zonePartitionIdProvider.setPartitionId(partitionId);
+		Zone zone = null;
 		try {
-			Zone z = getZoneService().findByZoneApex(zone);
-			if (z == null) {
+			zone = getZoneService().findByZoneApex(az.getId(), az.getZoneApex());
+			if (zone == null) {
 				throw new IllegalStateException("Zone missing.");
 			}
 		} finally {

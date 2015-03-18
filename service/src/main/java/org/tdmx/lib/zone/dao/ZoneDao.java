@@ -18,7 +18,6 @@
  */
 package org.tdmx.lib.zone.dao;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -39,6 +38,6 @@ public interface ZoneDao {
 
 	public Zone loadById(Long id);
 
-	public Zone loadByZoneApex(ZoneReference zone);
+	public Zone loadByZoneApex(Long accountZoneId, String zoneApex);
 
 }

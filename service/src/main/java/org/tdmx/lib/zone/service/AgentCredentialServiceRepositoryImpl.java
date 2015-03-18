@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Transactional CRUD Services for AgentCredential Entity.
@@ -92,13 +92,13 @@ public class AgentCredentialServiceRepositoryImpl implements AgentCredentialServ
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria) {
+	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria) {
 		return getAgentCredentialDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public AgentCredential findByFingerprint(ZoneReference zone, String fingerprint) {
+	public AgentCredential findByFingerprint(Zone zone, String fingerprint) {
 		if (!StringUtils.hasText(fingerprint)) {
 			throw new IllegalArgumentException("missing fingerprint");
 		}

@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
 
@@ -31,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 
@@ -42,20 +42,19 @@ public class ZoneServiceRepositoryUnitTest {
 	@Autowired
 	private ZoneService service;
 
-	private ZoneReference zone;
+	private Zone zone;
 
 	@Before
 	public void doSetup() throws Exception {
-		zone = new ZoneReference(new Random().nextLong(), "zone.root.test");
+		zone = ZoneFacade.createZone(new Random().nextLong(), "zone.root.test");
 
-		Zone az = ZoneFacade.createZone(zone);
-
-		service.createOrUpdate(az);
+		service.createOrUpdate(zone);
+		assertNotNull(zone.getId());
 	}
 
 	@After
 	public void doTeardown() {
-		Zone az = service.findByZoneApex(zone);
+		Zone az = service.findById(zone.getId());
 		if (az != null) {
 			service.delete(az);
 		}
@@ -68,26 +67,29 @@ public class ZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Zone az = service.findByZoneApex(zone);
+		Zone az = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
 		assertNotNull(az);
-		assertEquals(zone, az.getZoneReference());
+		assertEquals(zone.getId(), az.getId());
+		assertEquals(zone.getAccountZoneId(), az.getAccountZoneId());
 	}
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		ZoneReference r = new ZoneReference(zone.getTenantId(), "gugus");
-		Zone az = service.findByZoneApex(r);
+		Zone az = service.findByZoneApex(zone.getAccountZoneId(), "gugus");
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Zone az = service.findByZoneApex(zone);
+		Zone az = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
 		service.createOrUpdate(az);
 
-		Zone az2 = service.findByZoneApex(zone);
+		Zone az2 = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
 
-		assertEquals(az.getZoneReference(), az2.getZoneReference());
+		assertTrue(az != az2);
+		assertEquals(az.getAccountZoneId(), az2.getAccountZoneId());
+		assertEquals(az.getZoneApex(), az2.getZoneApex());
+		assertEquals(az.getId(), az2.getId());
 	}
 
 }

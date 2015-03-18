@@ -26,13 +26,11 @@ import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
-import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -111,7 +109,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException {
+	public TestDataGeneratorOutput setUp(TestDataGeneratorInput input) throws CryptoCertificateException {
 		TestDataGeneratorOutput result = new TestDataGeneratorOutput();
 		// create an Account in ControlDB if we are not provided one with the input data.
 		if (input.getAccount() == null) {
@@ -122,12 +120,11 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 		// create the AccountZone in ControlDB
 		createAccountZone(result.getAccount(), input.getZoneApex(), input.getZonePartitionId(), result);
-		ZoneReference zone = result.getAccountZone().getZoneReference();
 		try {
 			zonePartitionIdProvider.setPartitionId(input.getZonePartitionId());
 
-			Zone zE = createZone(zone);
-			result.setZone(zE);
+			Zone zone = createZone(result.getAccountZone().getId(), result.getAccountZone().getZoneApex());
+			result.setZone(zone);
 
 			// create ZACs
 			PKIXCredential zac = null;
@@ -222,26 +219,16 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	}
 
 	@Override
-	public void tearDown(Account account) {
-		boolean more = true;
-		while (more) {
-			AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 999));
-			List<AccountZone> accountZones = accountZoneService.search(sc);
-			if (!accountZones.isEmpty()) {
-				for (AccountZone az : accountZones) {
-					tearDown(az);
-				}
-			} else {
-				more = false;
-			}
-		}
+	public void tearDown(TestDataGeneratorInput input, TestDataGeneratorOutput output) {
+		tearDown(output.getAccountZone(), output.getZone());
 
 		// remove Account
-		deleteAccount(account);
+		if (input.getAccount() == null && output.getAccount() != null) {
+			deleteAccount(output.getAccount());
+		}
 	}
 
-	@Override
-	public void tearDown(AccountZone accountZone) {
+	private void tearDown(AccountZone accountZone, Zone zone) {
 		if (accountZone.getId() == null) {
 			throw new IllegalArgumentException("missing AccountZone#id");
 		}
@@ -254,7 +241,6 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		if (!StringUtils.hasText(accountZone.getZonePartitionId())) {
 			throw new IllegalArgumentException("missing zonePartitionId");
 		}
-		ZoneReference zone = accountZone.getZoneReference();
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
 
@@ -308,89 +294,84 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 	}
 
-	private void deleteZone(ZoneReference zone) {
-		Zone z = zoneService.findByZoneApex(zone);
+	private void deleteZone(Zone zone) {
+		Zone z = zoneService.findById(zone.getId());
 		if (z != null) {
 			zoneService.delete(z);
 		}
 	}
 
-	private void deleteDomains(ZoneReference zone) {
+	private void deleteDomains(Zone zone) {
 		boolean more = true;
 		while (more) {
 			DomainSearchCriteria sc = new DomainSearchCriteria(new PageSpecifier(0, 999));
 
 			List<Domain> domains = domainService.search(zone, sc);
+			for (Domain d : domains) {
+				domainService.delete(d);
+			}
 			if (domains.isEmpty()) {
 				more = false;
-			} else {
-				for (Domain d : domains) {
-					domainService.delete(d);
-				}
 			}
 		}
 	}
 
-	private void deleteServices(ZoneReference zone) {
+	private void deleteServices(Zone zone) {
 		boolean more = true;
 		while (more) {
 			ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(0, 999));
 
 			List<Service> services = serviceService.search(zone, sc);
+			for (Service s : services) {
+				serviceService.delete(s);
+			}
 			if (services.isEmpty()) {
 				more = false;
-			} else {
-				for (Service s : services) {
-					serviceService.delete(s);
-				}
 			}
 		}
 	}
 
-	private void deleteAddresses(ZoneReference zone) {
+	private void deleteAddresses(Zone zone) {
 		boolean more = true;
 		while (more) {
 			AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(0, 999));
 
 			List<Address> addresses = addressService.search(zone, sc);
+			for (Address a : addresses) {
+				addressService.delete(a);
+			}
 			if (addresses.isEmpty()) {
 				more = false;
-			} else {
-				for (Address a : addresses) {
-					addressService.delete(a);
-				}
 			}
 		}
 	}
 
-	private void deleteAgentCredentials(ZoneReference zone) {
+	private void deleteAgentCredentials(Zone zone) {
 		boolean more = true;
 		while (more) {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 999));
 
 			List<AgentCredential> agentcredentials = agentCredentialService.search(zone, sc);
+			for (AgentCredential ac : agentcredentials) {
+				agentCredentialService.delete(ac);
+			}
 			if (agentcredentials.isEmpty()) {
 				more = false;
-			} else {
-				for (AgentCredential ac : agentcredentials) {
-					agentCredentialService.delete(ac);
-				}
 			}
 		}
 	}
 
-	private void deleteChannelAuthorizations(ZoneReference zone) {
+	private void deleteChannelAuthorizations(Zone zone) {
 		boolean more = true;
 		while (more) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 
 			List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, sc);
+			for (ChannelAuthorization ca : channelAuths) {
+				channelAuthorizationService.delete(ca);
+			}
 			if (channelAuths.isEmpty()) {
 				more = false;
-			} else {
-				for (ChannelAuthorization ca : channelAuths) {
-					channelAuthorizationService.delete(ca);
-				}
 			}
 		}
 	}
@@ -443,7 +424,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		return accountZoneAdminCredentialService.findByFingerprint(zoneAC.getFingerprint());
 	}
 
-	private AgentCredential createAgentCredential(ZoneReference zone, PKIXCredential credential)
+	private AgentCredential createAgentCredential(Zone zone, PKIXCredential credential)
 			throws CryptoCertificateException {
 		AgentCredential ac = new AgentCredential(zone, credential.getCertificateChain());
 		ac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
@@ -472,16 +453,15 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		result.setAccountZone(az);
 	}
 
-	private Zone createZone(ZoneReference zone) {
-		Zone z = new Zone(zone);
+	private Zone createZone(Long accountZoneId, String zoneApex) {
+		Zone z = new Zone(accountZoneId, zoneApex);
 
 		zoneService.createOrUpdate(z);
 
-		z = zoneService.findByZoneApex(zone);
 		return z;
 	}
 
-	private Domain createDomain(ZoneReference zone) {
+	private Domain createDomain(Zone zone) {
 		Domain d = new Domain(zone);
 		d.setDomainName("domain" + getUniqueID(10) + "." + zone.getZoneApex());
 
@@ -492,7 +472,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		return d;
 	}
 
-	private Service createService(ZoneReference zone, String domainName) {
+	private Service createService(Zone zone, String domainName) {
 		Service svc = new Service(zone);
 		svc.setDomainName(domainName);
 		svc.setServiceName("svc" + getUniqueID(10));
@@ -504,7 +484,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		return svc;
 	}
 
-	private Address createAddress(ZoneReference zone, String domainName) {
+	private Address createAddress(Zone zone, String domainName) {
 		Address add = new Address(zone);
 		add.setDomainName(domainName);
 		add.setLocalName("u" + getUniqueID(10));

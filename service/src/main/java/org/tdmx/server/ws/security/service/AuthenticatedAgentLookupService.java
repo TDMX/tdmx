@@ -19,7 +19,7 @@
 package org.tdmx.server.ws.security.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.common.domain.ZoneReference;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * The Service to use to lookup the authenticated agent's certificate and zone DB partition information.
@@ -44,10 +44,10 @@ public interface AuthenticatedAgentLookupService {
 	public String getZoneDbPartitionId();
 
 	/**
-	 * Return the ZoneReference ( tenant + zoneApex ) of the authorized agent.
+	 * Return the Zone of the authorized agent.
 	 * 
-	 * @return the ZoneReference ( tenant + zoneApex ) of the authorized agent.
+	 * @return the Zone of the authorized agent.
 	 */
-	public ZoneReference getZoneReference();
+	public Zone getZone();
 
 }

@@ -27,9 +27,9 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -82,17 +82,16 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	}
 
 	@Override
-	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria) {
-		if (zone.getTenantId() == null) {
-			throw new IllegalArgumentException("missing tenantId");
+	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
 		}
 		if (!StringUtils.hasText(zone.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
 		JPAQuery query = new JPAQuery(em).from(agentCredential);
 
-		BooleanExpression where = agentCredential.tenantId.eq(zone.getTenantId()).and(
-				agentCredential.zoneApex.eq(zone.getZoneApex()));
+		BooleanExpression where = agentCredential.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(agentCredential.domainName.eq(criteria.getDomainName()));

@@ -27,9 +27,9 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -81,16 +81,13 @@ public class DomainDaoImpl implements DomainDao {
 	}
 
 	@Override
-	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria) {
-		if (zone.getTenantId() == null) {
-			throw new IllegalArgumentException("missing tenantId");
-		}
-		if (!StringUtils.hasText(zone.getZoneApex())) {
-			throw new IllegalArgumentException("missing zoneApex");
+	public List<Domain> search(Zone zone, DomainSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
 		}
 		JPAQuery query = new JPAQuery(em).from(domain);
 
-		BooleanExpression where = domain.tenantId.eq(zone.getTenantId()).and(domain.zoneApex.eq(zone.getZoneApex()));
+		BooleanExpression where = domain.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));

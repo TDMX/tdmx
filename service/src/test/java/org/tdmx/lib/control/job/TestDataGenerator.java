@@ -19,8 +19,6 @@
 package org.tdmx.lib.control.job;
 
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
-import org.tdmx.lib.control.domain.Account;
-import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 
@@ -31,19 +29,13 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
  */
 public interface TestDataGenerator {
 
-	public TestDataGeneratorOutput generate(TestDataGeneratorInput input) throws CryptoCertificateException;
+	public TestDataGeneratorOutput setUp(TestDataGeneratorInput input) throws CryptoCertificateException;
 
 	/**
-	 * Remove the Account and all AccountZone information in the ControlDB and ZoneDB.
+	 * Remove the data setUp in the ControlDB and ZoneDB.
 	 * 
 	 * @param account
 	 */
-	public void tearDown(Account account);
+	public void tearDown(TestDataGeneratorInput input, TestDataGeneratorOutput output);
 
-	/**
-	 * Remove the AccountZone information in the ControlDB and ZoneDB.
-	 * 
-	 * @param zone
-	 */
-	public void tearDown(AccountZone zone);
 }

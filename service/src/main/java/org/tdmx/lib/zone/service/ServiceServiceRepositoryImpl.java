@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Transactional CRUD Services for Service Entity.
@@ -86,13 +86,13 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria) {
+	public List<Service> search(Zone zone, ServiceSearchCriteria criteria) {
 		return getServiceDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Service findByName(ZoneReference zone, String domainName, String serviceName) {
+	public Service findByName(Zone zone, String domainName, String serviceName) {
 		if (!StringUtils.hasText(domainName)) {
 			throw new IllegalArgumentException("missing domainName");
 		}

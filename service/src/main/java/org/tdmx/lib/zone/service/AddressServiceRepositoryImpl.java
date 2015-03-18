@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.AddressDao;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Transactional CRUD Services for Address Entity.
@@ -86,13 +86,13 @@ public class AddressServiceRepositoryImpl implements AddressService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria) {
+	public List<Address> search(Zone zone, AddressSearchCriteria criteria) {
 		return getAddressDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Address findByName(ZoneReference zone, String domainName, String localName) {
+	public Address findByName(Zone zone, String domainName, String localName) {
 		if (!StringUtils.hasText(domainName)) {
 			throw new IllegalArgumentException("missing domainName");
 		}

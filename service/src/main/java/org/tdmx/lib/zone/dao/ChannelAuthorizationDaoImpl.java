@@ -27,9 +27,9 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -82,17 +82,13 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 	}
 
 	@Override
-	public List<ChannelAuthorization> search(ZoneReference zone, ChannelAuthorizationSearchCriteria criteria) {
-		if (zone.getTenantId() == null) {
-			throw new IllegalArgumentException("missing tenantId");
-		}
-		if (!StringUtils.hasText(zone.getZoneApex())) {
-			throw new IllegalArgumentException("missing zoneApex");
+	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
 		}
 		JPAQuery query = new JPAQuery(em).from(channelAuthorization);
 
-		BooleanExpression where = channelAuthorization.tenantId.eq(zone.getTenantId()).and(
-				channelAuthorization.zoneApex.eq(zone.getZoneApex()));
+		BooleanExpression where = channelAuthorization.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
 			where = where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));

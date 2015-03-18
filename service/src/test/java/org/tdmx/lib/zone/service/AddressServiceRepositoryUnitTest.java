@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -51,17 +50,16 @@ public class AddressServiceRepositoryUnitTest {
 
 	private String domainName;
 	private String localName;
-	private ZoneReference zone;
+	private Zone zone;
 
 	@Before
 	public void doSetup() throws Exception {
 
-		zone = new ZoneReference(new Random().nextLong(), "ZONE.ROOT.TEST");
+		zone = ZoneFacade.createZone(new Random().nextLong(), "ZONE.ROOT.TEST");
 		domainName = "SUBDOMAIN." + zone.getZoneApex();
 		localName = "addressName";
 
-		Zone az = ZoneFacade.createZone(zone);
-		zoneService.createOrUpdate(az);
+		zoneService.createOrUpdate(zone);
 
 		Address d = ZoneFacade.createAddress(zone, domainName, localName);
 		addressService.createOrUpdate(d);
@@ -73,7 +71,7 @@ public class AddressServiceRepositoryUnitTest {
 		if (d != null) {
 			addressService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(zone);
+		Zone az = zoneService.findById(zone.getId());
 		if (az != null) {
 			zoneService.delete(az);
 		}
@@ -89,7 +87,6 @@ public class AddressServiceRepositoryUnitTest {
 	public void testLookup() throws Exception {
 		Address a = addressService.findByName(zone, domainName, localName);
 		assertNotNull(a);
-		assertEquals(zone, a.getZoneReference());
 		assertEquals(domainName, a.getDomainName());
 		assertEquals(localName, a.getLocalName());
 	}
@@ -102,7 +99,6 @@ public class AddressServiceRepositoryUnitTest {
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(zone, a.getZoneReference());
 		assertEquals(domainName, a.getDomainName());
 		assertEquals(localName, a.getLocalName());
 	}
@@ -117,7 +113,6 @@ public class AddressServiceRepositoryUnitTest {
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(zone, a.getZoneReference());
 		assertEquals(domainName, a.getDomainName());
 		assertEquals(localName, a.getLocalName());
 	}
@@ -133,7 +128,6 @@ public class AddressServiceRepositoryUnitTest {
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(zone, a.getZoneReference());
 		assertEquals(domainName, a.getDomainName());
 		assertEquals(localName, a.getLocalName());
 	}
@@ -148,25 +142,8 @@ public class AddressServiceRepositoryUnitTest {
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(zone, a.getZoneReference());
 		assertEquals(domainName, a.getDomainName());
 		assertEquals(localName, a.getLocalName());
-	}
-
-	@Test
-	public void testSearch_UnknownZoneAndAddress() throws Exception {
-		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setLocalName(localName);
-
-		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
-		List<Address> addresss = addressService.search(gugus, criteria);
-		assertNotNull(addresss);
-		assertEquals(0, addresss.size());
-
-		gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
-		addresss = addressService.search(gugus, criteria);
-		assertNotNull(addresss);
-		assertEquals(0, addresss.size());
 	}
 
 	@Test

@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.DomainDao;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Transactional CRUD Services for Domain Entity.
@@ -86,7 +86,7 @@ public class DomainServiceRepositoryImpl implements DomainService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria) {
+	public List<Domain> search(Zone zone, DomainSearchCriteria criteria) {
 		return getDomainDao().search(zone, criteria);
 	}
 
@@ -98,7 +98,7 @@ public class DomainServiceRepositoryImpl implements DomainService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Domain findByDomainName(ZoneReference zone, String domainName) {
+	public Domain findByDomainName(Zone zone, String domainName) {
 		if (!StringUtils.hasText(domainName)) {
 			throw new IllegalArgumentException("missing domainName");
 		}

@@ -20,11 +20,11 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Management Services for a ChannelAuthorization.
@@ -36,11 +36,11 @@ public interface ChannelAuthorizationService {
 
 	public void createOrUpdate(ChannelAuthorization auth);
 
-	public ChannelAuthorization findByChannel(ZoneReference zone, ChannelOrigin origin, ChannelDestination dest);
+	public ChannelAuthorization findByChannel(Zone zone, ChannelOrigin origin, ChannelDestination dest);
 
 	public ChannelAuthorization findById(Long id);
 
-	public List<ChannelAuthorization> search(ZoneReference zone, ChannelAuthorizationSearchCriteria criteria);
+	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
 	public void delete(ChannelAuthorization auth);
 

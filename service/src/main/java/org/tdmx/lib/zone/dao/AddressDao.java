@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * DAO for the Address Entity.
@@ -42,5 +42,5 @@ public interface AddressDao {
 
 	public Address loadById(Long id);
 
-	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria);
+	public List<Address> search(Zone zone, AddressSearchCriteria criteria);
 }

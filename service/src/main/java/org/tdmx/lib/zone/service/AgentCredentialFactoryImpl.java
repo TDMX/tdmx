@@ -25,9 +25,9 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Factory for AgentCredential Entity.
@@ -51,7 +51,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public AgentCredential createAgentCredential(ZoneReference authorizedZone, PKIXCertificate[] certificateChain) {
+	public AgentCredential createAgentCredential(Zone authorizedZone, PKIXCertificate[] certificateChain) {
 		if (certificateChain == null || certificateChain.length <= 0) {
 			log.error("certificateChain missing");
 			return null;
@@ -76,7 +76,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createDAC(ZoneReference authorizedZone, byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createDAC(Zone authorizedZone, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
 
@@ -105,7 +105,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createUC(ZoneReference authorizedZone, byte[] userCert, byte[] domainCert, byte[] zacCert) {
+	public AgentCredential createUC(Zone authorizedZone, byte[] userCert, byte[] domainCert, byte[] zacCert) {
 		try {
 			PKIXCertificate uc = CertificateIOUtils.decodeX509(userCert);
 

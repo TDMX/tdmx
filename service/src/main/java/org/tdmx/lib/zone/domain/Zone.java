@@ -28,10 +28,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.common.domain.ZoneReference;
-
 /**
  * An Zone is a domain name incl. all subdomains thereof, managed by a ServiceProvider
+ * 
+ * NOTE: we do not map any OneToMany relation from the Zone since we want to go through paging result lists only.
  * 
  * @author Peter Klauser
  * 
@@ -56,12 +56,12 @@ public class Zone implements Serializable {
 	private Long id;
 
 	/**
-	 * The tenantId is the entityID of the AccountZone in ControlDB.
+	 * The accountId is the entityID of the AccountZone in ControlDB.
 	 */
 	@Column(nullable = false)
-	private Long tenantId;
+	private Long accountZoneId;
 
-	// TODO unique index tenantId+zoneApex
+	// TODO unique index accountId+zoneApex
 	@Column(length = MAX_NAME_LEN, nullable = false)
 	private String zoneApex;
 
@@ -71,9 +71,9 @@ public class Zone implements Serializable {
 	Zone() {
 	}
 
-	public Zone(ZoneReference zone) {
-		this.tenantId = zone.getTenantId();
-		this.zoneApex = zone.getZoneApex();
+	public Zone(Long accountZoneId, String zoneApex) {
+		this.accountZoneId = accountZoneId;
+		this.zoneApex = zoneApex;
 	}
 
 	// -------------------------------------------------------------------------
@@ -100,8 +100,12 @@ public class Zone implements Serializable {
 		this.id = id;
 	}
 
-	public ZoneReference getZoneReference() {
-		return new ZoneReference(this.tenantId, this.zoneApex);
+	public Long getAccountZoneId() {
+		return accountZoneId;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
 	}
 
 }

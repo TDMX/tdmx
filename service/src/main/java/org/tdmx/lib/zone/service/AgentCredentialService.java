@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Management Services for a AgentCredential.
@@ -36,9 +36,9 @@ public interface AgentCredentialService {
 
 	public AgentCredential findById(Long id);
 
-	public AgentCredential findByFingerprint(ZoneReference zone, String fingerprint);
+	public AgentCredential findByFingerprint(Zone zone, String fingerprint);
 
-	public List<AgentCredential> search(ZoneReference zone, AgentCredentialSearchCriteria criteria);
+	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria);
 
 	public void delete(AgentCredential agentCredential);
 

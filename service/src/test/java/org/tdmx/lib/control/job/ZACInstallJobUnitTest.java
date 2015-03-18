@@ -34,7 +34,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
@@ -74,7 +73,7 @@ public class ZACInstallJobUnitTest {
 	private TestDataGeneratorOutput data;
 	private Long jobId;
 	private String fingerprint;
-	private ZoneReference zone;
+	private Zone zone;
 	private String partitionId;
 
 	@Before
@@ -89,13 +88,13 @@ public class ZACInstallJobUnitTest {
 		input.setNumAddressesPerDomain(0);
 		input.setNumUsersPerAddress(0);
 
-		data = dataGenerator.generate(input);
+		data = dataGenerator.setUp(input);
 
 		AccountZoneAdministrationCredential zac = data.getZacs().get(0).getAc();
 		zac.setJobId(jobId);
 		accountZoneAdministrationCredentialService.createOrUpdate(zac);
 
-		zone = new ZoneReference(data.getAccountZone().getId(), data.getAccountZone().getZoneApex());
+		zone = data.getZone();
 		fingerprint = data.getZacs().get(0).getAc().getFingerprint();
 		partitionId = data.getAccountZone().getZonePartitionId();
 
@@ -112,7 +111,7 @@ public class ZACInstallJobUnitTest {
 	public void doTeardown() {
 		zonePartitionIdProvider.clearPartitionId();
 
-		dataGenerator.tearDown(data.getAccount());
+		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
@@ -145,7 +144,6 @@ public class ZACInstallJobUnitTest {
 		try {
 			AgentCredential zac = agentCredentialService.findByFingerprint(zone, task.getFingerprint());
 			assertNotNull(zac);
-			assertEquals(zone, zac.getZoneReference());
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}
@@ -171,29 +169,6 @@ public class ZACInstallJobUnitTest {
 		assertNotNull(storedZAC);
 		assertNull(storedZAC.getJobId());
 		assertEquals(AccountZoneAdministrationCredentialStatus.NON_ZAC, storedZAC.getCredentialStatus());
-	}
-
-	@Test
-	public void test_MissingZoneInconsistency() throws Exception {
-		zonePartitionIdProvider.setPartitionId(partitionId);
-		try {
-			Zone z = zoneService.findByZoneApex(zone);
-			assertNotNull(z);
-			zoneService.delete(z);
-		} finally {
-			zonePartitionIdProvider.clearPartitionId();
-		}
-
-		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
-		task.setFingerprint(fingerprint);
-		try {
-			executor.execute(jobId, task);
-			fail();
-		} catch (IllegalStateException e) {
-
-		}
 	}
 
 	@Test

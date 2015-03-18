@@ -97,7 +97,6 @@ import org.tdmx.core.api.v01.sp.zas.report.ReportResponse;
 import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
@@ -106,6 +105,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -190,7 +190,7 @@ public class ZASImpl implements ZAS {
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
 		CreateDomainResponse response = new CreateDomainResponse();
-		ZoneReference zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+		Zone zone = checkZACDomainAuthorization(parameters.getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -217,7 +217,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		DeleteDomainResponse response = new DeleteDomainResponse();
 
-		ZoneReference zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+		Zone zone = checkZACDomainAuthorization(parameters.getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -268,7 +268,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
 
 		SearchDomainResponse response = new SearchDomainResponse();
-		ZoneReference zone = checkZACAuthorization(response);
+		Zone zone = checkZACAuthorization(response);
 		if (zone == null) {
 			return response;
 		}
@@ -302,7 +302,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -361,7 +361,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAdministrator parameters) {
 		SearchAdministratorResponse response = new SearchAdministratorResponse();
 
-		ZoneReference zone = checkZACAuthorization(response);
+		Zone zone = checkZACAuthorization(response);
 		if (zone == null) {
 			return response;
 		}
@@ -413,7 +413,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -458,7 +458,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "createAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAddress parameters) {
 		CreateAddressResponse response = new CreateAddressResponse();
 
-		ZoneReference zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		Zone zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -552,7 +552,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -598,7 +598,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		Zone zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -630,7 +630,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -665,7 +665,7 @@ public class ZASImpl implements ZAS {
 	public CreateAdministratorResponse createAdministrator(
 			@WebParam(partName = "parameters", name = "createAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAdministrator parameters) {
 		CreateAdministratorResponse response = new CreateAdministratorResponse();
-		ZoneReference zone = checkZACAuthorization(response);
+		Zone zone = checkZACAuthorization(response);
 		if (zone == null) {
 			return response;
 		}
@@ -714,7 +714,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
+		Zone zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -745,7 +745,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -781,7 +781,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAddress parameters) {
 		DeleteAddressResponse response = new DeleteAddressResponse();
 
-		ZoneReference zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
+		Zone zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -822,7 +822,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -864,15 +864,13 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createUser")
 	public CreateUserResponse createUser(
 			@WebParam(partName = "parameters", name = "createUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateUser parameters) {
-		//
-
 		CreateUserResponse response = new CreateUserResponse();
 		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -927,7 +925,7 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "createService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateService parameters) {
 		CreateServiceResponse response = new CreateServiceResponse();
 
-		ZoneReference zone = checkDomainAuthorization(parameters.getService().getDomain(), response);
+		Zone zone = checkDomainAuthorization(parameters.getService().getDomain(), response);
 		if (zone == null) {
 			return response;
 		}
@@ -969,7 +967,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ZoneReference zone = getAgentService().getZoneReference();
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -1131,16 +1129,16 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zone.
 	 */
-	private ZoneReference checkZACAuthorization(Acknowledge ack) {
+	private Zone checkZACAuthorization(Acknowledge ack) {
 		PKIXCertificate user = checkZACAuthorized(ack);
 		if (user == null) {
 			return null;
 		}
-		return getAgentService().getZoneReference();
+		return getAgentService().getZone();
 	}
 
-	private ZoneReference checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
-		ZoneReference zone = getAgentService().getZoneReference();
+	private Zone checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
+		Zone zone = getAgentService().getZone();
 
 		if (!StringUtils.isSuffix(domain, zone.getZoneApex())) {
 			setError(ErrorCode.OutOfZoneAccess, ack);
@@ -1163,7 +1161,7 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private ZoneReference checkZACDomainAuthorization(String domain, Acknowledge ack) {
+	private Zone checkZACDomainAuthorization(String domain, Acknowledge ack) {
 		if (!checkDomain(domain, ack)) {
 			return null;
 		}
@@ -1182,7 +1180,7 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-	private ZoneReference checkDomainAuthorization(String domain, Acknowledge ack) {
+	private Zone checkDomainAuthorization(String domain, Acknowledge ack) {
 		if (!checkDomain(domain, ack)) {
 			return null;
 		}

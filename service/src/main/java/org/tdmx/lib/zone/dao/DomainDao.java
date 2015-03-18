@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * DAO for the Domain Entity.
@@ -42,5 +42,5 @@ public interface DomainDao {
 
 	public Domain loadById(Long id);
 
-	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria);
+	public List<Domain> search(Zone zone, DomainSearchCriteria criteria);
 }

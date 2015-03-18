@@ -34,13 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -57,7 +57,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	private TestDataGeneratorInput input;
 	private TestDataGeneratorOutput data;
 
-	private ZoneReference zone;
+	private Zone zone;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -71,9 +71,9 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		input.setNumAddressesPerDomain(1);
 		input.setNumUsersPerAddress(1);
 
-		data = dataGenerator.generate(input);
+		data = dataGenerator.setUp(input);
 
-		zone = data.getAccountZone().getZoneReference();
+		zone = data.getZone();
 
 		zonePartitionIdProvider.setPartitionId(input.getZonePartitionId());
 	}
@@ -82,7 +82,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	public void doTeardown() {
 		zonePartitionIdProvider.clearPartitionId();
 
-		dataGenerator.tearDown(data.getAccount());
+		dataGenerator.tearDown(input, data);
 
 	}
 
@@ -168,7 +168,9 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
 
-		ZoneReference gugus = new ZoneReference(new Random().nextLong(), zone.getZoneApex());
+		Zone gugus = new Zone(zone.getAccountZoneId(), zone.getZoneApex());
+		gugus.setId(new Random().nextLong());
+
 		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(gugus, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(0, channelAuths.size());

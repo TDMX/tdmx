@@ -24,9 +24,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
@@ -34,7 +36,7 @@ import javax.persistence.Transient;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.common.domain.ZoneReference;
+import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
 
 /**
  * An AgentCredential is the public certificate of a ZAC, DAC or UC.
@@ -64,14 +66,8 @@ public class AgentCredential implements Serializable {
 	@TableGenerator(name = "CredentialIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	/**
-	 * The tenantId is the entityID of the AccountZone in ControlDB.
-	 */
-	@Column(nullable = false)
-	private Long tenantId;
-
-	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
-	private String zoneApex;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private Zone zone;
 
 	// TODO index fingerprint
 	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false)
@@ -104,9 +100,8 @@ public class AgentCredential implements Serializable {
 	AgentCredential() {
 	}
 
-	public AgentCredential(ZoneReference zone, PKIXCertificate[] certificateChain) throws CryptoCertificateException {
-		this.tenantId = zone.getTenantId();
-		this.zoneApex = zone.getZoneApex();
+	public AgentCredential(Zone zone, PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+		this.zone = zone;
 		setCertificateChain(certificateChain);
 		PKIXCertificate publicKey = getPublicKey();
 		setFingerprint(publicKey.getFingerprint());
@@ -135,8 +130,6 @@ public class AgentCredential implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("AgentCredential [id=");
 		builder.append(id);
-		builder.append(" ,zoneApex=");
-		builder.append(zoneApex);
 		builder.append(", fingerprint=");
 		builder.append(fingerprint);
 		builder.append(" ,type=");
@@ -210,8 +203,17 @@ public class AgentCredential implements Serializable {
 		this.id = id;
 	}
 
-	public ZoneReference getZoneReference() {
-		return new ZoneReference(this.tenantId, this.zoneApex);
+	public Zone getZone() {
+		return zone;
+	}
+
+	/**
+	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
+	 * 
+	 * @param zone
+	 */
+	public void setZone(Zone zone) {
+		this.zone = zone;
 	}
 
 	public String getFingerprint() {

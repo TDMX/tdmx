@@ -34,8 +34,10 @@ import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.ZoneService;
 
 /**
  * AgentCredential Authorization Service can ascertain if an Agent exists and is valid.
@@ -54,6 +56,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(AgentCredentialAuthorizationServiceImpl.class);
 
+	private ZoneService zoneService;
 	private AgentCredentialService agentCredentialService;
 	private AgentCredentialFactory agentCredentialFactory;
 	private AccountZoneService accountZoneService;
@@ -100,20 +103,24 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 
 		AgentCredential agentCredential = null;
 		AccountZone agentAccountZone = null;
+		Zone zone = null;
 		for (AccountZone accountZone : accountZones) {
 			try {
 				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
-				agentCredential = getAgentCredentialService().findByFingerprint(accountZone.getZoneReference(),
-						fingerprint);
-				if (agentCredential != null) {
-					agentAccountZone = accountZone;
-					break;
+
+				zone = getZoneService().findByZoneApex(accountZone.getId(), zoneApex);
+				if (zone != null) {
+					agentCredential = getAgentCredentialService().findByFingerprint(zone, fingerprint);
+					if (agentCredential != null) {
+						agentAccountZone = accountZone;
+						break;
+					}
 				}
 			} finally {
 				getZonePartitionIdProvider().clearPartitionId();
 			}
 		}
-		if (agentCredential == null || agentAccountZone == null) {
+		if (agentCredential == null || agentAccountZone == null || zone == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_AGENT);
 		}
 		if (AgentCredentialStatus.ACTIVE != agentCredential.getCredentialStatus()) {
@@ -130,7 +137,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 			log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
-		return new AuthorizationResult(cert, agentAccountZone);
+		return new AuthorizationResult(cert, agentAccountZone, zone);
 	}
 
 	// -------------------------------------------------------------------------
@@ -144,6 +151,14 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ZoneService getZoneService() {
+		return zoneService;
+	}
+
+	public void setZoneService(ZoneService zoneService) {
+		this.zoneService = zoneService;
+	}
 
 	public AgentCredentialService getAgentCredentialService() {
 		return agentCredentialService;

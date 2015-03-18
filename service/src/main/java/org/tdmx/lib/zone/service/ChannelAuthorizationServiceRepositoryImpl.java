@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.ChannelAuthorizationDao;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Transactional CRUD Services for ChannelAuthorization Entity.
@@ -88,13 +88,13 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<ChannelAuthorization> search(ZoneReference zone, ChannelAuthorizationSearchCriteria criteria) {
+	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		return getChannelAuthorizationDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelAuthorization findByChannel(ZoneReference zone, ChannelOrigin origin, ChannelDestination dest) {
+	public ChannelAuthorization findByChannel(Zone zone, ChannelOrigin origin, ChannelDestination dest) {
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");
 		}

@@ -25,7 +25,6 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -77,16 +76,14 @@ public class ZoneDaoImpl implements ZoneDao {
 	}
 
 	@Override
-	public Zone loadByZoneApex(ZoneReference zoneReference) {
-		if (zoneReference.getTenantId() == null) {
-			throw new IllegalArgumentException("missing tenantId");
+	public Zone loadByZoneApex(Long accountZoneId, String zoneApex) {
+		if (accountZoneId == null) {
+			throw new IllegalArgumentException("missing accountZoneId");
 		}
-		if (!StringUtils.hasText(zoneReference.getZoneApex())) {
+		if (!StringUtils.hasText(zoneApex)) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		return new JPAQuery(em)
-				.from(zone)
-				.where(zone.tenantId.eq(zoneReference.getTenantId()).and(zone.zoneApex.eq(zoneReference.getZoneApex())))
+		return new JPAQuery(em).from(zone).where(zone.accountZoneId.eq(accountZoneId).and(zone.zoneApex.eq(zoneApex)))
 				.uniqueResult(zone);
 	}
 

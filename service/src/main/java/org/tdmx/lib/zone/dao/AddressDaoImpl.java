@@ -27,9 +27,9 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -81,16 +81,13 @@ public class AddressDaoImpl implements AddressDao {
 	}
 
 	@Override
-	public List<Address> search(ZoneReference zone, AddressSearchCriteria criteria) {
-		if (zone.getTenantId() == null) {
-			throw new IllegalArgumentException("missing tenantId");
-		}
-		if (!StringUtils.hasText(zone.getZoneApex())) {
-			throw new IllegalArgumentException("missing zoneApex");
+	public List<Address> search(Zone zone, AddressSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
 		}
 		JPAQuery query = new JPAQuery(em).from(address);
 
-		BooleanExpression where = address.tenantId.eq(zone.getTenantId()).and(address.zoneApex.eq(zone.getZoneApex()));
+		BooleanExpression where = address.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(address.domainName.eq(criteria.getDomainName()));

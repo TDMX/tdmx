@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * DAO for the Service Entity.
@@ -42,5 +42,5 @@ public interface ServiceDao {
 
 	public Service loadById(Long id);
 
-	public List<Service> search(ZoneReference zone, ServiceSearchCriteria criteria);
+	public List<Service> search(Zone zone, ServiceSearchCriteria criteria);
 }

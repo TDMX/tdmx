@@ -85,7 +85,7 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 		getZonePartitionIdProvider().setPartitionId(zoneDbPartitionId);
 
 		// tx2: (w) create the ZoneDB's zone in the partition
-		Zone z = new Zone(az.getZoneReference());
+		Zone z = new Zone(az.getId(), az.getZoneApex());
 		getZoneService().createOrUpdate(z);
 
 		// tx3: (w) remove our jobId from the AccountZone

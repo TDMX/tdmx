@@ -22,7 +22,6 @@ package org.tdmx.lib.zone.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.dao.ZoneDao;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -81,8 +80,14 @@ public class ZoneServiceRepositoryImpl implements ZoneService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Zone findByZoneApex(ZoneReference zone) {
-		return getZoneDao().loadByZoneApex(zone);
+	public Zone findByZoneApex(Long accountId, String zoneApex) {
+		return getZoneDao().loadByZoneApex(accountId, zoneApex);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public Zone findById(Long id) {
+		return getZoneDao().loadById(id);
 	}
 
 	// -------------------------------------------------------------------------

@@ -1,10 +1,9 @@
-
     drop table Address if exists;
 
     drop table AgentCredential if exists;
 
     drop table ChannelAuthorization if exists;
-    
+
     drop table Domain if exists;
 
     drop table MaxValueEntry if exists;
@@ -17,8 +16,7 @@
         id bigint not null,
         domainName varchar(255) not null,
         localName varchar(255) not null,
-        tenantId bigint not null,
-        zoneApex varchar(255) not null,
+        zone_id bigint not null,
         primary key (id)
     );
 
@@ -30,8 +28,7 @@
         credentialType varchar(4) not null,
         domainName varchar(255),
         fingerprint varchar(64) not null,
-        tenantId bigint not null,
-        zoneApex varchar(255) not null,
+        zone_id bigint not null,
         primary key (id)
     );
 
@@ -76,20 +73,18 @@
         signerPem varchar(12000) not null,
         signatureDate timestamp not null,
         signature varchar(128) not null,
-        tenantId bigint not null,
         undeliveredHigh numeric,
         undeliveredLow numeric,
         unsentHigh numeric,
         unsentLow numeric,
-        zoneApex varchar(255) not null,
+        zone_id bigint not null,
         primary key (id)
     );
 
     create table Domain (
         id bigint not null,
         domainName varchar(255) not null,
-        tenantId bigint not null,
-        zoneApex varchar(255) not null,
+        zone_id bigint not null,
         primary key (id)
     );
 
@@ -104,15 +99,39 @@
         concurrencyLimit integer not null,
         domainName varchar(255) not null,
         serviceName varchar(255) not null,
-        tenantId bigint not null,
-        zoneApex varchar(255) not null,
+        zone_id bigint not null,
         primary key (id)
     );
 
     create table Zone (
         id bigint not null,
-        tenantId bigint not null,
+        accountZoneId bigint not null,
         zoneApex varchar(255) not null,
         primary key (id)
     );
+
+    alter table Address 
+        add constraint FK1ED033D4981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table AgentCredential 
+        add constraint FKDEAF7D1C981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table ChannelAuthorization 
+        add constraint FKD7AF4456981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table Domain 
+        add constraint FK7A58C0E4981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table Service 
+        add constraint FKD97C5E95981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
 

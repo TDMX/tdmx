@@ -22,13 +22,15 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.common.domain.ZoneReference;
+import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
 
 /**
  * An Domain (within a Zone) managed by a ServiceProvider
@@ -55,14 +57,8 @@ public class Domain implements Serializable {
 	@TableGenerator(name = "DomainIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	/**
-	 * The tenantId is the entityID of the AccountZone in ControlDB.
-	 */
-	@Column(nullable = false)
-	private Long tenantId;
-
-	@Column(length = Zone.MAX_NAME_LEN, nullable = false)
-	private String zoneApex;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private Zone zone;
 
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
@@ -77,9 +73,8 @@ public class Domain implements Serializable {
 	Domain() {
 	}
 
-	public Domain(ZoneReference zone) {
-		this.tenantId = zone.getTenantId();
-		this.zoneApex = zone.getZoneApex();
+	public Domain(Zone zone) {
+		this.zone = zone;
 	}
 
 	// -------------------------------------------------------------------------
@@ -117,8 +112,17 @@ public class Domain implements Serializable {
 		this.id = id;
 	}
 
-	public ZoneReference getZoneReference() {
-		return new ZoneReference(this.tenantId, this.zoneApex);
+	public Zone getZone() {
+		return zone;
+	}
+
+	/**
+	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
+	 * 
+	 * @param zone
+	 */
+	public void setZone(Zone zone) {
+		this.zone = zone;
 	}
 
 	public String getDomainName() {

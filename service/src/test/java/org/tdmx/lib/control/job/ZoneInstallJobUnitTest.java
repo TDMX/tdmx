@@ -18,7 +18,6 @@
  */
 package org.tdmx.lib.control.job;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -32,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneFacade;
@@ -100,9 +98,8 @@ public class ZoneInstallJobUnitTest {
 		assertNull(storedAZ.getJobId());
 
 		zonePartitionIdProvider.setPartitionId(az.getZonePartitionId());
-		Zone z = zoneService.findByZoneApex(new ZoneReference(az.getId(), az.getZoneApex()));
+		Zone z = zoneService.findByZoneApex(az.getId(), az.getZoneApex());
 		assertNotNull(z);
-		assertEquals(az.getZoneReference(), z.getZoneReference());
 	}
 
 	@Test

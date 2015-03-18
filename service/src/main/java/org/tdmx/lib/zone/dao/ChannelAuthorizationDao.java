@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * DAO for the ChannelAuthorization Entity.
@@ -42,5 +42,5 @@ public interface ChannelAuthorizationDao {
 
 	public ChannelAuthorization loadById(Long id);
 
-	public List<ChannelAuthorization> search(ZoneReference zone, ChannelAuthorizationSearchCriteria criteria);
+	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 }

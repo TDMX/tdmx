@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -76,7 +75,7 @@ public class ZoneTransferJobUnitTest {
 		input.setNumAddressesPerDomain(5);
 		input.setNumUsersPerAddress(2);
 
-		data = dataGenerator.generate(input);
+		data = dataGenerator.setUp(input);
 
 		AccountZone az = data.getAccountZone();
 		az.setJobId(jobId);
@@ -85,7 +84,7 @@ public class ZoneTransferJobUnitTest {
 
 	@After
 	public void doTeardown() {
-		dataGenerator.tearDown(data.getAccount());
+		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
@@ -122,10 +121,8 @@ public class ZoneTransferJobUnitTest {
 		assertEquals(newPartitionId, storedAZ.getZonePartitionId());
 
 		zonePartitionIdProvider.setPartitionId(newPartitionId);
-		Zone z = zoneService.findByZoneApex(new ZoneReference(data.getAccountZone().getId(), data.getAccountZone()
-				.getZoneApex()));
+		Zone z = zoneService.findByZoneApex(data.getAccountZone().getId(), data.getAccountZone().getZoneApex());
 		assertNotNull(z);
-		assertEquals(data.getAccountZone().getZoneReference(), z.getZoneReference());
 
 		// TODO check ALL the generated data is in the NEW partition.
 

@@ -20,9 +20,9 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * Management Services for a Domain.
@@ -36,9 +36,9 @@ public interface DomainService {
 
 	public Domain findById(Long id);
 
-	public Domain findByDomainName(ZoneReference zone, String domainName);
+	public Domain findByDomainName(Zone zone, String domainName);
 
-	public List<Domain> search(ZoneReference zone, DomainSearchCriteria criteria);
+	public List<Domain> search(Zone zone, DomainSearchCriteria criteria);
 
 	public void delete(Domain domain);
 

@@ -18,7 +18,6 @@
  */
 package org.tdmx.lib.zone.service;
 
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -31,7 +30,9 @@ public interface ZoneService {
 
 	public void createOrUpdate(Zone zone);
 
-	public Zone findByZoneApex(ZoneReference zone);
+	public Zone findById(Long id);
+
+	public Zone findByZoneApex(Long accountId, String zoneApex);
 
 	public void delete(Zone zone);
 

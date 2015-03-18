@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.common.domain.ZoneReference;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -49,16 +48,16 @@ public class DomainServiceRepositoryUnitTest {
 	@Autowired
 	private DomainService domainService;
 
-	private ZoneReference zone;
+	private Zone zone;
 	private String domainName;
 
 	@Before
 	public void doSetup() throws Exception {
-		zone = new ZoneReference(new Random().nextLong(), "ZONE.ROOT.TEST");
+		zone
 
-		Zone az = ZoneFacade.createZone(zone);
+		= ZoneFacade.createZone(new Random().nextLong(), "ZONE.ROOT.TEST");
 
-		zoneService.createOrUpdate(az);
+		zoneService.createOrUpdate(zone);
 
 		domainName = "SUBDOMAIN." + zone.getZoneApex();
 		Domain d = ZoneFacade.createDomain(zone, domainName);
@@ -71,7 +70,7 @@ public class DomainServiceRepositoryUnitTest {
 		if (d != null) {
 			domainService.delete(d);
 		}
-		Zone az = zoneService.findByZoneApex(zone);
+		Zone az = zoneService.findById(zone.getId());
 		if (az != null) {
 			zoneService.delete(az);
 		}
@@ -88,7 +87,6 @@ public class DomainServiceRepositoryUnitTest {
 		Domain d = domainService.findByDomainName(zone, domainName);
 		assertNotNull(d);
 		assertEquals(domainName, d.getDomainName());
-		assertEquals(zone, d.getZoneReference());
 	}
 
 	@Test
@@ -99,7 +97,9 @@ public class DomainServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFoundZone() throws Exception {
-		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
+		Zone gugus = new Zone(zone.getAccountZoneId(), "gugus");
+		gugus.setId(new Random().nextLong());
+
 		Domain d = domainService.findByDomainName(gugus, domainName);
 		assertNull(d);
 	}
@@ -111,28 +111,15 @@ public class DomainServiceRepositoryUnitTest {
 		assertNotNull(domains);
 		assertEquals(1, domains.size());
 		Domain d = domains.get(0);
-		assertEquals(zone, d.getZoneReference());
 		assertEquals(domainName, d.getDomainName());
 	}
 
 	@Test
-	public void testSearch_UnknownZoneAndDomain() throws Exception {
-		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
-
-		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
-		List<Domain> domains = domainService.search(gugus, criteria);
-		assertNotNull(domains);
-		assertEquals(0, domains.size());
-	}
-
-	@Test
-	public void testSearch_UnknownZoneAndUnknownDomain() throws Exception {
+	public void testSearch_UnknownDomain() throws Exception {
 		DomainSearchCriteria criteria = new DomainSearchCriteria(new PageSpecifier(0, 10));
 		criteria.setDomainName("gugusdomain");
 
-		ZoneReference gugus = new ZoneReference(zone.getTenantId(), "gugus");
-		List<Domain> domains = domainService.search(gugus, criteria);
+		List<Domain> domains = domainService.search(zone, criteria);
 		assertNotNull(domains);
 		assertEquals(0, domains.size());
 	}
