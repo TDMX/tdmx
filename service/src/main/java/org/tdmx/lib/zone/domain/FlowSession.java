@@ -22,62 +22,45 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
-
 /**
- * A Signature of either a User, DomainAdministrator or ZoneAdministrator.
- * 
- * NOTE: the signing public certificate chain is stored as a PEM.
+ * A FlowSession is an encryption scheme's public input material provided by the receiver to the sender to provider
+ * Perfect Forward Secrecy. Typically this is a Diffie-Hellmann key agreement public key.
  * 
  * @author Peter Klauser
  * 
  */
 @Embeddable
-public class AgentSignature implements Serializable {
+public class FlowSession implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	// large enough for SHA512 as hex
-	public static final int MAX_SIGNATURE_LEN = 128;
-	public static final int MAX_SIG_ALG_LEN = 16;
+	public static final int MAX_SCHEME_LEN = 16; // TODO check
+	public static final int MAX_SESSION_KEY_LEN = 8000; // TODO check
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = -1L;
+
+	private String scheme;
 
 	/**
-	 * The public certificate of the Agent ( UC or DAC or ZAC ).
-	 * 
-	 * NOTE: Maximum length is defined by {@link AgentCredential#MAX_CERTIFICATECHAIN_LEN}
+	 * The timestamp from which the session key is valid from.
 	 */
-	private String certificateChainPem;
-
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date signatureDate;
+	private Date validFrom;
 
-	/**
-	 * The hex representation of the signature.
-	 */
-	private String value;
-
-	/**
-	 * The signature algorithm.
-	 */
-	@Enumerated(EnumType.STRING)
-	private SignatureAlgorithm algorithm;
+	private byte[] sessionKey;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public AgentSignature() {
+	public FlowSession() {
 
 	}
 
@@ -88,14 +71,12 @@ public class AgentSignature implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("AgentSignature [");
-		builder.append("signatureDate=").append(signatureDate);
-		builder.append(", algorithm=").append(algorithm);
-		builder.append(", value=").append(value);
-		if (certificateChainPem != null) {
-			builder.append(", certificateChainPem.length=").append(certificateChainPem.length());
+		builder.append("FlowSession [");
+		builder.append("scheme=").append(scheme);
+		builder.append(", validFrom=").append(validFrom);
+		if (sessionKey != null) {
+			builder.append(", sessionKey.size=").append(sessionKey.length);
 		}
-
 		builder.append("]");
 		return builder.toString();
 	}
@@ -112,36 +93,28 @@ public class AgentSignature implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getCertificateChainPem() {
-		return certificateChainPem;
+	public byte[] getSessionKey() {
+		return sessionKey;
 	}
 
-	public void setCertificateChainPem(String certificateChainPem) {
-		this.certificateChainPem = certificateChainPem;
+	public void setSessionKey(byte[] sessionKey) {
+		this.sessionKey = sessionKey;
 	}
 
-	public Date getSignatureDate() {
-		return signatureDate;
+	public String getScheme() {
+		return scheme;
 	}
 
-	public void setSignatureDate(Date signatureDate) {
-		this.signatureDate = signatureDate;
+	public void setScheme(String scheme) {
+		this.scheme = scheme;
 	}
 
-	public String getValue() {
-		return value;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public SignatureAlgorithm getAlgorithm() {
-		return algorithm;
-	}
-
-	public void setAlgorithm(SignatureAlgorithm algorithm) {
-		this.algorithm = algorithm;
+	public void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
 	}
 
 }

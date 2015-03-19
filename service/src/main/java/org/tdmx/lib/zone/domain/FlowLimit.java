@@ -21,7 +21,6 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
@@ -42,10 +41,8 @@ public class FlowLimit implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(name = "highMarkBytes")
 	private BigInteger highMarkBytes;
 
-	@Column(name = "lowMarkBytes")
 	private BigInteger lowMarkBytes;
 
 	// -------------------------------------------------------------------------

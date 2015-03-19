@@ -345,20 +345,6 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="getChannelAuthorizationRequestType">
-		<xs:sequence>
-			<xs:element name="channel" type="msg:Channel"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getChannelAuthorizationResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:channelauthorization"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationRequestType">
 		<xs:sequence>
 			<xs:element ref="msg:currentchannelauthorization"/>
@@ -391,20 +377,6 @@
 				<xs:sequence minOccurs="0">
 					<xs:element ref="msg:flowtarget" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="getFlowTargetRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:flowdestination"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getFlowTargetResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flowtarget"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -445,20 +417,6 @@
 				<xs:sequence minOccurs="0">
 					<xs:element ref="msg:flow" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="getFlowRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:flowchannel"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getFlowResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flow"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -585,8 +543,6 @@
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>
 	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType"/>
 	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
-	<xs:element name="getChannelAuthorization" type="getChannelAuthorizationRequestType"/>
-	<xs:element name="getChannelAuthorizationResponse" type="getChannelAuthorizationResponseType"/>
 	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType">
 		<xs:annotation>
 			<xs:documentation>manages flow targets automatically, allows flow states to instantiate automatically.</xs:documentation>
@@ -601,12 +557,8 @@
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
 	<xs:element name="searchFlowTarget" type="searchFlowTargetRequestType"/>
 	<xs:element name="searchFlowTargetResponse" type="searchFlowTargetResponseType"/>
-	<xs:element name="getFlowTarget" type="getFlowTargetRequestType"/>
-	<xs:element name="getFlowTargetResponse" type="getFlowTargetResponseType"/>
 	<xs:element name="modifyFlowTarget" type="modifyFlowTargetRequestType"/>
 	<xs:element name="modifyFlowTargetResponse" type="modifyFlowTargetResponseType"/>
 	<xs:element name="searchFlow" type="searchFlowRequestType"/>
 	<xs:element name="searchFlowResponse" type="searchFlowResponseType"/>
-	<xs:element name="getFlow" type="getFlowRequestType"/>
-	<xs:element name="getFlowResponse" type="getFlowResponseType"/>
 </xs:schema>

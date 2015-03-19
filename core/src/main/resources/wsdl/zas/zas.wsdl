@@ -170,12 +170,6 @@
 	<wsdl:message name="searchChannelAuthorizationResponse">
 		<wsdl:part name="parameters" element="zas:searchChannelAuthorizationResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getChannelAuthorizationRequest">
-		<wsdl:part name="parameters" element="zas:getChannelAuthorization"/>
-	</wsdl:message>
-	<wsdl:message name="getChannelAuthorizationResponse">
-		<wsdl:part name="parameters" element="zas:getChannelAuthorizationResponse"/>
-	</wsdl:message>
 	<wsdl:message name="setChannelAuthorizationRequest">
 		<wsdl:part name="parameters" element="zas:setChannelAuthorization"/>
 	</wsdl:message>
@@ -194,12 +188,6 @@
 	<wsdl:message name="searchFlowTargetResponse">
 		<wsdl:part name="parameters" element="zas:searchFlowTargetResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getFlowTargetRequest">
-		<wsdl:part name="parameters" element="zas:getFlowTarget"/>
-	</wsdl:message>
-	<wsdl:message name="getFlowTargetResponse">
-		<wsdl:part name="parameters" element="zas:getFlowTargetResponse"/>
-	</wsdl:message>
 	<wsdl:message name="modifyFlowTargetRequest">
 		<wsdl:part name="parameters" element="zas:modifyFlowTarget"/>
 	</wsdl:message>
@@ -211,12 +199,6 @@
 	</wsdl:message>
 	<wsdl:message name="searchFlowResponse">
 		<wsdl:part name="parameters" element="zas:searchFlowResponse"/>
-	</wsdl:message>
-	<wsdl:message name="getFlowRequest">
-		<wsdl:part name="parameters" element="zas:getFlow"/>
-	</wsdl:message>
-	<wsdl:message name="getFlowResponse">
-		<wsdl:part name="parameters" element="zas:getFlowResponse"/>
 	</wsdl:message>
 	<wsdl:portType name="ZAS">
 		<wsdl:documentation>
@@ -397,13 +379,6 @@
 			<wsdl:input message="tns:searchChannelAuthorizationRequest"/>
 			<wsdl:output message="tns:searchChannelAuthorizationResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="getChannelAuthorization">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getChannelAuthorizationRequest"/>
-			<wsdl:output message="tns:getChannelAuthorizationResponse"/>
-		</wsdl:operation>
 		<wsdl:operation name="setChannelAuthorization">
 			<wsdl:documentation>
 				Bla Bla
@@ -425,13 +400,6 @@
 			<wsdl:input message="tns:searchFlowTargetRequest"/>
 			<wsdl:output message="tns:searchFlowTargetResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowTarget">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getFlowTargetRequest"/>
-			<wsdl:output message="tns:getFlowTargetResponse"/>
-		</wsdl:operation>
 		<wsdl:operation name="modifyFlowTarget">
 			<wsdl:documentation>
 				Bla Bla
@@ -445,13 +413,6 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:searchFlowRequest"/>
 			<wsdl:output message="tns:searchFlowResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="getFlow">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getFlowRequest"/>
-			<wsdl:output message="tns:getFlowResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="ZASBinding" type="tns:ZAS">
@@ -681,15 +642,6 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="getChannelAuthorization">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getChannelAuthorization"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
 		<wsdl:operation name="setChannelAuthorization">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization"/>
 			<wsdl:input>
@@ -717,15 +669,6 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="getFlowTarget">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlowTarget"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
 		<wsdl:operation name="modifyFlowTarget">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget"/>
 			<wsdl:input>
@@ -737,15 +680,6 @@
 		</wsdl:operation>
 		<wsdl:operation name="searchFlow">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlow"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="getFlow">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/getFlow"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

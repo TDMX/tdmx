@@ -53,8 +53,6 @@ import org.tdmx.core.api.v01.sp.zas.DeleteService;
 import org.tdmx.core.api.v01.sp.zas.DeleteServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.DeleteUser;
 import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
-import org.tdmx.core.api.v01.sp.zas.GetChannelAuthorization;
-import org.tdmx.core.api.v01.sp.zas.GetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.sp.zas.ModifyAdministratorResponse;
 import org.tdmx.core.api.v01.sp.zas.ModifyIpZone;
@@ -533,15 +531,6 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "getChannelAuthorizationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getChannelAuthorization")
-	public GetChannelAuthorizationResponse getChannelAuthorization(
-			@WebParam(partName = "parameters", name = "getChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") GetChannelAuthorization parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	@WebResult(name = "deleteUserResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteUser")
 	public DeleteUserResponse deleteUser(
@@ -994,27 +983,10 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "getFlowResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlow")
-	public org.tdmx.core.api.v01.sp.zas.GetFlowResponse getFlow(
-			@WebParam(partName = "parameters", name = "getFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.GetFlow parameters) {
-		return null;// TODO
-	}
-
-	@Override
 	@WebResult(name = "searchFlowResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlow")
 	public org.tdmx.core.api.v01.sp.zas.SearchFlowResponse searchFlow(
 			@WebParam(partName = "parameters", name = "searchFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.SearchFlow parameters) {
-		// TODO
-		return null;
-	}
-
-	@Override
-	@WebResult(name = "getFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/getFlowTarget")
-	public org.tdmx.core.api.v01.sp.zas.GetFlowTargetResponse getFlowTarget(
-			@WebParam(partName = "parameters", name = "getFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.GetFlowTarget parameters) {
 		// TODO
 		return null;
 	}

@@ -19,65 +19,52 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 
 /**
- * A Signature of either a User, DomainAdministrator or ZoneAdministrator.
+ * A FlowTargetSession is an encryption public key information with validity information.
  * 
- * NOTE: the signing public certificate chain is stored as a PEM.
+ * A FlowTargetSession provides for 2 simultaneous FlowSessions to allow seamless replacement of old session keys with
+ * newer ones. The 2nd FlowSession must have a {@link #validFrom} Date greater than the 1st.
+ * 
+ * A sender must always choose the FlowSession which is valid at the time of the sending. This could be the secondary
+ * session if the primary has been superceeded by the secondary. The receiver must know the private pendent to the
+ * public sessionKeys and manage multiple of these. The message contains the FlowTargetSession's signature timestamp.
+ * The receiver must identify the private key to use to decrypt the message by locating the used public key given the
+ * message's sent timestamp and the flow target session given the signature in the message.
+ * 
+ * Since the ServiceProvider only stores the current FlowTargetSession and doesn't keep a history, the ServiceProvider
+ * of the receiver cannot check if a message's session signature is known ( if it doesn't match the current one ). The
+ * receiver anyway has to "remember" the private session information and it's signatures to perform the validation. So
+ * ServiceProviders just check for valid channel authorizations on messages relayed, but not flow target session.
  * 
  * @author Peter Klauser
  * 
  */
 @Embeddable
-public class AgentSignature implements Serializable {
+public class FlowTargetSession implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	// large enough for SHA512 as hex
-	public static final int MAX_SIGNATURE_LEN = 128;
-	public static final int MAX_SIG_ALG_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = -1L;
 
-	/**
-	 * The public certificate of the Agent ( UC or DAC or ZAC ).
-	 * 
-	 * NOTE: Maximum length is defined by {@link AgentCredential#MAX_CERTIFICATECHAIN_LEN}
-	 */
-	private String certificateChainPem;
+	private FlowSession primary;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date signatureDate;
+	private FlowSession secondary;
 
-	/**
-	 * The hex representation of the signature.
-	 */
-	private String value;
-
-	/**
-	 * The signature algorithm.
-	 */
-	@Enumerated(EnumType.STRING)
-	private SignatureAlgorithm algorithm;
+	private AgentSignature signature;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public AgentSignature() {
+	public FlowTargetSession() {
 
 	}
 
@@ -88,14 +75,10 @@ public class AgentSignature implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("AgentSignature [");
-		builder.append("signatureDate=").append(signatureDate);
-		builder.append(", algorithm=").append(algorithm);
-		builder.append(", value=").append(value);
-		if (certificateChainPem != null) {
-			builder.append(", certificateChainPem.length=").append(certificateChainPem.length());
-		}
-
+		builder.append("FlowTargetSession [");
+		builder.append("primary=").append(primary);
+		builder.append(", secondary=").append(secondary);
+		builder.append(", signature=").append(signature);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -112,36 +95,27 @@ public class AgentSignature implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getCertificateChainPem() {
-		return certificateChainPem;
+	public FlowSession getPrimary() {
+		return primary;
 	}
 
-	public void setCertificateChainPem(String certificateChainPem) {
-		this.certificateChainPem = certificateChainPem;
+	public void setPrimary(FlowSession primary) {
+		this.primary = primary;
 	}
 
-	public Date getSignatureDate() {
-		return signatureDate;
+	public FlowSession getSecondary() {
+		return secondary;
 	}
 
-	public void setSignatureDate(Date signatureDate) {
-		this.signatureDate = signatureDate;
+	public void setSecondary(FlowSession secondary) {
+		this.secondary = secondary;
 	}
 
-	public String getValue() {
-		return value;
+	public AgentSignature getSignature() {
+		return signature;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setSignature(AgentSignature signature) {
+		this.signature = signature;
 	}
-
-	public SignatureAlgorithm getAlgorithm() {
-		return algorithm;
-	}
-
-	public void setAlgorithm(SignatureAlgorithm algorithm) {
-		this.algorithm = algorithm;
-	}
-
 }
