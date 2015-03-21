@@ -57,6 +57,8 @@ import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -65,6 +67,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 
@@ -96,6 +99,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private AddressService addressService;
 	private AgentCredentialService agentCredentialService;
 	private ChannelAuthorizationService channelAuthorizationService;
+	private FlowTargetService flowTargetService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -187,7 +191,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			// is more than
 			// one domain, else between all the addresses of the only domain.
 			DomainHolder fromDomain = result.getDomains().get(0);
+			DACHolder fromDac = fromDomain.getDacs().get(0);
 			DomainHolder toDomain = result.getDomains().size() > 1 ? result.getDomains().get(1) : fromDomain;
+			DACHolder toDac = toDomain.getDacs().get(0);
 			for (AddressHolder fromAddressHolder : fromDomain.getAddresses()) {
 				Address from = fromAddressHolder.getAddress();
 				for (ServiceHolder serviceHolder : toDomain.getServices()) {
@@ -201,10 +207,32 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(),
 								to.getDomainName(), service.getServiceName(), "SP");
 
-						ChannelAuthorization ca = ZoneFacade.createChannelAuthorization(zone, co, cd);
-						channelAuthorizationService.createOrUpdate(ca);
+						// if both domains are the same we merge the 2 auths into one.
+						if (from.getDomainName().equals(to.getDomainName())) {
+							ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(zone,
+									fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
+							channelAuthorizationService.createOrUpdate(sendRecvCa);
+							fromDomain.getAuths().add(sendRecvCa);
+						} else {
+							ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(zone,
+									fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
+							ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(zone,
+									toDomain.getDomain(), toDac.getCredential(), toDac.getAg(), co, cd);
 
-						serviceHolder.getAuths().add(ca);
+							channelAuthorizationService.createOrUpdate(sendCa);
+							fromDomain.getAuths().add(sendCa);
+							channelAuthorizationService.createOrUpdate(recvCa);
+							toDomain.getAuths().add(recvCa);
+						}
+
+						for (UCHolder targetUser : toAddressHolder.getUcs()) {
+							AgentCredential target = targetUser.getAg();
+
+							FlowTarget ft = ZoneFacade.createFlowTarget(targetUser.getCredential(), target, service);
+
+							flowTargetService.createOrUpdate(ft);
+						}
+
 					}
 				}
 			}
@@ -243,6 +271,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
+
+			// delete FlowTargets, depends on AgentCredentials & Services
+			deleteFlowTargets(zone);
 
 			// delete ChannelAuthorizations in ZoneDB
 			deleteChannelAuthorizations(zone);
@@ -341,6 +372,21 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				addressService.delete(a);
 			}
 			if (addresses.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void deleteFlowTargets(Zone zone) {
+		boolean more = true;
+		while (more) {
+			FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
+
+			List<FlowTarget> flowTargets = flowTargetService.search(zone, sc);
+			for (FlowTarget ft : flowTargets) {
+				flowTargetService.delete(ft);
+			}
+			if (flowTargets.isEmpty()) {
 				more = false;
 			}
 		}
@@ -600,6 +646,14 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
 		this.channelAuthorizationService = channelAuthorizationService;
+	}
+
+	public FlowTargetService getFlowTargetService() {
+		return flowTargetService;
+	}
+
+	public void setFlowTargetService(FlowTargetService flowTargetService) {
+		this.flowTargetService = flowTargetService;
 	}
 
 }

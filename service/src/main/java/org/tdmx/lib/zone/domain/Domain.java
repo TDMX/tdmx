@@ -30,8 +30,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
-
 /**
  * An Domain (within a Zone) managed by a ServiceProvider
  * 
@@ -116,12 +114,8 @@ public class Domain implements Serializable {
 		return zone;
 	}
 
-	/**
-	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
-	 * 
-	 * @param zone
-	 */
-	public void setZone(Zone zone) {
+	@SuppressWarnings("unused")
+	private void setZone(Zone zone) {
 		this.zone = zone;
 	}
 

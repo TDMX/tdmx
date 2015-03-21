@@ -77,6 +77,7 @@
         undeliveredLow numeric,
         unsentHigh numeric,
         unsentLow numeric,
+        domain_id bigint not null,
         zone_id bigint not null,
         primary key (id)
     );
@@ -85,6 +86,32 @@
         id bigint not null,
         domainName varchar(255) not null,
         zone_id bigint not null,
+        primary key (id)
+    );
+
+    create table FlowTarget (
+        id bigint not null,
+        primaryScheme varchar(16),
+        primarySession varbinary(8000),
+        primaryValidFrom timestamp,
+        secondaryScheme varchar(16),
+        secondarySession varbinary(8000),
+        secondaryValidFrom timestamp,
+        signatureAlgorithm varchar(16),
+        signerPem varchar(12000),
+        signatureDate timestamp,
+        signature varchar(128),
+        concurrency_id bigint not null,
+        service_id bigint not null,
+        target_id bigint not null,
+        primary key (id),
+        unique (concurrency_id)
+    );
+
+    create table FlowTargetConcurrency (
+        id bigint not null,
+        concurrencyLevel integer not null,
+        concurrencyLimit integer not null,
         primary key (id)
     );
 
@@ -125,10 +152,30 @@
         foreign key (zone_id) 
         references Zone;
 
+    alter table ChannelAuthorization 
+        add constraint FKD7AF4456E7351234 
+        foreign key (domain_id) 
+        references Domain;
+
     alter table Domain 
         add constraint FK7A58C0E4981D3FB4 
         foreign key (zone_id) 
         references Zone;
+
+    alter table FlowTarget 
+        add constraint FK8F7F207F473F0CC1 
+        foreign key (concurrency_id) 
+        references FlowTargetConcurrency;
+
+    alter table FlowTarget 
+        add constraint FK8F7F207F38E4420B 
+        foreign key (target_id) 
+        references AgentCredential;
+
+    alter table FlowTarget 
+        add constraint FK8F7F207FEB7BD1E0 
+        foreign key (service_id) 
+        references Service;
 
     alter table Service 
         add constraint FKD97C5E95981D3FB4 

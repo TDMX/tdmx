@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
 
 public class ZoneFacade {
 
@@ -77,10 +78,35 @@ public class ZoneFacade {
 		return cd;
 	}
 
+	public static FlowTarget createFlowTarget(PKIXCredential userCred, AgentCredential userAgent, Service service) {
+		FlowTarget ft = new FlowTarget(userAgent, service);
+		ft.setFts(createFlowTargetSession(userCred, userAgent));
+		return ft;
+	}
+
+	// TODO create propper signature
+	public static FlowTargetSession createFlowTargetSession(PKIXCredential userCred, AgentCredential userAgent) {
+		FlowTargetSession fts = new FlowTargetSession();
+		FlowSession ps = new FlowSession();
+		ps.setScheme("encryptionscheme");
+		ps.setSessionKey(new byte[] { 1, 2, 3 });
+		ps.setValidFrom(new Date());
+		fts.setPrimary(ps);
+
+		AgentSignature signature = new AgentSignature();
+		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+
+		signature.setCertificateChainPem(userAgent.getCertificateChainPem());
+		signature.setSignatureDate(new Date());
+		signature.setValue("hexvalueofsignature");
+		fts.setSignature(signature);
+		return fts;
+	}
+
 	// TODO give DAC to be able to construct correct signatures
-	public static ChannelAuthorization createChannelAuthorization(Zone zone, ChannelOrigin origin,
-			ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(zone);
+	public static ChannelAuthorization createSendRecvChannelAuthorization(Zone zone, Domain domain,
+			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
 		c.setOrigin(origin);
 		c.setDestination(dest);
 
@@ -90,7 +116,7 @@ public class ZoneFacade {
 		sendPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature sendPermSignature = new AgentSignature();
 		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		sendPermSignature.setCertificateChainPem("certificateChainPem");
+		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
 		sendPermSignature.setSignatureDate(new Date());
 		sendPermSignature.setValue("hexvalueofsignature");
 		sendPermission.setSignature(sendPermSignature);
@@ -102,13 +128,58 @@ public class ZoneFacade {
 		recvPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature recvPermSignature = new AgentSignature();
 		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		recvPermSignature.setCertificateChainPem("certificateChainPem");
+		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
 		recvPermSignature.setSignatureDate(new Date());
 		recvPermSignature.setValue("hexvalueofsignature");
-		recvPermission.setSignature(sendPermSignature);
+		recvPermission.setSignature(recvPermSignature);
 		c.setRecvAuthorization(recvPermission);
 
+		FlowLimit unsentBuffer = new FlowLimit();
+		unsentBuffer.setHighMarkBytes(ONE_GB);
+		unsentBuffer.setLowMarkBytes(ONE_MB);
+		c.setUnsentBuffer(unsentBuffer);
+
+		FlowLimit undeliveredBuffer = new FlowLimit();
+		undeliveredBuffer.setHighMarkBytes(ONE_GB);
+		undeliveredBuffer.setLowMarkBytes(ONE_MB);
+		c.setUndeliveredBuffer(undeliveredBuffer);
+
+		// TODO make a valid signature
+		AgentSignature signature = new AgentSignature();
+		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		signature.setCertificateChainPem(userAgent.getCertificateChainPem());
+		signature.setSignatureDate(new Date());
+		signature.setValue("hexvalueofsignature");
+		c.setSignature(signature);
+
+		return c;
+	}
+
+	public static ChannelAuthorization createSendChannelAuthorization(Zone zone, Domain domain,
+			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
+		c.setOrigin(origin);
+		c.setDestination(dest);
+
+		EndpointPermission sendPermission = new EndpointPermission();
+		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
+		sendPermission.setMaxPlaintextSizeBytes(ONE_MB);
+		sendPermission.setValidUntil(getDateYearsFromNow(1));
+		AgentSignature sendPermSignature = new AgentSignature();
+		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
+		sendPermSignature.setSignatureDate(new Date());
+		sendPermSignature.setValue("hexvalueofsignature");
+		sendPermission.setSignature(sendPermSignature);
+		c.setSendAuthorization(sendPermission);
+
 		// pending authorizations not set.
+
+		// undelivered is on the recv side
+		FlowLimit unsentBuffer = new FlowLimit();
+		unsentBuffer.setHighMarkBytes(ONE_GB);
+		unsentBuffer.setLowMarkBytes(ONE_MB);
+		c.setUnsentBuffer(unsentBuffer);
 
 		// TODO make a valid signature
 		AgentSignature signature = new AgentSignature();
@@ -117,16 +188,41 @@ public class ZoneFacade {
 		signature.setSignatureDate(new Date());
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
+		return c;
+	}
+
+	public static ChannelAuthorization createRecvChannelAuthorization(Zone zone, Domain domain,
+			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
+		c.setOrigin(origin);
+		c.setDestination(dest);
+
+		EndpointPermission recvPermission = new EndpointPermission();
+		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);
+		recvPermission.setMaxPlaintextSizeBytes(ONE_MB);
+		recvPermission.setValidUntil(getDateYearsFromNow(1));
+		AgentSignature recvPermSignature = new AgentSignature();
+		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
+		recvPermSignature.setSignatureDate(new Date());
+		recvPermSignature.setValue("hexvalueofsignature");
+		recvPermission.setSignature(recvPermSignature);
+		c.setRecvAuthorization(recvPermission);
+
+		// pending authorizations not set.
 
 		FlowLimit undeliveredBuffer = new FlowLimit();
 		undeliveredBuffer.setHighMarkBytes(ONE_GB);
 		undeliveredBuffer.setLowMarkBytes(ONE_MB);
 		c.setUndeliveredBuffer(undeliveredBuffer);
 
-		FlowLimit unsentBuffer = new FlowLimit();
-		unsentBuffer.setHighMarkBytes(ONE_GB);
-		unsentBuffer.setLowMarkBytes(ONE_MB);
-		c.setUnsentBuffer(unsentBuffer);
+		// TODO make a valid signature
+		AgentSignature signature = new AgentSignature();
+		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		signature.setCertificateChainPem("certificateChainPem");
+		signature.setSignatureDate(new Date());
+		signature.setValue("hexvalueofsignature");
+		c.setSignature(signature);
 		return c;
 	}
 

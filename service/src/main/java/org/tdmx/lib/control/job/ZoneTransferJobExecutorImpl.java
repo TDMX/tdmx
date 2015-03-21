@@ -35,6 +35,8 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -42,6 +44,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
@@ -65,8 +68,11 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private AddressService addressService;
 	private AgentCredentialService agentCredentialService;
 	private ChannelAuthorizationService channelAuthorizationService;
+	private FlowTargetService flowTargetService;
 
 	private int batchSize = 1000;
+
+	// TODO FlowTarget transfer
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -130,8 +136,6 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		task.setNumAgentCredentials(transferAgentCredentials(oldZone, oldPartitionId, newZone, newPartitionId));
 
 		// TODO num
-		transferChannelAuthorizations(oldZone, oldPartitionId, newZone, newPartitionId);
-
 		// update the AccountZone to state the new partition is active.
 		az.setZonePartitionId(newPartitionId);
 		az.setJobId(null);
@@ -166,6 +170,18 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		zonePartitionIdProvider.setPartitionId(oldPartitionId);
 		boolean more = true;
 		try {
+			more = true;
+			while (more) {
+				FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
+				List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
+				for (FlowTarget ft : flowTargets) {
+					flowTargetService.delete(ft);
+				}
+				if (flowTargets.isEmpty()) {
+					more = false;
+				}
+			}
+
 			more = true;
 			while (more) {
 				ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0,
@@ -260,32 +276,43 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		return newZone;
 	}
 
-	private int transferChannelAuthorizations(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
+	private int transferChannelAuthorizations(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
+			Domain newDomain, String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
-			List<ChannelAuthorization> domains = null;
+			sc.setDomain(oldDomain);
+
+			List<ChannelAuthorization> channelAuths = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
-				domains = channelAuthorizationService.search(oldZone, sc);
+				channelAuths = channelAuthorizationService.search(oldZone, sc);
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			zonePartitionIdProvider.setPartitionId(newPartitionId);
 			try {
-				for (ChannelAuthorization ca : domains) {
+				for (ChannelAuthorization oldCa : channelAuths) {
 					// clear the Id so we can use the detached object to create an entity in the new partition.
 
-					ca.setId(null);
-					ca.setZone(newZone);
+					ChannelAuthorization newCa = new ChannelAuthorization(newZone, newDomain);
+					newCa.setOrigin(oldCa.getOrigin());
+					newCa.setDestination(oldCa.getDestination());
+					newCa.setRecvAuthorization(oldCa.getRecvAuthorization());
+					newCa.setSendAuthorization(oldCa.getRecvAuthorization());
+					newCa.setReqRecvAuthorization(oldCa.getReqRecvAuthorization());
+					newCa.setReqSendAuthorization(oldCa.getReqSendAuthorization());
+					newCa.setUndeliveredBuffer(oldCa.getUndeliveredBuffer());
+					newCa.setUnsentBuffer(oldCa.getUnsentBuffer());
+					newCa.setSignature(oldCa.getSignature());
 
 					// add the zone to the new partition.
-					channelAuthorizationService.createOrUpdate(ca);
+					channelAuthorizationService.createOrUpdate(newCa);
 					numTransfer++;
 				}
-				if (domains.isEmpty()) {
+				if (channelAuths.isEmpty()) {
 					more = false;
 				}
 			} finally {
@@ -307,23 +334,33 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			zonePartitionIdProvider.setPartitionId(newPartitionId);
-			try {
-				for (Domain d : domains) {
-					// clear the Id so we can use the detached object to create an entity in the new partition.
+			for (Domain oldDomain : domains) {
+				// clear the Id so we can use the detached object to create an entity in the new partition.
 
-					d.setId(null);
-					d.setZone(newZone);
+				Domain newDomain = new Domain(newZone);
+				newDomain.setDomainName(oldDomain.getDomainName());
 
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
 					// add the zone to the new partition.
-					domainService.createOrUpdate(d);
-					numTransfer++;
+					domainService.createOrUpdate(newDomain);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
 				}
-				if (domains.isEmpty()) {
-					more = false;
-				}
-			} finally {
-				zonePartitionIdProvider.clearPartitionId();
+				numTransfer++;
+
+				// TODO dacs
+
+				// TODO addresses, nested UCs, flowtargets
+
+				// TODO services
+
+				transferChannelAuthorizations(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
+
+				// TODO flowtargets
+			}
+			if (domains.isEmpty()) {
+				more = false;
 			}
 		}
 		return numTransfer;
@@ -495,6 +532,14 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
 		this.channelAuthorizationService = channelAuthorizationService;
+	}
+
+	public FlowTargetService getFlowTargetService() {
+		return flowTargetService;
+	}
+
+	public void setFlowTargetService(FlowTargetService flowTargetService) {
+		this.flowTargetService = flowTargetService;
 	}
 
 	public int getBatchSize() {

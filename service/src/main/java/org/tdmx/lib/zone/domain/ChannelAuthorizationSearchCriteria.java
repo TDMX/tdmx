@@ -49,6 +49,12 @@ public class ChannelAuthorizationSearchCriteria {
 	private ChannelDestination destination = new ChannelDestination();
 
 	/**
+	 * A ChannelAuthorization belongs to a Domain. Provide this to limit the results to the ChannelAuthorizations of the
+	 * Domain, or leave null to retrieve ChannelAuthorizations for all the Zone's Domains.
+	 */
+	private Domain domain;
+
+	/**
 	 * If Boolean.TRUE then search only unconfirmed ChannelAuthorizations, else if Boolean.FALSE then only search for
 	 * confirmed ChannelAuthorizations, else if null find confirmed OR unconfirmed.
 	 */
@@ -87,6 +93,7 @@ public class ChannelAuthorizationSearchCriteria {
 		return origin;
 	}
 
+	@SuppressWarnings("unused")
 	private void setOrigin(ChannelOrigin origin) {
 		this.origin = origin;
 	}
@@ -98,6 +105,14 @@ public class ChannelAuthorizationSearchCriteria {
 	@SuppressWarnings("unused")
 	private void setDestination(ChannelDestination destination) {
 		this.destination = destination;
+	}
+
+	public Domain getDomain() {
+		return domain;
+	}
+
+	public void setDomain(Domain domain) {
+		this.domain = domain;
 	}
 
 	public Boolean getUnconfirmed() {

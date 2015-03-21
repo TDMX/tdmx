@@ -33,10 +33,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
-
 /**
- * An ChannelAuthorization (within a Zone) managed by a ServiceProvider
+ * An ChannelAuthorization (within a Domain of a Zone) managed by a ServiceProvider
  * 
  * @author Peter Klauser
  * 
@@ -61,6 +59,9 @@ public class ChannelAuthorization implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Zone zone;
+
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private Domain domain;
 
 	@Embedded
 	@AttributeOverrides({
@@ -146,8 +147,9 @@ public class ChannelAuthorization implements Serializable {
 	ChannelAuthorization() {
 	}
 
-	public ChannelAuthorization(Zone zone) {
+	public ChannelAuthorization(Zone zone, Domain domain) {
 		this.zone = zone;
+		this.domain = domain;
 	}
 
 	// -------------------------------------------------------------------------
@@ -196,13 +198,18 @@ public class ChannelAuthorization implements Serializable {
 		return zone;
 	}
 
-	/**
-	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
-	 * 
-	 * @param zone
-	 */
-	public void setZone(Zone zone) {
+	@SuppressWarnings("unused")
+	private void setZone(Zone zone) {
 		this.zone = zone;
+	}
+
+	public Domain getDomain() {
+		return domain;
+	}
+
+	@SuppressWarnings("unused")
+	private void setDomain(Domain domain) {
+		this.domain = domain;
 	}
 
 	public ChannelOrigin getOrigin() {

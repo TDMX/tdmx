@@ -26,6 +26,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -69,6 +70,7 @@ public class TestDataGeneratorOutput {
 		private final List<ServiceHolder> services = new ArrayList<>();
 		private final List<DACHolder> dacs = new ArrayList<>();
 		private final List<AddressHolder> addresses = new ArrayList<>();
+		private final List<ChannelAuthorization> auths = new ArrayList<>();
 
 		public DomainHolder(Domain domain) {
 			this.domain = domain;
@@ -90,11 +92,13 @@ public class TestDataGeneratorOutput {
 			return addresses;
 		}
 
+		public List<ChannelAuthorization> getAuths() {
+			return auths;
+		}
 	}
 
 	public static class ServiceHolder {
 		private final Service service;
-		private final List<ChannelAuthorization> auths = new ArrayList<>();
 
 		public ServiceHolder(Service service) {
 			this.service = service;
@@ -102,10 +106,6 @@ public class TestDataGeneratorOutput {
 
 		public Service getService() {
 			return service;
-		}
-
-		public List<ChannelAuthorization> getAuths() {
-			return auths;
 		}
 	}
 
@@ -154,6 +154,8 @@ public class TestDataGeneratorOutput {
 		private final AgentCredential ag;
 		private final PKIXCredential credential;
 
+		private final List<FlowTarget> flowTargets = new ArrayList<>();
+
 		public UCHolder(String domainName, String localName, AgentCredential ag, PKIXCredential credential) {
 			this.domainName = domainName;
 			this.localName = localName;
@@ -175,6 +177,10 @@ public class TestDataGeneratorOutput {
 
 		public PKIXCredential getCredential() {
 			return credential;
+		}
+
+		public List<FlowTarget> getFlowTargets() {
+			return flowTargets;
 		}
 
 	}

@@ -108,7 +108,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testSearch_OriginAll() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
@@ -122,7 +122,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testSearch_DestinationAll() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getDestination().setLocalName(ca.getDestination().getLocalName());
@@ -137,7 +137,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testSearch_OriginAndDestinationAll() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
@@ -155,7 +155,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_FindByChannel() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
 				ca.getDestination());
 		assertNotNull(storedCA);
@@ -163,7 +163,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testSearch_UnknownZone() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
@@ -178,7 +178,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 
 	@Test
 	public void testModify() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getServices().get(0).getAuths().get(0);
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
 				ca.getDestination());
 		assertNotNull(storedCA);

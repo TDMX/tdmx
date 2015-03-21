@@ -81,7 +81,8 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 
 	@Override
 	public FlowTarget loadById(Long id) {
-		return new JPAQuery(em).from(flowTarget).where(flowTarget.id.eq(id)).uniqueResult(flowTarget);
+		return new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch().where(flowTarget.id.eq(id))
+				.uniqueResult(flowTarget);
 	}
 
 	@Override
@@ -89,8 +90,9 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.target, agentCredential).fetch()
-				.innerJoin(flowTarget.service, service).fetch().where(agentCredential.eq(agent).and(service.eq(s)));
+		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
+				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(flowTarget.service, service).fetch()
+				.where(agentCredential.eq(agent).and(service.eq(s)));
 		return query.uniqueResult(flowTarget);
 	}
 
@@ -99,8 +101,8 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.target, agentCredential).fetch()
-				.innerJoin(flowTarget.service, service).fetch();
+		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
+				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(flowTarget.service, service).fetch();
 
 		BooleanExpression where = flowTarget.target.zone.eq(zone);
 
