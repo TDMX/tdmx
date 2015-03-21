@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -30,6 +31,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
@@ -66,12 +68,11 @@ public class FlowTarget implements Serializable {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Service service;
 
-	@Column(nullable = false)
-	private int concurrencyLimit;
-
-	// TODO separate entity
-	// @Column(nullable = false)
-	// private int concurrencyLevel;
+	/**
+	 * The concurrency association is "owned" ie. managed through this FlowTarget
+	 */
+	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private FlowTargetConcurrency concurrency;
 
 	// TODO encrypted "memory" for multi recv sharing state
 
@@ -99,6 +100,7 @@ public class FlowTarget implements Serializable {
 	public FlowTarget(AgentCredential target, Service service) {
 		this.target = target;
 		this.service = service;
+		this.concurrency = new FlowTargetConcurrency(this, service);
 	}
 
 	// -------------------------------------------------------------------------
@@ -110,7 +112,6 @@ public class FlowTarget implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("FlowTarget [id=");
 		builder.append(id);
-		builder.append(", concurrencyLimit=").append(concurrencyLimit);
 		if (fts != null) {
 			builder.append(", fts=").append(fts);
 		}
@@ -154,14 +155,6 @@ public class FlowTarget implements Serializable {
 		this.service = service;
 	}
 
-	public int getConcurrencyLimit() {
-		return concurrencyLimit;
-	}
-
-	public void setConcurrencyLimit(int concurrencyLimit) {
-		this.concurrencyLimit = concurrencyLimit;
-	}
-
 	public FlowTargetSession getFts() {
 		return fts;
 	}
@@ -170,4 +163,11 @@ public class FlowTarget implements Serializable {
 		this.fts = fts;
 	}
 
+	public FlowTargetConcurrency getConcurrency() {
+		return concurrency;
+	}
+
+	public void setConcurrency(FlowTargetConcurrency concurrency) {
+		this.concurrency = concurrency;
+	}
 }

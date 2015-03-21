@@ -280,11 +280,14 @@
 			<xs:element ref="servicename"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="FlowTargetFilter">
-		<xs:sequence>
-			<xs:element name="target" type="UserFilter" minOccurs="0"/>
-			<xs:element ref="servicename" minOccurs="0"/>
-		</xs:sequence>
+	<xs:complexType name="FlowDestinationFilter">
+		<xs:complexContent>
+			<xs:extension base="FlowEndpointFilter">
+				<xs:sequence>
+					<xs:element ref="servicename" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="FlowChannel">
 		<xs:complexContent>
@@ -299,11 +302,28 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="FlowEndpointFilter">
+		<xs:complexContent>
+			<xs:extension base="UserFilter">
+				<xs:sequence>
+					<xs:element ref="serviceprovider" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FlowTargetFilter">
+		<xs:complexContent>
+			<xs:extension base="UserFilter">
+				<xs:sequence>
+					<xs:element ref="servicename" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 	<xs:complexType name="FlowFilter">
 		<xs:sequence>
-			<xs:element name="source" type="UserFilter" minOccurs="0"/>
-			<xs:element name="target" type="UserFilter" minOccurs="0"/>
-			<xs:element ref="servicename" minOccurs="0"/>
+			<xs:element name="source" type="FlowEndpointFilter" minOccurs="0"/>
+			<xs:element name="target" type="FlowDestinationFilter" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FlowControlLimit">
@@ -520,7 +540,7 @@
 	<xs:element name="administratorstate" type="AdministratorState"/>
 	<xs:element name="userIdentity" type="UserIdentity">
 		<xs:annotation>
-			<xs:documentation>references a specific UC. If provided, then the localname, domain and status are ignred.</xs:documentation>
+			<xs:documentation>references a specific UC, making localname and domain redundant.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="user" type="User"/>

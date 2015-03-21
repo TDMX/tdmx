@@ -141,6 +141,16 @@
 			ref="tdmx.lib.zone.dao.ChannelAuthorizationDao" />
 	</bean>
 
+	<bean id="tdmx.lib.zone.dao.FlowTargetDao"
+		class="org.tdmx.lib.zone.dao.FlowTargetDaoImpl">
+	</bean>
+ 
+	<bean id="tdmx.lib.zone.FlowTargetRepository"
+		class="org.tdmx.lib.zone.service.FlowTargetServiceRepositoryImpl">
+		<property name="flowTargetDao"
+			ref="tdmx.lib.zone.dao.FlowTargetDao" />
+	</bean>
+
 
 
 </beans>
