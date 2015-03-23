@@ -23,6 +23,7 @@ public enum AccountZoneAdministrationCredentialStatus {
 	PENDING,
 	INVALID_PEM,
 	INVALID_TDMX,
+	INVALID_ZAC,
 	NON_ZAC,
 	NO_DNS_TRUST,
 	INSTALLED, ;

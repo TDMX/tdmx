@@ -30,8 +30,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
-
 /**
  * An Address (within a Domain) managed by a ServiceProvider
  * 
@@ -58,13 +56,7 @@ public class Address implements Serializable {
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Zone zone;
-
-	/**
-	 * The fully qualified domain name ( includes the zoneApex ).
-	 */
-	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
-	private String domainName;
+	private Domain domain;
 
 	@Column(length = MAX_NAME_LEN, nullable = false)
 	/**
@@ -80,8 +72,14 @@ public class Address implements Serializable {
 
 	}
 
-	public Address(Zone zone) {
-		this.zone = zone;
+	public Address(Domain domain, String localName) {
+		setDomain(domain);
+		setLocalName(localName);
+	}
+
+	public Address(Domain domain, Address other) {
+		setDomain(domain);
+		setLocalName(other.getLocalName());
 	}
 
 	// -------------------------------------------------------------------------
@@ -93,10 +91,7 @@ public class Address implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Address [id=");
 		builder.append(id);
-		builder.append(", domainName=");
-		builder.append(domainName);
-		builder.append(", localName=");
-		builder.append(localName);
+		builder.append(", localName=").append(localName);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -108,6 +103,14 @@ public class Address implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void setDomain(Domain domain) {
+		this.domain = domain;
+	}
+
+	private void setLocalName(String localName) {
+		this.localName = localName;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -121,33 +124,12 @@ public class Address implements Serializable {
 		this.id = id;
 	}
 
-	public Zone getZone() {
-		return this.zone;
-	}
-
-	/**
-	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
-	 * 
-	 * @param zone
-	 */
-	public void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
-	public String getDomainName() {
-		return domainName;
-	}
-
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
-	}
-
 	public String getLocalName() {
 		return localName;
 	}
 
-	public void setLocalName(String localName) {
-		this.localName = localName;
+	public Domain getDomain() {
+		return domain;
 	}
 
 }

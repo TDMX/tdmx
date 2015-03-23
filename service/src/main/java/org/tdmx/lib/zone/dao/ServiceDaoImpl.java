@@ -18,6 +18,7 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QService.service;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -85,12 +87,12 @@ public class ServiceDaoImpl implements ServiceDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(service);
+		JPAQuery query = new JPAQuery(em).from(service).innerJoin(service.domain, domain).fetch();
 
-		BooleanExpression where = service.zone.eq(zone);
+		BooleanExpression where = domain.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
-			where = where.and(service.domainName.eq(criteria.getDomainName()));
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getServiceName())) {
 			where = where.and(service.serviceName.eq(criteria.getServiceName()));
@@ -101,6 +103,22 @@ public class ServiceDaoImpl implements ServiceDao {
 				.getPageSpecifier().getFirstResult()));
 		return query.list(service);
 
+	}
+
+	@Override
+	public Service loadByName(Domain domain, String serviceName) {
+		if (domain == null) {
+			throw new IllegalArgumentException("missing domain");
+		}
+		if (!StringUtils.hasText(serviceName)) {
+			throw new IllegalArgumentException("missing serviceName");
+		}
+		JPAQuery query = new JPAQuery(em).from(service).innerJoin(service.domain).fetch();
+
+		BooleanExpression where = service.domain.eq(domain).and(service.serviceName.eq(serviceName));
+
+		query.where(where);
+		return query.uniqueResult(service);
 	}
 
 	// -------------------------------------------------------------------------

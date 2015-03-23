@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -41,6 +42,8 @@ public interface AddressDao {
 	public Address merge(Address value);
 
 	public Address loadById(Long id);
+
+	public Address loadByName(Domain domain, String localName);
 
 	public List<Address> search(Zone zone, AddressSearchCriteria criteria);
 }

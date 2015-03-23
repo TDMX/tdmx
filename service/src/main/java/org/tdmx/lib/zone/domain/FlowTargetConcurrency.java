@@ -72,8 +72,14 @@ public class FlowTargetConcurrency implements Serializable {
 	}
 
 	public FlowTargetConcurrency(FlowTarget flowTarget, Service service) {
-		this.flowTarget = flowTarget;
+		setFlowTarget(flowTarget);
 		this.concurrencyLimit = service.getConcurrencyLimit();
+	}
+
+	public FlowTargetConcurrency(FlowTarget flowTarget, FlowTargetConcurrency other) {
+		setFlowTarget(flowTarget);
+		setConcurrencyLimit(other.getConcurrencyLimit());
+		setConcurrencyLevel(other.getConcurrencyLevel());
 	}
 
 	// -------------------------------------------------------------------------
@@ -98,6 +104,10 @@ public class FlowTargetConcurrency implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void setFlowTarget(FlowTarget flowTarget) {
+		this.flowTarget = flowTarget;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

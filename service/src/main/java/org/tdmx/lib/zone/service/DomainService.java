@@ -36,7 +36,7 @@ public interface DomainService {
 
 	public Domain findById(Long id);
 
-	public Domain findByDomainName(Zone zone, String domainName);
+	public Domain findByName(Zone zone, String domainName);
 
 	public List<Domain> search(Zone zone, DomainSearchCriteria criteria);
 

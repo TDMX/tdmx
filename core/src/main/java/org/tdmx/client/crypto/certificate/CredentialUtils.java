@@ -371,6 +371,20 @@ public class CredentialUtils {
 		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
 	}
 
+	public static boolean isValidZoneAdministratorCertificate(PKIXCertificate zac) throws CryptoCertificateException {
+
+		// check the TDMX zone info extension exists and the TDMX certs are correctly formed.
+		if (!zac.isTdmxZoneAdminCertificate()) {
+			return false;
+		}
+
+		// check the signing of the chain terminating in the trust root anchor of the zac
+		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
+		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { zac };
+		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
+		// TODO check that a ZAC which is not valid anymore will "fail"
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

@@ -18,7 +18,9 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QAddress.address;
 import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
+import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QFlowTarget.flowTarget;
 import static org.tdmx.lib.zone.domain.QService.service;
 
@@ -86,9 +88,12 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 	}
 
 	@Override
-	public FlowTarget loadByTargetService(Zone zone, AgentCredential agent, Service s) {
-		if (zone == null) {
-			throw new IllegalArgumentException("missing zone");
+	public FlowTarget loadByTargetService(AgentCredential agent, Service s) {
+		if (agent == null) {
+			throw new IllegalArgumentException("missing agent");
+		}
+		if (s == null) {
+			throw new IllegalArgumentException("missing service");
 		}
 		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
 				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(flowTarget.service, service).fetch()
@@ -102,7 +107,8 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 			throw new IllegalArgumentException("missing zone");
 		}
 		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
-				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(flowTarget.service, service).fetch();
+				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(agentCredential.address, address)
+				.fetch().innerJoin(address.domain, domain).fetch().innerJoin(flowTarget.service, service).fetch();
 
 		BooleanExpression where = flowTarget.target.zone.eq(zone);
 
@@ -110,10 +116,10 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 			where = where.and(agentCredential.eq(criteria.getTarget().getAgent()));
 		}
 		if (StringUtils.hasText(criteria.getTarget().getAddressName())) {
-			where = where.and(agentCredential.addressName.eq(criteria.getTarget().getAddressName()));
+			where = where.and(address.localName.eq(criteria.getTarget().getAddressName()));
 		}
 		if (StringUtils.hasText(criteria.getTarget().getDomainName())) {
-			where = where.and(agentCredential.domainName.eq(criteria.getTarget().getDomainName()));
+			where = where.and(domain.domainName.eq(criteria.getTarget().getDomainName()));
 		}
 		if (criteria.getTarget().getStatus() != null) {
 			where = where.and(agentCredential.credentialStatus.eq(criteria.getTarget().getStatus()));

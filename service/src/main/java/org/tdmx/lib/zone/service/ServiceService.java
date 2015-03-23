@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -36,7 +37,7 @@ public interface ServiceService {
 
 	public Service findById(Long id);
 
-	public Service findByName(Zone zone, String domainName, String serviceName);
+	public Service findByName(Domain domain, String serviceName);
 
 	public List<Service> search(Zone zone, ServiceSearchCriteria criteria);
 

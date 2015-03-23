@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
@@ -33,6 +31,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -77,25 +76,21 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		if (certChain == null || certChain.length < 1) {
 			return new AuthorizationResult(AuthorizationFailureCode.MISSING_CERT);
 		}
-		PKIXCertificate[] chain;
-		try {
-			chain = CertificateIOUtils.convert(certChain);
-		} catch (CryptoCertificateException e) {
-			log.warn("Unable to convert X509 certificate.", e);
+		// the certificate provided here IS pkix validated by the SSL implementation.
+		// - time validity
+		// - oscp revocation
+		// - valid chain signature
+		// - trusted root => SSL layer trusts all self signed certs
+		// therefore we don't additionaly use the AgentCredentialValidator in this context
+		// which would double the effort to validate certificates for each client request
+		AgentCredentialDescriptor providedCredential = agentCredentialFactory.createAgentCredential(certChain);
+		if (providedCredential == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
-		PKIXCertificate cert = chain[0];
-
-		if (cert.getTdmxZoneInfo() == null) {
-			return new AuthorizationResult(AuthorizationFailureCode.NON_TDMX);
-		}
-		String fingerprint = cert.getFingerprint();
-
-		String zoneApex = cert.getTdmxZoneInfo().getZoneRoot();
 
 		// different accounts could have the same zone on different zoneDBs
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 4));
-		sc.setZoneApex(zoneApex);
+		sc.setZoneApex(providedCredential.getZoneApex());
 		List<AccountZone> accountZones = accountZoneService.search(sc);
 		if (accountZones.isEmpty()) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_ZONE);
@@ -108,9 +103,10 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 			try {
 				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
 
-				zone = getZoneService().findByZoneApex(accountZone.getId(), zoneApex);
+				zone = getZoneService().findByZoneApex(accountZone.getId(), providedCredential.getZoneApex());
 				if (zone != null) {
-					agentCredential = getAgentCredentialService().findByFingerprint(zone, fingerprint);
+					agentCredential = getAgentCredentialService().findByFingerprint(zone,
+							providedCredential.getFingerprint());
 					if (agentCredential != null) {
 						agentAccountZone = accountZone;
 						break;
@@ -130,14 +126,15 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		// to prove we "know" the client
 		PKIXCertificate storedPublicKey = agentCredential.getPublicKey();
 		if (storedPublicKey == null) {
-			log.warn("Stored public key missing for credential with fingerprint=" + fingerprint);
+			log.warn("Stored public key missing for credential with fingerprint=" + agentCredential.getFingerprint());
 			return new AuthorizationResult(AuthorizationFailureCode.SYSTEM);
 
-		} else if (!storedPublicKey.isIdentical(cert)) {
-			log.warn("Certificate unequal but matched fingerprint=" + fingerprint + " suspect cert: " + cert);
+		} else if (!storedPublicKey.isIdentical(providedCredential.getPublicKey())) {
+			log.warn("Certificate unequal but matched fingerprint=" + storedPublicKey.getFingerprint()
+					+ " suspect cert: " + providedCredential.getPublicKey());
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
-		return new AuthorizationResult(cert, agentAccountZone, zone);
+		return new AuthorizationResult(storedPublicKey, agentAccountZone, zone);
 	}
 
 	// -------------------------------------------------------------------------

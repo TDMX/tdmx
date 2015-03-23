@@ -98,7 +98,7 @@ public class DomainServiceRepositoryImpl implements DomainService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Domain findByDomainName(Zone zone, String domainName) {
+	public Domain findByName(Zone zone, String domainName) {
 		if (!StringUtils.hasText(domainName)) {
 			throw new IllegalArgumentException("missing domainName");
 		}

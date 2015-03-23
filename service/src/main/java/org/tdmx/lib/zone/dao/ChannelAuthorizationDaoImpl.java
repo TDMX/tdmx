@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
+import static org.tdmx.lib.zone.domain.QDomain.domain;
 
 import java.util.List;
 
@@ -86,9 +87,10 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelAuthorization);
+		JPAQuery query = new JPAQuery(em).from(channelAuthorization).innerJoin(channelAuthorization.domain, domain)
+				.fetch();
 
-		BooleanExpression where = channelAuthorization.zone.eq(zone);
+		BooleanExpression where = domain.zone.eq(zone);
 
 		if (criteria.getDomain() != null) {
 			where = where.and(channelAuthorization.domain.eq(criteria.getDomain()));

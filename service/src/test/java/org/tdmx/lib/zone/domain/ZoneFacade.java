@@ -39,23 +39,17 @@ public class ZoneFacade {
 	}
 
 	public static Domain createDomain(Zone zone, String domainName) throws Exception {
-		Domain d = new Domain(zone);
-		d.setDomainName(domainName);
+		Domain d = new Domain(zone, domainName);
 		return d;
 	}
 
-	public static Address createAddress(Zone zone, String domainName, String localName) throws Exception {
-		Address a = new Address(zone);
-		a.setDomainName(domainName);
-		a.setLocalName(localName);
+	public static Address createAddress(Domain domain, String localName) throws Exception {
+		Address a = new Address(domain, localName);
 		return a;
 	}
 
-	public static Service createService(Zone zone, String domainName, String serviceName, int concurrencyLimit)
-			throws Exception {
-		Service s = new Service(zone);
-		s.setDomainName(domainName);
-		s.setServiceName(serviceName);
+	public static Service createService(Domain domain, String serviceName, int concurrencyLimit) throws Exception {
+		Service s = new Service(domain, serviceName);
 		s.setConcurrencyLimit(concurrencyLimit);
 		return s;
 	}
@@ -104,9 +98,9 @@ public class ZoneFacade {
 	}
 
 	// TODO give DAC to be able to construct correct signatures
-	public static ChannelAuthorization createSendRecvChannelAuthorization(Zone zone, Domain domain,
-			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
+	public static ChannelAuthorization createSendRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
+			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(domain);
 		c.setOrigin(origin);
 		c.setDestination(dest);
 
@@ -155,9 +149,9 @@ public class ZoneFacade {
 		return c;
 	}
 
-	public static ChannelAuthorization createSendChannelAuthorization(Zone zone, Domain domain,
-			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
+	public static ChannelAuthorization createSendChannelAuthorization(Domain domain, PKIXCredential userCred,
+			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(domain);
 		c.setOrigin(origin);
 		c.setDestination(dest);
 
@@ -191,9 +185,9 @@ public class ZoneFacade {
 		return c;
 	}
 
-	public static ChannelAuthorization createRecvChannelAuthorization(Zone zone, Domain domain,
-			PKIXCredential userCred, AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(zone, domain);
+	public static ChannelAuthorization createRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
+			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+		ChannelAuthorization c = new ChannelAuthorization(domain);
 		c.setOrigin(origin);
 		c.setDestination(dest);
 

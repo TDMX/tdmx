@@ -44,7 +44,7 @@ public interface FlowTargetDao {
 
 	public FlowTarget loadById(Long id);
 
-	public FlowTarget loadByTargetService(Zone zone, AgentCredential agent, Service service);
+	public FlowTarget loadByTargetService(AgentCredential agent, Service service);
 
 	public List<FlowTarget> search(Zone zone, FlowTargetSearchCriteria criteria);
 }

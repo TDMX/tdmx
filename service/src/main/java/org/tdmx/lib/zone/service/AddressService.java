@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -36,7 +37,7 @@ public interface AddressService {
 
 	public Address findById(Long id);
 
-	public Address findByName(Zone zone, String domainName, String localName);
+	public Address findByName(Domain domain, String localName);
 
 	public List<Address> search(Zone zone, AddressSearchCriteria criteria);
 

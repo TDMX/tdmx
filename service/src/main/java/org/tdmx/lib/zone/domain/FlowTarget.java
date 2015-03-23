@@ -98,9 +98,17 @@ public class FlowTarget implements Serializable {
 	}
 
 	public FlowTarget(AgentCredential target, Service service) {
-		this.target = target;
-		this.service = service;
-		this.concurrency = new FlowTargetConcurrency(this, service);
+		setTarget(target);
+		setService(service);
+		setConcurrency(new FlowTargetConcurrency(this, service));
+		setFts(null);
+	}
+
+	public FlowTarget(AgentCredential target, Service service, FlowTarget other) {
+		setTarget(target);
+		setService(service);
+		setConcurrency(new FlowTargetConcurrency(this, other.getConcurrency()));
+		setFts(other.getFts());
 	}
 
 	// -------------------------------------------------------------------------
@@ -112,6 +120,7 @@ public class FlowTarget implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("FlowTarget [id=");
 		builder.append(id);
+		builder.append(", concurrency=").append(concurrency); // one2one
 		if (fts != null) {
 			builder.append(", fts=").append(fts);
 		}
@@ -126,6 +135,14 @@ public class FlowTarget implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void setTarget(AgentCredential target) {
+		this.target = target;
+	}
+
+	private void setService(Service service) {
+		this.service = service;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -143,16 +160,8 @@ public class FlowTarget implements Serializable {
 		return target;
 	}
 
-	public void setTarget(AgentCredential target) {
-		this.target = target;
-	}
-
 	public Service getService() {
 		return service;
-	}
-
-	public void setService(Service service) {
-		this.service = service;
 	}
 
 	public FlowTargetSession getFts() {

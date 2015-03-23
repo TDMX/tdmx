@@ -24,9 +24,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.dao.ServiceDao;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -92,18 +91,8 @@ public class ServiceServiceRepositoryImpl implements ServiceService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Service findByName(Zone zone, String domainName, String serviceName) {
-		if (!StringUtils.hasText(domainName)) {
-			throw new IllegalArgumentException("missing domainName");
-		}
-		if (!StringUtils.hasText(serviceName)) {
-			throw new IllegalArgumentException("missing serviceName");
-		}
-		ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(domainName);
-		sc.setServiceName(serviceName);
-		List<Service> services = getServiceDao().search(zone, sc);
-		return services.isEmpty() ? null : services.get(0);
+	public Service findByName(Domain domain, String serviceName) {
+		return getServiceDao().loadByName(domain, serviceName);
 	}
 
 	@Override

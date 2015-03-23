@@ -66,7 +66,7 @@ public class DomainServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		Domain d = domainService.findByDomainName(zone, domainName);
+		Domain d = domainService.findByName(zone, domainName);
 		if (d != null) {
 			domainService.delete(d);
 		}
@@ -84,14 +84,14 @@ public class DomainServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Domain d = domainService.findByDomainName(zone, domainName);
+		Domain d = domainService.findByName(zone, domainName);
 		assertNotNull(d);
 		assertEquals(domainName, d.getDomainName());
 	}
 
 	@Test
 	public void testLookup_NotFoundDomain() throws Exception {
-		Domain d = domainService.findByDomainName(zone, "gugus");
+		Domain d = domainService.findByName(zone, "gugus");
 		assertNull(d);
 	}
 
@@ -100,7 +100,7 @@ public class DomainServiceRepositoryUnitTest {
 		Zone gugus = new Zone(zone.getAccountZoneId(), "gugus");
 		gugus.setId(new Random().nextLong());
 
-		Domain d = domainService.findByDomainName(gugus, domainName);
+		Domain d = domainService.findByName(gugus, domainName);
 		assertNull(d);
 	}
 
@@ -126,10 +126,10 @@ public class DomainServiceRepositoryUnitTest {
 
 	@Test
 	public void testModify() throws Exception {
-		Domain d = domainService.findByDomainName(zone, domainName);
+		Domain d = domainService.findByName(zone, domainName);
 		domainService.createOrUpdate(d);
 
-		Domain d2 = domainService.findByDomainName(zone, domainName);
+		Domain d2 = domainService.findByName(zone, domainName);
 
 		assertEquals(d.getId(), d2.getId());
 	}

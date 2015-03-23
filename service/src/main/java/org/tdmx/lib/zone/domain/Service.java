@@ -30,8 +30,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
-
 /**
  * An Service (within a Domain) managed by a ServiceProvider
  * 
@@ -58,13 +56,7 @@ public class Service implements Serializable {
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Zone zone;
-
-	/**
-	 * The fully qualified domain name ( includes the zoneApex ).
-	 */
-	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
-	private String domainName;
+	private Domain domain;
 
 	/**
 	 * The serviceName part.
@@ -73,7 +65,7 @@ public class Service implements Serializable {
 	private String serviceName;
 
 	@Column(nullable = false)
-	private int concurrencyLimit;
+	private int concurrencyLimit = 1;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -82,8 +74,15 @@ public class Service implements Serializable {
 	Service() {
 	}
 
-	public Service(Zone zone) {
-		this.zone = zone;
+	public Service(Domain domain, String serviceName) {
+		setDomain(domain);
+		setServiceName(serviceName);
+	}
+
+	public Service(Domain domain, Service other) {
+		setDomain(domain);
+		setServiceName(other.getServiceName());
+		setConcurrencyLimit(other.getConcurrencyLimit());
 	}
 
 	// -------------------------------------------------------------------------
@@ -95,10 +94,7 @@ public class Service implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Service [id=");
 		builder.append(id);
-		builder.append(", domainName=");
-		builder.append(domainName);
-		builder.append(", serviceName=");
-		builder.append(serviceName);
+		builder.append(", serviceName=").append(serviceName);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -110,6 +106,14 @@ public class Service implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void setDomain(Domain domain) {
+		this.domain = domain;
+	}
+
+	private void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -123,33 +127,12 @@ public class Service implements Serializable {
 		this.id = id;
 	}
 
-	public Zone getZone() {
-		return zone;
-	}
-
-	/**
-	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
-	 * 
-	 * @param zone
-	 */
-	public void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
-	public String getDomainName() {
-		return domainName;
-	}
-
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public Domain getDomain() {
+		return domain;
 	}
 
 	public String getServiceName() {
 		return serviceName;
-	}
-
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
 	}
 
 	public int getConcurrencyLimit() {

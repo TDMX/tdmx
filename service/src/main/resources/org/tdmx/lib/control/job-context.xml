@@ -54,7 +54,9 @@
 		<property name="accountZoneAdministrationCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository"/>
 		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
-		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 
 	</bean>
 

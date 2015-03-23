@@ -36,7 +36,6 @@ import javax.persistence.Transient;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
 
 /**
  * An AgentCredential is the public certificate of a ZAC, DAC or UC.
@@ -49,6 +48,18 @@ import org.tdmx.lib.control.job.ZoneTransferJobExecutorImpl;
 @Entity
 @Table(name = "AgentCredential")
 public class AgentCredential implements Serializable {
+
+	public Domain getDomain() {
+		return domain;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setCertificateChain(PKIXCertificate[] certificateChain) {
+		this.certificateChain = certificateChain;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -69,6 +80,12 @@ public class AgentCredential implements Serializable {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Zone zone;
 
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	private Domain domain;
+
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	private Address address;
+
 	// TODO index fingerprint
 	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false)
 	private String fingerprint;
@@ -79,16 +96,10 @@ public class AgentCredential implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = AgentCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
-	private AgentCredentialStatus credentialStatus;
+	private AgentCredentialStatus credentialStatus = AgentCredentialStatus.ACTIVE;
 
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
-
-	@Column(length = Domain.MAX_NAME_LEN)
-	private String domainName; // set when DAC or UC, null if ZAC
-
-	@Column(length = Address.MAX_NAME_LEN)
-	private String addressName; // set when UC, null if ZAC or DAC
 
 	@Transient
 	private PKIXCertificate[] certificateChain;
@@ -100,25 +111,84 @@ public class AgentCredential implements Serializable {
 	AgentCredential() {
 	}
 
-	public AgentCredential(Zone zone, PKIXCertificate[] certificateChain) throws CryptoCertificateException {
-		this.zone = zone;
-		setCertificateChain(certificateChain);
-		PKIXCertificate publicKey = getPublicKey();
-		setFingerprint(publicKey.getFingerprint());
+	/**
+	 * Constructor for a ZAC.
+	 * 
+	 * @param zone
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, AgentCredentialDescriptor other) {
+		this(zone, null, null, other);
+	}
 
-		if (publicKey.isTdmxZoneAdminCertificate()) {
-			setCredentialType(AgentCredentialType.ZAC);
-		} else if (publicKey.isTdmxDomainAdminCertificate()) {
-			setCredentialType(AgentCredentialType.DAC);
-			setDomainName(publicKey.getCommonName());
-		} else if (publicKey.isTdmxUserCertificate()) {
-			setCredentialType(AgentCredentialType.UC);
-			setAddressName(publicKey.getCommonName());
+	/**
+	 * Constructor for a DAC.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, Domain domain, AgentCredentialDescriptor other) {
+		this(zone, domain, null, other);
+	}
 
-			PKIXCertificate issuerKey = getIssuerPublicKey();
-			setDomainName(issuerKey.getCommonName());
-		}
+	/**
+	 * Constructor for a UC.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param address
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, Domain domain, Address address, AgentCredentialDescriptor other) {
+		setZone(zone);
+		setDomain(domain);
+		setAddress(address);
+		this.credentialType = other.getCredentialType();
+		this.certificateChainPem = other.getCertificateChainPem();
+		this.fingerprint = other.getFingerprint();
+	}
 
+	/**
+	 * Clone ZAC for ZoneDB partition transfer.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param address
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, AgentCredential other) {
+		this(zone, null, null, other);
+	}
+
+	/**
+	 * Clone DAC for ZoneDB partition transfer.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param address
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, Domain domain, AgentCredential other) {
+		this(zone, domain, null, other);
+	}
+
+	/**
+	 * Clone UC for ZoneDB partition transfer.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param address
+	 * @param other
+	 */
+	public AgentCredential(Zone zone, Domain domain, Address address, AgentCredential other) {
+		setZone(zone);
+		setDomain(domain);
+		setAddress(address);
+		this.credentialType = other.getCredentialType();
+		this.certificateChainPem = other.getCertificateChainPem();
+		this.credentialStatus = other.getCredentialStatus();
+		this.fingerprint = other.getFingerprint();
 	}
 
 	// -------------------------------------------------------------------------
@@ -130,12 +200,9 @@ public class AgentCredential implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("AgentCredential [id=");
 		builder.append(id);
-		builder.append(", fingerprint=");
-		builder.append(fingerprint);
-		builder.append(" ,type=");
-		builder.append(credentialType);
-		builder.append(" ,status=");
-		builder.append(credentialStatus);
+		builder.append(" ,type=").append(credentialType);
+		builder.append(", fingerprint=").append(fingerprint);
+		builder.append(" ,status=").append(credentialStatus);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -149,7 +216,6 @@ public class AgentCredential implements Serializable {
 	public PKIXCertificate[] getCertificateChain() {
 		if (certificateChain == null && getCertificateChainPem() != null) {
 			certificateChain = CertificateIOUtils.safePemToX509certs(getCertificateChainPem());
-			return certificateChain;
 		}
 		return certificateChain;
 	}
@@ -186,9 +252,16 @@ public class AgentCredential implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setCertificateChain(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
-		this.certificateChain = certificateChain;
-		setCertificateChainPem(CertificateIOUtils.x509certsToPem(certificateChain));
+	private void setZone(Zone zone) {
+		this.zone = zone;
+	}
+
+	private void setDomain(Domain domain) {
+		this.domain = domain;
+	}
+
+	private void setAddress(Address address) {
+		this.address = address;
 	}
 
 	// -------------------------------------------------------------------------
@@ -207,15 +280,6 @@ public class AgentCredential implements Serializable {
 		return zone;
 	}
 
-	/**
-	 * Should only be used for ZoneDB partition transfer. {@link ZoneTransferJobExecutorImpl}
-	 * 
-	 * @param zone
-	 */
-	public void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
 	public String getFingerprint() {
 		return fingerprint;
 	}
@@ -228,7 +292,7 @@ public class AgentCredential implements Serializable {
 		return credentialType;
 	}
 
-	private void setCredentialType(AgentCredentialType credentialType) {
+	public void setCredentialType(AgentCredentialType credentialType) {
 		this.credentialType = credentialType;
 	}
 
@@ -246,22 +310,6 @@ public class AgentCredential implements Serializable {
 
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChainPem = certificateChainPem;
-	}
-
-	public String getDomainName() {
-		return domainName;
-	}
-
-	private void setDomainName(String domainName) {
-		this.domainName = domainName;
-	}
-
-	public String getAddressName() {
-		return addressName;
-	}
-
-	private void setAddressName(String addressName) {
-		this.addressName = addressName;
 	}
 
 }

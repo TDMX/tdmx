@@ -1,33 +1,19 @@
-    drop table Address if exists;
-
-    drop table AgentCredential if exists;
-
-    drop table ChannelAuthorization if exists;
-
-    drop table Domain if exists;
-
-    drop table MaxValueEntry if exists;
-
-    drop table Service if exists;
-
-    drop table Zone if exists;
 
     create table Address (
         id bigint not null,
-        domainName varchar(255) not null,
         localName varchar(255) not null,
-        zone_id bigint not null,
+        domain_id bigint not null,
         primary key (id)
     );
 
     create table AgentCredential (
         id bigint not null,
-        addressName varchar(255),
         certificateChainPem varchar(12000) not null,
         credentialStatus varchar(12) not null,
         credentialType varchar(4) not null,
-        domainName varchar(255),
         fingerprint varchar(64) not null,
+        address_id bigint,
+        domain_id bigint,
         zone_id bigint not null,
         primary key (id)
     );
@@ -78,7 +64,6 @@
         unsentHigh numeric,
         unsentLow numeric,
         domain_id bigint not null,
-        zone_id bigint not null,
         primary key (id)
     );
 
@@ -115,18 +100,11 @@
         primary key (id)
     );
 
-    create table MaxValueEntry (
-        name varchar(16) not null,
-        value bigint not null,
-        primary key (name)
-    );
-
     create table Service (
         id bigint not null,
         concurrencyLimit integer not null,
-        domainName varchar(255) not null,
         serviceName varchar(255) not null,
-        zone_id bigint not null,
+        domain_id bigint not null,
         primary key (id)
     );
 
@@ -138,19 +116,24 @@
     );
 
     alter table Address 
-        add constraint FK1ED033D4981D3FB4 
-        foreign key (zone_id) 
-        references Zone;
+        add constraint FK1ED033D4E7351234 
+        foreign key (domain_id) 
+        references Domain;
 
     alter table AgentCredential 
         add constraint FKDEAF7D1C981D3FB4 
         foreign key (zone_id) 
         references Zone;
 
-    alter table ChannelAuthorization 
-        add constraint FKD7AF4456981D3FB4 
-        foreign key (zone_id) 
-        references Zone;
+    alter table AgentCredential 
+        add constraint FKDEAF7D1CE7351234 
+        foreign key (domain_id) 
+        references Domain;
+
+    alter table AgentCredential 
+        add constraint FKDEAF7D1CE78C5580 
+        foreign key (address_id) 
+        references Address;
 
     alter table ChannelAuthorization 
         add constraint FKD7AF4456E7351234 
@@ -178,7 +161,11 @@
         references Service;
 
     alter table Service 
-        add constraint FKD97C5E95981D3FB4 
-        foreign key (zone_id) 
-        references Zone;
+        add constraint FKD97C5E95E7351234 
+        foreign key (domain_id) 
+        references Domain;
 
+    create table MaxValueEntry (
+         NAME varchar(255),
+         value integer 
+    ) ;

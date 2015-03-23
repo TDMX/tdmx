@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -44,11 +45,13 @@ public class ServiceServiceRepositoryUnitTest {
 
 	@Autowired
 	private ZoneService zoneService;
+	@Autowired
+	private DomainService domainService;
 
 	@Autowired
 	private ServiceService serviceService;
 
-	private String domainName;
+	private Domain domain;
 	private String serviceName;
 	private Zone zone;
 
@@ -57,20 +60,26 @@ public class ServiceServiceRepositoryUnitTest {
 
 		zone = ZoneFacade.createZone(new Random().nextLong(), "ZONE.ROOT.TEST");
 
-		domainName = "SUBDOMAIN." + zone.getZoneApex();
 		serviceName = "serviceName";
 
 		zoneService.createOrUpdate(zone);
 
-		Service d = ZoneFacade.createService(zone, domainName, serviceName, 10);
-		serviceService.createOrUpdate(d);
+		domain = new Domain(zone, "SUBDOMAIN." + zone.getZoneApex());
+		domainService.createOrUpdate(domain);
+
+		Service s = ZoneFacade.createService(domain, serviceName, 10);
+		serviceService.createOrUpdate(s);
 	}
 
 	@After
 	public void doTeardown() {
-		Service d = serviceService.findByName(zone, domainName, serviceName);
+		Service s = serviceService.findByName(domain, serviceName);
+		if (s != null) {
+			serviceService.delete(s);
+		}
+		Domain d = domainService.findById(domain.getId());
 		if (d != null) {
-			serviceService.delete(d);
+			domainService.delete(d);
 		}
 		Zone az = zoneService.findById(zone.getId());
 		if (az != null) {
@@ -81,14 +90,15 @@ public class ServiceServiceRepositoryUnitTest {
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(zoneService);
+		assertNotNull(domainService);
 		assertNotNull(serviceService);
 	}
 
 	@Test
 	public void testLookup() throws Exception {
-		Service s = serviceService.findByName(zone, domainName, serviceName);
+		Service s = serviceService.findByName(domain, serviceName);
 		assertNotNull(s);
-		assertEquals(domainName, s.getDomainName());
+		assertEquals(domain.getDomainName(), s.getDomain().getDomainName());
 		assertEquals(serviceName, s.getServiceName());
 	}
 
@@ -99,7 +109,7 @@ public class ServiceServiceRepositoryUnitTest {
 		assertNotNull(services);
 		assertEquals(1, services.size());
 		Service s = services.get(0);
-		assertEquals(domainName, s.getDomainName());
+		assertEquals(domain.getDomainName(), s.getDomain().getDomainName());
 		assertEquals(serviceName, s.getServiceName());
 	}
 
@@ -112,34 +122,34 @@ public class ServiceServiceRepositoryUnitTest {
 		assertNotNull(services);
 		assertEquals(1, services.size());
 		Service s = services.get(0);
-		assertEquals(domainName, s.getDomainName());
+		assertEquals(domain.getDomainName(), s.getDomain().getDomainName());
 		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainAndService() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
+		criteria.setDomainName(domain.getDomainName());
 		criteria.setServiceName(serviceName);
 
 		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
 		Service s = services.get(0);
-		assertEquals(domainName, s.getDomainName());
+		assertEquals(domain.getDomainName(), s.getDomain().getDomainName());
 		assertEquals(serviceName, s.getServiceName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainOnly() throws Exception {
 		ServiceSearchCriteria criteria = new ServiceSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
+		criteria.setDomainName(domain.getDomainName());
 
 		List<Service> services = serviceService.search(zone, criteria);
 		assertNotNull(services);
 		assertEquals(1, services.size());
 		Service s = services.get(0);
-		assertEquals(domainName, s.getDomainName());
+		assertEquals(domain.getDomainName(), s.getDomain().getDomainName());
 		assertEquals(serviceName, s.getServiceName());
 	}
 
@@ -168,19 +178,19 @@ public class ServiceServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Service d = serviceService.findByName(zone, domainName, "gugus");
+		Service d = serviceService.findByName(domain, "gugus");
 		assertNull(d);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Service d = serviceService.findByName(zone, domainName, serviceName);
+		Service d = serviceService.findByName(domain, serviceName);
 		d.setConcurrencyLimit(20);
 		serviceService.createOrUpdate(d);
 
-		Service d2 = serviceService.findByName(zone, domainName, serviceName);
+		Service d2 = serviceService.findByName(domain, serviceName);
 
-		assertEquals(d.getDomainName(), d2.getDomainName());
+		assertEquals(d.getDomain().getDomainName(), d2.getDomain().getDomainName());
 		assertEquals(d.getServiceName(), d2.getServiceName());
 		assertEquals(d.getConcurrencyLimit(), d2.getConcurrencyLimit());
 	}

@@ -53,7 +53,7 @@ public interface AgentCredentialAuthorizationService {
 		/*
 		 * Non TDMX.
 		 */
-		NON_TDMX,
+		NON_TDMX, // TODO obsolete?
 		/*
 		 * The certificates provided indicate an unknown zone.
 		 */

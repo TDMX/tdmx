@@ -23,6 +23,7 @@
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 	</bean>
 

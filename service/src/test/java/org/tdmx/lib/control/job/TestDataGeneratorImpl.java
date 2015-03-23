@@ -49,6 +49,7 @@ import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
@@ -64,6 +65,7 @@ import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
+import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
@@ -98,6 +100,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private ServiceService serviceService;
 	private AddressService addressService;
 	private AgentCredentialService agentCredentialService;
+	private AgentCredentialFactory agentCredentialFactory;
+
 	private ChannelAuthorizationService channelAuthorizationService;
 	private FlowTargetService flowTargetService;
 
@@ -141,7 +145,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						.getAccountId(), zac);
 
 				// create the AgentCredential for the ZAC in ZoneDB
-				AgentCredential zA = createAgentCredential(zone, zac);
+				AgentCredential zA = createAgentCredential(zone, null, null, zac);
 				result.getZacs().add(new ZACHolder(zAC, zA, zac));
 			}
 
@@ -158,20 +162,20 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					dac = TestCredentialGenerator.createDAC(zac, 5);
 
 					// create the AgentCredential for the ZAC in ZoneDB
-					AgentCredential ac = createAgentCredential(zone, dac);
+					AgentCredential ac = createAgentCredential(zone, domain, null, dac);
 					dh.getDacs().add(new DACHolder(ac, dac));
 				}
 
 				// per domain Service
 				for (int si = 0; si < input.getNumServicesPerDomain(); si++) {
-					Service svc = createService(zone, domain.getDomainName());
+					Service svc = createService(domain);
 					ServiceHolder sh = new ServiceHolder(svc);
 					dh.getServices().add(sh);
 				}
 
 				// per domain Address
 				for (int si = 0; si < input.getNumAddressesPerDomain(); si++) {
-					Address add = createAddress(zone, domain.getDomainName());
+					Address add = createAddress(domain);
 					AddressHolder ah = new AddressHolder(add);
 					dh.getAddresses().add(ah);
 
@@ -181,61 +185,12 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						PKIXCredential uc = TestCredentialGenerator.createUC(dac, 2);
 
 						// create the AgentCredential for the ZAC in ZoneDB
-						AgentCredential ac = createAgentCredential(zone, uc);
-						ah.getUcs().add(new UCHolder(add.getDomainName(), add.getLocalName(), ac, uc));
+						AgentCredential ac = createAgentCredential(zone, domain, add, uc);
+						ah.getUcs().add(new UCHolder(add.getDomain().getDomainName(), add.getLocalName(), ac, uc));
 					}
 				}
 			}
-
-			// we create channelauthorizations between all the addresses of the 1st domain and the 2nd domain if there
-			// is more than
-			// one domain, else between all the addresses of the only domain.
-			DomainHolder fromDomain = result.getDomains().get(0);
-			DACHolder fromDac = fromDomain.getDacs().get(0);
-			DomainHolder toDomain = result.getDomains().size() > 1 ? result.getDomains().get(1) : fromDomain;
-			DACHolder toDac = toDomain.getDacs().get(0);
-			for (AddressHolder fromAddressHolder : fromDomain.getAddresses()) {
-				Address from = fromAddressHolder.getAddress();
-				for (ServiceHolder serviceHolder : toDomain.getServices()) {
-					Service service = serviceHolder.getService();
-					for (AddressHolder toAddressHolder : toDomain.getAddresses()) {
-						Address to = toAddressHolder.getAddress();
-
-						// TODO serviceprovider url from AccountZone to Zone
-						ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(), from.getDomainName(),
-								"SP");
-						ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(),
-								to.getDomainName(), service.getServiceName(), "SP");
-
-						// if both domains are the same we merge the 2 auths into one.
-						if (from.getDomainName().equals(to.getDomainName())) {
-							ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(zone,
-									fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
-							channelAuthorizationService.createOrUpdate(sendRecvCa);
-							fromDomain.getAuths().add(sendRecvCa);
-						} else {
-							ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(zone,
-									fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
-							ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(zone,
-									toDomain.getDomain(), toDac.getCredential(), toDac.getAg(), co, cd);
-
-							channelAuthorizationService.createOrUpdate(sendCa);
-							fromDomain.getAuths().add(sendCa);
-							channelAuthorizationService.createOrUpdate(recvCa);
-							toDomain.getAuths().add(recvCa);
-						}
-
-						for (UCHolder targetUser : toAddressHolder.getUcs()) {
-							AgentCredential target = targetUser.getAg();
-
-							FlowTarget ft = ZoneFacade.createFlowTarget(targetUser.getCredential(), target, service);
-
-							flowTargetService.createOrUpdate(ft);
-						}
-
-					}
-				}
-			}
+			createChannelAuthorizations(result);
 
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
@@ -248,6 +203,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 	@Override
 	public void tearDown(TestDataGeneratorInput input, TestDataGeneratorOutput output) {
+		if (output == null) {
+			return;
+		}
 		tearDown(output.getAccountZone(), output.getZone());
 
 		// remove Account
@@ -256,7 +214,73 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 	}
 
+	private void createChannelAuthorizations(TestDataGeneratorOutput result) {
+		// we create channelauthorizations between all the addresses of the 1st domain and the 2nd domain if there
+		// is more than
+		// one domain, else between all the addresses of the only domain.
+		DomainHolder fromDomain = result.getDomains().get(0);
+		if (fromDomain.getDacs().isEmpty()) {
+			return;
+		}
+		DACHolder fromDac = fromDomain.getDacs().get(0);
+
+		DomainHolder toDomain = result.getDomains().size() > 1 ? result.getDomains().get(1) : fromDomain;
+		DACHolder toDac = toDomain.getDacs().get(0);
+		if (toDomain.getDacs().isEmpty()) {
+			return;
+		}
+		for (AddressHolder fromAddressHolder : fromDomain.getAddresses()) {
+			Address from = fromAddressHolder.getAddress();
+			for (ServiceHolder serviceHolder : toDomain.getServices()) {
+				Service service = serviceHolder.getService();
+				for (AddressHolder toAddressHolder : toDomain.getAddresses()) {
+					Address to = toAddressHolder.getAddress();
+
+					// TODO serviceprovider url from AccountZone to Zone
+					ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(), from.getDomain()
+							.getDomainName(), "SP");
+					ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(), to.getDomain()
+							.getDomainName(), service.getServiceName(), "SP");
+
+					// if both domains are the same we merge the 2 auths into one.
+					if (from.getDomain().getDomainName().equals(to.getDomain().getDomainName())) {
+						ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(
+								fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
+						channelAuthorizationService.createOrUpdate(sendRecvCa);
+						fromDomain.getAuths().add(sendRecvCa);
+					} else {
+						ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(fromDomain.getDomain(),
+								fromDac.getCredential(), fromDac.getAg(), co, cd);
+						ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(toDomain.getDomain(),
+								toDac.getCredential(), toDac.getAg(), co, cd);
+
+						channelAuthorizationService.createOrUpdate(sendCa);
+						fromDomain.getAuths().add(sendCa);
+						channelAuthorizationService.createOrUpdate(recvCa);
+						toDomain.getAuths().add(recvCa);
+					}
+
+					for (UCHolder targetUser : toAddressHolder.getUcs()) {
+						AgentCredential target = targetUser.getAg();
+
+						FlowTarget ft = ZoneFacade.createFlowTarget(targetUser.getCredential(), target, service);
+
+						flowTargetService.createOrUpdate(ft);
+					}
+
+				}
+			}
+		}
+
+	}
+
 	private void tearDown(AccountZone accountZone, Zone zone) {
+		if (accountZone == null) {
+			throw new IllegalArgumentException("missing AccountZone");
+		}
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
 		if (accountZone.getId() == null) {
 			throw new IllegalArgumentException("missing AccountZone#id");
 		}
@@ -470,9 +494,10 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		return accountZoneAdminCredentialService.findByFingerprint(zoneAC.getFingerprint());
 	}
 
-	private AgentCredential createAgentCredential(Zone zone, PKIXCredential credential)
+	private AgentCredential createAgentCredential(Zone zone, Domain domain, Address address, PKIXCredential credential)
 			throws CryptoCertificateException {
-		AgentCredential ac = new AgentCredential(zone, credential.getCertificateChain());
+		AgentCredentialDescriptor d = agentCredentialFactory.createAgentCredential(credential.getCertificateChain());
+		AgentCredential ac = new AgentCredential(zone, domain, address, d);
 		ac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
 		agentCredentialService.createOrUpdate(ac);
 
@@ -508,36 +533,31 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	}
 
 	private Domain createDomain(Zone zone) {
-		Domain d = new Domain(zone);
-		d.setDomainName("domain" + getUniqueID(10) + "." + zone.getZoneApex());
+		Domain d = new Domain(zone, "domain" + getUniqueID(10) + "." + zone.getZoneApex());
 
 		domainService.createOrUpdate(d);
 
-		d = domainService.findByDomainName(zone, d.getDomainName());
+		d = domainService.findByName(zone, d.getDomainName());
 
 		return d;
 	}
 
-	private Service createService(Zone zone, String domainName) {
-		Service svc = new Service(zone);
-		svc.setDomainName(domainName);
-		svc.setServiceName("svc" + getUniqueID(10));
+	private Service createService(Domain domain) {
+		Service svc = new Service(domain, "svc" + getUniqueID(10));
 
 		serviceService.createOrUpdate(svc);
 
-		svc = serviceService.findByName(zone, svc.getDomainName(), svc.getServiceName());
+		svc = serviceService.findByName(domain, svc.getServiceName());
 
 		return svc;
 	}
 
-	private Address createAddress(Zone zone, String domainName) {
-		Address add = new Address(zone);
-		add.setDomainName(domainName);
-		add.setLocalName("u" + getUniqueID(10));
+	private Address createAddress(Domain domain) {
+		Address add = new Address(domain, "u" + getUniqueID(10));
 
 		addressService.createOrUpdate(add);
 
-		add = addressService.findByName(zone, add.getDomainName(), add.getLocalName());
+		add = addressService.findByName(domain, add.getLocalName());
 
 		return add;
 	}
@@ -638,6 +658,14 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 	public void setAgentCredentialService(AgentCredentialService agentCredentialService) {
 		this.agentCredentialService = agentCredentialService;
+	}
+
+	public AgentCredentialFactory getAgentCredentialFactory() {
+		return agentCredentialFactory;
+	}
+
+	public void setAgentCredentialFactory(AgentCredentialFactory agentCredentialFactory) {
+		this.agentCredentialFactory = agentCredentialFactory;
 	}
 
 	public ChannelAuthorizationService getChannelAuthorizationService() {

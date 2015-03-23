@@ -39,6 +39,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
@@ -60,6 +61,7 @@ public class FlowTargetServiceRepositoryUnitTest {
 	private TestDataGeneratorOutput data;
 
 	private Zone zone;
+	private Domain domain;
 	private AgentCredential user;
 	private Service service;
 
@@ -78,6 +80,7 @@ public class FlowTargetServiceRepositoryUnitTest {
 		data = dataGenerator.setUp(input);
 
 		zone = data.getZone();
+		domain = data.getDomains().get(0).getDomain();
 		user = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getAg();
 		service = data.getDomains().get(0).getServices().get(0).getService();
 
@@ -113,8 +116,8 @@ public class FlowTargetServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testLookup_FindByChannel() throws Exception {
-		FlowTarget storedCA = flowTargetService.findByTargetService(zone, user, service);
+	public void testLookup_FindByFlowTarget() throws Exception {
+		FlowTarget storedCA = flowTargetService.findByTargetService(user, service);
 		assertNotNull(storedCA);
 	}
 
@@ -150,8 +153,8 @@ public class FlowTargetServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_TargetUser() throws Exception {
 		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getTarget().setAddressName(user.getAddressName());
-		criteria.getTarget().setDomainName(user.getDomainName());
+		criteria.getTarget().setAddressName(user.getAddress().getLocalName());
+		criteria.getTarget().setDomainName(user.getDomain().getDomainName());
 		criteria.getTarget().setStatus(user.getCredentialStatus());
 		List<FlowTarget> channelAuths = flowTargetService.search(zone, criteria);
 		assertNotNull(channelAuths);
@@ -169,13 +172,13 @@ public class FlowTargetServiceRepositoryUnitTest {
 
 	@Test
 	public void testModify() throws Exception {
-		FlowTarget storedCA = flowTargetService.findByTargetService(zone, user, service);
+		FlowTarget storedCA = flowTargetService.findByTargetService(user, service);
 		assertNotNull(storedCA);
 		storedCA.getConcurrency().setConcurrencyLevel(999);
 		storedCA.getConcurrency().setConcurrencyLimit(1000);
 		flowTargetService.createOrUpdate(storedCA);
 
-		FlowTarget modifiedCA = flowTargetService.findByTargetService(zone, user, service);
+		FlowTarget modifiedCA = flowTargetService.findByTargetService(user, service);
 		assertNotNull(modifiedCA);
 		assertTrue(modifiedCA != storedCA);
 		assertEquals(storedCA.getConcurrency().getConcurrencyLevel(), modifiedCA.getConcurrency().getConcurrencyLevel());

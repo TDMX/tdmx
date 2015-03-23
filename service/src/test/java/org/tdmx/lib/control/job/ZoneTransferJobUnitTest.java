@@ -106,13 +106,6 @@ public class ZoneTransferJobUnitTest {
 		task.setZoneDbPartitionId(newPartitionId);
 
 		executor.execute(jobId, task);
-		assertEquals(input.getNumDomains(), task.getNumDomains().intValue());
-		assertEquals(input.getNumDomains() * input.getNumServicesPerDomain(), task.getNumServices().intValue());
-		assertEquals(input.getNumDomains() * input.getNumAddressesPerDomain(), task.getNumAddresses().intValue());
-		assertEquals(
-				input.getNumZACs() + (input.getNumDomains() * input.getNumDACsPerDomain())
-						+ (input.getNumDomains() * input.getNumAddressesPerDomain() * input.getNumUsersPerAddress()),
-				task.getNumAgentCredentials().intValue());
 
 		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(data.getAccountZone().getAccountId(), data
 				.getAccountZone().getZoneApex());

@@ -97,6 +97,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
@@ -107,6 +108,7 @@ import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
@@ -129,6 +131,7 @@ public class ZASImpl implements ZAS {
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
+	private AgentCredentialValidator credentialValidator;
 
 	public enum ErrorCode {
 		// authorization errors
@@ -193,15 +196,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// check if the domain exists already
-		Domain existingDomain = getDomainService().findByDomainName(zone, parameters.getDomain());
+		Domain existingDomain = getDomainService().findByName(zone, parameters.getDomain());
 		if (existingDomain != null) {
 			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
 		// create the domain
-		Domain domain = new Domain(zone);
-		domain.setDomainName(parameters.getDomain());
+		Domain domain = new Domain(zone, parameters.getDomain());
 
 		getDomainService().createOrUpdate(domain);
 		response.setSuccess(true);
@@ -220,7 +222,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// check if the domain exists already
-		Domain domain = getDomainService().findByDomainName(zone, parameters.getDomain());
+		Domain domain = getDomainService().findByName(zone, parameters.getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
@@ -307,10 +309,11 @@ public class ZASImpl implements ZAS {
 
 		if (parameters.getFilter().getUserIdentity() != null) {
 			// if a user credential is provided then it't not so much a search as a lookup
-			AgentCredential uc = credentialFactory.createUC(zone, parameters.getFilter().getUserIdentity()
-					.getUsercertificate(), parameters.getFilter().getUserIdentity().getDomaincertificate(), parameters
-					.getFilter().getUserIdentity().getRootcertificate());
-			if (uc == null) {
+
+			AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFilter()
+					.getUserIdentity().getUsercertificate(), parameters.getFilter().getUserIdentity()
+					.getDomaincertificate(), parameters.getFilter().getUserIdentity().getRootcertificate());
+			if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 				setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
 			}
@@ -324,11 +327,10 @@ public class ZASImpl implements ZAS {
 			}
 		} else {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
-			if (authorizedUser.isTdmxDomainAdminCertificate()) {
-				if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
-					// we fix the search to search only the DAC's domain.
-					parameters.getFilter().setDomain(authorizedUser.getCommonName());
-				}
+			if (authorizedUser.isTdmxDomainAdminCertificate()
+					&& !StringUtils.hasText(parameters.getFilter().getDomain())) {
+				// we fix the search to search only the DAC's domain.
+				parameters.getFilter().setDomain(authorizedUser.getCommonName());
 			}
 			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we check that the provided domain is the DAC's domain.
@@ -366,9 +368,10 @@ public class ZASImpl implements ZAS {
 
 		if (parameters.getFilter().getAdministrator() != null) {
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredential dac = credentialFactory.createDAC(zone, parameters.getFilter().getAdministrator()
-					.getDomaincertificate(), parameters.getFilter().getAdministrator().getRootcertificate());
-			if (dac == null) {
+			AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getFilter()
+					.getAdministrator().getDomaincertificate(), parameters.getFilter().getAdministrator()
+					.getRootcertificate());
+			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
@@ -416,9 +419,10 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
-				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
-		if (uc == null) {
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
+				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
+				.getUserIdentity().getRootcertificate());
+		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
@@ -461,14 +465,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// check if the domain exists already
-		Domain domain = getDomainService().findByDomainName(zone, parameters.getAddress().getDomain());
+		Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check if the domain exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(zone, parameters.getAddress().getDomain(),
+		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(domain,
 				parameters.getAddress().getLocalname());
 		if (a != null) {
 			setError(ErrorCode.AddressExists, response);
@@ -476,9 +480,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		// create the address
-		a = new org.tdmx.lib.zone.domain.Address(zone);
-		a.setDomainName(parameters.getAddress().getDomain());
-		a.setLocalName(parameters.getAddress().getLocalname());
+		a = new org.tdmx.lib.zone.domain.Address(domain, parameters.getAddress().getLocalname());
 
 		getAddressService().createOrUpdate(a);
 		response.setSuccess(true);
@@ -546,9 +548,10 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
-				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
-		if (uc == null) {
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
+				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
+				.getUserIdentity().getRootcertificate());
+		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
@@ -592,9 +595,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
+		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
 		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(zone,
-				parameters.getService().getDomain(), parameters.getService().getServicename());
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(domain,
+				parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
 			return response;
@@ -659,20 +667,19 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
-		if (parameters.getStatus() != null) {
-			dac.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
-		} else {
-			dac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
+		if (!credentialValidator.isValid(dac)) {
+			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
 		}
 
 		// check if the domain exists already
-		Domain domain = getDomainService().findByDomainName(zone, dac.getDomainName());
+		Domain domain = getDomainService().findByName(zone, dac.getDomainName());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
@@ -685,8 +692,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
+		AgentCredential newCred = new AgentCredential(zone, domain, dac);
+		if (parameters.getStatus() != null) {
+			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		}
+
 		// create the DAC
-		credentialService.createOrUpdate(dac);
+		credentialService.createOrUpdate(newCred);
 
 		response.setSuccess(true);
 		return response;
@@ -708,9 +720,14 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
+		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
 		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(zone,
-				parameters.getService().getDomain(), parameters.getService().getServicename());
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(domain,
+				parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
 			return response;
@@ -786,8 +803,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
+		Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
 		// dont allow creation if we find the address exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(zone, parameters.getAddress().getDomain(),
+		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(domain,
 				parameters.getAddress().getLocalname());
 		if (a == null) {
 			setError(ErrorCode.AddressNotFound, response);
@@ -816,9 +838,9 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
-		if (dac == null) {
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
@@ -864,21 +886,23 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new UC given the data provided
-		AgentCredential uc = credentialFactory.createUC(zone, parameters.getUserIdentity().getUsercertificate(),
-				parameters.getUserIdentity().getDomaincertificate(), parameters.getUserIdentity().getRootcertificate());
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
+				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
+				.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-		if (parameters.getStatus() != null) {
-			uc.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
-		} else {
-			uc.setCredentialStatus(AgentCredentialStatus.ACTIVE);
+
+		// check if the domain exists already
+		Domain domain = getDomainService().findByName(zone, uc.getDomainName());
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
 		}
 
 		// check if the address exists already
-		org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(zone, uc.getDomainName(),
-				uc.getAddressName());
+		org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(domain, uc.getAddressName());
 		if (address == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
@@ -891,8 +915,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
+		AgentCredential newCred = new AgentCredential(zone, domain, address, uc);
+		if (parameters.getStatus() != null) {
+			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
+		}
+
 		// create the UC
-		credentialService.createOrUpdate(uc);
+		credentialService.createOrUpdate(newCred);
 
 		response.setSuccess(true);
 		return response;
@@ -920,24 +949,23 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check if the domain exists already
-		Domain domain = getDomainService().findByDomainName(zone, parameters.getService().getDomain());
+		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check if the service exists already
-		org.tdmx.lib.zone.domain.Service service = getServiceService().findByName(zone,
-				parameters.getService().getDomain(), parameters.getService().getServicename());
+		org.tdmx.lib.zone.domain.Service service = getServiceService().findByName(domain,
+				parameters.getService().getServicename());
 		if (service != null) {
 			setError(ErrorCode.ServiceExists, response);
 			return response;
 		}
 
 		// create the service
-		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(zone);
-		s.setDomainName(parameters.getService().getDomain());
-		s.setServiceName(parameters.getService().getServicename());
+		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(domain, parameters.getService()
+				.getServicename());
 		s.setConcurrencyLimit(parameters.getConcurrencyLimit());
 
 		getServiceService().createOrUpdate(s);
@@ -961,9 +989,9 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredential dac = credentialFactory.createDAC(zone, parameters.getAdministrator().getDomaincertificate(),
-				parameters.getAdministrator().getRootcertificate());
-		if (dac == null) {
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
+				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
@@ -1203,14 +1231,14 @@ public class ZASImpl implements ZAS {
 
 	private Address mapAddress(org.tdmx.lib.zone.domain.Address address) {
 		Address a = new Address();
-		a.setDomain(address.getDomainName());
+		a.setDomain(address.getDomain().getDomainName());
 		a.setLocalname(address.getLocalName());
 		return a;
 	}
 
 	private Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
 		Service s = new Service();
-		s.setDomain(service.getDomainName());
+		s.setDomain(service.getDomain().getDomainName());
 		s.setServicename(service.getServiceName());
 
 		Servicestate ss = new Servicestate();
@@ -1237,6 +1265,14 @@ public class ZASImpl implements ZAS {
 
 	public void setCredentialFactory(AgentCredentialFactory credentialFactory) {
 		this.credentialFactory = credentialFactory;
+	}
+
+	public AgentCredentialValidator getCredentialValidator() {
+		return credentialValidator;
+	}
+
+	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
+		this.credentialValidator = credentialValidator;
 	}
 
 	public AgentCredentialService getCredentialService() {

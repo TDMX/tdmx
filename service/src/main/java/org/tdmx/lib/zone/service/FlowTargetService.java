@@ -36,7 +36,7 @@ public interface FlowTargetService {
 
 	public void createOrUpdate(FlowTarget flowTarget);
 
-	public FlowTarget findByTargetService(Zone zone, AgentCredential agent, Service service);
+	public FlowTarget findByTargetService(AgentCredential agent, Service service);
 
 	public FlowTarget findById(Long id);
 

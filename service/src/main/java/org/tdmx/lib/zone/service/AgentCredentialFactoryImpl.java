@@ -19,18 +19,23 @@
 
 package org.tdmx.lib.zone.service;
 
+import java.security.cert.X509Certificate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
-import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * Factory for AgentCredential Entity.
+ * Implementation of the AgentCredentialValidator.
+ * 
+ * AgentCredentials are pkix validated (signature chain and time validity) only when they are "created", otherwise we
+ * allow to search for previously created credentials even if they have become invalid due to time.
+ * 
  * 
  * @author Peter Klauser
  * 
@@ -44,60 +49,80 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AgentCredentialFactoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(AgentCredentialValidatorImpl.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public AgentCredential createAgentCredential(Zone authorizedZone, PKIXCertificate[] certificateChain) {
-		if (certificateChain == null || certificateChain.length <= 0) {
-			log.error("certificateChain missing");
+	public AgentCredentialDescriptor createAgentCredential(X509Certificate... certChain) {
+		PKIXCertificate[] chain;
+		try {
+			chain = CertificateIOUtils.convert(certChain);
+		} catch (CryptoCertificateException e) {
+			log.info("Unable to convert X509 certificate.", e);
+			return null;
+		}
+		return createAgentCredential(chain);
+	}
+
+	@Override
+	public AgentCredentialDescriptor createAgentCredential(PKIXCertificate... certChain) {
+		if (certChain == null || certChain.length == 0 || certChain.length > 3) {
+			log.info("Invalid parameters provided to createAgentCredential");
 			return null;
 		}
 		try {
-			AgentCredential c = new AgentCredential(authorizedZone, certificateChain);
-			if (c.getCredentialType() == null) {
-				log.error("Invalid AgentCredentialType.");
-				return null;
-			}
-			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
-				// provided certificate doesn't match the authorized zone
-				log.error("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
-						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
-				return null;
-			}
-			return c;
-		} catch (CryptoCertificateException e) {
-			log.error("Unable to createAgentCredential.", e);
-		}
-		return null;
-	}
+			AgentCredentialDescriptor acd = new AgentCredentialDescriptor();
+			acd.setCertificateChain(certChain);
+			acd.setCertificateChainPem(CertificateIOUtils.x509certsToPem(certChain));
 
-	@Override
-	public AgentCredential createDAC(Zone authorizedZone, byte[] domainCert, byte[] zacCert) {
-		try {
-			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
+			PKIXCertificate publicKey = certChain[0];
+			acd.setFingerprint(publicKey.getFingerprint());
 
-			PKIXCertificate zc = CertificateIOUtils.decodeX509(zacCert);
+			if (publicKey.isTdmxZoneAdminCertificate()) {
+				if (certChain.length != 1) {
+					return null;
+				}
+				acd.setCredentialType(AgentCredentialType.ZAC);
+				acd.setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+				if (!CredentialUtils.isValidZoneAdministratorCertificate(certChain[0])) {
+					log.info("Invalid ZAC PKIX Certificate.");
+					return null;
+				}
 
-			if (!CredentialUtils.isValidDomainAdministratorCertificate(zc, dc)) {
-				log.info("Invalid DAC PKIX CertificateChain.");
-				return null;
-			}
-			AgentCredential c = new AgentCredential(authorizedZone, new PKIXCertificate[] { dc, zc });
-			if (c.getCredentialType() == null || AgentCredentialType.DAC != c.getCredentialType()) {
+			} else if (publicKey.isTdmxDomainAdminCertificate()) {
+				if (certChain.length != 2) {
+					return null;
+				}
+				acd.setCredentialType(AgentCredentialType.DAC);
+				acd.setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+				acd.setDomainName(publicKey.getCommonName());
+				if (!CredentialUtils.isValidDomainAdministratorCertificate(certChain[1], certChain[0])) {
+					log.info("Invalid DAC PKIX CertificateChain.");
+					return null;
+				}
+
+			} else if (publicKey.isTdmxUserCertificate()) {
+				if (certChain.length != 3) {
+					return null;
+				}
+				acd.setCredentialType(AgentCredentialType.UC);
+				acd.setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+				acd.setAddressName(publicKey.getCommonName());
+				acd.setDomainName(certChain[1].getCommonName());
+				if (!CredentialUtils.isValidUserCertificate(certChain[2], certChain[1], certChain[0])) {
+					log.info("Invalid User PKIX CertificateChain.");
+					return null;
+				}
+
+			} else {
 				log.info("Invalid AgentCredentialType.");
 				return null;
 			}
-			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
-				// provided certificate doesn't match the authorized zone
-				log.info("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
-						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
-				return null;
-			}
-			return c;
+
+			return acd;
 		} catch (CryptoCertificateException e) {
 			log.info("Invalid Certificate " + e.getRc());
 		}
@@ -105,34 +130,18 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	}
 
 	@Override
-	public AgentCredential createUC(Zone authorizedZone, byte[] userCert, byte[] domainCert, byte[] zacCert) {
+	public AgentCredentialDescriptor createAgentCredential(byte[]... certChain) {
+		PKIXCertificate[] chain;
 		try {
-			PKIXCertificate uc = CertificateIOUtils.decodeX509(userCert);
-
-			PKIXCertificate dc = CertificateIOUtils.decodeX509(domainCert);
-
-			PKIXCertificate zc = CertificateIOUtils.decodeX509(zacCert);
-
-			if (!CredentialUtils.isValidUserCertificate(zc, dc, uc)) {
-				log.info("Invalid User PKIX CertificateChain.");
-				return null;
+			chain = new PKIXCertificate[certChain.length];
+			for (int i = 0; i < certChain.length; i++) {
+				chain[i] = CertificateIOUtils.decodeX509(certChain[i]);
 			}
-			AgentCredential c = new AgentCredential(authorizedZone, new PKIXCertificate[] { uc, dc, zc });
-			if (c.getCredentialType() == null || AgentCredentialType.UC != c.getCredentialType()) {
-				log.info("Invalid AgentCredentialType.");
-				return null;
-			}
-			if (!authorizedZone.getZoneApex().equals(c.getPublicKey().getTdmxZoneInfo().getZoneRoot())) {
-				// provided certificate doesn't match the authorized zone
-				log.info("Unauthorized zoneApex " + authorizedZone.getZoneApex() + " was "
-						+ c.getPublicKey().getTdmxZoneInfo().getZoneRoot());
-				return null;
-			}
-			return c;
 		} catch (CryptoCertificateException e) {
 			log.info("Invalid Certificate " + e.getRc());
+			return null;
 		}
-		return null;
+		return createAgentCredential(chain);
 	}
 
 	// -------------------------------------------------------------------------

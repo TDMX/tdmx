@@ -20,7 +20,6 @@ package org.tdmx.lib.control.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -29,10 +28,12 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 
@@ -51,7 +52,9 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 	private AccountZoneAdministrationCredentialService accountZoneAdministrationCredentialService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	private ZoneService zoneService;
-	private AgentCredentialService agentCredentialService;
+	private AgentCredentialFactory credentialFactory;
+	private AgentCredentialService credentialService;
+	private AgentCredentialValidator credentialValidator;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -104,28 +107,26 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 			zonePartitionIdProvider.clearPartitionId();
 		}
 
-		AgentCredential ac = null;
-		try {
-			ac = new AgentCredential(zone, azac.getCertificateChain());
-		} catch (CryptoCertificateException e) {
-			throw new IllegalStateException(e);
-		}
-
-		if (AgentCredentialType.ZAC.equals(ac.getCredentialType())) {
-			// TODO DNS trust check
-			boolean isDNSTrusted = true;
-
-			if (isDNSTrusted) {
-				zonePartitionIdProvider.setPartitionId(partitionId);
-				try {
-					ac.setCredentialStatus(AgentCredentialStatus.ACTIVE);
-					agentCredentialService.createOrUpdate(ac);
-				} finally {
-					zonePartitionIdProvider.clearPartitionId();
-				}
-				azac.setCredentialStatus(AccountZoneAdministrationCredentialStatus.INSTALLED);
+		AgentCredentialDescriptor ac = credentialFactory.createAgentCredential(azac.getCertificateChain());
+		if (ac != null && AgentCredentialType.ZAC.equals(ac.getCredentialType())) {
+			if (!credentialValidator.isValid(ac)) {
+				azac.setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_ZAC);
 			} else {
-				azac.setCredentialStatus(AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST);
+				// TODO DNS trust check
+				boolean isDNSTrusted = true;
+
+				if (isDNSTrusted) {
+					zonePartitionIdProvider.setPartitionId(partitionId);
+					try {
+						AgentCredential zac = new AgentCredential(zone, ac);
+						credentialService.createOrUpdate(zac);
+					} finally {
+						zonePartitionIdProvider.clearPartitionId();
+					}
+					azac.setCredentialStatus(AccountZoneAdministrationCredentialStatus.INSTALLED);
+				} else {
+					azac.setCredentialStatus(AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST);
+				}
 			}
 
 		} else {
@@ -183,12 +184,28 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 		this.zoneService = zoneService;
 	}
 
-	public AgentCredentialService getAgentCredentialService() {
-		return agentCredentialService;
+	public AgentCredentialFactory getCredentialFactory() {
+		return credentialFactory;
 	}
 
-	public void setAgentCredentialService(AgentCredentialService agentCredentialService) {
-		this.agentCredentialService = agentCredentialService;
+	public void setCredentialFactory(AgentCredentialFactory credentialFactory) {
+		this.credentialFactory = credentialFactory;
+	}
+
+	public AgentCredentialService getCredentialService() {
+		return credentialService;
+	}
+
+	public void setCredentialService(AgentCredentialService credentialService) {
+		this.credentialService = credentialService;
+	}
+
+	public AgentCredentialValidator getCredentialValidator() {
+		return credentialValidator;
+	}
+
+	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
+		this.credentialValidator = credentialValidator;
 	}
 
 }

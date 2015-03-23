@@ -31,6 +31,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
@@ -122,20 +123,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		// 2) wait for some quarantine time / distribute cache clear instruction for the access revocation. TODO
 
 		// 3) transfer the Zone
-		Zone newZone = transferZone(oldZone, task.getZoneDbPartitionId());
+		transferZone(oldZone, oldPartitionId, newPartitionId);
 
-		// 4) transfer the Domains
-		task.setNumDomains(transferDomains(oldZone, oldPartitionId, newZone, newPartitionId));
-		// 5) transfer the Addresses
-		task.setNumAddresses(transferAddresses(oldZone, oldPartitionId, newZone, newPartitionId));
-
-		// 6) transfer the Services
-		task.setNumServices(transferServices(oldZone, oldPartitionId, newZone, newPartitionId));
-
-		// 7) transfer the AgentCredentials
-		task.setNumAgentCredentials(transferAgentCredentials(oldZone, oldPartitionId, newZone, newPartitionId));
-
-		// TODO num
 		// update the AccountZone to state the new partition is active.
 		az.setZonePartitionId(newPartitionId);
 		az.setJobId(null);
@@ -197,12 +186,12 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 			more = true;
 			while (more) {
-				DomainSearchCriteria dsc = new DomainSearchCriteria(new PageSpecifier(0, getBatchSize()));
-				List<Domain> domains = domainService.search(zone, dsc);
-				for (Domain d : domains) {
-					domainService.delete(d);
+				AgentCredentialSearchCriteria acsc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+				List<AgentCredential> credentials = agentCredentialService.search(zone, acsc);
+				for (AgentCredential s : credentials) {
+					agentCredentialService.delete(s);
 				}
-				if (domains.isEmpty()) {
+				if (credentials.isEmpty()) {
 					more = false;
 				}
 			}
@@ -233,12 +222,12 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 			more = true;
 			while (more) {
-				AgentCredentialSearchCriteria acsc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
-				List<AgentCredential> credentials = agentCredentialService.search(zone, acsc);
-				for (AgentCredential s : credentials) {
-					agentCredentialService.delete(s);
+				DomainSearchCriteria dsc = new DomainSearchCriteria(new PageSpecifier(0, getBatchSize()));
+				List<Domain> domains = domainService.search(zone, dsc);
+				for (Domain d : domains) {
+					domainService.delete(d);
 				}
-				if (credentials.isEmpty()) {
+				if (domains.isEmpty()) {
 					more = false;
 				}
 			}
@@ -264,7 +253,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		return z;
 	}
 
-	private Zone transferZone(Zone oldZone, String newPartitionId) {
+	private Zone transferZone(Zone oldZone, String oldPartitionId, String newPartitionId) {
 		Zone newZone = new Zone(oldZone.getAccountZoneId(), oldZone.getZoneApex());
 		// add the zone to the new partition.
 		zonePartitionIdProvider.setPartitionId(newPartitionId);
@@ -273,12 +262,15 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}
+
+		transferZoneAdminAgentCredentials(oldZone, oldPartitionId, newZone, newPartitionId);
+
+		transferDomains(oldZone, oldPartitionId, newZone, newPartitionId);
 		return newZone;
 	}
 
-	private int transferChannelAuthorizations(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
+	private void transferChannelAuthorizations(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
 			Domain newDomain, String newPartitionId) {
-		int numTransfer = 0;
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
@@ -292,38 +284,25 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			zonePartitionIdProvider.setPartitionId(newPartitionId);
-			try {
-				for (ChannelAuthorization oldCa : channelAuths) {
-					// clear the Id so we can use the detached object to create an entity in the new partition.
+			for (ChannelAuthorization oldCa : channelAuths) {
+				ChannelAuthorization newCa = new ChannelAuthorization(newDomain, oldCa);
 
-					ChannelAuthorization newCa = new ChannelAuthorization(newZone, newDomain);
-					newCa.setOrigin(oldCa.getOrigin());
-					newCa.setDestination(oldCa.getDestination());
-					newCa.setRecvAuthorization(oldCa.getRecvAuthorization());
-					newCa.setSendAuthorization(oldCa.getRecvAuthorization());
-					newCa.setReqRecvAuthorization(oldCa.getReqRecvAuthorization());
-					newCa.setReqSendAuthorization(oldCa.getReqSendAuthorization());
-					newCa.setUndeliveredBuffer(oldCa.getUndeliveredBuffer());
-					newCa.setUnsentBuffer(oldCa.getUnsentBuffer());
-					newCa.setSignature(oldCa.getSignature());
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
 
 					// add the zone to the new partition.
 					channelAuthorizationService.createOrUpdate(newCa);
-					numTransfer++;
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
 				}
-				if (channelAuths.isEmpty()) {
-					more = false;
-				}
-			} finally {
-				zonePartitionIdProvider.clearPartitionId();
+			}
+			if (channelAuths.isEmpty()) {
+				more = false;
 			}
 		}
-		return numTransfer;
 	}
 
-	private int transferDomains(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
-		int numTransfer = 0;
+	private void transferDomains(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			DomainSearchCriteria sc = new DomainSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
@@ -335,10 +314,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			for (Domain oldDomain : domains) {
-				// clear the Id so we can use the detached object to create an entity in the new partition.
-
-				Domain newDomain = new Domain(newZone);
-				newDomain.setDomainName(oldDomain.getDomainName());
+				Domain newDomain = new Domain(newZone, oldDomain);
 
 				zonePartitionIdProvider.setPartitionId(newPartitionId);
 				try {
@@ -347,26 +323,26 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				} finally {
 					zonePartitionIdProvider.clearPartitionId();
 				}
-				numTransfer++;
 
-				// TODO dacs
+				// dacs
+				transferDomainAdminAgentCredentials(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
-				// TODO addresses, nested UCs, flowtargets
+				// services
+				transferServices(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
-				// TODO services
+				// addresses, nested UCs, flowtargets
+				transferAddresses(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
 				transferChannelAuthorizations(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
-
-				// TODO flowtargets
 			}
 			if (domains.isEmpty()) {
 				more = false;
 			}
 		}
-		return numTransfer;
 	}
 
-	private int transferAddresses(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
+	private int transferAddresses(Zone oldZone, String oldPartitionId, Zone newZone, Domain newDomain,
+			String newPartitionId) {
 		int numTransfer = 0;
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
@@ -378,29 +354,31 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			zonePartitionIdProvider.setPartitionId(newPartitionId);
-			try {
-				for (Address a : addresses) {
-					// clear the Id so we can use the detached object to create an entity in the new partition.
-					a.setId(null);
-					a.setZone(newZone);
+			for (Address a : addresses) {
+				// clear the Id so we can use the detached object to create an entity in the new partition.
+				Address newAddress = new Address(newDomain, a);
 
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
 					// add the zone to the new partition.
-					addressService.createOrUpdate(a);
+					addressService.createOrUpdate(newAddress);
 					numTransfer++;
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
 				}
-				if (addresses.isEmpty()) {
-					more = false;
-				}
-			} finally {
-				zonePartitionIdProvider.clearPartitionId();
+
+				transferUserAgentCredentials(oldZone, oldPartitionId, newZone, newDomain, newAddress, newPartitionId);
+			}
+			if (addresses.isEmpty()) {
+				more = false;
 			}
 		}
+
 		return numTransfer;
 	}
 
-	private int transferServices(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
-		int numTransfer = 0;
+	private void transferServices(Zone oldZone, String oldPartitionId, Zone newZone, Domain newDomain,
+			String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			ServiceSearchCriteria sc = new ServiceSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
@@ -411,33 +389,32 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			zonePartitionIdProvider.setPartitionId(newPartitionId);
-			try {
-				for (Service s : services) {
+			for (Service s : services) {
+				Service newService = new Service(newDomain, s);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
 					// clear the Id so we can use the detached object to create an entity in the new partition.
-					s.setId(null);
-					s.setZone(newZone);
 
 					// add the zone to the new partition.
-					serviceService.createOrUpdate(s);
-					numTransfer++;
+					serviceService.createOrUpdate(newService);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
 				}
-				if (services.isEmpty()) {
-					more = false;
-				}
-			} finally {
-				zonePartitionIdProvider.clearPartitionId();
+			}
+			if (services.isEmpty()) {
+				more = false;
 			}
 		}
-		return numTransfer;
 	}
 
-	private int transferAgentCredentials(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
-		int numTransfer = 0;
+	private void transferZoneAdminAgentCredentials(Zone oldZone, String oldPartitionId, Zone newZone,
+			String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
+			sc.setType(AgentCredentialType.ZAC);
 			List<AgentCredential> credentials = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
@@ -445,25 +422,123 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
+			for (AgentCredential a : credentials) {
+				// clear the Id so we can use the detached object to create an entity in the new partition.
+
+				AgentCredential newCredential = new AgentCredential(newZone, a);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+					// add the zone to the new partition.
+					agentCredentialService.createOrUpdate(newCredential);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+			}
+			if (credentials.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void transferDomainAdminAgentCredentials(Zone oldZone, String oldPartitionId, Zone newZone,
+			Domain newDomain, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
+					getBatchSize()));
+			sc.setType(AgentCredentialType.DAC);
+			sc.setDomainName(newDomain.getDomainName());
+			List<AgentCredential> credentials = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				credentials = agentCredentialService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
+			for (AgentCredential a : credentials) {
+				AgentCredential newCredential = new AgentCredential(newZone, newDomain, a);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+					// add the zone to the new partition.
+					agentCredentialService.createOrUpdate(newCredential);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+			}
+			if (credentials.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void transferUserAgentCredentials(Zone oldZone, String oldPartitionId, Zone newZone, Domain newDomain,
+			Address newAddress, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
+					getBatchSize()));
+			sc.setType(AgentCredentialType.UC);
+			sc.setDomainName(newDomain.getDomainName());
+			sc.setAddressName(newAddress.getLocalName());
+
+			List<AgentCredential> credentials = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				credentials = agentCredentialService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
+			for (AgentCredential a : credentials) {
+				AgentCredential newCredential = new AgentCredential(newZone, newDomain, newAddress, a);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+					// add the zone to the new partition.
+					agentCredentialService.createOrUpdate(newCredential);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+
+				// transfer flow targets
+				transferFlowTargets(oldZone, oldPartitionId, a, newDomain, newCredential, newPartitionId);
+			}
+			if (credentials.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void transferFlowTargets(Zone oldZone, String oldPartitionId, AgentCredential oldTarget, Domain newDomain,
+			AgentCredential newTarget, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
+			sc.getTarget().setAgent(oldTarget);
+
+			List<FlowTarget> flowTargets = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				flowTargets = flowTargetService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
 			zonePartitionIdProvider.setPartitionId(newPartitionId);
 			try {
-				for (AgentCredential a : credentials) {
-					// clear the Id so we can use the detached object to create an entity in the new partition.
-					a.setId(null);
-					a.setZone(newZone);
+				for (FlowTarget ft : flowTargets) {
+					Service newService = serviceService.findByName(newDomain, ft.getService().getServiceName());
 
-					// add the zone to the new partition.
-					agentCredentialService.createOrUpdate(a);
-					numTransfer++;
-				}
-				if (credentials.isEmpty()) {
-					more = false;
+					FlowTarget newFlowTarget = new FlowTarget(newTarget, newService, ft);
+					flowTargetService.createOrUpdate(newFlowTarget);
 				}
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
+			if (flowTargets.isEmpty()) {
+				more = false;
+			}
 		}
-		return numTransfer;
 	}
 
 	// -------------------------------------------------------------------------

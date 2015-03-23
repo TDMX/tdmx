@@ -92,14 +92,8 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public FlowTarget findByTargetService(Zone zone, AgentCredential agent, Service service) {
-		if (agent == null) {
-			throw new IllegalArgumentException("missing agent");
-		}
-		if (service == null) {
-			throw new IllegalArgumentException("missing service");
-		}
-		return getFlowTargetDao().loadByTargetService(zone, agent, service);
+	public FlowTarget findByTargetService(AgentCredential agent, Service service) {
+		return getFlowTargetDao().loadByTargetService(agent, service);
 	}
 
 	@Override

@@ -18,7 +18,9 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QAddress.address;
 import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
+import static org.tdmx.lib.zone.domain.QDomain.domain;
 
 import java.util.List;
 
@@ -89,15 +91,16 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 		if (!StringUtils.hasText(zone.getZoneApex())) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		JPAQuery query = new JPAQuery(em).from(agentCredential);
+		JPAQuery query = new JPAQuery(em).from(agentCredential).leftJoin(agentCredential.domain, domain).fetch()
+				.leftJoin(agentCredential.address, address).fetch();
 
 		BooleanExpression where = agentCredential.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
-			where = where.and(agentCredential.domainName.eq(criteria.getDomainName()));
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getAddressName())) {
-			where = where.and(agentCredential.addressName.eq(criteria.getAddressName()));
+			where = where.and(address.localName.eq(criteria.getAddressName()));
 		}
 		if (criteria.getStatus() != null) {
 			where = where.and(agentCredential.credentialStatus.eq(criteria.getStatus()));

@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QAddress.address;
+import static org.tdmx.lib.zone.domain.QDomain.domain;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ import javax.persistence.PersistenceContext;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
@@ -85,12 +87,12 @@ public class AddressDaoImpl implements AddressDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(address);
+		JPAQuery query = new JPAQuery(em).from(address).innerJoin(address.domain, domain).fetch();
 
-		BooleanExpression where = address.zone.eq(zone);
+		BooleanExpression where = domain.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
-			where = where.and(address.domainName.eq(criteria.getDomainName()));
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getLocalName())) {
 			where = where.and(address.localName.eq(criteria.getLocalName()));
@@ -100,6 +102,22 @@ public class AddressDaoImpl implements AddressDao {
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));
 		return query.list(address);
+	}
+
+	@Override
+	public Address loadByName(Domain domain, String localName) {
+		if (domain == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		if (!StringUtils.hasText(localName)) {
+			throw new IllegalArgumentException("missing localName");
+		}
+		JPAQuery query = new JPAQuery(em).from(address).innerJoin(address.domain).fetch();
+
+		BooleanExpression where = address.domain.eq(domain).and(address.localName.eq(localName));
+
+		query.where(where);
+		return query.uniqueResult(address);
 	}
 
 	// -------------------------------------------------------------------------

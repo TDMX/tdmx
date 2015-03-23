@@ -18,28 +18,21 @@
  */
 package org.tdmx.lib.zone.service;
 
-import java.util.List;
-
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 
 /**
- * Management Services for a AgentCredential.
+ * Validation Service of AgentCredential.
  * 
  * @author Peter
  * 
  */
-public interface AgentCredentialService {
+public interface AgentCredentialValidator {
 
-	public void createOrUpdate(AgentCredential agentCredential);
-
-	public AgentCredential findById(Long id);
-
-	public AgentCredential findByFingerprint(Zone zone, String fingerprint); // TODO remove zone
-
-	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria);
-
-	public void delete(AgentCredential agentCredential);
+	/**
+	 * 
+	 * @param agentCredentialDescriptor
+	 * @return
+	 */
+	public boolean isValid(AgentCredentialDescriptor agentCredentialDescriptor);
 
 }

@@ -89,6 +89,10 @@
 		class="org.tdmx.lib.zone.service.AgentCredentialFactoryImpl">
 	</bean>
 
+	<bean id="tdmx.lib.zone.AgentCredentialValidator"
+		class="org.tdmx.lib.zone.service.AgentCredentialValidatorImpl">
+	</bean>
+
 
 	<bean id="tdmx.lib.zone.dao.ZoneDao"
 		class="org.tdmx.lib.zone.dao.ZoneDaoImpl">

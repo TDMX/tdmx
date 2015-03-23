@@ -58,9 +58,6 @@ public class ChannelAuthorization implements Serializable {
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Zone zone;
-
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Domain domain;
 
 	@Embedded
@@ -147,9 +144,22 @@ public class ChannelAuthorization implements Serializable {
 	ChannelAuthorization() {
 	}
 
-	public ChannelAuthorization(Zone zone, Domain domain) {
-		this.zone = zone;
-		this.domain = domain;
+	public ChannelAuthorization(Domain domain) {
+		setDomain(domain);
+	}
+
+	public ChannelAuthorization(Domain domain, ChannelAuthorization other) {
+		setDomain(domain);
+
+		setOrigin(other.getOrigin());
+		setDestination(other.getDestination());
+		setRecvAuthorization(other.getRecvAuthorization());
+		setSendAuthorization(other.getRecvAuthorization());
+		setReqRecvAuthorization(other.getReqRecvAuthorization());
+		setReqSendAuthorization(other.getReqSendAuthorization());
+		setUndeliveredBuffer(other.getUndeliveredBuffer());
+		setUnsentBuffer(other.getUnsentBuffer());
+		setSignature(other.getSignature());
 	}
 
 	// -------------------------------------------------------------------------
@@ -182,6 +192,10 @@ public class ChannelAuthorization implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void setDomain(Domain domain) {
+		this.domain = domain;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -194,22 +208,8 @@ public class ChannelAuthorization implements Serializable {
 		this.id = id;
 	}
 
-	public Zone getZone() {
-		return zone;
-	}
-
-	@SuppressWarnings("unused")
-	private void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
 	public Domain getDomain() {
 		return domain;
-	}
-
-	@SuppressWarnings("unused")
-	private void setDomain(Domain domain) {
-		this.domain = domain;
 	}
 
 	public ChannelOrigin getOrigin() {

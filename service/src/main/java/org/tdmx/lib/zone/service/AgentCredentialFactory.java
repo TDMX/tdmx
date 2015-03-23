@@ -18,9 +18,10 @@
  */
 package org.tdmx.lib.zone.service;
 
+import java.security.cert.X509Certificate;
+
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 
 /**
  * Factory Services for AgentCredential.
@@ -33,40 +34,25 @@ public interface AgentCredentialFactory {
 	/**
 	 * Creates an AgentCredential from the certificate chain.
 	 * 
-	 * @param authorizedZoneApex
 	 * @param certChain
-	 * @return the AgentCredential or null if there is any problem with the certificateChain or the zoneApex doesnt
-	 *         match.
+	 * @return the AgentCredential or null if there is any problem with the certificateChain.
 	 */
-	public AgentCredential createAgentCredential(Zone authorizedZone, PKIXCertificate[] certChain);
+	public AgentCredentialDescriptor createAgentCredential(X509Certificate... certChain);
 
 	/**
-	 * Creates an AgentCredential from certificate byte data - provided by client which is not checked by the TLS stack,
-	 * ie. by WebService.
+	 * Creates an AgentCredential from the certificate chain.
 	 * 
-	 * TODO validate that domainCert is signed by zacCert
-	 * 
-	 * @param authorizedZoneApex
-	 * @param domainCert
-	 * @param zacCert
-	 * @return null if the DAC is invalid, else the DAC.
+	 * @param certChain
+	 * @return the AgentCredential or null if there is any problem with the certificateChain.
 	 */
-	public AgentCredential createDAC(Zone authorizedZone, byte[] domainCert, byte[] zacCert);
+	public AgentCredentialDescriptor createAgentCredential(PKIXCertificate... certChain);
 
 	/**
-	 * Creates an AgentCredential from certificate byte data - provided by client which is not checked by the TLS stack,
-	 * ie. by WebService.
+	 * Creates an AgentCredential from the certificate chain.
 	 * 
-	 * TODO validate that userCert is signed by domainCert
-	 * 
-	 * TODO validate that domainCert is signed by zacCert
-	 * 
-	 * @param authorizedZoneApex
-	 * @param userCert
-	 * @param domainCert
-	 * @param zacCert
-	 * @return null if the DAC is invalid, else the DAC.
+	 * @param certChain
+	 * @return the AgentCredential or null if there is any problem with the certificateChain.
 	 */
-	public AgentCredential createUC(Zone authorizedZone, byte[] userCert, byte[] domainCert, byte[] zacCert);
+	public AgentCredentialDescriptor createAgentCredential(byte[]... certChain);
 
 }

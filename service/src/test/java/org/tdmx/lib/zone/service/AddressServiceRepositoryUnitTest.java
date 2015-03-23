@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
-import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,62 +32,71 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.TestDataGeneratorInput;
+import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.lib.zone.domain.ZoneFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class AddressServiceRepositoryUnitTest {
 
 	@Autowired
-	private ZoneService zoneService;
-
+	private TestDataGenerator dataGenerator;
 	@Autowired
 	private AddressService addressService;
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
-	private String domainName;
-	private String localName;
+	private TestDataGeneratorInput input;
+	private TestDataGeneratorOutput data;
+
 	private Zone zone;
+	private Domain domain;
+	private Address address;
 
 	@Before
 	public void doSetup() throws Exception {
 
-		zone = ZoneFacade.createZone(new Random().nextLong(), "ZONE.ROOT.TEST");
-		domainName = "SUBDOMAIN." + zone.getZoneApex();
-		localName = "addressName";
+		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
+				MockZonePartitionIdInstaller.ZP1_S1);
+		input.setNumZACs(1);
+		input.setNumDomains(1);
+		input.setNumDACsPerDomain(0);
+		input.setNumAddressesPerDomain(1);
+		input.setNumUsersPerAddress(0);
 
-		zoneService.createOrUpdate(zone);
+		data = dataGenerator.setUp(input);
 
-		Address d = ZoneFacade.createAddress(zone, domainName, localName);
-		addressService.createOrUpdate(d);
+		zone = data.getZone();
+		domain = data.getDomains().get(0).getDomain();
+		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
+
+		zonePartitionIdProvider.setPartitionId(input.getZonePartitionId());
 	}
 
 	@After
 	public void doTeardown() {
-		Address d = addressService.findByName(zone, domainName, localName);
-		if (d != null) {
-			addressService.delete(d);
-		}
-		Zone az = zoneService.findById(zone.getId());
-		if (az != null) {
-			zoneService.delete(az);
-		}
+		zonePartitionIdProvider.clearPartitionId();
+
+		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutoWire() throws Exception {
-		assertNotNull(zoneService);
 		assertNotNull(addressService);
 	}
 
 	@Test
 	public void testLookup() throws Exception {
-		Address a = addressService.findByName(zone, domainName, localName);
+		Address a = addressService.findByName(domain, address.getLocalName());
 		assertNotNull(a);
-		assertEquals(domainName, a.getDomainName());
-		assertEquals(localName, a.getLocalName());
+		assertEquals(domain.getDomainName(), a.getDomain().getDomainName());
+		assertEquals(address.getLocalName(), a.getLocalName());
 	}
 
 	@Test
@@ -99,51 +107,51 @@ public class AddressServiceRepositoryUnitTest {
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(domainName, a.getDomainName());
-		assertEquals(localName, a.getLocalName());
+		assertEquals(domain.getDomainName(), a.getDomain().getDomainName());
+		assertEquals(address.getLocalName(), a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setLocalName(localName);
+		criteria.setLocalName(address.getLocalName());
 
 		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(domainName, a.getDomainName());
-		assertEquals(localName, a.getLocalName());
+		assertEquals(domain.getDomainName(), a.getDomain().getDomainName());
+		assertEquals(address.getLocalName(), a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainAndAddress() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
-		criteria.setLocalName(localName);
+		criteria.setDomainName(domain.getDomainName());
+		criteria.setLocalName(address.getLocalName());
 
 		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(domainName, a.getDomainName());
-		assertEquals(localName, a.getLocalName());
+		assertEquals(domain.getDomainName(), a.getDomain().getDomainName());
+		assertEquals(address.getLocalName(), a.getLocalName());
 	}
 
 	@Test
 	public void testSearch_ZoneAndDomainOnly() throws Exception {
 		AddressSearchCriteria criteria = new AddressSearchCriteria(new PageSpecifier(0, 10));
-		criteria.setDomainName(domainName);
+		criteria.setDomainName(domain.getDomainName());
 
 		List<Address> addresss = addressService.search(zone, criteria);
 		assertNotNull(addresss);
 		assertEquals(1, addresss.size());
 		Address a = addresss.get(0);
 		assertNotNull(a);
-		assertEquals(domainName, a.getDomainName());
-		assertEquals(localName, a.getLocalName());
+		assertEquals(domain.getDomainName(), a.getDomain().getDomainName());
+		assertEquals(address.getLocalName(), a.getLocalName());
 	}
 
 	@Test
@@ -158,16 +166,16 @@ public class AddressServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Address d = addressService.findByName(zone, domainName, "gugus");
+		Address d = addressService.findByName(domain, "gugus");
 		assertNull(d);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Address d = addressService.findByName(zone, domainName, localName);
+		Address d = addressService.findByName(domain, address.getLocalName());
 		addressService.createOrUpdate(d);
 
-		Address d2 = addressService.findByName(zone, domainName, localName);
+		Address d2 = addressService.findByName(domain, address.getLocalName());
 
 		assertEquals(d.getId(), d2.getId());
 	}

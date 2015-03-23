@@ -24,11 +24,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.dao.AddressDao;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -92,25 +91,14 @@ public class AddressServiceRepositoryImpl implements AddressService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Address findByName(Zone zone, String domainName, String localName) {
-		if (!StringUtils.hasText(domainName)) {
-			throw new IllegalArgumentException("missing domainName");
-		}
-		if (!StringUtils.hasText(localName)) {
-			throw new IllegalArgumentException("missing localName");
-		}
-		AddressSearchCriteria sc = new AddressSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(domainName);
-		sc.setLocalName(localName);
-		List<Address> addresses = getAddressDao().search(zone, sc);
-
-		return addresses.isEmpty() ? null : addresses.get(0);
+	public Address findById(Long id) {
+		return getAddressDao().loadById(id);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Address findById(Long id) {
-		return getAddressDao().loadById(id);
+	public Address findByName(Domain domain, String localName) {
+		return getAddressDao().loadByName(domain, localName);
 	}
 
 	// -------------------------------------------------------------------------
