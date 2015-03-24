@@ -24,6 +24,7 @@ import java.util.UUID;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.system.dns.DnsUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
@@ -159,7 +160,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				// per domain DAC
 				for (int di = 0; zac != null && di < input.getNumDACsPerDomain(); di++) {
 					// create the DAC
-					dac = TestCredentialGenerator.createDAC(zac, 5);
+					String subdomain = DnsUtils.getSubdomain(domain.getDomainName(), zone.getZoneApex());
+					dac = TestCredentialGenerator.createDAC(zac, subdomain, 5);
 
 					// create the AgentCredential for the ZAC in ZoneDB
 					AgentCredential ac = createAgentCredential(zone, domain, null, dac);
@@ -182,7 +184,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					// per domain Address UC
 					for (int ui = 0; dac != null && ui < input.getNumUsersPerAddress(); ui++) {
 						// create the UC
-						PKIXCredential uc = TestCredentialGenerator.createUC(dac, 2);
+						PKIXCredential uc = TestCredentialGenerator.createUC(dac, add.getLocalName(), 2);
 
 						// create the AgentCredential for the ZAC in ZoneDB
 						AgentCredential ac = createAgentCredential(zone, domain, add, uc);

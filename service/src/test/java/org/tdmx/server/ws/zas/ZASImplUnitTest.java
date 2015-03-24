@@ -95,12 +95,17 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -133,6 +138,10 @@ public class ZASImplUnitTest {
 	private AddressService addressService;
 	@Autowired
 	private ServiceService serviceService;
+	@Autowired
+	private ChannelAuthorizationService channelAuthorizationService;
+	@Autowired
+	private FlowTargetService flowTargetService;
 
 	@Autowired
 	private ZAS zas;
@@ -166,6 +175,7 @@ public class ZASImplUnitTest {
 
 		data = dataGenerator.setUp(input);
 
+		accountZone = data.getAccountZone();
 		zone = data.getZone();
 		zac = data.getZacs().get(0).getCredential();
 		domain = data.getDomains().get(0).getDomain();
@@ -174,12 +184,12 @@ public class ZASImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		zonePartitionIdProvider.setPartitionId(input.getZonePartitionId());
+		// ZAS should use the "authenticated agent" to set the partitionID
 	}
 
 	@After
 	public void doTeardown() {
-		// zonePartitionIdProvider.clearPartitionId();
+		authenticatedAgentService.clearAuthenticatedAgent();
 
 		dataGenerator.tearDown(input, data);
 	}
@@ -940,10 +950,11 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// delete any DAC on the domain
+		// delete any DACs on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		dacSc.setDomainName(domain.getDomainName());
+		dacSc.setType(AgentCredentialType.DAC);
 		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
 		for (AgentCredential ac : list) {
 			agentCredentialService.delete(ac);
@@ -961,7 +972,16 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// delete any DAC on the domain
+		// delete any FlowTarget on the domain
+		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+				new PageSpecifier(0, 1000));
+		ftSc.getTarget().setDomainName(domain.getDomainName());
+		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
+		for (FlowTarget ft : ftlist) {
+			flowTargetService.delete(ft);
+		}
+
+		// delete any Agent on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
 				new PageSpecifier(0, 1000));
 		dacSc.setDomainName(domain.getDomainName());
@@ -991,32 +1011,11 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// delete any DAC on the domain
-		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
-				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(domain.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
-		for (AgentCredential ac : list) {
-			agentCredentialService.delete(ac);
-		}
-
-		// delete any address on the domain
-		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
-				new PageSpecifier(0, 1000));
-		adSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
-		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
-			addressService.delete(ad);
-		}
-
-		// delete any services on the domain
-		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
-				new PageSpecifier(0, 1000));
-		sSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
-		for (org.tdmx.lib.zone.domain.Service s : services) {
-			serviceService.delete(s);
-		}
+		removeFlowTargets(domain);
+		removeChannelAuthorizations(domain);
+		removeAgentCredentials(domain);
+		removeAddresses(domain);
+		removeServices(domain);
 
 		DeleteDomain ca = new DeleteDomain();
 
@@ -1041,6 +1040,8 @@ public class ZASImplUnitTest {
 	public void testDeleteUser_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		removeFlowTargets(domain);
 
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
@@ -1109,6 +1110,8 @@ public class ZASImplUnitTest {
 	public void testDeleteUser_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		removeFlowTargets(domain);
 
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
@@ -1251,6 +1254,8 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
+		removeFlowTargets(domain);
+
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
 		s.setDomain(domain.getDomainName());
@@ -1266,6 +1271,8 @@ public class ZASImplUnitTest {
 	public void testDeleteService_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		removeFlowTargets(domain);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1460,4 +1467,58 @@ public class ZASImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
+	private void removeFlowTargets(Domain domain) {
+		// delete any FlowTarget on the domain
+		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+				new PageSpecifier(0, 1000));
+		ftSc.getTarget().setDomainName(domain.getDomainName());
+		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
+		for (FlowTarget ft : ftlist) {
+			flowTargetService.delete(ft);
+		}
+	}
+
+	private void removeChannelAuthorizations(Domain domain) {
+		// delete any ChannelAuthorizations on the domain
+		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
+				new PageSpecifier(0, 1000));
+		caSc.setDomain(domain);
+		List<ChannelAuthorization> calist = channelAuthorizationService.search(zone, caSc);
+		for (ChannelAuthorization ca : calist) {
+			channelAuthorizationService.delete(ca);
+		}
+	}
+
+	private void removeAgentCredentials(Domain domain) {
+		// delete any UC+DAC on the domain
+		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
+				new PageSpecifier(0, 1000));
+		dacSc.setDomainName(domain.getDomainName());
+		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
+		for (AgentCredential ac : list) {
+			agentCredentialService.delete(ac);
+		}
+	}
+
+	private void removeAddresses(Domain domain) {
+		// delete any Address on the domain
+		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
+				new PageSpecifier(0, 1000));
+		adSc.setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
+		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
+			addressService.delete(ad);
+		}
+	}
+
+	private void removeServices(Domain domain) {
+		// delete any services on the domain
+		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
+				new PageSpecifier(0, 1000));
+		sSc.setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
+		for (org.tdmx.lib.zone.domain.Service s : services) {
+			serviceService.delete(s);
+		}
+	}
 }

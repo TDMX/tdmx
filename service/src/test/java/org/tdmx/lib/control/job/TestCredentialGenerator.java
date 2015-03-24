@@ -77,9 +77,10 @@ public class TestCredentialGenerator {
 		return CredentialUtils.createZoneAdministratorCredential(req);
 	}
 
-	public static DomainAdministrationCredentialSpecifier createDACS(PKIXCredential zac, Calendar from, Calendar to) {
+	public static DomainAdministrationCredentialSpecifier createDACS(PKIXCredential zac, String subdomainName,
+			Calendar from, Calendar to) {
 
-		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier("subdomain", zac);
+		DomainAdministrationCredentialSpecifier req = new DomainAdministrationCredentialSpecifier(subdomainName, zac);
 		req.setNotBefore(from);
 		req.setNotAfter(to);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
@@ -87,16 +88,18 @@ public class TestCredentialGenerator {
 		return req;
 	}
 
-	public static PKIXCredential createDAC(PKIXCredential zac, int validForYears) throws CryptoCertificateException {
-		DomainAdministrationCredentialSpecifier req = createDACS(zac, getNow(), getNowPlusYears(validForYears));
+	public static PKIXCredential createDAC(PKIXCredential zac, String subdomainName, int validForYears)
+			throws CryptoCertificateException {
+		DomainAdministrationCredentialSpecifier req = createDACS(zac, subdomainName, getNow(),
+				getNowPlusYears(validForYears));
 
 		return CredentialUtils.createDomainAdministratorCredential(req);
 	}
 
-	public static UserCredentialSpecifier createUCS(PKIXCredential dac, Calendar from, Calendar to) {
+	public static UserCredentialSpecifier createUCS(PKIXCredential dac, String localName, Calendar from, Calendar to) {
 		UserCredentialSpecifier req = new UserCredentialSpecifier();
 		req.setDomainAdministratorCredential(dac);
-		req.setName("username123");
+		req.setName(localName);
 		req.setNotBefore(from);
 		req.setNotAfter(to);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
@@ -104,8 +107,9 @@ public class TestCredentialGenerator {
 		return req;
 	}
 
-	public static PKIXCredential createUC(PKIXCredential dac, int validForYears) throws CryptoCertificateException {
-		UserCredentialSpecifier req = createUCS(dac, getNow(), getNowPlusYears(validForYears));
+	public static PKIXCredential createUC(PKIXCredential dac, String localName, int validForYears)
+			throws CryptoCertificateException {
+		UserCredentialSpecifier req = createUCS(dac, localName, getNow(), getNowPlusYears(validForYears));
 		PKIXCredential cred = CredentialUtils.createUserCredential(req);
 		return cred;
 	}

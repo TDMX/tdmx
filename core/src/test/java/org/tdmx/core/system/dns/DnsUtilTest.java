@@ -18,21 +18,24 @@
  */
 package org.tdmx.core.system.dns;
 
-import org.tdmx.core.system.lang.StringUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-public class DnsUtils {
+import org.junit.Test;
 
-	public static boolean isSubdomain(String domainName, String zoneApex) {
-		if (StringUtils.hasText(domainName) && StringUtils.hasText(zoneApex)) {
-			return domainName.endsWith("." + zoneApex);
-		}
-		return false;
+public class DnsUtilTest {
+
+	@Test
+	public void testIsSubdomain() throws Exception {
+		assertTrue(DnsUtils.isSubdomain("plus.google.com", "google.com"));
+		assertFalse(DnsUtils.isSubdomain("plus.google.com", "plus.google.com"));
 	}
 
-	public static String getSubdomain(String domainName, String zoneApex) {
-		if (isSubdomain(domainName, zoneApex)) {
-			return domainName.substring(0, domainName.length() - zoneApex.length() - 1);
-		}
-		return null;
+	@Test
+	public void testGetSubdomain() throws Exception {
+		assertEquals("plus", DnsUtils.getSubdomain("plus.google.com", "google.com"));
+		assertNull(DnsUtils.getSubdomain("plus.google.com", "plus.google.com"));
 	}
 }
