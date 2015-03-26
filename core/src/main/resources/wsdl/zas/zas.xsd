@@ -347,6 +347,7 @@
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationRequestType">
 		<xs:sequence>
+			<xs:element ref="msg:domain"/>
 			<xs:element ref="msg:currentchannelauthorization"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -357,6 +358,7 @@
 	</xs:complexType>
 	<xs:complexType name="deleteChannelAuthorizationRequestType">
 		<xs:sequence>
+			<xs:element ref="msg:domain"/>
 			<xs:element name="channel" type="msg:Channel"/>
 		</xs:sequence>
 	</xs:complexType>
