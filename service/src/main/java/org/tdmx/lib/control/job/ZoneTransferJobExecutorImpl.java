@@ -275,7 +275,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
-			sc.setDomain(oldDomain);
+			sc.setDomainName(oldDomain.getDomainName());
 
 			List<ChannelAuthorization> channelAuths = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);

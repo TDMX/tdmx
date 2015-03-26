@@ -92,8 +92,8 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 
 		BooleanExpression where = domain.zone.eq(zone);
 
-		if (criteria.getDomain() != null) {
-			where = where.and(channelAuthorization.domain.eq(criteria.getDomain()));
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
 			where = where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));

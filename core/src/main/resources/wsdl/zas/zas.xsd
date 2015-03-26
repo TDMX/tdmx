@@ -541,7 +541,11 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>
-	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType"/>
+	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for ChannelAuthorizations within own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
 	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType">
 		<xs:annotation>

@@ -80,11 +80,19 @@ import org.tdmx.core.api.v01.sp.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.core.api.v01.sp.zas.common.Error;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
+import org.tdmx.core.api.v01.sp.zas.common.Processingstatus;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
+import org.tdmx.core.api.v01.sp.zas.msg.Administratorsignature;
 import org.tdmx.core.api.v01.sp.zas.msg.Administratorstate;
+import org.tdmx.core.api.v01.sp.zas.msg.Channel;
+import org.tdmx.core.api.v01.sp.zas.msg.Channelauthorization;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
+import org.tdmx.core.api.v01.sp.zas.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.sp.zas.msg.EndpointPermission;
+import org.tdmx.core.api.v01.sp.zas.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
+import org.tdmx.core.api.v01.sp.zas.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
 import org.tdmx.core.api.v01.sp.zas.msg.Servicestate;
 import org.tdmx.core.api.v01.sp.zas.msg.UserIdentity;
@@ -101,6 +109,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
@@ -109,6 +118,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
@@ -128,10 +138,19 @@ public class ZASImpl implements ZAS {
 	private DomainService domainService;
 	private AddressService addressService;
 	private ServiceService serviceService;
+	private ChannelAuthorizationService channelAuthorizationService;
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
+
+	// TODO ChannelAuth effect on ZAS
+	// flowtarget independent of channel auths. Destination side just defines the state unilateraly.
+	// design jobs / process flow around channel auths
+	// trigger transfer of flowtargetsession from dest to origin SP based on channel authorization
+	// flowtargetsession arrives at origin SP where it applies it creates new flows if needed and assigns the flowtarget
+	// originator uc can then send message
+	// arrival of message creates flows on destination side as needed
 
 	public enum ErrorCode {
 		// authorization errors
@@ -932,8 +951,50 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchChannelAuthorization")
 	public SearchChannelAuthorizationResponse searchChannelAuthorization(
 			@WebParam(partName = "parameters", name = "searchChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchChannelAuthorization parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchChannelAuthorizationResponse response = new SearchChannelAuthorizationResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+		if (zone == null) {
+			return response;
+		}
+
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(mapPage(parameters.getPage()));
+		if (authorizedUser.isTdmxDomainAdminCertificate()) {
+			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
+				// we fix the search to search only the DAC's domain.
+				parameters.getFilter().setDomain(authorizedUser.getCommonName());
+			}
+		}
+		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+				return response;
+			}
+			sc.setDomainName(parameters.getFilter().getDomain());
+		}
+		if (parameters.getFilter().getOrigin() != null) {
+			sc.getOrigin().setDomainName(parameters.getFilter().getOrigin().getDomain());
+			sc.getOrigin().setLocalName(parameters.getFilter().getOrigin().getLocalname());
+			sc.getOrigin().setServiceProvider(parameters.getFilter().getOrigin().getServiceprovider());
+		}
+		if (parameters.getFilter().getDestination() != null) {
+			sc.getDestination().setDomainName(parameters.getFilter().getDestination().getDomain());
+			sc.getDestination().setLocalName(parameters.getFilter().getDestination().getLocalname());
+			sc.getDestination().setServiceProvider(parameters.getFilter().getDestination().getServiceprovider());
+			sc.getDestination().setServiceName(parameters.getFilter().getDestination().getServicename());
+		}
+		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelAuthorizationService.search(
+				zone, sc);
+		for (org.tdmx.lib.zone.domain.ChannelAuthorization ca : channelAuthorizations) {
+			response.getChannelauthorizations().add(mapChannelAuthorization(ca));
+		}
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
 	}
 
 	@Override
@@ -1051,40 +1112,6 @@ public class ZASImpl implements ZAS {
 	 * @param ack
 	 * @return null if not authorized, setting ack.Error, else the zoneApex.
 	 */
-
-	// private String checkDomainAuthorization(String domain, Acknowledge ack) {
-	// PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-	//
-	// ErrorCode error = null;
-	// if (!StringUtils.hasText(domain)) {
-	// // if no domain is passed in then the authenticated agent needs to be a ZAC
-	// if (user.isTdmxZoneAdminCertificate()) {
-	// return user.getTdmxZoneInfo().getZoneRoot();
-	// }
-	// errorDescription = "Agent is not a ZAC.";
-	// } else {
-	// if (!domain.toUpperCase().equals(domain)) {
-	// errorDescription = "Domain not normalized to uppercase.";
-	// } else if (user.isTdmxZoneAdminCertificate()) {
-	// String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
-	// if (domain.endsWith(zoneApex)) {
-	// return zoneApex;
-	// }
-	// errorDescription = "ZAC only authorized on own subdomains.";
-	// } else if (user.isTdmxDomainAdminCertificate()) {
-	// // a DAC needs to match the domain exactly, doesn't administer subdomains
-	// String dacDomainName = user.getCommonName();
-	// if (dacDomainName.equals(domain)) {
-	// return user.getTdmxZoneInfo().getZoneRoot();
-	// }
-	// errorDescription = "DAC only authorized on own domain.";
-	// } else {
-	// errorDescription = "Agent is not a ZAC or DAC.";
-	// }
-	// }
-	// setError(401, errorDescription, ack);
-	// return null;
-	// }
 
 	private boolean checkDomain(String domain, Acknowledge ack) {
 		if (!StringUtils.hasText(domain)) {
@@ -1247,6 +1274,30 @@ public class ZASImpl implements ZAS {
 		return ss;
 	}
 
+	private Channelauthorization mapChannelAuthorization(org.tdmx.lib.zone.domain.ChannelAuthorization ca) {
+		Channelauthorization c = new Channelauthorization();
+		c.setDomain(ca.getDomain().getDomainName());
+
+		// TODO
+		Channel channel = new Channel();
+		EndpointPermission origin = new EndpointPermission();
+		EndpointPermission destination = new EndpointPermission();
+		FlowControlLimit limit = new FlowControlLimit();
+		Administratorsignature administratorsignature = new Administratorsignature();
+
+		Currentchannelauthorization current = new Currentchannelauthorization();
+
+		c.setCurrent(current);
+
+		RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
+		c.setUnconfirmed(unconfirmed);
+
+		Processingstatus processingstatus = new Processingstatus();
+		c.setProcessingstatus(processingstatus);
+		// TODO
+		return c;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -1305,6 +1356,14 @@ public class ZASImpl implements ZAS {
 
 	public void setServiceService(ServiceService serviceService) {
 		this.serviceService = serviceService;
+	}
+
+	public ChannelAuthorizationService getChannelAuthorizationService() {
+		return channelAuthorizationService;
+	}
+
+	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
+		this.channelAuthorizationService = channelAuthorizationService;
 	}
 
 }

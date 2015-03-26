@@ -176,6 +176,7 @@
 			<xs:documentation>A filter criteria for searching for Channels.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element ref="domain" minOccurs="0"/>
 			<xs:element name="origin" type="ChannelEndpointFilter" minOccurs="0"/>
 			<xs:element name="destination" type="ChannelDestinationFilter" minOccurs="0"/>
 		</xs:sequence>
@@ -241,6 +242,7 @@
 	</xs:complexType>
 	<xs:complexType name="ChannelAuthorization">
 		<xs:sequence>
+			<xs:element ref="domain"/>
 			<xs:element name="current" type="CurrentChannelAuthorization">
 				<xs:annotation>
 					<xs:documentation>the current authorization of the channel.</xs:documentation>

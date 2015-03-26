@@ -1482,7 +1482,7 @@ public class ZASImplUnitTest {
 		// delete any ChannelAuthorizations on the domain
 		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
 				new PageSpecifier(0, 1000));
-		caSc.setDomain(domain);
+		caSc.setDomainName(domain.getDomainName());
 		List<ChannelAuthorization> calist = channelAuthorizationService.search(zone, caSc);
 		for (ChannelAuthorization ca : calist) {
 			channelAuthorizationService.delete(ca);

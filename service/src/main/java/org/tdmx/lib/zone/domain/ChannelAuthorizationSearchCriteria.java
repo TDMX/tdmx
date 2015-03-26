@@ -52,7 +52,7 @@ public class ChannelAuthorizationSearchCriteria {
 	 * A ChannelAuthorization belongs to a Domain. Provide this to limit the results to the ChannelAuthorizations of the
 	 * Domain, or leave null to retrieve ChannelAuthorizations for all the Zone's Domains.
 	 */
-	private Domain domain;
+	private String domainName;
 
 	/**
 	 * If Boolean.TRUE then search only unconfirmed ChannelAuthorizations, else if Boolean.FALSE then only search for
@@ -107,12 +107,12 @@ public class ChannelAuthorizationSearchCriteria {
 		this.destination = destination;
 	}
 
-	public Domain getDomain() {
-		return domain;
+	public String getDomainName() {
+		return domainName;
 	}
 
-	public void setDomain(Domain domain) {
-		this.domain = domain;
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
 	}
 
 	public Boolean getUnconfirmed() {
