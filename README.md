@@ -4,6 +4,8 @@ This project is the work-in-progress development of **Trusted Domain Messaging e
 
 Visit [http://tdmx.org](http://tdmx.org "tdmx.org") for more information.
 
+Developer contributions are welcome following signup via [Individual Contributor License Agreement](https://docs.google.com/forms/d/1LrlHQGtSRCEfIB1JfO9mw02MeMAiNsQk0UwZy9KQp-U/viewform?usp=send_form "Individual Contributor License Agreement").
+
 ## Development Setup
 clone the tdmx Github repository
 in Eclipse, use the `import existing maven projects` wizard on the tdmx root directory. Prerequisite is the m2eclipse plugin which can be found via Eclipse marketplace, or is bundled with Jboss Tools plugins. 
