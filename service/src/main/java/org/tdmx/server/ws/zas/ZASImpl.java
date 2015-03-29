@@ -1355,8 +1355,15 @@ public class ZASImpl implements ZAS {
 		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(mapTimestamp(agentSignature.getSignatureDate()));
 		sig.setSignature(agentSignature.getValue());
-		sig.setSignatureAlgorithm(SignatureAlgorithm.fromValue(agentSignature.getAlgorithm().toString()));
+		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));
 		return sig;
+	}
+
+	private SignatureAlgorithm mapSignatureAlgorithm(org.tdmx.client.crypto.algorithm.SignatureAlgorithm sa) {
+		if (sa == null) {
+			return null;
+		}
+		return SignatureAlgorithm.fromValue(sa.getAlgorithm());
 	}
 
 	private Calendar mapTimestamp(Date date) {

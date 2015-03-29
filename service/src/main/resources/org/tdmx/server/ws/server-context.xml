@@ -25,6 +25,7 @@
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
 	</bean>
 
 	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSImpl" />
