@@ -26,8 +26,12 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
  * A Signature of either a User, DomainAdministrator or ZoneAdministrator.
@@ -73,6 +77,9 @@ public class AgentSignature implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private SignatureAlgorithm algorithm;
 
+	@Transient
+	private PKIXCertificate[] certificateChain;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -98,6 +105,19 @@ public class AgentSignature implements Serializable {
 
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getCertificateChain() {
+		if (certificateChain == null && getCertificateChainPem() != null) {
+			certificateChain = CertificateIOUtils.safePemToX509certs(getCertificateChainPem());
+		}
+		return certificateChain;
 	}
 
 	// -------------------------------------------------------------------------

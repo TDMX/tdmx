@@ -21,7 +21,7 @@
 			<xs:documentation>A filter criteria for searching for Administrators.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="administrator" minOccurs="0"/>
+			<xs:element ref="administratorIdentity" minOccurs="0"/>
 			<xs:element ref="domain" minOccurs="0"/>
 			<xs:element name="status" type="credentialStatus" minOccurs="0"/>
 		</xs:sequence>
@@ -87,15 +87,15 @@
 			<xs:element ref="ipzone" minOccurs="0" maxOccurs="64"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="Administrator">
+	<xs:complexType name="AdministratorIdentity">
 		<xs:sequence>
 			<xs:element ref="domaincertificate"/>
 			<xs:element ref="rootcertificate"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="AdministratorState">
+	<xs:complexType name="Administrator">
 		<xs:sequence>
-			<xs:element ref="administrator"/>
+			<xs:element ref="administratorIdentity"/>
 			<xs:element name="status" type="credentialStatus"/>
 			<xs:element name="whitelist" type="IpAddressList"/>
 		</xs:sequence>
@@ -420,7 +420,7 @@
 	</xs:element>
 	<xs:complexType name="AdministratorSignature">
 		<xs:sequence>
-			<xs:element ref="administrator"/>
+			<xs:element ref="administratorIdentity"/>
 			<xs:element ref="signaturevalue"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -455,7 +455,7 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="highBytes" type="xs:unsignedLong"/>
-			<xs:element name="lowBytes" type="xs:unsignedShort"/>
+			<xs:element name="lowBytes" type="xs:unsignedLong"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="localname">
@@ -534,12 +534,12 @@
 	<xs:element name="rootcertificate" type="x509certificate"/>
 	<xs:element name="domaincertificate" type="x509certificate"/>
 	<xs:element name="usercertificate" type="x509certificate"/>
-	<xs:element name="administrator" type="Administrator">
+	<xs:element name="administratorIdentity" type="AdministratorIdentity">
 		<xs:annotation>
 			<xs:documentation>exact public credentials of a single DAC.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="administratorstate" type="AdministratorState"/>
+	<xs:element name="administrator" type="Administrator"/>
 	<xs:element name="userIdentity" type="UserIdentity">
 		<xs:annotation>
 			<xs:documentation>references a specific UC, making localname and domain redundant.</xs:documentation>

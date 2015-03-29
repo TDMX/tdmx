@@ -68,6 +68,8 @@ import org.tdmx.core.api.v01.sp.zas.SearchAddress;
 import org.tdmx.core.api.v01.sp.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.sp.zas.SearchAdministratorResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorization;
+import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchDomain;
 import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchService;
@@ -78,8 +80,9 @@ import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
 import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.AddressFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
 import org.tdmx.core.api.v01.sp.zas.msg.AdministratorFilter;
+import org.tdmx.core.api.v01.sp.zas.msg.AdministratorIdentity;
+import org.tdmx.core.api.v01.sp.zas.msg.ChannelAuthorizationFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
@@ -720,7 +723,7 @@ public class ZASImplUnitTest {
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
 		assertSuccess(response);
-		assertEquals(1, response.getAdministratorstates().size());
+		assertEquals(1, response.getAdministrators().size());
 	}
 
 	@Test
@@ -741,7 +744,7 @@ public class ZASImplUnitTest {
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
 		assertSuccess(response);
-		assertEquals(1, response.getAdministratorstates().size());
+		assertEquals(1, response.getAdministrators().size());
 	}
 
 	@Test
@@ -762,7 +765,7 @@ public class ZASImplUnitTest {
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
 		assertSuccess(response);
-		assertEquals(0, response.getAdministratorstates().size());
+		assertEquals(0, response.getAdministrators().size());
 	}
 
 	@Test
@@ -1172,11 +1175,11 @@ public class ZASImplUnitTest {
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		Administrator a = new Administrator();
+		AdministratorIdentity a = new AdministratorIdentity();
 		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(a);
+		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
 		assertSuccess(response);
 	}
@@ -1195,11 +1198,11 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateAdministrator ca = new CreateAdministrator();
-		Administrator a = new Administrator();
+		AdministratorIdentity a = new AdministratorIdentity();
 		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(a);
+		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
 		assertSuccess(response);
 	}
@@ -1211,11 +1214,11 @@ public class ZASImplUnitTest {
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		Administrator a = new Administrator();
+		AdministratorIdentity a = new AdministratorIdentity();
 		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(a);
+		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
 		assertError(ErrorCode.DomainAdministratorCredentialsExist, response);
 	}
@@ -1234,11 +1237,11 @@ public class ZASImplUnitTest {
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
-		Administrator a = new Administrator();
+		AdministratorIdentity a = new AdministratorIdentity();
 		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(a);
+		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
 		assertError(ErrorCode.DomainNotFound, response);
 	}
@@ -1399,9 +1402,24 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testSearchChannelAuthorization() {
-		fail("Not yet implemented"); // TODO
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchChannelAuthorization req = new SearchChannelAuthorization();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelAuthorizationFilter uf = new ChannelAuthorizationFilter();
+		req.setFilter(uf);
+
+		SearchChannelAuthorizationResponse response = zas.searchChannelAuthorization(req);
+		assertSuccess(response);
+		assertEquals(1, response.getChannelauthorizations().size());
+
 	}
 
 	@Test
@@ -1410,11 +1428,11 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		ModifyAdministrator ca = new ModifyAdministrator();
-		Administrator u = new Administrator();
+		AdministratorIdentity u = new AdministratorIdentity();
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(u);
+		ca.setAdministratorIdentity(u);
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyAdministratorResponse response = zas.modifyAdministrator(ca);
 		assertSuccess(response);
@@ -1427,11 +1445,11 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		DeleteAdministrator ca = new DeleteAdministrator();
-		Administrator u = new Administrator();
+		AdministratorIdentity u = new AdministratorIdentity();
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(u);
+		ca.setAdministratorIdentity(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
 		assertSuccess(response);
 	}
@@ -1442,11 +1460,11 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		DeleteAdministrator ca = new DeleteAdministrator();
-		Administrator u = new Administrator();
+		AdministratorIdentity u = new AdministratorIdentity();
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
-		ca.setAdministrator(u);
+		ca.setAdministratorIdentity(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(ca);
 		assertError(ErrorCode.NonZoneAdministratorAccess, response);
 	}

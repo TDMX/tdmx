@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws.zas;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.jws.WebMethod;
@@ -83,18 +85,24 @@ import org.tdmx.core.api.v01.sp.zas.common.Page;
 import org.tdmx.core.api.v01.sp.zas.common.Processingstatus;
 import org.tdmx.core.api.v01.sp.zas.msg.Address;
 import org.tdmx.core.api.v01.sp.zas.msg.Administrator;
+import org.tdmx.core.api.v01.sp.zas.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.sp.zas.msg.Administratorsignature;
-import org.tdmx.core.api.v01.sp.zas.msg.Administratorstate;
 import org.tdmx.core.api.v01.sp.zas.msg.Channel;
+import org.tdmx.core.api.v01.sp.zas.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.sp.zas.msg.Channelauthorization;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.sp.zas.msg.Destination;
 import org.tdmx.core.api.v01.sp.zas.msg.EndpointPermission;
 import org.tdmx.core.api.v01.sp.zas.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
+import org.tdmx.core.api.v01.sp.zas.msg.Limit;
+import org.tdmx.core.api.v01.sp.zas.msg.Permission;
 import org.tdmx.core.api.v01.sp.zas.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
 import org.tdmx.core.api.v01.sp.zas.msg.Servicestate;
+import org.tdmx.core.api.v01.sp.zas.msg.SignatureAlgorithm;
+import org.tdmx.core.api.v01.sp.zas.msg.Signaturevalue;
 import org.tdmx.core.api.v01.sp.zas.msg.UserIdentity;
 import org.tdmx.core.api.v01.sp.zas.report.Incident;
 import org.tdmx.core.api.v01.sp.zas.report.IncidentResponse;
@@ -342,7 +350,7 @@ public class ZASImpl implements ZAS {
 			}
 			AgentCredential c = credentialService.findByFingerprint(zone, uc.getFingerprint());
 			if (c != null) {
-				response.getUsers().add(mapUserstate(c));
+				response.getUsers().add(mapUser(c));
 			}
 		} else {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
@@ -365,7 +373,7 @@ public class ZASImpl implements ZAS {
 			sc.setType(AgentCredentialType.UC);
 			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
-				response.getUsers().add(mapUserstate(c));
+				response.getUsers().add(mapUser(c));
 			}
 		}
 		response.setSuccess(true);
@@ -385,18 +393,18 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		if (parameters.getFilter().getAdministrator() != null) {
+		if (parameters.getFilter().getAdministratorIdentity() != null) {
 			// if a DAC credential is provided then it't not so much a search as a lookup
 			AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getFilter()
-					.getAdministrator().getDomaincertificate(), parameters.getFilter().getAdministrator()
-					.getRootcertificate());
+					.getAdministratorIdentity().getDomaincertificate(), parameters.getFilter()
+					.getAdministratorIdentity().getRootcertificate());
 			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
 			AgentCredential c = credentialService.findByFingerprint(zone, dac.getFingerprint());
 			if (c != null) {
-				response.getAdministratorstates().add(mapAdministratorstate(c));
+				response.getAdministrators().add(mapAdministrator(c));
 			}
 		} else {
 			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
@@ -414,7 +422,7 @@ public class ZASImpl implements ZAS {
 			sc.setType(AgentCredentialType.DAC);
 			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
-				response.getAdministratorstates().add(mapAdministratorstate(c));
+				response.getAdministrators().add(mapAdministrator(c));
 			}
 		}
 		response.setSuccess(true);
@@ -686,8 +694,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
+				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -857,8 +865,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
+				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -1050,8 +1058,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministrator()
-				.getDomaincertificate(), parameters.getAdministrator().getRootcertificate());
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
+				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -1228,14 +1236,20 @@ public class ZASImpl implements ZAS {
 	}
 
 	private PageSpecifier mapPage(Page p) {
+		if (p == null) {
+			return null;
+		}
 		return new PageSpecifier(p.getNumber(), p.getSize());
 	}
 
-	private org.tdmx.core.api.v01.sp.zas.msg.User mapUserstate(AgentCredential cred) {
+	private org.tdmx.core.api.v01.sp.zas.msg.User mapUser(AgentCredential cred) {
+		if (cred == null) {
+			return null;
+		}
 		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(cred.getPublicKey().getX509Encoded());
-		u.setDomaincertificate(cred.getIssuerPublicKey().getX509Encoded());
-		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
+		u.setUsercertificate(PKIXCertificate.getPublicKey(cred.getCertificateChain()).getX509Encoded());
+		u.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(cred.getCertificateChain()).getX509Encoded());
+		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(cred.getCertificateChain()).getX509Encoded());
 
 		org.tdmx.core.api.v01.sp.zas.msg.User us = new org.tdmx.core.api.v01.sp.zas.msg.User();
 		us.setUserIdentity(u);
@@ -1244,19 +1258,21 @@ public class ZASImpl implements ZAS {
 		return us;
 	}
 
-	private Administratorstate mapAdministratorstate(AgentCredential cred) {
-		Administrator u = new Administrator();
-		u.setDomaincertificate(cred.getPublicKey().getX509Encoded());
-		u.setRootcertificate(cred.getZoneRootPublicKey().getX509Encoded());
-
-		Administratorstate us = new Administratorstate();
+	private Administrator mapAdministrator(AgentCredential cred) {
+		if (cred == null) {
+			return null;
+		}
+		Administrator us = new Administrator();
 		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setAdministrator(u);
+		us.setAdministratorIdentity(mapAdministratorIdentity(cred.getCertificateChain()));
 		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
 		return us;
 	}
 
 	private Address mapAddress(org.tdmx.lib.zone.domain.Address address) {
+		if (address == null) {
+			return null;
+		}
 		Address a = new Address();
 		a.setDomain(address.getDomain().getDomainName());
 		a.setLocalname(address.getLocalName());
@@ -1264,6 +1280,9 @@ public class ZASImpl implements ZAS {
 	}
 
 	private Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
+		if (service == null) {
+			return null;
+		}
 		Service s = new Service();
 		s.setDomain(service.getDomain().getDomainName());
 		s.setServicename(service.getServiceName());
@@ -1275,27 +1294,110 @@ public class ZASImpl implements ZAS {
 	}
 
 	private Channelauthorization mapChannelAuthorization(org.tdmx.lib.zone.domain.ChannelAuthorization ca) {
-		Channelauthorization c = new Channelauthorization();
-		c.setDomain(ca.getDomain().getDomainName());
+		if (ca == null) {
+			return null;
+		}
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(ca.getOrigin().getDomainName());
+		origin.setLocalname(ca.getOrigin().getLocalName());
+		origin.setServiceprovider(ca.getOrigin().getServiceProvider());
 
-		// TODO
+		Destination dest = new Destination();
+		dest.setDomain(ca.getDestination().getDomainName());
+		dest.setLocalname(ca.getDestination().getLocalName());
+		dest.setServicename(ca.getDestination().getServiceName());
+		dest.setServiceprovider(ca.getDestination().getServiceProvider());
+
 		Channel channel = new Channel();
-		EndpointPermission origin = new EndpointPermission();
-		EndpointPermission destination = new EndpointPermission();
+		channel.setDestination(dest);
+		channel.setOrigin(origin);
+
 		FlowControlLimit limit = new FlowControlLimit();
-		Administratorsignature administratorsignature = new Administratorsignature();
+		limit.setUnsentBuffer(mapLimit(ca.getUnsentBuffer()));
+		limit.setUndeliveredBuffer(mapLimit(ca.getUndeliveredBuffer()));
 
 		Currentchannelauthorization current = new Currentchannelauthorization();
-
-		c.setCurrent(current);
+		current.setChannel(channel);
+		current.setOrigin(mapPermission(ca.getSendAuthorization()));
+		current.setDestination(mapPermission(ca.getRecvAuthorization()));
+		current.setLimit(limit);
+		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 
 		RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
-		c.setUnconfirmed(unconfirmed);
+		unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
+		unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
 
 		Processingstatus processingstatus = new Processingstatus();
-		c.setProcessingstatus(processingstatus);
 		// TODO
+
+		Channelauthorization c = new Channelauthorization();
+		c.setDomain(ca.getDomain().getDomainName());
+		c.setCurrent(current);
+		c.setUnconfirmed(unconfirmed);
+		c.setProcessingstatus(processingstatus);
 		return c;
+	}
+
+	private Administratorsignature mapAdministratorSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+		if (agentSignature == null) {
+			return null;
+		}
+		Administratorsignature s = new Administratorsignature();
+		s.setAdministratorIdentity(mapAdministratorIdentity(agentSignature.getCertificateChain()));
+		s.setSignaturevalue(mapSignature(agentSignature));
+		return s;
+	}
+
+	private Signaturevalue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+		if (agentSignature == null) {
+			return null;
+		}
+		Signaturevalue sig = new Signaturevalue();
+		sig.setTimestamp(mapTimestamp(agentSignature.getSignatureDate()));
+		sig.setSignature(agentSignature.getValue());
+		sig.setSignatureAlgorithm(SignatureAlgorithm.fromValue(agentSignature.getAlgorithm().toString()));
+		return sig;
+	}
+
+	private Calendar mapTimestamp(Date date) {
+		if (date == null) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		return cal;
+	}
+
+	private AdministratorIdentity mapAdministratorIdentity(PKIXCertificate[] adminCertChain) {
+		if (adminCertChain == null) {
+			return null;
+		}
+		AdministratorIdentity u = new AdministratorIdentity();
+		u.setDomaincertificate(PKIXCertificate.getPublicKey(adminCertChain).getX509Encoded());
+		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(adminCertChain).getX509Encoded());
+		return u;
+	}
+
+	private Limit mapLimit(org.tdmx.lib.zone.domain.FlowLimit limit) {
+		if (limit == null) {
+			return null;
+		}
+		Limit l = new Limit();
+		l.setHighBytes(limit.getHighMarkBytes());
+		l.setLowBytes(limit.getLowMarkBytes());
+		return l;
+	}
+
+	private EndpointPermission mapPermission(org.tdmx.lib.zone.domain.EndpointPermission ep) {
+		if (ep == null) {
+			return null;
+		}
+		EndpointPermission p = new EndpointPermission();
+		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
+		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
+		p.setPermission(Permission.valueOf(ep.getGrant().toString()));
+		p.setValidUntil(mapTimestamp(ep.getValidUntil()));
+		return p;
 	}
 
 	// -------------------------------------------------------------------------

@@ -18,7 +18,6 @@
  */
 package org.tdmx.lib.zone.domain;
 
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
@@ -69,40 +68,6 @@ public class AgentCredentialDescriptor {
 		builder.append(" ,addressName=").append(addressName);
 		builder.append("]");
 		return builder.toString();
-	}
-
-	/**
-	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
-	 * 
-	 * @return
-	 * @throws CryptoCertificateException
-	 */
-	public PKIXCertificate[] getCertificateChain() {
-		return certificateChain;
-	}
-
-	public PKIXCertificate getPublicKey() {
-		if (certificateChain != null && certificateChain.length > 0) {
-			return certificateChain[0];
-		}
-		return null;
-	}
-
-	public PKIXCertificate getIssuerPublicKey() {
-		if (certificateChain != null && certificateChain.length > 1) {
-			return certificateChain[1];
-		}
-		return null;
-	}
-
-	public PKIXCertificate getZoneRootPublicKey() {
-		if (certificateChain != null && certificateChain.length > 1) {
-			if (certificateChain.length > 2) {
-				return certificateChain[2];
-			}
-			return certificateChain[1];
-		}
-		return null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -163,6 +128,10 @@ public class AgentCredentialDescriptor {
 
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChainPem = certificateChainPem;
+	}
+
+	public PKIXCertificate[] getCertificateChain() {
+		return certificateChain;
 	}
 
 	public void setCertificateChain(PKIXCertificate[] certificateChain) {

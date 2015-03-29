@@ -49,18 +49,6 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 @Table(name = "AgentCredential")
 public class AgentCredential implements Serializable {
 
-	public Domain getDomain() {
-		return domain;
-	}
-
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setCertificateChain(PKIXCertificate[] certificateChain) {
-		this.certificateChain = certificateChain;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -144,9 +132,9 @@ public class AgentCredential implements Serializable {
 		setZone(zone);
 		setDomain(domain);
 		setAddress(address);
-		this.credentialType = other.getCredentialType();
-		this.certificateChainPem = other.getCertificateChainPem();
-		this.fingerprint = other.getFingerprint();
+		setCredentialType(other.getCredentialType());
+		setCertificateChainPem(other.getCertificateChainPem());
+		setFingerprint(other.getFingerprint());
 	}
 
 	/**
@@ -185,10 +173,10 @@ public class AgentCredential implements Serializable {
 		setZone(zone);
 		setDomain(domain);
 		setAddress(address);
-		this.credentialType = other.getCredentialType();
-		this.certificateChainPem = other.getCertificateChainPem();
-		this.credentialStatus = other.getCredentialStatus();
-		this.fingerprint = other.getFingerprint();
+		setCredentialType(other.getCredentialType());
+		setCertificateChainPem(other.getCertificateChainPem());
+		setCredentialStatus(other.getCredentialStatus());
+		setFingerprint(other.getFingerprint());
 	}
 
 	// -------------------------------------------------------------------------
@@ -220,30 +208,6 @@ public class AgentCredential implements Serializable {
 		return certificateChain;
 	}
 
-	public PKIXCertificate getPublicKey() {
-		if (getCertificateChain() != null && getCertificateChain().length > 0) {
-			return getCertificateChain()[0];
-		}
-		return null;
-	}
-
-	public PKIXCertificate getIssuerPublicKey() {
-		if (getCertificateChain() != null && getCertificateChain().length > 1) {
-			return getCertificateChain()[1];
-		}
-		return null;
-	}
-
-	public PKIXCertificate getZoneRootPublicKey() {
-		if (getCertificateChain() != null && getCertificateChain().length > 1) {
-			if (getCertificateChain().length > 2) {
-				return getCertificateChain()[2];
-			}
-			return getCertificateChain()[1];
-		}
-		return null;
-	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -264,6 +228,22 @@ public class AgentCredential implements Serializable {
 		this.address = address;
 	}
 
+	private void setCertificateChain(PKIXCertificate[] certificateChain) {
+		this.certificateChain = certificateChain;
+	}
+
+	private void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
+	}
+
+	private void setCredentialType(AgentCredentialType credentialType) {
+		this.credentialType = credentialType;
+	}
+
+	private void setCertificateChainPem(String certificateChainPem) {
+		this.certificateChainPem = certificateChainPem;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -280,20 +260,20 @@ public class AgentCredential implements Serializable {
 		return zone;
 	}
 
+	public Domain getDomain() {
+		return domain;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
 	public String getFingerprint() {
 		return fingerprint;
 	}
 
-	public void setFingerprint(String fingerprint) {
-		this.fingerprint = fingerprint;
-	}
-
 	public AgentCredentialType getCredentialType() {
 		return credentialType;
-	}
-
-	public void setCredentialType(AgentCredentialType credentialType) {
-		this.credentialType = credentialType;
 	}
 
 	public AgentCredentialStatus getCredentialStatus() {
@@ -306,10 +286,6 @@ public class AgentCredential implements Serializable {
 
 	public String getCertificateChainPem() {
 		return certificateChainPem;
-	}
-
-	public void setCertificateChainPem(String certificateChainPem) {
-		this.certificateChainPem = certificateChainPem;
 	}
 
 }

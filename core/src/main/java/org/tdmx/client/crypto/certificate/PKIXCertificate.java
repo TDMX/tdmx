@@ -101,6 +101,36 @@ public class PKIXCertificate {
 		return certificate.toString();
 	}
 
+	/**
+	 * The public key is always the first in the chain.
+	 * 
+	 * @param chain
+	 * @return
+	 */
+	public static PKIXCertificate getPublicKey(PKIXCertificate[] chain) {
+		if (chain != null && chain.length > 0) {
+			return chain[0];
+		}
+		return null;
+	}
+
+	public static PKIXCertificate getIssuerPublicKey(PKIXCertificate[] chain) {
+		if (chain != null && chain.length > 1) {
+			return chain[1];
+		}
+		return null;
+	}
+
+	public static PKIXCertificate getZoneRootPublicKey(PKIXCertificate[] chain) {
+		if (chain != null && chain.length > 1) {
+			if (chain.length > 2) {
+				return chain[2];
+			}
+			return chain[1];
+		}
+		return null;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

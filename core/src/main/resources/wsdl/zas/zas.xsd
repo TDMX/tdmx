@@ -57,7 +57,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:administratorstate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:administrator" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
@@ -65,7 +65,7 @@
 	</xs:complexType>
 	<xs:complexType name="createAdministratorRequestType">
 		<xs:sequence>
-			<xs:element ref="msg:administrator"/>
+			<xs:element ref="msg:administratorIdentity"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>if present, the status of the administrator shall be set. Defaults to ACTIVE.</xs:documentation>
@@ -88,7 +88,7 @@
 			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="msg:administrator"/>
+			<xs:element ref="msg:administratorIdentity"/>
 			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
@@ -108,7 +108,7 @@
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorRequestType">
 		<xs:sequence>
-			<xs:element ref="msg:administrator"/>
+			<xs:element ref="msg:administratorIdentity"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorResponseType">
