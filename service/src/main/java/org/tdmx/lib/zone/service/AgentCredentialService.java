@@ -36,7 +36,13 @@ public interface AgentCredentialService {
 
 	public AgentCredential findById(Long id);
 
-	public AgentCredential findByFingerprint(Zone zone, String fingerprint); // TODO remove zone
+	/**
+	 * Credentials are universally unique given their SHA256 fingerprint.
+	 * 
+	 * @param fingerprint
+	 * @return
+	 */
+	public AgentCredential findByFingerprint(String fingerprint);
 
 	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria);
 

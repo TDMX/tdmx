@@ -42,6 +42,8 @@ public interface AgentCredentialDao {
 
 	public AgentCredential loadById(Long id);
 
+	public AgentCredential loadByFingerprint(String fingerprint);
+
 	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria);
 
 }

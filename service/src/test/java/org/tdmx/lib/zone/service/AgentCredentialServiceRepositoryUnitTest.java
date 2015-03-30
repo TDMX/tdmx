@@ -111,15 +111,15 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupById() throws Exception {
-		AgentCredential zoneAC = service.findByFingerprint(zone, zac.getFingerprint());
+		AgentCredential zoneAC = service.findByFingerprint(zac.getFingerprint());
 		assertNotNull(zoneAC);
 		assertEquals(AgentCredentialType.ZAC, zoneAC.getCredentialType());
 
-		AgentCredential domainAC = service.findByFingerprint(zone, dac.getFingerprint());
+		AgentCredential domainAC = service.findByFingerprint(dac.getFingerprint());
 		assertNotNull(domainAC);
 		assertEquals(AgentCredentialType.DAC, domainAC.getCredentialType());
 
-		AgentCredential userAC = service.findByFingerprint(zone, uc.getFingerprint());
+		AgentCredential userAC = service.findByFingerprint(uc.getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(AgentCredentialType.UC, userAC.getCredentialType());
 	}
@@ -202,20 +202,20 @@ public class AgentCredentialServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		AgentCredential az = service.findByFingerprint(zone, "gugus");
+		AgentCredential az = service.findByFingerprint("gugus");
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify_Status() throws Exception {
-		AgentCredential userAC = service.findByFingerprint(zone, uc.getFingerprint());
+		AgentCredential userAC = service.findByFingerprint(uc.getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(AgentCredentialStatus.ACTIVE, userAC.getCredentialStatus());
 
 		userAC.setCredentialStatus(AgentCredentialStatus.SUSPENDED);
 		service.createOrUpdate(userAC);
 
-		userAC = service.findByFingerprint(zone, uc.getFingerprint());
+		userAC = service.findByFingerprint(uc.getFingerprint());
 		assertNotNull(userAC);
 		assertEquals(AgentCredentialStatus.SUSPENDED, userAC.getCredentialStatus());
 	}

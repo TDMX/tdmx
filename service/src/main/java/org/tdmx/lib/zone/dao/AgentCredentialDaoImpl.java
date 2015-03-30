@@ -84,6 +84,17 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 	}
 
 	@Override
+	public AgentCredential loadByFingerprint(String fingerprint) {
+		if (!StringUtils.hasText(fingerprint)) {
+			throw new IllegalArgumentException("missing fingerprint");
+		}
+		JPAQuery query = new JPAQuery(em).from(agentCredential).leftJoin(agentCredential.domain, domain).fetch()
+				.leftJoin(agentCredential.address, address).fetch();
+		query.where(agentCredential.fingerprint.eq(fingerprint));
+		return query.uniqueResult(agentCredential);
+	}
+
+	@Override
 	public List<AgentCredential> search(Zone zone, AgentCredentialSearchCriteria criteria) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
@@ -107,9 +118,6 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 		}
 		if (criteria.getType() != null) {
 			where = where.and(agentCredential.credentialType.eq(criteria.getType()));
-		}
-		if (StringUtils.hasText(criteria.getFingerprint())) {
-			where = where.and(agentCredential.fingerprint.eq(criteria.getFingerprint()));
 		}
 
 		query.where(where);

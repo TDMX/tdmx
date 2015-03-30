@@ -105,8 +105,8 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 
 				zone = getZoneService().findByZoneApex(accountZone.getId(), providedCredential.getZoneApex());
 				if (zone != null) {
-					agentCredential = getAgentCredentialService().findByFingerprint(zone,
-							providedCredential.getFingerprint());
+					agentCredential = getAgentCredentialService()
+							.findByFingerprint(providedCredential.getFingerprint());
 					if (agentCredential != null) {
 						agentAccountZone = accountZone;
 						break;

@@ -100,7 +100,7 @@ public class ZACInstallJobUnitTest {
 
 		zonePartitionIdProvider.setPartitionId(partitionId);
 		try {
-			AgentCredential generatedAC = agentCredentialService.findByFingerprint(zone, fingerprint);
+			AgentCredential generatedAC = agentCredentialService.findByFingerprint(fingerprint);
 			agentCredentialService.delete(generatedAC);
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
@@ -142,7 +142,7 @@ public class ZACInstallJobUnitTest {
 
 		zonePartitionIdProvider.setPartitionId(partitionId);
 		try {
-			AgentCredential zac = agentCredentialService.findByFingerprint(zone, task.getFingerprint());
+			AgentCredential zac = agentCredentialService.findByFingerprint(task.getFingerprint());
 			assertNotNull(zac);
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();

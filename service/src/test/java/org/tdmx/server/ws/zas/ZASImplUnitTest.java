@@ -1166,7 +1166,7 @@ public class ZASImplUnitTest {
 	public void testCreateAdministrator_Success() {
 		AgentCredentialDescriptor dAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getFingerprint());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(dAC.getFingerprint());
 		agentCredentialService.delete(domainAC);
 		zonePartitionIdProvider.clearPartitionId();
 
@@ -1190,7 +1190,7 @@ public class ZASImplUnitTest {
 		// TODO create new credentials instead of deleting
 		AgentCredentialDescriptor dAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(zone, dAC.getFingerprint());
+		AgentCredential domainAC = agentCredentialService.findByFingerprint(dAC.getFingerprint());
 		agentCredentialService.delete(domainAC);
 		zonePartitionIdProvider.clearPartitionId();
 
@@ -1300,7 +1300,7 @@ public class ZASImplUnitTest {
 		// TODO create new address to delete without UCs
 		AgentCredentialDescriptor uAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential userAC = agentCredentialService.findByFingerprint(zone, uAC.getFingerprint());
+		AgentCredential userAC = agentCredentialService.findByFingerprint(uAC.getFingerprint());
 		agentCredentialService.delete(userAC);
 		zonePartitionIdProvider.clearPartitionId();
 
