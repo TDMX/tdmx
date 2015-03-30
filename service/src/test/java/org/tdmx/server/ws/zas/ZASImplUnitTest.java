@@ -72,6 +72,8 @@ import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchDomain;
 import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchFlowTarget;
+import org.tdmx.core.api.v01.sp.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchService;
 import org.tdmx.core.api.v01.sp.zas.SearchServiceResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchUser;
@@ -85,6 +87,7 @@ import org.tdmx.core.api.v01.sp.zas.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.sp.zas.msg.ChannelAuthorizationFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
 import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
+import org.tdmx.core.api.v01.sp.zas.msg.FlowTargetFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.Service;
 import org.tdmx.core.api.v01.sp.zas.msg.ServiceFilter;
 import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
@@ -1247,9 +1250,24 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSearchFlowTargetState() {
-		fail("Not yet implemented"); // TODO
+	public void testSearchFlowTarget() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchFlowTarget req = new SearchFlowTarget();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		FlowTargetFilter ftf = new FlowTargetFilter();
+		req.setFilter(ftf);
+
+		SearchFlowTargetResponse response = zas.searchFlowTarget(req);
+		assertSuccess(response);
+		assertEquals(1, response.getFlowtargets().size());
+		// TODO alternatives
 	}
 
 	@Test
@@ -1336,7 +1354,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	@Ignore
-	public void testSearchFlowState() {
+	public void testSearchFlow() {
 		fail("Not yet implemented"); // TODO
 	}
 
@@ -1419,7 +1437,7 @@ public class ZASImplUnitTest {
 		SearchChannelAuthorizationResponse response = zas.searchChannelAuthorization(req);
 		assertSuccess(response);
 		assertEquals(1, response.getChannelauthorizations().size());
-
+		// TODO alternatives
 	}
 
 	@Test

@@ -71,6 +71,7 @@ import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchDomain;
 import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.sp.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchIpZone;
 import org.tdmx.core.api.v01.sp.zas.SearchIpZoneResponse;
 import org.tdmx.core.api.v01.sp.zas.SearchService;
@@ -95,6 +96,9 @@ import org.tdmx.core.api.v01.sp.zas.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.sp.zas.msg.Destination;
 import org.tdmx.core.api.v01.sp.zas.msg.EndpointPermission;
 import org.tdmx.core.api.v01.sp.zas.msg.FlowControlLimit;
+import org.tdmx.core.api.v01.sp.zas.msg.Flowsession;
+import org.tdmx.core.api.v01.sp.zas.msg.Flowtarget;
+import org.tdmx.core.api.v01.sp.zas.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.sp.zas.msg.IpAddressList;
 import org.tdmx.core.api.v01.sp.zas.msg.Limit;
 import org.tdmx.core.api.v01.sp.zas.msg.Permission;
@@ -120,6 +124,10 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowSession;
+import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -128,6 +136,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
@@ -147,6 +156,7 @@ public class ZASImpl implements ZAS {
 	private AddressService addressService;
 	private ServiceService serviceService;
 	private ChannelAuthorizationService channelAuthorizationService;
+	private FlowTargetService flowTargetService;
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
@@ -1093,8 +1103,63 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTarget")
 	public org.tdmx.core.api.v01.sp.zas.SearchFlowTargetResponse searchFlowTarget(
 			@WebParam(partName = "parameters", name = "searchFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.sp.zas.SearchFlowTarget parameters) {
-		// TODO
-		return null;
+
+		SearchFlowTargetResponse response = new SearchFlowTargetResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+		if (zone == null) {
+			return response;
+		}
+
+		FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(mapPage(parameters.getPage()));
+		if (authorizedUser.isTdmxDomainAdminCertificate() && !StringUtils.hasText(parameters.getFilter().getDomain())) {
+			// we fix the search to search only the DAC's domain.
+			parameters.getFilter().setDomain(authorizedUser.getCommonName());
+		}
+		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+				return response;
+			}
+			sc.getTarget().setDomainName(parameters.getFilter().getDomain());
+		}
+		if (parameters.getFilter().getUserIdentity() != null) {
+			// if a user credential is provided then it't not so much a search as a lookup
+
+			AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFilter()
+					.getUserIdentity().getUsercertificate(), parameters.getFilter().getUserIdentity()
+					.getDomaincertificate(), parameters.getFilter().getUserIdentity().getRootcertificate());
+			if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
+				setError(ErrorCode.InvalidUserCredentials, response);
+				return response;
+			}
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
+				return response;
+			}
+			AgentCredential specificUser = credentialService.findByFingerprint(uc.getFingerprint());
+			if (specificUser != null) {
+				sc.getTarget().setAgent(specificUser);
+			}
+		}
+		sc.getTarget().setAddressName(parameters.getFilter().getLocalname());
+		if (parameters.getFilter().getStatus() != null) {
+			sc.getTarget().setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
+		}
+		sc.setServiceName(parameters.getFilter().getServicename());
+
+		List<FlowTarget> flowtargets = flowTargetService.search(zone, sc);
+		for (FlowTarget ft : flowtargets) {
+			response.getFlowtargets().add(mapFlowTarget(ft));
+		}
+
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
 	}
 
 	@Override
@@ -1242,7 +1307,59 @@ public class ZASImpl implements ZAS {
 		return new PageSpecifier(p.getNumber(), p.getSize());
 	}
 
+	private Flowtarget mapFlowTarget(FlowTarget ft) {
+		if (ft == null) {
+			return null;
+		}
+		Flowtarget f = new Flowtarget();
+
+		f.setTarget(mapUserIdentity(ft.getTarget()));
+		f.setConcurrencyLevel(ft.getConcurrency().getConcurrencyLevel());
+		f.setConcurrencyLimit(ft.getConcurrency().getConcurrencyLimit());
+		f.setFlowtargetsession(mapFlowTargetSession(ft.getFts()));
+		f.setServicename(ft.getService().getServiceName());
+
+		return f;
+	}
+
+	private Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {
+		if (fts == null) {
+			return null;
+		}
+		Flowtargetsession f = new Flowtargetsession();
+		if (fts.getPrimary() != null) {
+			f.getFlowsessions().add(mapFlowSession(fts.getPrimary()));
+		}
+		if (fts.getSecondary() != null) {
+			f.getFlowsessions().add(mapFlowSession(fts.getSecondary()));
+		}
+		f.setSignaturevalue(mapSignature(fts.getSignature()));
+		return f;
+	}
+
+	private Flowsession mapFlowSession(FlowSession fs) {
+		if (fs == null) {
+			return null;
+		}
+		Flowsession s = new Flowsession();
+		s.setScheme(fs.getScheme());
+		s.setSessionKey(fs.getSessionKey());
+		s.setValidFrom(mapTimestamp(fs.getValidFrom()));
+		return s;
+	}
+
 	private org.tdmx.core.api.v01.sp.zas.msg.User mapUser(AgentCredential cred) {
+		if (cred == null) {
+			return null;
+		}
+		org.tdmx.core.api.v01.sp.zas.msg.User us = new org.tdmx.core.api.v01.sp.zas.msg.User();
+		us.setUserIdentity(mapUserIdentity(cred));
+		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
+		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
+		return us;
+	}
+
+	private org.tdmx.core.api.v01.sp.zas.msg.UserIdentity mapUserIdentity(AgentCredential cred) {
 		if (cred == null) {
 			return null;
 		}
@@ -1251,11 +1368,7 @@ public class ZASImpl implements ZAS {
 		u.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(cred.getCertificateChain()).getX509Encoded());
 		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(cred.getCertificateChain()).getX509Encoded());
 
-		org.tdmx.core.api.v01.sp.zas.msg.User us = new org.tdmx.core.api.v01.sp.zas.msg.User();
-		us.setUserIdentity(u);
-		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
-		return us;
+		return u;
 	}
 
 	private Administrator mapAdministrator(AgentCredential cred) {
@@ -1473,6 +1586,14 @@ public class ZASImpl implements ZAS {
 
 	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
 		this.channelAuthorizationService = channelAuthorizationService;
+	}
+
+	public FlowTargetService getFlowTargetService() {
+		return flowTargetService;
+	}
+
+	public void setFlowTargetService(FlowTargetService flowTargetService) {
+		this.flowTargetService = flowTargetService;
 	}
 
 }

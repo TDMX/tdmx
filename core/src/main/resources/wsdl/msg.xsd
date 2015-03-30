@@ -477,7 +477,7 @@
 		<xs:restriction base="xs:short"/>
 	</xs:simpleType>
 	<xs:simpleType name="cryptoscheme">
-		<xs:restriction base="xs:short"/>
+		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
 	<xs:simpleType name="x509certificate">
 		<xs:restriction base="xs:base64Binary"/>
@@ -540,11 +540,7 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="administrator" type="Administrator"/>
-	<xs:element name="userIdentity" type="UserIdentity">
-		<xs:annotation>
-			<xs:documentation>references a specific UC, making localname and domain redundant.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
+	<xs:element name="userIdentity" type="UserIdentity"/>
 	<xs:element name="user" type="User"/>
 	<xs:element name="flowchannel" type="FlowChannel"/>
 	<xs:element name="flowsession" type="FlowSession"/>
