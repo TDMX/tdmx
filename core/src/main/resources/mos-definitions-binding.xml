@@ -9,7 +9,7 @@
  @see https://jax-ws.dev.java.net/nonav/guide/customizations/
 	 -->
 
-	<jaxws:package name="org.tdmx.core.api.v01.sp.mos.ws" />
+	<jaxws:package name="org.tdmx.core.api.v01.mos.ws" />
 
 </jaxws:bindings>
 

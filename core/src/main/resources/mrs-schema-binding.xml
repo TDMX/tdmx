@@ -7,7 +7,7 @@
 
 	<jxb:bindings schemaLocation="wsdl/mrs/mrs.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.core.api.v01.sp.mrs" />
+			<jxb:package name="org.tdmx.core.api.v01.mrs" />
 		</jxb:schemaBindings>
 		<!-- 
         <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
@@ -20,48 +20,4 @@
          -->
 	</jxb:bindings>
 
-	<jxb:bindings schemaLocation="wsdl/msg.xsd" node="/xs:schema">
-		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.core.api.v01.sp.mrs.msg" />
-		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
-	</jxb:bindings>
-
-	<jxb:bindings schemaLocation="wsdl/tx.xsd" node="/xs:schema">
-		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.core.api.v01.sp.mrs.tx" />
-		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
-	</jxb:bindings>
-	
-	<jxb:bindings schemaLocation="wsdl/common.xsd" node="/xs:schema">
-		<jxb:schemaBindings>
-			<jxb:package name="org.tdmx.core.api.v01.sp.mrs.common" />
-		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
-	</jxb:bindings>
 </jxb:bindings>

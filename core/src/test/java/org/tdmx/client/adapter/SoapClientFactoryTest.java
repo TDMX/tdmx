@@ -26,11 +26,11 @@ import org.junit.Test;
 import org.tdmx.client.crypto.certificate.CertificateFacade;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.sp.mos.Submit;
-import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
-import org.tdmx.core.api.v01.sp.mos.msg.Msg;
-import org.tdmx.core.api.v01.sp.mos.tx.Transaction;
-import org.tdmx.core.api.v01.sp.mos.ws.MOS;
+import org.tdmx.core.api.v01.mos.Submit;
+import org.tdmx.core.api.v01.mos.SubmitResponse;
+import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.tx.Transaction;
 
 @Ignore
 public class SoapClientFactoryTest {

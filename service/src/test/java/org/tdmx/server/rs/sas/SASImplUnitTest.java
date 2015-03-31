@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;

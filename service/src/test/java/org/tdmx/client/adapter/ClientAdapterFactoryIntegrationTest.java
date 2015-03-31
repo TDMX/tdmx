@@ -29,12 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.sp.mos.Submit;
-import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
-import org.tdmx.core.api.v01.sp.mos.ws.MOS;
-import org.tdmx.core.api.v01.sp.zas.CreateDomain;
-import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
-import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
+import org.tdmx.core.api.v01.mos.Submit;
+import org.tdmx.core.api.v01.mos.SubmitResponse;
+import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.zas.CreateDomain;
+import org.tdmx.core.api.v01.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.server.runtime.ServerContainer;
 
 @Ignore

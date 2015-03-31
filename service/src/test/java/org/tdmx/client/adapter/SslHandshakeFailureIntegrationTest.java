@@ -29,9 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.sp.mos.Submit;
-import org.tdmx.core.api.v01.sp.mos.SubmitResponse;
-import org.tdmx.core.api.v01.sp.mos.ws.MOS;
+import org.tdmx.core.api.v01.mos.Submit;
+import org.tdmx.core.api.v01.mos.SubmitResponse;
+import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.server.runtime.ServerContainer;
 
 public class SslHandshakeFailureIntegrationTest {

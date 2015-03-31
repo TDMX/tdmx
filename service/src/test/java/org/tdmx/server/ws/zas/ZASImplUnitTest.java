@@ -38,61 +38,70 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.sp.zas.CreateAddress;
-import org.tdmx.core.api.v01.sp.zas.CreateAddressResponse;
-import org.tdmx.core.api.v01.sp.zas.CreateAdministrator;
-import org.tdmx.core.api.v01.sp.zas.CreateAdministratorResponse;
-import org.tdmx.core.api.v01.sp.zas.CreateDomain;
-import org.tdmx.core.api.v01.sp.zas.CreateDomainResponse;
-import org.tdmx.core.api.v01.sp.zas.CreateService;
-import org.tdmx.core.api.v01.sp.zas.CreateServiceResponse;
-import org.tdmx.core.api.v01.sp.zas.CreateUser;
-import org.tdmx.core.api.v01.sp.zas.CreateUserResponse;
-import org.tdmx.core.api.v01.sp.zas.DeleteAddress;
-import org.tdmx.core.api.v01.sp.zas.DeleteAddressResponse;
-import org.tdmx.core.api.v01.sp.zas.DeleteAdministrator;
-import org.tdmx.core.api.v01.sp.zas.DeleteAdministratorResponse;
-import org.tdmx.core.api.v01.sp.zas.DeleteDomain;
-import org.tdmx.core.api.v01.sp.zas.DeleteDomainResponse;
-import org.tdmx.core.api.v01.sp.zas.DeleteService;
-import org.tdmx.core.api.v01.sp.zas.DeleteServiceResponse;
-import org.tdmx.core.api.v01.sp.zas.DeleteUser;
-import org.tdmx.core.api.v01.sp.zas.DeleteUserResponse;
-import org.tdmx.core.api.v01.sp.zas.ModifyAdministrator;
-import org.tdmx.core.api.v01.sp.zas.ModifyAdministratorResponse;
-import org.tdmx.core.api.v01.sp.zas.ModifyService;
-import org.tdmx.core.api.v01.sp.zas.ModifyServiceResponse;
-import org.tdmx.core.api.v01.sp.zas.ModifyUser;
-import org.tdmx.core.api.v01.sp.zas.ModifyUserResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchAddress;
-import org.tdmx.core.api.v01.sp.zas.SearchAddressResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchAdministrator;
-import org.tdmx.core.api.v01.sp.zas.SearchAdministratorResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorization;
-import org.tdmx.core.api.v01.sp.zas.SearchChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchDomain;
-import org.tdmx.core.api.v01.sp.zas.SearchDomainResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowTarget;
-import org.tdmx.core.api.v01.sp.zas.SearchFlowTargetResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchService;
-import org.tdmx.core.api.v01.sp.zas.SearchServiceResponse;
-import org.tdmx.core.api.v01.sp.zas.SearchUser;
-import org.tdmx.core.api.v01.sp.zas.SearchUserResponse;
-import org.tdmx.core.api.v01.sp.zas.common.Acknowledge;
-import org.tdmx.core.api.v01.sp.zas.common.Page;
-import org.tdmx.core.api.v01.sp.zas.msg.Address;
-import org.tdmx.core.api.v01.sp.zas.msg.AddressFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.AdministratorFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.AdministratorIdentity;
-import org.tdmx.core.api.v01.sp.zas.msg.ChannelAuthorizationFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.CredentialStatus;
-import org.tdmx.core.api.v01.sp.zas.msg.DomainFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.FlowTargetFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.Service;
-import org.tdmx.core.api.v01.sp.zas.msg.ServiceFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.UserFilter;
-import org.tdmx.core.api.v01.sp.zas.msg.UserIdentity;
-import org.tdmx.core.api.v01.sp.zas.ws.ZAS;
+import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Page;
+import org.tdmx.core.api.v01.msg.Address;
+import org.tdmx.core.api.v01.msg.AddressFilter;
+import org.tdmx.core.api.v01.msg.AdministratorFilter;
+import org.tdmx.core.api.v01.msg.AdministratorIdentity;
+import org.tdmx.core.api.v01.msg.Administratorsignature;
+import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
+import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.CredentialStatus;
+import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.msg.Destination;
+import org.tdmx.core.api.v01.msg.DomainFilter;
+import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.FlowControlLimit;
+import org.tdmx.core.api.v01.msg.FlowTargetFilter;
+import org.tdmx.core.api.v01.msg.Service;
+import org.tdmx.core.api.v01.msg.ServiceFilter;
+import org.tdmx.core.api.v01.msg.UserFilter;
+import org.tdmx.core.api.v01.msg.UserIdentity;
+import org.tdmx.core.api.v01.zas.CreateAddress;
+import org.tdmx.core.api.v01.zas.CreateAddressResponse;
+import org.tdmx.core.api.v01.zas.CreateAdministrator;
+import org.tdmx.core.api.v01.zas.CreateAdministratorResponse;
+import org.tdmx.core.api.v01.zas.CreateDomain;
+import org.tdmx.core.api.v01.zas.CreateDomainResponse;
+import org.tdmx.core.api.v01.zas.CreateService;
+import org.tdmx.core.api.v01.zas.CreateServiceResponse;
+import org.tdmx.core.api.v01.zas.CreateUser;
+import org.tdmx.core.api.v01.zas.CreateUserResponse;
+import org.tdmx.core.api.v01.zas.DeleteAddress;
+import org.tdmx.core.api.v01.zas.DeleteAddressResponse;
+import org.tdmx.core.api.v01.zas.DeleteAdministrator;
+import org.tdmx.core.api.v01.zas.DeleteAdministratorResponse;
+import org.tdmx.core.api.v01.zas.DeleteDomain;
+import org.tdmx.core.api.v01.zas.DeleteDomainResponse;
+import org.tdmx.core.api.v01.zas.DeleteService;
+import org.tdmx.core.api.v01.zas.DeleteServiceResponse;
+import org.tdmx.core.api.v01.zas.DeleteUser;
+import org.tdmx.core.api.v01.zas.DeleteUserResponse;
+import org.tdmx.core.api.v01.zas.ModifyAdministrator;
+import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
+import org.tdmx.core.api.v01.zas.ModifyService;
+import org.tdmx.core.api.v01.zas.ModifyServiceResponse;
+import org.tdmx.core.api.v01.zas.ModifyUser;
+import org.tdmx.core.api.v01.zas.ModifyUserResponse;
+import org.tdmx.core.api.v01.zas.SearchAddress;
+import org.tdmx.core.api.v01.zas.SearchAddressResponse;
+import org.tdmx.core.api.v01.zas.SearchAdministrator;
+import org.tdmx.core.api.v01.zas.SearchAdministratorResponse;
+import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
+import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.zas.SearchDomain;
+import org.tdmx.core.api.v01.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.zas.SearchFlowTarget;
+import org.tdmx.core.api.v01.zas.SearchFlowTargetResponse;
+import org.tdmx.core.api.v01.zas.SearchService;
+import org.tdmx.core.api.v01.zas.SearchServiceResponse;
+import org.tdmx.core.api.v01.zas.SearchUser;
+import org.tdmx.core.api.v01.zas.SearchUserResponse;
+import org.tdmx.core.api.v01.zas.SetChannelAuthorization;
+import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -1359,9 +1368,58 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSetChannelAuthorization() {
-		fail("Not yet implemented"); // TODO
+	@Ignore("work in progress")
+	public void testSetChannelAuthorization_SendRecvSameDomain() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SetChannelAuthorization req = new SetChannelAuthorization();
+		req.setDomain(domain.getDomainName());
+		Currentchannelauthorization auth = new Currentchannelauthorization();
+
+		Channel channel = new Channel();
+		Destination dest = new Destination();
+		dest.setDomain(domain.getDomainName());
+		dest.setLocalname(null); // TODO
+		dest.setServicename(null); // TODO
+		dest.setServiceprovider(null); // TODO
+		channel.setDestination(dest);
+
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain.getDomainName());
+		origin.setLocalname(null); // TODO
+		origin.setServiceprovider(null); // TODO
+		channel.setOrigin(origin);
+		auth.setChannel(channel);
+
+		EndpointPermission recvPermission = new EndpointPermission();
+		recvPermission.setAdministratorsignature(null);// TODO
+		recvPermission.setMaxPlaintextSizeBytes(null); // TODO
+		recvPermission.setPermission(null); // TODO
+		recvPermission.setAdministratorsignature(null);// TODO
+		auth.setDestination(recvPermission);
+
+		EndpointPermission sendPermission = new EndpointPermission();
+		sendPermission.setAdministratorsignature(null);// TODO
+		sendPermission.setMaxPlaintextSizeBytes(null); // TODO
+		sendPermission.setPermission(null); // TODO
+		sendPermission.setAdministratorsignature(null);// TODO
+		auth.setOrigin(sendPermission);
+
+		FlowControlLimit fcl = new FlowControlLimit();
+		fcl.setUndeliveredBuffer(null); // TODO
+		fcl.setUnsentBuffer(null); // TODO
+		auth.setLimit(fcl);// TODO
+
+		Administratorsignature sig = new Administratorsignature();
+		sig.setAdministratorIdentity(null); // TODO
+		sig.setSignaturevalue(null); // TODO
+		auth.setAdministratorsignature(sig);
+
+		req.setCurrentchannelauthorization(auth);
+
+		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);
+		assertSuccess(response);
 	}
 
 	@Test
