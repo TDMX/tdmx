@@ -18,8 +18,6 @@
  */
 package org.tdmx.server.ws.zas;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import javax.jws.WebMethod;
@@ -31,33 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
-import org.tdmx.core.api.v01.common.Page;
-import org.tdmx.core.api.v01.common.Processingstatus;
-import org.tdmx.core.api.v01.msg.Address;
-import org.tdmx.core.api.v01.msg.Administrator;
-import org.tdmx.core.api.v01.msg.AdministratorIdentity;
-import org.tdmx.core.api.v01.msg.Administratorsignature;
-import org.tdmx.core.api.v01.msg.Channel;
-import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Channelauthorization;
-import org.tdmx.core.api.v01.msg.CredentialStatus;
-import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
-import org.tdmx.core.api.v01.msg.FlowControlLimit;
-import org.tdmx.core.api.v01.msg.Flowsession;
-import org.tdmx.core.api.v01.msg.Flowtarget;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
-import org.tdmx.core.api.v01.msg.IpAddressList;
-import org.tdmx.core.api.v01.msg.Limit;
-import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
-import org.tdmx.core.api.v01.msg.Service;
-import org.tdmx.core.api.v01.msg.Servicestate;
-import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
-import org.tdmx.core.api.v01.msg.Signaturevalue;
-import org.tdmx.core.api.v01.msg.User;
-import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -125,10 +96,8 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -139,6 +108,8 @@ import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class ZASImpl implements ZAS {
@@ -170,6 +141,8 @@ public class ZASImpl implements ZAS {
 	// flowtargetsession arrives at origin SP where it applies it creates new flows if needed and assigns the flowtarget
 	// originator uc can then send message
 	// arrival of message creates flows on destination side as needed
+	private final DomainToApiMapper d2a = new DomainToApiMapper();
+	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 
 	public enum ErrorCode {
 		// authorization errors
@@ -310,7 +283,7 @@ public class ZASImpl implements ZAS {
 		if (zone == null) {
 			return response;
 		}
-		DomainSearchCriteria criteria = new DomainSearchCriteria(mapPage(parameters.getPage()));
+		DomainSearchCriteria criteria = new DomainSearchCriteria(a2d.mapPage(parameters.getPage()));
 		// make sure client stipulates a domain which is within the zone.
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
@@ -361,10 +334,10 @@ public class ZASImpl implements ZAS {
 			}
 			AgentCredential c = credentialService.findByFingerprint(uc.getFingerprint());
 			if (c != null) {
-				response.getUsers().add(mapUser(c));
+				response.getUsers().add(d2a.mapUser(c));
 			}
 		} else {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(a2d.mapPage(parameters.getPage()));
 			if (authorizedUser.isTdmxDomainAdminCertificate()
 					&& !StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we fix the search to search only the DAC's domain.
@@ -384,7 +357,7 @@ public class ZASImpl implements ZAS {
 			sc.setType(AgentCredentialType.UC);
 			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
-				response.getUsers().add(mapUser(c));
+				response.getUsers().add(d2a.mapUser(c));
 			}
 		}
 		response.setSuccess(true);
@@ -415,10 +388,10 @@ public class ZASImpl implements ZAS {
 			}
 			AgentCredential c = credentialService.findByFingerprint(dac.getFingerprint());
 			if (c != null) {
-				response.getAdministrators().add(mapAdministrator(c));
+				response.getAdministrators().add(d2a.mapAdministrator(c));
 			}
 		} else {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(mapPage(parameters.getPage()));
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(a2d.mapPage(parameters.getPage()));
 			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we check that the provided domain is the ZAC's root domain.
 				if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
@@ -433,7 +406,7 @@ public class ZASImpl implements ZAS {
 			sc.setType(AgentCredentialType.DAC);
 			List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
-				response.getAdministrators().add(mapAdministrator(c));
+				response.getAdministrators().add(d2a.mapAdministrator(c));
 			}
 		}
 		response.setSuccess(true);
@@ -670,7 +643,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		AddressSearchCriteria sc = new AddressSearchCriteria(mapPage(parameters.getPage()));
+		AddressSearchCriteria sc = new AddressSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (authorizedUser.isTdmxDomainAdminCertificate()) {
 			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we fix the search to search only the DAC's domain.
@@ -687,7 +660,7 @@ public class ZASImpl implements ZAS {
 		sc.setLocalName(parameters.getFilter().getLocalname());
 		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
-			response.getAddresses().add(mapAddress(a));
+			response.getAddresses().add(d2a.mapAddress(a));
 		}
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
@@ -794,7 +767,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ServiceSearchCriteria sc = new ServiceSearchCriteria(mapPage(parameters.getPage()));
+		ServiceSearchCriteria sc = new ServiceSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (authorizedUser.isTdmxDomainAdminCertificate()) {
 			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we fix the search to search only the DAC's domain.
@@ -811,7 +784,7 @@ public class ZASImpl implements ZAS {
 		sc.setServiceName(parameters.getFilter().getServicename());
 		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
-			response.getServicestates().add(mapService(s));
+			response.getServicestates().add(d2a.mapService(s));
 		}
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
@@ -904,7 +877,9 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization")
 	public SetChannelAuthorizationResponse setChannelAuthorization(
 			@WebParam(partName = "parameters", name = "setChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SetChannelAuthorization parameters) {
-		// TODO Auto-generated method stub
+		// TODO
+
+		channelAuthorizationService.createOrUpdate(null); // TODO
 		return null;
 	}
 
@@ -981,7 +956,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(mapPage(parameters.getPage()));
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+				a2d.mapPage(parameters.getPage()));
 		if (authorizedUser.isTdmxDomainAdminCertificate()) {
 			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we fix the search to search only the DAC's domain.
@@ -1009,7 +985,7 @@ public class ZASImpl implements ZAS {
 		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelAuthorizationService.search(
 				zone, sc);
 		for (org.tdmx.lib.zone.domain.ChannelAuthorization ca : channelAuthorizations) {
-			response.getChannelauthorizations().add(mapChannelAuthorization(ca));
+			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(ca));
 		}
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
@@ -1116,7 +1092,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(mapPage(parameters.getPage()));
+		FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (authorizedUser.isTdmxDomainAdminCertificate() && !StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we fix the search to search only the DAC's domain.
 			parameters.getFilter().setDomain(authorizedUser.getCommonName());
@@ -1155,7 +1131,7 @@ public class ZASImpl implements ZAS {
 
 		List<FlowTarget> flowtargets = flowTargetService.search(zone, sc);
 		for (FlowTarget ft : flowtargets) {
-			response.getFlowtargets().add(mapFlowTarget(ft));
+			response.getFlowtargets().add(d2a.mapFlowTarget(ft));
 		}
 
 		response.setSuccess(true);
@@ -1299,226 +1275,6 @@ public class ZASImpl implements ZAS {
 		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
-	}
-
-	private PageSpecifier mapPage(Page p) {
-		if (p == null) {
-			return null;
-		}
-		return new PageSpecifier(p.getNumber(), p.getSize());
-	}
-
-	private Flowtarget mapFlowTarget(FlowTarget ft) {
-		if (ft == null) {
-			return null;
-		}
-		Flowtarget f = new Flowtarget();
-
-		f.setTarget(mapUserIdentity(ft.getTarget()));
-		f.setConcurrencyLevel(ft.getConcurrency().getConcurrencyLevel());
-		f.setConcurrencyLimit(ft.getConcurrency().getConcurrencyLimit());
-		f.setFlowtargetsession(mapFlowTargetSession(ft.getFts()));
-		f.setServicename(ft.getService().getServiceName());
-
-		return f;
-	}
-
-	private Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {
-		if (fts == null) {
-			return null;
-		}
-		Flowtargetsession f = new Flowtargetsession();
-		if (fts.getPrimary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getPrimary()));
-		}
-		if (fts.getSecondary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getSecondary()));
-		}
-		f.setSignaturevalue(mapSignature(fts.getSignature()));
-		return f;
-	}
-
-	private Flowsession mapFlowSession(FlowSession fs) {
-		if (fs == null) {
-			return null;
-		}
-		Flowsession s = new Flowsession();
-		s.setScheme(fs.getScheme());
-		s.setSessionKey(fs.getSessionKey());
-		s.setValidFrom(mapTimestamp(fs.getValidFrom()));
-		return s;
-	}
-
-	private User mapUser(AgentCredential cred) {
-		if (cred == null) {
-			return null;
-		}
-		User us = new User();
-		us.setUserIdentity(mapUserIdentity(cred));
-		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
-		return us;
-	}
-
-	private UserIdentity mapUserIdentity(AgentCredential cred) {
-		if (cred == null) {
-			return null;
-		}
-		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(PKIXCertificate.getPublicKey(cred.getCertificateChain()).getX509Encoded());
-		u.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(cred.getCertificateChain()).getX509Encoded());
-		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(cred.getCertificateChain()).getX509Encoded());
-
-		return u;
-	}
-
-	private Administrator mapAdministrator(AgentCredential cred) {
-		if (cred == null) {
-			return null;
-		}
-		Administrator us = new Administrator();
-		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setAdministratorIdentity(mapAdministratorIdentity(cred.getCertificateChain()));
-		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
-		return us;
-	}
-
-	private Address mapAddress(org.tdmx.lib.zone.domain.Address address) {
-		if (address == null) {
-			return null;
-		}
-		Address a = new Address();
-		a.setDomain(address.getDomain().getDomainName());
-		a.setLocalname(address.getLocalName());
-		return a;
-	}
-
-	private Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
-		if (service == null) {
-			return null;
-		}
-		Service s = new Service();
-		s.setDomain(service.getDomain().getDomainName());
-		s.setServicename(service.getServiceName());
-
-		Servicestate ss = new Servicestate();
-		ss.setService(s);
-		ss.setConcurrencyLimit(service.getConcurrencyLimit());
-		return ss;
-	}
-
-	private Channelauthorization mapChannelAuthorization(org.tdmx.lib.zone.domain.ChannelAuthorization ca) {
-		if (ca == null) {
-			return null;
-		}
-		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(ca.getOrigin().getDomainName());
-		origin.setLocalname(ca.getOrigin().getLocalName());
-		origin.setServiceprovider(ca.getOrigin().getServiceProvider());
-
-		Destination dest = new Destination();
-		dest.setDomain(ca.getDestination().getDomainName());
-		dest.setLocalname(ca.getDestination().getLocalName());
-		dest.setServicename(ca.getDestination().getServiceName());
-		dest.setServiceprovider(ca.getDestination().getServiceProvider());
-
-		Channel channel = new Channel();
-		channel.setDestination(dest);
-		channel.setOrigin(origin);
-
-		FlowControlLimit limit = new FlowControlLimit();
-		limit.setUnsentBuffer(mapLimit(ca.getUnsentBuffer()));
-		limit.setUndeliveredBuffer(mapLimit(ca.getUndeliveredBuffer()));
-
-		Currentchannelauthorization current = new Currentchannelauthorization();
-		current.setChannel(channel);
-		current.setOrigin(mapPermission(ca.getSendAuthorization()));
-		current.setDestination(mapPermission(ca.getRecvAuthorization()));
-		current.setLimit(limit);
-		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
-
-		RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
-		unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
-		unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
-
-		Processingstatus processingstatus = new Processingstatus();
-		// TODO
-
-		Channelauthorization c = new Channelauthorization();
-		c.setDomain(ca.getDomain().getDomainName());
-		c.setCurrent(current);
-		c.setUnconfirmed(unconfirmed);
-		c.setProcessingstatus(processingstatus);
-		return c;
-	}
-
-	private Administratorsignature mapAdministratorSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
-		if (agentSignature == null) {
-			return null;
-		}
-		Administratorsignature s = new Administratorsignature();
-		s.setAdministratorIdentity(mapAdministratorIdentity(agentSignature.getCertificateChain()));
-		s.setSignaturevalue(mapSignature(agentSignature));
-		return s;
-	}
-
-	private Signaturevalue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
-		if (agentSignature == null) {
-			return null;
-		}
-		Signaturevalue sig = new Signaturevalue();
-		sig.setTimestamp(mapTimestamp(agentSignature.getSignatureDate()));
-		sig.setSignature(agentSignature.getValue());
-		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));
-		return sig;
-	}
-
-	private SignatureAlgorithm mapSignatureAlgorithm(org.tdmx.client.crypto.algorithm.SignatureAlgorithm sa) {
-		if (sa == null) {
-			return null;
-		}
-		return SignatureAlgorithm.fromValue(sa.getAlgorithm());
-	}
-
-	private Calendar mapTimestamp(Date date) {
-		if (date == null) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		return cal;
-	}
-
-	private AdministratorIdentity mapAdministratorIdentity(PKIXCertificate[] adminCertChain) {
-		if (adminCertChain == null) {
-			return null;
-		}
-		AdministratorIdentity u = new AdministratorIdentity();
-		u.setDomaincertificate(PKIXCertificate.getPublicKey(adminCertChain).getX509Encoded());
-		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(adminCertChain).getX509Encoded());
-		return u;
-	}
-
-	private Limit mapLimit(org.tdmx.lib.zone.domain.FlowLimit limit) {
-		if (limit == null) {
-			return null;
-		}
-		Limit l = new Limit();
-		l.setHighBytes(limit.getHighMarkBytes());
-		l.setLowBytes(limit.getLowMarkBytes());
-		return l;
-	}
-
-	private EndpointPermission mapPermission(org.tdmx.lib.zone.domain.EndpointPermission ep) {
-		if (ep == null) {
-			return null;
-		}
-		EndpointPermission p = new EndpointPermission();
-		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
-		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
-		p.setPermission(Permission.valueOf(ep.getGrant().toString()));
-		p.setValidUntil(mapTimestamp(ep.getValidUntil()));
-		return p;
 	}
 
 	// -------------------------------------------------------------------------
