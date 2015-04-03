@@ -70,7 +70,7 @@ public class StringEncrypter {
 	private SecretKey key;
 	AlgorithmParameterSpec paramSpec;
 
-	private static Logger log = LoggerFactory.getLogger(StringEncrypter.class);
+	private static final Logger log = LoggerFactory.getLogger(StringEncrypter.class);
 
 	/**
 	 * Constructor used to create this object. Responsible for setting and initializing this object's encrypter and
