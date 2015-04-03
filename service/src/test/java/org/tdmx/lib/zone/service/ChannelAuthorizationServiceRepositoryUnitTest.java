@@ -156,8 +156,9 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Test
 	public void testLookup_FindByChannel() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
-		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
-				ca.getDestination());
+
+		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain().getDomainName(),
+				ca.getOrigin(), ca.getDestination());
 		assertNotNull(storedCA);
 	}
 
@@ -179,8 +180,8 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Test
 	public void testModify() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
-		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
-				ca.getDestination());
+		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain().getDomainName(),
+				ca.getOrigin(), ca.getDestination());
 		assertNotNull(storedCA);
 		storedCA.getUndeliveredBuffer().setHighMarkBytes(BigInteger.TEN);
 		storedCA.getUndeliveredBuffer().setLowMarkBytes(BigInteger.ONE);
@@ -188,8 +189,8 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		storedCA.getUnsentBuffer().setLowMarkBytes(BigInteger.ONE);
 		channelAuthorizationService.createOrUpdate(storedCA);
 
-		ChannelAuthorization modifiedCA = channelAuthorizationService.findByChannel(zone, ca.getOrigin(),
-				ca.getDestination());
+		ChannelAuthorization modifiedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain()
+				.getDomainName(), ca.getOrigin(), ca.getDestination());
 		assertNotNull(modifiedCA);
 		assertEquals(storedCA.getUndeliveredBuffer().getHighMarkBytes(), modifiedCA.getUndeliveredBuffer()
 				.getHighMarkBytes());

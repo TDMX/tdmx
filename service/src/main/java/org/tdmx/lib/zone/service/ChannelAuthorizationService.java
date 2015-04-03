@@ -36,7 +36,8 @@ public interface ChannelAuthorizationService {
 
 	public void createOrUpdate(ChannelAuthorization auth);
 
-	public ChannelAuthorization findByChannel(Zone zone, ChannelOrigin origin, ChannelDestination dest);
+	public ChannelAuthorization findByChannel(Zone zone, String domainName, ChannelOrigin origin,
+			ChannelDestination dest);
 
 	public ChannelAuthorization findById(Long id);
 

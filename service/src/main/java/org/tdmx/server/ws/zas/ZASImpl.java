@@ -29,6 +29,13 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.msg.AdministratorIdentity;
+import org.tdmx.core.api.v01.msg.Administratorsignature;
+import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Destination;
+import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -169,7 +176,35 @@ public class ZASImpl implements ZAS {
 		UserCredentialNotFound(500, "UC not found."),
 		CredentialsExist(500, "Credentials exists."),
 		AddressesExist(500, "Addresses exists."),
-		ServicesExist(500, "Addresses exists."), ;
+		ServicesExist(500, "Services exists."),
+
+		MissingChannel(500, "Channel missing."),
+		MissingChannelEndpoint(500, "ChannelEndpoint missing."),
+
+		MissingChannelDestinationService(500, "ChannelDestination Service missing."),
+		MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),
+		MissingChannelEndpointLocalname(500, "ChannelEndpoint Localname missing."),
+		MissingChannelEndpointServiceprovider(500, "ChannelEndpoint Serviceprovider missing."),
+
+		ChannelAuthorizationDomainMismatch(500, "ChannelAuthorization domain mismatch."),
+
+		MissingEndpointPermission(500, "Channel EndpointPermission missing."),
+		InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
+		MissingPermissionEndpointPermission(500, "Channel EndpointPermission signature missing."),
+		MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
+		MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
+
+		MissingAdministratorSignature(500, "AdministratorSignature missing."),
+		MissingAdministratorIdentity(500, "AdministratorIdentity missing."),
+		MissingDomainAdministratorZoneRootPublicKey(500, "AdministratorIdentity zoneroot public key missing."),
+		MissingDomainAdministratorPublicKey(500, "AdministratorIdentity public key missing."),
+
+		MissingSignatureValue(500, "Signaturevalue missing."),
+		MissingSignature(500, "Signature missing."),
+		MissingSignatureTimestamp(500, "Signaturetimestamp missing."),
+		MissingSignatureAlgorithm(500, "SignatureAlgorithm missing."),
+
+		;
 
 		private final int errorCode;
 		private final String errorDescription;
@@ -378,10 +413,15 @@ public class ZASImpl implements ZAS {
 		}
 
 		if (parameters.getFilter().getAdministratorIdentity() != null) {
+			AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getFilter()
+					.getAdministratorIdentity(), response);
+			if (dacIdentity == null) {
+				return response;
+			}
+
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getFilter()
-					.getAdministratorIdentity().getDomaincertificate(), parameters.getFilter()
-					.getAdministratorIdentity().getRootcertificate());
+			AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
+					dacIdentity.getRootcertificate());
 			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
@@ -678,8 +718,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
-				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
+		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		if (dacIdentity == null) {
+			return response;
+		}
+
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
+				dacIdentity.getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -849,8 +894,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
-				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
+		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		if (dacIdentity == null) {
+			return response;
+		}
+
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
+				dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -877,10 +927,209 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization")
 	public SetChannelAuthorizationResponse setChannelAuthorization(
 			@WebParam(partName = "parameters", name = "setChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SetChannelAuthorization parameters) {
+		SetChannelAuthorizationResponse response = new SetChannelAuthorizationResponse();
+
+		PKIXCertificate authorizedUser = checkDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+		String domainName = parameters.getDomain();
+
+		// check DAC is authorized on the channelauths domain
+		Zone zone = checkDomainAuthorization(authorizedUser, domainName, response);
+		if (zone == null) {
+			return response;
+		}
+
+		// validate all channel fields are specified.
+		Channel channel = checkChannel(parameters.getCurrentchannelauthorization().getChannel(), response);
+		if (channel == null) {
+			return response;
+		}
+
+		// check that the channel origin or channel destination matches the ca's domain
+		if (!(domainName.equals(channel.getOrigin().getDomain()) || domainName.equals(channel.getDestination()
+				.getDomain()))) {
+			setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
+			return response;
+		}
+		// note if the domain matches both send and recv then we validate both
+
+		if (domainName.equals(channel.getOrigin().getDomain())) {
+			// if the origin domain matches the domain - check that we have a send permission and that the signature is
+			// ok
+			EndpointPermission sendPermission = checkEndpointPermission(parameters.getCurrentchannelauthorization()
+					.getOrigin(), response);
+			if (sendPermission == null) {
+				return response;
+			}
+			if (!checkEndpointPermissionSignature(channel, sendPermission)) {
+				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
+				return response;
+			}
+		}
+
+		if (domainName.equals(channel.getDestination().getDomain())) {
+			// if the destination domain matches the ca's domain - check that we have a recv permission and that the
+			// signature is ok
+			EndpointPermission recvPermission = checkEndpointPermission(parameters.getCurrentchannelauthorization()
+					.getDestination(), response);
+			if (recvPermission == null) {
+				return response;
+			}
+			if (!checkEndpointPermissionSignature(channel, recvPermission)) {
+				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
+				return response;
+			}
+		}
 		// TODO
 
+		// check the signature of the current ca is ok
+
+		// lookup existing channelauthorization in the domain given the provided channel(origin+destination)
+
+		// decide if 1) setting send&recvAuth on same domain channel
+		// - no requested send/recv allowed in existing ca.
+		// or 2) sendAuth(+confirm requested recvAuth)
+		// - no reqSendAuth allowed in existing ca.
+		// - change of sendAuth vs existing sendAuth forces transfer
+		// or 3) recvAuth(+confirming requested sendAuth)
+		// - n reqRecvAuth allowed in existing ca.
+		// - change of recvAuth vs existing recvAuth forces transfer(relay if different SP)
+
+		// channel open AND destination domain matches - create job which creates FlowTarget for all Agents of the
+		// destinationAddress
+
 		channelAuthorizationService.createOrUpdate(null); // TODO
-		return null;
+		return response;
+	}
+
+	private boolean checkEndpointPermissionSignature(Channel channel, EndpointPermission perm) {
+		// TODO
+		// signature timestamp in the past
+
+		// validUntil timestamp in the future?
+
+		return true;
+	}
+
+	private EndpointPermission checkEndpointPermission(EndpointPermission perm, Acknowledge ack) {
+		if (perm == null) {
+			setError(ErrorCode.MissingEndpointPermission, ack);
+			return null;
+		}
+		if (checkAdministratorsignature(perm.getAdministratorsignature(), ack) == null) {
+			return null;
+		}
+		if (perm.getMaxPlaintextSizeBytes() == null) {
+			setError(ErrorCode.MissingPlaintextSizeEndpointPermission, ack);
+			return null;
+		}
+		if (perm.getValidUntil() == null) {
+			setError(ErrorCode.MissingValidUntilEndpointPermission, ack);
+			return null;
+		}
+		if (perm.getPermission() == null) {
+			setError(ErrorCode.MissingPermissionEndpointPermission, ack);
+			return null;
+		}
+		return perm;
+	}
+
+	private Administratorsignature checkAdministratorsignature(Administratorsignature signature, Acknowledge ack) {
+		if (signature == null) {
+			setError(ErrorCode.MissingAdministratorSignature, ack);
+			return null;
+		}
+		if (checkAdministratorIdentity(signature.getAdministratorIdentity(), ack) == null) {
+			return null;
+		}
+		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
+			return null;
+		}
+		return signature;
+	}
+
+	private Signaturevalue checkSignaturevalue(Signaturevalue sig, Acknowledge ack) {
+		if (sig == null) {
+			setError(ErrorCode.MissingSignatureValue, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(sig.getSignature())) {
+			setError(ErrorCode.MissingSignature, ack);
+			return null;
+		}
+		if (sig.getSignatureAlgorithm() == null) {
+			setError(ErrorCode.MissingSignatureAlgorithm, ack);
+			return null;
+		}
+		if (sig.getTimestamp() == null) {
+			setError(ErrorCode.MissingSignatureTimestamp, ack);
+			return null;
+
+		}
+		return sig;
+	}
+
+	private AdministratorIdentity checkAdministratorIdentity(AdministratorIdentity admin, Acknowledge ack) {
+		if (admin == null) {
+			setError(ErrorCode.MissingAdministratorIdentity, ack);
+			return null;
+		}
+		if (admin.getDomaincertificate() == null) {
+			setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
+			return null;
+		}
+		if (admin.getRootcertificate() == null) {
+			setError(ErrorCode.MissingDomainAdministratorZoneRootPublicKey, ack);
+			return null;
+		}
+		return admin;
+	}
+
+	private ChannelEndpoint checkChannelEndpoint(ChannelEndpoint channelEndpoint, Acknowledge ack) {
+		if (channelEndpoint == null) {
+			setError(ErrorCode.MissingChannelEndpoint, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(channelEndpoint.getDomain())) {
+			setError(ErrorCode.MissingChannelEndpointDomain, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(channelEndpoint.getLocalname())) {
+			setError(ErrorCode.MissingChannelEndpointLocalname, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(channelEndpoint.getServiceprovider())) {
+			setError(ErrorCode.MissingChannelEndpointServiceprovider, ack);
+			return null;
+		}
+		return channelEndpoint;
+	}
+
+	private Destination checkChannelDestination(Destination dest, Acknowledge ack) {
+		if (checkChannelEndpoint(dest, ack) == null) {
+			return null;
+		}
+		if (!StringUtils.hasText(dest.getServicename())) {
+			setError(ErrorCode.MissingChannelDestinationService, ack);
+			return null;
+		}
+		return dest;
+	}
+
+	private Channel checkChannel(Channel channel, Acknowledge ack) {
+		if (channel == null) {
+			setError(ErrorCode.MissingChannel, ack);
+			return null;
+		}
+		if (checkChannelEndpoint(channel.getOrigin(), ack) == null) {
+			return null;
+		}
+		if (checkChannelDestination(channel.getDestination(), ack) == null) {
+			return null;
+		}
+		return channel;
 	}
 
 	@Override
@@ -1045,8 +1294,12 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(parameters.getAdministratorIdentity()
-				.getDomaincertificate(), parameters.getAdministratorIdentity().getRootcertificate());
+		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		if (dacIdentity == null) {
+			return response;
+		}
+		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
+				dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -1194,6 +1447,19 @@ public class ZASImpl implements ZAS {
 			return null;
 		}
 		if (!user.isTdmxZoneAdminCertificate() && !user.isTdmxDomainAdminCertificate()) {
+			setError(ErrorCode.NonDomainAdministratorAccess, ack);
+			return null;
+		}
+		return user;
+	}
+
+	private PKIXCertificate checkDACAuthorized(Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+		if (user == null) {
+			setError(ErrorCode.MissingCredentials, ack);
+			return null;
+		}
+		if (!user.isTdmxDomainAdminCertificate()) {
 			setError(ErrorCode.NonDomainAdministratorAccess, ack);
 			return null;
 		}

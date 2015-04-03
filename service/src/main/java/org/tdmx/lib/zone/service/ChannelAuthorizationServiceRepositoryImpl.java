@@ -94,7 +94,11 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelAuthorization findByChannel(Zone zone, ChannelOrigin origin, ChannelDestination dest) {
+	public ChannelAuthorization findByChannel(Zone zone, String domainName, ChannelOrigin origin,
+			ChannelDestination dest) {
+		if (domainName == null) {
+			throw new IllegalArgumentException("missing domainName");
+		}
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");
 		}
@@ -123,6 +127,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			throw new IllegalArgumentException("missing dest serviceName");
 		}
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		criteria.setDomainName(domainName);
 		criteria.getOrigin().setLocalName(origin.getLocalName());
 		criteria.getOrigin().setDomainName(origin.getDomainName());
 		criteria.getOrigin().setServiceProvider(origin.getServiceProvider());
