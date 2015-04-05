@@ -190,7 +190,7 @@ public class ZASImpl implements ZAS {
 
 		MissingEndpointPermission(500, "Channel EndpointPermission missing."),
 		InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
-		MissingPermissionEndpointPermission(500, "Channel EndpointPermission signature missing."),
+		MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 		MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 		MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
 
@@ -209,6 +209,11 @@ public class ZASImpl implements ZAS {
 		private final int errorCode;
 		private final String errorDescription;
 
+		private ErrorCode(int ec, String description) {
+			this.errorCode = ec;
+			this.errorDescription = description;
+		}
+
 		public int getErrorCode() {
 			return errorCode;
 		}
@@ -217,10 +222,6 @@ public class ZASImpl implements ZAS {
 			return errorDescription;
 		}
 
-		private ErrorCode(int ec, String description) {
-			this.errorCode = ec;
-			this.errorDescription = description;
-		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -683,13 +684,11 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		AddressSearchCriteria sc = new AddressSearchCriteria(a2d.mapPage(parameters.getPage()));
-		if (authorizedUser.isTdmxDomainAdminCertificate()) {
-			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
-				// we fix the search to search only the DAC's domain.
-				parameters.getFilter().setDomain(authorizedUser.getCommonName());
-			}
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
+			// we fix the search to search only the DAC's domain.
+			parameters.getFilter().setDomain(authorizedUser.getCommonName());
 		}
+		AddressSearchCriteria sc = new AddressSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we check that the provided domain is the DAC's domain.
 			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
@@ -812,13 +811,11 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ServiceSearchCriteria sc = new ServiceSearchCriteria(a2d.mapPage(parameters.getPage()));
-		if (authorizedUser.isTdmxDomainAdminCertificate()) {
-			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
-				// we fix the search to search only the DAC's domain.
-				parameters.getFilter().setDomain(authorizedUser.getCommonName());
-			}
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
+			// we fix the search to search only the DAC's domain.
+			parameters.getFilter().setDomain(authorizedUser.getCommonName());
 		}
+		ServiceSearchCriteria sc = new ServiceSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we check that the provided domain is the DAC's domain.
 			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
@@ -1407,6 +1404,8 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	// TODO separate checker class , using PKIXCertificate as paraemeter for ZAC, ZACorDAC, UC, DAC
 
 	/**
 	 * Checks the AuthenticatedAgent is authorized to perform administration on the domain, and return the agent's
