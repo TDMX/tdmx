@@ -37,11 +37,11 @@ public class AccountResource {
 		LASTNAME("lastname"),
 		EMAIL("email");
 
+		private final String n;
+
 		private FIELD(String n) {
 			this.n = n;
 		}
-
-		private final String n;
 
 		@Override
 		public String toString() {

@@ -41,12 +41,12 @@ public class ChannelAuthorizationSearchCriteria {
 	/**
 	 * Specify the each individual field of of the ChannelOrigin to search for.
 	 */
-	private ChannelOrigin origin = new ChannelOrigin();
+	private final ChannelOrigin origin = new ChannelOrigin();
 
 	/**
 	 * Specify the each individual field of of the ChannelDestination to search for.
 	 */
-	private ChannelDestination destination = new ChannelDestination();
+	private final ChannelDestination destination = new ChannelDestination();
 
 	/**
 	 * A ChannelAuthorization belongs to a Domain. Provide this to limit the results to the ChannelAuthorizations of the
@@ -93,18 +93,8 @@ public class ChannelAuthorizationSearchCriteria {
 		return origin;
 	}
 
-	@SuppressWarnings("unused")
-	private void setOrigin(ChannelOrigin origin) {
-		this.origin = origin;
-	}
-
 	public ChannelDestination getDestination() {
 		return destination;
-	}
-
-	@SuppressWarnings("unused")
-	private void setDestination(ChannelDestination destination) {
-		this.destination = destination;
 	}
 
 	public String getDomainName() {

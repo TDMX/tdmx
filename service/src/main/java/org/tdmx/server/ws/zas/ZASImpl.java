@@ -27,12 +27,14 @@ import javax.jws.WebResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
@@ -180,6 +182,8 @@ public class ZASImpl implements ZAS {
 
 		MissingChannel(500, "Channel missing."),
 		MissingChannelEndpoint(500, "ChannelEndpoint missing."),
+		MissingChannelAuthorization(500, "ChannelAuthorization missing."),
+		MissingFlowControlLimit(500, "FlowControlLimit missing."),
 
 		MissingChannelDestinationService(500, "ChannelDestination Service missing."),
 		MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),
@@ -190,6 +194,7 @@ public class ZASImpl implements ZAS {
 
 		MissingEndpointPermission(500, "Channel EndpointPermission missing."),
 		InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
+		InvalidSignatureChannelAuthorization(500, "ChannelAuthorization signature invalid."),
 		MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 		MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 		MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
@@ -201,8 +206,8 @@ public class ZASImpl implements ZAS {
 
 		MissingSignatureValue(500, "Signaturevalue missing."),
 		MissingSignature(500, "Signature missing."),
-		MissingSignatureTimestamp(500, "Signaturetimestamp missing."),
-		MissingSignatureAlgorithm(500, "SignatureAlgorithm missing."),
+		MissingSignatureTimestamp(500, "Signature Timestamp missing."),
+		MissingSignatureAlgorithm(500, "Signature Algorithm missing."),
 
 		;
 
@@ -976,51 +981,55 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// validate all channel fields are specified.
-		Channel channel = checkChannel(parameters.getCurrentchannelauthorization().getChannel(), response);
-		if (channel == null) {
+		// validate all channel and provided permission fields are specified.
+		Currentchannelauthorization ca = checkChannelauthorization(parameters.getCurrentchannelauthorization(),
+				response);
+		if (ca == null) {
+			return response;
+		}
+		// check the signature of the current ca is ok
+		if (!SignatureUtils.checkChannelAuthorizationSignature(ca)) {
+			setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 			return response;
 		}
 
 		// check that the channel origin or channel destination matches the ca's domain
-		if (!(domainName.equals(channel.getOrigin().getDomain()) || domainName.equals(channel.getDestination()
-				.getDomain()))) {
+		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain()) || domainName.equals(ca.getChannel()
+				.getDestination().getDomain()))) {
 			setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
 			return response;
 		}
 		// note if the domain matches both send and recv then we validate both
 
-		if (domainName.equals(channel.getOrigin().getDomain())) {
+		if (domainName.equals(ca.getChannel().getOrigin().getDomain())) {
 			// if the origin domain matches the domain - check that we have a send permission and that the signature is
 			// ok
-			EndpointPermission sendPermission = checkEndpointPermission(parameters.getCurrentchannelauthorization()
-					.getOrigin(), response);
-			if (sendPermission == null) {
+
+			if (ca.getOrigin() == null) {
+				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!checkEndpointPermissionSignature(channel, sendPermission)) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getOrigin(), true)) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
 		}
 
-		if (domainName.equals(channel.getDestination().getDomain())) {
+		if (domainName.equals(ca.getChannel().getDestination().getDomain())) {
 			// if the destination domain matches the ca's domain - check that we have a recv permission and that the
 			// signature is ok
-			EndpointPermission recvPermission = checkEndpointPermission(parameters.getCurrentchannelauthorization()
-					.getDestination(), response);
-			if (recvPermission == null) {
+
+			if (ca.getDestination() == null) {
+				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!checkEndpointPermissionSignature(channel, recvPermission)) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getDestination(), true)) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
 		}
+
 		// TODO
-
-		// check the signature of the current ca is ok
-
 		// lookup existing channelauthorization in the domain given the provided channel(origin+destination)
 
 		// decide if 1) setting send&recvAuth on same domain channel
@@ -1039,13 +1048,28 @@ public class ZASImpl implements ZAS {
 		return response;
 	}
 
-	private boolean checkEndpointPermissionSignature(Channel channel, EndpointPermission perm) {
-		// TODO
-		// signature timestamp in the past
-
-		// validUntil timestamp in the future?
-
-		return true;
+	private Currentchannelauthorization checkChannelauthorization(Currentchannelauthorization ca, Acknowledge ack) {
+		if (ca == null) {
+			setError(ErrorCode.MissingChannelAuthorization, ack);
+			return null;
+		}
+		if (checkChannel(ca.getChannel(), ack) == null) {
+			return null;
+		}
+		if (ca.getOrigin() != null && checkEndpointPermission(ca.getOrigin(), ack) == null) {
+			return null;
+		}
+		if (ca.getDestination() != null && checkEndpointPermission(ca.getDestination(), ack) == null) {
+			return null;
+		}
+		if (ca.getLimit() == null) {
+			setError(ErrorCode.MissingFlowControlLimit, ack);
+			return null;
+		}
+		if (checkAdministratorsignature(ca.getAdministratorsignature(), ack) == null) {
+			return null;
+		}
+		return ca;
 	}
 
 	private EndpointPermission checkEndpointPermission(EndpointPermission perm, Acknowledge ack) {
@@ -1242,11 +1266,9 @@ public class ZASImpl implements ZAS {
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
 				a2d.mapPage(parameters.getPage()));
-		if (authorizedUser.isTdmxDomainAdminCertificate()) {
-			if (!StringUtils.hasText(parameters.getFilter().getDomain())) {
-				// we fix the search to search only the DAC's domain.
-				parameters.getFilter().setDomain(authorizedUser.getCommonName());
-			}
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
+			// we fix the search to search only the DAC's domain.
+			parameters.getFilter().setDomain(authorizedUser.getCommonName());
 		}
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we check that the provided domain is the DAC's domain.

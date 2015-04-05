@@ -18,7 +18,6 @@
  */
 package org.tdmx.core.api;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -79,15 +78,8 @@ public class SignatureUtilsTest {
 
 		assertNotNull(perm.getAdministratorsignature().getSignaturevalue().getSignature());
 
-		boolean signatureOk = SignatureUtils.checkEndpointPermissionSignature(dac.getPublicCert(),
-				SignatureAlgorithm.SHA_256_RSA, channel, perm);
+		boolean signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm, true);
 		assertTrue(signatureOk);
 
-		boolean signatureNok = SignatureUtils.checkEndpointPermissionSignature(zac.getPublicCert(),
-				SignatureAlgorithm.SHA_256_RSA, channel, perm);
-		assertFalse(signatureNok);
-		signatureNok = SignatureUtils.checkEndpointPermissionSignature(uc.getPublicCert(),
-				SignatureAlgorithm.SHA_256_RSA, channel, perm);
-		assertFalse(signatureNok);
 	}
 }

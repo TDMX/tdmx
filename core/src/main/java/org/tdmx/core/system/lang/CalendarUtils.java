@@ -29,6 +29,26 @@ public class CalendarUtils {
 	private static Logger log = LoggerFactory.getLogger(CalendarUtils.class);
 
 	/**
+	 * If the date is in the future.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static boolean isInFuture(Calendar date) {
+		return date.after(Calendar.getInstance());
+	}
+
+	/**
+	 * If the date is in the past.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static boolean isInPast(Calendar date) {
+		return date.before(Calendar.getInstance());
+	}
+
+	/**
 	 * Convert Calendar to Date
 	 */
 	public static Date getDate(Calendar date) {

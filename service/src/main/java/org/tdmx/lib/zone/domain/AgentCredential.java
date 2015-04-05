@@ -203,7 +203,7 @@ public class AgentCredential implements Serializable {
 	 */
 	public PKIXCertificate[] getCertificateChain() {
 		if (certificateChain == null && getCertificateChainPem() != null) {
-			certificateChain = CertificateIOUtils.safePemToX509certs(getCertificateChainPem());
+			setCertificateChain(CertificateIOUtils.safePemToX509certs(getCertificateChainPem()));
 		}
 		return certificateChain;
 	}
