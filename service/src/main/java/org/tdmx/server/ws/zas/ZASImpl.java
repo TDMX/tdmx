@@ -238,19 +238,30 @@ public class ZASImpl implements ZAS {
 	public CreateDomainResponse createDomain(
 			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
 		CreateDomainResponse response = new CreateDomainResponse();
-		Zone zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
+
+		String domainName = checkZACDomainAuthorization(parameters.getDomain(), zone, response);
+		if (domainName == null) {
+			return response;
+		}
 		// check if the domain exists already
-		Domain existingDomain = getDomainService().findByName(zone, parameters.getDomain());
+		Domain existingDomain = getDomainService().findByName(zone, domainName);
 		if (existingDomain != null) {
 			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
 		// create the domain
-		Domain domain = new Domain(zone, parameters.getDomain());
+		Domain domain = new Domain(zone, domainName);
 
 		getDomainService().createOrUpdate(domain);
 		response.setSuccess(true);
@@ -264,12 +275,22 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
 		DeleteDomainResponse response = new DeleteDomainResponse();
 
-		Zone zone = checkZACDomainAuthorization(parameters.getDomain(), response);
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
+
+		String domainName = checkZACDomainAuthorization(parameters.getDomain(), zone, response);
+		if (domainName == null) {
+			return response;
+		}
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, parameters.getDomain());
+		Domain domain = getDomainService().findByName(zone, domainName);
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
@@ -315,7 +336,12 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
 
 		SearchDomainResponse response = new SearchDomainResponse();
-		Zone zone = checkZACAuthorization(response);
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -408,7 +434,12 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "searchAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAdministrator parameters) {
 		SearchAdministratorResponse response = new SearchAdministratorResponse();
 
-		Zone zone = checkZACAuthorization(response);
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -712,7 +743,13 @@ public class ZASImpl implements ZAS {
 	public CreateAdministratorResponse createAdministrator(
 			@WebParam(partName = "parameters", name = "createAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAdministrator parameters) {
 		CreateAdministratorResponse response = new CreateAdministratorResponse();
-		Zone zone = checkZACAuthorization(response);
+
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
 		if (zone == null) {
 			return response;
 		}
@@ -881,7 +918,8 @@ public class ZASImpl implements ZAS {
 	public ModifyAdministratorResponse modifyAdministrator(
 			@WebParam(partName = "parameters", name = "modifyAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyAdministrator parameters) {
 		ModifyAdministratorResponse response = new ModifyAdministratorResponse();
-		PKIXCertificate authorizedUser = checkZACAuthorized(response);
+
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
 		if (authorizedUser == null) {
 			return response;
 		}
@@ -1281,7 +1319,7 @@ public class ZASImpl implements ZAS {
 	public DeleteAdministratorResponse deleteAdministrator(
 			@WebParam(partName = "parameters", name = "deleteAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAdministrator parameters) {
 		DeleteAdministratorResponse response = new DeleteAdministratorResponse();
-		PKIXCertificate authorizedUser = checkZACAuthorized(response);
+		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
 		if (authorizedUser == null) {
 			return response;
 		}
@@ -1426,8 +1464,7 @@ public class ZASImpl implements ZAS {
 		return true;
 	}
 
-	private PKIXCertificate checkZACAuthorized(Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+	private PKIXCertificate checkZACAuthorized(PKIXCertificate user, Acknowledge ack) {
 		if (user == null) {
 			setError(ErrorCode.MissingCredentials, ack);
 			return null;
@@ -1465,20 +1502,6 @@ public class ZASImpl implements ZAS {
 		return user;
 	}
 
-	/**
-	 * Checks the AuthenticatedAgent is a ZAC.
-	 * 
-	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the zone.
-	 */
-	private Zone checkZACAuthorization(Acknowledge ack) {
-		PKIXCertificate user = checkZACAuthorized(ack);
-		if (user == null) {
-			return null;
-		}
-		return getAgentService().getZone();
-	}
-
 	private Zone checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
 		Zone zone = getAgentService().getZone();
 
@@ -1497,22 +1520,20 @@ public class ZASImpl implements ZAS {
 	}
 
 	/**
-	 * Checks the AuthenticatedAgent is a ZAC authorized to perform administration on the domain, and return the agent's
-	 * zoneApex. If the agent is not authorized then the acknowledge's Error info will be set and null returned.
+	 * Checks the domain is within the authorized zone.
 	 * 
 	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the zoneApex.
+	 * @return null if not authorized, setting ack.Error, else the domain.
 	 */
-	private Zone checkZACDomainAuthorization(String domain, Acknowledge ack) {
+	private String checkZACDomainAuthorization(String domain, Zone zone, Acknowledge ack) {
 		if (!checkDomain(domain, ack)) {
 			return null;
 		}
-
-		PKIXCertificate user = checkZACAuthorized(ack);
-		if (user == null) {
+		if (!StringUtils.isSuffix(domain, zone.getZoneApex())) {
+			setError(ErrorCode.OutOfZoneAccess, ack);
 			return null;
 		}
-		return checkDomainAuthorization(user, domain, ack);
+		return domain;
 	}
 
 	/**
