@@ -54,6 +54,10 @@ public class ChannelAuthorization implements Serializable {
 
 	// TODO denormalized "effective" ValidTo (min validuntil), "effective state" open/closed
 
+	// TODO Processingstatus
+
+	// TODO open / closed status of channel - need events?
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelAuthorizationIdGen")
 	@TableGenerator(name = "ChannelAuthorizationIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelauthObjectId", valueColumnName = "value", allocationSize = 10)

@@ -34,6 +34,48 @@ import org.tdmx.lib.zone.domain.Zone;
  */
 public interface ChannelAuthorizationService {
 
+	public enum SetAuthorizationOperationStatus {
+		SENDER_AUTHORIZATION_CONFIRMATION_MISSING,
+		SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH,
+		SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED,
+		RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING,
+		RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED,
+		RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH,
+		SUCCESS
+	}
+
+	/**
+	 * Process the ChannelAuthorization set by a client DAC. The logic is that the local DAC can always set the domain
+	 * agent's endpoint permissions, but it must always confirm any remote domain's requested authorization (which is
+	 * pending authorization). Confirmation does not imply "ALLOW".
+	 * 
+	 * lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination). If no
+	 * existing ca - then create one with empty data. decide if
+	 * 
+	 * 1) setting send&recvAuth on same domain channel
+	 * 
+	 * - no requested send/recv allowed in existing ca.
+	 * 
+	 * or 2) sendAuth(+confirm requested recvAuth)
+	 * 
+	 * - no reqSendAuth allowed in existing ca.
+	 * 
+	 * - change of sendAuth vs existing sendAuth forces transfer
+	 * 
+	 * or 3) recvAuth(+confirming requested sendAuth)
+	 * 
+	 * - no reqRecvAuth allowed in existing ca.
+	 * 
+	 * - change of recvAuth vs existing recvAuth forces transfer(relay if different SP)
+	 * 
+	 * persist the new or updated ca.
+	 * 
+	 * 
+	 * @param auth
+	 * @return
+	 */
+	public SetAuthorizationOperationStatus setAuthorization(Zone zone, ChannelAuthorization auth);
+
 	public void createOrUpdate(ChannelAuthorization auth);
 
 	public ChannelAuthorization findByChannel(Zone zone, String domainName, ChannelOrigin origin,

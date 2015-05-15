@@ -62,6 +62,95 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB")
+	public SetAuthorizationOperationStatus setAuthorization(Zone zone, ChannelAuthorization auth) {
+		SetAuthorizationOperationStatus result = SetAuthorizationOperationStatus.SUCCESS;
+		//
+		String domainName = auth.getDomain().getDomainName();
+
+		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
+		ChannelAuthorization existingCA = findByChannel(zone, domainName, auth.getOrigin(), auth.getDestination());
+		if (existingCA == null) {
+			// If no existing ca - then create one with empty data.
+			existingCA = new ChannelAuthorization(auth.getDomain());
+		}
+
+		// handle sendAuth(+confirm requested recvAuth)
+		// - no reqSendAuth allowed in existing ca.
+		// - change of sendAuth vs existing sendAuth forces transfer
+		boolean sendAuthChanged = false;
+		boolean recvAuthChanged = false;
+
+		if (domainName.equals(auth.getOrigin().getDomainName())
+				&& domainName.equals(auth.getDestination().getDomainName())) {
+			// 1) setting send&recvAuth on same domain channel
+			// - no requested send/recv allowed in existing ca.
+			existingCA.setReqRecvAuthorization(null);
+			existingCA.setReqSendAuthorization(null);
+			if (auth.getRecvAuthorization() == null) {
+				return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+			}
+			if (auth.getSendAuthorization() == null) {
+				return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+			}
+			existingCA.setSendAuthorization(auth.getSendAuthorization());
+			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+
+		} else if (domainName.equals(auth.getOrigin().getDomainName())) {
+			// we are sender and there shall be no pending send authorization
+			existingCA.setReqSendAuthorization(null);
+
+			// we must confirm any requested recvAuth if there is one, but not invent one
+			if (existingCA.getReqRecvAuthorization() != null) {
+				if (auth.getRecvAuthorization() == null) {
+					return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+				} else if (auth.getRecvAuthorization().equals(existingCA.getReqRecvAuthorization())) {
+					return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+				}
+				existingCA.setReqRecvAuthorization(null);
+			} else if (auth.getRecvAuthorization() != null) {
+				// and if there isn't a requestedRecvAuth we cannot provide one either
+				return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+			}
+			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+
+			if (!auth.getSendAuthorization().equals(existingCA.getSendAuthorization())) {
+				sendAuthChanged = true;
+			}
+			existingCA.setSendAuthorization(auth.getSendAuthorization());
+		} else {
+			// 3) recvAuth(+confirming requested sendAuth)
+			// - no reqRecvAuth allowed in existing ca.
+			// - change of recvAuth vs existing sendAuth forces transfer
+			// we are receiver and there shall be no pending recv authorization
+			existingCA.setReqRecvAuthorization(null);
+
+			// we must confirm any requested sendAuth if there is one, but not invent one
+			if (existingCA.getReqSendAuthorization() != null) {
+				if (auth.getSendAuthorization() == null) {
+					return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+				} else if (auth.getSendAuthorization().equals(existingCA.getReqSendAuthorization())) {
+					return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+				}
+				existingCA.setReqSendAuthorization(null);
+			} else if (auth.getSendAuthorization() != null) {
+				// and if there isn't a requestedRecvAuth we cannot provide one either
+				return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+			}
+			existingCA.setSendAuthorization(auth.getSendAuthorization());
+
+			if (!auth.getRecvAuthorization().equals(existingCA.getRecvAuthorization())) {
+				recvAuthChanged = true;
+			}
+			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+		}
+
+		// persist the new or updated ca.
+		getChannelAuthorizationDao().persist(existingCA);
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(ChannelAuthorization auth) {
 		if (auth.getId() != null) {
 			ChannelAuthorization storedAuth = getChannelAuthorizationDao().loadById(auth.getId());

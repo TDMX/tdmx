@@ -41,11 +41,11 @@ public class AccountZoneResource {
 		ACCESSSTATUS("accessStatus"),
 		JOBID("jobId"), ;
 
+		private final String n;
+
 		private FIELD(String n) {
 			this.n = n;
 		}
-
-		private final String n;
 
 		@Override
 		public String toString() {

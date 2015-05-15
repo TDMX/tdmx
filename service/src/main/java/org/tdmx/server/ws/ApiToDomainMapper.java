@@ -21,7 +21,10 @@ package org.tdmx.server.ws;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.common.Page;
+import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.Domain;
 
 public class ApiToDomainMapper {
 
@@ -47,6 +50,16 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		return new PageSpecifier(p.getNumber(), p.getSize());
+	}
+
+	public ChannelAuthorization mapChannelAuthorization(Domain domain, Currentchannelauthorization ca) {
+		if (ca == null) {
+			return null;
+		}
+		ChannelAuthorization a = new ChannelAuthorization(domain);
+		// TODO
+
+		return a;
 	}
 
 	// -------------------------------------------------------------------------

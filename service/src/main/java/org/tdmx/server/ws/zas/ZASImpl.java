@@ -114,6 +114,7 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationOperationStatus;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -208,6 +209,21 @@ public class ZASImpl implements ZAS {
 		MissingSignature(500, "Signature missing."),
 		MissingSignatureTimestamp(500, "Signature Timestamp missing."),
 		MissingSignatureAlgorithm(500, "Signature Algorithm missing."),
+
+		SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
+		SenderChannelAuthorizationMismatch(
+				301,
+				"Mismatch of sender's requested EndpointPermission. Changed since last read."),
+		SenderChannelAuthorizationProvided(
+				302,
+				"Provided confirmation of non existent sender's requested EndpointPermission."),
+		ReceiverChannelAuthorizationMissing(303, "Missing confirmation of receiver's requested EndpointPermission."),
+		ReceiverChannelAuthorizationMismatch(
+				304,
+				"Mismatch of receiver's requested EndpointPermission. Changed since last read."),
+		ReceiverChannelAuthorizationProvided(
+				305,
+				"Provided confirmation of non existent receiver's requested EndpointPermission."),
 
 		;
 
@@ -1029,22 +1045,21 @@ public class ZASImpl implements ZAS {
 			}
 		}
 
-		// TODO
-		// lookup existing channelauthorization in the domain given the provided channel(origin+destination)
+		Domain domain = getDomainService().findByName(zone, domainName);
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
 
-		// decide if 1) setting send&recvAuth on same domain channel
-		// - no requested send/recv allowed in existing ca.
-		// or 2) sendAuth(+confirm requested recvAuth)
-		// - no reqSendAuth allowed in existing ca.
-		// - change of sendAuth vs existing sendAuth forces transfer
-		// or 3) recvAuth(+confirming requested sendAuth)
-		// - n reqRecvAuth allowed in existing ca.
-		// - change of recvAuth vs existing recvAuth forces transfer(relay if different SP)
+		// we construct a detached channel authorization from the provided request data
+		org.tdmx.lib.zone.domain.ChannelAuthorization offeredCA = a2d.mapChannelAuthorization(domain, ca);
 
-		// channel open AND destination domain matches - create job which creates FlowTarget for all Agents of the
-		// destinationAddress
-
-		channelAuthorizationService.createOrUpdate(null); // TODO
+		SetAuthorizationOperationStatus operationStatus = channelAuthorizationService.setAuthorization(zone, offeredCA);
+		if (SetAuthorizationOperationStatus.SUCCESS != operationStatus) {
+			setError(mapSetAuthorizationOperationStatus(operationStatus), response);
+			return response;
+		}
+		response.setSuccess(true);
 		return response;
 	}
 
@@ -1583,6 +1598,25 @@ public class ZASImpl implements ZAS {
 		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
+	}
+
+	private ErrorCode mapSetAuthorizationOperationStatus(SetAuthorizationOperationStatus status) {
+		switch (status) {
+		case RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH:
+			return ErrorCode.ReceiverChannelAuthorizationMismatch;
+		case RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING:
+			return ErrorCode.ReceiverChannelAuthorizationMissing;
+		case SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH:
+			return ErrorCode.SenderChannelAuthorizationMismatch;
+		case SENDER_AUTHORIZATION_CONFIRMATION_MISSING:
+			return ErrorCode.SenderChannelAuthorizationMissing;
+		case RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED:
+			return ErrorCode.ReceiverChannelAuthorizationProvided;
+		case SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED:
+			return ErrorCode.SenderChannelAuthorizationProvided;
+		default:
+			return null;
+		}
 	}
 
 	// -------------------------------------------------------------------------
