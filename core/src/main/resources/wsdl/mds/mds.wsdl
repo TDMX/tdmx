@@ -17,23 +17,17 @@
 			<xsd:include schemaLocation="mds.xsd"/>
 		</xsd:schema>
 	</wsdl:types>
-	<wsdl:message name="getDestinationAddressRequest">
-		<wsdl:part name="parameters" element="mds:getDestinationAddress"/>
+	<wsdl:message name="getAddressRequest">
+		<wsdl:part name="parameters" element="mds:getAddress"/>
 	</wsdl:message>
-	<wsdl:message name="getDestinationAddressResponse">
-		<wsdl:part name="parameters" element="mds:getDestinationAddressResponse"/>
+	<wsdl:message name="getAddressResponse">
+		<wsdl:part name="parameters" element="mds:getAddressResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listAuthorizedServiceRequest">
-		<wsdl:part name="parameters" element="mds:listAuthorizedService"/>
+	<wsdl:message name="listChannelAuthorizationRequest">
+		<wsdl:part name="parameters" element="mds:listChannelAuthorization"/>
 	</wsdl:message>
-	<wsdl:message name="listAuthorizedServiceResponse">
-		<wsdl:part name="parameters" element="mds:listAuthorizedServiceResponse"/>
-	</wsdl:message>
-	<wsdl:message name="listAuthorizedChannelOriginRequest">
-		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOrigin"/>
-	</wsdl:message>
-	<wsdl:message name="listAuthorizedChannelOriginResponse">
-		<wsdl:part name="parameters" element="mds:listAuthorizedChannelOriginResponse"/>
+	<wsdl:message name="listChannelAuthorizationResponse">
+		<wsdl:part name="parameters" element="mds:listChannelAuthorizationResponse"/>
 	</wsdl:message>
 	<wsdl:message name="listFlowRequest">
 		<wsdl:part name="parameters" element="mds:listFlow"/>
@@ -47,11 +41,11 @@
 	<wsdl:message name="getFlowTargetResponse">
 		<wsdl:part name="parameters" element="mds:getFlowTargetResponse"/>
 	</wsdl:message>
-	<wsdl:message name="setTargetSessionRequest">
-		<wsdl:part name="parameters" element="mds:setTargetSession"/>
+	<wsdl:message name="setFlowTargetSessionRequest">
+		<wsdl:part name="parameters" element="mds:setFlowTargetSession"/>
 	</wsdl:message>
-	<wsdl:message name="setTargetSessionResponse">
-		<wsdl:part name="parameters" element="mds:setTargetSessionResponse"/>
+	<wsdl:message name="setFlowTargetSessionResponse">
+		<wsdl:part name="parameters" element="mds:setFlowTargetSessionResponse"/>
 	</wsdl:message>
 	<wsdl:message name="receiveRequest">
 		<wsdl:part name="parameters" element="mds:receive"/>
@@ -99,26 +93,19 @@
 		<wsdl:documentation>
 				Bla Bla
 		</wsdl:documentation>
-		<wsdl:operation name="getDestinationAddress">
+		<wsdl:operation name="getAddress">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:getDestinationAddressRequest"/>
-			<wsdl:output message="tns:getDestinationAddressResponse"/>
+			<wsdl:input message="tns:getAddressRequest"/>
+			<wsdl:output message="tns:getAddressResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listAuthorizedService">
+		<wsdl:operation name="listChannelAuthorization">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listAuthorizedServiceRequest"/>
-			<wsdl:output message="tns:listAuthorizedServiceResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="listAuthorizedChannelOrigin">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:listAuthorizedChannelOriginRequest"/>
-			<wsdl:output message="tns:listAuthorizedChannelOriginResponse"/>
+			<wsdl:input message="tns:listChannelAuthorizationRequest"/>
+			<wsdl:output message="tns:listChannelAuthorizationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="listFlow">
 			<wsdl:documentation>
@@ -134,12 +121,12 @@
 			<wsdl:input message="tns:getFlowTargetRequest"/>
 			<wsdl:output message="tns:getFlowTargetResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="setTargetSession">
+		<wsdl:operation name="setFlowTargetSession">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:setTargetSessionRequest"/>
-			<wsdl:output message="tns:setTargetSessionResponse"/>
+			<wsdl:input message="tns:setFlowTargetSessionRequest"/>
+			<wsdl:output message="tns:setFlowTargetSessionResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="receive">
 			<wsdl:documentation>
@@ -193,8 +180,8 @@
 	</wsdl:portType>
 	<wsdl:binding name="MDSBinding" type="tns:MDS">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="getDestinationAddress">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getDestinationAddress"/>
+		<wsdl:operation name="getAddress">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getAddress"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -202,17 +189,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listAuthorizedService">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listAuthorizedService"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="listAuthorizedChannelOrigin">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listAuthorizedChannelOrigin"/>
+		<wsdl:operation name="listChannelAuthorization">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listChannelAuthorization"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -238,8 +216,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="setTargetSession">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/setTargetSession"/>
+		<wsdl:operation name="setFlowTargetSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/setFlowTargetSession"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

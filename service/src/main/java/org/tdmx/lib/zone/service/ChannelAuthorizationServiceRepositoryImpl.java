@@ -146,6 +146,12 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 		// persist the new or updated ca.
 		getChannelAuthorizationDao().persist(existingCA);
+
+		// TODO initiate transfer of send/recv auth to other party ( processing state )
+
+		// TODO manage "channel state" if opened - initialize any ChannelFlowSessions, if closed, remove any
+		// ChannelFlowSessions
+
 		return result;
 	}
 

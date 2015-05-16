@@ -22,20 +22,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
-import org.tdmx.core.api.v01.mds.GetDestinationAddress;
-import org.tdmx.core.api.v01.mds.GetDestinationAddressResponse;
+import org.tdmx.core.api.v01.mds.GetAddress;
+import org.tdmx.core.api.v01.mds.GetAddressResponse;
 import org.tdmx.core.api.v01.mds.GetFlowTarget;
 import org.tdmx.core.api.v01.mds.GetFlowTargetResponse;
-import org.tdmx.core.api.v01.mds.ListAuthorizedChannelOrigin;
-import org.tdmx.core.api.v01.mds.ListAuthorizedChannelOriginResponse;
-import org.tdmx.core.api.v01.mds.ListAuthorizedService;
-import org.tdmx.core.api.v01.mds.ListAuthorizedServiceResponse;
+import org.tdmx.core.api.v01.mds.ListChannelAuthorization;
+import org.tdmx.core.api.v01.mds.ListChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.mds.ListFlow;
 import org.tdmx.core.api.v01.mds.ListFlowResponse;
 import org.tdmx.core.api.v01.mds.Receive;
 import org.tdmx.core.api.v01.mds.ReceiveResponse;
-import org.tdmx.core.api.v01.mds.SetTargetSession;
-import org.tdmx.core.api.v01.mds.SetTargetSessionResponse;
+import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
+import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
@@ -68,13 +66,13 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ForgetResponse forget(Forget parameters) {
+	public GetAddressResponse getAddress(GetAddress parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ListAuthorizedServiceResponse listAuthorizedService(ListAuthorizedService parameters) {
+	public ForgetResponse forget(Forget parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -98,7 +96,7 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public GetDestinationAddressResponse getDestinationAddress(GetDestinationAddress parameters) {
+	public SetFlowTargetSessionResponse setFlowTargetSession(SetFlowTargetSession parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -122,25 +120,19 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
+	public ListChannelAuthorizationResponse listChannelAuthorization(ListChannelAuthorization parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public CommitResponse commit(Commit parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ListAuthorizedChannelOriginResponse listAuthorizedChannelOrigin(ListAuthorizedChannelOrigin parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public RecoverResponse recover(Recover parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SetTargetSessionResponse setTargetSession(SetTargetSession parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}

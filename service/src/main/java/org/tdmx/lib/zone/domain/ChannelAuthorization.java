@@ -52,11 +52,10 @@ public class ChannelAuthorization implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO denormalized "effective" ValidTo (min validuntil), "effective state" open/closed
+	// TODO "Relay" Processingstatus, relay to include any existing destination FlowTargetSessions which are valid at
+	// opening time.
 
-	// TODO Processingstatus
-
-	// TODO open / closed status of channel - need events?
+	// TODO manage ChannelFlowSessions
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelAuthorizationIdGen")
