@@ -24,12 +24,10 @@ import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatus;
 import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatusResponse;
-import org.tdmx.core.api.v01.mos.ListAuthorizedChannelDestination;
-import org.tdmx.core.api.v01.mos.ListAuthorizedChannelDestinationResponse;
+import org.tdmx.core.api.v01.mos.ListChannelAuthorization;
+import org.tdmx.core.api.v01.mos.ListChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.mos.ListFlow;
 import org.tdmx.core.api.v01.mos.ListFlowResponse;
-import org.tdmx.core.api.v01.mos.ListService;
-import org.tdmx.core.api.v01.mos.ListServiceResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
@@ -66,13 +64,6 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ListAuthorizedChannelDestinationResponse listAuthorizedChannelDestination(
-			ListAuthorizedChannelDestination parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public CommitResponse commit(Commit parameters) {
 		// TODO Auto-generated method stub
 		return null;
@@ -103,12 +94,6 @@ public class MOSImpl implements MOS {
 	}
 
 	@Override
-	public ListServiceResponse listService(ListService parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public GetAddressResponse getAddress(GetAddress parameters) {
 		// TODO Auto-generated method stub
 		return null;
@@ -134,6 +119,12 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public UploadResponse upload(Upload parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ListChannelAuthorizationResponse listChannelAuthorization(ListChannelAuthorization parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}

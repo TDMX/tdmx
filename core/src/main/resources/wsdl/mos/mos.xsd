@@ -26,30 +26,7 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="listServiceRequestType">
-		<xs:annotation>
-			<xs:documentation>list the services associated with the source credential through authorized channels.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="destination" type="msg:ServiceFilter">
-				<xs:annotation>
-					<xs:documentation>a filter of the destination service.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="listServiceResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:service" minOccurs="0" maxOccurs="unbounded"/>
-					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="listAuthorizedChannelDestinationRequestType">
+	<xs:complexType name="listChannelAuthorizationRequestType">
 		<xs:annotation>
 			<xs:documentation>list the authorized channels associated with the source credential.</xs:documentation>
 		</xs:annotation>
@@ -62,7 +39,7 @@
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="listAuthorizedChannelDestinationResponseType">
+	<xs:complexType name="listChannelAuthorizationResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
@@ -140,10 +117,8 @@
 	<!-- ********************************************* -->
 	<xs:element name="getAddress" type="getAddressRequestType"/>
 	<xs:element name="getAddressResponse" type="getAddressResponseType"/>
-	<xs:element name="listService" type="listServiceRequestType"/>
-	<xs:element name="listServiceResponse" type="listServiceResponseType"/>
-	<xs:element name="listAuthorizedChannelDestination" type="listAuthorizedChannelDestinationRequestType"/>
-	<xs:element name="listAuthorizedChannelDestinationResponse" type="listAuthorizedChannelDestinationResponseType"/>
+	<xs:element name="listChannelAuthorization" type="listChannelAuthorizationRequestType"/>
+	<xs:element name="listChannelAuthorizationResponse" type="listChannelAuthorizationResponseType"/>
 	<xs:element name="listFlow" type="listFlowRequestType"/>
 	<xs:element name="listFlowResponse" type="listFlowResponseType"/>
 	<xs:element name="getMessageDeliveryStatus" type="getMessageDeliveryStatusRequestType"/>
