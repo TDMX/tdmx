@@ -96,6 +96,7 @@ import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -115,6 +116,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService;
 import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationOperationStatus;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -1054,11 +1056,19 @@ public class ZASImpl implements ZAS {
 		// we construct a detached channel authorization from the provided request data
 		org.tdmx.lib.zone.domain.ChannelAuthorization offeredCA = a2d.mapChannelAuthorization(domain, ca);
 
-		SetAuthorizationOperationStatus operationStatus = channelAuthorizationService.setAuthorization(zone, offeredCA);
-		if (SetAuthorizationOperationStatus.SUCCESS != operationStatus) {
-			setError(mapSetAuthorizationOperationStatus(operationStatus), response);
+		SetAuthorizationResultHolder operationStatus = channelAuthorizationService.setAuthorization(zone, offeredCA);
+		if (SetAuthorizationOperationStatus.SUCCESS != operationStatus.status) {
+			setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
 			return response;
 		}
+		if (operationStatus.channelAuthorization != null) {
+			if (operationStatus.channelAuthorization.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+				// TODO initiate transfer of send/recv auth to other party ( processing state )
+				// by caller, depending on whether processingstate is PENDING.
+
+			}
+		}
+
 		response.setSuccess(true);
 		return response;
 	}

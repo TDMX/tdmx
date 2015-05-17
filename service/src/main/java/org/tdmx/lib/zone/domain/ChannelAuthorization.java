@@ -33,6 +33,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
+
 /**
  * An ChannelAuthorization (within a Domain of a Zone) managed by a ServiceProvider
  * 
@@ -142,6 +145,15 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "algorithm", column = @Column(name = "signatureAlg", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)) })
 	private AgentSignature signature;
 
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false)),
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false)),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false)),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode")),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
+	private ProcessingState processingState;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -165,6 +177,7 @@ public class ChannelAuthorization implements Serializable {
 		setUndeliveredBuffer(other.getUndeliveredBuffer());
 		setUnsentBuffer(other.getUnsentBuffer());
 		setSignature(other.getSignature());
+		setProcessingState(other.getProcessingState());
 	}
 
 	// -------------------------------------------------------------------------
@@ -185,6 +198,7 @@ public class ChannelAuthorization implements Serializable {
 		builder.append(", undeliveredBuffer=").append(undeliveredBuffer);
 		builder.append(", unsentBuffer=").append(unsentBuffer);
 		builder.append(", signature=").append(signature);
+		builder.append(", processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -287,6 +301,14 @@ public class ChannelAuthorization implements Serializable {
 
 	public void setSignature(AgentSignature signature) {
 		this.signature = signature;
+	}
+
+	public ProcessingState getProcessingState() {
+		return processingState;
+	}
+
+	public void setProcessingState(ProcessingState processingState) {
+		this.processingState = processingState;
 	}
 
 }

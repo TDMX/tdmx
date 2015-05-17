@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.common.Processingstatus;
+import org.tdmx.core.api.v01.common.Taskstatus;
 import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.Administrator;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
@@ -207,15 +208,30 @@ public class DomainToApiMapper {
 		unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
 		unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
 
-		Processingstatus processingstatus = new Processingstatus();
-		// TODO
-
 		Channelauthorization c = new Channelauthorization();
 		c.setDomain(ca.getDomain().getDomainName());
 		c.setCurrent(current);
 		c.setUnconfirmed(unconfirmed);
-		c.setProcessingstatus(processingstatus);
+		c.setProcessingstatus(mapProcessingStatus(ca.getProcessingState()));
 		return c;
+	}
+
+	public Processingstatus mapProcessingStatus(org.tdmx.lib.common.domain.ProcessingState ps) {
+		Processingstatus p = new Processingstatus();
+		p.setStatus(Taskstatus.fromValue(ps.getStatus().toString()));
+		p.setTimestamp(mapTimestamp(ps.getTimestamp()));
+		p.setError(mapError(ps.getErrorCode(), ps.getErrorMessage()));
+		return p;
+	}
+
+	public org.tdmx.core.api.v01.common.Error mapError(Integer errorCode, String message) {
+		if (errorCode == null) {
+			return null;
+		}
+		org.tdmx.core.api.v01.common.Error e = new org.tdmx.core.api.v01.common.Error();
+		e.setCode(errorCode);
+		e.setDescription(message);
+		return e;
 	}
 
 	public Administratorsignature mapAdministratorSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {

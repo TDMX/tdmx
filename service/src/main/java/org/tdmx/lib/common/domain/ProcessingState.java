@@ -16,70 +16,70 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.domain;
+package org.tdmx.lib.common.domain;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.TableGenerator;
+import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
- * An FlowTargetConcurrency is separated as it's own instance from the FlowTarget so that it can be updated with a
- * higher frequency without incurring the penalty of the data of the FlowTarget not changing fast.
+ * An ProcessingState describes the current status of processing related to the enclosing entity.
+ * 
+ * We always have a taskId, state and timestamp when we entered the state.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "FlowTargetConcurrency")
-public class FlowTargetConcurrency implements Serializable {
+@Embeddable
+public class ProcessingState implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_TASKID_LEN = 32;
+	public static final int MAX_ERRORMESSAGE_LEN = 2048;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -1L;
+	private static final long serialVersionUID = -128859602084626282L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowTargetConcurrencyIdGen")
-	@TableGenerator(name = "FlowTargetConcurrencyIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
-	private Long id;
+	@Column(length = MAX_TASKID_LEN, unique = true, nullable = false)
+	private String taskId; // the link to the relay
 
-	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "concurrency")
-	private FlowTarget flowTarget;
+	@Enumerated(EnumType.STRING)
+	@Column(length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false)
+	private ProcessingStatus status;
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(nullable = false)
-	private int concurrencyLimit;
+	private Date timestamp; // the time since we've been in this status
 
-	@Column(nullable = false)
-	private int concurrencyLevel;
+	@Column
+	private Integer errorCode;
+
+	@Column(length = MAX_ERRORMESSAGE_LEN)
+	private String errorMessage;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	FlowTargetConcurrency() {
+	public ProcessingState() {
+		this(ProcessingStatus.NONE);
 	}
 
-	public FlowTargetConcurrency(FlowTarget flowTarget, Service service) {
-		setFlowTarget(flowTarget);
-		this.concurrencyLimit = service.getConcurrencyLimit();
-	}
-
-	public FlowTargetConcurrency(FlowTarget flowTarget, FlowTargetConcurrency other) {
-		setFlowTarget(flowTarget);
-		setConcurrencyLimit(other.getConcurrencyLimit());
-		setConcurrencyLevel(other.getConcurrencyLevel());
+	public ProcessingState(ProcessingStatus currentStatus) {
+		taskId = UUID.randomUUID().toString();
+		status = currentStatus;
+		timestamp = new Date();
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,10 +89,12 @@ public class FlowTargetConcurrency implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("FlowTargetConcurrency [id=");
-		builder.append(id);
-		builder.append(", concurrencyLimit=").append(concurrencyLimit);
-		builder.append(", concurrencyLevel=").append(concurrencyLevel);
+		builder.append("Job [");
+		builder.append("taskId=").append(taskId);
+		builder.append(" status=").append(status);
+		builder.append(" timestamp=").append(timestamp);
+		builder.append(" errorCode=").append(errorCode);
+		builder.append(" errorMessage=").append(errorMessage);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -105,40 +107,48 @@ public class FlowTargetConcurrency implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setFlowTarget(FlowTarget flowTarget) {
-		this.flowTarget = flowTarget;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public Long getId() {
-		return id;
+	public String getTaskId() {
+		return taskId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
 	}
 
-	public int getConcurrencyLimit() {
-		return concurrencyLimit;
+	public ProcessingStatus getStatus() {
+		return status;
 	}
 
-	public void setConcurrencyLimit(int concurrencyLimit) {
-		this.concurrencyLimit = concurrencyLimit;
+	public void setStatus(ProcessingStatus status) {
+		this.status = status;
 	}
 
-	public int getConcurrencyLevel() {
-		return concurrencyLevel;
+	public Date getTimestamp() {
+		return timestamp;
 	}
 
-	public void setConcurrencyLevel(int concurrencyLevel) {
-		this.concurrencyLevel = concurrencyLevel;
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
 	}
 
-	public FlowTarget getFlowTarget() {
-		return flowTarget;
+	public Integer getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(Integer errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 
 }

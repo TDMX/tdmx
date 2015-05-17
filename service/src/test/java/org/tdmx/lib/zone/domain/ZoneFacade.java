@@ -24,6 +24,8 @@ import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 
 public class ZoneFacade {
 
@@ -146,6 +148,7 @@ public class ZoneFacade {
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
 
+		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		return c;
 	}
 
@@ -182,6 +185,8 @@ public class ZoneFacade {
 		signature.setSignatureDate(new Date());
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
+
+		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		return c;
 	}
 
@@ -217,6 +222,8 @@ public class ZoneFacade {
 		signature.setSignatureDate(new Date());
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
+
+		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		return c;
 	}
 

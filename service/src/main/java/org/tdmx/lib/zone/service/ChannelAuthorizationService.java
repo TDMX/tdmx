@@ -44,6 +44,11 @@ public interface ChannelAuthorizationService {
 		SUCCESS
 	}
 
+	public class SetAuthorizationResultHolder {
+		public SetAuthorizationOperationStatus status;
+		public ChannelAuthorization channelAuthorization;
+	}
+
 	/**
 	 * Process the ChannelAuthorization set by a client DAC. The logic is that the local DAC can always set the domain
 	 * agent's endpoint permissions, but it must always confirm any remote domain's requested authorization (which is
@@ -70,11 +75,13 @@ public interface ChannelAuthorizationService {
 	 * 
 	 * persist the new or updated ca.
 	 * 
+	 * set the processingstate to PENDING will require the caller (non tx layer) to submit the CA to the relay service.
+	 * 
 	 * 
 	 * @param auth
 	 * @return
 	 */
-	public SetAuthorizationOperationStatus setAuthorization(Zone zone, ChannelAuthorization auth);
+	public SetAuthorizationResultHolder setAuthorization(Zone zone, ChannelAuthorization auth);
 
 	public void createOrUpdate(ChannelAuthorization auth);
 

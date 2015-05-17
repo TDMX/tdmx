@@ -42,12 +42,12 @@
 		<xs:sequence>
 			<xs:element name="status" type="taskstatus">
 				<xs:annotation>
-					<xs:documentation>if status is DEFERED or FAILED, the error information shall be included below.</xs:documentation>
+					<xs:documentation>the current status of the processing.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="timestamp" type="xs:dateTime" minOccurs="0">
+			<xs:element name="timestamp" type="xs:dateTime">
 				<xs:annotation>
-					<xs:documentation>if a task is pending for a future date, or if a task has failed but can be retried later, then this future time is incidated here. This is for informational purposes only, a ServiceProvider can retry earlier or later is required.</xs:documentation>
+					<xs:documentation>the time since the state was entered.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element ref="error" minOccurs="0"/>
@@ -85,7 +85,6 @@
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="PENDING"/>
 			<xs:enumeration value="SUCCESS"/>
-			<xs:enumeration value="DEFERRED"/>
 			<xs:enumeration value="FAILURE"/>
 		</xs:restriction>
 	</xs:simpleType>

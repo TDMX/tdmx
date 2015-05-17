@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.ChannelAuthorizationDao;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -62,8 +64,8 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SetAuthorizationOperationStatus setAuthorization(Zone zone, ChannelAuthorization auth) {
-		SetAuthorizationOperationStatus result = SetAuthorizationOperationStatus.SUCCESS;
+	public SetAuthorizationResultHolder setAuthorization(Zone zone, ChannelAuthorization auth) {
+		SetAuthorizationResultHolder resultHolder = new SetAuthorizationResultHolder();
 		//
 		String domainName = auth.getDomain().getDomainName();
 
@@ -72,6 +74,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 		if (existingCA == null) {
 			// If no existing ca - then create one with empty data.
 			existingCA = new ChannelAuthorization(auth.getDomain());
+			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 		}
 
 		// handle sendAuth(+confirm requested recvAuth)
@@ -87,13 +90,16 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(null);
 			if (auth.getRecvAuthorization() == null) {
-				return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+				return resultHolder;
 			}
 			if (auth.getSendAuthorization() == null) {
-				return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+				return resultHolder;
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
 		} else if (domainName.equals(auth.getOrigin().getDomainName())) {
 			// we are sender and there shall be no pending send authorization
@@ -102,19 +108,23 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			// we must confirm any requested recvAuth if there is one, but not invent one
 			if (existingCA.getReqRecvAuthorization() != null) {
 				if (auth.getRecvAuthorization() == null) {
-					return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
+					return resultHolder;
 				} else if (auth.getRecvAuthorization().equals(existingCA.getReqRecvAuthorization())) {
-					return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+					return resultHolder;
 				}
 				existingCA.setReqRecvAuthorization(null);
 			} else if (auth.getRecvAuthorization() != null) {
 				// and if there isn't a requestedRecvAuth we cannot provide one either
-				return SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+				return resultHolder;
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 
-			if (!auth.getSendAuthorization().equals(existingCA.getSendAuthorization())) {
-				sendAuthChanged = true;
+			if (!auth.getSendAuthorization().equals(existingCA.getSendAuthorization())
+					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
+				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 		} else {
@@ -127,19 +137,23 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			// we must confirm any requested sendAuth if there is one, but not invent one
 			if (existingCA.getReqSendAuthorization() != null) {
 				if (auth.getSendAuthorization() == null) {
-					return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+					resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
+					return resultHolder;
 				} else if (auth.getSendAuthorization().equals(existingCA.getReqSendAuthorization())) {
-					return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+					resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH;
+					return resultHolder;
 				}
 				existingCA.setReqSendAuthorization(null);
 			} else if (auth.getSendAuthorization() != null) {
 				// and if there isn't a requestedRecvAuth we cannot provide one either
-				return SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
+				return resultHolder;
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 
-			if (!auth.getRecvAuthorization().equals(existingCA.getRecvAuthorization())) {
-				recvAuthChanged = true;
+			if (!auth.getRecvAuthorization().equals(existingCA.getRecvAuthorization())
+					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
+				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 		}
@@ -147,12 +161,10 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 		// persist the new or updated ca.
 		getChannelAuthorizationDao().persist(existingCA);
 
-		// TODO initiate transfer of send/recv auth to other party ( processing state )
-
 		// TODO manage "channel state" if opened - initialize any ChannelFlowSessions, if closed, remove any
 		// ChannelFlowSessions
-
-		return result;
+		resultHolder.channelAuthorization = existingCA;
+		return resultHolder;
 	}
 
 	@Override
