@@ -36,8 +36,6 @@ public interface DomainDao {
 
 	public void delete(Domain value);
 
-	public void lock(Domain value);
-
 	public Domain merge(Domain value);
 
 	public Domain loadById(Long id);

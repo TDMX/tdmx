@@ -37,8 +37,6 @@ public interface ControlJobDao {
 
 	public void delete(ControlJob value);
 
-	public void lock(ControlJob value);
-
 	public ControlJob merge(ControlJob value);
 
 	public ControlJob loadById(Long id);

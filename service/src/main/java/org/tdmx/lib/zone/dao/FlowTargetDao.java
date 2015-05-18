@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -38,7 +39,7 @@ public interface FlowTargetDao {
 
 	public void delete(FlowTarget value);
 
-	public void lock(FlowTarget value);
+	public FlowTargetConcurrency lock(Long concurrencyId);
 
 	public FlowTarget merge(FlowTarget value);
 

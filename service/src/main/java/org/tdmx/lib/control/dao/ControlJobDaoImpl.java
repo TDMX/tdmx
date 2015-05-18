@@ -66,11 +66,6 @@ public class ControlJobDaoImpl implements ControlJobDao {
 	}
 
 	@Override
-	public void lock(ControlJob value) {
-		em.lock(value, LockModeType.WRITE);
-	}
-
-	@Override
 	public ControlJob merge(ControlJob value) {
 		return em.merge(value);
 	}

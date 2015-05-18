@@ -23,7 +23,6 @@ import static org.tdmx.lib.control.domain.QAccountZoneAdministrationCredential.a
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -63,11 +62,6 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	@Override
 	public void delete(AccountZoneAdministrationCredential value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(AccountZoneAdministrationCredential value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

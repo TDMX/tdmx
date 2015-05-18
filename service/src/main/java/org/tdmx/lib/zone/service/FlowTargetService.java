@@ -34,7 +34,24 @@ import org.tdmx.lib.zone.domain.Zone;
  */
 public interface FlowTargetService {
 
+	public enum ModifyConcurrencyOperationStatus {
+		FLOWTARGET_NOT_FOUND,
+		SUCCESS
+	}
+
 	public void createOrUpdate(FlowTarget flowTarget);
+
+	/**
+	 * Updates the FlowTarget's concurrencyLimit respecting concurrent changes made to the FlowTargetConcurrency by
+	 * receiving threads.
+	 * 
+	 * @param agent
+	 * @param service
+	 * @param concurrencyLimit
+	 * @return
+	 */
+	public ModifyConcurrencyOperationStatus modifyConcurrency(AgentCredential agent, Service service,
+			int concurrencyLimit);
 
 	public FlowTarget findByTargetService(AgentCredential agent, Service service);
 

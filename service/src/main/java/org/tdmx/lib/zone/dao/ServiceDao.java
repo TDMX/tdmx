@@ -37,8 +37,6 @@ public interface ServiceDao {
 
 	public void delete(Service value);
 
-	public void lock(Service value);
-
 	public Service merge(Service value);
 
 	public Service loadById(Long id);

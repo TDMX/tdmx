@@ -21,7 +21,6 @@ package org.tdmx.lib.zone.dao;
 import static org.tdmx.lib.zone.domain.QZone.zone;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -58,11 +57,6 @@ public class ZoneDaoImpl implements ZoneDao {
 	@Override
 	public void delete(Zone value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(Zone value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

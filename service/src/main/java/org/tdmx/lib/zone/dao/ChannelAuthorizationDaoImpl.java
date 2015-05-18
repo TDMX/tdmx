@@ -24,7 +24,6 @@ import static org.tdmx.lib.zone.domain.QDomain.domain;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -64,11 +63,6 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 	@Override
 	public void delete(ChannelAuthorization value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(ChannelAuthorization value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

@@ -385,20 +385,11 @@
 	</xs:complexType>
 	<xs:complexType name="modifyFlowTargetRequestType">
 		<xs:sequence>
-			<xs:element name="flowtarget">
-				<xs:complexType>
-					<xs:complexContent>
-						<xs:extension base="msg:FlowDestination">
-							<xs:sequence>
-								<xs:element name="concurrencyLimit" type="xs:unsignedShort">
-									<xs:annotation>
-										<xs:documentation>new maximum concurrency limit for the flow target.</xs:documentation>
-									</xs:annotation>
-								</xs:element>
-							</xs:sequence>
-						</xs:extension>
-					</xs:complexContent>
-				</xs:complexType>
+			<xs:element ref="msg:flowdestination"/>
+			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
+				<xs:annotation>
+					<xs:documentation>new maximum concurrency limit for the flow target.</xs:documentation>
+				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>

@@ -37,8 +37,6 @@ public interface AddressDao {
 
 	public void delete(Address value);
 
-	public void lock(Address value);
-
 	public Address merge(Address value);
 
 	public Address loadById(Long id);

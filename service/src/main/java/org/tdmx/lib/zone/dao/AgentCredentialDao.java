@@ -36,8 +36,6 @@ public interface AgentCredentialDao {
 
 	public void delete(AgentCredential value);
 
-	public void lock(AgentCredential value);
-
 	public AgentCredential merge(AgentCredential value);
 
 	public AgentCredential loadById(Long id);

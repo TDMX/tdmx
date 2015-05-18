@@ -22,6 +22,7 @@ import static org.tdmx.lib.zone.domain.QAddress.address;
 import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QFlowTarget.flowTarget;
+import static org.tdmx.lib.zone.domain.QFlowTargetConcurrency.flowTargetConcurrency;
 import static org.tdmx.lib.zone.domain.QService.service;
 
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.persistence.PersistenceContext;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -72,8 +74,9 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 	}
 
 	@Override
-	public void lock(FlowTarget value) {
-		em.lock(value, LockModeType.WRITE);
+	public FlowTargetConcurrency lock(Long concurrencyId) {
+		return new JPAQuery(em).setLockMode(LockModeType.PESSIMISTIC_WRITE).from(flowTargetConcurrency)
+				.where(flowTargetConcurrency.id.eq(concurrencyId)).uniqueResult(flowTargetConcurrency);
 	}
 
 	@Override

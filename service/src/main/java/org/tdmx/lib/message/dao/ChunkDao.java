@@ -32,8 +32,6 @@ public interface ChunkDao {
 
 	public void delete(Chunk value);
 
-	public void lock(Chunk value);
-
 	public Chunk merge(Chunk value);
 
 	public Chunk loadById(Long id);

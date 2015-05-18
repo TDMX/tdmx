@@ -19,7 +19,6 @@
 package org.tdmx.lib.message.dao;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -55,11 +54,6 @@ public class MessageDaoImpl implements MessageDao {
 	@Override
 	public void delete(Message value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(Message value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

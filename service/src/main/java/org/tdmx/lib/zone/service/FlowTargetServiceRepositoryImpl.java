@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.zone.dao.FlowTargetDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -71,6 +72,19 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 		} else {
 			getFlowTargetDao().persist(target);
 		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public ModifyConcurrencyOperationStatus modifyConcurrency(AgentCredential agent, Service service,
+			int concurrencyLimit) {
+		FlowTarget existingFlowTarget = findByTargetService(agent, service);
+		if (existingFlowTarget == null) {
+			return ModifyConcurrencyOperationStatus.FLOWTARGET_NOT_FOUND;
+		}
+		FlowTargetConcurrency ftc = getFlowTargetDao().lock(existingFlowTarget.getConcurrency().getId());
+		ftc.setConcurrencyLimit(concurrencyLimit);
+		return ModifyConcurrencyOperationStatus.SUCCESS;
 	}
 
 	@Override

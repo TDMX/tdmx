@@ -23,7 +23,6 @@ import static org.tdmx.lib.control.domain.QDatabasePartition.databasePartition;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.lib.control.domain.DatabasePartition;
@@ -43,11 +42,6 @@ public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 	@Override
 	public void delete(DatabasePartition value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(DatabasePartition value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

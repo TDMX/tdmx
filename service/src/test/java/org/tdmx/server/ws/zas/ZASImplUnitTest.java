@@ -54,6 +54,7 @@ import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.DomainFilter;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
+import org.tdmx.core.api.v01.msg.FlowDestination;
 import org.tdmx.core.api.v01.msg.FlowTargetFilter;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.ServiceFilter;
@@ -81,6 +82,8 @@ import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
+import org.tdmx.core.api.v01.zas.ModifyFlowTarget;
+import org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.ModifyService;
 import org.tdmx.core.api.v01.zas.ModifyServiceResponse;
 import org.tdmx.core.api.v01.zas.ModifyUser;
@@ -1157,9 +1160,51 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testModifyFlowTargetState() {
-		fail("Not yet implemented"); // TODO
+	public void testModifyFlowTarget_DAC() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		FlowDestination fd = new FlowDestination();
+		fd.setServicename(service.getServiceName());
+		UserIdentity u = new UserIdentity();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+		fd.setTarget(u);
+
+		ModifyFlowTarget ft = new ModifyFlowTarget();
+		ft.setFlowdestination(fd);
+		ft.setConcurrencyLimit(100);
+
+		ModifyFlowTargetResponse response = zas.modifyFlowTarget(ft);
+		assertSuccess(response);
+
+		// TODO test changed
+
+		// TODO testModifyFlowTarget_DAC
+	}
+
+	@Test
+	public void testModifyFlowTarget_ZAC() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		FlowDestination fd = new FlowDestination();
+		fd.setServicename(service.getServiceName());
+		UserIdentity u = new UserIdentity();
+		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+		fd.setTarget(u);
+
+		ModifyFlowTarget ft = new ModifyFlowTarget();
+		ft.setFlowdestination(fd);
+		ft.setConcurrencyLimit(999);
+
+		ModifyFlowTargetResponse response = zas.modifyFlowTarget(ft);
+		assertSuccess(response);
+
+		// TODO test changed
 	}
 
 	@Test

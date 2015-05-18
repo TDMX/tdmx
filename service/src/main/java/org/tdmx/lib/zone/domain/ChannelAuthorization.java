@@ -58,7 +58,11 @@ public class ChannelAuthorization implements Serializable {
 	// TODO "Relay" Processingstatus, relay to include any existing destination FlowTargetSessions which are valid at
 	// opening time.
 
-	// TODO manage ChannelFlowSessions
+	// TODO manage ChannelFlowSessions as cascaded entity.
+
+	// TODO update processing status ChannelAuthorizationService after successful/failed relay of its changed state
+
+	//
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelAuthorizationIdGen")

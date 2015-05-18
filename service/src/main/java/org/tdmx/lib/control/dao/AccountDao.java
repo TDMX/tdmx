@@ -35,8 +35,6 @@ public interface AccountDao {
 
 	public void delete(Account value);
 
-	public void lock(Account value);
-
 	public Account merge(Account value);
 
 	public Account loadById(Long id);

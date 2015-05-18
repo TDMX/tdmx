@@ -35,8 +35,6 @@ public interface AccountZoneDao {
 
 	public void delete(AccountZone value);
 
-	public void lock(AccountZone value);
-
 	public AccountZone merge(AccountZone value);
 
 	public AccountZone loadById(Long id);

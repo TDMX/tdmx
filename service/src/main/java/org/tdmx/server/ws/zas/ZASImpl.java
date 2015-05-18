@@ -70,6 +70,7 @@ import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
+import org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.ModifyIpZone;
 import org.tdmx.core.api.v01.zas.ModifyIpZoneResponse;
 import org.tdmx.core.api.v01.zas.ModifyService;
@@ -119,6 +120,7 @@ import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationOpe
 import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.FlowTargetService.ModifyConcurrencyOperationStatus;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -182,6 +184,7 @@ public class ZASImpl implements ZAS {
 		CredentialsExist(500, "Credentials exists."),
 		AddressesExist(500, "Addresses exists."),
 		ServicesExist(500, "Services exists."),
+		FlowTargetNotFound(500, "FlowTarget not found."),
 
 		MissingChannel(500, "Channel missing."),
 		MissingChannelEndpoint(500, "ChannelEndpoint missing."),
@@ -520,16 +523,17 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
 		// try to constuct the UC given the data provided
 		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
 				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
 				.getUserIdentity().getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
+		if (zone == null) {
 			return response;
 		}
 
@@ -661,6 +665,8 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
+
+		// TODO if DAC check user belongs to DAC's domain checkDomainAuthorization
 
 		// check that the UC credential exists
 		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
@@ -1479,7 +1485,49 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget")
 	public org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse modifyFlowTarget(
 			@WebParam(partName = "parameters", name = "modifyFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.ModifyFlowTarget parameters) {
-		return null;// TODO
+		ModifyFlowTargetResponse response = new ModifyFlowTargetResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFlowdestination()
+				.getTarget().getUsercertificate(), parameters.getFlowdestination().getTarget().getDomaincertificate(),
+				parameters.getFlowdestination().getTarget().getRootcertificate());
+		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
+		if (zone == null) {
+			return response;
+		}
+
+		// check that the UC credential exists
+		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
+		if (existingCred == null) {
+			setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+
+		// lookup existing service exists
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingCred.getDomain(),
+				parameters.getFlowdestination().getServicename());
+		if (existingService == null) {
+			setError(ErrorCode.ServiceNotFound, response);
+			return response;
+		}
+
+		ModifyConcurrencyOperationStatus status = flowTargetService.modifyConcurrency(existingCred, existingService,
+				parameters.getConcurrencyLimit());
+		if (ModifyConcurrencyOperationStatus.SUCCESS != status) {
+			setError(mapModifyConcurrencyOperationStatus(status), response);
+			return response;
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	// -------------------------------------------------------------------------
@@ -1608,6 +1656,15 @@ public class ZASImpl implements ZAS {
 		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
+	}
+
+	private ErrorCode mapModifyConcurrencyOperationStatus(ModifyConcurrencyOperationStatus status) {
+		switch (status) {
+		case FLOWTARGET_NOT_FOUND:
+			return ErrorCode.FlowTargetNotFound;
+		default:
+			return null;
+		}
 	}
 
 	private ErrorCode mapSetAuthorizationOperationStatus(SetAuthorizationOperationStatus status) {

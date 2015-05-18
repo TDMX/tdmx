@@ -32,8 +32,6 @@ public interface MessageDao {
 
 	public void delete(Message value);
 
-	public void lock(Message value);
-
 	public Message merge(Message value);
 
 	public Message loadById(Long id);

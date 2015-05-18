@@ -36,8 +36,6 @@ public interface ChannelAuthorizationDao {
 
 	public void delete(ChannelAuthorization value);
 
-	public void lock(ChannelAuthorization value);
-
 	public ChannelAuthorization merge(ChannelAuthorization value);
 
 	public ChannelAuthorization loadById(Long id);

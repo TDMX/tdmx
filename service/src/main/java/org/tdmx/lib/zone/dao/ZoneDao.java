@@ -32,8 +32,6 @@ public interface ZoneDao {
 
 	public void delete(Zone value);
 
-	public void lock(Zone value);
-
 	public Zone merge(Zone value);
 
 	public Zone loadById(Long id);

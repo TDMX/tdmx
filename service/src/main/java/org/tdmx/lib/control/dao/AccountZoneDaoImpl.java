@@ -23,7 +23,6 @@ import static org.tdmx.lib.control.domain.QAccountZone.accountZone;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -63,11 +62,6 @@ public class AccountZoneDaoImpl implements AccountZoneDao {
 	@Override
 	public void delete(AccountZone value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(AccountZone value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

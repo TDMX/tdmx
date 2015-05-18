@@ -24,7 +24,6 @@ import static org.tdmx.lib.zone.domain.QService.service;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -65,11 +64,6 @@ public class ServiceDaoImpl implements ServiceDao {
 	@Override
 	public void delete(Service value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(Service value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

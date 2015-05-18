@@ -23,7 +23,6 @@ import static org.tdmx.lib.zone.domain.QDomain.domain;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -63,11 +62,6 @@ public class DomainDaoImpl implements DomainDao {
 	@Override
 	public void delete(Domain value) {
 		em.remove(value);
-	}
-
-	@Override
-	public void lock(Domain value) {
-		em.lock(value, LockModeType.WRITE);
 	}
 
 	@Override

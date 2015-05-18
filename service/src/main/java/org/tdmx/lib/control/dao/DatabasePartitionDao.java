@@ -28,8 +28,6 @@ public interface DatabasePartitionDao {
 
 	public void delete(DatabasePartition value);
 
-	public void lock(DatabasePartition value);
-
 	public DatabasePartition merge(DatabasePartition value);
 
 	public DatabasePartition loadById(Long id);

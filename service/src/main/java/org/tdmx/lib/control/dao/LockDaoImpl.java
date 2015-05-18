@@ -47,11 +47,6 @@ public class LockDaoImpl implements LockDao {
 	}
 
 	@Override
-	public void lock(Lock value) {
-		em.lock(value, LockModeType.WRITE);
-	}
-
-	@Override
 	public Lock merge(Lock value) {
 		return em.merge(value);
 	}

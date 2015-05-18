@@ -28,8 +28,6 @@ public interface LockDao {
 
 	public void delete(Lock value);
 
-	public void lock(Lock value);
-
 	public Lock merge(Lock value);
 
 	public Lock loadById(Long lockId);

@@ -35,8 +35,6 @@ public interface AccountZoneAdministrationCredentialDao {
 
 	public void delete(AccountZoneAdministrationCredential value);
 
-	public void lock(AccountZoneAdministrationCredential value);
-
 	public AccountZoneAdministrationCredential merge(AccountZoneAdministrationCredential value);
 
 	public AccountZoneAdministrationCredential loadById(Long id);
