@@ -130,6 +130,9 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 		if (StringUtils.hasText(criteria.getServiceName())) {
 			where = where.and(service.serviceName.eq(criteria.getServiceName()));
 		}
+		if (criteria.getService() != null) {
+			where = where.and(service.eq(criteria.getService()));
+		}
 
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria

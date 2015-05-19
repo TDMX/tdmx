@@ -35,11 +35,18 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
+
 /**
  * An FlowTarget is the receiver end of a Flow which stores FlowTargetSession information at the ServiceProvider.
  * 
  * The Service of the Flow defines the default and initial concurrency limit for the receiver. The concurrency limit of
  * the flow can be individually modified by the administrator at any time later.
+ * 
+ * FlowTargets are created by {@link MDS#setFlowTargetSession(org.tdmx.core.api.v01.mds.SetFlowTargetSession)} and
+ * deleted by {@link ZAS#deleteService(org.tdmx.core.api.v01.zas.DeleteService) and
+ * {@link ZAS#deleteUser(org.tdmx.core.api.v01.zas.DeleteUser)}
  * 
  * @author Peter Klauser
  * 

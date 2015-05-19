@@ -1059,8 +1059,6 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		removeFlowTargets(domain);
-
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
 		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
@@ -1128,8 +1126,6 @@ public class ZASImplUnitTest {
 	public void testDeleteUser_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		removeFlowTargets(domain);
 
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
@@ -1329,8 +1325,6 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		removeFlowTargets(domain);
-
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
 		s.setDomain(domain.getDomainName());
@@ -1346,8 +1340,6 @@ public class ZASImplUnitTest {
 	public void testDeleteService_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		removeFlowTargets(domain);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();

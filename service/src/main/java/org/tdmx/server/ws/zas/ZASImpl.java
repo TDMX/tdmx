@@ -157,6 +157,7 @@ public class ZASImpl implements ZAS {
 	// arrival of message creates flows on destination side as needed
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
+	private int batchSize = 100;
 
 	public enum ErrorCode {
 		// authorization errors
@@ -653,10 +654,6 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
 		// try to constuct the UC given the data provided
 		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
 				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
@@ -666,13 +663,32 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// TODO if DAC check user belongs to DAC's domain checkDomainAuthorization
+		// check user belongs to DAC's domain
+		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
+		if (zone == null) {
+			return response;
+		}
 
 		// check that the UC credential exists
 		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
+		}
+
+		// delete any FlowTargets
+		boolean moreFT = true;
+		while (moreFT) {
+			FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.getTarget().setAgent(existingCred);
+
+			List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
+			for (FlowTarget ft : flowTargets) {
+				flowTargetService.delete(ft);
+			}
+			if (flowTargets.isEmpty()) {
+				moreFT = false;
+			}
 		}
 
 		// delete the UC
@@ -852,6 +868,21 @@ public class ZASImpl implements ZAS {
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
 			return response;
+		}
+
+		// delete any FlowTargets
+		boolean moreFT = true;
+		while (moreFT) {
+			FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.setService(existingService);
+
+			List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
+			for (FlowTarget ft : flowTargets) {
+				flowTargetService.delete(ft);
+			}
+			if (flowTargets.isEmpty()) {
+				moreFT = false;
+			}
 		}
 
 		// delete the existing service
@@ -1233,16 +1264,18 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
 		// try to constuct new UC given the data provided
 		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
 				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
 				.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		// check the domain name of UC matches the DAC's domain or we are ZAC
+		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
+		if (zone == null) {
 			return response;
 		}
 
@@ -1760,6 +1793,14 @@ public class ZASImpl implements ZAS {
 
 	public void setFlowTargetService(FlowTargetService flowTargetService) {
 		this.flowTargetService = flowTargetService;
+	}
+
+	public int getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
 	}
 
 }

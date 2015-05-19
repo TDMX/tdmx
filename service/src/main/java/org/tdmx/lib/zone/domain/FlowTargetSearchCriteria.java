@@ -43,6 +43,8 @@ public class FlowTargetSearchCriteria {
 	 */
 	private String serviceName;
 
+	private Service service;
+
 	private final AgentFilterCriteria target = new AgentFilterCriteria();
 
 	// -------------------------------------------------------------------------
@@ -84,6 +86,14 @@ public class FlowTargetSearchCriteria {
 
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
+	}
+
+	public Service getService() {
+		return service;
+	}
+
+	public void setService(Service service) {
+		this.service = service;
 	}
 
 }
