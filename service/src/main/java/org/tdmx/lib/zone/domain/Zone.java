@@ -65,6 +65,8 @@ public class Zone implements Serializable {
 	@Column(length = MAX_NAME_LEN, nullable = false)
 	private String zoneApex;
 
+	// TODO zone serviceprovider
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------

@@ -27,11 +27,24 @@
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="batchSize" value="100"/>
 	</bean>
 
 	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSImpl" />
 
 	<bean id="ws.MOS" class="org.tdmx.server.ws.mos.MOSImpl" />
-	<bean id="ws.MDS" class="org.tdmx.server.ws.mds.MDSImpl" />
+
+	<bean id="ws.MDS" class="org.tdmx.server.ws.mds.MDSImpl" >
+		<property name="agentService" ref="server.authenticatedAgentService"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="batchSize" value="100"/>
+	</bean>
 	
 </beans>

@@ -23,6 +23,7 @@ import java.util.List;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -34,12 +35,22 @@ import org.tdmx.lib.zone.domain.Zone;
  */
 public interface FlowTargetService {
 
-	public enum ModifyConcurrencyOperationStatus {
+	public enum ModifyOperationStatus {
 		FLOWTARGET_NOT_FOUND,
 		SUCCESS
 	}
 
 	public void createOrUpdate(FlowTarget flowTarget);
+
+	/**
+	 * Modifies the FlowTarget's FlowTargetSession.
+	 * 
+	 * @param agent
+	 * @param service
+	 * @param session
+	 * @return
+	 */
+	public FlowTarget modifySession(AgentCredential agent, Service service, FlowTargetSession session);
 
 	/**
 	 * Updates the FlowTarget's concurrencyLimit respecting concurrent changes made to the FlowTargetConcurrency by
@@ -50,8 +61,7 @@ public interface FlowTargetService {
 	 * @param concurrencyLimit
 	 * @return
 	 */
-	public ModifyConcurrencyOperationStatus modifyConcurrency(AgentCredential agent, Service service,
-			int concurrencyLimit);
+	public ModifyOperationStatus modifyConcurrency(AgentCredential agent, Service service, int concurrencyLimit);
 
 	public FlowTarget findByTargetService(AgentCredential agent, Service service);
 

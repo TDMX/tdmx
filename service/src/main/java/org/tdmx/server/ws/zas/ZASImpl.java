@@ -120,7 +120,7 @@ import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationOpe
 import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
-import org.tdmx.lib.zone.service.FlowTargetService.ModifyConcurrencyOperationStatus;
+import org.tdmx.lib.zone.service.FlowTargetService.ModifyOperationStatus;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -1552,9 +1552,9 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ModifyConcurrencyOperationStatus status = flowTargetService.modifyConcurrency(existingCred, existingService,
+		ModifyOperationStatus status = flowTargetService.modifyConcurrency(existingCred, existingService,
 				parameters.getConcurrencyLimit());
-		if (ModifyConcurrencyOperationStatus.SUCCESS != status) {
+		if (ModifyOperationStatus.SUCCESS != status) {
 			setError(mapModifyConcurrencyOperationStatus(status), response);
 			return response;
 		}
@@ -1691,7 +1691,7 @@ public class ZASImpl implements ZAS {
 		ack.setSuccess(false);
 	}
 
-	private ErrorCode mapModifyConcurrencyOperationStatus(ModifyConcurrencyOperationStatus status) {
+	private ErrorCode mapModifyConcurrencyOperationStatus(ModifyOperationStatus status) {
 		switch (status) {
 		case FLOWTARGET_NOT_FOUND:
 			return ErrorCode.FlowTargetNotFound;
