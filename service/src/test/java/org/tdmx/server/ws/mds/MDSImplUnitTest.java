@@ -24,6 +24,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -35,11 +37,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
+import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
+import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.Flowsession;
+import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -172,7 +181,33 @@ public class MDSImplUnitTest {
 		// TODO others
 	}
 
-	// TODO setFlowTargetSession
+	// TODO setFlowTargetSession with invalid signature
+	@Test
+	public void testSetFlowTargetSession() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SetFlowTargetSession req = new SetFlowTargetSession();
+		req.setServicename(service.getServiceName());
+
+		Flowtargetsession fts = new Flowtargetsession();
+		Flowsession fs1 = new Flowsession();
+		fs1.setValidFrom(Calendar.getInstance());
+		fs1.setSessionKey(new byte[] { 1, 2, 3 });
+		fs1.setScheme("scheme-name");
+		fts.getFlowsessions().add(fs1);
+
+		Flowtarget ft = new Flowtarget();
+		ft.setFlowtargetsession(fts);
+		ft.setServicename(service.getServiceName());
+		SignatureUtils.signFlowTarget(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+
+		req.setFlowtargetsession(fts);
+
+		SetFlowTargetSessionResponse response = mds.setFlowTargetSession(req);
+		assertSuccess(response);
+		// TODO others
+	}
 
 	private void assertSuccess(Acknowledge ack) {
 		assertNotNull(ack);

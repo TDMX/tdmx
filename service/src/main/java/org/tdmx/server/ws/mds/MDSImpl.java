@@ -199,6 +199,8 @@ public class MDSImpl implements MDS {
 
 		// TODO check that there is at least one authorized channel with the flowtarget
 
+		// TODO check that the FTS signature is ok for the targetagent.
+
 		// TODO map the flowtargetsession from api to domain
 
 		flowTargetService.modifySession(existingCred, existingService, null);

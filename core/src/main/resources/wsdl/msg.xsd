@@ -362,7 +362,7 @@
 	</xs:complexType>
 	<xs:complexType name="FlowTargetSession">
 		<xs:annotation>
-			<xs:documentation>flowtargetsession is signed by the flow's target user and contains { channel.originAddress+Domain+ServiceProvider+channel.destination.Address+DomainName+ServiceProvider+serviceName + { flowsession.sessionKey+validFrom+scheme }1..2 + signaturevalue.timestamp</xs:documentation>
+			<xs:documentation>flowtargetsession is signed by the flow's target user and contains { channel.destination.Address+DomainName+ServiceProvider+serviceName + { flowsession.sessionKey+validFrom+scheme }1..2 + signaturevalue.timestamp</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="flowsession" maxOccurs="2"/>
