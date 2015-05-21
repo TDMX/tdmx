@@ -63,6 +63,15 @@ public enum SignatureAlgorithm {
 		this.asn1oid = oid;
 	}
 
+	public static SignatureAlgorithm getByAlgorithmName(String name) {
+		for (SignatureAlgorithm a : SignatureAlgorithm.values()) {
+			if (a.getAlgorithm().equals(name)) {
+				return a;
+			}
+		}
+		return null;
+	}
+
 	public String getAlgorithm() {
 		return this.algorithm;
 	}

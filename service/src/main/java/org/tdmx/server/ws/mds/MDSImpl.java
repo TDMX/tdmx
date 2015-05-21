@@ -50,6 +50,7 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -201,9 +202,11 @@ public class MDSImpl implements MDS {
 
 		// TODO check that the FTS signature is ok for the targetagent.
 
-		// TODO map the flowtargetsession from api to domain
-
-		flowTargetService.modifySession(existingCred, existingService, null);
+		FlowTarget ft = a2d.mapFlowTarget(existingCred, existingService, parameters.getFlowtargetsession());
+		if (flowTargetService.setSession(ft)) {
+			log.info("FlowTargetSession changed.");
+			// TODO update all ChannelFlowSession's and return for relaying back
+		}
 
 		response.setSuccess(true);
 		return response;

@@ -45,8 +45,8 @@ public class Certificate implements Serializable {
 	public Certificate(org.tdmx.console.application.domain.X509CertificateDO p) {
 		this.id = p.getId();
 		this.text = p.getCertificate().getInfo();
-		this.validFrom = CalendarUtils.getDate(p.getCertificate().getNotBefore());
-		this.validTo = CalendarUtils.getDate(p.getCertificate().getNotAfter());
+		this.validFrom = CalendarUtils.getDateTime(p.getCertificate().getNotBefore());
+		this.validTo = CalendarUtils.getDateTime(p.getCertificate().getNotAfter());
 	}
 
 	// -------------------------------------------------------------------------

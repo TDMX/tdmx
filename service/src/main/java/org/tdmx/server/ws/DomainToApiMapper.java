@@ -18,9 +18,6 @@
  */
 package org.tdmx.server.ws;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -51,6 +48,7 @@ import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
+import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
@@ -82,10 +80,19 @@ public class DomainToApiMapper {
 		Flowtarget f = new Flowtarget();
 
 		f.setTarget(mapUserIdentity(ft.getTarget()));
+		f.setServicename(ft.getService().getServiceName());
+
 		f.setConcurrencyLevel(ft.getConcurrency().getConcurrencyLevel());
 		f.setConcurrencyLimit(ft.getConcurrency().getConcurrencyLimit());
-		f.setFlowtargetsession(mapFlowTargetSession(ft.getFts()));
-		f.setServicename(ft.getService().getServiceName());
+
+		Signaturevalue sv = new Signaturevalue();
+		sv.setSignature(ft.getSignatureValue());
+		sv.setTimestamp(CalendarUtils.getDateTime(ft.getSignatureDate()));
+		sv.setSignatureAlgorithm(mapSignatureAlgorithm(ft.getSignatureAlgorithm()));
+
+		Flowtargetsession fts = new Flowtargetsession();
+		fts.setSignaturevalue(sv);
+		f.setFlowtargetsession(fts);
 
 		return f;
 	}
@@ -112,7 +119,7 @@ public class DomainToApiMapper {
 		Flowsession s = new Flowsession();
 		s.setScheme(fs.getScheme());
 		s.setSessionKey(fs.getSessionKey());
-		s.setValidFrom(mapTimestamp(fs.getValidFrom()));
+		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));
 		return s;
 	}
 
@@ -219,7 +226,7 @@ public class DomainToApiMapper {
 	public Processingstatus mapProcessingStatus(org.tdmx.lib.common.domain.ProcessingState ps) {
 		Processingstatus p = new Processingstatus();
 		p.setStatus(Taskstatus.fromValue(ps.getStatus().toString()));
-		p.setTimestamp(mapTimestamp(ps.getTimestamp()));
+		p.setTimestamp(CalendarUtils.getDateTime(ps.getTimestamp()));
 		p.setError(mapError(ps.getErrorCode(), ps.getErrorMessage()));
 		return p;
 	}
@@ -249,7 +256,7 @@ public class DomainToApiMapper {
 			return null;
 		}
 		Signaturevalue sig = new Signaturevalue();
-		sig.setTimestamp(mapTimestamp(agentSignature.getSignatureDate()));
+		sig.setTimestamp(CalendarUtils.getDateTime(agentSignature.getSignatureDate()));
 		sig.setSignature(agentSignature.getValue());
 		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));
 		return sig;
@@ -260,15 +267,6 @@ public class DomainToApiMapper {
 			return null;
 		}
 		return SignatureAlgorithm.fromValue(sa.getAlgorithm());
-	}
-
-	public Calendar mapTimestamp(Date date) {
-		if (date == null) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		return cal;
 	}
 
 	public AdministratorIdentity mapAdministratorIdentity(PKIXCertificate[] adminCertChain) {
@@ -299,7 +297,7 @@ public class DomainToApiMapper {
 		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
 		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
 		p.setPermission(Permission.valueOf(ep.getGrant().toString()));
-		p.setValidUntil(mapTimestamp(ep.getValidUntil()));
+		p.setValidUntil(CalendarUtils.getDateTime(ep.getValidUntil()));
 		return p;
 	}
 

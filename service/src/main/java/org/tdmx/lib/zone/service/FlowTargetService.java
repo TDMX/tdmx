@@ -23,7 +23,6 @@ import java.util.List;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -45,12 +44,13 @@ public interface FlowTargetService {
 	/**
 	 * Modifies the FlowTarget's FlowTargetSession.
 	 * 
-	 * @param agent
-	 * @param service
-	 * @param session
-	 * @return
+	 * The FlowTarget provided must identify the UserAgent and Service. If a FlowTarget exists then the Session
+	 * information is updated, otherwise the FlowTarget is created.
+	 * 
+	 * @param ft
+	 * @return whether there is an effective change in the session information
 	 */
-	public FlowTarget modifySession(AgentCredential agent, Service service, FlowTargetSession session);
+	public boolean setSession(FlowTarget ft);
 
 	/**
 	 * Updates the FlowTarget's concurrencyLimit respecting concurrent changes made to the FlowTargetConcurrency by

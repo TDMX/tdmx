@@ -51,7 +51,7 @@ public class CalendarUtils {
 	/**
 	 * Convert Calendar to Date
 	 */
-	public static Date getDate(Calendar date) {
+	public static Date getDateTime(Calendar date) {
 		if (date == null) {
 			return null;
 		}
@@ -59,7 +59,8 @@ public class CalendarUtils {
 	}
 
 	/**
-	 * Convert Date to DateCalendar
+	 * Convert Date to Calendar
+	 * 
 	 */
 	public static Calendar getDate(Date date) {
 		if (date == null) {

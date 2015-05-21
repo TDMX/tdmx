@@ -29,7 +29,6 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -89,17 +88,26 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public FlowTarget modifySession(AgentCredential agent, Service service, FlowTargetSession session) {
-		FlowTarget flowTarget = findByTargetService(agent, service);
+	public boolean setSession(FlowTarget ft) {
+		boolean changed = true;
+		FlowTarget flowTarget = findByTargetService(ft.getTarget(), ft.getService());
 		if (flowTarget == null) {
-			flowTarget = new FlowTarget(agent, service);
-			flowTarget.setFts(session);
-			createOrUpdate(flowTarget);
+			createOrUpdate(ft);
 		} else {
-			flowTarget.setFts(session);
+			if ((flowTarget.getSignatureValue() == ft.getSignatureValue())
+					|| (flowTarget.getSignatureValue() != null && flowTarget.getSignatureValue().equals(
+							ft.getSignatureValue()))) {
+				// effective change of signature value means we need to propagate changes to ChannelFlowSessions
+				changed = false;
+			} else {
+				flowTarget.setPrimary(ft.getPrimary());
+				flowTarget.setSecondary(ft.getSecondary());
+				flowTarget.setSignatureAlgorithm(ft.getSignatureAlgorithm());
+				flowTarget.setSignatureDate(ft.getSignatureDate());
+				flowTarget.setSignatureValue(ft.getSignatureValue());
+			}
 		}
-		// TODO update all ChannelFlowSession's and return for relaying back
-		return flowTarget;
+		return changed;
 	}
 
 	@Override

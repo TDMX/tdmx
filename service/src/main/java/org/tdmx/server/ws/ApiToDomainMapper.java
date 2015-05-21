@@ -22,9 +22,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.msg.Flowsession;
+import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
+import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowSession;
+import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Service;
 
 public class ApiToDomainMapper {
 
@@ -52,6 +60,43 @@ public class ApiToDomainMapper {
 		return new PageSpecifier(p.getNumber(), p.getSize());
 	}
 
+	public FlowTarget mapFlowTarget(AgentCredential target, Service service, Flowtargetsession fts) {
+		if (fts == null) {
+			return null;
+		}
+		FlowTarget s = new FlowTarget(target, service);
+		mapFlowTargetSessions(s, fts);
+		return s;
+	}
+
+	public void mapFlowTargetSessions(FlowTarget ft, Flowtargetsession fts) {
+		if (!fts.getFlowsessions().isEmpty()) {
+			if (fts.getFlowsessions().size() > 0) {
+				ft.setPrimary(mapFlowSession(fts.getFlowsessions().get(0)));
+			}
+			if (fts.getFlowsessions().size() > 1) {
+				ft.setSecondary(mapFlowSession(fts.getFlowsessions().get(1)));
+			}
+		}
+
+		if (fts.getSignaturevalue() != null) {
+			ft.setSignatureValue(fts.getSignaturevalue().getSignature());
+			ft.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignaturevalue().getSignatureAlgorithm()));
+			ft.setSignatureDate(CalendarUtils.getDateTime(fts.getSignaturevalue().getTimestamp()));
+		}
+	}
+
+	public FlowSession mapFlowSession(Flowsession fs) {
+		if (fs == null) {
+			return null;
+		}
+		FlowSession s = new FlowSession();
+		s.setScheme(fs.getScheme());
+		s.setSessionKey(fs.getSessionKey());
+		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));
+		return s;
+	}
+
 	public ChannelAuthorization mapChannelAuthorization(Domain domain, Currentchannelauthorization ca) {
 		if (ca == null) {
 			return null;
@@ -60,6 +105,13 @@ public class ApiToDomainMapper {
 		// TODO
 
 		return a;
+	}
+
+	public org.tdmx.client.crypto.algorithm.SignatureAlgorithm mapSignatureAlgorithm(SignatureAlgorithm sa) {
+		if (sa == null) {
+			return null;
+		}
+		return org.tdmx.client.crypto.algorithm.SignatureAlgorithm.getByAlgorithmName(sa.value());
 	}
 
 	// -------------------------------------------------------------------------

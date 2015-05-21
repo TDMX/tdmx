@@ -24,8 +24,12 @@ import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.msg.Flowtarget;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
+import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.DomainToApiMapper;
 
 public class ZoneFacade {
 
@@ -34,6 +38,9 @@ public class ZoneFacade {
 	public static final BigInteger ONE_GB = BigInteger.valueOf(1024 * 1024 * 1024);
 
 	public static final String DUMMY_SP_URL = "https://localhost:9000/api/mrs/v1.0";
+
+	private static final DomainToApiMapper d2a = new DomainToApiMapper();
+	private static final ApiToDomainMapper a2d = new ApiToDomainMapper();
 
 	public static Zone createZone(Long accountZoneId, String zoneApex) throws Exception {
 		Zone z = new Zone(accountZoneId, zoneApex);
@@ -76,27 +83,17 @@ public class ZoneFacade {
 
 	public static FlowTarget createFlowTarget(PKIXCredential userCred, AgentCredential userAgent, Service service) {
 		FlowTarget ft = new FlowTarget(userAgent, service);
-		ft.setFts(createFlowTargetSession(userCred, userAgent));
-		return ft;
-	}
 
-	// TODO create propper signature
-	public static FlowTargetSession createFlowTargetSession(PKIXCredential userCred, AgentCredential userAgent) {
-		FlowTargetSession fts = new FlowTargetSession();
 		FlowSession ps = new FlowSession();
 		ps.setScheme("encryptionscheme");
 		ps.setSessionKey(new byte[] { 1, 2, 3 });
 		ps.setValidFrom(new Date());
-		fts.setPrimary(ps);
+		ft.setPrimary(ps);
 
-		AgentSignature signature = new AgentSignature();
-		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		Flowtarget aft = d2a.mapFlowTarget(ft);
+		SignatureUtils.signFlowTarget(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(), aft);
 
-		signature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		signature.setSignatureDate(new Date());
-		signature.setValue("hexvalueofsignature");
-		fts.setSignature(signature);
-		return fts;
+		return a2d.mapFlowTarget(userAgent, service, aft.getFlowtargetsession());
 	}
 
 	// TODO give DAC to be able to construct correct signatures

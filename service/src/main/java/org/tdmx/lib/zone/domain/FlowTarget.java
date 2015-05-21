@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -26,6 +27,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,7 +37,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 
@@ -46,7 +52,8 @@ import org.tdmx.core.api.v01.zas.ws.ZAS;
  * 
  * FlowTargets are created by {@link MDS#setFlowTargetSession(org.tdmx.core.api.v01.mds.SetFlowTargetSession)} and
  * deleted by {@link ZAS#deleteService(org.tdmx.core.api.v01.zas.DeleteService) and
- * {@link ZAS#deleteUser(org.tdmx.core.api.v01.zas.DeleteUser)}
+ * 
+ * @link ZAS#deleteUser(org.tdmx.core.api.v01.zas.DeleteUser)}
  * 
  * @author Peter Klauser
  * 
@@ -85,17 +92,32 @@ public class FlowTarget implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "primary.scheme", column = @Column(name = "primaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
-			@AttributeOverride(name = "primary.validFrom", column = @Column(name = "primaryValidFrom")),
-			@AttributeOverride(name = "primary.sessionKey", column = @Column(name = "primarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
-			@AttributeOverride(name = "secondary.scheme", column = @Column(name = "secondaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
-			@AttributeOverride(name = "secondary.validFrom", column = @Column(name = "secondaryValidFrom")),
-			@AttributeOverride(name = "secondary.sessionKey", column = @Column(name = "secondarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
-			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "signatureDate")),
-			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "signerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
-			@AttributeOverride(name = "signature.value", column = @Column(name = "signature", length = AgentSignature.MAX_SIGNATURE_LEN)),
-			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "signatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
-	private FlowTargetSession fts;
+			@AttributeOverride(name = "scheme", column = @Column(name = "primaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
+			@AttributeOverride(name = "validFrom", column = @Column(name = "primaryValidFrom")),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "primarySession", length = FlowSession.MAX_SESSION_KEY_LEN)) })
+	private FlowSession primary;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "scheme", column = @Column(name = "secondaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
+			@AttributeOverride(name = "validFrom", column = @Column(name = "secondaryValidFrom")),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "secondarySession", length = FlowSession.MAX_SESSION_KEY_LEN)) })
+	private FlowSession secondary;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date signatureDate;
+
+	/**
+	 * The hex representation of the signature.
+	 */
+	@Column(length = AgentSignature.MAX_SIGNATURE_LEN)
+	private String signatureValue;
+
+	/**
+	 * The signature algorithm.
+	 */
+	@Enumerated(EnumType.STRING)
+	private SignatureAlgorithm signatureAlgorithm;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -108,14 +130,17 @@ public class FlowTarget implements Serializable {
 		setTarget(target);
 		setService(service);
 		setConcurrency(new FlowTargetConcurrency(this, service));
-		setFts(null);
 	}
 
 	public FlowTarget(AgentCredential target, Service service, FlowTarget other) {
 		setTarget(target);
 		setService(service);
 		setConcurrency(new FlowTargetConcurrency(this, other.getConcurrency()));
-		setFts(other.getFts());
+		setPrimary(other.getPrimary());
+		setSecondary(other.getSecondary());
+		setSignatureAlgorithm(other.getSignatureAlgorithm());
+		setSignatureDate(other.getSignatureDate());
+		setSignatureValue(other.getSignatureValue());
 	}
 
 	// -------------------------------------------------------------------------
@@ -128,8 +153,20 @@ public class FlowTarget implements Serializable {
 		builder.append("FlowTarget [id=");
 		builder.append(id);
 		builder.append(", concurrency=").append(concurrency); // one2one
-		if (fts != null) {
-			builder.append(", fts=").append(fts);
+		if (primary != null) {
+			builder.append(", session1=").append(primary);
+		}
+		if (secondary != null) {
+			builder.append(", session2=").append(secondary);
+		}
+		if (signatureDate != null) {
+			builder.append(", signatureDate=").append(signatureDate);
+		}
+		if (signatureAlgorithm != null) {
+			builder.append(", signatureAlgorithm=").append(signatureAlgorithm);
+		}
+		if (signatureValue != null) {
+			builder.append(", signatureValue=").append(signatureValue);
 		}
 		builder.append("]");
 		return builder.toString();
@@ -171,14 +208,6 @@ public class FlowTarget implements Serializable {
 		return service;
 	}
 
-	public FlowTargetSession getFts() {
-		return fts;
-	}
-
-	public void setFts(FlowTargetSession fts) {
-		this.fts = fts;
-	}
-
 	public FlowTargetConcurrency getConcurrency() {
 		return concurrency;
 	}
@@ -186,4 +215,45 @@ public class FlowTarget implements Serializable {
 	public void setConcurrency(FlowTargetConcurrency concurrency) {
 		this.concurrency = concurrency;
 	}
+
+	public FlowSession getPrimary() {
+		return primary;
+	}
+
+	public void setPrimary(FlowSession primary) {
+		this.primary = primary;
+	}
+
+	public FlowSession getSecondary() {
+		return secondary;
+	}
+
+	public void setSecondary(FlowSession secondary) {
+		this.secondary = secondary;
+	}
+
+	public Date getSignatureDate() {
+		return signatureDate;
+	}
+
+	public void setSignatureDate(Date signatureDate) {
+		this.signatureDate = signatureDate;
+	}
+
+	public String getSignatureValue() {
+		return signatureValue;
+	}
+
+	public void setSignatureValue(String signatureValue) {
+		this.signatureValue = signatureValue;
+	}
+
+	public SignatureAlgorithm getSignatureAlgorithm() {
+		return signatureAlgorithm;
+	}
+
+	public void setSignatureAlgorithm(SignatureAlgorithm signatureAlgorithm) {
+		this.signatureAlgorithm = signatureAlgorithm;
+	}
+
 }
