@@ -21,6 +21,7 @@ package org.tdmx.server.ws.mds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mds.Download;
@@ -39,6 +40,8 @@ import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
 import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -97,6 +100,8 @@ public class MDSImpl implements MDS {
 
 		UserCredentialNotFound(500, "UC not found."),
 		ServiceNotFound(500, "Service not found."),
+
+		InvalidSignatureFlowTarget(500, "FlowTarget signature invalid."),
 
 		;
 
@@ -200,7 +205,20 @@ public class MDSImpl implements MDS {
 
 		// TODO check that there is at least one authorized channel with the flowtarget
 
-		// TODO check that the FTS signature is ok for the targetagent.
+		Flowtarget aft = new Flowtarget();
+		aft.setFlowtargetsession(parameters.getFlowtargetsession());
+		aft.setServicename(parameters.getServicename());
+
+		UserIdentity id = new UserIdentity();
+		id.setUsercertificate(PKIXCertificate.getPublicKey(existingCred.getCertificateChain()).getX509Encoded());
+		id.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(existingCred.getCertificateChain()).getX509Encoded());
+		id.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(existingCred.getCertificateChain()).getX509Encoded());
+		aft.setTarget(id);
+		// check that the FTS signature is ok for the targetagent.
+		if (!SignatureUtils.checkFlowTargetSignature(aft)) {
+			setError(ErrorCode.InvalidSignatureFlowTarget, response);
+			return response;
+		}
 
 		FlowTarget ft = a2d.mapFlowTarget(existingCred, existingService, parameters.getFlowtargetsession());
 		if (flowTargetService.setSession(ft)) {

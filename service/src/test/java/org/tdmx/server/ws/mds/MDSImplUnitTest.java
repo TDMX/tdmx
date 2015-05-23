@@ -200,13 +200,15 @@ public class MDSImplUnitTest {
 		Flowtarget ft = new Flowtarget();
 		ft.setFlowtargetsession(fts);
 		ft.setServicename(service.getServiceName());
-		SignatureUtils.signFlowTarget(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+		SignatureUtils.createFlowTargetSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
 
 		req.setFlowtargetsession(fts);
 
 		SetFlowTargetSessionResponse response = mds.setFlowTargetSession(req);
 		assertSuccess(response);
 		// TODO others
+
+		// TODO do getFlowTarget to confirm created
 	}
 
 	private void assertSuccess(Acknowledge ack) {

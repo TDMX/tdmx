@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -37,14 +38,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.AddressFilter;
 import org.tdmx.core.api.v01.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
-import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
@@ -1405,7 +1407,6 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore("work in progress")
 	public void testSetChannelAuthorization_SendRecvSameDomain() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1448,11 +1449,7 @@ public class ZASImplUnitTest {
 		fcl.setUnsentBuffer(null); // TODO
 		auth.setLimit(fcl);// TODO
 
-		Administratorsignature sig = new Administratorsignature();
-		sig.setAdministratorIdentity(null); // TODO
-		sig.setSignaturevalue(null); // TODO
-		auth.setAdministratorsignature(sig);
-
+		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
 		req.setCurrentchannelauthorization(auth);
 
 		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);

@@ -18,10 +18,12 @@
  */
 package org.tdmx.core.api;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Before;
@@ -68,18 +70,37 @@ public class SignatureUtilsTest {
 		channel.setOrigin(origin);
 		channel.setDestination(dest);
 
+		Date futureDate = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
+
 		EndpointPermission perm = new EndpointPermission();
 		perm.setMaxPlaintextSizeBytes(BigInteger.ONE);
 		perm.setPermission(Permission.ALLOW);
-		perm.setValidUntil(CalendarUtils.getDate(new Date()));
+		perm.setValidUntil(CalendarUtils.getDate(futureDate));
 
 		SignatureUtils
 				.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel, perm);
 
 		assertNotNull(perm.getAdministratorsignature().getSignaturevalue().getSignature());
 
+		// test future date succeeds
 		boolean signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm, true);
 		assertTrue(signatureOk);
 
+		// test past date fails
+		Date pastDate = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, -1);
+		perm.setValidUntil(CalendarUtils.getDate(pastDate));
+
+		SignatureUtils
+				.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel, perm);
+
+		assertNotNull(perm.getAdministratorsignature().getSignaturevalue().getSignature());
+
+		signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm, true);
+		assertFalse(signatureOk);
 	}
+
+	// TODO CA signature check
+
+	// TODO FTS signature check
+
 }

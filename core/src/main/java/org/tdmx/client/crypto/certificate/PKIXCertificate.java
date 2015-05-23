@@ -69,8 +69,6 @@ public class PKIXCertificate {
 	// TODO subject key identifier
 	// TODO issuer key identifier
 
-	// TODO TDMX domain and zone apex MUST be uppercase! address / username is case sensitive but not DomainNames.
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------

@@ -32,7 +32,6 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="msg:servicename"/>
-			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="getFlowTargetResponseType">
