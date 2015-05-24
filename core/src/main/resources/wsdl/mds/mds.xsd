@@ -166,7 +166,7 @@
 	<xs:element name="listFlowResponse" type="listFlowResponseType"/>
 	<xs:element name="setFlowTargetSession" type="setFlowTargetSessionRequestType">
 		<xs:annotation>
-			<xs:documentation>creates flow target if it doesn't exist and then overwrites the session. Pre-requisite is at least one receive channel authorization. Creates or overwrites ChannelFlowSessions in all ChannelAuthorizations.</xs:documentation>
+			<xs:documentation>creates flow target if it doesn't exist and then overwrites the session. Pre-requisite is that the service exists in the domain of the calling Agent. Creates or overwrites ChannelFlowSessions in all ChannelAuthorizations.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="setFlowTargetSessionResponse" type="setFlowTargetSessionResponseType"/>

@@ -134,9 +134,9 @@ import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
-import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -1469,6 +1469,11 @@ public class ZASImplUnitTest {
 
 		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);
 		assertSuccess(response);
+
+		// tamper with the CA signature
+		req.getCurrentchannelauthorization().getAdministratorsignature().getSignaturevalue().setSignature("gugus");
+		response = zas.setChannelAuthorization(req);
+		assertError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 	}
 
 	@Test

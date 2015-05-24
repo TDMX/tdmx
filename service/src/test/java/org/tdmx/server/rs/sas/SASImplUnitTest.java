@@ -48,7 +48,7 @@ import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
-import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
+import org.tdmx.server.ws.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

@@ -69,9 +69,9 @@ import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
-import org.tdmx.server.ws.zas.ZASImpl.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -181,7 +181,6 @@ public class MDSImplUnitTest {
 		// TODO others
 	}
 
-	// TODO setFlowTargetSession with invalid signature
 	@Test
 	public void testSetFlowTargetSession() {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
@@ -209,6 +208,11 @@ public class MDSImplUnitTest {
 		// TODO others
 
 		// TODO do getFlowTarget to confirm created
+
+		// tamper with signature doesn't work
+		fts.getSignaturevalue().setSignature("gugus");
+		response = mds.setFlowTargetSession(req);
+		assertError(ErrorCode.InvalidSignatureFlowTarget, response);
 	}
 
 	private void assertSuccess(Acknowledge ack) {

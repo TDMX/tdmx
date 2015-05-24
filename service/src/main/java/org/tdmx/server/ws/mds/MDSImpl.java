@@ -41,6 +41,7 @@ import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
@@ -63,7 +64,9 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class MDSImpl implements MDS {
@@ -91,37 +94,9 @@ public class MDSImpl implements MDS {
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
+	private final ApiValidator validator = new ApiValidator();
+
 	private int batchSize = 100;
-
-	public enum ErrorCode {
-		// authorization errors
-		MissingCredentials(403, "Missing Credentials."),
-		NonUserAccess(403, "Non User access."),
-
-		UserCredentialNotFound(500, "UC not found."),
-		ServiceNotFound(500, "Service not found."),
-
-		InvalidSignatureFlowTarget(500, "FlowTarget signature invalid."),
-
-		;
-
-		private final int errorCode;
-		private final String errorDescription;
-
-		private ErrorCode(int ec, String description) {
-			this.errorCode = ec;
-			this.errorDescription = description;
-		}
-
-		public int getErrorCode() {
-			return errorCode;
-		}
-
-		public String getErrorDescription() {
-			return errorDescription;
-		}
-
-	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -203,14 +178,11 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		// TODO validate all channel and provided permission fields are specified.
-		// Currentchannelauthorization ca = checkChannelauthorization(parameters.getCurrentchannelauthorization(),
-		// response);
-		// if (ca == null) {
-		// return response;
-		// }
-
-		// TODO check that there is at least one authorized channel with the flowtarget
+		// validate all FlowTargetSession fields are specified.
+		Flowtargetsession fts = validator.checkFlowtargetsession(parameters.getFlowtargetsession(), response);
+		if (fts == null) {
+			return response;
+		}
 
 		Flowtarget aft = new Flowtarget();
 		aft.setFlowtargetsession(parameters.getFlowtargetsession());

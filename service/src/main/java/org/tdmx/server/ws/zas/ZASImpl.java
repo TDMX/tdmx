@@ -31,13 +31,7 @@ import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
-import org.tdmx.core.api.v01.msg.Administratorsignature;
-import org.tdmx.core.api.v01.msg.Channel;
-import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
-import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -123,7 +117,9 @@ import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.FlowTargetService.ModifyOperationStatus;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class ZASImpl implements ZAS {
@@ -157,99 +153,8 @@ public class ZASImpl implements ZAS {
 	// arrival of message creates flows on destination side as needed
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
+	private final ApiValidator validator = new ApiValidator();
 	private int batchSize = 100;
-
-	public enum ErrorCode {
-		// authorization errors
-		MissingCredentials(403, "Missing Credentials."),
-		NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
-		NonDomainAdministratorAccess(403, "Non DomainAdministrator access."),
-		OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
-		OutOfDomainAccess(403, "DAC only authorized on own domain."),
-		// business logic errors
-		DomainNotSpecified(500, "Domain not supplied."),
-		NotNormalizedDomain(500, "Domain not normalized to uppercase."),
-		DomainExists(500, "Domain exists."),
-		DomainNotFound(500, "Domain not found."),
-		AddressExists(500, "Address exists."),
-		AddressNotFound(500, "Address not found."),
-		ServiceExists(500, "Service exists."),
-		ServiceNotFound(500, "Service not found."),
-
-		InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
-		DomainAdministratorCredentialsExist(500, "DACs exists."),
-		DomainAdministratorCredentialNotFound(500, "DAC not found."),
-		InvalidUserCredentials(500, "Invalid User credentials."),
-		UserCredentialsExist(500, "UCs exists."),
-		UserCredentialNotFound(500, "UC not found."),
-		CredentialsExist(500, "Credentials exists."),
-		AddressesExist(500, "Addresses exists."),
-		ServicesExist(500, "Services exists."),
-		FlowTargetNotFound(500, "FlowTarget not found."),
-
-		MissingChannel(500, "Channel missing."),
-		MissingChannelEndpoint(500, "ChannelEndpoint missing."),
-		MissingChannelAuthorization(500, "ChannelAuthorization missing."),
-		MissingFlowControlLimit(500, "FlowControlLimit missing."),
-
-		MissingChannelDestinationService(500, "ChannelDestination Service missing."),
-		MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),
-		MissingChannelEndpointLocalname(500, "ChannelEndpoint Localname missing."),
-		MissingChannelEndpointServiceprovider(500, "ChannelEndpoint Serviceprovider missing."),
-
-		ChannelAuthorizationDomainMismatch(500, "ChannelAuthorization domain mismatch."),
-
-		MissingEndpointPermission(500, "Channel EndpointPermission missing."),
-		InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
-		InvalidSignatureChannelAuthorization(500, "ChannelAuthorization signature invalid."),
-		MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
-		MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
-		MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
-
-		MissingAdministratorSignature(500, "AdministratorSignature missing."),
-		MissingAdministratorIdentity(500, "AdministratorIdentity missing."),
-		MissingDomainAdministratorZoneRootPublicKey(500, "AdministratorIdentity zoneroot public key missing."),
-		MissingDomainAdministratorPublicKey(500, "AdministratorIdentity public key missing."),
-
-		MissingSignatureValue(500, "Signaturevalue missing."),
-		MissingSignature(500, "Signature missing."),
-		MissingSignatureTimestamp(500, "Signature Timestamp missing."),
-		MissingSignatureAlgorithm(500, "Signature Algorithm missing."),
-
-		SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
-		SenderChannelAuthorizationMismatch(
-				301,
-				"Mismatch of sender's requested EndpointPermission. Changed since last read."),
-		SenderChannelAuthorizationProvided(
-				302,
-				"Provided confirmation of non existent sender's requested EndpointPermission."),
-		ReceiverChannelAuthorizationMissing(303, "Missing confirmation of receiver's requested EndpointPermission."),
-		ReceiverChannelAuthorizationMismatch(
-				304,
-				"Mismatch of receiver's requested EndpointPermission. Changed since last read."),
-		ReceiverChannelAuthorizationProvided(
-				305,
-				"Provided confirmation of non existent receiver's requested EndpointPermission."),
-
-		;
-
-		private final int errorCode;
-		private final String errorDescription;
-
-		private ErrorCode(int ec, String description) {
-			this.errorCode = ec;
-			this.errorDescription = description;
-		}
-
-		public int getErrorCode() {
-			return errorCode;
-		}
-
-		public String getErrorDescription() {
-			return errorDescription;
-		}
-
-	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -472,7 +377,7 @@ public class ZASImpl implements ZAS {
 		}
 
 		if (parameters.getFilter().getAdministratorIdentity() != null) {
-			AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getFilter()
+			AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getFilter()
 					.getAdministratorIdentity(), response);
 			if (dacIdentity == null) {
 				return response;
@@ -799,7 +704,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct new DAC given the data provided
-		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
+				response);
 		if (dacIdentity == null) {
 			return response;
 		}
@@ -989,7 +895,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
+				response);
 		if (dacIdentity == null) {
 			return response;
 		}
@@ -1037,8 +944,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// validate all channel and provided permission fields are specified.
-		Currentchannelauthorization ca = checkChannelauthorization(parameters.getCurrentchannelauthorization(),
-				response);
+		Currentchannelauthorization ca = validator.checkChannelauthorization(
+				parameters.getCurrentchannelauthorization(), response);
 		if (ca == null) {
 			return response;
 		}
@@ -1108,149 +1015,6 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	private Currentchannelauthorization checkChannelauthorization(Currentchannelauthorization ca, Acknowledge ack) {
-		if (ca == null) {
-			setError(ErrorCode.MissingChannelAuthorization, ack);
-			return null;
-		}
-		if (checkChannel(ca.getChannel(), ack) == null) {
-			return null;
-		}
-		if (ca.getOrigin() != null && checkEndpointPermission(ca.getOrigin(), ack) == null) {
-			return null;
-		}
-		if (ca.getDestination() != null && checkEndpointPermission(ca.getDestination(), ack) == null) {
-			return null;
-		}
-		if (ca.getLimit() == null) {
-			setError(ErrorCode.MissingFlowControlLimit, ack);
-			return null;
-		}
-		if (checkAdministratorsignature(ca.getAdministratorsignature(), ack) == null) {
-			return null;
-		}
-		return ca;
-	}
-
-	private EndpointPermission checkEndpointPermission(EndpointPermission perm, Acknowledge ack) {
-		if (perm == null) {
-			setError(ErrorCode.MissingEndpointPermission, ack);
-			return null;
-		}
-		if (checkAdministratorsignature(perm.getAdministratorsignature(), ack) == null) {
-			return null;
-		}
-		if (perm.getMaxPlaintextSizeBytes() == null) {
-			setError(ErrorCode.MissingPlaintextSizeEndpointPermission, ack);
-			return null;
-		}
-		if (perm.getValidUntil() == null) {
-			setError(ErrorCode.MissingValidUntilEndpointPermission, ack);
-			return null;
-		}
-		if (perm.getPermission() == null) {
-			setError(ErrorCode.MissingPermissionEndpointPermission, ack);
-			return null;
-		}
-		return perm;
-	}
-
-	private Administratorsignature checkAdministratorsignature(Administratorsignature signature, Acknowledge ack) {
-		if (signature == null) {
-			setError(ErrorCode.MissingAdministratorSignature, ack);
-			return null;
-		}
-		if (checkAdministratorIdentity(signature.getAdministratorIdentity(), ack) == null) {
-			return null;
-		}
-		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
-			return null;
-		}
-		return signature;
-	}
-
-	private Signaturevalue checkSignaturevalue(Signaturevalue sig, Acknowledge ack) {
-		if (sig == null) {
-			setError(ErrorCode.MissingSignatureValue, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(sig.getSignature())) {
-			setError(ErrorCode.MissingSignature, ack);
-			return null;
-		}
-		if (sig.getSignatureAlgorithm() == null) {
-			setError(ErrorCode.MissingSignatureAlgorithm, ack);
-			return null;
-		}
-		if (sig.getTimestamp() == null) {
-			setError(ErrorCode.MissingSignatureTimestamp, ack);
-			return null;
-
-		}
-		return sig;
-	}
-
-	private AdministratorIdentity checkAdministratorIdentity(AdministratorIdentity admin, Acknowledge ack) {
-		if (admin == null) {
-			setError(ErrorCode.MissingAdministratorIdentity, ack);
-			return null;
-		}
-		if (admin.getDomaincertificate() == null) {
-			setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
-			return null;
-		}
-		if (admin.getRootcertificate() == null) {
-			setError(ErrorCode.MissingDomainAdministratorZoneRootPublicKey, ack);
-			return null;
-		}
-		return admin;
-	}
-
-	private ChannelEndpoint checkChannelEndpoint(ChannelEndpoint channelEndpoint, Acknowledge ack) {
-		if (channelEndpoint == null) {
-			setError(ErrorCode.MissingChannelEndpoint, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(channelEndpoint.getDomain())) {
-			setError(ErrorCode.MissingChannelEndpointDomain, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(channelEndpoint.getLocalname())) {
-			setError(ErrorCode.MissingChannelEndpointLocalname, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(channelEndpoint.getServiceprovider())) {
-			setError(ErrorCode.MissingChannelEndpointServiceprovider, ack);
-			return null;
-		}
-		return channelEndpoint;
-	}
-
-	private Destination checkChannelDestination(Destination dest, Acknowledge ack) {
-		if (checkChannelEndpoint(dest, ack) == null) {
-			return null;
-		}
-		if (!StringUtils.hasText(dest.getServicename())) {
-			setError(ErrorCode.MissingChannelDestinationService, ack);
-			return null;
-		}
-		return dest;
-	}
-
-	private Channel checkChannel(Channel channel, Acknowledge ack) {
-		if (channel == null) {
-			setError(ErrorCode.MissingChannel, ack);
-			return null;
-		}
-		if (checkChannelEndpoint(channel.getOrigin(), ack) == null) {
-			return null;
-		}
-		if (checkChannelDestination(channel.getDestination(), ack) == null) {
-			return null;
-		}
-		return channel;
 	}
 
 	@Override
@@ -1415,7 +1179,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		// try to constuct the DAC given the data provided
-		AdministratorIdentity dacIdentity = checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
+		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
+				response);
 		if (dacIdentity == null) {
 			return response;
 		}
@@ -1570,8 +1335,6 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	// TODO separate checker class , using PKIXCertificate as paraemeter for ZAC, ZACorDAC, UC, DAC
 
 	/**
 	 * Checks the AuthenticatedAgent is authorized to perform administration on the domain, and return the agent's
