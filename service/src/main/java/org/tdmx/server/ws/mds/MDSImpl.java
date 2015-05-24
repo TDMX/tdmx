@@ -203,6 +203,13 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
+		// TODO validate all channel and provided permission fields are specified.
+		// Currentchannelauthorization ca = checkChannelauthorization(parameters.getCurrentchannelauthorization(),
+		// response);
+		// if (ca == null) {
+		// return response;
+		// }
+
 		// TODO check that there is at least one authorized channel with the flowtarget
 
 		Flowtarget aft = new Flowtarget();

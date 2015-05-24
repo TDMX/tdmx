@@ -118,6 +118,34 @@ public class CertificateIOUtils {
 		return xs;
 	}
 
+	public static PKIXCertificate[] decodeX509(byte[]... certChain) throws CryptoCertificateException {
+		if (certChain == null) {
+			return null;
+		}
+		PKIXCertificate[] pkcerts = new PKIXCertificate[certChain.length];
+		for (int i = 0; i < certChain.length; i++) {
+			pkcerts[i] = decodeX509(certChain[i]);
+		}
+		return pkcerts;
+	}
+
+	public static String safeX509certsToPem(byte[]... certChain) {
+		try {
+			PKIXCertificate[] certs = decodeX509(certChain);
+			return x509certsToPem(certs);
+		} catch (CryptoCertificateException e) {
+			return null;
+		}
+	}
+
+	public static String safeX509certsToPem(PKIXCertificate[] certs) {
+		try {
+			return x509certsToPem(certs);
+		} catch (CryptoCertificateException e) {
+			return null;
+		}
+	}
+
 	public static String x509certsToPem(PKIXCertificate[] certs) throws CryptoCertificateException {
 		StringWriter writer = new StringWriter();
 		PEMWriter pemWrtCer = new PEMWriter(writer);

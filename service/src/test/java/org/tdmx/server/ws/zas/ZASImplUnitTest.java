@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +59,8 @@ import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.FlowDestination;
 import org.tdmx.core.api.v01.msg.FlowTargetFilter;
+import org.tdmx.core.api.v01.msg.Limit;
+import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.ServiceFilter;
 import org.tdmx.core.api.v01.msg.UserFilter;
@@ -107,6 +110,7 @@ import org.tdmx.core.api.v01.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
+import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -120,6 +124,7 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -1418,36 +1423,46 @@ public class ZASImplUnitTest {
 		Channel channel = new Channel();
 		Destination dest = new Destination();
 		dest.setDomain(domain.getDomainName());
-		dest.setLocalname(null); // TODO
-		dest.setServicename(null); // TODO
-		dest.setServiceprovider(null); // TODO
+		dest.setLocalname(uc.getPublicCert().getCommonName());
+		dest.setServicename(service.getServiceName());
+		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain.getDomainName());
-		origin.setLocalname(null); // TODO
-		origin.setServiceprovider(null); // TODO
+		origin.setLocalname(uc.getPublicCert().getCommonName());
+		origin.setServiceprovider("SP"); // TODO
 		channel.setOrigin(origin);
 		auth.setChannel(channel);
 
+		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		EndpointPermission recvPermission = new EndpointPermission();
-		recvPermission.setAdministratorsignature(null);// TODO
-		recvPermission.setMaxPlaintextSizeBytes(null); // TODO
-		recvPermission.setPermission(null); // TODO
-		recvPermission.setAdministratorsignature(null);// TODO
+		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		recvPermission.setPermission(Permission.ALLOW);
+		recvPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
 		auth.setDestination(recvPermission);
+		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				recvPermission);
 
 		EndpointPermission sendPermission = new EndpointPermission();
-		sendPermission.setAdministratorsignature(null);// TODO
-		sendPermission.setMaxPlaintextSizeBytes(null); // TODO
-		sendPermission.setPermission(null); // TODO
-		sendPermission.setAdministratorsignature(null);// TODO
+		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		sendPermission.setPermission(Permission.ALLOW);
+		sendPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
 		auth.setOrigin(sendPermission);
+		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				sendPermission);
 
 		FlowControlLimit fcl = new FlowControlLimit();
-		fcl.setUndeliveredBuffer(null); // TODO
-		fcl.setUnsentBuffer(null); // TODO
-		auth.setLimit(fcl);// TODO
+		Limit undeliveredBuffer = new Limit();
+		undeliveredBuffer.setHighBytes(ZoneFacade.ONE_GB);
+		undeliveredBuffer.setLowBytes(ZoneFacade.ONE_MB);
+		fcl.setUndeliveredBuffer(undeliveredBuffer);
+
+		Limit unsentBuffer = new Limit();
+		unsentBuffer.setHighBytes(ZoneFacade.ONE_GB);
+		unsentBuffer.setLowBytes(ZoneFacade.ONE_MB);
+		fcl.setUnsentBuffer(unsentBuffer);
+		auth.setLimit(fcl);
 
 		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
 		req.setCurrentchannelauthorization(auth);

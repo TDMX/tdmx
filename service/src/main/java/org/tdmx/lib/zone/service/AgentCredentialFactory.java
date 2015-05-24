@@ -32,26 +32,26 @@ import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 public interface AgentCredentialFactory {
 
 	/**
-	 * Creates an AgentCredential from the certificate chain.
+	 * Creates an AgentCredentialDescriptor from the certificate chain.
 	 * 
 	 * @param certChain
-	 * @return the AgentCredential or null if there is any problem with the certificateChain.
+	 * @return the AgentCredentialDescriptor or null if there is any problem with the certificateChain.
 	 */
 	public AgentCredentialDescriptor createAgentCredential(X509Certificate... certChain);
 
 	/**
-	 * Creates an AgentCredential from the certificate chain.
+	 * Creates an AgentCredentialDescriptor from the certificate chain.
 	 * 
 	 * @param certChain
-	 * @return the AgentCredential or null if there is any problem with the certificateChain.
+	 * @return the AgentCredentialDescriptor or null if there is any problem with the certificateChain.
 	 */
 	public AgentCredentialDescriptor createAgentCredential(PKIXCertificate... certChain);
 
 	/**
-	 * Creates an AgentCredential from the certificate chain.
+	 * Creates an AgentCredentialDescriptor from the certificate chain.
 	 * 
 	 * @param certChain
-	 * @return the AgentCredential or null if there is any problem with the certificateChain.
+	 * @return the AgentCredentialDescriptor or null if there is any problem with the certificateChain.
 	 */
 	public AgentCredentialDescriptor createAgentCredential(byte[]... certChain);
 

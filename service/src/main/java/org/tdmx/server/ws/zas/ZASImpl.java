@@ -1094,7 +1094,7 @@ public class ZASImpl implements ZAS {
 		org.tdmx.lib.zone.domain.ChannelAuthorization offeredCA = a2d.mapChannelAuthorization(domain, ca);
 
 		SetAuthorizationResultHolder operationStatus = channelAuthorizationService.setAuthorization(zone, offeredCA);
-		if (SetAuthorizationOperationStatus.SUCCESS != operationStatus.status) {
+		if (operationStatus.status != null) {
 			setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
 			return response;
 		}

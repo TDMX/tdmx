@@ -20,6 +20,7 @@ package org.tdmx.server.ws;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Flowsession;
@@ -28,8 +29,14 @@ import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
+import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Service;
@@ -102,9 +109,91 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		ChannelAuthorization a = new ChannelAuthorization(domain);
-		// TODO
-
+		if (ca.getChannel() != null) {
+			a.setOrigin(mapChannelOrigin(ca.getChannel().getOrigin()));
+		}
+		if (ca.getDestination() != null) {
+			a.setDestination(mapChannelDestination(ca.getChannel().getDestination()));
+		}
+		a.setSendAuthorization(mapEndpointPermission(ca.getOrigin()));
+		a.setRecvAuthorization(mapEndpointPermission(ca.getDestination()));
+		a.setReqSendAuthorization(null);
+		a.setReqSendAuthorization(null);
+		if (ca.getLimit() != null) {
+			a.setUndeliveredBuffer(mapFlowLimit(ca.getLimit().getUndeliveredBuffer()));
+			a.setUnsentBuffer(mapFlowLimit(ca.getLimit().getUnsentBuffer()));
+		}
+		a.setSignature(mapAdministratorSignature(ca.getAdministratorsignature()));
 		return a;
+	}
+
+	public AgentSignature mapAdministratorSignature(org.tdmx.core.api.v01.msg.Administratorsignature signature) {
+		if (signature == null) {
+			return null;
+		}
+		AgentSignature s = new AgentSignature();
+		if (signature.getAdministratorIdentity() != null) {
+			s.setCertificateChainPem(CertificateIOUtils.safeX509certsToPem(signature.getAdministratorIdentity()
+					.getDomaincertificate(), signature.getAdministratorIdentity().getRootcertificate()));
+		}
+		if (signature.getSignaturevalue() != null) {
+			s.setAlgorithm(mapSignatureAlgorithm(signature.getSignaturevalue().getSignatureAlgorithm()));
+			s.setSignatureDate(CalendarUtils.getDateTime(signature.getSignaturevalue().getTimestamp()));
+			s.setValue(signature.getSignaturevalue().getSignature());
+		}
+		return s;
+	}
+
+	public FlowLimit mapFlowLimit(org.tdmx.core.api.v01.msg.Limit limit) {
+		if (limit == null) {
+			return null;
+		}
+		FlowLimit l = new FlowLimit();
+		l.setHighMarkBytes(limit.getHighBytes());
+		l.setLowMarkBytes(limit.getLowBytes());
+		return l;
+	}
+
+	public EndpointPermission mapEndpointPermission(org.tdmx.core.api.v01.msg.EndpointPermission perm) {
+		if (perm == null) {
+			return null;
+		}
+		EndpointPermission p = new EndpointPermission();
+		p.setGrant(mapEndpointPermissionGrant(perm.getPermission()));
+		p.setMaxPlaintextSizeBytes(perm.getMaxPlaintextSizeBytes());
+		p.setValidUntil(CalendarUtils.getDateTime(perm.getValidUntil()));
+		p.setSignature(mapAdministratorSignature(perm.getAdministratorsignature()));
+		return p;
+	}
+
+	public ChannelOrigin mapChannelOrigin(org.tdmx.core.api.v01.msg.ChannelEndpoint origin) {
+		if (origin == null) {
+			return null;
+		}
+		ChannelOrigin o = new ChannelOrigin();
+		o.setLocalName(origin.getLocalname());
+		o.setDomainName(origin.getDomain());
+		o.setServiceProvider(origin.getServiceprovider());
+		return o;
+	}
+
+	public ChannelDestination mapChannelDestination(org.tdmx.core.api.v01.msg.Destination destination) {
+		if (destination == null) {
+			return null;
+		}
+		ChannelDestination d = new ChannelDestination();
+		d.setLocalName(destination.getLocalname());
+		d.setDomainName(destination.getDomain());
+		d.setServiceProvider(destination.getServiceprovider());
+		d.setServiceName(destination.getServicename());
+		return d;
+	}
+
+	public EndpointPermissionGrant mapEndpointPermissionGrant(org.tdmx.core.api.v01.msg.Permission permission) {
+		if (permission == null) {
+			return null;
+		}
+		return EndpointPermissionGrant.valueOf(permission.value());
 	}
 
 	public org.tdmx.client.crypto.algorithm.SignatureAlgorithm mapSignatureAlgorithm(SignatureAlgorithm sa) {

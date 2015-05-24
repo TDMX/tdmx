@@ -133,10 +133,7 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 	public AgentCredentialDescriptor createAgentCredential(byte[]... certChain) {
 		PKIXCertificate[] chain;
 		try {
-			chain = new PKIXCertificate[certChain.length];
-			for (int i = 0; i < certChain.length; i++) {
-				chain[i] = CertificateIOUtils.decodeX509(certChain[i]);
-			}
+			chain = CertificateIOUtils.decodeX509(certChain);
 		} catch (CryptoCertificateException e) {
 			log.info("Invalid Certificate " + e.getRc());
 			return null;
