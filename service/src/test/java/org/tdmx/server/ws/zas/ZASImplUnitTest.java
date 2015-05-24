@@ -51,6 +51,7 @@ import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
@@ -79,6 +80,8 @@ import org.tdmx.core.api.v01.zas.DeleteAddress;
 import org.tdmx.core.api.v01.zas.DeleteAddressResponse;
 import org.tdmx.core.api.v01.zas.DeleteAdministrator;
 import org.tdmx.core.api.v01.zas.DeleteAdministratorResponse;
+import org.tdmx.core.api.v01.zas.DeleteChannelAuthorization;
+import org.tdmx.core.api.v01.zas.DeleteChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.DeleteDomain;
 import org.tdmx.core.api.v01.zas.DeleteDomainResponse;
 import org.tdmx.core.api.v01.zas.DeleteService;
@@ -924,12 +927,6 @@ public class ZASImplUnitTest {
 
 	@Test
 	@Ignore
-	public void testDeleteChannelAuthorization() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	@Ignore
 	public void testIncident() {
 		fail("Not yet implemented"); // TODO
 	}
@@ -1052,12 +1049,6 @@ public class ZASImplUnitTest {
 	@Test
 	@Ignore
 	public void testReport() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	@Ignore
-	public void testGetChannelAuthorization() {
 		fail("Not yet implemented"); // TODO
 	}
 
@@ -1532,7 +1523,7 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchChannelAuthorization() {
+	public void testSearchChannelAuthorization_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -1550,6 +1541,41 @@ public class ZASImplUnitTest {
 		assertSuccess(response);
 		assertEquals(1, response.getChannelauthorizations().size());
 		// TODO alternatives
+	}
+
+	@Test
+	public void testDeleteChannelAuthorization() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchChannelAuthorization req = new SearchChannelAuthorization();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelAuthorizationFilter uf = new ChannelAuthorizationFilter();
+		req.setFilter(uf);
+
+		SearchChannelAuthorizationResponse response = zas.searchChannelAuthorization(req);
+		assertSuccess(response);
+		assertEquals(1, response.getChannelauthorizations().size());
+		// TODO alternatives
+
+		Channelauthorization caToDel = response.getChannelauthorizations().get(0);
+
+		DeleteChannelAuthorization delReq = new DeleteChannelAuthorization();
+		delReq.setDomain(dac.getPublicCert().getCommonName());
+		delReq.setChannel(caToDel.getCurrent().getChannel());
+
+		DeleteChannelAuthorizationResponse delRes = zas.deleteChannelAuthorization(delReq);
+		assertSuccess(delRes);
+
+		// check it's gone
+		response = zas.searchChannelAuthorization(req);
+		assertSuccess(response);
+		assertEquals(0, response.getChannelauthorizations().size());
 	}
 
 	@Test

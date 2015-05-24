@@ -542,19 +542,31 @@
 	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
 	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType">
 		<xs:annotation>
-			<xs:documentation>manages flow targets automatically, allows flow states to instantiate automatically.</xs:documentation>
+			<xs:documentation>Authorization: DAC only. Precondition: the current ChannelAuthorization being set must "confirm" any pending send or receive authorization from the other endpoint. Postcondition: ChannelAuthorization created if not existing before. TODO:manages flow targets automatically, allows flow states to instantiate automatically.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="setChannelAuthorizationResponse" type="setChannelAuthorizationResponseType"/>
+	<xs:element name="setChannelAuthorizationResponse" type="setChannelAuthorizationResponseType">
+		<xs:annotation>
+			<xs:documentation>TODO: allow ZAC? </xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="deleteChannelAuthorization" type="deleteChannelAuthorizationRequestType">
 		<xs:annotation>
-			<xs:documentation>manages flow targets and flows automatically.</xs:documentation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: the referenced ChannelAuthorization exists. manages flows and channelflowsession's automatically.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
-	<xs:element name="searchFlowTarget" type="searchFlowTargetRequestType"/>
+	<xs:element name="searchFlowTarget" type="searchFlowTargetRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for FlowTarget's in it's own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchFlowTargetResponse" type="searchFlowTargetResponseType"/>
-	<xs:element name="modifyFlowTarget" type="modifyFlowTargetRequestType"/>
+	<xs:element name="modifyFlowTarget" type="modifyFlowTargetRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. DAC can only modify FlowTarget's concurrency settings in it's own domain.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="modifyFlowTargetResponse" type="modifyFlowTargetResponseType"/>
 	<xs:element name="searchFlow" type="searchFlowRequestType"/>
 	<xs:element name="searchFlowResponse" type="searchFlowResponseType"/>

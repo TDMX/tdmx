@@ -31,6 +31,7 @@ import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
+import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
@@ -98,6 +99,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
@@ -508,8 +510,42 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteChannelAuthorization")
 	public DeleteChannelAuthorizationResponse deleteChannelAuthorization(
 			@WebParam(partName = "parameters", name = "deleteChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteChannelAuthorization parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		DeleteChannelAuthorizationResponse response = new DeleteChannelAuthorizationResponse();
+
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+		String domainName = parameters.getDomain();
+
+		// check DAC is authorized on the channelauths domain
+		Zone zone = checkDomainAuthorization(authorizedUser, domainName, response);
+		if (zone == null) {
+			return response;
+		}
+
+		// validate all channel and provided permission fields are specified.
+		Channel channel = validator.checkChannel(parameters.getChannel(), response);
+		if (channel == null) {
+			return response;
+		}
+
+		Domain domain = getDomainService().findByName(zone, domainName);
+		if (domain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
+
+		ChannelAuthorization ca = channelAuthorizationService.findByChannel(zone, domainName,
+				a2d.mapChannelOrigin(channel.getOrigin()), a2d.mapChannelDestination(channel.getDestination()));
+		if (ca == null) {
+			setError(ErrorCode.ChannelAuthorizationNotFound, response);
+			return response;
+		}
+		channelAuthorizationService.delete(ca);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
