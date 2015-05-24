@@ -52,7 +52,6 @@ import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 
 public class DomainToApiMapper {
 
@@ -91,24 +90,15 @@ public class DomainToApiMapper {
 		sv.setSignatureAlgorithm(mapSignatureAlgorithm(ft.getSignatureAlgorithm()));
 
 		Flowtargetsession fts = new Flowtargetsession();
+		if (ft.getPrimary() != null) {
+			fts.getFlowsessions().add(mapFlowSession(ft.getPrimary()));
+		}
+		if (ft.getSecondary() != null) {
+			fts.getFlowsessions().add(mapFlowSession(ft.getSecondary()));
+		}
 		fts.setSignaturevalue(sv);
 		f.setFlowtargetsession(fts);
 
-		return f;
-	}
-
-	public Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {
-		if (fts == null) {
-			return null;
-		}
-		Flowtargetsession f = new Flowtargetsession();
-		if (fts.getPrimary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getPrimary()));
-		}
-		if (fts.getSecondary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getSecondary()));
-		}
-		f.setSignaturevalue(mapSignature(fts.getSignature()));
 		return f;
 	}
 

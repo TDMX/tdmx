@@ -139,8 +139,35 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public GetFlowTargetResponse getFlowTarget(GetFlowTarget parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		GetFlowTargetResponse response = new GetFlowTargetResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		// check that the UC credential exists
+		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
+		if (existingCred == null) {
+			setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+
+		// lookup existing service exists
+		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingCred.getDomain(),
+				parameters.getServicename());
+		if (existingService == null) {
+			setError(ErrorCode.ServiceNotFound, response);
+			return response;
+		}
+
+		FlowTarget existingFlowTarget = flowTargetService.findByTargetService(existingCred, existingService);
+		if (existingFlowTarget != null) {
+			Flowtarget ft = d2a.mapFlowTarget(existingFlowTarget);
+			response.setFlowtarget(ft);
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override

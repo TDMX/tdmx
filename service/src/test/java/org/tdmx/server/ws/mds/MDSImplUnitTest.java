@@ -43,6 +43,8 @@ import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
+import org.tdmx.core.api.v01.mds.GetFlowTarget;
+import org.tdmx.core.api.v01.mds.GetFlowTargetResponse;
 import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
 import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
@@ -207,7 +209,12 @@ public class MDSImplUnitTest {
 		assertSuccess(response);
 		// TODO others
 
-		// TODO do getFlowTarget to confirm created
+		// do getFlowTarget to confirm FTS created
+		GetFlowTarget getReq = new GetFlowTarget();
+		getReq.setServicename(service.getServiceName());
+		GetFlowTargetResponse getRes = mds.getFlowTarget(getReq);
+		assertSuccess(getRes);
+		assertNotNull(getRes.getFlowtarget());
 
 		// tamper with signature doesn't work
 		fts.getSignaturevalue().setSignature("gugus");
