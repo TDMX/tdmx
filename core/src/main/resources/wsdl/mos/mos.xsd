@@ -21,7 +21,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:address"/>
+					<xs:element ref="msg:origin"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

@@ -20,6 +20,9 @@ package org.tdmx.server.ws.mos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatus;
@@ -33,6 +36,7 @@ import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
 import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -43,6 +47,20 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.service.AddressService;
+import org.tdmx.lib.zone.service.AgentCredentialFactory;
+import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.AgentCredentialValidator;
+import org.tdmx.lib.zone.service.ChannelAuthorizationService;
+import org.tdmx.lib.zone.service.DomainService;
+import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.ApiValidator;
+import org.tdmx.server.ws.DomainToApiMapper;
+import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
 
 public class MOSImpl implements MOS {
 
@@ -54,6 +72,24 @@ public class MOSImpl implements MOS {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MOSImpl.class);
+
+	private AuthenticatedAgentLookupService agentService;
+
+	private DomainService domainService;
+	private AddressService addressService;
+	private ServiceService serviceService;
+	private ChannelAuthorizationService channelAuthorizationService;
+	private FlowTargetService flowTargetService;
+
+	private AgentCredentialFactory credentialFactory;
+	private AgentCredentialService credentialService;
+	private AgentCredentialValidator credentialValidator;
+
+	private final DomainToApiMapper d2a = new DomainToApiMapper();
+	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
+	private final ApiValidator validator = new ApiValidator();
+
+	private int batchSize = 100;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -95,8 +131,27 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public GetAddressResponse getAddress(GetAddress parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		GetAddressResponse response = new GetAddressResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		// check that the UC credential exists
+		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
+		if (existingCred == null) {
+			setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+
+		ChannelEndpoint ep = new ChannelEndpoint();
+		ep.setDomain(existingCred.getDomain().getDomainName());
+		ep.setLocalname(existingCred.getAddress().getLocalName());
+		ep.setServiceprovider("TODO"); // TODO from the zone
+		response.setOrigin(ep);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -137,8 +192,108 @@ public class MOSImpl implements MOS {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private PKIXCertificate checkUserAuthorized(Acknowledge ack) {
+		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
+		if (user == null) {
+			setError(ErrorCode.MissingCredentials, ack);
+			return null;
+		}
+		if (!user.isTdmxUserCertificate()) {
+			setError(ErrorCode.NonUserAccess, ack);
+			return null;
+		}
+		return user;
+	}
+
+	private void setError(ErrorCode ec, Acknowledge ack) {
+		Error error = new Error();
+		error.setCode(ec.getErrorCode());
+		error.setDescription(ec.getErrorDescription());
+		ack.setError(error);
+		ack.setSuccess(false);
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+	public AuthenticatedAgentLookupService getAgentService() {
+		return agentService;
+	}
+
+	public void setAgentService(AuthenticatedAgentLookupService agentService) {
+		this.agentService = agentService;
+	}
+
+	public DomainService getDomainService() {
+		return domainService;
+	}
+
+	public void setDomainService(DomainService domainService) {
+		this.domainService = domainService;
+	}
+
+	public AddressService getAddressService() {
+		return addressService;
+	}
+
+	public void setAddressService(AddressService addressService) {
+		this.addressService = addressService;
+	}
+
+	public ServiceService getServiceService() {
+		return serviceService;
+	}
+
+	public void setServiceService(ServiceService serviceService) {
+		this.serviceService = serviceService;
+	}
+
+	public ChannelAuthorizationService getChannelAuthorizationService() {
+		return channelAuthorizationService;
+	}
+
+	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
+		this.channelAuthorizationService = channelAuthorizationService;
+	}
+
+	public FlowTargetService getFlowTargetService() {
+		return flowTargetService;
+	}
+
+	public void setFlowTargetService(FlowTargetService flowTargetService) {
+		this.flowTargetService = flowTargetService;
+	}
+
+	public AgentCredentialFactory getCredentialFactory() {
+		return credentialFactory;
+	}
+
+	public void setCredentialFactory(AgentCredentialFactory credentialFactory) {
+		this.credentialFactory = credentialFactory;
+	}
+
+	public AgentCredentialService getCredentialService() {
+		return credentialService;
+	}
+
+	public void setCredentialService(AgentCredentialService credentialService) {
+		this.credentialService = credentialService;
+	}
+
+	public AgentCredentialValidator getCredentialValidator() {
+		return credentialValidator;
+	}
+
+	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
+		this.credentialValidator = credentialValidator;
+	}
+
+	public int getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
 
 }
