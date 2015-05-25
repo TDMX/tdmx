@@ -119,6 +119,28 @@
         primary key (id)
     );
 
+    create table ChannelFlowTarget (
+        id bigint not null,
+        primaryScheme varchar(16),
+        primarySession varbinary(8000),
+        primaryValidFrom timestamp,
+        secondaryScheme varchar(16),
+        secondarySession varbinary(8000),
+        secondaryValidFrom timestamp,
+        signatureAlgorithm varchar(16),
+        targetPem varchar(12000),
+        signatureDate timestamp,
+        signature varchar(128),
+        processingErrorCode integer,
+        processingErrorMessage varchar(2048),
+        processingStatus varchar(12) not null,
+        processingId varchar(32) not null,
+        processingTimestamp timestamp not null,
+        targetFingerprint varchar(64) not null,
+        channelAuthorization_id bigint not null,
+        primary key (id)
+    );
+
     alter table Address 
         add constraint FK1ED033D4E7351234 
         foreign key (domain_id) 
@@ -168,6 +190,11 @@
         add constraint FKD97C5E95E7351234 
         foreign key (domain_id) 
         references Domain;
+
+    alter table ChannelFlowTarget 
+        add constraint FKBE84B5A2323A0354 
+        foreign key (channelAuthorization_id) 
+        references ChannelAuthorization;
 
     create table MaxValueEntry (
          NAME varchar(255),

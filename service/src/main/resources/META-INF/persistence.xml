@@ -26,9 +26,10 @@
 		<class>org.tdmx.lib.zone.domain.Domain</class>
 		<class>org.tdmx.lib.zone.domain.Address</class>
 		<class>org.tdmx.lib.zone.domain.Service</class>
-		<class>org.tdmx.lib.zone.domain.ChannelAuthorization</class>
 		<class>org.tdmx.lib.zone.domain.FlowTarget</class>
 		<class>org.tdmx.lib.zone.domain.FlowTargetConcurrency</class>
+		<class>org.tdmx.lib.zone.domain.ChannelAuthorization</class>
+		<class>org.tdmx.lib.zone.domain.ChannelFlowTarget</class>
 	</persistence-unit>
 
 	<persistence-unit name="MessageDB" transaction-type="RESOURCE_LOCAL">

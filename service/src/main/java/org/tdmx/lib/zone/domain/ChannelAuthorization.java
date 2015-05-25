@@ -19,9 +19,11 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -30,6 +32,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
@@ -157,6 +160,9 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode")),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
 	private ProcessingState processingState;
+
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "channelAuthorization", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ChannelFlowTarget> channelFlowTargets;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

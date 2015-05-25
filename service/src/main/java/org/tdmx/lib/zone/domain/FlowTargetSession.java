@@ -39,33 +39,16 @@ import javax.persistence.Embeddable;
  * receiver anyway has to "remember" the private session information and it's signatures to perform the validation. So
  * ServiceProviders just check for valid channel authorizations on messages relayed, but not flow target session.
  * 
- * @deprecated until ChannelFlowSession
- * 
  * @author Peter Klauser
  * 
  */
 @Embeddable
-@Deprecated
 public class FlowTargetSession implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	//@formatter:off
-	// TODO for ChannelFlowSession 
-//	@Embedded
-//	@AttributeOverrides({
-//			@AttributeOverride(name = "primary.scheme", column = @Column(name = "primaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
-//			@AttributeOverride(name = "primary.validFrom", column = @Column(name = "primaryValidFrom")),
-//			@AttributeOverride(name = "primary.sessionKey", column = @Column(name = "primarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
-//			@AttributeOverride(name = "secondary.scheme", column = @Column(name = "secondaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
-//			@AttributeOverride(name = "secondary.validFrom", column = @Column(name = "secondaryValidFrom")),
-//			@AttributeOverride(name = "secondary.sessionKey", column = @Column(name = "secondarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
-//			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "signatureDate")),
-//			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "signerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
-//			@AttributeOverride(name = "signature.value", column = @Column(name = "signature", length = AgentSignature.MAX_SIGNATURE_LEN)),
-//			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "signatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
-	//@formatter:on
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
