@@ -20,19 +20,21 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * Management Services for a ChannelAuthorization.
+ * Management Services for a Channels and it's ChannelAuthorization and ChannelFlowTargets.
  * 
  * @author Peter
  * 
  */
-public interface ChannelAuthorizationService {
+public interface ChannelService {
 
 	public enum SetAuthorizationOperationStatus {
 		SENDER_AUTHORIZATION_CONFIRMATION_MISSING,
@@ -77,20 +79,21 @@ public interface ChannelAuthorizationService {
 	 * set the processingstate to PENDING will require the caller (non tx layer) to submit the CA to the relay service.
 	 * 
 	 * 
-	 * @param auth
+	 * @param channel
+	 *            detached channel
 	 * @return
 	 */
-	public SetAuthorizationResultHolder setAuthorization(Zone zone, ChannelAuthorization auth);
+	public SetAuthorizationResultHolder setAuthorization(Zone zone, Domain domain, ChannelOrigin origin,
+			ChannelDestination dest, ChannelAuthorization auth);
 
-	public void createOrUpdate(ChannelAuthorization auth);
+	public void createOrUpdate(Channel channel);
 
-	public ChannelAuthorization findByChannel(Zone zone, String domainName, ChannelOrigin origin,
-			ChannelDestination dest);
+	public ChannelAuthorization findByChannel(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest);
 
-	public ChannelAuthorization findById(Long id);
+	public Channel findById(Long id);
 
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
-	public void delete(ChannelAuthorization auth);
+	public void delete(Channel channel);
 
 }

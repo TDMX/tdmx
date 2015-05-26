@@ -26,7 +26,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
  * @author Peter Klauser
  * 
  */
-public class ChannelAuthorizationSearchCriteria extends ChannelSearchCriteria {
+public class ChannelSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,17 +36,36 @@ public class ChannelAuthorizationSearchCriteria extends ChannelSearchCriteria {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	private final PageSpecifier pageSpecifier;
+
 	/**
-	 * If Boolean.TRUE then search only unconfirmed ChannelAuthorizations, else if Boolean.FALSE then only search for
-	 * confirmed ChannelAuthorizations, else if null find confirmed OR unconfirmed.
+	 * Specify the each individual field of of the ChannelOrigin to search for.
 	 */
-	private Boolean unconfirmed;
+	private final ChannelOrigin origin = new ChannelOrigin();
+
+	/**
+	 * Specify the each individual field of of the ChannelDestination to search for.
+	 */
+	private final ChannelDestination destination = new ChannelDestination();
+
+	/**
+	 * Find by owning domainName.
+	 */
+	private String domainName;
+
+	/**
+	 * Find by owning Domain.
+	 */
+	private Domain domain;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ChannelAuthorizationSearchCriteria(PageSpecifier pageSpecifier) {
-		super(pageSpecifier);
+	public ChannelSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
@@ -64,13 +83,32 @@ public class ChannelAuthorizationSearchCriteria extends ChannelSearchCriteria {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public Boolean getUnconfirmed() {
-		return unconfirmed;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setUnconfirmed(Boolean unconfirmed) {
-		this.unconfirmed = unconfirmed;
+	public ChannelOrigin getOrigin() {
+		return origin;
+	}
+
+	public ChannelDestination getDestination() {
+		return destination;
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public Domain getDomain() {
+		return domain;
+	}
+
+	public void setDomain(Domain domain) {
+		this.domain = domain;
 	}
 
 }

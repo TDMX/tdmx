@@ -68,7 +68,7 @@ import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService;
+import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -103,7 +103,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private AgentCredentialService agentCredentialService;
 	private AgentCredentialFactory agentCredentialFactory;
 
-	private ChannelAuthorizationService channelAuthorizationService;
+	private ChannelService channelService;
 	private FlowTargetService flowTargetService;
 
 	// -------------------------------------------------------------------------
@@ -248,7 +248,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					if (from.getDomain().getDomainName().equals(to.getDomain().getDomainName())) {
 						ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(
 								fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
-						channelAuthorizationService.createOrUpdate(sendRecvCa);
+						channelService.createOrUpdate(sendRecvCa.getChannel());
 						fromDomain.getAuths().add(sendRecvCa);
 					} else {
 						ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(fromDomain.getDomain(),
@@ -256,9 +256,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(toDomain.getDomain(),
 								toDac.getCredential(), toDac.getAg(), co, cd);
 
-						channelAuthorizationService.createOrUpdate(sendCa);
+						channelService.createOrUpdate(sendCa.getChannel());
 						fromDomain.getAuths().add(sendCa);
-						channelAuthorizationService.createOrUpdate(recvCa);
+						channelService.createOrUpdate(recvCa.getChannel());
 						toDomain.getAuths().add(recvCa);
 					}
 
@@ -438,9 +438,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		while (more) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 
-			List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, sc);
+			List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
 			for (ChannelAuthorization ca : channelAuths) {
-				channelAuthorizationService.delete(ca);
+				channelService.delete(ca.getChannel());
 			}
 			if (channelAuths.isEmpty()) {
 				more = false;
@@ -670,12 +670,12 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		this.agentCredentialFactory = agentCredentialFactory;
 	}
 
-	public ChannelAuthorizationService getChannelAuthorizationService() {
-		return channelAuthorizationService;
+	public ChannelService getChannelService() {
+		return channelService;
 	}
 
-	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
-		this.channelAuthorizationService = channelAuthorizationService;
+	public void setChannelService(ChannelService channelService) {
+		this.channelService = channelService;
 	}
 
 	public FlowTargetService getFlowTargetService() {

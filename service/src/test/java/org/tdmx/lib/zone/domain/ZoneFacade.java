@@ -99,9 +99,13 @@ public class ZoneFacade {
 	// TODO give DAC to be able to construct correct signatures
 	public static ChannelAuthorization createSendRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(domain);
-		c.setOrigin(origin);
-		c.setDestination(dest);
+
+		Channel channel = new Channel(domain);
+		channel.setOrigin(origin);
+		channel.setDestination(dest);
+
+		ChannelAuthorization c = new ChannelAuthorization(channel);
+		channel.setAuthorization(c);
 
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
@@ -151,9 +155,13 @@ public class ZoneFacade {
 
 	public static ChannelAuthorization createSendChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(domain);
-		c.setOrigin(origin);
-		c.setDestination(dest);
+
+		Channel channel = new Channel(domain);
+		channel.setOrigin(origin);
+		channel.setDestination(dest);
+
+		ChannelAuthorization c = new ChannelAuthorization(channel);
+		channel.setAuthorization(c);
 
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
@@ -189,9 +197,12 @@ public class ZoneFacade {
 
 	public static ChannelAuthorization createRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		ChannelAuthorization c = new ChannelAuthorization(domain);
-		c.setOrigin(origin);
-		c.setDestination(dest);
+		Channel channel = new Channel(domain);
+		channel.setOrigin(origin);
+		channel.setDestination(dest);
+
+		ChannelAuthorization c = new ChannelAuthorization(channel);
+		channel.setAuthorization(c);
 
 		EndpointPermission recvPermission = new EndpointPermission();
 		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);

@@ -33,7 +33,6 @@ import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
-import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowLimit;
@@ -104,17 +103,11 @@ public class ApiToDomainMapper {
 		return s;
 	}
 
-	public ChannelAuthorization mapChannelAuthorization(Domain domain, Currentchannelauthorization ca) {
+	public ChannelAuthorization mapChannelAuthorization(Currentchannelauthorization ca) {
 		if (ca == null) {
 			return null;
 		}
-		ChannelAuthorization a = new ChannelAuthorization(domain);
-		if (ca.getChannel() != null) {
-			a.setOrigin(mapChannelOrigin(ca.getChannel().getOrigin()));
-		}
-		if (ca.getDestination() != null) {
-			a.setDestination(mapChannelDestination(ca.getChannel().getDestination()));
-		}
+		ChannelAuthorization a = new ChannelAuthorization();
 		a.setSendAuthorization(mapEndpointPermission(ca.getOrigin()));
 		a.setRecvAuthorization(mapEndpointPermission(ca.getDestination()));
 		a.setReqSendAuthorization(null);

@@ -25,7 +25,7 @@
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
@@ -40,7 +40,7 @@
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
@@ -53,7 +53,7 @@
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>

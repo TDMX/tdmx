@@ -111,9 +111,9 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationOperationStatus;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService.SetAuthorizationResultHolder;
+import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationOperationStatus;
+import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.FlowTargetService.ModifyOperationStatus;
@@ -139,7 +139,7 @@ public class ZASImpl implements ZAS {
 	private DomainService domainService;
 	private AddressService addressService;
 	private ServiceService serviceService;
-	private ChannelAuthorizationService channelAuthorizationService;
+	private ChannelService channelService;
 	private FlowTargetService flowTargetService;
 
 	private AgentCredentialFactory credentialFactory;
@@ -536,13 +536,13 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ChannelAuthorization ca = channelAuthorizationService.findByChannel(zone, domainName,
-				a2d.mapChannelOrigin(channel.getOrigin()), a2d.mapChannelDestination(channel.getDestination()));
+		ChannelAuthorization ca = channelService.findByChannel(zone, domain, a2d.mapChannelOrigin(channel.getOrigin()),
+				a2d.mapChannelDestination(channel.getDestination()));
 		if (ca == null) {
 			setError(ErrorCode.ChannelAuthorizationNotFound, response);
 			return response;
 		}
-		channelAuthorizationService.delete(ca);
+		channelService.delete(ca.getChannel());
 
 		response.setSuccess(true);
 		return response;
@@ -1034,9 +1034,10 @@ public class ZASImpl implements ZAS {
 		}
 
 		// we construct a detached channel authorization from the provided request data
-		org.tdmx.lib.zone.domain.ChannelAuthorization offeredCA = a2d.mapChannelAuthorization(domain, ca);
 
-		SetAuthorizationResultHolder operationStatus = channelAuthorizationService.setAuthorization(zone, offeredCA);
+		SetAuthorizationResultHolder operationStatus = channelService.setAuthorization(zone, domain,
+				a2d.mapChannelOrigin(ca.getChannel().getOrigin()),
+				a2d.mapChannelDestination(ca.getChannel().getDestination()), a2d.mapChannelAuthorization(ca));
 		if (operationStatus.status != null) {
 			setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
 			return response;
@@ -1152,8 +1153,7 @@ public class ZASImpl implements ZAS {
 			sc.getDestination().setServiceProvider(parameters.getFilter().getDestination().getServiceprovider());
 			sc.getDestination().setServiceName(parameters.getFilter().getDestination().getServicename());
 		}
-		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelAuthorizationService.search(
-				zone, sc);
+		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.ChannelAuthorization ca : channelAuthorizations) {
 			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(ca));
 		}
@@ -1578,12 +1578,12 @@ public class ZASImpl implements ZAS {
 		this.serviceService = serviceService;
 	}
 
-	public ChannelAuthorizationService getChannelAuthorizationService() {
-		return channelAuthorizationService;
+	public ChannelService getChannelService() {
+		return channelService;
 	}
 
-	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
-		this.channelAuthorizationService = channelAuthorizationService;
+	public void setChannelService(ChannelService channelService) {
+		this.channelService = channelService;
 	}
 
 	public FlowTargetService getFlowTargetService() {

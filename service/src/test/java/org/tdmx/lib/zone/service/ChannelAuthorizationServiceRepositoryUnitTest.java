@@ -38,6 +38,7 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -52,7 +53,7 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
-	private ChannelAuthorizationService channelAuthorizationService;
+	private ChannelService channelService;
 
 	private TestDataGeneratorInput input;
 	private TestDataGeneratorOutput data;
@@ -89,19 +90,19 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(dataGenerator);
-		assertNotNull(channelAuthorizationService);
+		assertNotNull(channelService);
 	}
 
 	@Test
 	public void testFindById_NotFound() throws Exception {
-		ChannelAuthorization c = channelAuthorizationService.findById(new Random().nextLong());
+		Channel c = channelService.findById(new Random().nextLong());
 		assertNull(c);
 	}
 
 	@Test
 	public void testSearch_None() throws Exception {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(1, channelAuths.size());
 	}
@@ -111,11 +112,11 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
-		criteria.getOrigin().setDomainName(ca.getOrigin().getDomainName());
-		criteria.getOrigin().setServiceProvider(ca.getOrigin().getServiceProvider());
+		criteria.getOrigin().setLocalName(ca.getChannel().getOrigin().getLocalName());
+		criteria.getOrigin().setDomainName(ca.getChannel().getOrigin().getDomainName());
+		criteria.getOrigin().setServiceProvider(ca.getChannel().getOrigin().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(1, channelAuths.size());
 	}
@@ -125,12 +126,12 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getDestination().setLocalName(ca.getDestination().getLocalName());
-		criteria.getDestination().setDomainName(ca.getDestination().getDomainName());
-		criteria.getDestination().setServiceName(ca.getDestination().getServiceName());
-		criteria.getDestination().setServiceProvider(ca.getDestination().getServiceProvider());
+		criteria.getDestination().setLocalName(ca.getChannel().getDestination().getLocalName());
+		criteria.getDestination().setDomainName(ca.getChannel().getDestination().getDomainName());
+		criteria.getDestination().setServiceName(ca.getChannel().getDestination().getServiceName());
+		criteria.getDestination().setServiceProvider(ca.getChannel().getDestination().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(1, channelAuths.size());
 	}
@@ -140,15 +141,15 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
-		criteria.getOrigin().setDomainName(ca.getOrigin().getDomainName());
-		criteria.getOrigin().setServiceProvider(ca.getOrigin().getServiceProvider());
-		criteria.getDestination().setLocalName(ca.getDestination().getLocalName());
-		criteria.getDestination().setDomainName(ca.getDestination().getDomainName());
-		criteria.getDestination().setServiceName(ca.getDestination().getServiceName());
-		criteria.getDestination().setServiceProvider(ca.getDestination().getServiceProvider());
+		criteria.getOrigin().setLocalName(ca.getChannel().getOrigin().getLocalName());
+		criteria.getOrigin().setDomainName(ca.getChannel().getOrigin().getDomainName());
+		criteria.getOrigin().setServiceProvider(ca.getChannel().getOrigin().getServiceProvider());
+		criteria.getDestination().setLocalName(ca.getChannel().getDestination().getLocalName());
+		criteria.getDestination().setDomainName(ca.getChannel().getDestination().getDomainName());
+		criteria.getDestination().setServiceName(ca.getChannel().getDestination().getServiceName());
+		criteria.getDestination().setServiceProvider(ca.getChannel().getDestination().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(zone, criteria);
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(1, channelAuths.size());
 	}
@@ -157,8 +158,8 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	public void testLookup_FindByChannel() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
-		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain().getDomainName(),
-				ca.getOrigin(), ca.getDestination());
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca.getChannel()
+				.getOrigin(), ca.getChannel().getDestination());
 		assertNotNull(storedCA);
 	}
 
@@ -167,12 +168,12 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getOrigin().setLocalName(ca.getOrigin().getLocalName());
+		criteria.getOrigin().setLocalName(ca.getChannel().getOrigin().getLocalName());
 
 		Zone gugus = new Zone(zone.getAccountZoneId(), zone.getZoneApex());
 		gugus.setId(new Random().nextLong());
 
-		List<ChannelAuthorization> channelAuths = channelAuthorizationService.search(gugus, criteria);
+		List<ChannelAuthorization> channelAuths = channelService.search(gugus, criteria);
 		assertNotNull(channelAuths);
 		assertEquals(0, channelAuths.size());
 	}
@@ -180,17 +181,17 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Test
 	public void testModify() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
-		ChannelAuthorization storedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain().getDomainName(),
-				ca.getOrigin(), ca.getDestination());
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca.getChannel()
+				.getOrigin(), ca.getChannel().getDestination());
 		assertNotNull(storedCA);
 		storedCA.getUndeliveredBuffer().setHighMarkBytes(BigInteger.TEN);
 		storedCA.getUndeliveredBuffer().setLowMarkBytes(BigInteger.ONE);
 		storedCA.getUnsentBuffer().setHighMarkBytes(BigInteger.TEN);
 		storedCA.getUnsentBuffer().setLowMarkBytes(BigInteger.ONE);
-		channelAuthorizationService.createOrUpdate(storedCA);
+		channelService.createOrUpdate(storedCA.getChannel());
 
-		ChannelAuthorization modifiedCA = channelAuthorizationService.findByChannel(zone, ca.getDomain()
-				.getDomainName(), ca.getOrigin(), ca.getDestination());
+		ChannelAuthorization modifiedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca
+				.getChannel().getOrigin(), ca.getChannel().getDestination());
 		assertNotNull(modifiedCA);
 		assertEquals(storedCA.getUndeliveredBuffer().getHighMarkBytes(), modifiedCA.getUndeliveredBuffer()
 				.getHighMarkBytes());

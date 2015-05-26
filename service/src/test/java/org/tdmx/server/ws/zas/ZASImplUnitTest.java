@@ -131,7 +131,7 @@ import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService;
+import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
@@ -167,7 +167,7 @@ public class ZASImplUnitTest {
 	@Autowired
 	private ServiceService serviceService;
 	@Autowired
-	private ChannelAuthorizationService channelAuthorizationService;
+	private ChannelService channelService;
 	@Autowired
 	private FlowTargetService flowTargetService;
 
@@ -1657,9 +1657,9 @@ public class ZASImplUnitTest {
 		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		caSc.setDomainName(domain.getDomainName());
-		List<ChannelAuthorization> calist = channelAuthorizationService.search(zone, caSc);
+		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
 		for (ChannelAuthorization ca : calist) {
-			channelAuthorizationService.delete(ca);
+			channelService.delete(ca.getChannel());
 		}
 	}
 

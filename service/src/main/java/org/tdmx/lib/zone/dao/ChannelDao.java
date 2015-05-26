@@ -20,25 +20,34 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * DAO for the ChannelAuthorization Entity.
+ * DAO for the Channel Entity.
  * 
  * @author Peter
  * 
  */
-public interface ChannelAuthorizationDao {
+public interface ChannelDao {
 
-	public void persist(ChannelAuthorization value);
+	public void persist(Channel value);
 
-	public void delete(ChannelAuthorization value);
+	public void delete(Channel value);
 
-	public ChannelAuthorization merge(ChannelAuthorization value);
+	public Channel merge(Channel value);
 
-	public ChannelAuthorization loadById(Long id);
+	public Channel loadById(Long id);
 
+	/**
+	 * Search for ChannelAuthorizations. Fetchplan includes Channel and Domain.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
+
 }

@@ -59,7 +59,7 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
-import org.tdmx.lib.zone.service.ChannelAuthorizationService;
+import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -85,7 +85,7 @@ public class MDSImpl implements MDS {
 	private DomainService domainService;
 	private AddressService addressService;
 	private ServiceService serviceService;
-	private ChannelAuthorizationService channelAuthorizationService;
+	private ChannelService channelService;
 	private FlowTargetService flowTargetService;
 
 	private AgentCredentialFactory credentialFactory;
@@ -337,12 +337,12 @@ public class MDSImpl implements MDS {
 		this.serviceService = serviceService;
 	}
 
-	public ChannelAuthorizationService getChannelAuthorizationService() {
-		return channelAuthorizationService;
+	public ChannelService getChannelService() {
+		return channelService;
 	}
 
-	public void setChannelAuthorizationService(ChannelAuthorizationService channelAuthorizationService) {
-		this.channelAuthorizationService = channelAuthorizationService;
+	public void setChannelService(ChannelService channelService) {
+		this.channelService = channelService;
 	}
 
 	public FlowTargetService getFlowTargetService() {

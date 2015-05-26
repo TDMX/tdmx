@@ -19,11 +19,9 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -31,8 +29,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
@@ -40,7 +37,7 @@ import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
- * An ChannelAuthorization (within a Domain of a Zone) managed by a ServiceProvider
+ * An ChannelAuthorization part of a Channel
  * 
  * @author Peter Klauser
  * 
@@ -61,9 +58,7 @@ public class ChannelAuthorization implements Serializable {
 	// TODO "Relay" Processingstatus, relay to include any existing destination FlowTargetSessions which are valid at
 	// opening time.
 
-	// TODO manage ChannelFlowSessions as cascaded entity.
-
-	// TODO update processing status ChannelAuthorizationService after successful/failed relay of its changed state
+	// TODO update processing status ChannelService after successful/failed relay of its changed state
 
 	//
 
@@ -72,23 +67,8 @@ public class ChannelAuthorization implements Serializable {
 	@TableGenerator(name = "ChannelAuthorizationIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelauthObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Domain domain;
-
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "originSP", nullable = false)) })
-	private ChannelOrigin origin;
-
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false)),
-			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "destSP", nullable = false)) })
-	private ChannelDestination destination;
+	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "authorization")
+	private Channel channel;
 
 	@Embedded
 	@AttributeOverrides({
@@ -161,33 +141,27 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
 	private ProcessingState processingState;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "channelAuthorization", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ChannelFlowTarget> channelFlowTargets;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	ChannelAuthorization() {
+	public ChannelAuthorization() {
 	}
 
-	public ChannelAuthorization(Domain domain) {
-		setDomain(domain);
+	public ChannelAuthorization(Channel channel) {
+		setChannel(channel);
 	}
 
-	public ChannelAuthorization(Domain domain, ChannelAuthorization other) {
-		setDomain(domain);
-
-		setOrigin(other.getOrigin());
-		setDestination(other.getDestination());
+	public ChannelAuthorization(Channel channel, ChannelAuthorization other) {
+		setChannel(channel);
+		setProcessingState(other.getProcessingState());
 		setRecvAuthorization(other.getRecvAuthorization());
-		setSendAuthorization(other.getRecvAuthorization());
 		setReqRecvAuthorization(other.getReqRecvAuthorization());
 		setReqSendAuthorization(other.getReqSendAuthorization());
+		setSendAuthorization(other.getSendAuthorization());
+		setSignature(other.getSignature());
 		setUndeliveredBuffer(other.getUndeliveredBuffer());
 		setUnsentBuffer(other.getUnsentBuffer());
-		setSignature(other.getSignature());
-		setProcessingState(other.getProcessingState());
 	}
 
 	// -------------------------------------------------------------------------
@@ -199,8 +173,6 @@ public class ChannelAuthorization implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ChannelAuthorization [id=");
 		builder.append(id);
-		builder.append(" origin=").append(origin);
-		builder.append(", destination=").append(destination);
 		builder.append(", sendAuthorization=").append(sendAuthorization);
 		builder.append(", recvAuthorization=").append(recvAuthorization);
 		builder.append(", reqSendAuthorization=").append(reqSendAuthorization);
@@ -221,8 +193,8 @@ public class ChannelAuthorization implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setDomain(Domain domain) {
-		this.domain = domain;
+	private void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	// -------------------------------------------------------------------------
@@ -237,24 +209,8 @@ public class ChannelAuthorization implements Serializable {
 		this.id = id;
 	}
 
-	public Domain getDomain() {
-		return domain;
-	}
-
-	public ChannelOrigin getOrigin() {
-		return origin;
-	}
-
-	public void setOrigin(ChannelOrigin origin) {
-		this.origin = origin;
-	}
-
-	public ChannelDestination getDestination() {
-		return destination;
-	}
-
-	public void setDestination(ChannelDestination destination) {
-		this.destination = destination;
+	public Channel getChannel() {
+		return channel;
 	}
 
 	public EndpointPermission getSendAuthorization() {

@@ -28,20 +28,22 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
-import org.tdmx.lib.zone.dao.ChannelAuthorizationDao;
+import org.tdmx.lib.zone.dao.ChannelDao;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * Transactional CRUD Services for ChannelAuthorization Entity.
+ * Transactional CRUD Services for Channel Entity.
  * 
  * @author Peter Klauser
  * 
  */
-public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthorizationService {
+public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -50,9 +52,9 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ChannelAuthorizationServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ChannelServiceRepositoryImpl.class);
 
-	private ChannelAuthorizationDao channelAuthorizationDao;
+	private ChannelDao channelDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -64,16 +66,16 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SetAuthorizationResultHolder setAuthorization(Zone zone, ChannelAuthorization auth) {
+	public SetAuthorizationResultHolder setAuthorization(Zone zone, Domain domain, ChannelOrigin origin,
+			ChannelDestination dest, ChannelAuthorization auth) {
 		SetAuthorizationResultHolder resultHolder = new SetAuthorizationResultHolder();
-		//
-		String domainName = auth.getDomain().getDomainName();
 
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
-		ChannelAuthorization existingCA = findByChannel(zone, domainName, auth.getOrigin(), auth.getDestination());
+		ChannelAuthorization existingCA = findByChannel(zone, domain, origin, dest);
 		if (existingCA == null) {
 			// If no existing ca - then create one with empty data.
-			existingCA = new ChannelAuthorization(auth.getDomain());
+			Channel channel = new Channel(domain);
+			existingCA = new ChannelAuthorization(channel);
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 		}
 
@@ -83,8 +85,8 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 		boolean sendAuthChanged = false;
 		boolean recvAuthChanged = false;
 
-		if (domainName.equals(auth.getOrigin().getDomainName())
-				&& domainName.equals(auth.getDestination().getDomainName())) {
+		if (domain.getDomainName().equals(origin.getDomainName())
+				&& domain.getDomainName().equals(dest.getDomainName())) {
 			// 1) setting send&recvAuth on same domain channel
 			// - no requested send/recv allowed in existing ca.
 			existingCA.setReqRecvAuthorization(null);
@@ -101,7 +103,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
-		} else if (domainName.equals(auth.getOrigin().getDomainName())) {
+		} else if (domain.getDomainName().equals(origin.getDomainName())) {
 			// we are sender and there shall be no pending send authorization
 			existingCA.setReqSendAuthorization(null);
 
@@ -159,7 +161,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 		}
 
 		// persist the new or updated ca.
-		getChannelAuthorizationDao().persist(existingCA);
+		getChannelDao().persist(existingCA.getChannel());
 
 		// TODO manage "channel state" if opened - initialize any ChannelFlowSessions, if closed, remove any
 		// ChannelFlowSessions
@@ -169,42 +171,41 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void createOrUpdate(ChannelAuthorization auth) {
-		if (auth.getId() != null) {
-			ChannelAuthorization storedAuth = getChannelAuthorizationDao().loadById(auth.getId());
+	public void createOrUpdate(Channel channel) {
+		if (channel.getId() != null) {
+			Channel storedAuth = getChannelDao().loadById(channel.getId());
 			if (storedAuth != null) {
-				getChannelAuthorizationDao().merge(auth);
+				getChannelDao().merge(channel);
 			} else {
-				log.warn("Unable to find ChannelAuthorization with id " + auth.getId());
+				log.warn("Unable to find Channel with id " + channel.getId());
 			}
 		} else {
-			getChannelAuthorizationDao().persist(auth);
+			getChannelDao().persist(channel);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void delete(ChannelAuthorization auth) {
-		ChannelAuthorization storedAuth = getChannelAuthorizationDao().loadById(auth.getId());
+	public void delete(Channel channel) {
+		Channel storedAuth = getChannelDao().loadById(channel.getId());
 		if (storedAuth != null) {
-			getChannelAuthorizationDao().delete(storedAuth);
+			getChannelDao().delete(storedAuth);
 		} else {
-			log.warn("Unable to find ChannelAuthorization to delete with id " + auth.getId());
+			log.warn("Unable to find Channel to delete with id " + channel.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
-		return getChannelAuthorizationDao().search(zone, criteria);
+		return getChannelDao().search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelAuthorization findByChannel(Zone zone, String domainName, ChannelOrigin origin,
-			ChannelDestination dest) {
-		if (domainName == null) {
-			throw new IllegalArgumentException("missing domainName");
+	public ChannelAuthorization findByChannel(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest) {
+		if (domain == null) {
+			throw new IllegalArgumentException("missing domain");
 		}
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");
@@ -234,7 +235,7 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 			throw new IllegalArgumentException("missing dest serviceName");
 		}
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		criteria.setDomainName(domainName);
+		criteria.setDomain(domain);
 		criteria.getOrigin().setLocalName(origin.getLocalName());
 		criteria.getOrigin().setDomainName(origin.getDomainName());
 		criteria.getOrigin().setServiceProvider(origin.getServiceProvider());
@@ -242,15 +243,15 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 		criteria.getDestination().setDomainName(dest.getDomainName());
 		criteria.getDestination().setServiceProvider(dest.getServiceProvider());
 		criteria.getDestination().setServiceName(dest.getServiceName());
-		List<ChannelAuthorization> auths = getChannelAuthorizationDao().search(zone, criteria);
+		List<ChannelAuthorization> auths = getChannelDao().search(zone, criteria);
 
 		return auths.isEmpty() ? null : auths.get(0);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelAuthorization findById(Long id) {
-		return getChannelAuthorizationDao().loadById(id);
+	public Channel findById(Long id) {
+		return getChannelDao().loadById(id);
 	}
 
 	// -------------------------------------------------------------------------
@@ -265,12 +266,12 @@ public class ChannelAuthorizationServiceRepositoryImpl implements ChannelAuthori
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ChannelAuthorizationDao getChannelAuthorizationDao() {
-		return channelAuthorizationDao;
+	public ChannelDao getChannelDao() {
+		return channelDao;
 	}
 
-	public void setChannelAuthorizationDao(ChannelAuthorizationDao channelAuthorizationDao) {
-		this.channelAuthorizationDao = channelAuthorizationDao;
+	public void setChannelDao(ChannelDao channelDao) {
+		this.channelDao = channelDao;
 	}
 
 }

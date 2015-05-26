@@ -28,6 +28,7 @@
 		<class>org.tdmx.lib.zone.domain.Service</class>
 		<class>org.tdmx.lib.zone.domain.FlowTarget</class>
 		<class>org.tdmx.lib.zone.domain.FlowTargetConcurrency</class>
+		<class>org.tdmx.lib.zone.domain.Channel</class>
 		<class>org.tdmx.lib.zone.domain.ChannelAuthorization</class>
 		<class>org.tdmx.lib.zone.domain.ChannelFlowTarget</class>
 	</persistence-unit>

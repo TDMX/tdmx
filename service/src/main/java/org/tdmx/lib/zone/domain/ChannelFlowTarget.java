@@ -66,7 +66,7 @@ public class ChannelFlowTarget implements Serializable {
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private ChannelAuthorization channelAuthorization;
+	private Channel channel;
 
 	@Column(length = AgentCredential.MAX_SHA256FINGERPRINT_LEN, nullable = false)
 	private String targetFingerprint;
@@ -101,8 +101,8 @@ public class ChannelFlowTarget implements Serializable {
 	ChannelFlowTarget() {
 	}
 
-	public ChannelFlowTarget(ChannelAuthorization ca) {
-		setChannelAuthorization(ca);
+	public ChannelFlowTarget(Channel c) {
+		setChannel(c);
 	}
 
 	// -------------------------------------------------------------------------
@@ -114,6 +114,7 @@ public class ChannelFlowTarget implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ChannelAuthorization [id=");
 		builder.append(id);
+		builder.append(" targetFingerprint=").append(targetFingerprint);
 		builder.append(" fts=").append(flowTargetSession);
 		builder.append(", processingState=").append(processingState);
 		builder.append("]");
@@ -128,8 +129,8 @@ public class ChannelFlowTarget implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setChannelAuthorization(ChannelAuthorization ca) {
-		this.channelAuthorization = ca;
+	private void setChannel(Channel c) {
+		this.channel = c;
 	}
 
 	// -------------------------------------------------------------------------
@@ -144,8 +145,8 @@ public class ChannelFlowTarget implements Serializable {
 		this.id = id;
 	}
 
-	public ChannelAuthorization getChannelAuthorization() {
-		return channelAuthorization;
+	public Channel getChannel() {
+		return channel;
 	}
 
 	public String getTargetFingerprint() {

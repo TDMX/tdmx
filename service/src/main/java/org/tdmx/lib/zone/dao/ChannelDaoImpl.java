@@ -18,6 +18,7 @@
  */
 package org.tdmx.lib.zone.dao;
 
+import static org.tdmx.lib.zone.domain.QChannel.channel;
 import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 
@@ -27,6 +28,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -35,7 +37,7 @@ import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.expr.BooleanExpression;
 
-public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
+public class ChannelDaoImpl implements ChannelDao {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -56,24 +58,23 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void persist(ChannelAuthorization value) {
+	public void persist(Channel value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(ChannelAuthorization value) {
+	public void delete(Channel value) {
 		em.remove(value);
 	}
 
 	@Override
-	public ChannelAuthorization merge(ChannelAuthorization value) {
+	public Channel merge(Channel value) {
 		return em.merge(value);
 	}
 
 	@Override
-	public ChannelAuthorization loadById(Long id) {
-		return new JPAQuery(em).from(channelAuthorization).where(channelAuthorization.id.eq(id))
-				.uniqueResult(channelAuthorization);
+	public Channel loadById(Long id) {
+		return new JPAQuery(em).from(channel).where(channel.id.eq(id)).uniqueResult(channel);
 	}
 
 	@Override
@@ -81,38 +82,37 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelAuthorization).innerJoin(channelAuthorization.domain, domain)
-				.fetch();
+		JPAQuery query = new JPAQuery(em).from(channelAuthorization).innerJoin(channelAuthorization.channel, channel)
+				.fetch().innerJoin(channel.domain, domain).fetch();
 
 		BooleanExpression where = domain.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
+		if (criteria.getDomain() != null) {
+			where = where.and(channel.domain.eq(criteria.getDomain()));
+		}
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
-			where = where.and(channelAuthorization.origin.localName.eq(criteria.getOrigin().getLocalName()));
+			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
-			where = where.and(channelAuthorization.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getServiceProvider())) {
-			where = where
-					.and(channelAuthorization.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
+			where = where.and(channel.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-			where = where.and(channelAuthorization.destination.localName.eq(criteria.getDestination().getLocalName()));
+			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-			where = where
-					.and(channelAuthorization.destination.domainName.eq(criteria.getDestination().getDomainName()));
+			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
-			where = where.and(channelAuthorization.destination.serviceProvider.eq(criteria.getDestination()
-					.getServiceProvider()));
+			where = where.and(channel.destination.serviceProvider.eq(criteria.getDestination().getServiceProvider()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-			where = where.and(channelAuthorization.destination.serviceName.eq(criteria.getDestination()
-					.getServiceName()));
+			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 
 		query.where(where);
@@ -120,6 +120,7 @@ public class ChannelAuthorizationDaoImpl implements ChannelAuthorizationDao {
 				.getPageSpecifier().getFirstResult()));
 		return query.list(channelAuthorization);
 	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

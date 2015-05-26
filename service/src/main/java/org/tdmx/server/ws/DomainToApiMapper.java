@@ -171,33 +171,53 @@ public class DomainToApiMapper {
 		return ss;
 	}
 
+	public ChannelEndpoint mapOrigin(org.tdmx.lib.zone.domain.ChannelOrigin origin) {
+		if (origin == null) {
+			return null;
+		}
+		ChannelEndpoint o = new ChannelEndpoint();
+		o.setDomain(origin.getDomainName());
+		o.setLocalname(origin.getLocalName());
+		o.setServiceprovider(origin.getServiceProvider());
+		return o;
+	}
+
+	public Destination mapDestination(org.tdmx.lib.zone.domain.ChannelDestination dest) {
+		if (dest == null) {
+			return null;
+		}
+		Destination d = new Destination();
+		d.setDomain(dest.getDomainName());
+		d.setLocalname(dest.getLocalName());
+		d.setServiceprovider(dest.getServiceProvider());
+		d.setServicename(dest.getServiceName());
+		return d;
+	}
+
+	public Channel mapChannel(org.tdmx.lib.zone.domain.Channel channel) {
+		if (channel == null) {
+			return null;
+		}
+
+		Channel c = new Channel();
+		c.setDestination(mapDestination(channel.getDestination()));
+		c.setOrigin(mapOrigin(channel.getOrigin()));
+		return c;
+	}
+
 	public Channelauthorization mapChannelAuthorization(org.tdmx.lib.zone.domain.ChannelAuthorization ca) {
 		if (ca == null) {
 			return null;
 		}
-		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(ca.getOrigin().getDomainName());
-		origin.setLocalname(ca.getOrigin().getLocalName());
-		origin.setServiceprovider(ca.getOrigin().getServiceProvider());
 
-		Destination dest = new Destination();
-		dest.setDomain(ca.getDestination().getDomainName());
-		dest.setLocalname(ca.getDestination().getLocalName());
-		dest.setServicename(ca.getDestination().getServiceName());
-		dest.setServiceprovider(ca.getDestination().getServiceProvider());
-
-		Channel channel = new Channel();
-		channel.setDestination(dest);
-		channel.setOrigin(origin);
+		Currentchannelauthorization current = new Currentchannelauthorization();
+		current.setChannel(mapChannel(ca.getChannel()));
+		current.setOrigin(mapPermission(ca.getSendAuthorization()));
+		current.setDestination(mapPermission(ca.getRecvAuthorization()));
 
 		FlowControlLimit limit = new FlowControlLimit();
 		limit.setUnsentBuffer(mapLimit(ca.getUnsentBuffer()));
 		limit.setUndeliveredBuffer(mapLimit(ca.getUndeliveredBuffer()));
-
-		Currentchannelauthorization current = new Currentchannelauthorization();
-		current.setChannel(channel);
-		current.setOrigin(mapPermission(ca.getSendAuthorization()));
-		current.setDestination(mapPermission(ca.getRecvAuthorization()));
 		current.setLimit(limit);
 		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 
@@ -206,7 +226,7 @@ public class DomainToApiMapper {
 		unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
 
 		Channelauthorization c = new Channelauthorization();
-		c.setDomain(ca.getDomain().getDomainName());
+		c.setDomain(ca.getChannel().getDomain().getDomainName());
 		c.setCurrent(current);
 		c.setUnconfirmed(unconfirmed);
 		c.setProcessingstatus(mapProcessingStatus(ca.getProcessingState()));

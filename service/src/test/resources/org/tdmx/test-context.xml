@@ -50,7 +50,7 @@
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="agentCredentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
 		
 	</bean>

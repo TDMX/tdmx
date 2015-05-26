@@ -135,14 +135,14 @@
 			ref="tdmx.lib.zone.dao.ServiceDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.ChannelAuthorizationDao"
-		class="org.tdmx.lib.zone.dao.ChannelAuthorizationDaoImpl">
+	<bean id="tdmx.lib.zone.dao.ChannelDao"
+		class="org.tdmx.lib.zone.dao.ChannelDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.ChannelAuthorizationRepository"
-		class="org.tdmx.lib.zone.service.ChannelAuthorizationServiceRepositoryImpl">
-		<property name="channelAuthorizationDao"
-			ref="tdmx.lib.zone.dao.ChannelAuthorizationDao" />
+	<bean id="tdmx.lib.zone.ChannelRepository"
+		class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
+		<property name="channelDao"
+			ref="tdmx.lib.zone.dao.ChannelDao" />
 	</bean>
 
 	<bean id="tdmx.lib.zone.dao.FlowTargetDao"

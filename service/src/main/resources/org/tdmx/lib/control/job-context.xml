@@ -38,7 +38,7 @@
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelAuthorizationService" ref="tdmx.lib.zone.ChannelAuthorizationRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
 
 		<property name="batchSize" value="1000"/>
