@@ -114,7 +114,17 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
 			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
-
+		if (criteria.getUnconfirmed() != null) {
+			if (criteria.getUnconfirmed()) {
+				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNotNull().or(
+						channelAuthorization.reqSendAuthorization.grant.isNotNull());
+				where = where.and(orCondition);
+			} else {
+				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNull().or(
+						channelAuthorization.reqSendAuthorization.grant.isNull());
+				where = where.and(orCondition);
+			}
+		}
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));

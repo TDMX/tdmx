@@ -98,7 +98,7 @@ public class Channel implements Serializable {
 	private ChannelDestination destination;
 
 	/**
-	 * The concurrency association is "owned" ie. managed through this FlowTarget
+	 * The authorization owned by this Channel.
 	 */
 	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private ChannelAuthorization authorization;

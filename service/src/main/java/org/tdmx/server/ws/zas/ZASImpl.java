@@ -1153,6 +1153,7 @@ public class ZASImpl implements ZAS {
 			sc.getDestination().setServiceProvider(parameters.getFilter().getDestination().getServiceprovider());
 			sc.getDestination().setServiceName(parameters.getFilter().getDestination().getServicename());
 		}
+		sc.setUnconfirmed(parameters.getFilter().isUnconfirmedFlag()); // TODO test
 		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.ChannelAuthorization ca : channelAuthorizations) {
 			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(ca));
