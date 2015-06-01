@@ -100,9 +100,7 @@ public class ZoneFacade {
 	public static ChannelAuthorization createSendRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
 
-		Channel channel = new Channel(domain);
-		channel.setOrigin(origin);
-		channel.setDestination(dest);
+		Channel channel = new Channel(domain, origin, dest);
 
 		ChannelAuthorization c = new ChannelAuthorization(channel);
 		channel.setAuthorization(c);
@@ -156,9 +154,7 @@ public class ZoneFacade {
 	public static ChannelAuthorization createSendChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
 
-		Channel channel = new Channel(domain);
-		channel.setOrigin(origin);
-		channel.setDestination(dest);
+		Channel channel = new Channel(domain, origin, dest);
 
 		ChannelAuthorization c = new ChannelAuthorization(channel);
 		channel.setAuthorization(c);
@@ -197,9 +193,7 @@ public class ZoneFacade {
 
 	public static ChannelAuthorization createRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
 			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		Channel channel = new Channel(domain);
-		channel.setOrigin(origin);
-		channel.setDestination(dest);
+		Channel channel = new Channel(domain, origin, dest);
 
 		ChannelAuthorization c = new ChannelAuthorization(channel);
 		channel.setAuthorization(c);

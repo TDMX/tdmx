@@ -29,12 +29,20 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.ChannelDao;
+import org.tdmx.lib.zone.dao.FlowTargetDao;
+import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -55,6 +63,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	private static final Logger log = LoggerFactory.getLogger(ChannelServiceRepositoryImpl.class);
 
 	private ChannelDao channelDao;
+	private FlowTargetDao flowTargetDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -71,22 +80,20 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		SetAuthorizationResultHolder resultHolder = new SetAuthorizationResultHolder();
 
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
+		Channel existingChannel = null;
+		boolean newChannel = false;
 		ChannelAuthorization existingCA = findByChannel(zone, domain, origin, dest);
 		if (existingCA == null) {
 			// If no existing ca - then create one with empty data.
-			Channel channel = new Channel(domain);
-			existingCA = new ChannelAuthorization(channel);
+			existingChannel = new Channel(domain, origin, dest);
+			newChannel = true;
+			existingCA = new ChannelAuthorization(existingChannel);
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
+		} else {
+			existingChannel = existingCA.getChannel();
 		}
 
-		// handle sendAuth(+confirm requested recvAuth)
-		// - no reqSendAuth allowed in existing ca.
-		// - change of sendAuth vs existing sendAuth forces transfer
-		boolean sendAuthChanged = false;
-		boolean recvAuthChanged = false;
-
-		if (domain.getDomainName().equals(origin.getDomainName())
-				&& domain.getDomainName().equals(dest.getDomainName())) {
+		if (existingChannel.isSend() && existingChannel.isRecv()) {
 			// 1) setting send&recvAuth on same domain channel
 			// - no requested send/recv allowed in existing ca.
 			existingCA.setReqRecvAuthorization(null);
@@ -103,7 +110,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
-		} else if (domain.getDomainName().equals(origin.getDomainName())) {
+		} else if (existingChannel.isSend()) {
 			// we are sender and there shall be no pending send authorization
 			existingCA.setReqSendAuthorization(null);
 
@@ -124,6 +131,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 
+			// change of sendAuth vs existing sendAuth forces transfer
 			if (!auth.getSendAuthorization().equals(existingCA.getSendAuthorization())
 					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
 				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
@@ -132,7 +140,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		} else {
 			// 3) recvAuth(+confirming requested sendAuth)
 			// - no reqRecvAuth allowed in existing ca.
-			// - change of recvAuth vs existing sendAuth forces transfer
 			// we are receiver and there shall be no pending recv authorization
 			existingCA.setReqRecvAuthorization(null);
 
@@ -153,6 +160,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 
+			// change of recvAuth vs existing recvAuth forces transfer
 			if (!auth.getRecvAuthorization().equals(existingCA.getRecvAuthorization())
 					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
 				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
@@ -160,13 +168,40 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 		}
 
-		// persist the new or updated ca.
-		getChannelDao().persist(existingCA.getChannel());
+		// if the channel is "OPEN" and we are a receiving channel, then initialize any ChannelFlowTargets from the
+		// existing FlowTargets of receivers.
+		if (existingChannel.isOpen() && existingChannel.isRecv()) {
+			FlowTargetSearchCriteria ftsc = new FlowTargetSearchCriteria(new PageSpecifier(0, 100)); // TODO global hard
+																										// limit
+			ftsc.getTarget().setAddressName(existingChannel.getDestination().getLocalName());
+			ftsc.getTarget().setDomainName(existingChannel.getDestination().getDomainName());
+			ftsc.setServiceName(existingChannel.getDestination().getServiceName());
+			// suspended agents don't have FlowTargets, nor ChannelFlowTargets, so we don't need to restrict here on
+			// "active" agents
 
-		// TODO manage "channel state" if opened - initialize any ChannelFlowSessions, if closed, remove any
-		// ChannelFlowSessions
+			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
+			for (FlowTarget ft : flowTargets) {
+				setChannelFlowTarget(existingChannel, ft);
+			}
+		} else if (!existingChannel.isOpen()) {
+			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
+			existingChannel.getChannelFlowTargets().clear();
+		}
+		// persist the new ca
+		if (newChannel) {
+			getChannelDao().persist(existingChannel);
+		}
+
 		resultHolder.channelAuthorization = existingCA;
 		return resultHolder;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void setChannelFlowTarget(Long id, FlowTarget flowTarget) {
+		Channel channel = findById(id);
+		setChannelFlowTarget(channel, flowTarget);
+		// persist should not be necessary
 	}
 
 	@Override
@@ -196,8 +231,26 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	public void delete(ChannelFlowTarget channelFlowTarget) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 
@@ -262,6 +315,40 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void setChannelFlowTarget(Channel channel, FlowTarget flowTarget) {
+		ChannelFlowTarget foundFlowTarget = null;
+		for (ChannelFlowTarget cft : channel.getChannelFlowTargets()) {
+			if (cft.getTargetFingerprint().equals(flowTarget.getTarget().getFingerprint())) {
+				foundFlowTarget = cft;
+				break;
+			}
+		}
+		if (foundFlowTarget == null) {
+			ChannelFlowTarget cft = new ChannelFlowTarget(channel);
+			channel.getChannelFlowTargets().add(cft);
+			foundFlowTarget = cft;
+		}
+
+		foundFlowTarget.setTargetFingerprint(flowTarget.getTarget().getFingerprint());
+
+		FlowTargetSession fts = new FlowTargetSession();
+		fts.setPrimary(flowTarget.getPrimary());
+		fts.setSecondary(flowTarget.getSecondary());
+
+		AgentSignature sig = new AgentSignature();
+		sig.setAlgorithm(flowTarget.getSignatureAlgorithm());
+		sig.setCertificateChainPem(flowTarget.getTarget().getCertificateChainPem());
+		sig.setSignatureDate(flowTarget.getSignatureDate());
+		sig.setValue(flowTarget.getSignatureValue());
+		fts.setSignature(sig);
+		foundFlowTarget.setFlowTargetSession(fts);
+		if (channel.isSend() && channel.isRecv()) {
+			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+		} else {
+			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -272,6 +359,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	public void setChannelDao(ChannelDao channelDao) {
 		this.channelDao = channelDao;
+	}
+
+	public FlowTargetDao getFlowTargetDao() {
+		return flowTargetDao;
+	}
+
+	public void setFlowTargetDao(FlowTargetDao flowTargetDao) {
+		this.flowTargetDao = flowTargetDao;
 	}
 
 }

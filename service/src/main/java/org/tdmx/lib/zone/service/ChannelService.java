@@ -24,8 +24,12 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -94,6 +98,30 @@ public interface ChannelService {
 
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
+	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
+
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
+
+	/**
+	 * Adds or updates the FlowTarget as ChannelFlowTarget within a Channel.
+	 * 
+	 * @param id
+	 *            id of the channel
+	 * @param flowTarget
+	 */
+	public void setChannelFlowTarget(Long id, FlowTarget flowTarget);
+
+	/**
+	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.
+	 * 
+	 * @param channel
+	 */
 	public void delete(Channel channel);
 
+	/**
+	 * ChannelFlowTarget's can be deleted without the Channel's knowledge. Cascades to Flows.
+	 * 
+	 * @param channelFlowTarget
+	 */
+	public void delete(ChannelFlowTarget channelFlowTarget);
 }

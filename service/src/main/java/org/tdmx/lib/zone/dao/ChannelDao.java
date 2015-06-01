@@ -23,6 +23,9 @@ import java.util.List;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -41,8 +44,10 @@ public interface ChannelDao {
 
 	public Channel loadById(Long id);
 
+	public ChannelFlowTarget loadChannelFlowTargetById(Long id);
+
 	/**
-	 * Search for ChannelAuthorizations. Fetchplan includes Channel and Domain.
+	 * Search for ChannelAuthorizations. FetchPlan includes Channel and Domain.
 	 * 
 	 * @param zone
 	 * @param criteria
@@ -50,4 +55,21 @@ public interface ChannelDao {
 	 */
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
+	/**
+	 * Search for Channels. No FetchPlan.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
+
+	/**
+	 * Search for ChannelFlowTargets. FetchPlan includes Channel, Domain.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
 }

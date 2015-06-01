@@ -58,8 +58,6 @@ public class ChannelFlowTarget implements Serializable {
 	// TODO "Relay" Processingstatus, relay to include any existing destination FlowTargetSessions which are valid at
 	// opening time.
 
-	//
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowTargetIdGen")
 	@TableGenerator(name = "ChannelFlowTargetIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelflowtargetObjectId", valueColumnName = "value", allocationSize = 10)
@@ -93,6 +91,8 @@ public class ChannelFlowTarget implements Serializable {
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode")),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
 	private ProcessingState processingState;
+
+	// TODO Flow cascade
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

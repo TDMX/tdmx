@@ -1319,9 +1319,27 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testDeleteService_ZAC_ChannelsExist() {
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteService ca = new DeleteService();
+		Service s = new Service();
+		s.setDomain(domain.getDomainName());
+		s.setServicename(service.getServiceName());
+
+		ca.setService(s);
+
+		DeleteServiceResponse response = zas.deleteService(ca);
+		assertError(ErrorCode.ChannelAuthorizationExist, response);
+	}
+
+	@Test
 	public void testDeleteService_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		removeChannels(domain, service);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1335,9 +1353,27 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testDeleteService_DAC_ChannelsExist() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		DeleteService ca = new DeleteService();
+		Service s = new Service();
+		s.setDomain(domain.getDomainName());
+		s.setServicename(service.getServiceName());
+
+		ca.setService(s);
+
+		DeleteServiceResponse response = zas.deleteService(ca);
+		assertError(ErrorCode.ChannelAuthorizationExist, response);
+	}
+
+	@Test
 	public void testDeleteService_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		removeChannels(domain, service);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1660,6 +1696,18 @@ public class ZASImplUnitTest {
 		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
 		for (ChannelAuthorization ca : calist) {
 			channelService.delete(ca.getChannel());
+		}
+	}
+
+	private void removeChannels(Domain domain, org.tdmx.lib.zone.domain.Service service) {
+		// delete any ChannelAuthorizations on the domain
+		org.tdmx.lib.zone.domain.ChannelSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelSearchCriteria(
+				new PageSpecifier(0, 1000));
+		caSc.setDomainName(domain.getDomainName());
+		caSc.getDestination().setServiceName(service.getServiceName());
+		List<org.tdmx.lib.zone.domain.Channel> channelList = channelService.search(zone, caSc);
+		for (org.tdmx.lib.zone.domain.Channel c : channelList) {
+			channelService.delete(c);
 		}
 	}
 

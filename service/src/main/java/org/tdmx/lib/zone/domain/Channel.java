@@ -113,8 +113,10 @@ public class Channel implements Serializable {
 	Channel() {
 	}
 
-	public Channel(Domain domain) {
+	public Channel(Domain domain, ChannelOrigin origin, ChannelDestination destination) {
 		setDomain(domain);
+		setOrigin(origin);
+		setDestination(destination);
 	}
 
 	public Channel(Domain domain, Channel other) {
@@ -126,6 +128,21 @@ public class Channel implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public boolean isSend() {
+		return domain.getDomainName().equals(origin.getDomainName());
+	}
+
+	public boolean isRecv() {
+		return domain.getDomainName().equals(destination.getDomainName());
+	}
+
+	public boolean isOpen() {
+		return authorization.getSendAuthorization() != null
+				&& EndpointPermissionGrant.ALLOW == authorization.getSendAuthorization().getGrant()
+				&& authorization.getRecvAuthorization() != null
+				&& EndpointPermissionGrant.ALLOW == authorization.getRecvAuthorization().getGrant();
+	}
 
 	@Override
 	public String toString() {
@@ -170,7 +187,7 @@ public class Channel implements Serializable {
 		return origin;
 	}
 
-	public void setOrigin(ChannelOrigin origin) {
+	private void setOrigin(ChannelOrigin origin) {
 		this.origin = origin;
 	}
 
@@ -178,7 +195,7 @@ public class Channel implements Serializable {
 		return destination;
 	}
 
-	public void setDestination(ChannelDestination destination) {
+	private void setDestination(ChannelDestination destination) {
 		this.destination = destination;
 	}
 

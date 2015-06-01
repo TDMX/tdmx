@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QChannel.channel;
 import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
+import static org.tdmx.lib.zone.domain.QChannelFlowTarget.channelFlowTarget;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 
 import java.util.List;
@@ -31,6 +32,9 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
@@ -75,6 +79,12 @@ public class ChannelDaoImpl implements ChannelDao {
 	@Override
 	public Channel loadById(Long id) {
 		return new JPAQuery(em).from(channel).where(channel.id.eq(id)).uniqueResult(channel);
+	}
+
+	@Override
+	public ChannelFlowTarget loadChannelFlowTargetById(Long id) {
+		return new JPAQuery(em).from(channelFlowTarget).where(channelFlowTarget.id.eq(id))
+				.uniqueResult(channelFlowTarget);
 	}
 
 	@Override
@@ -129,6 +139,94 @@ public class ChannelDaoImpl implements ChannelDao {
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));
 		return query.list(channelAuthorization);
+	}
+
+	@Override
+	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		JPAQuery query = new JPAQuery(em).from(channelFlowTarget).innerJoin(channelFlowTarget.channel, channel).fetch()
+				.innerJoin(channel.domain, domain).fetch();
+
+		BooleanExpression where = domain.zone.eq(zone);
+
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
+		}
+		if (criteria.getDomain() != null) {
+			where = where.and(channel.domain.eq(criteria.getDomain()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
+			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
+			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getServiceProvider())) {
+			where = where.and(channel.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
+			where = where.and(channel.destination.serviceProvider.eq(criteria.getDestination().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
+		}
+		if (StringUtils.hasText(criteria.getTargetFingerprint())) {
+			where = where.and(channelFlowTarget.targetFingerprint.eq(criteria.getTargetFingerprint()));
+		}
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(channelFlowTarget);
+	}
+
+	@Override
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		JPAQuery query = new JPAQuery(em).from(channel).innerJoin(channel.domain, domain).fetch();
+
+		BooleanExpression where = domain.zone.eq(zone);
+
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
+		}
+		if (criteria.getDomain() != null) {
+			where = where.and(channel.domain.eq(criteria.getDomain()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
+			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
+			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getServiceProvider())) {
+			where = where.and(channel.origin.serviceProvider.eq(criteria.getOrigin().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceProvider())) {
+			where = where.and(channel.destination.serviceProvider.eq(criteria.getDestination().getServiceProvider()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
+		}
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(channel);
 	}
 
 	// -------------------------------------------------------------------------

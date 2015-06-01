@@ -143,6 +143,8 @@
 		class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
 		<property name="channelDao"
 			ref="tdmx.lib.zone.dao.ChannelDao" />
+		<property name="flowTargetDao"
+			ref="tdmx.lib.zone.dao.FlowTargetDao" />
 	</bean>
 
 	<bean id="tdmx.lib.zone.dao.FlowTargetDao"

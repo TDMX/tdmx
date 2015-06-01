@@ -530,7 +530,7 @@
 	<xs:element name="modifyServiceResponse" type="modifyServiceResponseType"/>
 	<xs:element name="deleteService" type="deleteServiceRequestType">
 		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists. Postcondition: Service deleted. TODO:no channel authorizations</xs:documentation>
+			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists, no ChannelAuthorizations exist. Postcondition: Service deleted.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>

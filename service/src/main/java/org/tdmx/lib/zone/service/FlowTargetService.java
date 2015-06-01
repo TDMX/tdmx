@@ -45,12 +45,15 @@ public interface FlowTargetService {
 	 * Modifies the FlowTarget's FlowTargetSession.
 	 * 
 	 * The FlowTarget provided must identify the UserAgent and Service. If a FlowTarget exists then the Session
-	 * information is updated, otherwise the FlowTarget is created.
+	 * information is updated, otherwise the FlowTarget is created. The FlowTargetSession is propagated as the
+	 * ChannelFlowTarget to all Channels which have the FlowTarget as the Destination and are "open", ie. have
+	 * ChannelAuthorizations which allow communications.
 	 * 
 	 * @param ft
+	 *            detached FlowTarget
 	 * @return whether there is an effective change in the session information
 	 */
-	public boolean setSession(FlowTarget ft);
+	public void setSession(FlowTarget ft);
 
 	/**
 	 * Updates the FlowTarget's concurrencyLimit respecting concurrent changes made to the FlowTargetConcurrency by
@@ -67,6 +70,13 @@ public interface FlowTargetService {
 
 	public FlowTarget findById(Long id);
 
+	/**
+	 * Find FlowTargets given the criteria. FetchPlan includes Domain, Service, Target and Target's address.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<FlowTarget> search(Zone zone, FlowTargetSearchCriteria criteria);
 
 	public void delete(FlowTarget auth);

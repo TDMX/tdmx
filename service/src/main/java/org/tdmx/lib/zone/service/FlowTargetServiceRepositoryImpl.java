@@ -88,26 +88,18 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public boolean setSession(FlowTarget ft) {
-		boolean changed = true;
+	public void setSession(FlowTarget ft) {
 		FlowTarget flowTarget = findByTargetService(ft.getTarget(), ft.getService());
 		if (flowTarget == null) {
 			createOrUpdate(ft);
+			flowTarget = ft;
 		} else {
-			if ((flowTarget.getSignatureValue() == ft.getSignatureValue())
-					|| (flowTarget.getSignatureValue() != null && flowTarget.getSignatureValue().equals(
-							ft.getSignatureValue()))) {
-				// effective change of signature value means we need to propagate changes to ChannelFlowSessions
-				changed = false;
-			} else {
-				flowTarget.setPrimary(ft.getPrimary());
-				flowTarget.setSecondary(ft.getSecondary());
-				flowTarget.setSignatureAlgorithm(ft.getSignatureAlgorithm());
-				flowTarget.setSignatureDate(ft.getSignatureDate());
-				flowTarget.setSignatureValue(ft.getSignatureValue());
-			}
+			flowTarget.setPrimary(ft.getPrimary());
+			flowTarget.setSecondary(ft.getSecondary());
+			flowTarget.setSignatureAlgorithm(ft.getSignatureAlgorithm());
+			flowTarget.setSignatureDate(ft.getSignatureDate());
+			flowTarget.setSignatureValue(ft.getSignatureValue());
 		}
-		return changed;
 	}
 
 	@Override

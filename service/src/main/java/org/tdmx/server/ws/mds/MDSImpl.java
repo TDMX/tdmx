@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws.mds;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -53,8 +55,12 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -160,6 +166,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
+		// TODO find by fingerprint and serviceName
 		FlowTarget existingFlowTarget = flowTargetService.findByTargetService(existingCred, existingService);
 		if (existingFlowTarget != null) {
 			Flowtarget ft = d2a.mapFlowTarget(existingFlowTarget);
@@ -214,11 +221,7 @@ public class MDSImpl implements MDS {
 		Flowtarget aft = new Flowtarget();
 		aft.setFlowtargetsession(parameters.getFlowtargetsession());
 		aft.setServicename(parameters.getServicename());
-
-		UserIdentity id = new UserIdentity();
-		id.setUsercertificate(PKIXCertificate.getPublicKey(existingCred.getCertificateChain()).getX509Encoded());
-		id.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(existingCred.getCertificateChain()).getX509Encoded());
-		id.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(existingCred.getCertificateChain()).getX509Encoded());
+		UserIdentity id = d2a.mapUserIdentity(existingCred);
 		aft.setTarget(id);
 		// check that the FTS signature is ok for the targetagent.
 		if (!SignatureUtils.checkFlowTargetSignature(aft)) {
@@ -227,9 +230,26 @@ public class MDSImpl implements MDS {
 		}
 
 		FlowTarget ft = a2d.mapFlowTarget(existingCred, existingService, parameters.getFlowtargetsession());
-		if (flowTargetService.setSession(ft)) {
-			log.info("FlowTargetSession changed.");
-			// TODO update all ChannelFlowSession's and return for relaying back
+		Zone zone = getAgentService().getZone();
+		flowTargetService.setSession(ft);
+
+		boolean more = true;
+		// fetch ALL Channels which have this FlowTarget as Destination.
+		for (int pageNo = 0; more; pageNo++) {
+			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomain(existingCred.getDomain());
+			sc.getDestination().setLocalName(existingCred.getAddress().getLocalName());
+			sc.getDestination().setDomainName(existingCred.getDomain().getDomainName());
+			sc.getDestination().setServiceName(existingService.getServiceName());
+			// sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
+
+			List<Channel> channels = channelService.search(zone, sc);
+			for (Channel channel : channels) {
+				channelService.setChannelFlowTarget(channel.getId(), ft);
+			}
+			if (channels.isEmpty()) {
+				more = false;
+			}
 		}
 
 		response.setSuccess(true);

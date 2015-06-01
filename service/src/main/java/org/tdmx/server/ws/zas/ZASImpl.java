@@ -101,6 +101,9 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTarget;
@@ -542,6 +545,8 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.ChannelAuthorizationNotFound, response);
 			return response;
 		}
+		// deleting the Channel will cascade to automatically delete all ChannelFlowTargets and Flows and the
+		// ChannelAuthorization.
 		channelService.delete(ca.getChannel());
 
 		response.setSuccess(true);
@@ -617,7 +622,7 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// delete any FlowTargets
+		// delete any FlowTargets for any service
 		boolean moreFT = true;
 		while (moreFT) {
 			FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
@@ -632,8 +637,29 @@ public class ZASImpl implements ZAS {
 			}
 		}
 
+		// TODO delete any remaining Flows ( originating ) with this agent.
+
 		// delete the UC
 		credentialService.delete(existingCred);
+
+		// ChannelFlowTargets (incl their Flows) which relate to the Agent should be deleted too, for any Service
+		// we can do this AFTER the credential is removed since the ChannelFlowTarget is not constrained to link to the
+		// FlowTarget
+		boolean moreCFT = true;
+		while (moreCFT) {
+			ChannelFlowTargetSearchCriteria sc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0,
+					getBatchSize()));
+			sc.setDomain(existingCred.getDomain());
+			sc.setTargetFingerprint(existingCred.getFingerprint());
+
+			List<ChannelFlowTarget> channelFlowTargets = channelService.search(zone, sc);
+			for (ChannelFlowTarget cft : channelFlowTargets) {
+				channelService.delete(cft);
+			}
+			if (channelFlowTargets.isEmpty()) {
+				moreCFT = false;
+			}
+		}
 
 		response.setSuccess(true);
 		return response;
@@ -809,6 +835,17 @@ public class ZASImpl implements ZAS {
 				parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
+			return response;
+		}
+
+		// prohibit deleteService change if we have ChannelAuthorizations, which would get rid of
+		// ChannelFlowTargets and Flows
+		ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomain(domain);
+		sc.getDestination().setServiceName(existingService.getServiceName());
+		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
+		if (!channels.isEmpty()) {
+			setError(ErrorCode.ChannelAuthorizationExist, response);
 			return response;
 		}
 

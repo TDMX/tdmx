@@ -58,7 +58,9 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
@@ -220,6 +222,27 @@ public class MDSImplUnitTest {
 		fts.getSignaturevalue().setSignature("gugus");
 		response = mds.setFlowTargetSession(req);
 		assertError(ErrorCode.InvalidSignatureFlowTarget, response);
+
+		// check that the channelflowtargets are set
+		boolean more = true;
+		// fetch ALL Channels which have this FlowTarget as Destination.
+		for (int pageNo = 0; more; pageNo++) {
+			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(pageNo, 5));
+			sc.setDomain(domain);
+			sc.getDestination().setLocalName(uc.getPublicCert().getCommonName());
+			sc.getDestination().setDomainName(domain.getDomainName());
+			sc.getDestination().setServiceName(service.getServiceName());
+			// sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
+
+			List<Channel> channels = channelService.search(zone, sc);
+			for (Channel channel : channels) {
+				log.info("" + channel);
+			}
+			if (channels.isEmpty()) {
+				more = false;
+			}
+		}
+
 	}
 
 	private void assertSuccess(Acknowledge ack) {
