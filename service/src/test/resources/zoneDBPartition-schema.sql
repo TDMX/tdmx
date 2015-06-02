@@ -148,6 +148,14 @@
         primary key (id)
     );
 
+    create table ChannelFlowOrigin (
+        id bigint not null,
+        sourceCertificateChainPem varchar(12000) not null,
+        sourceFingerprint varchar(64) not null,
+        flowTarget_id bigint not null,
+        primary key (id)
+    );
+
 
     alter table Address 
         add constraint FK1ED033D4E7351234 
@@ -178,6 +186,11 @@
         add constraint FK8F4414E398CAEC51 
         foreign key (authorization_id) 
         references ChannelAuthorization;
+
+    alter table ChannelFlowOrigin 
+        add constraint FKB6E7F337EB7EBA3 
+        foreign key (flowTarget_id) 
+        references ChannelFlowTarget;
 
     alter table ChannelFlowTarget 
         add constraint FKBE84B5A294FB8720 

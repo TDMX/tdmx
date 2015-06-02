@@ -326,6 +326,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (foundFlowTarget == null) {
 			ChannelFlowTarget cft = new ChannelFlowTarget(channel);
 			channel.getChannelFlowTargets().add(cft);
+			if (channel.isSend()) {
+				// TODO initialize the ChannelFlowOrigins for ALL known Agents
+			}
+
 			foundFlowTarget = cft;
 		}
 
@@ -342,10 +346,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		sig.setValue(flowTarget.getSignatureValue());
 		fts.setSignature(sig);
 		foundFlowTarget.setFlowTargetSession(fts);
-		if (channel.isSend() && channel.isRecv()) {
-			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
-		} else {
+		// on the receiving side, we need to relay new ChannelFlowTargets to the sending side, except if we are both
+		// sender and receiver
+		if (!channel.isSend() && channel.isRecv()) {
 			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+		} else {
+			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		}
 	}
 

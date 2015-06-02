@@ -29,70 +29,69 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Transient;
 
-import org.tdmx.server.ws.zas.ZASImpl;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
- * An Service (within a Domain) managed by a ServiceProvider.
+ * An ChannelFlowOrigin is a the source of a Flow which targets a ChannelFlowTarget.
  * 
- * A Service is created by a DomainAdministrator or ZoneAdministrator for a Domain at any time, as long as the service
- * doesn't exist already. A Service is deleted by a DomainAdministrator or ZoneAdministrator only if there are no
- * existing Channel's ( with Authorizations ).
+ * Multiple ChannelFlowOrigins ( one per source Agent with the same address ) can share the same ChannelFlowTarget (
+ * where there is one per destination Agent ).
  * 
- * FlowTargets which exist on the Service are deleted prior to deleting the Service, see
- * {@link ZASImpl#deleteService(org.tdmx.core.api.v01.zas.DeleteService)}. Prior deletion of ChannelAuthorizations makes
- * sure Flows and Messages are deleted cleanly before the service is removed.
+ * ChannelFlowOrigins are created at the same ChannelFlowTargets are created for all "known" source Agents. This can be
+ * on the sending side when a ChannelFlowTarget is relayed in from the receiving side, or when the first inbound
+ * messages is relayed in on the receiving side. For Flows within the same domain, the ChannelFlowOrigin is created at
+ * the same time the ChannelFlowTargets are created, on Channel open.
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "Service")
-public class Service implements Serializable {
+@Table(name = "ChannelFlowOrigin")
+public class ChannelFlowOrigin implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
+	// TODO "Relay" Processingstatus of flowcontrolstatus
+
+	// TODO Quota info
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ServiceIdGen")
-	@TableGenerator(name = "ServiceIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowOriginIdGen")
+	@TableGenerator(name = "ChannelFlowOriginIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelfloworiginObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Domain domain;
+	private ChannelFlowTarget flowTarget;
 
-	/**
-	 * The serviceName part.
-	 */
-	@Column(length = MAX_NAME_LEN, nullable = false)
-	private String serviceName;
+	@Column(length = AgentCredential.MAX_SHA256FINGERPRINT_LEN, nullable = false)
+	private String sourceFingerprint;
 
-	@Column(nullable = false)
-	private int concurrencyLimit = 1;
+	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
+	private String sourceCertificateChainPem;
+
+	@Transient
+	private PKIXCertificate[] sourceCertificateChain;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	Service() {
+	ChannelFlowOrigin() {
 	}
 
-	public Service(Domain domain, String serviceName) {
-		setDomain(domain);
-		setServiceName(serviceName);
-	}
-
-	public Service(Domain domain, Service other) {
-		setDomain(domain);
-		setServiceName(other.getServiceName());
-		setConcurrencyLimit(other.getConcurrencyLimit());
+	public ChannelFlowOrigin(ChannelFlowTarget cft) {
+		setFlowTarget(cft);
 	}
 
 	// -------------------------------------------------------------------------
@@ -102,11 +101,24 @@ public class Service implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Service [id=");
+		builder.append("ChannelFlowOrigin [id=");
 		builder.append(id);
-		builder.append(", serviceName=").append(serviceName);
+		builder.append(" sourceFingerprint=").append(sourceFingerprint);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getSourceCertificateChain() {
+		if (sourceCertificateChain == null && getSourceCertificateChainPem() != null) {
+			sourceCertificateChain = CertificateIOUtils.safePemToX509certs(getSourceCertificateChainPem());
+		}
+		return sourceCertificateChain;
 	}
 
 	// -------------------------------------------------------------------------
@@ -117,12 +129,8 @@ public class Service implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setDomain(Domain domain) {
-		this.domain = domain;
-	}
-
-	private void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
+	private void setFlowTarget(ChannelFlowTarget flowTarget) {
+		this.flowTarget = flowTarget;
 	}
 
 	// -------------------------------------------------------------------------
@@ -137,20 +145,24 @@ public class Service implements Serializable {
 		this.id = id;
 	}
 
-	public Domain getDomain() {
-		return domain;
+	public ChannelFlowTarget getFlowTarget() {
+		return flowTarget;
 	}
 
-	public String getServiceName() {
-		return serviceName;
+	public String getSourceFingerprint() {
+		return sourceFingerprint;
 	}
 
-	public int getConcurrencyLimit() {
-		return concurrencyLimit;
+	public void setSourceFingerprint(String sourceFingerprint) {
+		this.sourceFingerprint = sourceFingerprint;
 	}
 
-	public void setConcurrencyLimit(int concurrencyLimit) {
-		this.concurrencyLimit = concurrencyLimit;
+	public String getSourceCertificateChainPem() {
+		return sourceCertificateChainPem;
+	}
+
+	public void setSourceCertificateChainPem(String sourceCertificateChainPem) {
+		this.sourceCertificateChainPem = sourceCertificateChainPem;
 	}
 
 }

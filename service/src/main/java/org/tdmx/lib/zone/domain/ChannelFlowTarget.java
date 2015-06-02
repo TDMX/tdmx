@@ -19,9 +19,12 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -30,14 +33,24 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
  * An ChannelFlowTarget is a copy of a FlowTarget held within each ChannelAuthorization.
+ * 
+ * ChannelFlowTargets are created when FlowTargets are set by target Agents on all open Channels which have that target.
+ * ChannelFlowTargets are created on the receiving side ( from existing FlowTargets ) on Channel open when
+ * ChannelAuthorization is relayed in or authorization set by the receiving side.
+ * 
+ * ChannelFlowTargets ( including their ChannelFlowOrigins ) are deleted on the receiving side when the target agent is
+ * deleted on the receiving side. They are deleted also when a ChannelAuthorization declares a Channel "closed".
  * 
  * @author Peter Klauser
  * 
@@ -93,6 +106,8 @@ public class ChannelFlowTarget implements Serializable {
 	private ProcessingState processingState;
 
 	// TODO Flow cascade
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "flowTarget", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ChannelFlowOrigin> channelFlowOrigins;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -119,6 +134,16 @@ public class ChannelFlowTarget implements Serializable {
 		builder.append(", processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getTargetCertificateChain() {
+		return flowTargetSession.getSignature().getCertificateChain();
 	}
 
 	// -------------------------------------------------------------------------
@@ -171,6 +196,13 @@ public class ChannelFlowTarget implements Serializable {
 
 	public void setProcessingState(ProcessingState processingState) {
 		this.processingState = processingState;
+	}
+
+	public Set<ChannelFlowOrigin> getChannelFlowOrigins() {
+		if (channelFlowOrigins == null) {
+			channelFlowOrigins = new HashSet<>();
+		}
+		return channelFlowOrigins;
 	}
 
 }

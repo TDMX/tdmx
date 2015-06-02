@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -208,11 +209,10 @@ public class Channel implements Serializable {
 	}
 
 	public Set<ChannelFlowTarget> getChannelFlowTargets() {
+		if (channelFlowTargets == null) {
+			channelFlowTargets = new HashSet<>();
+		}
 		return channelFlowTargets;
-	}
-
-	public void setChannelFlowTargets(Set<ChannelFlowTarget> channelFlowTargets) {
-		this.channelFlowTargets = channelFlowTargets;
 	}
 
 }

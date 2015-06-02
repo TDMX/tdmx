@@ -203,7 +203,7 @@ public class AgentCredential implements Serializable {
 	 */
 	public PKIXCertificate[] getCertificateChain() {
 		if (certificateChain == null && getCertificateChainPem() != null) {
-			setCertificateChain(CertificateIOUtils.safePemToX509certs(getCertificateChainPem()));
+			certificateChain = CertificateIOUtils.safePemToX509certs(getCertificateChainPem());
 		}
 		return certificateChain;
 	}
@@ -226,10 +226,6 @@ public class AgentCredential implements Serializable {
 
 	private void setAddress(Address address) {
 		this.address = address;
-	}
-
-	private void setCertificateChain(PKIXCertificate[] certificateChain) {
-		this.certificateChain = certificateChain;
 	}
 
 	private void setFingerprint(String fingerprint) {
