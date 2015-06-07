@@ -20,15 +20,12 @@
 package org.tdmx.server.ws.security.service;
 
 import java.security.cert.X509Certificate;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -89,34 +86,26 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 		}
 
 		// different accounts could have the same zone on different zoneDBs
-		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(new PageSpecifier(0, 4));
-		sc.setZoneApex(providedCredential.getZoneApex());
-		List<AccountZone> accountZones = accountZoneService.search(sc);
-		if (accountZones.isEmpty()) {
+		AccountZone accountZone = accountZoneService.findByZoneApex(providedCredential.getZoneApex());
+		if (accountZone == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_ZONE);
 		}
 
 		AgentCredential agentCredential = null;
-		AccountZone agentAccountZone = null;
 		Zone zone = null;
-		for (AccountZone accountZone : accountZones) {
-			try {
-				getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+		try {
+			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
 
-				zone = getZoneService().findByZoneApex(accountZone.getId(), providedCredential.getZoneApex());
-				if (zone != null) {
-					agentCredential = getAgentCredentialService()
-							.findByFingerprint(providedCredential.getFingerprint());
-					if (agentCredential != null) {
-						agentAccountZone = accountZone;
-						break;
-					}
-				}
-			} finally {
-				getZonePartitionIdProvider().clearPartitionId();
+			zone = getZoneService().findByZoneApex(providedCredential.getZoneApex());
+			if (zone == null) {
+				return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_ZONE);
 			}
+			// TODO fetch plan up to Zone if requested, so we dont need to fetch the zone separately
+			agentCredential = getAgentCredentialService().findByFingerprint(providedCredential.getFingerprint());
+		} finally {
+			getZonePartitionIdProvider().clearPartitionId();
 		}
-		if (agentCredential == null || agentAccountZone == null || zone == null) {
+		if (agentCredential == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_AGENT);
 		}
 		if (AgentCredentialStatus.ACTIVE != agentCredential.getCredentialStatus()) {
@@ -134,7 +123,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 					+ " suspect cert: " + PKIXCertificate.getPublicKey(providedCredential.getCertificateChain()));
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
-		return new AuthorizationResult(storedPublicKey, agentAccountZone, zone);
+		return new AuthorizationResult(storedPublicKey, accountZone, zone);
 	}
 
 	// -------------------------------------------------------------------------

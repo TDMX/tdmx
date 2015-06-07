@@ -72,7 +72,7 @@ public class ZoneInstallJobExecutorImpl implements JobExecutor<ZoneInstallTask> 
 	public void execute(Long id, ZoneInstallTask task) {
 		// tx1: (r/o) lookup AccountZone in ControlDB to figure out the partition to provision the Zone to.
 		// check that the AccountZone has our jobId so we have effectively the "lock" to update it later.
-		AccountZone az = getAccountZoneService().findByAccountIdZoneApex(task.getAccountId(), task.getZoneApex());
+		AccountZone az = getAccountZoneService().findByZoneApex(task.getZoneApex());
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}

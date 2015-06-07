@@ -29,6 +29,7 @@ import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -89,6 +90,22 @@ public interface ChannelService {
 	 */
 	public SetAuthorizationResultHolder setAuthorization(Zone zone, Domain domain, ChannelOrigin origin,
 			ChannelDestination dest, ChannelAuthorization auth);
+
+	/**
+	 * Relayed in EndpointPermission.
+	 * 
+	 * Creates ChannelAuthorization if no Channel exists, otherwise the EndpointPermission relayed in is set as either
+	 * the reqSendPermission or reqRecvPermission, which must be later confirmed by the domain administrator using
+	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param origin
+	 * @param dest
+	 * @param otherPerm
+	 */
+	public void relayAuthorization(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest,
+			EndpointPermission otherPerm);
 
 	public void createOrUpdate(Channel channel);
 

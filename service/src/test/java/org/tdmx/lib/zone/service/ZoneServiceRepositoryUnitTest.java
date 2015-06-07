@@ -67,7 +67,7 @@ public class ZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Zone az = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
+		Zone az = service.findByZoneApex(zone.getZoneApex());
 		assertNotNull(az);
 		assertEquals(zone.getId(), az.getId());
 		assertEquals(zone.getAccountZoneId(), az.getAccountZoneId());
@@ -75,16 +75,16 @@ public class ZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound() throws Exception {
-		Zone az = service.findByZoneApex(zone.getAccountZoneId(), "gugus");
+		Zone az = service.findByZoneApex("gugus");
 		assertNull(az);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		Zone az = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
+		Zone az = service.findByZoneApex(zone.getZoneApex());
 		service.createOrUpdate(az);
 
-		Zone az2 = service.findByZoneApex(zone.getAccountZoneId(), zone.getZoneApex());
+		Zone az2 = service.findByZoneApex(zone.getZoneApex());
 
 		assertTrue(az != az2);
 		assertEquals(az.getAccountZoneId(), az2.getAccountZoneId());

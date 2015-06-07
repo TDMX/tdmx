@@ -93,7 +93,7 @@ public class SASImplUnitTest {
 		accountZoneResource = new AccountZoneResource();
 		accountZoneResource.setAccountId(accountResource.getAccountId());
 		accountZoneResource.setSegment(MockZonePartitionIdInstaller.S1);
-		accountZoneResource.setZoneApex("zone.apex");
+		accountZoneResource.setZoneApex(accountResource.getAccountId() + ".zone.apex"); // make it unique.
 		accountZoneResource.setAccessStatus("ACTIVE");
 
 		accountZoneResource = sas.createAccountZone(accountResource.getId(), accountZoneResource);

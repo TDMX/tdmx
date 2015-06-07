@@ -172,21 +172,6 @@ public class ZACInstallJobUnitTest {
 	}
 
 	@Test
-	public void test_Failure_AccountIdNotFound() throws Exception {
-		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId("gugus");
-		task.setZoneApex(zone.getZoneApex());
-		task.setFingerprint(fingerprint);
-
-		try {
-			executor.execute(jobId, task);
-			fail();
-		} catch (IllegalArgumentException e) {
-
-		}
-	}
-
-	@Test
 	public void test_Failure_FingerprintMissing() throws Exception {
 		ZACInstallTask task = new ZACInstallTask();
 		task.setAccountId(data.getAccount().getAccountId());

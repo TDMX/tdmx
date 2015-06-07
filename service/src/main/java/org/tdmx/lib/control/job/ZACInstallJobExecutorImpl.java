@@ -74,7 +74,7 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 
 	@Override
 	public void execute(Long id, ZACInstallTask task) {
-		AccountZone az = getAccountZoneService().findByAccountIdZoneApex(task.getAccountId(), task.getZoneApex());
+		AccountZone az = getAccountZoneService().findByZoneApex(task.getZoneApex());
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}
@@ -99,7 +99,7 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 		zonePartitionIdProvider.setPartitionId(partitionId);
 		Zone zone = null;
 		try {
-			zone = getZoneService().findByZoneApex(az.getId(), az.getZoneApex());
+			zone = getZoneService().findByZoneApex(az.getZoneApex());
 			if (zone == null) {
 				throw new IllegalStateException("Zone missing.");
 			}

@@ -35,7 +35,7 @@ public interface AccountZoneService {
 
 	public AccountZone findById(Long id);
 
-	public AccountZone findByAccountIdZoneApex(String accountId, String zoneApex);
+	public AccountZone findByZoneApex(String zoneApex);
 
 	public void delete(AccountZone accountZone);
 

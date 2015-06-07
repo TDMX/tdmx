@@ -344,8 +344,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	}
 
 	private void deleteAccountZone(AccountZone accountZone) {
-		AccountZone az = accountZoneService.findByAccountIdZoneApex(accountZone.getAccountId(),
-				accountZone.getZoneApex());
+		AccountZone az = accountZoneService.findByZoneApex(accountZone.getZoneApex());
 		if (az != null) {
 			accountZoneService.delete(az);
 		}
@@ -521,7 +520,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 		accountZoneService.createOrUpdate(az);
 
-		az = accountZoneService.findByAccountIdZoneApex(a.getAccountId(), zoneApex);
+		az = accountZoneService.findByZoneApex(zoneApex);
 
 		result.setAccountZone(az);
 	}

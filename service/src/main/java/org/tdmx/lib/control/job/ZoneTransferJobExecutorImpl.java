@@ -94,7 +94,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 	@Override
 	public void execute(Long id, ZoneTransferTask task) {
-		AccountZone az = getAccountZoneService().findByAccountIdZoneApex(task.getAccountId(), task.getZoneApex());
+		AccountZone az = getAccountZoneService().findByZoneApex(task.getZoneApex());
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}
@@ -147,7 +147,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private void checkNoZoneExistsInTarget(Long accountId, String zoneApex, String newPartitionId) {
 		zonePartitionIdProvider.setPartitionId(newPartitionId);
 		try {
-			Zone z = zoneService.findByZoneApex(accountId, zoneApex);
+			Zone z = zoneService.findByZoneApex(zoneApex);
 			if (z != null) {
 				throw new IllegalStateException("Zone exists in new partition.");
 			}
@@ -244,7 +244,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		Zone z = null;
 		zonePartitionIdProvider.setPartitionId(oldPartitionId);
 		try {
-			z = zoneService.findByZoneApex(accountId, zoneApex);
+			z = zoneService.findByZoneApex(zoneApex);
 			if (z == null) {
 				throw new IllegalStateException("No installed Zone for " + zoneApex + " with accountId " + accountId);
 			}

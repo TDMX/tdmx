@@ -62,15 +62,15 @@ public class ZoneInstallJobUnitTest {
 	public void doSetup() throws Exception {
 		jobId = new Random().nextLong();
 
-		az = AccountZoneFacade.createAccountZone("1234", "zoneApex", MockZonePartitionIdInstaller.S1,
-				MockZonePartitionIdInstaller.ZP1_S1);
+		az = AccountZoneFacade.createAccountZone("1234", "ZoneInstallJobUnitTestZoneApex",
+				MockZonePartitionIdInstaller.S1, MockZonePartitionIdInstaller.ZP1_S1);
 		az.setJobId(jobId);
 		accountZoneService.createOrUpdate(az);
 	}
 
 	@After
 	public void doTeardown() {
-		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone storedAZ = accountZoneService.findByZoneApex(az.getZoneApex());
 		if (storedAZ != null) {
 			accountZoneService.delete(storedAZ);
 		}
@@ -93,27 +93,13 @@ public class ZoneInstallJobUnitTest {
 
 		executor.execute(jobId, task);
 
-		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone storedAZ = accountZoneService.findByZoneApex(az.getZoneApex());
 		assertNotNull(storedAZ);
 		assertNull(storedAZ.getJobId());
 
 		zonePartitionIdProvider.setPartitionId(az.getZonePartitionId());
-		Zone z = zoneService.findByZoneApex(az.getId(), az.getZoneApex());
+		Zone z = zoneService.findByZoneApex(az.getZoneApex());
 		assertNotNull(z);
-	}
-
-	@Test
-	public void test_Failure_AccountIdNotFound() throws Exception {
-		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId("gugus");
-		task.setZoneApex(az.getZoneApex());
-
-		try {
-			executor.execute(jobId, task);
-			fail();
-		} catch (IllegalArgumentException e) {
-
-		}
 	}
 
 	@Test

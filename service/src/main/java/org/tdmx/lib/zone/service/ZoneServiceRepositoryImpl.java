@@ -80,8 +80,8 @@ public class ZoneServiceRepositoryImpl implements ZoneService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Zone findByZoneApex(Long accountId, String zoneApex) {
-		return getZoneDao().loadByZoneApex(accountId, zoneApex);
+	public Zone findByZoneApex(String zoneApex) {
+		return getZoneDao().loadByZoneApex(zoneApex);
 	}
 
 	@Override

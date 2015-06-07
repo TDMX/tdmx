@@ -179,8 +179,7 @@ public class SASImpl implements SAS {
 		getAccountZoneService().createOrUpdate(az);
 
 		// the ID is only created on commit of the createOrUpdate above
-		AccountZone storedAccountZone = getAccountZoneService().findByAccountIdZoneApex(az.getAccountId(),
-				az.getZoneApex());
+		AccountZone storedAccountZone = getAccountZoneService().findByZoneApex(az.getZoneApex());
 
 		// schedule the job to install the Zone in the ZoneDB partition.
 		ControlJob j = getJobScheduler().scheduleImmediate(installJob);

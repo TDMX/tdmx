@@ -36,6 +36,6 @@ public interface ZoneDao {
 
 	public Zone loadById(Long id);
 
-	public Zone loadByZoneApex(Long accountZoneId, String zoneApex);
+	public Zone loadByZoneApex(String zoneApex);
 
 }

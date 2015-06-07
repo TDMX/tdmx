@@ -24,6 +24,7 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
+import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
@@ -227,6 +228,20 @@ public class ApiValidator {
 			return null;
 		}
 		return channel;
+	}
+
+	public Authorization checkAuthorization(Authorization auth, Acknowledge ack) {
+		if (auth == null) {
+			setError(ErrorCode.MissingAuthorization, ack);
+			return null;
+		}
+		if (checkChannel(auth.getChannel(), ack) == null) {
+			return null;
+		}
+		if (checkEndpointPermission(auth, ack) == null) {
+			return null;
+		}
+		return auth;
 	}
 
 	// -------------------------------------------------------------------------

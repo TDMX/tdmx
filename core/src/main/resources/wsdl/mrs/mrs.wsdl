@@ -17,12 +17,6 @@
 			<xsd:include schemaLocation="mrs.xsd"/>
 		</xsd:schema>
 	</wsdl:types>
-	<wsdl:message name="createSessionRequest">
-		<wsdl:part name="parameters" element="mrs:createSession"/>
-	</wsdl:message>
-	<wsdl:message name="createSessionResponse">
-		<wsdl:part name="parameters" element="mrs:createSessionResponse"/>
-	</wsdl:message>
 	<wsdl:message name="relayRequest">
 		<wsdl:part name="parameters" element="mrs:relay"/>
 	</wsdl:message>
@@ -33,13 +27,6 @@
 		<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-		<wsdl:operation name="createSession">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:createSessionRequest"/>
-			<wsdl:output message="tns:createSessionResponse"/>
-		</wsdl:operation>
 		<wsdl:operation name="relay">
 			<wsdl:documentation>
 				Bla Bla
@@ -50,15 +37,6 @@
 	</wsdl:portType>
 	<wsdl:binding name="MRSBinding" type="tns:MRS">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="createSession">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mrs-definition/createSession"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
 		<wsdl:operation name="relay">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mrs-definition/relay"/>
 			<wsdl:input>

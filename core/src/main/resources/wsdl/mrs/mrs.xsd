@@ -7,119 +7,34 @@
 	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="../common.xsd"/>
 	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="../tx.xsd"/>
 	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="../msg.xsd"/>
-	<xs:simpleType name="relaySessionID">
-		<xs:annotation>
-			<xs:documentation>an RelaySessionID identifies a session between two ServiceProviders.</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="common:text"/>
-	</xs:simpleType>
-	<xs:element name="sID" type="relaySessionID">
-		<xs:annotation>
-			<xs:documentation>the RelaySessionID.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="sExp" type="xs:dateTime">
-		<xs:annotation>
-			<xs:documentation>the new RelaySession expiry time.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:simpleType name="authorizationID">
-		<xs:annotation>
-			<xs:documentation>each RelayContent requires an authorizationID, which is usable only once and replaced with the authorizationID of the RelayAck..</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="common:text"/>
-	</xs:simpleType>
-	<xs:element name="authID" type="authorizationID">
-		<xs:annotation>
-			<xs:documentation>the authorizationID for the relay request.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
 	<xs:simpleType name="relayCorrelationID">
 		<xs:annotation>
-			<xs:documentation>routing information sent to a destination ServiceProvider in a RelayContent which must accompany the RelayAck back to the originator. This can be used to simplify correlation of the asynchronous acknowledges with the messages sent.</xs:documentation>
+			<xs:documentation>correlationId used to sequentialize the transfer of chunks of a message.</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="common:text"/>
 	</xs:simpleType>
 	<xs:element name="correlationID" type="relayCorrelationID">
 		<xs:annotation>
-			<xs:documentation>the source supplied correlatiionID which must be  replied in a RelayAck.</xs:documentation>
+			<xs:documentation>the correlator for chunks.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:complexType name="RelayFrame">
-		<xs:annotation>
-			<xs:documentation>the framing information containing RelaySession authorization.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="sID"/>
-			<xs:element ref="authID"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="RelayContent">
-		<xs:annotation>
-			<xs:documentation>the content of a single relay interaction.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="correlationID"/>
-			<xs:element ref="msg:dr" minOccurs="0" maxOccurs="256"/>
-			<xs:element ref="msg:targetsession" minOccurs="0" maxOccurs="256"/>
-			<xs:element ref="msg:authorization" minOccurs="0" maxOccurs="256"/>
-			<xs:choice>
-				<xs:element ref="msg:msg" minOccurs="0"/>
-				<xs:element ref="msg:chunk" minOccurs="0"/>
-			</xs:choice>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="RelayAck">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element name="frame" type="RelayFrame"/>
-					<xs:element ref="sExp"/>
-					<xs:element ref="correlationID"/>
-					<xs:element ref="nextAuthID" minOccurs="0"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--   MRS CONTROL OPERATION TYPES                               -->
 	<!--                  -->
 	<!-- ********************************************* -->
-	<xs:complexType name="createSessionRequestType">
-		<xs:annotation>
-			<xs:documentation>lease a RelaySession.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence/>
-	</xs:complexType>
-	<xs:complexType name="createSessionResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="sID" minOccurs="0"/>
-					<xs:element ref="sExp" minOccurs="0"/>
-					<xs:element ref="authID" minOccurs="0"/>
-					<xs:element name="availableSessions" type="xs:unsignedShort">
-						<xs:annotation>
-							<xs:documentation>the number of sessions which can still be leased from the ServiceProvider. The calling ServiceProvider can create RelaySessions until this function returns 0.</xs:documentation>
-						</xs:annotation>
-					</xs:element>
-					<xs:element name="availabilityWait" type="xs:unsignedShort" minOccurs="0">
-						<xs:annotation>
-							<xs:documentation>the relative time in seconds before sessions could become available. Supplied only when availableSessions is 0.</xs:documentation>
-						</xs:annotation>
-					</xs:element>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<xs:complexType name="relayRequestType">
 		<xs:annotation>
 			<xs:documentation>a container for all relayed data between ServiceProviders.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="frame" type="RelayFrame"/>
-			<xs:element name="content" type="RelayContent" minOccurs="0"/>
-			<xs:element name="ack" type="RelayAck" minOccurs="0" maxOccurs="256"/>
+			<xs:element ref="correlationID" minOccurs="0"/>
+			<xs:choice>
+				<xs:element ref="msg:authorization" minOccurs="0"/>
+				<xs:element ref="msg:targetsession" minOccurs="0"/>
+				<xs:element ref="msg:msg" minOccurs="0"/>
+				<xs:element ref="msg:chunk" minOccurs="0"/>
+				<xs:element ref="msg:dr" minOccurs="0"/>
+			</xs:choice>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="relayResponseType">
@@ -129,7 +44,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
-					<xs:element ref="nextAuthID" minOccurs="0"/>
+					<xs:element ref="correlationID" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -138,13 +53,6 @@
 	<!--    REQUEST AND RESPONSE ELEMENTS                                              -->
 	<!--                                               -->
 	<!-- ********************************************* -->
-	<xs:element name="createSession" type="createSessionRequestType"/>
-	<xs:element name="createSessionResponse" type="createSessionResponseType"/>
 	<xs:element name="relay" type="relayRequestType"/>
 	<xs:element name="relayResponse" type="relayResponseType"/>
-	<xs:element name="nextAuthID" type="authorizationID">
-		<xs:annotation>
-			<xs:documentation>the next authorizationID to use in the connectedSession, if RelayAck indicates success, otherwise dispose of session.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
 </xs:schema>

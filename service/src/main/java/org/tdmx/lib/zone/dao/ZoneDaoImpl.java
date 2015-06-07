@@ -70,15 +70,11 @@ public class ZoneDaoImpl implements ZoneDao {
 	}
 
 	@Override
-	public Zone loadByZoneApex(Long accountZoneId, String zoneApex) {
-		if (accountZoneId == null) {
-			throw new IllegalArgumentException("missing accountZoneId");
-		}
+	public Zone loadByZoneApex(String zoneApex) {
 		if (!StringUtils.hasText(zoneApex)) {
 			throw new IllegalArgumentException("missing zoneApex");
 		}
-		return new JPAQuery(em).from(zone).where(zone.accountZoneId.eq(accountZoneId).and(zone.zoneApex.eq(zoneApex)))
-				.uniqueResult(zone);
+		return new JPAQuery(em).from(zone).where(zone.zoneApex.eq(zoneApex)).uniqueResult(zone);
 	}
 
 	// -------------------------------------------------------------------------

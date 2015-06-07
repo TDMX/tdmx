@@ -59,7 +59,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone a = service.findByZoneApex(az.getZoneApex());
 		if (a != null) {
 			service.delete(a);
 		}
@@ -72,7 +72,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone a = service.findByZoneApex(az.getZoneApex());
 		assertNotNull(a);
 		assertNotNull(a.getAccountId());
 		assertNotNull(a.getStatus());
@@ -84,23 +84,17 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup_NotFound_Zone() throws Exception {
-		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), "gugus");
-		assertNull(a);
-	}
-
-	@Test
-	public void testLookup_NotFound_AccountId() throws Exception {
-		AccountZone a = service.findByAccountIdZoneApex("gugus", az.getZoneApex());
+		AccountZone a = service.findByZoneApex("gugus");
 		assertNull(a);
 	}
 
 	@Test
 	public void testModify() throws Exception {
-		AccountZone a = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone a = service.findByZoneApex(az.getZoneApex());
 		a.setStatus(AccountZoneStatus.BLOCKED);
 		service.createOrUpdate(a);
 
-		AccountZone a2 = service.findByAccountIdZoneApex(az.getAccountId(), az.getZoneApex());
+		AccountZone a2 = service.findByZoneApex(az.getZoneApex());
 		assertEquals(AccountZoneStatus.BLOCKED, a2.getStatus());
 
 		assertEquals(a.getAccountId(), a2.getAccountId());

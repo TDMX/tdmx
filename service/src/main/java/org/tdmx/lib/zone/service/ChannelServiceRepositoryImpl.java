@@ -40,6 +40,7 @@ import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTargetSession;
@@ -194,6 +195,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 		resultHolder.channelAuthorization = existingCA;
 		return resultHolder;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void relayAuthorization(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest,
+			EndpointPermission otherPerm) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override

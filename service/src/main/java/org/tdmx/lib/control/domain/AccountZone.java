@@ -59,8 +59,7 @@ public class AccountZone implements Serializable {
 	private Long id;
 
 	// TODO index zoneApex for agent authentication service
-	// TODO unique constraint on accountId and zoneApex
-	@Column(length = MAX_ZONEAPEX_LEN, nullable = false)
+	@Column(length = MAX_ZONEAPEX_LEN, nullable = false, unique = true)
 	private String zoneApex;
 
 	// TODO separate status into AccessStatus and ProvisioningStatus

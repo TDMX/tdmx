@@ -9,6 +9,7 @@ public enum ErrorCode {
 	OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 	OutOfDomainAccess(403, "DAC only authorized on own domain."),
 	// business logic errors
+	ZoneNotFound(500, "Zone not found."),
 	DomainNotSpecified(500, "Domain not supplied."),
 	NotNormalizedDomain(500, "Domain not normalized to uppercase."),
 	DomainExists(500, "Domain exists."),
@@ -32,6 +33,7 @@ public enum ErrorCode {
 	FlowTargetNotFound(500, "FlowTarget not found."),
 
 	MissingChannel(500, "Channel missing."),
+	MissingAuthorization(500, "Authorization missing."),
 	MissingChannelEndpoint(500, "ChannelEndpoint missing."),
 	MissingChannelAuthorization(500, "ChannelAuthorization missing."),
 	MissingFlowControlLimit(500, "FlowControlLimit missing."),
@@ -82,7 +84,7 @@ public enum ErrorCode {
 			305,
 			"Provided confirmation of non existent receiver's requested EndpointPermission."),
 
-	;
+	MissingRelayPayload(500, "Relay payload missing."), ;
 
 	private final int errorCode;
 	private final String errorDescription;

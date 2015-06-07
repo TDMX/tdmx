@@ -107,33 +107,17 @@ public class ZoneTransferJobUnitTest {
 
 		executor.execute(jobId, task);
 
-		AccountZone storedAZ = accountZoneService.findByAccountIdZoneApex(data.getAccountZone().getAccountId(), data
-				.getAccountZone().getZoneApex());
+		AccountZone storedAZ = accountZoneService.findByZoneApex(data.getAccountZone().getZoneApex());
 		assertNotNull(storedAZ);
 		assertNull(storedAZ.getJobId());
 		assertEquals(newPartitionId, storedAZ.getZonePartitionId());
 
 		zonePartitionIdProvider.setPartitionId(newPartitionId);
-		Zone z = zoneService.findByZoneApex(data.getAccountZone().getId(), data.getAccountZone().getZoneApex());
+		Zone z = zoneService.findByZoneApex(data.getAccountZone().getZoneApex());
 		assertNotNull(z);
 
 		// TODO check ALL the generated data is in the NEW partition.
 
-	}
-
-	@Test
-	public void test_Failure_AccountIdNotFound() throws Exception {
-		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId("gugus");
-		task.setZoneApex(data.getAccountZone().getZoneApex());
-		task.setZoneDbPartitionId(MockZonePartitionIdInstaller.ZP1_S2);
-
-		try {
-			executor.execute(jobId, task);
-			fail();
-		} catch (IllegalArgumentException e) {
-
-		}
 	}
 
 	@Test

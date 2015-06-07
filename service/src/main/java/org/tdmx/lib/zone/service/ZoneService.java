@@ -32,7 +32,7 @@ public interface ZoneService {
 
 	public Zone findById(Long id);
 
-	public Zone findByZoneApex(Long accountId, String zoneApex);
+	public Zone findByZoneApex(String zoneApex);
 
 	public void delete(Zone zone);
 
