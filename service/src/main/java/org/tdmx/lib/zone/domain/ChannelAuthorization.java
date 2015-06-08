@@ -124,12 +124,13 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow")) })
 	private FlowLimit undeliveredBuffer;
 
+	// the signature can be null when a requested ca is relayed in before being set by the local DAC.
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "signatureDate", column = @Column(name = "signatureDate", nullable = false)),
-			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "signerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)),
-			@AttributeOverride(name = "value", column = @Column(name = "signature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)),
-			@AttributeOverride(name = "algorithm", column = @Column(name = "signatureAlg", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)) })
+			@AttributeOverride(name = "signatureDate", column = @Column(name = "signatureDate")),
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "signerPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "value", column = @Column(name = "signature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "signatureAlg", length = AgentSignature.MAX_SIG_ALG_LEN)) })
 	private AgentSignature signature;
 
 	@Embedded
@@ -150,10 +151,11 @@ public class ChannelAuthorization implements Serializable {
 
 	public ChannelAuthorization(Channel channel) {
 		setChannel(channel);
+		channel.setAuthorization(this);
 	}
 
 	public ChannelAuthorization(Channel channel, ChannelAuthorization other) {
-		setChannel(channel);
+		this(channel);
 		setProcessingState(other.getProcessingState());
 		setRecvAuthorization(other.getRecvAuthorization());
 		setReqRecvAuthorization(other.getReqRecvAuthorization());

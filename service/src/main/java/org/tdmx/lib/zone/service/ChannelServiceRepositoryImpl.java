@@ -145,9 +145,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 
 			// change of sendAuth vs existing sendAuth forces transfer
-			if (!auth.getSendAuthorization().equals(existingCA.getSendAuthorization())
+			if (existingCA.getSendAuthorization() == null
+					|| !existingCA.getSendAuthorization().getSignature().getValue()
+							.equals(auth.getSendAuthorization().getSignature().getValue())
 					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
-				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 		} else {
@@ -182,32 +184,19 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 
 			// change of recvAuth vs existing recvAuth forces transfer
-			if (!auth.getRecvAuthorization().equals(existingCA.getRecvAuthorization())
+			if (existingCA.getRecvAuthorization() == null
+					|| !existingCA.getRecvAuthorization().getSignature().getValue()
+							.equals(auth.getRecvAuthorization().getSignature().getValue())
 					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
-				auth.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 		}
 
 		// if the channel is "OPEN" and we are a receiving channel, then initialize any ChannelFlowTargets from the
 		// existing FlowTargets of receivers.
-		if (existingChannel.isOpen() && existingChannel.isRecv()) {
-			FlowTargetSearchCriteria ftsc = new FlowTargetSearchCriteria(new PageSpecifier(0, 100)); // TODO global hard
-																										// limit
-			ftsc.getTarget().setAddressName(existingChannel.getDestination().getLocalName());
-			ftsc.getTarget().setDomainName(existingChannel.getDestination().getDomainName());
-			ftsc.setServiceName(existingChannel.getDestination().getServiceName());
-			// suspended agents don't have FlowTargets, nor ChannelFlowTargets, so we don't need to restrict here on
-			// "active" agents
+		handleChannelOpenClose(zone, existingChannel);
 
-			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
-			for (FlowTarget ft : flowTargets) {
-				setChannelFlowTarget(existingChannel, ft);
-			}
-		} else if (!existingChannel.isOpen()) {
-			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
-			existingChannel.getChannelFlowTargets().clear();
-		}
 		// persist the new ca
 		if (newChannel) {
 			getChannelDao().persist(existingChannel);
@@ -221,7 +210,34 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public void relayAuthorization(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest,
 			EndpointPermission otherPerm) {
-		// TODO Auto-generated method stub
+		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
+		Channel existingChannel = null;
+		boolean newChannel = false;
+		ChannelAuthorization existingCA = findByChannel(zone, domain, origin, dest);
+		if (existingCA == null) {
+			// If no existing ca - then create one with empty data.
+			existingChannel = new Channel(domain, origin, dest);
+			newChannel = true;
+			existingCA = new ChannelAuthorization(existingChannel);
+			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
+		} else {
+			existingChannel = existingCA.getChannel();
+		}
+
+		if (existingChannel.isSend()) {
+			// we are sender and we got relayed in a requested recv authorization
+			existingCA.setReqRecvAuthorization(otherPerm);
+			existingCA.setReqSendAuthorization(null);
+		} else {
+			// we are receiver and we received a requested send authorization
+			existingCA.setReqRecvAuthorization(null);
+			existingCA.setReqSendAuthorization(otherPerm);
+		}
+
+		// persist the new ca
+		if (newChannel) {
+			getChannelDao().persist(existingChannel);
+		}
 
 	}
 
@@ -343,6 +359,26 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void handleChannelOpenClose(Zone zone, Channel channel) {
+		if (channel.isOpen() && channel.isRecv()) {
+			FlowTargetSearchCriteria ftsc = new FlowTargetSearchCriteria(new PageSpecifier(0, 100)); // TODO global hard
+																										// limit
+			ftsc.getTarget().setAddressName(channel.getDestination().getLocalName());
+			ftsc.getTarget().setDomainName(channel.getDestination().getDomainName());
+			ftsc.setServiceName(channel.getDestination().getServiceName());
+			// suspended agents don't have FlowTargets, nor ChannelFlowTargets, so we don't need to restrict here on
+			// "active" agents
+
+			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
+			for (FlowTarget ft : flowTargets) {
+				setChannelFlowTarget(channel, ft);
+			}
+		} else if (!channel.isOpen()) {
+			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
+			channel.getChannelFlowTargets().clear();
+		}
+	}
 
 	private void setChannelFlowTarget(Channel channel, FlowTarget flowTarget) {
 		ChannelFlowTarget foundFlowTarget = null;

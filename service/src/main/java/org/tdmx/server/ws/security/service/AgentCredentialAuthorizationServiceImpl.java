@@ -85,7 +85,7 @@ public class AgentCredentialAuthorizationServiceImpl implements AgentCredentialA
 			return new AuthorizationResult(AuthorizationFailureCode.BAD_CERTIFICATE);
 		}
 
-		// different accounts could have the same zone on different zoneDBs
+		// a Zone is unique at the ServiceProvider
 		AccountZone accountZone = accountZoneService.findByZoneApex(providedCredential.getZoneApex());
 		if (accountZone == null) {
 			return new AuthorizationResult(AuthorizationFailureCode.UNKNOWN_ZONE);

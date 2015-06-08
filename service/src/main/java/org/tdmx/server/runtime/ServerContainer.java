@@ -228,10 +228,7 @@ public class ServerContainer {
 		wsContext.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
 		wsContext.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
 		wsContext.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
-		// the MRS endpoint is not filtered by any authorization filter because
-		// each ServiceProvider is automatically "authorized" but only to operate
-		// sending data which is signed to be relevant to that service provider, so service
-		// layer checking takes place.
+		// the MRS endpoint is filtered by ServiceProviderFilter TODO
 
 		// Add servlets
 		ServletHolder sh = new ServletHolder(CXFServlet.class);

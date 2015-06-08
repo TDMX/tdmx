@@ -61,6 +61,12 @@ public class MRSImpl implements MRS {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	// TODO #69 public trusted client authentication of SP. cn==SP mrs url, since we dont want to do PKIX validation for
+	// each request, but only for new connections, we can cache authorized client certificates, so using HTTS with
+	// keep-alive would not incur a significant performance penality w.r.t SSL level certificate trust checking
+	// or we have a different endpoint for relay sessions which authorize the client's certificates directly, cache them
+	// for the mrs endpoint and checks the PKIX validation to know/trusted roots.
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -195,6 +201,7 @@ public class MRSImpl implements MRS {
 			getZonePartitionIdProvider().clearPartitionId();
 		}
 
+		response.setSuccess(true);
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {
