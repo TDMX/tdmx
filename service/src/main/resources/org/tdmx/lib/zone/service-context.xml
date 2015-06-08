@@ -75,86 +75,63 @@
 		<property name="entityManagerFactory" ref="tdmx.lib.zone.EntityManagerFactory" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.AgentCredentialDao"
-		class="org.tdmx.lib.zone.dao.AgentCredentialDaoImpl">
+	<bean id="tdmx.lib.zone.dao.AgentCredentialDao"	class="org.tdmx.lib.zone.dao.AgentCredentialDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.AgentCredentialRepository"
-		class="org.tdmx.lib.zone.service.AgentCredentialServiceRepositoryImpl">
-		<property name="agentCredentialDao"
-			ref="tdmx.lib.zone.dao.AgentCredentialDao" />
+	<bean id="tdmx.lib.zone.AgentCredentialRepository" class="org.tdmx.lib.zone.service.AgentCredentialServiceRepositoryImpl">
+		<property name="agentCredentialDao"	ref="tdmx.lib.zone.dao.AgentCredentialDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.AgentCredentialFactory"
-		class="org.tdmx.lib.zone.service.AgentCredentialFactoryImpl">
+	<bean id="tdmx.lib.zone.AgentCredentialFactory"	class="org.tdmx.lib.zone.service.AgentCredentialFactoryImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.AgentCredentialValidator"
-		class="org.tdmx.lib.zone.service.AgentCredentialValidatorImpl">
+	<bean id="tdmx.lib.zone.AgentCredentialValidator" class="org.tdmx.lib.zone.service.AgentCredentialValidatorImpl">
 	</bean>
 
 
-	<bean id="tdmx.lib.zone.dao.ZoneDao"
-		class="org.tdmx.lib.zone.dao.ZoneDaoImpl">
+	<bean id="tdmx.lib.zone.dao.ZoneDao" class="org.tdmx.lib.zone.dao.ZoneDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.ZoneRepository"
-		class="org.tdmx.lib.zone.service.ZoneServiceRepositoryImpl">
-		<property name="zoneDao"
-			ref="tdmx.lib.zone.dao.ZoneDao" />
+	<bean id="tdmx.lib.zone.ZoneRepository"	class="org.tdmx.lib.zone.service.ZoneServiceRepositoryImpl">
+		<property name="zoneDao" ref="tdmx.lib.zone.dao.ZoneDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.zone.dao.DomainDao"
-		class="org.tdmx.lib.zone.dao.DomainDaoImpl">
+	<bean id="tdmx.lib.zone.dao.DomainDao" class="org.tdmx.lib.zone.dao.DomainDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.DomainRepository"
-		class="org.tdmx.lib.zone.service.DomainServiceRepositoryImpl">
-		<property name="domainDao"
-			ref="tdmx.lib.zone.dao.DomainDao" />
+	<bean id="tdmx.lib.zone.DomainRepository" class="org.tdmx.lib.zone.service.DomainServiceRepositoryImpl">
+		<property name="domainDao" ref="tdmx.lib.zone.dao.DomainDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.AddressDao"
-		class="org.tdmx.lib.zone.dao.AddressDaoImpl">
+	<bean id="tdmx.lib.zone.dao.AddressDao"	class="org.tdmx.lib.zone.dao.AddressDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.AddressRepository"
-		class="org.tdmx.lib.zone.service.AddressServiceRepositoryImpl">
-		<property name="addressDao"
-			ref="tdmx.lib.zone.dao.AddressDao" />
+	<bean id="tdmx.lib.zone.AddressRepository" class="org.tdmx.lib.zone.service.AddressServiceRepositoryImpl">
+		<property name="addressDao"	ref="tdmx.lib.zone.dao.AddressDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.ServiceDao"
-		class="org.tdmx.lib.zone.dao.ServiceDaoImpl">
+	<bean id="tdmx.lib.zone.dao.ServiceDao"	class="org.tdmx.lib.zone.dao.ServiceDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.ServiceRepository"
-		class="org.tdmx.lib.zone.service.ServiceServiceRepositoryImpl">
-		<property name="serviceDao"
-			ref="tdmx.lib.zone.dao.ServiceDao" />
+	<bean id="tdmx.lib.zone.ServiceRepository" class="org.tdmx.lib.zone.service.ServiceServiceRepositoryImpl">
+		<property name="serviceDao"	ref="tdmx.lib.zone.dao.ServiceDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.ChannelDao"
-		class="org.tdmx.lib.zone.dao.ChannelDaoImpl">
+	<bean id="tdmx.lib.zone.dao.ChannelDao"	class="org.tdmx.lib.zone.dao.ChannelDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.zone.ChannelRepository"
-		class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
-		<property name="channelDao"
-			ref="tdmx.lib.zone.dao.ChannelDao" />
-		<property name="flowTargetDao"
-			ref="tdmx.lib.zone.dao.FlowTargetDao" />
+	<bean id="tdmx.lib.zone.ChannelRepository" class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
+		<property name="channelDao" ref="tdmx.lib.zone.dao.ChannelDao" />
+		<property name="flowTargetDao" ref="tdmx.lib.zone.dao.FlowTargetDao" />
+		<property name="serviceDao" ref="tdmx.lib.zone.dao.ServiceDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.FlowTargetDao"
-		class="org.tdmx.lib.zone.dao.FlowTargetDaoImpl">
+	<bean id="tdmx.lib.zone.dao.FlowTargetDao"	class="org.tdmx.lib.zone.dao.FlowTargetDaoImpl">
 	</bean>
  
-	<bean id="tdmx.lib.zone.FlowTargetRepository"
-		class="org.tdmx.lib.zone.service.FlowTargetServiceRepositoryImpl">
-		<property name="flowTargetDao"
-			ref="tdmx.lib.zone.dao.FlowTargetDao" />
+	<bean id="tdmx.lib.zone.FlowTargetRepository" class="org.tdmx.lib.zone.service.FlowTargetServiceRepositoryImpl">
+		<property name="flowTargetDao" ref="tdmx.lib.zone.dao.FlowTargetDao" />
 	</bean>
 
 

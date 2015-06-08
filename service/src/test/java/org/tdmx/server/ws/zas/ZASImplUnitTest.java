@@ -1504,6 +1504,66 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
+	public void testSetChannelAuthorization_SendRecvSameDomain_NoService() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SetChannelAuthorization req = new SetChannelAuthorization();
+		req.setDomain(domain.getDomainName());
+		Currentchannelauthorization auth = new Currentchannelauthorization();
+
+		Channel channel = new Channel();
+		Destination dest = new Destination();
+		dest.setDomain(domain.getDomainName());
+		dest.setLocalname(uc.getPublicCert().getCommonName());
+		dest.setServicename("gugus");
+		dest.setServiceprovider("SP"); // TODO
+		channel.setDestination(dest);
+
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain.getDomainName());
+		origin.setLocalname(uc.getPublicCert().getCommonName());
+		origin.setServiceprovider("SP"); // TODO
+		channel.setOrigin(origin);
+		auth.setChannel(channel);
+
+		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
+		EndpointPermission recvPermission = new EndpointPermission();
+		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		recvPermission.setPermission(Permission.ALLOW);
+		recvPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		auth.setDestination(recvPermission);
+		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				recvPermission);
+
+		EndpointPermission sendPermission = new EndpointPermission();
+		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		sendPermission.setPermission(Permission.ALLOW);
+		sendPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		auth.setOrigin(sendPermission);
+		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				sendPermission);
+
+		FlowControlLimit fcl = new FlowControlLimit();
+		Limit undeliveredBuffer = new Limit();
+		undeliveredBuffer.setHighBytes(ZoneFacade.ONE_GB);
+		undeliveredBuffer.setLowBytes(ZoneFacade.ONE_MB);
+		fcl.setUndeliveredBuffer(undeliveredBuffer);
+
+		Limit unsentBuffer = new Limit();
+		unsentBuffer.setHighBytes(ZoneFacade.ONE_GB);
+		unsentBuffer.setLowBytes(ZoneFacade.ONE_MB);
+		fcl.setUnsentBuffer(unsentBuffer);
+		auth.setLimit(fcl);
+
+		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
+		req.setCurrentchannelauthorization(auth);
+
+		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);
+		assertError(ErrorCode.ServiceNotFound, response);
+	}
+
+	@Test
 	public void testCreateUser_ZAC_UCExists() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);

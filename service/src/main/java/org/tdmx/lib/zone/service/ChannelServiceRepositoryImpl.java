@@ -30,6 +30,7 @@ import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.FlowTargetDao;
+import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
@@ -41,9 +42,11 @@ import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTargetSession;
+import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -65,6 +68,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	private ChannelDao channelDao;
 	private FlowTargetDao flowTargetDao;
+	private ServiceDao serviceDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -97,8 +101,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (existingChannel.isSend() && existingChannel.isRecv()) {
 			// 1) setting send&recvAuth on same domain channel
 			// - no requested send/recv allowed in existing ca.
-			existingCA.setReqRecvAuthorization(null);
-			existingCA.setReqSendAuthorization(null);
 			if (auth.getRecvAuthorization() == null) {
 				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
 				return resultHolder;
@@ -107,29 +109,39 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
 				return resultHolder;
 			}
+			if (auth.getRecvAuthorization().getGrant() == EndpointPermissionGrant.ALLOW) {
+				// check that the Service exists
+				Service service = serviceDao.loadByName(domain, existingChannel.getDestination().getServiceName());
+				if (service == null) {
+					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_SERVICE_NOT_FOUND;
+					return resultHolder;
+				}
+			}
+			existingCA.setReqRecvAuthorization(null);
+			existingCA.setReqSendAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
 		} else if (existingChannel.isSend()) {
-			// we are sender and there shall be no pending send authorization
-			existingCA.setReqSendAuthorization(null);
-
 			// we must confirm any requested recvAuth if there is one, but not invent one
 			if (existingCA.getReqRecvAuthorization() != null) {
 				if (auth.getRecvAuthorization() == null) {
 					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING;
 					return resultHolder;
-				} else if (auth.getRecvAuthorization().equals(existingCA.getReqRecvAuthorization())) {
+				} else if (!auth.getRecvAuthorization().getSignature().getValue()
+						.equals(existingCA.getReqRecvAuthorization().getSignature().getValue())) {
 					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH;
 					return resultHolder;
 				}
-				existingCA.setReqRecvAuthorization(null);
 			} else if (auth.getRecvAuthorization() != null) {
 				// and if there isn't a requestedRecvAuth we cannot provide one either
 				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
+			// we are sender and there shall be no pending send authorization
+			existingCA.setReqRecvAuthorization(null);
+			existingCA.setReqSendAuthorization(null);
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 
 			// change of sendAuth vs existing sendAuth forces transfer
@@ -142,23 +154,31 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			// 3) recvAuth(+confirming requested sendAuth)
 			// - no reqRecvAuth allowed in existing ca.
 			// we are receiver and there shall be no pending recv authorization
-			existingCA.setReqRecvAuthorization(null);
-
 			// we must confirm any requested sendAuth if there is one, but not invent one
+			if (auth.getRecvAuthorization().getGrant() == EndpointPermissionGrant.ALLOW) {
+				// check that the Service exists if we're opening up the receiving end.
+				Service service = serviceDao.loadByName(domain, existingChannel.getDestination().getServiceName());
+				if (service == null) {
+					resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_SERVICE_NOT_FOUND;
+					return resultHolder;
+				}
+			}
 			if (existingCA.getReqSendAuthorization() != null) {
 				if (auth.getSendAuthorization() == null) {
 					resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISSING;
 					return resultHolder;
-				} else if (auth.getSendAuthorization().equals(existingCA.getReqSendAuthorization())) {
+				} else if (!auth.getSendAuthorization().getSignature().getValue()
+						.equals(existingCA.getReqSendAuthorization().getSignature().getValue())) {
 					resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH;
 					return resultHolder;
 				}
-				existingCA.setReqSendAuthorization(null);
 			} else if (auth.getSendAuthorization() != null) {
 				// and if there isn't a requestedRecvAuth we cannot provide one either
 				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
+			existingCA.setReqSendAuthorization(null);
+			existingCA.setReqRecvAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 
 			// change of recvAuth vs existing recvAuth forces transfer
@@ -382,6 +402,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	public void setFlowTargetDao(FlowTargetDao flowTargetDao) {
 		this.flowTargetDao = flowTargetDao;
+	}
+
+	public ServiceDao getServiceDao() {
+		return serviceDao;
+	}
+
+	public void setServiceDao(ServiceDao serviceDao) {
+		this.serviceDao = serviceDao;
 	}
 
 }

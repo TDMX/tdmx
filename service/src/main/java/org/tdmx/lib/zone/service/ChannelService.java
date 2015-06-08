@@ -45,6 +45,7 @@ public interface ChannelService {
 		SENDER_AUTHORIZATION_CONFIRMATION_MISSING,
 		SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH,
 		SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED,
+		RECEIVER_SERVICE_NOT_FOUND, // allowing reception only when service exists.
 		RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING,
 		RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED,
 		RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH
@@ -65,7 +66,9 @@ public interface ChannelService {
 	 * 
 	 * 1) setting send&recvAuth on same domain channel
 	 * 
-	 * - no requested send/recv allowed in existing ca.
+	 * - No requested send/recv allowed in existing ca.
+	 * 
+	 * - if allowing send/recv, the destination service must exist. TODO
 	 * 
 	 * or 2) sendAuth(+confirm requested recvAuth)
 	 * 
@@ -76,6 +79,8 @@ public interface ChannelService {
 	 * or 3) recvAuth(+confirming requested sendAuth)
 	 * 
 	 * - no reqRecvAuth allowed in existing ca.
+	 * 
+	 * - if allowing the reception, the destination service must exist. TODO
 	 * 
 	 * - change of recvAuth vs existing recvAuth forces transfer(relay if different SP)
 	 * 

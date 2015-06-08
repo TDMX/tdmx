@@ -1543,12 +1543,14 @@ public class ZASImpl implements ZAS {
 			return ErrorCode.ReceiverChannelAuthorizationMismatch;
 		case RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING:
 			return ErrorCode.ReceiverChannelAuthorizationMissing;
+		case RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED:
+			return ErrorCode.ReceiverChannelAuthorizationProvided;
+		case RECEIVER_SERVICE_NOT_FOUND:
+			return ErrorCode.ServiceNotFound;
 		case SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH:
 			return ErrorCode.SenderChannelAuthorizationMismatch;
 		case SENDER_AUTHORIZATION_CONFIRMATION_MISSING:
 			return ErrorCode.SenderChannelAuthorizationMissing;
-		case RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED:
-			return ErrorCode.ReceiverChannelAuthorizationProvided;
 		case SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED:
 			return ErrorCode.SenderChannelAuthorizationProvided;
 		default:
