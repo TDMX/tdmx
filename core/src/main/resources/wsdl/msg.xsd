@@ -398,10 +398,11 @@
 			<xs:element name="scheme" type="cryptoscheme"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="TargetSession">
+	<xs:complexType name="ChannelFlowTarget">
 		<xs:complexContent>
 			<xs:extension base="FlowDestination">
 				<xs:sequence>
+					<xs:element ref="origin"/>
 					<xs:element ref="flowtargetsession"/>
 				</xs:sequence>
 			</xs:extension>
@@ -572,7 +573,7 @@
 			<xs:documentation>a channel endpoint authorization.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="targetsession" type="TargetSession">
+	<xs:element name="channelflowtarget" type="ChannelFlowTarget">
 		<xs:annotation>
 			<xs:documentation>relayed target session information.</xs:documentation>
 		</xs:annotation>

@@ -31,6 +31,7 @@ import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Authorization;
+import org.tdmx.core.api.v01.msg.Channelflowtarget;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
@@ -109,6 +110,8 @@ public class MRSImpl implements MRS {
 		RelayResponse response = new RelayResponse();
 		if (parameters.getAuthorization() != null) {
 			processChannelAuthorization(parameters.getAuthorization(), response);
+		} else if (parameters.getChannelflowtarget() != null) {
+			processChannelFlowTarget(parameters.getChannelflowtarget(), response);
 		} else {
 			// TODO other relays
 			setError(ErrorCode.MissingRelayPayload, response);
@@ -202,6 +205,11 @@ public class MRSImpl implements MRS {
 		}
 
 		response.setSuccess(true);
+	}
+
+	// handle the channel flowtarget relayed inbound.
+	private void processChannelFlowTarget(Channelflowtarget cft, RelayResponse response) {
+
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

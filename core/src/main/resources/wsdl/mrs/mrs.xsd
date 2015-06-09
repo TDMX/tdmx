@@ -30,7 +30,7 @@
 			<xs:element ref="correlationID" minOccurs="0"/>
 			<xs:choice>
 				<xs:element ref="msg:authorization" minOccurs="0"/>
-				<xs:element ref="msg:targetsession" minOccurs="0"/>
+				<xs:element ref="msg:channelflowtarget" minOccurs="0"/>
 				<xs:element ref="msg:msg" minOccurs="0"/>
 				<xs:element ref="msg:chunk" minOccurs="0"/>
 				<xs:element ref="msg:dr" minOccurs="0"/>
