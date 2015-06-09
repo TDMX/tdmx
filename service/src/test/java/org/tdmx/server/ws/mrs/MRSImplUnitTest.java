@@ -58,6 +58,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
@@ -72,6 +73,8 @@ import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
+import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -87,6 +90,8 @@ public class MRSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	@Autowired
+	private AuthenticatedAgentService authenticatedAgentService;
 
 	@Autowired
 	private ZoneService zoneService;
@@ -158,6 +163,7 @@ public class MRSImplUnitTest {
 
 	@After
 	public void doTeardown() {
+		authenticatedAgentService.clearAuthenticatedAgent();
 
 		dataGenerator.tearDown(input, data);
 	}
@@ -167,6 +173,7 @@ public class MRSImplUnitTest {
 		assertNotNull(zoneService);
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
+		assertNotNull(authenticatedAgentService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -206,7 +213,23 @@ public class MRSImplUnitTest {
 
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
-		// TODO check the CA exists and reqSend is set.
+
+		// check the CA exists and reqSend is set.
+		AuthorizationResult r = new AuthorizationResult(dac1.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		casc.setDomainName(domain1.getDomainName());
+		casc.getDestination().setDomainName(domain1.getDomainName());
+		casc.getDestination().setLocalName(address1.getLocalName());
+		casc.getDestination().setServiceName(service1.getServiceName());
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, casc);
+		assertEquals(1, channelAuths.size());
+		ChannelAuthorization ca = channelAuths.get(0);
+		assertNull(ca.getSendAuthorization());
+		assertNull(ca.getRecvAuthorization());
+		assertNull(ca.getReqRecvAuthorization());
+		assertNotNull(ca.getReqSendAuthorization());
 	}
 
 	@Test
@@ -241,7 +264,22 @@ public class MRSImplUnitTest {
 
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
-		// TODO check CA exists and that the authorization is set as a reqRecv by someother.
+
+		// check CA exists and that the authorization is set as a reqRecv by someother.
+		AuthorizationResult r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		casc.setDomainName(domain2.getDomainName());
+		casc.getOrigin().setDomainName(domain2.getDomainName());
+		casc.getOrigin().setLocalName(address2.getLocalName());
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, casc);
+		assertEquals(1, channelAuths.size());
+		ChannelAuthorization ca = channelAuths.get(0);
+		assertNull(ca.getSendAuthorization());
+		assertNull(ca.getRecvAuthorization());
+		assertNotNull(ca.getReqRecvAuthorization());
+		assertNull(ca.getReqSendAuthorization());
 	}
 
 	private void assertSuccess(Acknowledge ack) {
