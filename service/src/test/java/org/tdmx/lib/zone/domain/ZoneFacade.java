@@ -91,7 +91,7 @@ public class ZoneFacade {
 		ft.setPrimary(ps);
 
 		Flowtarget aft = d2a.mapFlowTarget(ft);
-		SignatureUtils.createFlowTargetSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(), aft);
+		SignatureUtils.createFlowTargetSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(), aft);
 
 		return a2d.mapFlowTarget(userAgent, service, aft.getFlowtargetsession());
 	}

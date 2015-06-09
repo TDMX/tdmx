@@ -209,7 +209,18 @@ public class MRSImpl implements MRS {
 
 	// handle the channel flowtarget relayed inbound.
 	private void processChannelFlowTarget(Channelflowtarget cft, RelayResponse response) {
+		// check that the Channel and EndpointPermission represented by the Auth is complete
+		if (validator.checkChannelflowtarget(cft, response) == null) {
+			return;
+		}
+		if (!SignatureUtils.checkFlowTargetSessionSignature(cft.getServicename(), cft.getTarget(),
+				cft.getFlowtargetsession())) {
+			setError(ErrorCode.InvalidSignatureFlowTargetSession, response);
+			return;
+		}
+		// TODO tbc..
 
+		// TODO define the channelService api to accept inbound CFT
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

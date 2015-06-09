@@ -218,14 +218,11 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		Flowtarget aft = new Flowtarget();
-		aft.setFlowtargetsession(parameters.getFlowtargetsession());
-		aft.setServicename(parameters.getServicename());
 		UserIdentity id = d2a.mapUserIdentity(existingCred);
-		aft.setTarget(id);
 		// check that the FTS signature is ok for the targetagent.
-		if (!SignatureUtils.checkFlowTargetSignature(aft)) {
-			setError(ErrorCode.InvalidSignatureFlowTarget, response);
+		if (!SignatureUtils.checkFlowTargetSessionSignature(parameters.getServicename(), id,
+				parameters.getFlowtargetsession())) {
+			setError(ErrorCode.InvalidSignatureFlowTargetSession, response);
 			return response;
 		}
 

@@ -27,12 +27,15 @@ import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Channelflowtarget;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.FlowDestination;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
+import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ApiValidator {
@@ -53,6 +56,36 @@ public class ApiValidator {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public Channelflowtarget checkChannelflowtarget(Channelflowtarget cft, Acknowledge ack) {
+		if (cft == null) {
+			setError(ErrorCode.MissingChannelFlowTarget, ack);
+		}
+		if (checkFlowDestination(cft, ack) == null) {
+			return null;
+		}
+		if (checkChannelEndpoint(cft.getOrigin(), ack) == null) {
+			return null;
+		}
+		if (checkFlowtargetsession(cft.getFlowtargetsession(), ack) == null) {
+			return null;
+		}
+		return cft;
+	}
+
+	public FlowDestination checkFlowDestination(FlowDestination fd, Acknowledge ack) {
+		if (fd == null) {
+			setError(ErrorCode.MissingFlowDestination, ack);
+		}
+		if (!StringUtils.hasText(fd.getServicename())) {
+			setError(ErrorCode.MissingService, ack);
+			return null;
+		}
+		if (checkUserIdentity(fd.getTarget(), ack) == null) {
+			return null;
+		}
+		return fd;
+	}
 
 	public Flowtargetsession checkFlowtargetsession(Flowtargetsession fts, Acknowledge ack) {
 		if (fts == null) {
@@ -179,10 +212,30 @@ public class ApiValidator {
 			return null;
 		}
 		if (admin.getRootcertificate() == null) {
-			setError(ErrorCode.MissingDomainAdministratorZoneRootPublicKey, ack);
+			setError(ErrorCode.MissingZoneRootPublicKey, ack);
 			return null;
 		}
 		return admin;
+	}
+
+	public UserIdentity checkUserIdentity(UserIdentity user, Acknowledge ack) {
+		if (user == null) {
+			setError(ErrorCode.MissingUserIdentity, ack);
+			return null;
+		}
+		if (user.getUsercertificate() == null) {
+			setError(ErrorCode.MissingUserPublicKey, ack);
+			return null;
+		}
+		if (user.getDomaincertificate() == null) {
+			setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
+			return null;
+		}
+		if (user.getRootcertificate() == null) {
+			setError(ErrorCode.MissingZoneRootPublicKey, ack);
+			return null;
+		}
+		return user;
 	}
 
 	public ChannelEndpoint checkChannelEndpoint(ChannelEndpoint channelEndpoint, Acknowledge ack) {

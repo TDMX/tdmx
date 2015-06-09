@@ -203,7 +203,7 @@ public class MDSImplUnitTest {
 		Flowtarget ft = new Flowtarget();
 		ft.setFlowtargetsession(fts);
 		ft.setServicename(service.getServiceName());
-		SignatureUtils.createFlowTargetSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+		SignatureUtils.createFlowTargetSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
 
 		req.setFlowtargetsession(fts);
 
@@ -221,7 +221,7 @@ public class MDSImplUnitTest {
 		// tamper with signature doesn't work
 		fts.getSignaturevalue().setSignature("gugus");
 		response = mds.setFlowTargetSession(req);
-		assertError(ErrorCode.InvalidSignatureFlowTarget, response);
+		assertError(ErrorCode.InvalidSignatureFlowTargetSession, response);
 
 		// check that the channelflowtargets are set
 		boolean more = true;

@@ -39,6 +39,9 @@ public enum ErrorCode {
 	MissingFlowControlLimit(500, "FlowControlLimit missing."),
 	MissingFlowTargetSession(500, "FlowTargetSession missing."),
 	MissingFlowSession(500, "FlowSession missing."),
+	MissingChannelFlowTarget(500, "ChannelFlowTarget missing."),
+	MissingFlowDestination(500, "FlowDestination missing."),
+	MissingService(500, "Service missing."),
 
 	MissingChannelDestinationService(500, "ChannelDestination Service missing."),
 	MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),
@@ -50,15 +53,19 @@ public enum ErrorCode {
 	MissingEndpointPermission(500, "Channel EndpointPermission missing."),
 	InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
 	InvalidSignatureChannelAuthorization(500, "ChannelAuthorization signature invalid."),
-	InvalidSignatureFlowTarget(500, "FlowTarget signature invalid."),
+	InvalidSignatureFlowTargetSession(500, "FlowTargetSession signature invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 	MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 	MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
 
 	MissingAdministratorSignature(500, "AdministratorSignature missing."),
 	MissingAdministratorIdentity(500, "AdministratorIdentity missing."),
-	MissingDomainAdministratorZoneRootPublicKey(500, "AdministratorIdentity zoneroot public key missing."),
+	MissingUserIdentity(500, "UserIdentity missing."),
+	MissingUserPublicKey(500, "UserIdentity public key missing."),
+
+	MissingUserSignature(500, "UserSignature missing."),
 	MissingDomainAdministratorPublicKey(500, "AdministratorIdentity public key missing."),
+	MissingZoneRootPublicKey(500, "Zone root public key missing."),
 
 	MissingSignatureValue(500, "Signaturevalue missing."),
 	MissingSignature(500, "Signature missing."),

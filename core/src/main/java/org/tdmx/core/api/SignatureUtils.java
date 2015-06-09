@@ -35,6 +35,7 @@ import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -121,7 +122,7 @@ public class SignatureUtils {
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static void createFlowTargetSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
+	public static void createFlowTargetSessionSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
 			Flowtarget ft) {
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
@@ -135,17 +136,17 @@ public class SignatureUtils {
 
 		ft.getFlowtargetsession().setSignaturevalue(sig);
 
-		String valueToSign = getValueToSign(ft);
+		String valueToSign = getValueToSign(ft.getServicename(), id, ft.getFlowtargetsession());
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static boolean checkFlowTargetSignature(Flowtarget ft) {
-		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(ft.getTarget().getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(ft.getFlowtargetsession().getSignaturevalue()
-				.getSignatureAlgorithm().value());
+	public static boolean checkFlowTargetSessionSignature(String serviceName, UserIdentity target, Flowtargetsession fts) {
+		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(target.getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(fts.getSignaturevalue().getSignatureAlgorithm()
+				.value());
 
-		return CalendarUtils.isInPast(ft.getFlowtargetsession().getSignaturevalue().getTimestamp())
-				&& checkFlowTargetSessionSignature(publicCert, alg, ft);
+		return CalendarUtils.isInPast(fts.getSignaturevalue().getTimestamp())
+				&& checkFlowTargetSessionSignature(publicCert, alg, target, serviceName, fts);
 	}
 
 	// -------------------------------------------------------------------------
@@ -181,33 +182,33 @@ public class SignatureUtils {
 	}
 
 	private static boolean checkFlowTargetSessionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
-			Flowtarget ft) {
-		String valueToSign = getValueToSign(ft);
-		String signatureHex = ft.getFlowtargetsession().getSignaturevalue().getSignature();
+			UserIdentity target, String serviceName, Flowtargetsession fts) {
+		String valueToSign = getValueToSign(serviceName, target, fts);
+		String signatureHex = fts.getSignaturevalue().getSignature();
 
 		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
 				valueToSign, signatureHex);
 	}
 
-	private static String getValueToSign(Flowtarget ft) {
+	private static String getValueToSign(String serviceName, UserIdentity target, Flowtargetsession fts) {
 		StringBuilder value = new StringBuilder();
 		// serviceName
-		value.append(toValue(ft.getServicename()));
+		value.append(toValue(serviceName));
 
 		// up to 2 sessions
-		for (Flowsession fs : ft.getFlowtargetsession().getFlowsessions()) {
+		for (Flowsession fs : fts.getFlowsessions()) {
 			value.append(toValue(fs.getValidFrom()));
 			value.append(toValue(fs.getScheme()));
 			value.append(toValue(fs.getSessionKey()));
 		}
 
 		// signer
-		value.append(toValue(ft.getTarget().getUsercertificate()));
-		value.append(toValue(ft.getTarget().getDomaincertificate()));
-		value.append(toValue(ft.getTarget().getRootcertificate()));
+		value.append(toValue(target.getUsercertificate()));
+		value.append(toValue(target.getDomaincertificate()));
+		value.append(toValue(target.getRootcertificate()));
 		// signature details
-		value.append(toValue(ft.getFlowtargetsession().getSignaturevalue().getTimestamp()));
-		value.append(toValue(ft.getFlowtargetsession().getSignaturevalue().getSignatureAlgorithm()));
+		value.append(toValue(fts.getSignaturevalue().getTimestamp()));
+		value.append(toValue(fts.getSignaturevalue().getSignatureAlgorithm()));
 		// permission data
 		return value.toString();
 	}
