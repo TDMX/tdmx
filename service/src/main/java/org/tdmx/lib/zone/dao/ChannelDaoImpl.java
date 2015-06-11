@@ -72,6 +72,11 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
+	public void delete(ChannelFlowTarget value) {
+		em.remove(value);
+	}
+
+	@Override
 	public Channel merge(Channel value) {
 		return em.merge(value);
 	}

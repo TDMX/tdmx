@@ -58,6 +58,7 @@ import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
@@ -227,8 +228,9 @@ public class MDSImpl implements MDS {
 		}
 
 		FlowTarget ft = a2d.mapFlowTarget(existingCred, existingService, parameters.getFlowtargetsession());
-		Zone zone = getAgentService().getZone();
 		flowTargetService.setSession(ft);
+
+		Zone zone = getAgentService().getZone();
 
 		boolean more = true;
 		// fetch ALL Channels which have this FlowTarget as Destination.
@@ -242,7 +244,8 @@ public class MDSImpl implements MDS {
 
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
-				channelService.setChannelFlowTarget(channel.getId(), ft);
+				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
+				channelService.setChannelFlowTarget(channel.getId(), cftd);
 			}
 			if (channels.isEmpty()) {
 				more = false;

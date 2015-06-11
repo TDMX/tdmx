@@ -40,6 +40,8 @@ public interface ChannelDao {
 
 	public void delete(Channel value);
 
+	public void delete(ChannelFlowTarget value);
+
 	public Channel merge(Channel value);
 
 	public Channel loadById(Long id);

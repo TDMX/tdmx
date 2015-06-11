@@ -1120,6 +1120,7 @@ public class ZASImplUnitTest {
 		// TODO check limit.
 	}
 
+	// TODO delete user which has is a target Channel.ChannelFlowTarget (+Flows)
 	@Test
 	public void testDeleteUser_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);

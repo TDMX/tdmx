@@ -29,6 +29,7 @@ import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelDestination;
@@ -38,6 +39,7 @@ import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Service;
 
 public class ApiToDomainMapper {
@@ -72,6 +74,30 @@ public class ApiToDomainMapper {
 		}
 		FlowTarget s = new FlowTarget(target, service);
 		mapFlowTargetSessions(s, fts);
+		return s;
+	}
+
+	public FlowTargetSession mapFlowTargetSession(AgentCredentialDescriptor target, Flowtargetsession fts) {
+		if (fts == null) {
+			return null;
+		}
+		FlowTargetSession s = new FlowTargetSession();
+		if (!fts.getFlowsessions().isEmpty()) {
+			if (fts.getFlowsessions().size() > 0) {
+				s.setPrimary(mapFlowSession(fts.getFlowsessions().get(0)));
+			}
+			if (fts.getFlowsessions().size() > 1) {
+				s.setSecondary(mapFlowSession(fts.getFlowsessions().get(1)));
+			}
+		}
+
+		if (fts.getSignaturevalue() != null) {
+			AgentSignature sig = new AgentSignature();
+			sig.setAlgorithm(mapSignatureAlgorithm(fts.getSignaturevalue().getSignatureAlgorithm()));
+			sig.setValue(fts.getSignaturevalue().getSignature());
+			sig.setSignatureDate(CalendarUtils.getDateTime(fts.getSignaturevalue().getTimestamp()));
+			sig.setCertificateChainPem(target.getCertificateChainPem());
+		}
 		return s;
 	}
 

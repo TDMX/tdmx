@@ -31,12 +31,12 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.FlowTargetDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
-import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
@@ -45,7 +45,6 @@ import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -243,7 +242,15 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void setChannelFlowTarget(Long id, FlowTarget flowTarget) {
+	public void setChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget) {
+		Channel channel = findById(id);
+		setChannelFlowTarget(channel, flowTarget);
+		// persist should not be necessary
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void relayChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget) {
 		Channel channel = findById(id);
 		setChannelFlowTarget(channel, flowTarget);
 		// persist should not be necessary
@@ -277,8 +284,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	public void delete(ChannelFlowTarget channelFlowTarget) {
-		// TODO Auto-generated method stub
-
+		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTarget.getId());
+		if (storedCft != null) {
+			getChannelDao().delete(storedCft);
+		} else {
+			log.warn("Unable to find ChaChannelFlowTargetnnel to delete with id " + channelFlowTarget.getId());
+		}
 	}
 
 	@Override
@@ -372,7 +383,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
 			for (FlowTarget ft : flowTargets) {
-				setChannelFlowTarget(channel, ft);
+				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
+				setChannelFlowTarget(channel, cftd);
 			}
 		} else if (!channel.isOpen()) {
 			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
@@ -380,43 +392,32 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 	}
 
-	private void setChannelFlowTarget(Channel channel, FlowTarget flowTarget) {
-		ChannelFlowTarget foundFlowTarget = null;
+	private void setChannelFlowTarget(Channel channel, ChannelFlowTargetDescriptor channelFlowTarget) {
+		ChannelFlowTarget foundCft = null;
 		for (ChannelFlowTarget cft : channel.getChannelFlowTargets()) {
-			if (cft.getTargetFingerprint().equals(flowTarget.getTarget().getFingerprint())) {
-				foundFlowTarget = cft;
+			if (cft.getTargetFingerprint().equals(channelFlowTarget.getTarget().getFingerprint())) {
+				foundCft = cft;
 				break;
 			}
 		}
-		if (foundFlowTarget == null) {
+		if (foundCft == null) {
+			// create a new CFT and link it to the Channel
 			ChannelFlowTarget cft = new ChannelFlowTarget(channel);
-			channel.getChannelFlowTargets().add(cft);
 			if (channel.isSend()) {
 				// TODO initialize the ChannelFlowOrigins for ALL known Agents
 			}
 
-			foundFlowTarget = cft;
+			foundCft = cft;
+			foundCft.setTargetFingerprint(channelFlowTarget.getTarget().getFingerprint());
 		}
 
-		foundFlowTarget.setTargetFingerprint(flowTarget.getTarget().getFingerprint());
-
-		FlowTargetSession fts = new FlowTargetSession();
-		fts.setPrimary(flowTarget.getPrimary());
-		fts.setSecondary(flowTarget.getSecondary());
-
-		AgentSignature sig = new AgentSignature();
-		sig.setAlgorithm(flowTarget.getSignatureAlgorithm());
-		sig.setCertificateChainPem(flowTarget.getTarget().getCertificateChainPem());
-		sig.setSignatureDate(flowTarget.getSignatureDate());
-		sig.setValue(flowTarget.getSignatureValue());
-		fts.setSignature(sig);
-		foundFlowTarget.setFlowTargetSession(fts);
+		foundCft.setFlowTargetSession(channelFlowTarget.getFlowTargetSession());
 		// on the receiving side, we need to relay new ChannelFlowTargets to the sending side, except if we are both
 		// sender and receiver
 		if (!channel.isSend() && channel.isRecv()) {
-			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 		} else {
-			foundFlowTarget.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		}
 	}
 

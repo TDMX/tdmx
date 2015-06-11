@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -32,15 +34,20 @@ import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channelflowtarget;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -218,9 +225,76 @@ public class MRSImpl implements MRS {
 			setError(ErrorCode.InvalidSignatureFlowTargetSession, response);
 			return;
 		}
-		// TODO tbc..
 
-		// TODO define the channelService api to accept inbound CFT
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(cft.getTarget().getUsercertificate(),
+				cft.getTarget().getDomaincertificate(), cft.getTarget().getRootcertificate());
+		if (uc == null || uc.getCredentialType() != AgentCredentialType.UC) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return;
+		}
+		if (!credentialValidator.isValid(uc)) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return;
+		}
+
+		ChannelOrigin origin = a2d.mapChannelOrigin(cft.getOrigin());
+		ChannelDestination dest = new ChannelDestination();
+		dest.setLocalName(uc.getAddressName());
+		dest.setDomainName(uc.getDomainName());
+		dest.setServiceName(cft.getServicename());
+		dest.setServiceProvider(null); // TODO uc.getServiceProvider()
+		// sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
+		FlowTargetSession fts = a2d.mapFlowTargetSession(uc, cft.getFlowtargetsession());
+
+		String localDomain = origin.getDomainName();
+		// TODO lookup the origin or destination domain in DNS and retrieve their zone root information
+		AccountZone accountZone = null;
+		if (accountZone == null) {
+			// FIXME! temporary fallback on recursive lookup of domain to domain parent until matches with a zone.
+			accountZone = lookupAccountZoneByDomain(localDomain);
+		}
+		if (accountZone == null) {
+			setError(ErrorCode.ZoneNotFound, response);
+			return;
+		}
+
+		// using the ZoneDB specified in the AccountZone's partitionID, find the Zone and then Domain
+		// and then call ChannelService#relayChannelAuthorization
+		Zone zone = null;
+		try {
+			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+
+			zone = getZoneService().findByZoneApex(accountZone.getZoneApex());
+			if (zone == null) {
+				setError(ErrorCode.ZoneNotFound, response);
+				return;
+			}
+			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(0, 1));
+			sc.setDomainName(origin.getDomainName());
+			sc.getOrigin().setLocalName(origin.getLocalName());
+			sc.getOrigin().setDomainName(origin.getDomainName());
+			sc.getOrigin().setServiceProvider(origin.getServiceProvider());
+			sc.getDestination().setLocalName(dest.getLocalName());
+			sc.getDestination().setDomainName(dest.getDomainName());
+			sc.getDestination().setServiceName(dest.getServiceName());
+			// TODO dest.ServiceProvider
+
+			List<Channel> channels = channelService.search(zone, sc);
+			if (channels.isEmpty()) {
+				setError(ErrorCode.ChannelNotFound, response);
+			}
+			for (Channel channel : channels) {
+				ChannelFlowTargetDescriptor cftd = new ChannelFlowTargetDescriptor();
+				cftd.setOrigin(channel.getOrigin());
+				cftd.setDestination(channel.getDestination());
+				cftd.setTarget(uc);
+				cftd.setFlowTargetSession(fts);
+
+				channelService.relayChannelFlowTarget(channel.getId(), cftd);
+			}
+		} finally {
+			getZonePartitionIdProvider().clearPartitionId();
+		}
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

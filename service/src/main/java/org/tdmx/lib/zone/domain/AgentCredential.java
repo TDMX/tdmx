@@ -208,6 +208,26 @@ public class AgentCredential implements Serializable {
 		return certificateChain;
 	}
 
+	/**
+	 * Reverse map the AgentCredential to a Descriptor which can be mapped easier to other entities.
+	 * 
+	 * @return a AgentCredentialDescriptor describing this AgentCredential.
+	 */
+	public AgentCredentialDescriptor getDescriptor(Zone zone) {
+		AgentCredentialDescriptor result = new AgentCredentialDescriptor();
+		result.setZoneApex(zone.getZoneApex());
+		if (getAddress() != null) {
+			result.setAddressName(getAddress().getLocalName());
+		}
+		result.setCertificateChainPem(getCertificateChainPem());
+		result.setCredentialType(getCredentialType());
+		if (getDomain() != null) {
+			result.setDomainName(getDomain().getDomainName());
+		}
+		result.setFingerprint(getFingerprint());
+		return result;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

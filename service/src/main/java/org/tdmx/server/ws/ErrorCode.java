@@ -20,6 +20,7 @@ public enum ErrorCode {
 	ServiceNotFound(500, "Service not found."),
 	ChannelAuthorizationNotFound(500, "ChannelAuthorization not found."),
 	ChannelAuthorizationExist(500, "ChannelAuthorization exists."),
+	ChannelNotFound(500, "Channel not found."),
 
 	InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
 	DomainAdministratorCredentialsExist(500, "DACs exists."),

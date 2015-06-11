@@ -20,17 +20,19 @@ package org.tdmx.lib.zone.service;
 
 import java.util.List;
 
+import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
-import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -127,11 +129,26 @@ public interface ChannelService {
 	/**
 	 * Adds or updates the FlowTarget as ChannelFlowTarget within a Channel.
 	 * 
+	 * This is called on the receiving end of the channel by the target's
+	 * {@link MDS#setFlowTargetSession(org.tdmx.core.api.v01.mds.SetFlowTargetSession)} propagation to each channel.
+	 * 
 	 * @param id
 	 *            id of the channel
 	 * @param flowTarget
 	 */
-	public void setChannelFlowTarget(Long id, FlowTarget flowTarget);
+	public void setChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget);
+
+	/**
+	 * Updates the FlowTarget as ChannelFlowTarget within a Channel.
+	 * 
+	 * This is called on the sending end by the relay in of a remote ChannelFlowTarget via
+	 * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)}.
+	 * 
+	 * @param id
+	 *            id of the channel
+	 * @param flowTarget
+	 */
+	public void relayChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget);
 
 	/**
 	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.

@@ -18,42 +18,39 @@
  */
 package org.tdmx.lib.zone.domain;
 
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
- * An AgentCredentialDescriptor describes an AgentCredential derived from the PKIXCertificate of the Agent.
+ * An ChannelFlowTargetDescriptor a helper object to map between ChannelFlowTargets and FlowTargets and API classes.
  * 
  * @author Peter Klauser
  * 
  */
-public class AgentCredentialDescriptor {
+public class ChannelFlowTargetDescriptor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private AgentCredentialType credentialType;
+	private ChannelOrigin origin;
 
-	private String fingerprint;
+	private ChannelDestination destination;
 
-	private String zoneApex; // set when ZAC, DAC or UC
+	private AgentCredentialDescriptor target;
 
-	private String domainName; // set when DAC or UC, null if ZAC
-
-	private String addressName; // set when UC, null if ZAC or DAC
-
-	private PKIXCertificate[] certificateChain;
-
-	private String certificateChainPem;
-
-	// TODO serviceProviderURL - taken from cert's TDMXZoneInfo
+	private FlowTargetSession flowTargetSession;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public ChannelFlowTargetDescriptor() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -62,14 +59,23 @@ public class AgentCredentialDescriptor {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("AgentCredentialDescriptor [");
-		builder.append(" fingerprint=").append(fingerprint);
-		builder.append(" ,type=").append(credentialType);
-		builder.append(" ,zoneApex=").append(zoneApex);
-		builder.append(" ,domainName=").append(domainName);
-		builder.append(" ,addressName=").append(addressName);
+		builder.append("ChannelFlowTargetDescriptor [");
+		builder.append(" origin=").append(origin);
+		builder.append(" destination=").append(destination);
+		builder.append(" target=").append(target);
+		builder.append(" fts=").append(flowTargetSession);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * Get the PEM certificate chain in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getTargetCertificateChain() {
+		return flowTargetSession.getSignature().getCertificateChain();
 	}
 
 	// -------------------------------------------------------------------------
@@ -84,60 +90,36 @@ public class AgentCredentialDescriptor {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AgentCredentialType getCredentialType() {
-		return credentialType;
+	public ChannelOrigin getOrigin() {
+		return origin;
 	}
 
-	public void setCredentialType(AgentCredentialType credentialType) {
-		this.credentialType = credentialType;
+	public void setOrigin(ChannelOrigin origin) {
+		this.origin = origin;
 	}
 
-	public String getFingerprint() {
-		return fingerprint;
+	public ChannelDestination getDestination() {
+		return destination;
 	}
 
-	public void setFingerprint(String fingerprint) {
-		this.fingerprint = fingerprint;
+	public void setDestination(ChannelDestination destination) {
+		this.destination = destination;
 	}
 
-	public String getZoneApex() {
-		return zoneApex;
+	public FlowTargetSession getFlowTargetSession() {
+		return flowTargetSession;
 	}
 
-	public void setZoneApex(String zoneApex) {
-		this.zoneApex = zoneApex;
+	public void setFlowTargetSession(FlowTargetSession flowTargetSession) {
+		this.flowTargetSession = flowTargetSession;
 	}
 
-	public String getDomainName() {
-		return domainName;
+	public AgentCredentialDescriptor getTarget() {
+		return target;
 	}
 
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
-	}
-
-	public String getAddressName() {
-		return addressName;
-	}
-
-	public void setAddressName(String addressName) {
-		this.addressName = addressName;
-	}
-
-	public String getCertificateChainPem() {
-		return certificateChainPem;
-	}
-
-	public void setCertificateChainPem(String certificateChainPem) {
-		this.certificateChainPem = certificateChainPem;
-	}
-
-	public PKIXCertificate[] getCertificateChain() {
-		return certificateChain;
-	}
-
-	public void setCertificateChain(PKIXCertificate[] certificateChain) {
-		this.certificateChain = certificateChain;
+	public void setTarget(AgentCredentialDescriptor target) {
+		this.target = target;
 	}
 
 }

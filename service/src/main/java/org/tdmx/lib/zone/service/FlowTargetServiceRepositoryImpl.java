@@ -63,8 +63,8 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(FlowTarget target) {
 		if (target.getId() != null) {
-			FlowTarget storedAuth = getFlowTargetDao().loadById(target.getId());
-			if (storedAuth != null) {
+			FlowTarget storedTarget = getFlowTargetDao().loadById(target.getId());
+			if (storedTarget != null) {
 				getFlowTargetDao().merge(target);
 			} else {
 				log.warn("Unable to find FlowTarget with id " + target.getId());

@@ -118,6 +118,7 @@ public class ChannelFlowTarget implements Serializable {
 
 	public ChannelFlowTarget(Channel c) {
 		setChannel(c);
+		channel.getChannelFlowTargets().add(this);
 	}
 
 	// -------------------------------------------------------------------------
@@ -127,7 +128,7 @@ public class ChannelFlowTarget implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelAuthorization [id=");
+		builder.append("ChannelFlowTarget [id=");
 		builder.append(id);
 		builder.append(" targetFingerprint=").append(targetFingerprint);
 		builder.append(" fts=").append(flowTargetSession);

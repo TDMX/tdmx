@@ -644,7 +644,7 @@ public class ZASImpl implements ZAS {
 
 		// ChannelFlowTargets (incl their Flows) which relate to the Agent should be deleted too, for any Service
 		// we can do this AFTER the credential is removed since the ChannelFlowTarget is not constrained to link to the
-		// FlowTarget
+		// FlowTarget.
 		boolean moreCFT = true;
 		while (moreCFT) {
 			ChannelFlowTargetSearchCriteria sc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0,
@@ -660,6 +660,9 @@ public class ZASImpl implements ZAS {
 				moreCFT = false;
 			}
 		}
+		// On message relay in, if the CFT doesn't exist, the sending SP will get a specific error message and can fail
+		// the message transfer, put the flow into a flowcontrolled/blocked state, and after all message delivery
+		// reports have been consumed or time-out, can be removed.
 
 		response.setSuccess(true);
 		return response;

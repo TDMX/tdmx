@@ -172,6 +172,34 @@ public class FlowTarget implements Serializable {
 		return builder.toString();
 	}
 
+	public ChannelFlowTargetDescriptor getDescriptor(Zone zone, ChannelOrigin origin) {
+		ChannelFlowTargetDescriptor d = new ChannelFlowTargetDescriptor();
+		d.setTarget(getTarget().getDescriptor(zone));
+
+		d.setOrigin(origin);
+
+		ChannelDestination dest = new ChannelDestination();
+		dest.setLocalName(d.getTarget().getAddressName());
+		dest.setDomainName(d.getTarget().getDomainName());
+		dest.setServiceName(getService().getServiceName());
+		dest.setServiceProvider(null); // TODO
+		d.setDestination(dest);
+
+		AgentSignature sig = new AgentSignature();
+		sig.setAlgorithm(getSignatureAlgorithm());
+		sig.setSignatureDate(getSignatureDate());
+		sig.setValue(getSignatureValue());
+		sig.setCertificateChainPem(getTarget().getCertificateChainPem());
+
+		FlowTargetSession fts = new FlowTargetSession();
+		fts.setPrimary(getPrimary());
+		fts.setSecondary(getSecondary());
+		fts.setSignature(sig);
+		d.setFlowTargetSession(fts);
+
+		return d;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
