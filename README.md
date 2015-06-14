@@ -1,10 +1,10 @@
-# TDMX
-
+## TDMX
+![TDMX Logo](https://raw.githubusercontent.com/TDMX/tdmx/wiki/images/www/tdmx.png)
 This project is the work-in-progress development of **Trusted Domain Messaging eXchange**. TDMX is a specification enabling secure B2B messaging between separate corporations via cloud service providers.
 
-Visit [http://tdmx.org](http://tdmx.org "tdmx.org") for more information.
+Visit [http://tdmx.org](http://tdmx.org "tdmx.org") and the [specification WIKI](https://raw.githubusercontent.com/TDMX/tdmx/wiki/README.md) for more information.
 
-Developer contributions are welcome following signup via [Individual Contributor License Agreement](https://docs.google.com/forms/d/1LrlHQGtSRCEfIB1JfO9mw02MeMAiNsQk0UwZy9KQp-U/viewform?usp=send_form "Individual Contributor License Agreement").
+Anyone wishing to contribute get more information, contact [Peter Klauser](https://github.com/pjklauser "Peter Klauser").
 
 ## Development Setup
 clone the tdmx Github repository
