@@ -8,10 +8,10 @@ Draft 27.04.2013 - today
 
 The goal of this document is to specify an electronic messaging transport infrastructure which is **global, decentralized, interoperable and secure**. The solution is designed  to be low level and minimalistic, yet suitable for enterprise messaging - ( B2B, M2M ). The specification is intended to create a standard for secure messaging - which has the potential to reach widespread adoption. TDMX can be considered to be an evolutionary step of traditional email and secure file transfer towards a system which is suitable for transactional enterprise application integration. 
 
-##Primary Use Case
+###Primary Use Case
 TDMX can be used as a highly secure alternative to sending PGP encrypted emails or files encrypted and sent via (S)FTP between applications, in particular when the applications belong to separate corporations.
 
-##Primary Features
+##Features
 ###Key Security Features
 The key concepts of information security according to [Wikipedia](http://en.wikipedia.org/wiki/Information_security#Key_concepts) are: Confidentiality, Integrity, Availability, Authenticity, and Non Repudiation.
 
