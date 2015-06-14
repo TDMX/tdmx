@@ -6,9 +6,13 @@ Visit [http://tdmx.org](http://tdmx.org "tdmx.org") and the specification sectio
 
 Anyone wishing to contribute get more information, contact [Peter Klauser](https://github.com/pjklauser "Peter Klauser").
 ## Specification
- - [Summary](https://github.com/TDMX/tdmx/master/wiki/Introduction.md)
-  - [Features](https://github.com/TDMX/tdmx/master/wiki/Introduction.md#Features)
+ - [Introduction](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md)
+  - [Summary](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#summary)
+  - [Features](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#features)
+  - [What TDMX is NOT](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#what-tdmx-is-not)
   - [Motivation](https://github.com/TDMX/tdmx/master/wiki/Motivation.md)
+
+
 ## Development Setup
 clone the tdmx Github repository
 in Eclipse, use the `import existing maven projects` wizard on the tdmx root directory. Prerequisite is the m2eclipse plugin which can be found via Eclipse marketplace, or is bundled with Jboss Tools plugins. 
