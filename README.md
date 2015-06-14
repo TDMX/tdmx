@@ -12,6 +12,8 @@ Anyone wishing to contribute get more information, contact [Peter Klauser](https
   - [What TDMX is NOT](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#what-tdmx-is-not)
   - [Motivation](https://github.com/TDMX/tdmx/blob/master/wiki/Motivation.md#motivation)
  - [High Level Concepts](https://github.com/TDMX/tdmx/blob/master/wiki/HighLevelConcepts.md#high-level-concepts)
+  - [System Architecture](https://github.com/TDMX/tdmx/blob/master/wiki/HighLevelConcepts.md#system-architecture)
+  - [DNS Model](https://github.com/TDMX/tdmx/blob/master/wiki/HighLevelConcepts.md#dns-model)
  - [Cryptography](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#cryptography)
   - [Crypto Scheme](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#crypt-scheme)
   - [Concrete Schemes](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#concrete-schemes)

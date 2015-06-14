@@ -17,3 +17,22 @@ The main components are the following:
  - **User Credential** is a X.509 Certificate and private key, issued by a Client domain’s public SSL certificate, linking a Public-Cryptographic-Key to an Address, ServiceProvider and API-Version. The time validity of the credentials are limited by that of the domain’s SSL certificate.
  - **RelayAgent** is a computing resource through which a ServiceProvider communicates with another ServiceProvider’s RelayService to relay Messages, Delivery Receipts and control data like Authorizations, Flow Control and cryptographic Session information.
 
+### DNS Model
+
+The following diagram details which information in kept in DNS for TDMX.
+![DNS Architecture](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/dns.png "logical-concepts/dns.png")
+
+The following DNS TXT records are defined
+
+- DNS domain at Zone Apex
+ - tdmx-v01-sp “ServiceProvider record”
+ - tdmx-v01-zone-cert “Zone Administrator authorization record”
+ - tdmx-v01-zone-excl “Zone exclusion record”
+- DNS domain at or below the Zone Apex
+ - tdmx-v01-zoneroot “ZoneRoot indicator record”
+
+If a domain at the Zone Apex is to be used as a TDMX domain ( which is the normal case for single domain setups ) then the domain must also declare itself TDMX domain with a “ZoneRoot indicator record” which points to itself.
+
+### Trust Relationships
+
+
