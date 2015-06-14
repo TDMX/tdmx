@@ -54,9 +54,11 @@ In the scheme, the encrypted-data and an encryption-context is transferred from 
 
 The naming scheme for concrete crypto scheme implementations is as follows:
 
-encryption-context encryption mechanism “/” payload encryption mechanism
+**encryption-context encryption mechanism “/” payload encryption mechanism**
+
 where 
-cascaded crypto mechanisms are separated with a “+”
+
+**cascaded crypto mechanisms are separated with a “+”**
 
 The following are examples of concrete schemes. 
 
@@ -390,3 +392,38 @@ Is a extension of pf_ecdh384-aes256+rsa where there are more than 1 encryption k
 					SKe-twofish || IVe-twofish ))
     
 The combined encryption keys have a length of (32+16)\*2= 96 bytes. The scheme could be extended to incorporate cascading more than two symmetric encryption algorithms ( since the RSA encryption has space ) - but this is not considered further because the two cipher cascade is considered sufficient for the very paranoid, and the fact that the key protection is unchanged regardless of how many symmetric algorithms are cascaded for the payload.
+
+###Crypto Scheme Support Matrix
+
+The TDMX version defines a small set of concrete scheme names which **MUST** be supported.
+
+**rsa/pf_rsa_ecdh384-aes256**
+
+**pf_ecdh384-aes256+rsa/aes256**
+
+The following set of schemes which **SHOULD** be supported by users to provide a good a interoperability between users and at the same time allow for a flexible choice of cryptographic algorithms. The cipher below can be aes, twofish or serpent:
+
+**none/cipher256**
+
+**rsa/cipher256**
+
+**none/pf-cipher256**
+
+**rsa/pf-cipher256**
+
+**none/pf_ecdh384-cipher256**
+
+**rsa/pf_ecdh384-cipher256**
+
+**rsa/pf_rsa_ecdh384-cipher256**
+
+**rsa/pf_rsa_ecdh384-cipher256+cipher256**
+
+**pf_ecdh384-cipher256/cipher256**
+
+**pf_ecdh384-cipher256+rsa/cipher256**
+
+**pf_ecdh384-cipher256+rsa/cipher256+cipher256**
+
+In the schemes which support cascaded ciphers, the same cipher algorithm may not be used twice in the cascade. This is because the cipher cascade is intended to guard against cipher weaknesses, where duplication doesn’t help - and might even be catastrophic.
+

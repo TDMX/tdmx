@@ -15,6 +15,8 @@ Anyone wishing to contribute get more information, contact [Peter Klauser](https
  - [Cryptography](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#cryptography)
   - [Crypto Scheme](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#crypt-scheme)
   - [Concrete Schemes](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#concrete-schemes)
+  - [Crypto Scheme Support Matrix](https://github.com/TDMX/tdmx/blob/master/wiki/Cryptography.md#crypto-scheme-support-matrix)
+
 
 ## Development Setup
 clone the tdmx Github repository
