@@ -90,6 +90,7 @@ public class ApiValidator {
 	public Flowtargetsession checkFlowtargetsession(Flowtargetsession fts, Acknowledge ack) {
 		if (fts == null) {
 			setError(ErrorCode.MissingFlowTargetSession, ack);
+			return null;
 		}
 		if (checkSignaturevalue(fts.getSignaturevalue(), ack) == null) {
 			return null;

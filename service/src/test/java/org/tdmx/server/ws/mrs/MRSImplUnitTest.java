@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -47,7 +48,11 @@ import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Channelflowtarget;
 import org.tdmx.core.api.v01.msg.Destination;
+import org.tdmx.core.api.v01.msg.Flowsession;
+import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -59,6 +64,8 @@ import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.Zone;
@@ -280,6 +287,116 @@ public class MRSImplUnitTest {
 		assertNull(ca.getRecvAuthorization());
 		assertNotNull(ca.getReqRecvAuthorization());
 		assertNull(ca.getReqSendAuthorization());
+	}
+
+	@Test
+	public void testRelay_ChannelFlowTarget() {
+		// the setup creates authorized channels from domain-0 -> domain-1
+		Channel channel = new Channel();
+		Destination dest = new Destination();
+		dest.setDomain(domain2.getDomainName());
+		dest.setLocalname(address2.getLocalName());
+		dest.setServicename(service2.getServiceName());
+		dest.setServiceprovider("SP"); // TODO
+		channel.setDestination(dest);
+
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain1.getDomainName());
+		origin.setLocalname(address1.getLocalName());
+		origin.setServiceprovider("SP");
+		channel.setOrigin(origin);
+
+		Flowtarget ft = new Flowtarget();
+		Flowtargetsession fts = new Flowtargetsession();
+		Flowsession s1 = new Flowsession();
+		s1.setScheme("scheme");
+		s1.setSessionKey(new byte[] { 1, 2, 3 });
+		s1.setValidFrom(CalendarUtils.getDate(new Date()));
+
+		Flowsession s2 = new Flowsession();
+		s2.setScheme("scheme");
+		s2.setSessionKey(new byte[] { 4, 5, 6 });
+		s2.setValidFrom(CalendarUtils.getDate(new Date()));
+
+		fts.getFlowsessions().add(s1);
+		fts.getFlowsessions().add(s2);
+
+		ft.setFlowtargetsession(fts);
+		ft.setServicename(dest.getServicename());
+		SignatureUtils.createFlowTargetSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+		// signer is destination, so reqRecv at origin
+
+		Channelflowtarget cft = new Channelflowtarget();
+		cft.setOrigin(origin);
+		cft.setServicename(dest.getServicename());
+		cft.setTarget(ft.getTarget());
+		cft.setFlowtargetsession(ft.getFlowtargetsession());
+
+		Relay req = new Relay();
+		req.setChannelflowtarget(cft);
+
+		RelayResponse response = mrs.relay(req);
+		assertSuccess(response);
+
+		// check CA exists and that the authorization is set as a reqRecv by someother.
+		AuthorizationResult r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ChannelFlowTargetSearchCriteria casc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0, 1));
+		casc.setDomainName(domain1.getDomainName());
+		casc.getOrigin().setDomainName(domain1.getDomainName());
+		casc.getOrigin().setLocalName(address1.getLocalName());
+		List<ChannelFlowTarget> channelFlowTargets = channelService.search(zone, casc);
+		assertEquals(1, channelFlowTargets.size());
+		ChannelFlowTarget cFT = channelFlowTargets.get(0);
+		assertNotNull(cFT.getTargetFingerprint());
+		assertNotNull(cFT.getFlowTargetSession());
+		assertEquals(cft.getFlowtargetsession().getSignaturevalue().getSignature(), cFT.getFlowTargetSession()
+				.getSignature().getValue());
+		assertNotNull(cFT.getFlowTargetSession().getPrimary());
+		assertEquals(s1.getScheme(), cFT.getFlowTargetSession().getPrimary().getScheme());
+		assertArrayEquals(s1.getSessionKey(), cFT.getFlowTargetSession().getPrimary().getSessionKey());
+		assertEquals(s1.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getPrimary().getValidFrom()
+				.getTime());
+		assertNotNull(cFT.getFlowTargetSession().getSecondary());
+		assertEquals(s2.getScheme(), cFT.getFlowTargetSession().getSecondary().getScheme());
+		assertArrayEquals(s2.getSessionKey(), cFT.getFlowTargetSession().getSecondary().getSessionKey());
+		assertEquals(s2.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getSecondary().getValidFrom()
+				.getTime());
+
+		// assert a second time relay of the same info is ok too.
+		req = new Relay();
+		req.setChannelflowtarget(cft);
+
+		response = mrs.relay(req);
+		assertSuccess(response);
+
+		// check CA exists and that the authorization is set as a reqRecv by someother.
+		r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		casc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0, 1));
+		casc.setDomainName(domain1.getDomainName());
+		casc.getOrigin().setDomainName(domain1.getDomainName());
+		casc.getOrigin().setLocalName(address1.getLocalName());
+		channelFlowTargets = channelService.search(zone, casc);
+		assertEquals(1, channelFlowTargets.size());
+		cFT = channelFlowTargets.get(0);
+		assertNotNull(cFT.getTargetFingerprint());
+		assertNotNull(cFT.getFlowTargetSession());
+		assertEquals(cft.getFlowtargetsession().getSignaturevalue().getSignature(), cFT.getFlowTargetSession()
+				.getSignature().getValue());
+		assertNotNull(cFT.getFlowTargetSession().getPrimary());
+		assertEquals(s1.getScheme(), cFT.getFlowTargetSession().getPrimary().getScheme());
+		assertArrayEquals(s1.getSessionKey(), cFT.getFlowTargetSession().getPrimary().getSessionKey());
+		assertEquals(s1.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getPrimary().getValidFrom()
+				.getTime());
+		assertNotNull(cFT.getFlowTargetSession().getSecondary());
+		assertEquals(s2.getScheme(), cFT.getFlowTargetSession().getSecondary().getScheme());
+		assertArrayEquals(s2.getSessionKey(), cFT.getFlowTargetSession().getSecondary().getSessionKey());
+		assertEquals(s2.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getSecondary().getValidFrom()
+				.getTime());
+
 	}
 
 	private void assertSuccess(Acknowledge ack) {

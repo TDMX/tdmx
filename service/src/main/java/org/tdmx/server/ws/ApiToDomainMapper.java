@@ -97,6 +97,7 @@ public class ApiToDomainMapper {
 			sig.setValue(fts.getSignaturevalue().getSignature());
 			sig.setSignatureDate(CalendarUtils.getDateTime(fts.getSignaturevalue().getTimestamp()));
 			sig.setCertificateChainPem(target.getCertificateChainPem());
+			s.setSignature(sig);
 		}
 		return s;
 	}

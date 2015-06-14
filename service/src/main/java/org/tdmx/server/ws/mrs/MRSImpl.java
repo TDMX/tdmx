@@ -295,6 +295,7 @@ public class MRSImpl implements MRS {
 		} finally {
 			getZonePartitionIdProvider().clearPartitionId();
 		}
+		response.setSuccess(true);
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {
