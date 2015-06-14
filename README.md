@@ -2,10 +2,13 @@
 ![TDMX Logo](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/www/tdmx.png)
 This project is the work-in-progress development of **Trusted Domain Messaging eXchange**. TDMX is a specification enabling secure B2B messaging between separate corporations via cloud service providers.
 
-Visit [http://tdmx.org](http://tdmx.org "tdmx.org") and the [specification WIKI](https://github.com/TDMX/tdmx/wiki/README.md) for more information.
+Visit [http://tdmx.org](http://tdmx.org "tdmx.org") and the specification section below for more information.
 
 Anyone wishing to contribute get more information, contact [Peter Klauser](https://github.com/pjklauser "Peter Klauser").
-
+## Specification
+ - [Summary](https://github.com/TDMX/tdmx/master/wiki/Introduction.md)
+  - [Features](https://github.com/TDMX/tdmx/master/wiki/Introduction.md#Features)
+  - [Motivation](https://github.com/TDMX/tdmx/master/wiki/Motivation.md)
 ## Development Setup
 clone the tdmx Github repository
 in Eclipse, use the `import existing maven projects` wizard on the tdmx root directory. Prerequisite is the m2eclipse plugin which can be found via Eclipse marketplace, or is bundled with Jboss Tools plugins. 
