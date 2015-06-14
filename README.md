@@ -10,7 +10,7 @@ Anyone wishing to contribute get more information, contact [Peter Klauser](https
   - [Summary](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#summary)
   - [Features](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#features)
   - [What TDMX is NOT](https://github.com/TDMX/tdmx/blob/master/wiki/Introduction.md#what-tdmx-is-not)
-  - [Motivation](https://github.com/TDMX/tdmx/master/wiki/Motivation.md)
+  - [Motivation](https://github.com/TDMX/tdmx/blob/master/wiki/Motivation.md#motivation)
 
 
 ## Development Setup
