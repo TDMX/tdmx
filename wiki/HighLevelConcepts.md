@@ -35,4 +35,9 @@ If a domain at the Zone Apex is to be used as a TDMX domain ( which is the norma
 
 ### Trust Relationships
 
+The trust in a given User Certificate is achieved as follows:
 
+![End to End Trust](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/abstract-concept/trust/e2e-anon.png "abstract-concepts/trust/e2e-anon.png")
+
+- DNS must authorize the Zone Administration Certificate
+- The certificate chain from Zone Administration Certificate through the Domain Administration Certificate to the User Certificate must be valid.
