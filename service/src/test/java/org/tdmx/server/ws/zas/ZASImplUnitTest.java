@@ -119,9 +119,9 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
+import org.tdmx.lib.control.job.TestCredentialGenerator;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
@@ -186,6 +186,9 @@ public class ZASImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 
+	private PKIXCredential uc2;
+	private PKIXCredential dac2;
+
 	// private String localName;
 	// private String serviceName;
 	// private String domainName;
@@ -212,6 +215,10 @@ public class ZASImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
+		uc2 = TestCredentialGenerator.createUC(dac, address.getLocalName(), 2);
+
+		String subdomain = domain.getDomainName().substring(0, domain.getDomainName().indexOf(zone.getZoneApex()) - 1);
+		dac2 = TestCredentialGenerator.createDAC(zac, subdomain, 2);
 		// ZAS should use the "authenticated agent" to set the partitionID
 	}
 
@@ -1216,21 +1223,14 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success() {
-		AgentCredentialDescriptor dAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
-
-		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(dAC.getFingerprint());
-		agentCredentialService.delete(domainAC);
-		zonePartitionIdProvider.clearPartitionId();
-
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
 		AdministratorIdentity a = new AdministratorIdentity();
-		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
-		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+		a.setDomaincertificate(dac2.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac2.getIssuerPublicCert().getX509Encoded());
 
 		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
@@ -1238,22 +1238,14 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testCreateAdministrator_Success_DefaultStatus() {
-		// TODO create new credentials instead of deleting
-		AgentCredentialDescriptor dAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
-		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential domainAC = agentCredentialService.findByFingerprint(dAC.getFingerprint());
-		agentCredentialService.delete(domainAC);
-		zonePartitionIdProvider.clearPartitionId();
-
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		AdministratorIdentity a = new AdministratorIdentity();
-		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
-		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+		a.setDomaincertificate(dac2.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac2.getIssuerPublicCert().getX509Encoded());
 
 		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
@@ -1277,13 +1269,10 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testCreateAdministrator_DomainNotExists() {
-		// TODO create new credential for inexistint domain
+	public void testCreateAdministrator_DomainNotExists() throws Exception {
+		// create new credential for non-existent domain
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		Domain dacDomain = domainService.findByName(zone, domain.getDomainName());
-		domainService.delete(dacDomain);
-		zonePartitionIdProvider.clearPartitionId();
+		PKIXCredential dac3 = TestCredentialGenerator.createDAC(zac, "gugus", 2);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1291,8 +1280,8 @@ public class ZASImplUnitTest {
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
 		AdministratorIdentity a = new AdministratorIdentity();
-		a.setDomaincertificate(dac.getPublicCert().getX509Encoded());
-		a.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+		a.setDomaincertificate(dac3.getPublicCert().getX509Encoded());
+		a.setRootcertificate(dac3.getIssuerPublicCert().getX509Encoded());
 
 		ca.setAdministratorIdentity(a);
 		CreateAdministratorResponse response = zas.createAdministrator(ca);
@@ -1395,27 +1384,26 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testDeleteAddress_ZAC_ok() {
-		// TODO create new address to delete without UCs
-		AgentCredentialDescriptor uAC = agentCredentialFactory.createAgentCredential(uc.getCertificateChain());
-		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		AgentCredential userAC = agentCredentialService.findByFingerprint(uAC.getFingerprint());
-		agentCredentialService.delete(userAC);
-		zonePartitionIdProvider.clearPartitionId();
-
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		Address a = new Address();
-		a.setDomain(dac.getPublicCert().getCommonName());
-		a.setLocalname(uc.getPublicCert().getCommonName());
+		// create the address
+		Address ucAddress = new Address();
+		ucAddress.setDomain(dac.getPublicCert().getCommonName());
+		ucAddress.setLocalname("anewaddressname");
 
-		DeleteAddress request = new DeleteAddress();
-		request.setAddress(a);
+		CreateAddress ca = new CreateAddress();
+		ca.setAddress(ucAddress);
 
-		DeleteAddressResponse response = zas.deleteAddress(request);
+		CreateAddressResponse response = zas.createAddress(ca);
 		assertSuccess(response);
+
+		DeleteAddress da = new DeleteAddress();
+		da.setAddress(ucAddress);
+
+		DeleteAddressResponse daRes = zas.deleteAddress(da);
+		assertSuccess(daRes);
 	}
 
 	@Test
@@ -1583,7 +1571,6 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
 	public void testCreateUser_ZAC_ok() {
 		// create new ZAC credential
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
@@ -1592,26 +1579,49 @@ public class ZASImplUnitTest {
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
 		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setUsercertificate(uc2.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 
 		ca.setUserIdentity(u);
 		CreateUserResponse response = zas.createUser(ca);
 		assertSuccess(response);
+
+		// TODO check originating flows created
 	}
 
 	@Test
-	@Ignore
-	public void testCreateUser_AddressNotExists() {
-		// create new credentials on unexisting address
+	public void testCreateUser_DAC_ok() {
+		// create new ZAC credential
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
 		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
+		u.setUsercertificate(uc2.getPublicCert().getX509Encoded());
+		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
+		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
+
+		ca.setUserIdentity(u);
+		CreateUserResponse response = zas.createUser(ca);
+		assertSuccess(response);
+
+		// TODO check originating flows created
+	}
+
+	@Test
+	public void testCreateUser_DAC_NOK_AddressNotFound() throws Exception {
+		// create new credentials on unexisting address
+		PKIXCredential uc3 = TestCredentialGenerator.createUC(dac, "gugus", 2);
+
+		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		CreateUser ca = new CreateUser();
+		ca.setStatus(CredentialStatus.ACTIVE);
+		UserIdentity u = new UserIdentity();
+		u.setUsercertificate(uc3.getPublicCert().getX509Encoded());
 		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
 		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
 

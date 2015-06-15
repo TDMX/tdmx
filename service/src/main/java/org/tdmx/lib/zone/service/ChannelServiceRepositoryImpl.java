@@ -264,6 +264,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
+	public void createOriginatingUser(Zone zone, Long channelFlowTargetId, AgentCredential originatingUser) {
+		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
+		if (storedCft != null) {
+			setChannelFlowOrigin(storedCft, originatingUser);
+		}
+		// persist should not be necessary, using cascade.
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
 	public void createOrUpdate(Channel channel) {
 		if (channel.getId() != null) {
 			Channel storedAuth = getChannelDao().loadById(channel.getId());
@@ -437,19 +447,26 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			List<AgentCredential> originatingAgents = agentCredentialDao.search(zone, oasc);
 
 			for (AgentCredential origin : originatingAgents) {
-				boolean foundOrigin = false;
-				for (ChannelFlowOrigin cfo : foundCft.getChannelFlowOrigins()) {
-					if (origin.getFingerprint().equals(cfo.getSourceFingerprint())) {
-						foundOrigin = true;
-						break;
-					}
-				}
-				if (!foundOrigin) {
-					ChannelFlowOrigin cfo = new ChannelFlowOrigin(foundCft);
-					cfo.setSourceFingerprint(origin.getFingerprint());
-					cfo.setSourceCertificateChainPem(origin.getCertificateChainPem());
-				}
+				setChannelFlowOrigin(foundCft, origin);
 			}
+		}
+	}
+
+	/*
+	 * Creates a ChannelFlowOrigin in a ChannelFlowTarget for an originating User if it doesn't already exist.
+	 */
+	private void setChannelFlowOrigin(ChannelFlowTarget cft, AgentCredential origin) {
+		boolean foundOrigin = false;
+		for (ChannelFlowOrigin cfo : cft.getChannelFlowOrigins()) {
+			if (origin.getFingerprint().equals(cfo.getSourceFingerprint())) {
+				foundOrigin = true;
+				break;
+			}
+		}
+		if (!foundOrigin) {
+			ChannelFlowOrigin cfo = new ChannelFlowOrigin(cft);
+			cfo.setSourceFingerprint(origin.getFingerprint());
+			cfo.setSourceCertificateChainPem(origin.getCertificateChainPem());
 		}
 	}
 

@@ -1149,6 +1149,25 @@ public class ZASImpl implements ZAS {
 		// create the UC
 		credentialService.createOrUpdate(newCred);
 
+		// if the User matches an origin of some channel, then create Flows accordingly.
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			ChannelFlowTargetSearchCriteria cftsc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(pageNo,
+					getBatchSize()));
+			cftsc.setDomain(newCred.getDomain());
+			cftsc.getOrigin().setLocalName(newCred.getAddress().getLocalName());
+			cftsc.getOrigin().setDomainName(newCred.getDomain().getDomainName());
+			// sc.getOrigin().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
+
+			List<ChannelFlowTarget> originatingFlowTargets = channelService.search(zone, cftsc);
+			for (ChannelFlowTarget channelFlowTarget : originatingFlowTargets) {
+				channelService.createOriginatingUser(zone, channelFlowTarget.getId(), newCred);
+			}
+			if (originatingFlowTargets.isEmpty()) {
+				more = false;
+			}
+		}
+
 		response.setSuccess(true);
 		return response;
 	}

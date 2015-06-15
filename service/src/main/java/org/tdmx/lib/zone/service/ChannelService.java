@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
+import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -153,6 +154,15 @@ public interface ChannelService {
 	 * @param flowTarget
 	 */
 	public void relayChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget);
+
+	/**
+	 * Creates a Flow originating from the originatingUser and terminating in the ChannelFlowTarget referenced by
+	 * channelFlowId.
+	 * 
+	 * @param zone
+	 * @param channelFlowTargetId
+	 */
+	public void createOriginatingUser(Zone zone, Long channelFlowTargetId, AgentCredential originatingUser);
 
 	/**
 	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.
