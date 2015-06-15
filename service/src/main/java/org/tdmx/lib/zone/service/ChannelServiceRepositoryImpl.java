@@ -28,13 +28,18 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
+import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.FlowTargetDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
@@ -68,6 +73,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	private ChannelDao channelDao;
 	private FlowTargetDao flowTargetDao;
 	private ServiceDao serviceDao;
+	private AgentCredentialDao agentCredentialDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -242,17 +248,17 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void setChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget) {
-		Channel channel = findById(id);
-		setChannelFlowTarget(channel, flowTarget);
+	public void setChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget) {
+		Channel channel = findById(channelId);
+		setChannelFlowTarget(zone, channel, flowTarget);
 		// persist should not be necessary
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void relayChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget) {
-		Channel channel = findById(id);
-		setChannelFlowTarget(channel, flowTarget);
+	public void relayChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget) {
+		Channel channel = findById(channelId);
+		setChannelFlowTarget(zone, channel, flowTarget);
 		// persist should not be necessary
 	}
 
@@ -283,12 +289,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
 	public void delete(ChannelFlowTarget channelFlowTarget) {
 		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTarget.getId());
 		if (storedCft != null) {
 			getChannelDao().delete(storedCft);
 		} else {
-			log.warn("Unable to find ChaChannelFlowTargetnnel to delete with id " + channelFlowTarget.getId());
+			log.warn("Unable to find ChannelFlowTarget to delete with id " + channelFlowTarget.getId());
 		}
 	}
 
@@ -384,7 +391,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
 			for (FlowTarget ft : flowTargets) {
 				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
-				setChannelFlowTarget(channel, cftd);
+				setChannelFlowTarget(zone, channel, cftd);
 			}
 		} else if (!channel.isOpen()) {
 			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
@@ -392,7 +399,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 	}
 
-	private void setChannelFlowTarget(Channel channel, ChannelFlowTargetDescriptor channelFlowTarget) {
+	private void setChannelFlowTarget(Zone zone, Channel channel, ChannelFlowTargetDescriptor channelFlowTarget) {
 		ChannelFlowTarget foundCft = null;
 		for (ChannelFlowTarget cft : channel.getChannelFlowTargets()) {
 			if (cft.getTargetFingerprint().equals(channelFlowTarget.getTarget().getFingerprint())) {
@@ -401,13 +408,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 		}
 		if (foundCft == null) {
-			// create a new CFT and link it to the Channel
-			ChannelFlowTarget cft = new ChannelFlowTarget(channel);
-			if (channel.isSend()) {
-				// TODO initialize the ChannelFlowOrigins for ALL known Agents
-			}
+			// create a new CFT
+			foundCft = new ChannelFlowTarget(channel);
 
-			foundCft = cft;
+			// link the new CFT to the channel
+			channel.getChannelFlowTargets().add(foundCft);
 			foundCft.setTargetFingerprint(channelFlowTarget.getTarget().getFingerprint());
 		}
 
@@ -418,6 +423,33 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 		} else {
 			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+		}
+		// every time we set a new FlowTarget we make sure all flows are pre-setup too.
+		if (channel.isSend()) {
+			// initialize the ChannelFlowOrigins for ALL known originating Agents
+			AgentCredentialSearchCriteria oasc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 100)); // TODO
+																												// global
+																												// hard
+																												// limit
+			oasc.setAddressName(channel.getOrigin().getLocalName());
+			oasc.setDomainName(channel.getOrigin().getDomainName());
+			oasc.setType(AgentCredentialType.UC);
+			List<AgentCredential> originatingAgents = agentCredentialDao.search(zone, oasc);
+
+			for (AgentCredential origin : originatingAgents) {
+				boolean foundOrigin = false;
+				for (ChannelFlowOrigin cfo : foundCft.getChannelFlowOrigins()) {
+					if (origin.getFingerprint().equals(cfo.getSourceFingerprint())) {
+						foundOrigin = true;
+						break;
+					}
+				}
+				if (!foundOrigin) {
+					ChannelFlowOrigin cfo = new ChannelFlowOrigin(foundCft);
+					cfo.setSourceFingerprint(origin.getFingerprint());
+					cfo.setSourceCertificateChainPem(origin.getCertificateChainPem());
+				}
+			}
 		}
 	}
 
@@ -447,6 +479,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	public void setServiceDao(ServiceDao serviceDao) {
 		this.serviceDao = serviceDao;
+	}
+
+	public AgentCredentialDao getAgentCredentialDao() {
+		return agentCredentialDao;
+	}
+
+	public void setAgentCredentialDao(AgentCredentialDao agentCredentialDao) {
+		this.agentCredentialDao = agentCredentialDao;
 	}
 
 }

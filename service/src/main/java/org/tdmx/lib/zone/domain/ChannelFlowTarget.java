@@ -105,7 +105,6 @@ public class ChannelFlowTarget implements Serializable {
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
 	private ProcessingState processingState;
 
-	// TODO Flow cascade
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "flowTarget", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ChannelFlowOrigin> channelFlowOrigins;
 
@@ -118,7 +117,6 @@ public class ChannelFlowTarget implements Serializable {
 
 	public ChannelFlowTarget(Channel c) {
 		setChannel(c);
-		channel.getChannelFlowTargets().add(this);
 	}
 
 	// -------------------------------------------------------------------------

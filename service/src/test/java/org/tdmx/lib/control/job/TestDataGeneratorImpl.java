@@ -53,9 +53,11 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
@@ -244,12 +246,17 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(), to.getDomain()
 							.getDomainName(), service.getServiceName(), "SP");
 
+					Channel sendChannel = null;
+					Channel recvChannel = null;
+
 					// if both domains are the same we merge the 2 auths into one.
 					if (from.getDomain().getDomainName().equals(to.getDomain().getDomainName())) {
 						ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(
 								fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
 						channelService.createOrUpdate(sendRecvCa.getChannel());
 						fromDomain.getAuths().add(sendRecvCa);
+						sendChannel = sendRecvCa.getChannel();
+						recvChannel = sendRecvCa.getChannel();
 					} else {
 						ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(fromDomain.getDomain(),
 								fromDac.getCredential(), fromDac.getAg(), co, cd);
@@ -258,8 +265,10 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 						channelService.createOrUpdate(sendCa.getChannel());
 						fromDomain.getAuths().add(sendCa);
+						sendChannel = sendCa.getChannel();
 						channelService.createOrUpdate(recvCa.getChannel());
 						toDomain.getAuths().add(recvCa);
+						recvChannel = recvCa.getChannel();
 					}
 
 					for (UCHolder targetUser : toAddressHolder.getUcs()) {
@@ -268,6 +277,12 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						FlowTarget ft = ZoneFacade.createFlowTarget(targetUser.getCredential(), target, service);
 
 						flowTargetService.createOrUpdate(ft);
+
+						// create the CFT equivalent of the FT in the Channel, for both receiving and sending sides
+						// which will also create the Flows
+						ChannelFlowTargetDescriptor cftd = ft.getDescriptor(result.getZone(), co);
+						channelService.setChannelFlowTarget(result.getZone(), recvChannel.getId(), cftd);
+						channelService.relayChannelFlowTarget(result.getZone(), sendChannel.getId(), cftd);
 					}
 
 				}

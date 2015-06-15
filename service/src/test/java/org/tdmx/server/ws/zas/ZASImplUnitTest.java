@@ -1217,6 +1217,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_Success() {
 		AgentCredentialDescriptor dAC = agentCredentialFactory.createAgentCredential(dac.getCertificateChain());
+
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		AgentCredential domainAC = agentCredentialService.findByFingerprint(dAC.getFingerprint());
 		agentCredentialService.delete(domainAC);

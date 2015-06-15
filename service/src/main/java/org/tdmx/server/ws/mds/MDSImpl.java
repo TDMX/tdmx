@@ -245,7 +245,7 @@ public class MDSImpl implements MDS {
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
 				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
-				channelService.setChannelFlowTarget(channel.getId(), cftd);
+				channelService.setChannelFlowTarget(zone, channel.getId(), cftd);
 			}
 			if (channels.isEmpty()) {
 				more = false;

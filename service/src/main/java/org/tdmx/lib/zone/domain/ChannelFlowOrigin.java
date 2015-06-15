@@ -92,6 +92,7 @@ public class ChannelFlowOrigin implements Serializable {
 
 	public ChannelFlowOrigin(ChannelFlowTarget cft) {
 		setFlowTarget(cft);
+		cft.getChannelFlowOrigins().add(this);
 	}
 
 	// -------------------------------------------------------------------------

@@ -132,11 +132,13 @@ public interface ChannelService {
 	 * This is called on the receiving end of the channel by the target's
 	 * {@link MDS#setFlowTargetSession(org.tdmx.core.api.v01.mds.SetFlowTargetSession)} propagation to each channel.
 	 * 
-	 * @param id
+	 * @param zone
+	 *            the zone
+	 * @param channelId
 	 *            id of the channel
 	 * @param flowTarget
 	 */
-	public void setChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget);
+	public void setChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget);
 
 	/**
 	 * Updates the FlowTarget as ChannelFlowTarget within a Channel.
@@ -144,11 +146,13 @@ public interface ChannelService {
 	 * This is called on the sending end by the relay in of a remote ChannelFlowTarget via
 	 * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)}.
 	 * 
-	 * @param id
+	 * @param zone
+	 *            the zone
+	 * @param channelId
 	 *            id of the channel
 	 * @param flowTarget
 	 */
-	public void relayChannelFlowTarget(Long id, ChannelFlowTargetDescriptor flowTarget);
+	public void relayChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget);
 
 	/**
 	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.

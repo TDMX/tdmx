@@ -290,7 +290,7 @@ public class MRSImpl implements MRS {
 				cftd.setTarget(uc);
 				cftd.setFlowTargetSession(fts);
 
-				channelService.relayChannelFlowTarget(channel.getId(), cftd);
+				channelService.relayChannelFlowTarget(zone, channel.getId(), cftd);
 			}
 		} finally {
 			getZonePartitionIdProvider().clearPartitionId();
