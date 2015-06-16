@@ -34,7 +34,10 @@ import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.Flow;
+import org.tdmx.core.api.v01.msg.FlowControlLevel;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
+import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtarget;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
@@ -50,8 +53,10 @@ import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.FlowTargetSession;
 
 public class DomainToApiMapper {
 
@@ -72,13 +77,54 @@ public class DomainToApiMapper {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public Flow mapFlow(ChannelFlowOrigin fo) {
+		if (fo == null) {
+			return null;
+		}
+		Flow f = new Flow();
+
+		f.setFlowcontrolstatus(Flowcontrolstatus.OPEN); // TODO
+		f.setLevel(new FlowControlLevel()); // TODO
+		f.setLimit(new FlowControlLimit()); // TODO
+		f.setFlowtargetsession(mapFlowTargetSession(fo.getFlowTarget().getFlowTargetSession()));
+
+		f.setSource(mapUserIdentity(fo.getSourceCertificateChain()));
+		f.setTarget(mapUserIdentity(fo.getFlowTarget().getTargetCertificateChain()));
+		f.setServicename(fo.getFlowTarget().getChannel().getDestination().getServiceName());
+		return f;
+	}
+
+	public Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {
+		if (fts == null) {
+			return null;
+		}
+		Flowtargetsession f = new Flowtargetsession();
+
+		if (fts.getPrimary() != null) {
+			f.getFlowsessions().add(mapFlowSession(fts.getPrimary()));
+		}
+		if (fts.getSecondary() != null) {
+			f.getFlowsessions().add(mapFlowSession(fts.getSecondary()));
+		}
+		if (fts.getSignature() != null) {
+			Signaturevalue sv = new Signaturevalue();
+			sv.setSignature(fts.getSignature().getValue());
+			sv.setTimestamp(CalendarUtils.getDateTime(fts.getSignature().getSignatureDate()));
+			sv.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignature().getAlgorithm()));
+
+			f.setSignaturevalue(sv);
+		}
+
+		return f;
+	}
+
 	public Flowtarget mapFlowTarget(FlowTarget ft) {
 		if (ft == null) {
 			return null;
 		}
 		Flowtarget f = new Flowtarget();
 
-		f.setTarget(mapUserIdentity(ft.getTarget()));
+		f.setTarget(mapUserIdentity(ft.getTarget().getCertificateChain()));
 		f.setServicename(ft.getService().getServiceName());
 
 		f.setConcurrencyLevel(ft.getConcurrency().getConcurrencyLevel());
@@ -118,20 +164,20 @@ public class DomainToApiMapper {
 			return null;
 		}
 		User us = new User();
-		us.setUserIdentity(mapUserIdentity(cred));
+		us.setUserIdentity(mapUserIdentity(cred.getCertificateChain()));
 		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
 		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
 		return us;
 	}
 
-	public UserIdentity mapUserIdentity(AgentCredential cred) {
-		if (cred == null) {
+	public UserIdentity mapUserIdentity(PKIXCertificate[] userCertChain) {
+		if (userCertChain == null || userCertChain.length != 3) {
 			return null;
 		}
 		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(PKIXCertificate.getPublicKey(cred.getCertificateChain()).getX509Encoded());
-		u.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(cred.getCertificateChain()).getX509Encoded());
-		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(cred.getCertificateChain()).getX509Encoded());
+		u.setUsercertificate(PKIXCertificate.getPublicKey(userCertChain).getX509Encoded());
+		u.setDomaincertificate(PKIXCertificate.getIssuerPublicKey(userCertChain).getX509Encoded());
+		u.setRootcertificate(PKIXCertificate.getZoneRootPublicKey(userCertChain).getX509Encoded());
 
 		return u;
 	}

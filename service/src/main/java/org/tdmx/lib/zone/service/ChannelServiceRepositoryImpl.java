@@ -40,6 +40,7 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
@@ -310,6 +311,17 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
+	public void delete(ChannelFlowOrigin channelFlowOrigin) {
+		ChannelFlowOrigin storedCfo = getChannelDao().loadChannelFlowOriginById(channelFlowOrigin.getId());
+		if (storedCfo != null) {
+			getChannelDao().delete(storedCfo);
+		} else {
+			log.warn("Unable to find ChannelFlowOrigin to delete with id " + channelFlowOrigin.getId());
+		}
+	}
+
+	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
@@ -324,6 +336,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 

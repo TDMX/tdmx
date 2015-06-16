@@ -23,6 +23,8 @@ import java.util.List;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
@@ -42,11 +44,15 @@ public interface ChannelDao {
 
 	public void delete(ChannelFlowTarget value);
 
+	public void delete(ChannelFlowOrigin value);
+
 	public Channel merge(Channel value);
 
 	public Channel loadById(Long id);
 
 	public ChannelFlowTarget loadChannelFlowTargetById(Long id);
+
+	public ChannelFlowOrigin loadChannelFlowOriginById(Long id);
 
 	/**
 	 * Search for ChannelAuthorizations. FetchPlan includes Channel and Domain.
@@ -74,4 +80,14 @@ public interface ChannelDao {
 	 * @return
 	 */
 	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
+
+	/**
+	 * Search for ChannelFlowOrigins. FetchPlan includes ChannelFlowTarget, Channel, Domain.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
+
 }

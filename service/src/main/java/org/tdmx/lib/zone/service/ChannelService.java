@@ -27,6 +27,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
@@ -121,11 +123,13 @@ public interface ChannelService {
 
 	public Channel findById(Long id);
 
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
+
 	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
 	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
 
-	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
+	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
 
 	/**
 	 * Adds or updates the FlowTarget as ChannelFlowTarget within a Channel.
@@ -172,9 +176,16 @@ public interface ChannelService {
 	public void delete(Channel channel);
 
 	/**
-	 * ChannelFlowTarget's can be deleted without the Channel's knowledge. Cascades to Flows.
+	 * ChannelFlowTargets can be deleted without the Channel's knowledge. Cascades to Flows.
 	 * 
 	 * @param channelFlowTarget
 	 */
 	public void delete(ChannelFlowTarget channelFlowTarget);
+
+	/**
+	 * ChannelFlowOrigins can be deleted without the ChannelFlowTarget's knowledge. Cascades to Messages.
+	 * 
+	 * @param channelFlowOrigin
+	 */
+	public void delete(ChannelFlowOrigin channelFlowOrigin);
 }

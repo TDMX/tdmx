@@ -33,6 +33,8 @@ import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.msg.FlowDestinationFilter;
+import org.tdmx.core.api.v01.msg.FlowEndpointFilter;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -80,6 +82,7 @@ import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.zas.SearchFlowResponse;
 import org.tdmx.core.api.v01.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.SearchIpZone;
 import org.tdmx.core.api.v01.zas.SearchIpZoneResponse;
@@ -101,6 +104,8 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
@@ -1306,8 +1311,84 @@ public class ZASImpl implements ZAS {
 	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlow")
 	public org.tdmx.core.api.v01.zas.SearchFlowResponse searchFlow(
 			@WebParam(partName = "parameters", name = "searchFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.SearchFlow parameters) {
-		// TODO
-		return null;
+
+		SearchFlowResponse response = new SearchFlowResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+		if (zone == null) {
+			return response;
+		}
+
+		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(a2d.mapPage(parameters.getPage()));
+		if (authorizedUser.isTdmxDomainAdminCertificate()) {
+			// we fix the search to search only the DAC's domain.
+			sc.setDomainName(authorizedUser.getCommonName());
+		}
+		if (parameters.getFilter().getSource() != null) {
+			FlowEndpointFilter src = parameters.getFilter().getSource();
+			if (StringUtils.hasText(src.getLocalname())) {
+				sc.getOrigin().setLocalName(src.getLocalname());
+			}
+			if (StringUtils.hasText(src.getDomain())) {
+				sc.getOrigin().setDomainName(src.getDomain());
+			}
+			if (StringUtils.hasText(src.getServiceprovider())) {
+				sc.getOrigin().setServiceProvider(src.getServiceprovider());
+			}
+			if (src.getUserIdentity() != null) {
+				// if a user credential is provided then it't not so much a search as a lookup
+
+				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(src.getUserIdentity()
+						.getUsercertificate(), src.getUserIdentity().getDomaincertificate(), src.getUserIdentity()
+						.getRootcertificate());
+				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
+					setError(ErrorCode.InvalidUserCredentials, response);
+					return response;
+				}
+				sc.setSourceFingerprint(uc.getFingerprint());
+			}
+		}
+		if (parameters.getFilter().getTarget() != null) {
+			FlowDestinationFilter trg = parameters.getFilter().getTarget();
+			if (StringUtils.hasText(trg.getLocalname())) {
+				sc.getDestination().setLocalName(trg.getLocalname());
+			}
+			if (StringUtils.hasText(trg.getDomain())) {
+				sc.getDestination().setDomainName(trg.getDomain());
+			}
+			if (StringUtils.hasText(trg.getServicename())) {
+				sc.getDestination().setServiceName(trg.getServicename());
+			}
+			if (StringUtils.hasText(trg.getServiceprovider())) {
+				sc.getDestination().setServiceProvider(trg.getServiceprovider());
+			}
+			if (trg.getUserIdentity() != null) {
+				// if a user credential is provided then it't not so much a search as a lookup
+
+				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(trg.getUserIdentity()
+						.getUsercertificate(), trg.getUserIdentity().getDomaincertificate(), trg.getUserIdentity()
+						.getRootcertificate());
+				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
+					setError(ErrorCode.InvalidUserCredentials, response);
+					return response;
+				}
+				sc.setTargetFingerprint(uc.getFingerprint());
+			}
+
+		}
+
+		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
+		for (ChannelFlowOrigin flow : flows) {
+			response.getFlows().add(d2a.mapFlow(flow));
+		}
+
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
 	}
 
 	@Override

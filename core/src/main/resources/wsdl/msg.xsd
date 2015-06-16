@@ -306,9 +306,9 @@
 	</xs:complexType>
 	<xs:complexType name="FlowEndpointFilter">
 		<xs:complexContent>
-			<xs:extension base="UserFilter">
+			<xs:extension base="ChannelEndpointFilter">
 				<xs:sequence>
-					<xs:element ref="serviceprovider" minOccurs="0"/>
+					<xs:element ref="userIdentity" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

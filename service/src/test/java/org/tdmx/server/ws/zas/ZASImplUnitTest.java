@@ -59,6 +59,7 @@ import org.tdmx.core.api.v01.msg.DomainFilter;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.FlowDestination;
+import org.tdmx.core.api.v01.msg.FlowFilter;
 import org.tdmx.core.api.v01.msg.FlowTargetFilter;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
@@ -104,6 +105,8 @@ import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
+import org.tdmx.core.api.v01.zas.SearchFlow;
+import org.tdmx.core.api.v01.zas.SearchFlowResponse;
 import org.tdmx.core.api.v01.zas.SearchFlowTarget;
 import org.tdmx.core.api.v01.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.SearchService;
@@ -1216,12 +1219,6 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testGetFlowState() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
 	public void testCreateAdministrator_Success() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1289,7 +1286,7 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchFlowTarget() {
+	public void testSearchFlowTarget_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -1378,12 +1375,6 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testGetFlowTargetState() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
 	public void testDeleteAddress_ZAC_ok() {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1423,9 +1414,23 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSearchFlow() {
-		fail("Not yet implemented"); // TODO
+	public void testSearchFlow_DAC_All() {
+		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		SearchFlow req = new SearchFlow();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		FlowFilter ff = new FlowFilter();
+		req.setFilter(ff);
+
+		SearchFlowResponse response = zas.searchFlow(req);
+		assertSuccess(response);
+		assertEquals(1, response.getFlows().size());
 	}
 
 	@Test
@@ -1587,7 +1592,7 @@ public class ZASImplUnitTest {
 		CreateUserResponse response = zas.createUser(ca);
 		assertSuccess(response);
 
-		// TODO check originating flows created
+		// TODO check originating flows created by using ZAS#searchFlow
 	}
 
 	@Test
@@ -1607,7 +1612,7 @@ public class ZASImplUnitTest {
 		CreateUserResponse response = zas.createUser(ca);
 		assertSuccess(response);
 
-		// TODO check originating flows created
+		// TODO check originating flows created by using ZAS#searchFlow
 	}
 
 	@Test

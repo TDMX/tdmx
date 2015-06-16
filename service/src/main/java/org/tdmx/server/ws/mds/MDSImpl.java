@@ -219,7 +219,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		UserIdentity id = d2a.mapUserIdentity(existingCred);
+		UserIdentity id = d2a.mapUserIdentity(existingCred.getCertificateChain());
 		// check that the FTS signature is ok for the targetagent.
 		if (!SignatureUtils.checkFlowTargetSessionSignature(parameters.getServicename(), id,
 				parameters.getFlowtargetsession())) {
