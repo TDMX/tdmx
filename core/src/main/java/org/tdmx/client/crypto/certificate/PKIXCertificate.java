@@ -294,6 +294,38 @@ public class PKIXCertificate {
 		return -1;
 	}
 
+	/**
+	 * Get the TDMX domainName related to this public certificate. If the certificate is a User certificate then the
+	 * domain is encoded into the X509 subjectName, for DAC it is the X.509 commonName.
+	 * 
+	 * @return the TDMX domainName for DAC and UC. ZAC is null.
+	 */
+	public String getTdmxDomainName() {
+		if (isTdmxUserCertificate()) {
+			getLastRDN(getSubjectName(), BCStyle.OU);
+		} else if (isTdmxDomainAdminCertificate()) {
+			return getCommonName();
+		}
+		return null;
+	}
+
+	/**
+	 * The LocalName of a UC is the X.509 commonName.
+	 * 
+	 * @return
+	 */
+	public String getTdmxUserName() {
+		if (isTdmxUserCertificate()) {
+			return getCommonName();
+		}
+		return null;
+	}
+
+	/**
+	 * Whether the PKIXCertificate is a ZAC.
+	 * 
+	 * @return
+	 */
 	public boolean isTdmxZoneAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 1 == getCAPathLengthConstraint();
@@ -360,6 +392,11 @@ public class PKIXCertificate {
 		return false;
 	}
 
+	/**
+	 * Whether the PKIXCertificate is a DAC.
+	 * 
+	 * @return
+	 */
 	public boolean isTdmxDomainAdminCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		boolean caConstrained = isCA() && 0 == getCAPathLengthConstraint();
@@ -440,6 +477,11 @@ public class PKIXCertificate {
 		return false;
 	}
 
+	/**
+	 * Whether the PKIXCertifiate is a UC.
+	 * 
+	 * @return
+	 */
 	public boolean isTdmxUserCertificate() {
 		// critical basicConstraints CA=true, max path length=1
 		if (isCA()) {

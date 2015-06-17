@@ -54,7 +54,7 @@
 			<xs:documentation>list the flow state of every flow of a channel. The origin of the channel is implicitly the User's address.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="destination" type="msg:ChannelDestinationFilter"/>
+			<xs:element name="destination" type="msg:FlowDestinationFilter"/>
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>

@@ -267,14 +267,15 @@ public class DomainToApiMapper {
 		current.setLimit(limit);
 		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 
-		RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
-		unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
-		unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
-
 		Channelauthorization c = new Channelauthorization();
 		c.setDomain(ca.getChannel().getDomain().getDomainName());
 		c.setCurrent(current);
-		c.setUnconfirmed(unconfirmed);
+		if (ca.getReqRecvAuthorization() != null || ca.getSendAuthorization() != null) {
+			RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
+			unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
+			unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
+			c.setUnconfirmed(unconfirmed);
+		}
 		c.setProcessingstatus(mapProcessingStatus(ca.getProcessingState()));
 		return c;
 	}

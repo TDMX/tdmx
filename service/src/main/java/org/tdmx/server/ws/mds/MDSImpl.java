@@ -55,9 +55,16 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
+import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowTarget;
@@ -152,6 +159,11 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
+		if (!StringUtils.hasText(parameters.getServicename())) {
+			setError(ErrorCode.MissingService, response);
+			return response;
+		}
+
 		// check that the UC credential exists
 		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
 		if (existingCred == null) {
@@ -180,8 +192,44 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public ListFlowResponse listFlow(ListFlow parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		ListFlowResponse response = new ListFlowResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+		if (!StringUtils.hasText(parameters.getServicename())) {
+			setError(ErrorCode.MissingService, response);
+			return response;
+		}
+		Zone zone = getAgentService().getZone();
+
+		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(a2d.mapPage(parameters.getPage()));
+		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setTargetFingerprint(authorizedUser.getFingerprint());
+		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getDestination().setServiceName(parameters.getServicename());
+		if (parameters.getOrigin() != null) {
+			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
+			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());
+			sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
+			if (parameters.getOrigin().getUserIdentity() != null) {
+				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getOrigin()
+						.getUserIdentity().getUsercertificate(), parameters.getOrigin().getUserIdentity()
+						.getDomaincertificate(), parameters.getOrigin().getUserIdentity().getRootcertificate());
+				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
+					setError(ErrorCode.InvalidUserCredentials, response);
+					return response;
+				}
+				sc.setSourceFingerprint(uc.getFingerprint());
+			}
+		}
+		List<ChannelFlowOrigin> channelFlows = channelService.search(zone, sc);
+		for (ChannelFlowOrigin flow : channelFlows) {
+			response.getFlows().add(d2a.mapFlow(flow));
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -195,6 +243,11 @@ public class MDSImpl implements MDS {
 		SetFlowTargetSessionResponse response = new SetFlowTargetSessionResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
+			return response;
+		}
+
+		if (!StringUtils.hasText(parameters.getServicename())) {
+			setError(ErrorCode.MissingService, response);
 			return response;
 		}
 
@@ -276,8 +329,37 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public ListChannelAuthorizationResponse listChannelAuthorization(ListChannelAuthorization parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		ListChannelAuthorizationResponse response = new ListChannelAuthorizationResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		if (!StringUtils.hasText(parameters.getServicename())) {
+			setError(ErrorCode.MissingService, response);
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+				a2d.mapPage(parameters.getPage()));
+		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getDestination().setLocalName(authorizedUser.getTdmxUserName());
+		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getDestination().setServiceName(parameters.getServicename());
+		if (parameters.getOrigin() != null) {
+			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
+			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());
+			sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
+		}
+		List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
+		for (ChannelAuthorization channelAuth : channelAuths) {
+			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(channelAuth));
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override

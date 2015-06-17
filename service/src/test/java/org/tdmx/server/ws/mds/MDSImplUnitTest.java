@@ -41,10 +41,15 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
 import org.tdmx.core.api.v01.mds.GetFlowTarget;
 import org.tdmx.core.api.v01.mds.GetFlowTargetResponse;
+import org.tdmx.core.api.v01.mds.ListChannelAuthorization;
+import org.tdmx.core.api.v01.mds.ListChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.mds.ListFlow;
+import org.tdmx.core.api.v01.mds.ListFlowResponse;
 import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
 import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
@@ -183,6 +188,51 @@ public class MDSImplUnitTest {
 		assertNotNull(response.getDestination());
 		assertEquals(domain.getDomainName(), response.getDestination().getDomain());
 		// TODO others
+	}
+
+	@Test
+	public void testListChannelAuthorization_All() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ListChannelAuthorization req = new ListChannelAuthorization();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		req.setPage(p);
+		req.setServicename(service.getServiceName());
+		// TODO test without svc name fails
+
+		ListChannelAuthorizationResponse response = mds.listChannelAuthorization(req);
+		assertSuccess(response);
+
+		// TODO others
+		assertEquals(1, response.getChannelauthorizations().size());
+	}
+
+	@Test
+	public void testListFlow_All() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ListFlow req = new ListFlow();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		req.setPage(p);
+		req.setServicename(service.getServiceName());
+
+		ListFlowResponse response = mds.listFlow(req);
+		assertSuccess(response);
+
+		// TODO others
+		assertEquals(1, response.getFlows().size());
 	}
 
 	@Test
