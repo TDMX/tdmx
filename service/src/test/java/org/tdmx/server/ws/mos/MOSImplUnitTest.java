@@ -37,8 +37,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
+import org.tdmx.core.api.v01.mos.ListChannelAuthorization;
+import org.tdmx.core.api.v01.mos.ListChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.mos.ListFlow;
+import org.tdmx.core.api.v01.mos.ListFlowResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
@@ -170,6 +175,48 @@ public class MOSImplUnitTest {
 		assertNotNull(response.getOrigin());
 		assertEquals(domain.getDomainName(), response.getOrigin().getDomain());
 		// TODO others
+	}
+
+	@Test
+	public void testListChannelAuthorization_All() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ListChannelAuthorization req = new ListChannelAuthorization();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		// TODO test without svc name fails
+
+		ListChannelAuthorizationResponse response = mos.listChannelAuthorization(req);
+		assertSuccess(response);
+
+		// TODO others
+		assertEquals(1, response.getChannelauthorizations().size());
+	}
+
+	@Test
+	public void testListFlow_All() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		ListFlow req = new ListFlow();
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		req.setPage(p);
+
+		ListFlowResponse response = mos.listFlow(req);
+		assertSuccess(response);
+
+		// TODO others
+		assertEquals(1, response.getFlows().size());
 	}
 
 	private void assertSuccess(Acknowledge ack) {

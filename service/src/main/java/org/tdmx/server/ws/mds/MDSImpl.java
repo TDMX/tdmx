@@ -347,11 +347,12 @@ public class MDSImpl implements MDS {
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
 		sc.getDestination().setLocalName(authorizedUser.getTdmxUserName());
 		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
+		// FIXME SP: sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); // TODO SP
 		sc.getDestination().setServiceName(parameters.getServicename());
 		if (parameters.getOrigin() != null) {
 			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
 			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());
-			sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
+			// FIXME SP: sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
 		}
 		List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
 		for (ChannelAuthorization channelAuth : channelAuths) {

@@ -202,7 +202,6 @@ public class MDSImplUnitTest {
 		p.setSize(10);
 		req.setPage(p);
 
-		req.setPage(p);
 		req.setServicename(service.getServiceName());
 		// TODO test without svc name fails
 
