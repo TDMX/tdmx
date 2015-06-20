@@ -166,6 +166,7 @@ public class MOSImpl implements MOS {
 	@Override
 	public SubmitResponse submit(Submit parameters) {
 		// TODO Auto-generated method stub
+		parameters.getMsg();
 		return null;
 	}
 

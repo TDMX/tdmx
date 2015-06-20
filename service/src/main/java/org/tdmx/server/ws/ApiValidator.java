@@ -107,6 +107,10 @@ public class ApiValidator {
 		if (fs == null) {
 			setError(ErrorCode.MissingFlowSession, ack);
 		}
+		if (!StringUtils.hasText(fs.getFlowsessionId())) {
+			setError(ErrorCode.MissingFlowSessionIdentifier, ack);
+			return null;
+		}
 		if (!StringUtils.hasText(fs.getScheme())) {
 			setError(ErrorCode.MissingFlowSessionScheme, ack);
 			return null;

@@ -393,9 +393,10 @@
 			<xs:documentation>FlowSession is a public (encryption) session key which is signed by the flow's destination credential and has a fixed validity period.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="sessionKey" type="xs:base64Binary"/>
+			<xs:element ref="flowsessionId"/>
 			<xs:element name="validFrom" type="timestamp"/>
 			<xs:element name="scheme" type="cryptoscheme"/>
+			<xs:element name="sessionKey" type="xs:base64Binary"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ChannelFlowTarget">
@@ -544,6 +545,7 @@
 	<xs:element name="userIdentity" type="UserIdentity"/>
 	<xs:element name="user" type="User"/>
 	<xs:element name="flowchannel" type="FlowChannel"/>
+	<xs:element name="flowsessionId" type="common:text"/>
 	<xs:element name="flowsession" type="FlowSession"/>
 	<xs:element name="flow" type="Flow"/>
 	<xs:element name="flowcontrolstatus" type="flowcontrolstatus">
@@ -632,34 +634,20 @@
 				</xs:annotation>
 			</xs:element>
 			<xs:element ref="flowchannel"/>
-			<xs:element name="externalReference" type="common:longtext">
-				<xs:annotation>
-					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="sendAuthorizationSignature" type="signature">
-				<xs:annotation>
-					<xs:documentation>the signature of the authorization under which this message is claimed sendable.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="recvAuthorizationSignature" type="signature">
-				<xs:annotation>
-					<xs:documentation>the signature of the authorization under which this message is claimed receivable.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="sessionSignature" type="signature">
-				<xs:annotation>
-					<xs:documentation>the signature of the flowtargetsession under which this message is sent.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
+			<xs:element ref="flowsessionId"/>
 			<xs:element name="payloadSignature" type="signature">
 				<xs:annotation>
 					<xs:documentation>the signature value of the Message's payload element fields, including a CRC of all the chunks of the ciphertext. Note that there is a cryptographically secure digital signature of the message payload typically in the encryption scheme ( on the payload plaintext ). The payloadSignature issuer is the that of the header signature issuer.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="externalReference" type="common:longtext" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="headerSignature" type="signature">
 				<xs:annotation>
-					<xs:documentation>the signature value for all header elements, issued by the flow source. { msgId +  timestamp + ttl + src.credential + trg.credential + serviceName + externalRefrence + sendAuthSig + recvAuthSig + sessionSig + payloadSig }</xs:documentation>
+					<xs:documentation>the signature value for all header elements, issued by the flow source. { msgId +  timestamp + ttl + src.credential + trg.credential + serviceName + flowTargetSessionId + payloadSig + externalRefrence   }</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>

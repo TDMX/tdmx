@@ -309,11 +309,13 @@ public class MRSImplUnitTest {
 		Flowtarget ft = new Flowtarget();
 		Flowtargetsession fts = new Flowtargetsession();
 		Flowsession s1 = new Flowsession();
+		s1.setFlowsessionId("id1");
 		s1.setScheme("scheme");
 		s1.setSessionKey(new byte[] { 1, 2, 3 });
 		s1.setValidFrom(CalendarUtils.getDate(new Date()));
 
 		Flowsession s2 = new Flowsession();
+		s2.setFlowsessionId("id2");
 		s2.setScheme("scheme");
 		s2.setSessionKey(new byte[] { 4, 5, 6 });
 		s2.setValidFrom(CalendarUtils.getDate(new Date()));

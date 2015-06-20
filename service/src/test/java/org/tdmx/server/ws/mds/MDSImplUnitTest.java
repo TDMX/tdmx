@@ -244,6 +244,7 @@ public class MDSImplUnitTest {
 
 		Flowtargetsession fts = new Flowtargetsession();
 		Flowsession fs1 = new Flowsession();
+		fs1.setFlowsessionId("id1");
 		fs1.setValidFrom(Calendar.getInstance());
 		fs1.setSessionKey(new byte[] { 1, 2, 3 });
 		fs1.setScheme("scheme-name");

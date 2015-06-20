@@ -92,6 +92,7 @@ public class FlowTarget implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
+			@AttributeOverride(name = "identifier", column = @Column(name = "primaryIdentifier", length = FlowSession.MAX_IDENTIFIER_LEN)),
 			@AttributeOverride(name = "scheme", column = @Column(name = "primaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
 			@AttributeOverride(name = "validFrom", column = @Column(name = "primaryValidFrom")),
 			@AttributeOverride(name = "sessionKey", column = @Column(name = "primarySession", length = FlowSession.MAX_SESSION_KEY_LEN)) })
@@ -99,6 +100,7 @@ public class FlowTarget implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
+			@AttributeOverride(name = "identifier", column = @Column(name = "secondaryIdentifier", length = FlowSession.MAX_IDENTIFIER_LEN)),
 			@AttributeOverride(name = "scheme", column = @Column(name = "secondaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
 			@AttributeOverride(name = "validFrom", column = @Column(name = "secondaryValidFrom")),
 			@AttributeOverride(name = "sessionKey", column = @Column(name = "secondarySession", length = FlowSession.MAX_SESSION_KEY_LEN)) })

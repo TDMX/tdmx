@@ -124,6 +124,7 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		FlowSession s = new FlowSession();
+		s.setIdentifier(fs.getFlowsessionId());
 		s.setScheme(fs.getScheme());
 		s.setSessionKey(fs.getSessionKey());
 		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));

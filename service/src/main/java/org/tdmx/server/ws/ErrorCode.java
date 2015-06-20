@@ -73,6 +73,7 @@ public enum ErrorCode {
 	MissingSignatureTimestamp(500, "Signature Timestamp missing."),
 	MissingSignatureAlgorithm(500, "Signature Algorithm missing."),
 
+	MissingFlowSessionIdentifier(500, "FlowSession identifier missing."),
 	MissingFlowSessionScheme(500, "FlowSession scheme missing."),
 	MissingFlowSessionValidFrom(500, "FlowSession validFrom missing."),
 	MissingFlowSessionSessionKey(500, "FlowSession sessionKey missing."),

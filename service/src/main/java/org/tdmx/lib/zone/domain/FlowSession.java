@@ -38,6 +38,7 @@ public class FlowSession implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_IDENTIFIER_LEN = 256;
 	public static final int MAX_SCHEME_LEN = 16; // TODO check
 	public static final int MAX_SESSION_KEY_LEN = 8000; // TODO check
 
@@ -45,6 +46,8 @@ public class FlowSession implements Serializable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
+
+	private String identifier;
 
 	private String scheme;
 
@@ -72,6 +75,7 @@ public class FlowSession implements Serializable {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("FlowSession [");
+		builder.append("identifier=").append(identifier);
 		builder.append("scheme=").append(scheme);
 		builder.append(", validFrom=").append(validFrom);
 		if (sessionKey != null) {
@@ -92,6 +96,14 @@ public class FlowSession implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
 
 	public byte[] getSessionKey() {
 		return sessionKey;

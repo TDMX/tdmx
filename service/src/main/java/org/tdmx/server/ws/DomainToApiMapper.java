@@ -153,6 +153,7 @@ public class DomainToApiMapper {
 			return null;
 		}
 		Flowsession s = new Flowsession();
+		s.setFlowsessionId(fs.getIdentifier());
 		s.setScheme(fs.getScheme());
 		s.setSessionKey(fs.getSessionKey());
 		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));

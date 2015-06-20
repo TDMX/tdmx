@@ -85,6 +85,7 @@ public class ZoneFacade {
 		FlowTarget ft = new FlowTarget(userAgent, service);
 
 		FlowSession ps = new FlowSession();
+		ps.setIdentifier("1");
 		ps.setScheme("encryptionscheme");
 		ps.setSessionKey(new byte[] { 1, 2, 3 });
 		ps.setValidFrom(new Date());

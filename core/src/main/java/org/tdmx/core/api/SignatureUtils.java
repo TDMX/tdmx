@@ -122,8 +122,8 @@ public class SignatureUtils {
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static void createFlowTargetSessionSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
-			Flowtarget ft) {
+	public static void createFlowTargetSessionSignature(PKIXCredential credential, SignatureAlgorithm alg,
+			Date signatureDate, Flowtarget ft) {
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
 		id.setDomaincertificate(credential.getIssuerPublicCert().getX509Encoded());
@@ -197,6 +197,7 @@ public class SignatureUtils {
 
 		// up to 2 sessions
 		for (Flowsession fs : fts.getFlowsessions()) {
+			value.append(toValue(fs.getFlowsessionId()));
 			value.append(toValue(fs.getValidFrom()));
 			value.append(toValue(fs.getScheme()));
 			value.append(toValue(fs.getSessionKey()));

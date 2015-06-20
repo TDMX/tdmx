@@ -27,9 +27,11 @@
 
     create table FlowTarget (
         id bigint not null,
+        primaryIdentifier varchar(256),
         primaryScheme varchar(16),
         primarySession varbinary(8000),
         primaryValidFrom timestamp,
+        secondaryIdentifier varchar(256),
         secondaryScheme varchar(16),
         secondarySession varbinary(8000),
         secondaryValidFrom timestamp,
@@ -128,9 +130,11 @@
 
     create table ChannelFlowTarget (
         id bigint not null,
+        primaryIdentifier varchar(256),
         primaryScheme varchar(16),
         primarySession varbinary(8000),
         primaryValidFrom timestamp,
+        secondaryIdentifier varchar(256),
         secondaryScheme varchar(16),
         secondarySession varbinary(8000),
         secondaryValidFrom timestamp,

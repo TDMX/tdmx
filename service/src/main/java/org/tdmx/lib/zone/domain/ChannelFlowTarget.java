@@ -84,9 +84,11 @@ public class ChannelFlowTarget implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
+			@AttributeOverride(name = "primary.identifier", column = @Column(name = "primaryIdentifier", length = FlowSession.MAX_IDENTIFIER_LEN)),
 			@AttributeOverride(name = "primary.scheme", column = @Column(name = "primaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
 			@AttributeOverride(name = "primary.validFrom", column = @Column(name = "primaryValidFrom")),
 			@AttributeOverride(name = "primary.sessionKey", column = @Column(name = "primarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
+			@AttributeOverride(name = "secondary.identifier", column = @Column(name = "secondaryIdentifier", length = FlowSession.MAX_IDENTIFIER_LEN)),
 			@AttributeOverride(name = "secondary.scheme", column = @Column(name = "secondaryScheme", length = FlowSession.MAX_SCHEME_LEN)),
 			@AttributeOverride(name = "secondary.validFrom", column = @Column(name = "secondaryValidFrom")),
 			@AttributeOverride(name = "secondary.sessionKey", column = @Column(name = "secondarySession", length = FlowSession.MAX_SESSION_KEY_LEN)),
