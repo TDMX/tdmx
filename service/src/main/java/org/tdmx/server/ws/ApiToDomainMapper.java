@@ -25,9 +25,12 @@ import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentSignature;
@@ -66,6 +69,26 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		return new PageSpecifier(p.getNumber(), p.getSize());
+	}
+
+	public Message mapMessage(Header header, Payload payload) {
+		if (header == null) {
+			return null;
+		}
+		Message msg = new Message(header.getMsgId(), CalendarUtils.getDateTime(header.getTimestamp()));
+		msg.setLiveUntilTS(CalendarUtils.getDateTime(header.getTtl()));
+		// header FlowChannel is separate for identifying the src/trg.
+		msg.setFlowSessionId(header.getFlowsessionId());
+		msg.setPayloadSignature(header.getPayloadSignature());
+		msg.setHeaderSignature(header.getHeaderSignature());
+
+		msg.setChunkSizeFactor(payload.getChunkSizeFactor());
+		msg.setChunksCRC(payload.getChunksCRC());
+		msg.setEncryptionContext(payload.getEncryptionContext());
+		msg.setPayloadLength(payload.getLength());
+		msg.setPlaintextLength(payload.getPlaintextLength());
+
+		return msg;
 	}
 
 	public FlowTarget mapFlowTarget(AgentCredential target, Service service, Flowtargetsession fts) {

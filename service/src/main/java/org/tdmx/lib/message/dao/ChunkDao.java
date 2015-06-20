@@ -36,6 +36,6 @@ public interface ChunkDao {
 
 	public Chunk loadById(Long id);
 
-	public Chunk loadByMsgIdAndPos(String msgId, short pos);
+	public Chunk loadByMsgIdAndPos(String msgId, int pos);
 
 }

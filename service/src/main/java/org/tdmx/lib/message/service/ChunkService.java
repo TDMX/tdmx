@@ -30,7 +30,7 @@ public interface ChunkService {
 
 	public void createOrUpdate(Chunk chunk);
 
-	public Chunk findByMsgIdAndPos(String msgId, short pos);
+	public Chunk findByMsgIdAndPos(String msgId, int pos);
 
 	public void delete(Chunk chunk);
 

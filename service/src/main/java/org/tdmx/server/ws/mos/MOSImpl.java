@@ -39,6 +39,10 @@ import org.tdmx.core.api.v01.mos.Upload;
 import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Chunk;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -49,6 +53,8 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
+import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
@@ -165,9 +171,28 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public SubmitResponse submit(Submit parameters) {
-		// TODO Auto-generated method stub
-		parameters.getMsg();
-		return null;
+		SubmitResponse response = new SubmitResponse();
+
+		// TODO validate Tx fields present if provided
+		Transaction tx = parameters.getTransaction(); // TODO
+
+		// TODO validate Msg fields present
+		Msg msg = parameters.getMsg();
+		Header header = msg.getHeader();
+		Payload payload = msg.getPayload();
+		// TODO check the Header's signature correct.
+
+		// TODO validate Chunk fields present
+		Chunk chunk = msg.getChunk();
+
+		Message m = a2d.mapMessage(header, payload);
+
+		// TODO persist Message and Chunk via ChunkService and MessageService respectively
+
+		// TODO create originating ChannelFlowMessage
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override

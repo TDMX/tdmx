@@ -30,14 +30,12 @@ public class MessageFacade {
 		m.setLiveUntilTS(new Date());
 		m.setFlowId(flowId);
 		m.setExternalReference("External Reference Text");
-		m.setRecvAuthSignature("12345");
-		m.setSendAuthSignature("12345");
-		m.setSessionSignature("12345");
+		m.setFlowSessionId("fs1");
 		m.setHeaderSignature("12345");
 
 		// payload fields
 		m.setChunksCRC("12345678");
-		m.setChunkSizeFactor((short) 8);
+		m.setChunkSizeFactor(8);
 		m.setEncryptionContext(new byte[] { 1, 2, 3 });
 		m.setPayloadLength(1024);
 		m.setPayloadSignature("1234");
@@ -45,7 +43,7 @@ public class MessageFacade {
 		return m;
 	}
 
-	public static Chunk createChunk(String msgId, short pos) throws Exception {
+	public static Chunk createChunk(String msgId, int pos) throws Exception {
 		Chunk c = new Chunk(msgId, pos);
 		c.setMac("1234");
 		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });

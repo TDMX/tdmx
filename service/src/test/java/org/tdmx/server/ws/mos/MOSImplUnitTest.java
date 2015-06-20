@@ -37,6 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.ContinuedAcknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
@@ -44,7 +45,10 @@ import org.tdmx.core.api.v01.mos.ListChannelAuthorization;
 import org.tdmx.core.api.v01.mos.ListChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.mos.ListFlow;
 import org.tdmx.core.api.v01.mos.ListFlowResponse;
+import org.tdmx.core.api.v01.mos.Submit;
+import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -217,6 +221,32 @@ public class MOSImplUnitTest {
 
 		// TODO others
 		assertEquals(1, response.getFlows().size());
+	}
+
+	@Test
+	public void testSubmit() {
+		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
+		authenticatedAgentService.setAuthenticatedAgent(r);
+
+		Submit req = new Submit();
+
+		Msg msg = new Msg();
+		req.setMsg(msg);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, false);
+	}
+
+	private void assertSuccess(ContinuedAcknowledge ack, boolean hasContinuation) {
+		assertNotNull(ack);
+		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";
+		assertTrue("Error " + errorDesc, ack.isSuccess());
+		if (hasContinuation) {
+			assertNotNull(ack.getContinuation());
+		} else {
+			assertNull(ack.getContinuation());
+		}
+		assertNull(ack.getError());
 	}
 
 	private void assertSuccess(Acknowledge ack) {

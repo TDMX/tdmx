@@ -74,9 +74,4 @@ public class MessageServiceRepositoryUnitTest {
 		assertNull(m);
 	}
 
-	@Test
-	public void testModify() throws Exception {
-		// TODO
-	}
-
 }

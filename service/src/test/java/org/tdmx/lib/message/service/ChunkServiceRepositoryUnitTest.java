@@ -41,11 +41,11 @@ public class ChunkServiceRepositoryUnitTest {
 	private ChunkService service;
 
 	private String msgId;
-	private short pos;
+	private int pos;
 
 	@Before
 	public void doSetup() throws Exception {
-		Chunk c = MessageFacade.createChunk(UUID.randomUUID().toString(), (short) 1);
+		Chunk c = MessageFacade.createChunk(UUID.randomUUID().toString(), 1);
 		msgId = c.getMsgId();
 		pos = c.getPos();
 

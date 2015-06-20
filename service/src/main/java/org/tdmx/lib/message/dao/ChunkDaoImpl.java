@@ -18,12 +18,14 @@
  */
 package org.tdmx.lib.message.dao;
 
+import static org.tdmx.lib.message.domain.QChunk.chunk;
+
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.lib.message.domain.Chunk;
+
+import com.mysema.query.jpa.impl.JPAQuery;
 
 public class ChunkDaoImpl implements ChunkDao {
 
@@ -63,25 +65,12 @@ public class ChunkDaoImpl implements ChunkDao {
 
 	@Override
 	public Chunk loadById(Long id) {
-		Query query = em.createQuery("from Chunk as c where c.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Chunk) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(chunk).where(chunk.id.eq(id)).uniqueResult(chunk);
 	}
 
 	@Override
-	public Chunk loadByMsgIdAndPos(String msgId, short pos) {
-		Query query = em.createQuery("from Chunk as c where c.msgId = :mid and c.pos = :pos");
-		query.setParameter("mid", msgId);
-		query.setParameter("pos", pos);
-		try {
-			return (Chunk) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+	public Chunk loadByMsgIdAndPos(String msgId, int pos) {
+		return new JPAQuery(em).from(chunk).where(chunk.msgId.eq(msgId).and(chunk.pos.eq(pos))).uniqueResult(chunk);
 	}
 
 	// -------------------------------------------------------------------------

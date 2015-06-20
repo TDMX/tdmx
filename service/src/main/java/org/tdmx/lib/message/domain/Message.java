@@ -34,6 +34,8 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.tdmx.lib.zone.domain.FlowSession;
+
 /**
  * A Message.
  * 
@@ -82,20 +84,14 @@ public class Message implements Serializable {
 	@Column(nullable = false)
 	private Long flowId;
 
-	@Column(length = MAX_EXTREF_LEN, nullable = false)
-	private String externalReference;
-
-	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
-	private String sendAuthSignature;
-
-	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
-	private String recvAuthSignature;
-
-	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
-	private String sessionSignature;
+	@Column(length = FlowSession.MAX_IDENTIFIER_LEN, nullable = false)
+	private String flowSessionId;
 
 	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
 	private String payloadSignature;
+
+	@Column(length = MAX_EXTREF_LEN)
+	private String externalReference;
 
 	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
 	private String headerSignature;
@@ -104,7 +100,7 @@ public class Message implements Serializable {
 	// PAYLOAD FIELDS
 	// -------------------------------------------------------------------------
 	@Column(nullable = false)
-	private short chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
+	private int chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
 
 	@Column(nullable = false)
 	private long payloadLength; // total encrypted length = SUM length chunks
@@ -187,28 +183,12 @@ public class Message implements Serializable {
 		this.externalReference = externalReference;
 	}
 
-	public String getSendAuthSignature() {
-		return sendAuthSignature;
+	public String getFlowSessionId() {
+		return flowSessionId;
 	}
 
-	public void setSendAuthSignature(String sendAuthSignature) {
-		this.sendAuthSignature = sendAuthSignature;
-	}
-
-	public String getRecvAuthSignature() {
-		return recvAuthSignature;
-	}
-
-	public void setRecvAuthSignature(String recvAuthSignature) {
-		this.recvAuthSignature = recvAuthSignature;
-	}
-
-	public String getSessionSignature() {
-		return sessionSignature;
-	}
-
-	public void setSessionSignature(String sessionSignature) {
-		this.sessionSignature = sessionSignature;
+	public void setFlowSessionId(String flowSessionId) {
+		this.flowSessionId = flowSessionId;
 	}
 
 	public String getPayloadSignature() {
@@ -227,11 +207,11 @@ public class Message implements Serializable {
 		this.headerSignature = headerSignature;
 	}
 
-	public short getChunkSizeFactor() {
+	public int getChunkSizeFactor() {
 		return chunkSizeFactor;
 	}
 
-	public void setChunkSizeFactor(short chunkSizeFactor) {
+	public void setChunkSizeFactor(int chunkSizeFactor) {
 		this.chunkSizeFactor = chunkSizeFactor;
 	}
 

@@ -63,7 +63,7 @@ public class Chunk implements Serializable {
 	private String msgId;
 
 	@Column(nullable = false)
-	private short pos;
+	private int pos;
 
 	@Column(nullable = false)
 	private String mac;
@@ -79,7 +79,7 @@ public class Chunk implements Serializable {
 	Chunk() {
 	}
 
-	public Chunk(String msgId, short pos) {
+	public Chunk(String msgId, int pos) {
 		this.msgId = msgId;
 		this.pos = pos;
 	}
@@ -128,7 +128,7 @@ public class Chunk implements Serializable {
 		return msgId;
 	}
 
-	public short getPos() {
+	public int getPos() {
 		return pos;
 	}
 

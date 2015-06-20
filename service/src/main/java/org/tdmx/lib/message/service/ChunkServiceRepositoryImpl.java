@@ -80,7 +80,7 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 
 	@Override
 	@Transactional(value = "MessageDB", readOnly = true)
-	public Chunk findByMsgIdAndPos(String msgId, short pos) {
+	public Chunk findByMsgIdAndPos(String msgId, int pos) {
 		return getChunkDao().loadByMsgIdAndPos(msgId, pos);
 	}
 

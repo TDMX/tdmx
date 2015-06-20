@@ -18,12 +18,14 @@
  */
 package org.tdmx.lib.message.dao;
 
+import static org.tdmx.lib.message.domain.QMessage.message;
+
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.tdmx.lib.message.domain.Message;
+
+import com.mysema.query.jpa.impl.JPAQuery;
 
 public class MessageDaoImpl implements MessageDao {
 
@@ -63,24 +65,12 @@ public class MessageDaoImpl implements MessageDao {
 
 	@Override
 	public Message loadById(Long id) {
-		Query query = em.createQuery("from Message as m where m.id = :id");
-		query.setParameter("id", id);
-		try {
-			return (Message) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(message).where(message.id.eq(id)).uniqueResult(message);
 	}
 
 	@Override
 	public Message loadByMsgId(String msgId) {
-		Query query = em.createQuery("from Message as m where m.msgId = :mid");
-		query.setParameter("mid", msgId);
-		try {
-			return (Message) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
+		return new JPAQuery(em).from(message).where(message.msgId.eq(msgId)).uniqueResult(message);
 	}
 
 	// -------------------------------------------------------------------------
