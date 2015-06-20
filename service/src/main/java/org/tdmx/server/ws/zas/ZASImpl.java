@@ -154,13 +154,6 @@ public class ZASImpl implements ZAS {
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
 
-	// TODO ChannelAuth effect on ZAS
-	// flowtarget independent of channel auths. Destination side just defines the state unilateraly.
-	// design jobs / process flow around channel auths
-	// trigger transfer of flowtargetsession from dest to origin SP based on channel authorization
-	// flowtargetsession arrives at origin SP where it applies it creates new flows if needed and assigns the flowtarget
-	// originator uc can then send message
-	// arrival of message creates flows on destination side as needed
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 	private final ApiValidator validator = new ApiValidator();
@@ -642,10 +635,26 @@ public class ZASImpl implements ZAS {
 			}
 		}
 
-		// TODO delete any remaining Flows ( originating ) with this agent.
-
 		// delete the UC
 		credentialService.delete(existingCred);
+
+		// delete any remaining Flows ( originating ) with this agent.
+		// we can do this AFTER the credential is removed since the ChannelFlowOrigin is not constrained to link to the
+		// AgentCredential of the UC being deleted.
+		boolean moreCFO = true;
+		while (moreCFO) {
+			ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			sc.setDomain(existingCred.getDomain());
+			sc.setSourceFingerprint(existingCred.getFingerprint());
+
+			List<ChannelFlowOrigin> channelFlows = channelService.search(zone, sc);
+			for (ChannelFlowOrigin cfo : channelFlows) {
+				channelService.delete(cfo);
+			}
+			if (channelFlows.isEmpty()) {
+				moreCFO = false;
+			}
+		}
 
 		// ChannelFlowTargets (incl their Flows) which relate to the Agent should be deleted too, for any Service
 		// we can do this AFTER the credential is removed since the ChannelFlowTarget is not constrained to link to the
