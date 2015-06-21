@@ -39,7 +39,6 @@ import org.tdmx.core.api.v01.mos.Upload;
 import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
@@ -54,7 +53,10 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.domain.Message;
+import org.tdmx.lib.message.service.ChunkService;
+import org.tdmx.lib.message.service.MessageService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
@@ -99,6 +101,9 @@ public class MOSImpl implements MOS {
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
+
+	private ChunkService chunkService;
+	private MessageService messageService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -177,17 +182,22 @@ public class MOSImpl implements MOS {
 		Transaction tx = parameters.getTransaction(); // TODO
 
 		// TODO validate Msg fields present
+
+		// TODO check chunk's mac
+
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
 		// TODO check the Header's signature correct.
 
 		// TODO validate Chunk fields present
-		Chunk chunk = msg.getChunk();
+		Chunk c = a2d.mapChunk(msg.getChunk());
 
 		Message m = a2d.mapMessage(header, payload);
 
 		// TODO persist Message and Chunk via ChunkService and MessageService respectively
+		messageService.createOrUpdate(m);
+		chunkService.createOrUpdate(c);
 
 		// TODO create originating ChannelFlowMessage
 
@@ -379,6 +389,22 @@ public class MOSImpl implements MOS {
 
 	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
 		this.credentialValidator = credentialValidator;
+	}
+
+	public ChunkService getChunkService() {
+		return chunkService;
+	}
+
+	public void setChunkService(ChunkService chunkService) {
+		this.chunkService = chunkService;
+	}
+
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
 	}
 
 	public int getBatchSize() {

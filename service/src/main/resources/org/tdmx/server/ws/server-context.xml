@@ -56,6 +56,8 @@
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="messageService" ref="tdmx.lib.message.MessageRepository"/>
+		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 

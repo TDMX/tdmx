@@ -231,6 +231,8 @@ public class MOSImplUnitTest {
 		Submit req = new Submit();
 
 		Msg msg = new Msg();
+		// TODO setup msg, create signatures
+
 		req.setMsg(msg);
 
 		SubmitResponse response = mos.submit(req);

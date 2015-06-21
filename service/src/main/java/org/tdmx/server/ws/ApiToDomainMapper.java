@@ -30,6 +30,7 @@ import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -89,6 +90,16 @@ public class ApiToDomainMapper {
 		msg.setPlaintextLength(payload.getPlaintextLength());
 
 		return msg;
+	}
+
+	public Chunk mapChunk(org.tdmx.core.api.v01.msg.Chunk chunk) {
+		if (chunk == null) {
+			return null;
+		}
+		Chunk c = new Chunk(chunk.getMsgId(), chunk.getPos());
+		c.setData(chunk.getData());
+		c.setMac(chunk.getMac());
+		return c;
 	}
 
 	public FlowTarget mapFlowTarget(AgentCredential target, Service service, Flowtargetsession fts) {
