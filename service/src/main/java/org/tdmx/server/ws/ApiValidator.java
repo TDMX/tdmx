@@ -28,12 +28,17 @@ import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelflowtarget;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.FlowChannel;
 import org.tdmx.core.api.v01.msg.FlowDestination;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.StringUtils;
@@ -272,6 +277,129 @@ public class ApiValidator {
 			return null;
 		}
 		return dest;
+	}
+
+	public Msg checkMessage(Msg msg, Acknowledge ack) {
+		if (msg == null) {
+			setError(ErrorCode.MissingMessage, ack);
+			return null;
+		}
+		if (checkHeader(msg.getHeader(), ack) == null) {
+			return null;
+		}
+		if (checkPayload(msg.getPayload(), ack) == null) {
+			return null;
+		}
+		if (checkChunk(msg.getChunk(), ack) == null) {
+			return null;
+		}
+		return msg;
+	}
+
+	public Chunk checkChunk(Chunk chunk, Acknowledge ack) {
+		if (chunk == null) {
+			setError(ErrorCode.MissingChunk, ack);
+			return null;
+		}
+		if (chunk.getData() == null) {
+			setError(ErrorCode.MissingChunkData, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(chunk.getMsgId())) {
+			setError(ErrorCode.MissingChunkMsgId, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(chunk.getMac())) {
+			setError(ErrorCode.MissingChunkMac, ack);
+			return null;
+		}
+		if (chunk.getPos() < 0) {
+			setError(ErrorCode.InvalidChunkPos, ack);
+			return null;
+		}
+		return chunk;
+	}
+
+	public Header checkHeader(Header hdr, Acknowledge ack) {
+		if (hdr == null) {
+			setError(ErrorCode.MissingHeader, ack);
+			return null;
+		}
+		if (checkFlowChannel(hdr.getFlowchannel(), ack) == null) {
+			return null;
+		}
+		if (hdr.getTtl() == null) {
+			setError(ErrorCode.MissingHeaderTTL, ack);
+			return null;
+		}
+		if (hdr.getTimestamp() == null) {
+			setError(ErrorCode.MissingHeaderTimestamp, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(hdr.getFlowsessionId())) {
+			setError(ErrorCode.MissingHeaderFlowsessionId, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(hdr.getMsgId())) {
+			setError(ErrorCode.MissingHeaderMsgId, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(hdr.getPayloadSignature())) {
+			setError(ErrorCode.MissingHeaderPayloadSignature, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(hdr.getHeaderSignature())) {
+			setError(ErrorCode.MissingHeaderSignature, ack);
+			return null;
+		}
+		return hdr;
+	}
+
+	public FlowChannel checkFlowChannel(FlowChannel fc, Acknowledge ack) {
+		if (fc == null) {
+			setError(ErrorCode.MissingHeaderFlowChannel, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(fc.getServicename())) {
+			setError(ErrorCode.MissingFlowChannelServicename, ack);
+			return null;
+		}
+		if (checkUserIdentity(fc.getSource(), ack) == null) {
+			return null;
+		}
+		if (checkUserIdentity(fc.getTarget(), ack) == null) {
+			return null;
+		}
+		return fc;
+	}
+
+	public Payload checkPayload(Payload payload, Acknowledge ack) {
+		if (payload == null) {
+			setError(ErrorCode.MissingPayload, ack);
+			return null;
+		}
+
+		if (!StringUtils.hasText(payload.getChunksCRC())) {
+			setError(ErrorCode.MissingPayloadChunksCRC, ack);
+			return null;
+		}
+		if (payload.getEncryptionContext() == null) {
+			setError(ErrorCode.MissingPayloadEncryptionContext, ack);
+			return null;
+		}
+		if (payload.getChunkSizeFactor() < 0) {
+			setError(ErrorCode.InvalidChunkSizeFactor, ack);
+			return null;
+		}
+		if (payload.getLength() < 0) {
+			setError(ErrorCode.InvalidPayloadLength, ack);
+			return null;
+		}
+		if (payload.getPlaintextLength() < 0) {
+			setError(ErrorCode.InvalidPlaintextLength, ack);
+			return null;
+		}
+		return payload;
 	}
 
 	public Channel checkChannel(Channel channel, Acknowledge ack) {

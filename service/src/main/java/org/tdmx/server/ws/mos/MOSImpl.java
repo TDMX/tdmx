@@ -178,6 +178,9 @@ public class MOSImpl implements MOS {
 	public SubmitResponse submit(Submit parameters) {
 		SubmitResponse response = new SubmitResponse();
 
+		if (validator.checkMessage(parameters.getMsg(), response) == null) {
+			return response;
+		}
 		// TODO validate Tx fields present if provided
 		Transaction tx = parameters.getTransaction(); // TODO
 

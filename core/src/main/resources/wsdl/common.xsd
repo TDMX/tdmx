@@ -18,15 +18,13 @@
 		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="ContinuedAcknowledge">
-		<xs:sequence>
-			<xs:element ref="error" minOccurs="0"/>
-			<xs:element ref="continuation" minOccurs="0"/>
-		</xs:sequence>
-		<xs:attribute name="success" type="xs:boolean" use="required">
-			<xs:annotation>
-				<xs:documentation>true if the operation succeeded, else false and an error element is provided below.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
+		<xs:complexContent>
+			<xs:extension base="Acknowledge">
+				<xs:sequence>
+					<xs:element ref="continuation" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Error">
 		<xs:sequence>
