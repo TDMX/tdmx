@@ -645,6 +645,11 @@
 					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="signatureAlgorithm" type="signatureAlgorithm">
+				<xs:annotation>
+					<xs:documentation>the signature algorithm used by both the payloadSignature and the headerSignature.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="headerSignature" type="signature">
 				<xs:annotation>
 					<xs:documentation>the signature value for all header elements, issued by the flow source. { msgId +  timestamp + ttl + src.credential + trg.credential + serviceName + flowTargetSessionId + payloadSig + externalRefrence   }</xs:documentation>

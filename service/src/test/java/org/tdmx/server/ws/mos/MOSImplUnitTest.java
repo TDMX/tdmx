@@ -55,6 +55,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
@@ -224,13 +225,13 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
-	public void testSubmit() {
+	public void testSubmit() throws Exception {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		Submit req = new Submit();
 
-		Msg msg = new Msg();
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName());
 		// TODO setup msg, create signatures
 
 		req.setMsg(msg);

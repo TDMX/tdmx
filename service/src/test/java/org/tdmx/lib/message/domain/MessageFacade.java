@@ -21,6 +21,12 @@ package org.tdmx.lib.message.domain;
 import java.util.Date;
 import java.util.UUID;
 
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.msg.FlowChannel;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Payload;
+
 public class MessageFacade {
 
 	public static Message createMessage(Long flowId) throws Exception {
@@ -48,5 +54,34 @@ public class MessageFacade {
 		c.setMac("1234");
 		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
 		return c;
+	}
+
+	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName)
+			throws Exception {
+		Msg msg = new Msg();
+		// TODO
+		Header hdr = new Header();
+		msg.setHeader(hdr);
+
+		FlowChannel fc = new FlowChannel();
+		fc.setServicename(serviceName);
+		fc.setSource(null); // TODO cred to uidentity
+		fc.setTarget(null); // TODO
+		hdr.setFlowchannel(fc);
+
+		Payload payload = new Payload();
+		payload.setLength(100);
+		payload.setPlaintextLength(1000);
+		payload.setEncryptionContext(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
+		payload.setChunksCRC("CRC");
+		payload.setChunkSizeFactor(10);
+
+		msg.setPayload(payload);
+
+		org.tdmx.core.api.v01.msg.Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
+		// TODO
+		msg.setChunk(chunk);
+
+		return msg;
 	}
 }

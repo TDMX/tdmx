@@ -103,4 +103,7 @@ public class SignatureUtilsTest {
 
 	// TODO FTS signature check
 
+	// TODO payload signature check
+
+	// TODO header signature check
 }

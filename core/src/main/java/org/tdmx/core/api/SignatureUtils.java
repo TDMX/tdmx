@@ -33,9 +33,12 @@ import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.FlowChannel;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtarget;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -61,6 +64,43 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	public static boolean checkPayloadSignature(Payload payload, Header header) {
+		PKIXCertificate signingPublicCert = CertificateIOUtils.safeDecodeX509(header.getFlowchannel().getSource()
+				.getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(header.getSignatureAlgorithm().value());
+
+		String valueToSignPayload = getValueToSign(payload);
+		String signatureHex = header.getPayloadSignature();
+
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
+				valueToSignPayload, signatureHex);
+	}
+
+	public static String createPayloadSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
+			Payload payload, Header header) {
+
+		String valueToSignPayload = getValueToSign(payload);
+		return StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignPayload);
+	}
+
+	public static boolean checkHeaderSignature(Header header) {
+		PKIXCertificate signingPublicCert = CertificateIOUtils.safeDecodeX509(header.getFlowchannel().getSource()
+				.getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(header.getSignatureAlgorithm().value());
+
+		String valueToSign = getValueToSign(header);
+		String signatureHex = header.getHeaderSignature();
+
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
+				valueToSign, signatureHex);
+	}
+
+	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
+			Header header) {
+
+		String valueToSignHeader = getValueToSign(header);
+		header.setHeaderSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
+	}
 
 	public static boolean checkEndpointPermissionSignature(Channel channel, EndpointPermission perm,
 			boolean checkValidUntil) {
@@ -156,6 +196,43 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private static String getValueToSign(Payload payload) {
+		StringBuilder value = new StringBuilder();
+
+		value.append(toValue(payload.getChunkSizeFactor()));
+		value.append(toValue(payload.getLength()));
+		value.append(toValue(payload.getEncryptionContext()));
+		value.append(toValue(payload.getPlaintextLength()));
+		value.append(toValue(payload.getChunksCRC()));
+
+		return value.toString();
+	}
+
+	private static String getValueToSign(Header header) {
+		StringBuilder value = new StringBuilder();
+
+		value.append(toValue(header.getMsgId()));
+		value.append(toValue(header.getTimestamp()));
+		value.append(toValue(header.getTtl()));
+		appendValueToSign(value, header.getFlowchannel());
+		value.append(toValue(header.getFlowsessionId()));
+		value.append(toValue(header.getPayloadSignature()));
+		value.append(toValue(header.getExternalReference()));
+		return value.toString();
+	}
+
+	private static void appendValueToSign(StringBuilder value, FlowChannel fc) {
+		value.append(toValue(fc.getSource().getUsercertificate()));
+		value.append(toValue(fc.getSource().getDomaincertificate()));
+		value.append(toValue(fc.getSource().getRootcertificate()));
+
+		value.append(toValue(fc.getTarget().getUsercertificate()));
+		value.append(toValue(fc.getTarget().getDomaincertificate()));
+		value.append(toValue(fc.getTarget().getRootcertificate()));
+
+		value.append(toValue(fc.getServicename()));
+	}
 
 	private static String getValueToSign(Channel channel, EndpointPermission perm) {
 		StringBuilder value = new StringBuilder();
@@ -325,6 +402,14 @@ public class SignatureUtils {
 			return MISSING;
 		}
 		return bigint.toString();
+	}
+
+	private static String toValue(long longValue) {
+		return "" + longValue;
+	}
+
+	private static String toValue(int intValue) {
+		return "" + intValue;
 	}
 
 	/**

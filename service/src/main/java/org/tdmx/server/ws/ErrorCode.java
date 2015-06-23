@@ -76,6 +76,8 @@ public enum ErrorCode {
 	InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
 	InvalidSignatureChannelAuthorization(500, "ChannelAuthorization signature invalid."),
 	InvalidSignatureFlowTargetSession(500, "FlowTargetSession signature invalid."),
+	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
+	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 	MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 	MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),

@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mos.GetAddress;
@@ -178,31 +179,39 @@ public class MOSImpl implements MOS {
 	public SubmitResponse submit(Submit parameters) {
 		SubmitResponse response = new SubmitResponse();
 
+		// validate Msg fields present ( payload, header and chunk )
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
 			return response;
 		}
 		// TODO validate Tx fields present if provided
-		Transaction tx = parameters.getTransaction(); // TODO
-
-		// TODO validate Msg fields present
+		Transaction tx = parameters.getTransaction();
 
 		// TODO check chunk's mac
+
+		// check chunk's mac is 1st CRC in payload CRC manifest
 
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
-		// TODO check the Header's signature correct.
+		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
+			setError(ErrorCode.InvalidSignatureMessagePayload, response);
+			return response;
+		}
+		if (!SignatureUtils.checkHeaderSignature(header)) {
+			setError(ErrorCode.InvalidSignatureMessageHeader, response);
+			return response;
+		}
 
-		// TODO validate Chunk fields present
 		Chunk c = a2d.mapChunk(msg.getChunk());
 
 		Message m = a2d.mapMessage(header, payload);
 
-		// TODO persist Message and Chunk via ChunkService and MessageService respectively
+		// persist Message and Chunk via ChunkService and MessageService respectively
 		messageService.createOrUpdate(m);
 		chunkService.createOrUpdate(c);
 
-		// TODO create originating ChannelFlowMessage
+		// TODO create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
+		// ChannelFlowOrigin to attach to.
 
 		response.setSuccess(true);
 		return response;
