@@ -76,8 +76,8 @@ public class ApiToDomainMapper {
 		if (header == null) {
 			return null;
 		}
-		Message msg = new Message(header.getMsgId(), CalendarUtils.getDateTime(header.getTimestamp()));
-		msg.setLiveUntilTS(CalendarUtils.getDateTime(header.getTtl()));
+		Message msg = new Message(header.getMsgId(), CalendarUtils.cast(header.getTimestamp()));
+		msg.setLiveUntilTS(CalendarUtils.cast(header.getTtl()));
 		// header FlowChannel is separate for identifying the src/trg.
 		msg.setFlowSessionId(header.getFlowsessionId());
 		msg.setPayloadSignature(header.getPayloadSignature());
@@ -129,7 +129,7 @@ public class ApiToDomainMapper {
 			AgentSignature sig = new AgentSignature();
 			sig.setAlgorithm(mapSignatureAlgorithm(fts.getSignaturevalue().getSignatureAlgorithm()));
 			sig.setValue(fts.getSignaturevalue().getSignature());
-			sig.setSignatureDate(CalendarUtils.getDateTime(fts.getSignaturevalue().getTimestamp()));
+			sig.setSignatureDate(CalendarUtils.cast(fts.getSignaturevalue().getTimestamp()));
 			sig.setCertificateChainPem(target.getCertificateChainPem());
 			s.setSignature(sig);
 		}
@@ -149,7 +149,7 @@ public class ApiToDomainMapper {
 		if (fts.getSignaturevalue() != null) {
 			ft.setSignatureValue(fts.getSignaturevalue().getSignature());
 			ft.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignaturevalue().getSignatureAlgorithm()));
-			ft.setSignatureDate(CalendarUtils.getDateTime(fts.getSignaturevalue().getTimestamp()));
+			ft.setSignatureDate(CalendarUtils.cast(fts.getSignaturevalue().getTimestamp()));
 		}
 	}
 
@@ -161,7 +161,7 @@ public class ApiToDomainMapper {
 		s.setIdentifier(fs.getFlowsessionId());
 		s.setScheme(fs.getScheme());
 		s.setSessionKey(fs.getSessionKey());
-		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));
+		s.setValidFrom(CalendarUtils.cast(fs.getValidFrom()));
 		return s;
 	}
 
@@ -193,7 +193,7 @@ public class ApiToDomainMapper {
 		}
 		if (signature.getSignaturevalue() != null) {
 			s.setAlgorithm(mapSignatureAlgorithm(signature.getSignaturevalue().getSignatureAlgorithm()));
-			s.setSignatureDate(CalendarUtils.getDateTime(signature.getSignaturevalue().getTimestamp()));
+			s.setSignatureDate(CalendarUtils.cast(signature.getSignaturevalue().getTimestamp()));
 			s.setValue(signature.getSignaturevalue().getSignature());
 		}
 		return s;
@@ -216,7 +216,7 @@ public class ApiToDomainMapper {
 		EndpointPermission p = new EndpointPermission();
 		p.setGrant(mapEndpointPermissionGrant(perm.getPermission()));
 		p.setMaxPlaintextSizeBytes(perm.getMaxPlaintextSizeBytes());
-		p.setValidUntil(CalendarUtils.getDateTime(perm.getValidUntil()));
+		p.setValidUntil(CalendarUtils.cast(perm.getValidUntil()));
 		p.setSignature(mapAdministratorSignature(perm.getAdministratorsignature()));
 		return p;
 	}

@@ -210,7 +210,7 @@ public class MRSImplUnitTest {
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		auth.setPermission(Permission.ALLOW);
-		auth.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is origin, so reqSend at destination
@@ -261,7 +261,7 @@ public class MRSImplUnitTest {
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		auth.setPermission(Permission.ALLOW);
-		auth.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac1, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is destination, so reqRecv at origin

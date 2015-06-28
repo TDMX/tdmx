@@ -57,7 +57,7 @@ public class CalendarUtils {
 	/**
 	 * Convert Calendar to Date
 	 */
-	public static Date getDateTime(Calendar date) {
+	public static Date cast(Calendar date) {
 		if (date == null) {
 			return null;
 		}
@@ -66,6 +66,18 @@ public class CalendarUtils {
 
 	/**
 	 * Convert Date to Calendar
+	 */
+	public static Calendar cast(Date date) {
+		if (date == null) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		return cal;
+	}
+
+	/**
+	 * Get Date YYYY-MM-DD as a Calendar.
 	 * 
 	 */
 	public static Calendar getDate(Date date) {
@@ -82,9 +94,9 @@ public class CalendarUtils {
 	}
 
 	/**
-	 * Convert Date to DateTimeCalendar
+	 * Get Timestamp YYYY-MM-DDTHH:MI:SS
 	 */
-	public static Calendar getDateTime(Date date) {
+	public static Calendar getTimestamp(Date date) {
 		if (date == null) {
 			return null;
 		}
@@ -96,6 +108,15 @@ public class CalendarUtils {
 
 	public static Date getDateWithOffset(Date base, int units, int offsetInUnits) {
 		Calendar cal = getDate(base);
+		if (cal != null) {
+			cal.add(units, offsetInUnits);
+			return cal.getTime();
+		}
+		return null;
+	}
+
+	public static Date getTimestampWithOffset(Date base, int units, int offsetInUnits) {
+		Calendar cal = getTimestamp(base);
 		if (cal != null) {
 			cal.add(units, offsetInUnits);
 			return cal.getTime();

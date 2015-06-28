@@ -109,7 +109,7 @@ public class DomainToApiMapper {
 		if (fts.getSignature() != null) {
 			Signaturevalue sv = new Signaturevalue();
 			sv.setSignature(fts.getSignature().getValue());
-			sv.setTimestamp(CalendarUtils.getDateTime(fts.getSignature().getSignatureDate()));
+			sv.setTimestamp(CalendarUtils.cast(fts.getSignature().getSignatureDate()));
 			sv.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignature().getAlgorithm()));
 
 			f.setSignaturevalue(sv);
@@ -132,7 +132,7 @@ public class DomainToApiMapper {
 
 		Signaturevalue sv = new Signaturevalue();
 		sv.setSignature(ft.getSignatureValue());
-		sv.setTimestamp(CalendarUtils.getDateTime(ft.getSignatureDate()));
+		sv.setTimestamp(CalendarUtils.cast(ft.getSignatureDate()));
 		sv.setSignatureAlgorithm(mapSignatureAlgorithm(ft.getSignatureAlgorithm()));
 
 		Flowtargetsession fts = new Flowtargetsession();
@@ -156,7 +156,7 @@ public class DomainToApiMapper {
 		s.setFlowsessionId(fs.getIdentifier());
 		s.setScheme(fs.getScheme());
 		s.setSessionKey(fs.getSessionKey());
-		s.setValidFrom(CalendarUtils.getDateTime(fs.getValidFrom()));
+		s.setValidFrom(CalendarUtils.cast(fs.getValidFrom()));
 		return s;
 	}
 
@@ -284,7 +284,7 @@ public class DomainToApiMapper {
 	public Processingstatus mapProcessingStatus(org.tdmx.lib.common.domain.ProcessingState ps) {
 		Processingstatus p = new Processingstatus();
 		p.setStatus(Taskstatus.fromValue(ps.getStatus().toString()));
-		p.setTimestamp(CalendarUtils.getDateTime(ps.getTimestamp()));
+		p.setTimestamp(CalendarUtils.cast(ps.getTimestamp()));
 		p.setError(mapError(ps.getErrorCode(), ps.getErrorMessage()));
 		return p;
 	}
@@ -314,7 +314,7 @@ public class DomainToApiMapper {
 			return null;
 		}
 		Signaturevalue sig = new Signaturevalue();
-		sig.setTimestamp(CalendarUtils.getDateTime(agentSignature.getSignatureDate()));
+		sig.setTimestamp(CalendarUtils.cast(agentSignature.getSignatureDate()));
 		sig.setSignature(agentSignature.getValue());
 		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));
 		return sig;
@@ -355,7 +355,7 @@ public class DomainToApiMapper {
 		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
 		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
 		p.setPermission(Permission.valueOf(ep.getGrant().toString()));
-		p.setValidUntil(CalendarUtils.getDateTime(ep.getValidUntil()));
+		p.setValidUntil(CalendarUtils.cast(ep.getValidUntil()));
 		return p;
 	}
 

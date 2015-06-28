@@ -1461,7 +1461,7 @@ public class ZASImplUnitTest {
 		EndpointPermission recvPermission = new EndpointPermission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Permission.ALLOW);
-		recvPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setDestination(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
@@ -1469,7 +1469,7 @@ public class ZASImplUnitTest {
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		sendPermission.setPermission(Permission.ALLOW);
-		sendPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setOrigin(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
@@ -1526,7 +1526,7 @@ public class ZASImplUnitTest {
 		EndpointPermission recvPermission = new EndpointPermission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Permission.ALLOW);
-		recvPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setDestination(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
@@ -1534,7 +1534,7 @@ public class ZASImplUnitTest {
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		sendPermission.setPermission(Permission.ALLOW);
-		sendPermission.setValidUntil(CalendarUtils.getDateTime(oneMonth));
+		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setOrigin(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);

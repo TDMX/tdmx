@@ -63,9 +63,9 @@ public class MessageFacade {
 	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName)
 			throws Exception {
 		// define the message's timestamp
-		Calendar msgTs = CalendarUtils.getDateTime(new Date());
+		Calendar msgTs = CalendarUtils.getTimestamp(new Date());
 
-		Calendar ttlCal = CalendarUtils.getDateTime(new Date());
+		Calendar ttlCal = CalendarUtils.getTimestamp(new Date());
 		ttlCal.add(Calendar.HOUR, 24);
 
 		// create the first chunk
