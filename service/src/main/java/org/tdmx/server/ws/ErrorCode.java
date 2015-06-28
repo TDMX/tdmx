@@ -32,6 +32,7 @@ public enum ErrorCode {
 	AddressesExist(500, "Addresses exists."),
 	ServicesExist(500, "Services exists."),
 	FlowTargetNotFound(500, "FlowTarget not found."),
+	FlowNotFound(500, "Flow not found."),
 
 	MissingChannel(500, "Channel missing."),
 	MissingAuthorization(500, "Authorization missing."),
@@ -60,6 +61,7 @@ public enum ErrorCode {
 	MissingChunkMsgId(500, "Chunk msgId missing."),
 	MissingChunkData(500, "Chunk data missing."),
 	MissingChunkMac(500, "Chunk MAC missing."),
+	InvalidMessageSource(500, "Message source invalid."),
 	InvalidChunkPos(500, "Chunk pos invalid."),
 	InvalidChunkSizeFactor(500, "Chunk size factor invalid."),
 	InvalidPayloadLength(500, "Payload length invalid."),
@@ -78,6 +80,7 @@ public enum ErrorCode {
 	InvalidSignatureFlowTargetSession(500, "FlowTargetSession signature invalid."),
 	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
+	InvalidMsgId(500, "Message ID invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 	MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 	MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),

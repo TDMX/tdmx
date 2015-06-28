@@ -22,12 +22,15 @@ import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.StringSigningUtils;
 import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.converters.StringToUtf8;
+import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
@@ -64,6 +67,16 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	public static boolean checkMsgId(Header header) {
+		return header != null && header.getMsgId() != null && header.getMsgId().equals(calculateMsgId(header));
+	}
+
+	public static void setMsgId(Header header) {
+		if (header != null) {
+			header.setMsgId(calculateMsgId(header));
+		}
+	}
+
 	public static boolean checkPayloadSignature(Payload payload, Header header) {
 		PKIXCertificate signingPublicCert = CertificateIOUtils.safeDecodeX509(header.getFlowchannel().getSource()
 				.getUsercertificate());
@@ -76,11 +89,12 @@ public class SignatureUtils {
 				valueToSignPayload, signatureHex);
 	}
 
-	public static String createPayloadSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
-			Payload payload, Header header) {
+	public static void createPayloadSignature(PKIXCredential credential, SignatureAlgorithm alg, Payload payload,
+			Header header) {
 
 		String valueToSignPayload = getValueToSign(payload);
-		return StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignPayload);
+		header.setPayloadSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg,
+				valueToSignPayload));
 	}
 
 	public static boolean checkHeaderSignature(Header header) {
@@ -95,10 +109,9 @@ public class SignatureUtils {
 				valueToSign, signatureHex);
 	}
 
-	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
-			Header header) {
-
+	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Header header) {
 		String valueToSignHeader = getValueToSign(header);
+		header.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 		header.setHeaderSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
 	}
 
@@ -196,6 +209,35 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private static String calculateMsgId(Header header) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(toValue(header.getTimestamp()));
+		if (header.getFlowchannel() != null) {
+			// source
+			sb.append(toValue(header.getFlowchannel().getSource().getUsercertificate()));
+			sb.append(toValue(header.getFlowchannel().getSource().getDomaincertificate()));
+			sb.append(toValue(header.getFlowchannel().getSource().getRootcertificate()));
+			// target
+			sb.append(toValue(header.getFlowchannel().getTarget().getUsercertificate()));
+			sb.append(toValue(header.getFlowchannel().getTarget().getDomaincertificate()));
+			sb.append(toValue(header.getFlowchannel().getTarget().getRootcertificate()));
+			// service
+			sb.append(toValue(header.getFlowchannel().getServicename()));
+		}
+		sb.append(toValue(header.getFlowsessionId()));
+		sb.append(toValue(header.getPayloadSignature()));
+		String valueToHash = sb.toString();
+
+		DigestAlgorithm alg = DigestAlgorithm.SHA_256;
+		byte[] hashedByes;
+		try {
+			hashedByes = alg.kdf(StringToUtf8.toBytes(valueToHash));
+		} catch (CryptoException e) {
+			return null;
+		}
+		return ByteArray.asHex(hashedByes);
+	}
 
 	private static String getValueToSign(Payload payload) {
 		StringBuilder value = new StringBuilder();

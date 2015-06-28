@@ -24,6 +24,12 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Date is just a day YYYY-MM-DD DateTime is a timestamp with YYYY-MM-DDTHH:MI:SS, without milliseconds.
+ * 
+ * @author Peter
+ * 
+ */
 public class CalendarUtils {
 
 	private static Logger log = LoggerFactory.getLogger(CalendarUtils.class);
@@ -84,6 +90,7 @@ public class CalendarUtils {
 		}
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
+		cal.set(Calendar.MILLISECOND, 0);
 		return cal;
 	}
 

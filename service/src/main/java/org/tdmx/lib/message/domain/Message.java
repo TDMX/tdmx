@@ -81,9 +81,6 @@ public class Message implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date liveUntilTS;
 
-	@Column(nullable = false)
-	private Long flowId;
-
 	@Column(length = FlowSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String flowSessionId;
 
@@ -165,14 +162,6 @@ public class Message implements Serializable {
 
 	public void setLiveUntilTS(Date liveUntilTS) {
 		this.liveUntilTS = liveUntilTS;
-	}
-
-	public Long getFlowId() {
-		return flowId;
-	}
-
-	public void setFlowId(Long flowId) {
-		this.flowId = flowId;
 	}
 
 	public String getExternalReference() {

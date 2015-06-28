@@ -54,6 +54,7 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.message.service.ChunkService;
@@ -178,6 +179,10 @@ public class MOSImpl implements MOS {
 	@Override
 	public SubmitResponse submit(Submit parameters) {
 		SubmitResponse response = new SubmitResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
 
 		// validate Msg fields present ( payload, header and chunk )
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
@@ -193,6 +198,10 @@ public class MOSImpl implements MOS {
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
+		if (!SignatureUtils.checkMsgId(header)) {
+			setError(ErrorCode.InvalidMsgId, response);
+			return response;
+		}
 		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
 			setError(ErrorCode.InvalidSignatureMessagePayload, response);
 			return response;
@@ -206,12 +215,47 @@ public class MOSImpl implements MOS {
 
 		Message m = a2d.mapMessage(header, payload);
 
+		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getFlowchannel().getSource()
+				.getUsercertificate(), header.getFlowchannel().getSource().getDomaincertificate(), header
+				.getFlowchannel().getSource().getRootcertificate());
+		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+		// check origin cert is same as msg channel origin cert.
+		if (!srcUc.getFingerprint().equals(authorizedUser.getFingerprint())) {
+			setError(ErrorCode.InvalidMessageSource, response);
+			return response;
+		}
+		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getFlowchannel().getTarget()
+				.getUsercertificate(), header.getFlowchannel().getTarget().getDomaincertificate(), header
+				.getFlowchannel().getTarget().getRootcertificate());
+		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return response;
+		}
+
+		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
+		// ChannelFlowOrigin to attach to.
+		Zone zone = getAgentService().getZone();
+
+		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setSourceFingerprint(authorizedUser.getFingerprint());
+		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setTargetFingerprint(dstUc.getFingerprint());
+		sc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+
+		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
+		if (flows.isEmpty()) {
+			setError(ErrorCode.FlowNotFound, response);
+			return response;
+		}
+		ChannelFlowOrigin flow = flows.get(0);
+
 		// persist Message and Chunk via ChunkService and MessageService respectively
 		messageService.createOrUpdate(m);
 		chunkService.createOrUpdate(c);
-
-		// TODO create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
-		// ChannelFlowOrigin to attach to.
 
 		response.setSuccess(true);
 		return response;

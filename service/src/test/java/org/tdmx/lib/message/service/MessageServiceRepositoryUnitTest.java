@@ -42,7 +42,7 @@ public class MessageServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		Message m = MessageFacade.createMessage(1L);
+		Message m = MessageFacade.createMessage();
 		msgId = m.getMsgId();
 
 		service.createOrUpdate(m);

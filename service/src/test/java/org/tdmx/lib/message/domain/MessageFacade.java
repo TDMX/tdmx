@@ -18,23 +18,27 @@
  */
 package org.tdmx.lib.message.domain;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.msg.FlowChannel;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
+import org.tdmx.core.system.lang.CalendarUtils;
+import org.tdmx.server.ws.DomainToApiMapper;
 
 public class MessageFacade {
 
-	public static Message createMessage(Long flowId) throws Exception {
+	public static Message createMessage() throws Exception {
 		Message m = new Message(UUID.randomUUID().toString(), new Date());
 
 		// Header fields.
 		m.setLiveUntilTS(new Date());
-		m.setFlowId(flowId);
 		m.setExternalReference("External Reference Text");
 		m.setFlowSessionId("fs1");
 		m.setHeaderSignature("12345");
@@ -58,16 +62,28 @@ public class MessageFacade {
 
 	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName)
 			throws Exception {
-		Msg msg = new Msg();
-		// TODO
+		// define the message's timestamp
+		Calendar msgTs = CalendarUtils.getDateTime(new Date());
+
+		Calendar ttlCal = CalendarUtils.getDateTime(new Date());
+		ttlCal.add(Calendar.HOUR, 24);
+
+		// create the first chunk
+		org.tdmx.core.api.v01.msg.Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
+		chunk.setData(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+		chunk.setMac("MAC"); // TODO
+		chunk.setPos(0);
+
 		Header hdr = new Header();
-		msg.setHeader(hdr);
+		hdr.setTimestamp(msgTs);
+		hdr.setTtl(ttlCal);
 
 		FlowChannel fc = new FlowChannel();
 		fc.setServicename(serviceName);
-		fc.setSource(null); // TODO cred to uidentity
-		fc.setTarget(null); // TODO
+		fc.setSource(new DomainToApiMapper().mapUserIdentity(sourceUser.getCertificateChain()));
+		fc.setTarget(new DomainToApiMapper().mapUserIdentity(targetUser.getCertificateChain()));
 		hdr.setFlowchannel(fc);
+		hdr.setFlowsessionId("TODO"); // TODO
 
 		Payload payload = new Payload();
 		payload.setLength(100);
@@ -76,12 +92,20 @@ public class MessageFacade {
 		payload.setChunksCRC("CRC");
 		payload.setChunkSizeFactor(10);
 
+		SignatureUtils.createPayloadSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, payload, hdr);
+
+		// once we have the payload signature in the header, we can set the ID.
+		SignatureUtils.setMsgId(hdr);
+		// and sign the message header
+		SignatureUtils.createHeaderSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, hdr);
+
+		// link the chunk to the message
+		chunk.setMsgId(hdr.getMsgId());
+
+		Msg msg = new Msg();
+		msg.setHeader(hdr);
 		msg.setPayload(payload);
-
-		org.tdmx.core.api.v01.msg.Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
-		// TODO
 		msg.setChunk(chunk);
-
 		return msg;
 	}
 }
