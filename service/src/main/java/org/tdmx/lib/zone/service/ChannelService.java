@@ -36,6 +36,7 @@ import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -188,4 +189,17 @@ public interface ChannelService {
 	 * @param channelFlowOrigin
 	 */
 	public void delete(ChannelFlowOrigin channelFlowOrigin);
+
+	public enum SubmitMessageOperationStatus {
+		FLOW_NOT_FOUND,
+	}
+
+	/**
+	 * Submit a Message.
+	 * 
+	 * @param zone
+	 * @param msg
+	 * @return
+	 */
+	public SubmitMessageOperationStatus submitMessage(Zone zone, MessageDescriptor md);
 }

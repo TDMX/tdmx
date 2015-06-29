@@ -19,7 +19,9 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -27,6 +29,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
@@ -79,6 +82,10 @@ public class ChannelFlowOrigin implements Serializable {
 
 	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String sourceCertificateChainPem;
+
+	// we don't make getters nor setters for CFMs because there can be too many, but we do want cascade of deletions
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "flowOrigin", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ChannelFlowMessage> channelFlowMessages;
 
 	@Transient
 	private PKIXCertificate[] sourceCertificateChain;

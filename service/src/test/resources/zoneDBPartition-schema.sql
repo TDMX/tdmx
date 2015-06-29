@@ -160,6 +160,16 @@
         primary key (id)
     );
 
+    create table ChannelFlowMessage (
+        id bigint not null,
+        msgId varchar(64) not null,
+        payloadSize bigint not null,
+        sentTimestamp timestamp not null,
+        ttlTimestamp timestamp not null,
+        flowOrigin_id bigint not null,
+        primary key (id)
+    );
+
 
     alter table Address 
         add constraint FK1ED033D4E7351234 
@@ -190,6 +200,11 @@
         add constraint FK8F4414E398CAEC51 
         foreign key (authorization_id) 
         references ChannelAuthorization;
+    
+    alter table ChannelFlowMessage 
+        add constraint FKA6AD3E162BD68783 
+        foreign key (flowOrigin_id) 
+        references ChannelFlowOrigin;
 
     alter table ChannelFlowOrigin 
         add constraint FKB6E7F337EB7EBA3 

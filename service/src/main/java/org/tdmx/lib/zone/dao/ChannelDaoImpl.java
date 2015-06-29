@@ -33,6 +33,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
@@ -87,6 +88,16 @@ public class ChannelDaoImpl implements ChannelDao {
 	@Override
 	public Channel merge(Channel value) {
 		return em.merge(value);
+	}
+
+	@Override
+	public void persist(ChannelFlowMessage value) {
+		em.persist(value);
+	}
+
+	@Override
+	public void delete(ChannelFlowMessage value) {
+		em.remove(value);
 	}
 
 	@Override

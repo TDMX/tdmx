@@ -39,6 +39,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
@@ -51,6 +52,7 @@ import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -342,6 +344,30 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public SubmitMessageOperationStatus submitMessage(Zone zone, MessageDescriptor md) {
+		// TODO separate ChannelFlowOrigin#findByFlow detached to get and lock quota before saving the message
+
+		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(md.getDomainName());
+		sc.setSourceFingerprint(md.getSourceFingerprint());
+		sc.getOrigin().setDomainName(md.getDomainName());
+		sc.setTargetFingerprint(md.getTargetFingerprint());
+		sc.getDestination().setServiceName(md.getServiceName());
+
+		List<ChannelFlowOrigin> flows = search(zone, sc);
+		if (flows.isEmpty()) {
+			return SubmitMessageOperationStatus.FLOW_NOT_FOUND;
+		}
+		ChannelFlowOrigin flow = flows.get(0);
+
+		// TODO lock the FlowQuota and check if possible to submit
+		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
+		getChannelDao().persist(m);
+		return null;
 	}
 
 	@Override

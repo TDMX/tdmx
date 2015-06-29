@@ -66,12 +66,14 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
+import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -235,23 +237,35 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
+		MessageDescriptor md = new MessageDescriptor();
+		// TODO separate out next 4
+		md.setDomainName(authorizedUser.getTdmxDomainName());
+		md.setSourceFingerprint(authorizedUser.getFingerprint());
+		md.setTargetFingerprint(dstUc.getFingerprint());
+		md.setServiceName(header.getFlowchannel().getServicename());
+
+		md.setMsgId(header.getMsgId());
+		md.setTxId(null); // TODO
+		md.setSentTimestamp(m.getTxTS());
+		md.setTtlTimestamp(m.getLiveUntilTS());
+		md.setPayloadSize(m.getPayloadLength());
+
 		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
 		// ChannelFlowOrigin to attach to.
 		Zone zone = getAgentService().getZone();
 
 		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setSourceFingerprint(authorizedUser.getFingerprint());
-		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setTargetFingerprint(dstUc.getFingerprint());
-		sc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+		sc.setDomainName(md.getDomainName());
+		sc.setSourceFingerprint(md.getSourceFingerprint());
+		sc.getOrigin().setDomainName(md.getDomainName());
+		sc.setTargetFingerprint(md.getTargetFingerprint());
+		sc.getDestination().setServiceName(md.getServiceName());
 
-		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
-		if (flows.isEmpty()) {
-			setError(ErrorCode.FlowNotFound, response);
+		SubmitMessageOperationStatus status = channelService.submitMessage(zone, md);
+		if (status != null) {
+			setError(mapSetAuthorizationOperationStatus(status), response);
 			return response;
 		}
-		ChannelFlowOrigin flow = flows.get(0);
 
 		// persist Message and Chunk via ChunkService and MessageService respectively
 		messageService.createOrUpdate(m);
@@ -370,6 +384,15 @@ public class MOSImpl implements MOS {
 		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
+	}
+
+	private ErrorCode mapSetAuthorizationOperationStatus(SubmitMessageOperationStatus status) {
+		switch (status) {
+		case FLOW_NOT_FOUND:
+			return ErrorCode.FlowNotFound;
+		default:
+			return null;
+		}
 	}
 
 	// -------------------------------------------------------------------------
