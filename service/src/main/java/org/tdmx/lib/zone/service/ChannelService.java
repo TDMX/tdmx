@@ -198,8 +198,10 @@ public interface ChannelService {
 	 * Submit a Message.
 	 * 
 	 * @param zone
+	 * @param flow
+	 *            detached Flow
 	 * @param msg
 	 * @return
 	 */
-	public SubmitMessageOperationStatus submitMessage(Zone zone, MessageDescriptor md);
+	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
 }

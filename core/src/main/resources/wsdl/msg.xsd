@@ -336,8 +336,8 @@
 	</xs:complexType>
 	<xs:complexType name="FlowControlLevel">
 		<xs:sequence>
-			<xs:element name="unsentBuffer" type="xs:unsignedInt" minOccurs="0"/>
-			<xs:element name="undeliveredBuffer" type="xs:unsignedInt" minOccurs="0"/>
+			<xs:element name="unsentBuffer" type="xs:unsignedLong" minOccurs="0"/>
+			<xs:element name="undeliveredBuffer" type="xs:unsignedLong" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="Flow">

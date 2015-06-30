@@ -19,15 +19,28 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.math.BigInteger;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 /**
- * An MessageDescriptor describes a Message.
+ * An FlowQuota is separated as it's own instance from the ChannelFlowOrigin so that it can be updated with a higher
+ * frequency without incurring the penalty of the data of the ChannelFlowOrigin not changing fast.
  * 
  * @author Peter Klauser
  * 
  */
-public class MessageDescriptor implements Serializable {
+@Entity
+@Table(name = "FlowQuota")
+public class FlowQuota implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,20 +49,33 @@ public class MessageDescriptor implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = -1L;
 
-	private String msgId;
-	private String txId;
-	private long payloadSize;
-	private Date sentTimestamp;
-	private Date ttlTimestamp;
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowQuotaIdGen")
+	@TableGenerator(name = "FlowQuotaIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	private Long id;
+
+	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "quota")
+	private ChannelFlowOrigin flow;
+
+	@Column(nullable = false)
+	private BigInteger unsentBytes;
+
+	@Column(nullable = false)
+	private BigInteger undeliveredBytes;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public MessageDescriptor() {
+	FlowQuota() {
+	}
 
+	public FlowQuota(ChannelFlowOrigin flow) {
+		setFlow(flow);
+		setUndeliveredBytes(BigInteger.ZERO);
+		setUnsentBytes(BigInteger.ZERO);
 	}
 
 	// -------------------------------------------------------------------------
@@ -59,11 +85,10 @@ public class MessageDescriptor implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("MessageDescriptor [");
-		builder.append(" msgId=").append(msgId);
-		builder.append(" txId=").append(txId);
-		builder.append(" sentTimestamp=").append(sentTimestamp);
-		builder.append(" ttlTimestamp=").append(ttlTimestamp);
+		builder.append("FlowQuota [id=");
+		builder.append(id);
+		builder.append(", unsentBytes=").append(unsentBytes);
+		builder.append(", undeliveredBytes=").append(undeliveredBytes);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -76,48 +101,40 @@ public class MessageDescriptor implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void setFlow(ChannelFlowOrigin flow) {
+		this.flow = flow;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getMsgId() {
-		return msgId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setMsgId(String msgId) {
-		this.msgId = msgId;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public String getTxId() {
-		return txId;
+	public BigInteger getUnsentBytes() {
+		return unsentBytes;
 	}
 
-	public void setTxId(String txId) {
-		this.txId = txId;
+	public void setUnsentBytes(BigInteger unsentBytes) {
+		this.unsentBytes = unsentBytes;
 	}
 
-	public long getPayloadSize() {
-		return payloadSize;
+	public BigInteger getUndeliveredBytes() {
+		return undeliveredBytes;
 	}
 
-	public void setPayloadSize(long payloadSize) {
-		this.payloadSize = payloadSize;
+	public void setUndeliveredBytes(BigInteger undeliveredBytes) {
+		this.undeliveredBytes = undeliveredBytes;
 	}
 
-	public Date getSentTimestamp() {
-		return sentTimestamp;
-	}
-
-	public void setSentTimestamp(Date sentTimestamp) {
-		this.sentTimestamp = sentTimestamp;
-	}
-
-	public Date getTtlTimestamp() {
-		return ttlTimestamp;
-	}
-
-	public void setTtlTimestamp(Date ttlTimestamp) {
-		this.ttlTimestamp = ttlTimestamp;
+	public ChannelFlowOrigin getFlow() {
+		return flow;
 	}
 
 }

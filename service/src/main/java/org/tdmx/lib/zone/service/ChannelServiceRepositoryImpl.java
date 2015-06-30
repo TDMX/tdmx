@@ -348,21 +348,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageOperationStatus submitMessage(Zone zone, MessageDescriptor md) {
+	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
 		// TODO separate ChannelFlowOrigin#findByFlow detached to get and lock quota before saving the message
-
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(md.getDomainName());
-		sc.setSourceFingerprint(md.getSourceFingerprint());
-		sc.getOrigin().setDomainName(md.getDomainName());
-		sc.setTargetFingerprint(md.getTargetFingerprint());
-		sc.getDestination().setServiceName(md.getServiceName());
-
-		List<ChannelFlowOrigin> flows = search(zone, sc);
-		if (flows.isEmpty()) {
-			return SubmitMessageOperationStatus.FLOW_NOT_FOUND;
-		}
-		ChannelFlowOrigin flow = flows.get(0);
 
 		// TODO lock the FlowQuota and check if possible to submit
 		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);

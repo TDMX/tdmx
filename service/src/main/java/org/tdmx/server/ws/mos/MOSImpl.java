@@ -237,31 +237,33 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		MessageDescriptor md = new MessageDescriptor();
-		// TODO separate out next 4
-		md.setDomainName(authorizedUser.getTdmxDomainName());
-		md.setSourceFingerprint(authorizedUser.getFingerprint());
-		md.setTargetFingerprint(dstUc.getFingerprint());
-		md.setServiceName(header.getFlowchannel().getServicename());
+		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
+		// ChannelFlowOrigin to attach to.
+		Zone zone = getAgentService().getZone();
 
+		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setSourceFingerprint(authorizedUser.getFingerprint());
+		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setTargetFingerprint(dstUc.getFingerprint());
+		sc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+
+		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
+		if (flows.isEmpty()) {
+			setError(ErrorCode.FlowNotFound, response);
+			return response;
+		}
+		ChannelFlowOrigin flow = flows.get(0);
+		// TODO check the flow has send quota and is not throttled
+
+		MessageDescriptor md = new MessageDescriptor();
 		md.setMsgId(header.getMsgId());
 		md.setTxId(null); // TODO
 		md.setSentTimestamp(m.getTxTS());
 		md.setTtlTimestamp(m.getLiveUntilTS());
 		md.setPayloadSize(m.getPayloadLength());
 
-		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
-		// ChannelFlowOrigin to attach to.
-		Zone zone = getAgentService().getZone();
-
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(md.getDomainName());
-		sc.setSourceFingerprint(md.getSourceFingerprint());
-		sc.getOrigin().setDomainName(md.getDomainName());
-		sc.setTargetFingerprint(md.getTargetFingerprint());
-		sc.getDestination().setServiceName(md.getServiceName());
-
-		SubmitMessageOperationStatus status = channelService.submitMessage(zone, md);
+		SubmitMessageOperationStatus status = channelService.submitMessage(zone, flow, md);
 		if (status != null) {
 			setError(mapSetAuthorizationOperationStatus(status), response);
 			return response;

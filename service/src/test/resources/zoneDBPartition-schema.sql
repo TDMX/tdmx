@@ -152,12 +152,25 @@
         primary key (id)
     );
 
+    create table FlowQuota (
+        id bigint not null,
+        undeliveredBytes numeric not null,
+        unsentBytes numeric not null,
+        primary key (id)
+    );
+
     create table ChannelFlowOrigin (
         id bigint not null,
         sourceCertificateChainPem varchar(12000) not null,
         sourceFingerprint varchar(64) not null,
+        undeliveredHigh numeric,
+        undeliveredLow numeric,
+        unsentHigh numeric,
+        unsentLow numeric,
         flowTarget_id bigint not null,
-        primary key (id)
+        quota_id bigint not null,
+        primary key (id),
+        unique (quota_id)
     );
 
     create table ChannelFlowMessage (
@@ -205,6 +218,11 @@
         add constraint FKA6AD3E162BD68783 
         foreign key (flowOrigin_id) 
         references ChannelFlowOrigin;
+
+    alter table ChannelFlowOrigin 
+        add constraint FKB6E7F337635CB8F2 
+        foreign key (quota_id) 
+        references FlowQuota;
 
     alter table ChannelFlowOrigin 
         add constraint FKB6E7F337EB7EBA3 

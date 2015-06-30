@@ -54,6 +54,8 @@ import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.FlowLimit;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSession;
@@ -84,14 +86,28 @@ public class DomainToApiMapper {
 		Flow f = new Flow();
 
 		f.setFlowcontrolstatus(Flowcontrolstatus.OPEN); // TODO
-		f.setLevel(new FlowControlLevel()); // TODO
-		f.setLimit(new FlowControlLimit()); // TODO
+		f.setLevel(mapFlowControlLevel(fo.getQuota()));
+		f.setLimit(mapFlowControlLimit(fo.getUnsentBuffer(), fo.getUndeliveredBuffer()));
 		f.setFlowtargetsession(mapFlowTargetSession(fo.getFlowTarget().getFlowTargetSession()));
 
 		f.setSource(mapUserIdentity(fo.getSourceCertificateChain()));
 		f.setTarget(mapUserIdentity(fo.getFlowTarget().getTargetCertificateChain()));
 		f.setServicename(fo.getFlowTarget().getChannel().getDestination().getServiceName());
 		return f;
+	}
+
+	public FlowControlLevel mapFlowControlLevel(FlowQuota quota) {
+		FlowControlLevel fcl = new FlowControlLevel();
+		fcl.setUnsentBuffer(quota.getUnsentBytes());
+		fcl.setUndeliveredBuffer(quota.getUndeliveredBytes());
+		return fcl;
+	}
+
+	public FlowControlLimit mapFlowControlLimit(FlowLimit unsentBuffer, FlowLimit undeliveredBuffer) {
+		FlowControlLimit fl = new FlowControlLimit();
+		fl.setUnsentBuffer(mapLimit(unsentBuffer));
+		fl.setUndeliveredBuffer(mapLimit(undeliveredBuffer));
+		return fl;
 	}
 
 	public Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {

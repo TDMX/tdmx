@@ -21,8 +21,11 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -30,6 +33,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
@@ -67,7 +71,9 @@ public class ChannelFlowOrigin implements Serializable {
 
 	// TODO "Relay" Processingstatus of flowcontrolstatus
 
-	// TODO Quota info
+	// TODO Quota info - lockable object like flowtarget concurrency? Mapping flow info in domain2api mapper ZAS
+
+	// TODO
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowOriginIdGen")
@@ -82,6 +88,28 @@ public class ChannelFlowOrigin implements Serializable {
 
 	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String sourceCertificateChainPem;
+
+	/**
+	 * The unsentBuffer is denormalized from the ChannelAuthorization
+	 */
+	@Embedded
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh")),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow")) })
+	private FlowLimit unsentBuffer; // TODO ZAS#setChannelAuthorization sets and on new ChannelAuthorization
+
+	/**
+	 * The undeliveredBuffer is denormalized from the ChannelAuthorization
+	 */
+	@Embedded
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh")),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow")) })
+	private FlowLimit undeliveredBuffer; // TODO ZAS#setChannelAuthorization sets and on new ChannelAuthorization
+
+	/**
+	 * The quota association is "owned" ie. managed through this ChannelFlowOrigin
+	 */
+	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private FlowQuota quota;
 
 	// we don't make getters nor setters for CFMs because there can be too many, but we do want cascade of deletions
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "flowOrigin", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -100,6 +128,7 @@ public class ChannelFlowOrigin implements Serializable {
 	public ChannelFlowOrigin(ChannelFlowTarget cft) {
 		setFlowTarget(cft);
 		cft.getChannelFlowOrigins().add(this);
+		setQuota(new FlowQuota(this));
 	}
 
 	// -------------------------------------------------------------------------
@@ -171,6 +200,30 @@ public class ChannelFlowOrigin implements Serializable {
 
 	public void setSourceCertificateChainPem(String sourceCertificateChainPem) {
 		this.sourceCertificateChainPem = sourceCertificateChainPem;
+	}
+
+	public FlowLimit getUnsentBuffer() {
+		return unsentBuffer;
+	}
+
+	public void setUnsentBuffer(FlowLimit unsentBuffer) {
+		this.unsentBuffer = unsentBuffer;
+	}
+
+	public FlowLimit getUndeliveredBuffer() {
+		return undeliveredBuffer;
+	}
+
+	public void setUndeliveredBuffer(FlowLimit undeliveredBuffer) {
+		this.undeliveredBuffer = undeliveredBuffer;
+	}
+
+	public FlowQuota getQuota() {
+		return quota;
+	}
+
+	public void setQuota(FlowQuota quota) {
+		this.quota = quota;
 	}
 
 }

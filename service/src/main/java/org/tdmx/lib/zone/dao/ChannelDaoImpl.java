@@ -23,6 +23,7 @@ import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorizatio
 import static org.tdmx.lib.zone.domain.QChannelFlowOrigin.channelFlowOrigin;
 import static org.tdmx.lib.zone.domain.QChannelFlowTarget.channelFlowTarget;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
+import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
 
 import java.util.List;
 
@@ -264,7 +265,7 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelFlowOrigin)
+		JPAQuery query = new JPAQuery(em).from(channelFlowOrigin).innerJoin(channelFlowOrigin.quota, flowQuota).fetch()
 				.innerJoin(channelFlowOrigin.flowTarget, channelFlowTarget).fetch()
 				.innerJoin(channelFlowTarget.channel, channel).fetch().innerJoin(channel.domain, domain).fetch();
 
