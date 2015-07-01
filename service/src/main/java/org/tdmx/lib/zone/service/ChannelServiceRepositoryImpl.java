@@ -19,6 +19,7 @@
 
 package org.tdmx.lib.zone.service;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -50,6 +51,9 @@ import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
+import org.tdmx.lib.zone.domain.FlowLimit;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
@@ -270,7 +274,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public void createOriginatingUser(Zone zone, Long channelFlowTargetId, AgentCredential originatingUser) {
 		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
 		if (storedCft != null) {
-			setChannelFlowOrigin(storedCft, originatingUser);
+			setChannelFlowOrigin(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(),
+					originatingUser);
 		}
 		// persist should not be necessary, using cascade.
 	}
@@ -349,9 +354,24 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
-		// TODO separate ChannelFlowOrigin#findByFlow detached to get and lock quota before saving the message
+		// get and lock quota and check we can send
+		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
+		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
+			// if the unsent bytes decreased below the low limit, change the status to open
+			if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getLowMarkBytes()).compareTo(BigInteger.ZERO) < 0) {
+				// quota exceeded, close send
+				quota.setSenderStatus(FlowControlStatus.OPEN);
+			} else {
+				return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			}
+		}
+		// we can exceed the high mark but if we do then we set flow control to closed.
+		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadSize())));
+		if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+			// quota exceeded, close send
+			quota.setSenderStatus(FlowControlStatus.CLOSED);
+		}
 
-		// TODO lock the FlowQuota and check if possible to submit
 		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
 		getChannelDao().persist(m);
 		return null;
@@ -477,7 +497,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			List<AgentCredential> originatingAgents = agentCredentialDao.search(zone, oasc);
 
 			for (AgentCredential origin : originatingAgents) {
-				setChannelFlowOrigin(foundCft, origin);
+				setChannelFlowOrigin(foundCft, channel.getAuthorization().getUnsentBuffer(), origin);
 			}
 		}
 	}
@@ -485,7 +505,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	/*
 	 * Creates a ChannelFlowOrigin in a ChannelFlowTarget for an originating User if it doesn't already exist.
 	 */
-	private void setChannelFlowOrigin(ChannelFlowTarget cft, AgentCredential origin) {
+	private void setChannelFlowOrigin(ChannelFlowTarget cft, FlowLimit unsentBuffer, AgentCredential origin) {
 		boolean foundOrigin = false;
 		for (ChannelFlowOrigin cfo : cft.getChannelFlowOrigins()) {
 			if (origin.getFingerprint().equals(cfo.getSourceFingerprint())) {
@@ -497,6 +517,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			ChannelFlowOrigin cfo = new ChannelFlowOrigin(cft);
 			cfo.setSourceFingerprint(origin.getFingerprint());
 			cfo.setSourceCertificateChainPem(origin.getCertificateChainPem());
+			cfo.setUnsentBuffer(unsentBuffer);
 		}
 	}
 

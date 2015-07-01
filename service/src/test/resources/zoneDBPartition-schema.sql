@@ -154,6 +154,8 @@
 
     create table FlowQuota (
         id bigint not null,
+        receiverStatus varchar(8) not null,
+        senderStatus varchar(8) not null,
         undeliveredBytes numeric not null,
         unsentBytes numeric not null,
         primary key (id)

@@ -23,6 +23,8 @@ import java.math.BigInteger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -59,8 +61,16 @@ public class FlowQuota implements Serializable {
 	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "quota")
 	private ChannelFlowOrigin flow;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
+	private FlowControlStatus senderStatus;
+
 	@Column(nullable = false)
 	private BigInteger unsentBytes;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
+	private FlowControlStatus receiverStatus;
 
 	@Column(nullable = false)
 	private BigInteger undeliveredBytes;
@@ -76,6 +86,8 @@ public class FlowQuota implements Serializable {
 		setFlow(flow);
 		setUndeliveredBytes(BigInteger.ZERO);
 		setUnsentBytes(BigInteger.ZERO);
+		setSenderStatus(FlowControlStatus.OPEN);
+		setReceiverStatus(FlowControlStatus.OPEN);
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,6 +101,8 @@ public class FlowQuota implements Serializable {
 		builder.append(id);
 		builder.append(", unsentBytes=").append(unsentBytes);
 		builder.append(", undeliveredBytes=").append(undeliveredBytes);
+		builder.append(", senderStatus=").append(senderStatus);
+		builder.append(", receiverStatus=").append(receiverStatus);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -131,6 +145,22 @@ public class FlowQuota implements Serializable {
 
 	public void setUndeliveredBytes(BigInteger undeliveredBytes) {
 		this.undeliveredBytes = undeliveredBytes;
+	}
+
+	public FlowControlStatus getSenderStatus() {
+		return senderStatus;
+	}
+
+	public void setSenderStatus(FlowControlStatus senderStatus) {
+		this.senderStatus = senderStatus;
+	}
+
+	public FlowControlStatus getReceiverStatus() {
+		return receiverStatus;
+	}
+
+	public void setReceiverStatus(FlowControlStatus receiverStatus) {
+		this.receiverStatus = receiverStatus;
 	}
 
 	public ChannelFlowOrigin getFlow() {

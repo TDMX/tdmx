@@ -265,7 +265,7 @@ public class MOSImpl implements MOS {
 
 		SubmitMessageOperationStatus status = channelService.submitMessage(zone, flow, md);
 		if (status != null) {
-			setError(mapSetAuthorizationOperationStatus(status), response);
+			setError(mapSubmitOperationStatus(status), response);
 			return response;
 		}
 
@@ -388,10 +388,10 @@ public class MOSImpl implements MOS {
 		ack.setSuccess(false);
 	}
 
-	private ErrorCode mapSetAuthorizationOperationStatus(SubmitMessageOperationStatus status) {
+	private ErrorCode mapSubmitOperationStatus(SubmitMessageOperationStatus status) {
 		switch (status) {
-		case FLOW_NOT_FOUND:
-			return ErrorCode.FlowNotFound;
+		case FLOW_CONTROL_CLOSED:
+			return ErrorCode.SubmitFlowControlClosed;
 		default:
 			return null;
 		}

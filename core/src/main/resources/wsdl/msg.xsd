@@ -330,21 +330,55 @@
 	</xs:complexType>
 	<xs:complexType name="FlowControlLimit">
 		<xs:sequence>
-			<xs:element name="unsentBuffer" type="Limit" minOccurs="0"/>
-			<xs:element name="undeliveredBuffer" type="Limit" minOccurs="0"/>
+			<xs:element name="unsentBuffer" type="Limit" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the buffer limits for messages sent but not yet relayed to the receiving side of the flow.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="undeliveredBuffer" type="Limit" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the buffer limits for messags not yet delivered to receivers on the receiving side of the flow.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FlowStatus">
+		<xs:sequence>
+			<xs:element name="senderStatus" type="flowcontrolstatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>On the sender side, this is determined by the unsentBuffer quota.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="receiverStatus" type="flowcontrolstatus" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>On the sender side, this represents the status of relaying to the receiver side. as communicated by the receiver. On the receiver side it is determined by the undeliveredBuffer.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FlowControlLevel">
 		<xs:sequence>
-			<xs:element name="unsentBuffer" type="xs:unsignedLong" minOccurs="0"/>
-			<xs:element name="undeliveredBuffer" type="xs:unsignedLong" minOccurs="0"/>
+			<xs:element name="unsentBuffer" type="xs:unsignedLong" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the sum of the size of payloads in the unsentBuffer. Only availible on the sender side of the flow.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="undeliveredBuffer" type="xs:unsignedLong" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>the sum of the size of payloads in the undeliveredBuffer. Only availible on the receiver side of the flow.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="Flow">
 		<xs:complexContent>
 			<xs:extension base="FlowChannel">
 				<xs:sequence>
-					<xs:element ref="flowcontrolstatus"/>
+					<xs:element name="status" type="FlowStatus">
+						<xs:annotation>
+							<xs:documentation>the current flow control status.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
 					<xs:element name="level" type="FlowControlLevel">
 						<xs:annotation>
 							<xs:documentation>the current flow control levels.</xs:documentation>
@@ -548,11 +582,6 @@
 	<xs:element name="flowsessionId" type="common:text"/>
 	<xs:element name="flowsession" type="FlowSession"/>
 	<xs:element name="flow" type="Flow"/>
-	<xs:element name="flowcontrolstatus" type="flowcontrolstatus">
-		<xs:annotation>
-			<xs:documentation>whether flow control is active - meaning the flow is CLOSED, or inactive meaning the flow is OPEN. When CLOSED, message relay is blocked by destination-SP, and the originating-SP will prohibit new messages being sent.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
 	<xs:element name="flowdestination" type="FlowDestination"/>
 	<xs:element name="flowtarget" type="FlowTarget"/>
 	<xs:element name="flowtargetsession" type="FlowTargetSession">

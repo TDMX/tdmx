@@ -37,6 +37,7 @@ import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.Flow;
 import org.tdmx.core.api.v01.msg.FlowControlLevel;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
+import org.tdmx.core.api.v01.msg.FlowStatus;
 import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtarget;
@@ -54,6 +55,7 @@ import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.FlowSession;
@@ -85,7 +87,7 @@ public class DomainToApiMapper {
 		}
 		Flow f = new Flow();
 
-		f.setFlowcontrolstatus(Flowcontrolstatus.OPEN); // TODO
+		f.setStatus(mapFlowStatus(fo.getQuota()));
 		f.setLevel(mapFlowControlLevel(fo.getQuota()));
 		f.setLimit(mapFlowControlLimit(fo.getUnsentBuffer(), fo.getUndeliveredBuffer()));
 		f.setFlowtargetsession(mapFlowTargetSession(fo.getFlowTarget().getFlowTargetSession()));
@@ -101,6 +103,13 @@ public class DomainToApiMapper {
 		fcl.setUnsentBuffer(quota.getUnsentBytes());
 		fcl.setUndeliveredBuffer(quota.getUndeliveredBytes());
 		return fcl;
+	}
+
+	public FlowStatus mapFlowStatus(FlowQuota quota) {
+		FlowStatus fs = new FlowStatus();
+		fs.setSenderStatus(mapFlowControlStatus(quota.getSenderStatus()));
+		fs.setReceiverStatus(mapFlowControlStatus(quota.getReceiverStatus()));
+		return fs;
 	}
 
 	public FlowControlLimit mapFlowControlLimit(FlowLimit unsentBuffer, FlowLimit undeliveredBuffer) {
@@ -341,6 +350,13 @@ public class DomainToApiMapper {
 			return null;
 		}
 		return SignatureAlgorithm.fromValue(sa.getAlgorithm());
+	}
+
+	public Flowcontrolstatus mapFlowControlStatus(FlowControlStatus sa) {
+		if (sa == null) {
+			return null;
+		}
+		return Flowcontrolstatus.fromValue(sa.name());
 	}
 
 	public AdministratorIdentity mapAdministratorIdentity(PKIXCertificate[] adminCertChain) {

@@ -29,6 +29,7 @@ import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -52,6 +53,8 @@ public interface ChannelDao {
 	public void delete(ChannelFlowOrigin value);
 
 	public void delete(ChannelFlowMessage value);
+
+	public FlowQuota lock(Long quotaId);
 
 	public Channel loadById(Long id);
 

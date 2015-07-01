@@ -191,7 +191,7 @@ public interface ChannelService {
 	public void delete(ChannelFlowOrigin channelFlowOrigin);
 
 	public enum SubmitMessageOperationStatus {
-		FLOW_NOT_FOUND,
+		FLOW_CONTROL_CLOSED,
 	}
 
 	/**
@@ -201,7 +201,7 @@ public interface ChannelService {
 	 * @param flow
 	 *            detached Flow
 	 * @param msg
-	 * @return
+	 * @return null if successful otherwise the reason.
 	 */
 	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
 }

@@ -28,6 +28,7 @@ import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
@@ -40,6 +41,7 @@ import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
@@ -104,6 +106,12 @@ public class ChannelDaoImpl implements ChannelDao {
 	@Override
 	public Channel loadById(Long id) {
 		return new JPAQuery(em).from(channel).where(channel.id.eq(id)).uniqueResult(channel);
+	}
+
+	@Override
+	public FlowQuota lock(Long quotaId) {
+		return new JPAQuery(em).setLockMode(LockModeType.PESSIMISTIC_WRITE).from(flowQuota)
+				.where(flowQuota.id.eq(quotaId)).uniqueResult(flowQuota);
 	}
 
 	@Override

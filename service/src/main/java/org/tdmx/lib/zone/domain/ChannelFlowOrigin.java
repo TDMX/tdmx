@@ -69,12 +69,6 @@ public class ChannelFlowOrigin implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO "Relay" Processingstatus of flowcontrolstatus
-
-	// TODO Quota info - lockable object like flowtarget concurrency? Mapping flow info in domain2api mapper ZAS
-
-	// TODO
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowOriginIdGen")
 	@TableGenerator(name = "ChannelFlowOriginIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelfloworiginObjectId", valueColumnName = "value", allocationSize = 10)
@@ -141,6 +135,8 @@ public class ChannelFlowOrigin implements Serializable {
 		builder.append("ChannelFlowOrigin [id=");
 		builder.append(id);
 		builder.append(" sourceFingerprint=").append(sourceFingerprint);
+		builder.append(" unsentBuffer=").append(unsentBuffer);
+		builder.append(" undeliveredBuffer=").append(undeliveredBuffer);
 		builder.append("]");
 		return builder.toString();
 	}

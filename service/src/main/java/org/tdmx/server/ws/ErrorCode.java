@@ -104,6 +104,8 @@ public enum ErrorCode {
 	MissingFlowSessionValidFrom(500, "FlowSession validFrom missing."),
 	MissingFlowSessionSessionKey(500, "FlowSession sessionKey missing."),
 
+	MissingRelayPayload(500, "Relay payload missing."),
+
 	SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
 	SenderChannelAuthorizationMismatch(
 			301,
@@ -119,7 +121,9 @@ public enum ErrorCode {
 			305,
 			"Provided confirmation of non existent receiver's requested EndpointPermission."),
 
-	MissingRelayPayload(500, "Relay payload missing."), ;
+	SubmitFlowControlClosed(306, "FlowControl closed."),
+
+	;
 
 	private final int errorCode;
 	private final String errorDescription;
