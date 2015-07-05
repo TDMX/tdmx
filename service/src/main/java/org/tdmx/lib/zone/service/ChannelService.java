@@ -23,6 +23,7 @@ import java.util.List;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -162,12 +163,26 @@ public interface ChannelService {
 
 	/**
 	 * Creates a Flow originating from the originatingUser and terminating in the ChannelFlowTarget referenced by
-	 * channelFlowId.
+	 * channelFlowId. This is the means to create Flows on the Originating side when originating Users are created when
+	 * ChannelAuthorizations exist.
 	 * 
 	 * @param zone
 	 * @param channelFlowTargetId
+	 * @param originatingUser
 	 */
-	public void createOriginatingUser(Zone zone, Long channelFlowTargetId, AgentCredential originatingUser);
+	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
+			AgentCredential originatingUser);
+
+	/**
+	 * Creates a Flow originating from the sourceUser and terminating in the ChannelFlowTarget referenced by
+	 * channelFlowId. This is the means to create Flows on the Destination side when inbound Messages are received.
+	 * 
+	 * @param zone
+	 * @param channelFlowTargetId
+	 * @param sourceUser
+	 */
+	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
+			AgentCredentialDescriptor sourceUser);
 
 	/**
 	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.
@@ -195,7 +210,7 @@ public interface ChannelService {
 	}
 
 	/**
-	 * Submit a Message.
+	 * Submit a Message outbound called on the sender side.
 	 * 
 	 * @param zone
 	 * @param flow
@@ -204,4 +219,15 @@ public interface ChannelService {
 	 * @return null if successful otherwise the reason.
 	 */
 	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+
+	/**
+	 * Relay a Message inbound called on the receiver side.
+	 * 
+	 * @param zone
+	 * @param flow
+	 *            detached Flow
+	 * @param msg
+	 * @return null if successful otherwise the reason.
+	 */
+	public SubmitMessageOperationStatus relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
 }

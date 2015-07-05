@@ -66,6 +66,7 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -254,14 +255,13 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 		ChannelFlowOrigin flow = flows.get(0);
-		// TODO check the flow has send quota and is not throttled
+		// check the flow is not already throttled
+		if (FlowControlStatus.OPEN != flow.getQuota().getSenderStatus()) {
+			setError(ErrorCode.SubmitFlowControlClosed, response);
+			return response;
+		}
 
-		MessageDescriptor md = new MessageDescriptor();
-		md.setMsgId(header.getMsgId());
-		md.setTxId(null); // TODO
-		md.setSentTimestamp(m.getTxTS());
-		md.setTtlTimestamp(m.getLiveUntilTS());
-		md.setPayloadSize(m.getPayloadLength());
+		MessageDescriptor md = a2d.getDescriptor(msg);
 
 		SubmitMessageOperationStatus status = channelService.submitMessage(zone, flow, md);
 		if (status != null) {

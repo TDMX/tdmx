@@ -34,26 +34,40 @@ import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channelflowtarget;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.message.domain.Message;
+import org.tdmx.lib.message.service.ChunkService;
+import org.tdmx.lib.message.service.MessageService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
+import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowTargetSession;
+import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -95,6 +109,9 @@ public class MRSImpl implements MRS {
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
 
+	private ChunkService chunkService;
+	private MessageService messageService;
+
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 	private final ApiValidator validator = new ApiValidator();
@@ -119,6 +136,8 @@ public class MRSImpl implements MRS {
 			processChannelAuthorization(parameters.getAuthorization(), response);
 		} else if (parameters.getChannelflowtarget() != null) {
 			processChannelFlowTarget(parameters.getChannelflowtarget(), response);
+		} else if (parameters.getMsg() != null) {
+			processMessage(parameters.getMsg(), response);
 		} else {
 			// TODO other relays
 			setError(ErrorCode.MissingRelayPayload, response);
@@ -298,12 +317,134 @@ public class MRSImpl implements MRS {
 		response.setSuccess(true);
 	}
 
+	// handle the message inbound
+	private void processMessage(Msg msg, RelayResponse response) {
+		// check that the Message provided is complete
+		if (validator.checkMessage(msg, response) == null) {
+			return;
+		}
+		Header header = msg.getHeader();
+		Payload payload = msg.getPayload();
+		if (!SignatureUtils.checkMsgId(header)) {
+			setError(ErrorCode.InvalidMsgId, response);
+			return;
+		}
+		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
+			setError(ErrorCode.InvalidSignatureMessagePayload, response);
+			return;
+		}
+		if (!SignatureUtils.checkHeaderSignature(header)) {
+			setError(ErrorCode.InvalidSignatureMessageHeader, response);
+			return;
+		}
+
+		Chunk c = a2d.mapChunk(msg.getChunk());
+		Message m = a2d.mapMessage(header, payload);
+
+		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getFlowchannel().getSource()
+				.getUsercertificate(), header.getFlowchannel().getSource().getDomaincertificate(), header
+				.getFlowchannel().getSource().getRootcertificate());
+		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return;
+		}
+		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getFlowchannel().getTarget()
+				.getUsercertificate(), header.getFlowchannel().getTarget().getDomaincertificate(), header
+				.getFlowchannel().getTarget().getRootcertificate());
+		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
+			setError(ErrorCode.InvalidUserCredentials, response);
+			return;
+		}
+
+		// find the zone and domain
+		String localDomain = dstUc.getDomainName();
+		// TODO lookup the origin or destination domain in DNS and retrieve their zone root information
+		AccountZone accountZone = null;
+		if (accountZone == null) {
+			// FIXME! temporary fallback on recursive lookup of domain to domain parent until matches with a zone.
+			accountZone = lookupAccountZoneByDomain(localDomain);
+		}
+		if (accountZone == null) {
+			setError(ErrorCode.ZoneNotFound, response);
+			return;
+		}
+
+		// using the ZoneDB specified in the AccountZone's partitionID, find the Zone and then Domain
+		// and then call ChannelService#relayChannelAuthorization
+		Zone zone = null;
+		try {
+			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+
+			zone = getZoneService().findByZoneApex(accountZone.getZoneApex());
+			if (zone == null) {
+				setError(ErrorCode.ZoneNotFound, response);
+				return;
+			}
+			ChannelFlowSearchCriteria flowSc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
+			flowSc.setDomainName(dstUc.getDomainName());
+			flowSc.setSourceFingerprint(srcUc.getFingerprint());
+			flowSc.getOrigin().setDomainName(srcUc.getDomainName());
+			flowSc.setTargetFingerprint(dstUc.getFingerprint());
+			flowSc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+
+			ChannelFlowOrigin flow = null;
+			List<ChannelFlowOrigin> flows = channelService.search(zone, flowSc);
+			if (flows.isEmpty()) {
+				ChannelFlowTargetSearchCriteria ftSc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0, 1));
+				ftSc.setDomainName(dstUc.getDomainName());
+				ftSc.setTargetFingerprint(dstUc.getFingerprint());
+				ftSc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+
+				List<ChannelFlowTarget> flowTargets = channelService.search(zone, ftSc);
+				if (flowTargets.isEmpty()) {
+					setError(ErrorCode.FlowTargetNotFound, response);
+					return;
+				} else {
+					flow = channelService.createChannelFlowOrigin(zone, flowTargets.get(0).getId(), srcUc);
+				}
+			} else {
+				flow = flows.get(0);
+			}
+			// check the flow is not already throttled
+			if (FlowControlStatus.OPEN != flow.getQuota().getSenderStatus()) {
+				setError(ErrorCode.ReceiveFlowControlClosed, response);
+				return;
+			}
+
+			MessageDescriptor md = a2d.getDescriptor(msg);
+
+			SubmitMessageOperationStatus status = channelService.relayMessage(zone, flow, md);
+			if (status != null) {
+				setError(mapSubmitOperationStatus(status), response);
+				return;
+			}
+
+		} finally {
+			getZonePartitionIdProvider().clearPartitionId();
+		}
+
+		// persist Message and Chunk via ChunkService and MessageService respectively
+		messageService.createOrUpdate(m);
+		chunkService.createOrUpdate(c);
+
+		response.setSuccess(true);
+	}
+
 	private void setError(ErrorCode ec, Acknowledge ack) {
 		Error error = new Error();
 		error.setCode(ec.getErrorCode());
 		error.setDescription(ec.getErrorDescription());
 		ack.setError(error);
 		ack.setSuccess(false);
+	}
+
+	private ErrorCode mapSubmitOperationStatus(SubmitMessageOperationStatus status) {
+		switch (status) {
+		case FLOW_CONTROL_CLOSED:
+			return ErrorCode.ReceiveFlowControlClosed;
+		default:
+			return null;
+		}
 	}
 
 	private AccountZone lookupAccountZoneByDomain(String searchDomain) {
@@ -409,6 +550,22 @@ public class MRSImpl implements MRS {
 
 	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
 		this.credentialValidator = credentialValidator;
+	}
+
+	public ChunkService getChunkService() {
+		return chunkService;
+	}
+
+	public void setChunkService(ChunkService chunkService) {
+		this.chunkService = chunkService;
+	}
+
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
 	}
 
 	public int getBatchSize() {

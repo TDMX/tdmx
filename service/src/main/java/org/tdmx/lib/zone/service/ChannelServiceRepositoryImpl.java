@@ -34,6 +34,7 @@ import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.FlowTargetDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
@@ -253,6 +254,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	}
 
+	// TODO message relay in, creates channelfloworigin if doesn't exist for the flowtarget, adds the message and
+	// reduces the undelivered quota
+
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void setChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget) {
@@ -271,13 +275,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void createOriginatingUser(Zone zone, Long channelFlowTargetId, AgentCredential originatingUser) {
+	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
+			AgentCredential originatingUser) {
+		ChannelFlowOrigin flow = null;
 		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
 		if (storedCft != null) {
-			setChannelFlowOrigin(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(),
-					originatingUser);
+			flow = createOrUpdateFlow(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(), storedCft
+					.getChannel().getAuthorization().getUndeliveredBuffer(), originatingUser.getFingerprint(),
+					originatingUser.getCertificateChainPem());
 		}
-		// persist should not be necessary, using cascade.
+		return flow;
 	}
 
 	@Override
@@ -357,19 +364,51 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
 		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
-			// if the unsent bytes decreased below the low limit, change the status to open
-			if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getLowMarkBytes()).compareTo(BigInteger.ZERO) < 0) {
-				// quota exceeded, close send
-				quota.setSenderStatus(FlowControlStatus.OPEN);
-			} else {
-				return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
-			}
+			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
+			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadSize())));
 		if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
+		}
+
+		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
+		getChannelDao().persist(m);
+		return null;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
+			AgentCredentialDescriptor sourceUser) {
+		ChannelFlowOrigin flow = null;
+		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
+		if (storedCft != null) {
+			flow = createOrUpdateFlow(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(), storedCft
+					.getChannel().getAuthorization().getUndeliveredBuffer(), sourceUser.getFingerprint(),
+					sourceUser.getCertificateChainPem());
+		}
+		return flow;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public SubmitMessageOperationStatus relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+		// get and lock quota and check we can send
+		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
+		if (FlowControlStatus.CLOSED == quota.getReceiverStatus()) {
+			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
+			// changes this status eventually
+			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+		}
+		// we can exceed the high mark but if we do then we set flow control to closed.
+		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadSize())));
+		if (quota.getUndeliveredBytes().subtract(flow.getUndeliveredBuffer().getHighMarkBytes())
+				.compareTo(BigInteger.ZERO) > 0) {
+			// quota exceeded, close relay
+			quota.setReceiverStatus(FlowControlStatus.CLOSED);
 		}
 
 		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
@@ -497,7 +536,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			List<AgentCredential> originatingAgents = agentCredentialDao.search(zone, oasc);
 
 			for (AgentCredential origin : originatingAgents) {
-				setChannelFlowOrigin(foundCft, channel.getAuthorization().getUnsentBuffer(), origin);
+				createOrUpdateFlow(foundCft, channel.getAuthorization().getUnsentBuffer(), channel.getAuthorization()
+						.getUndeliveredBuffer(), origin.getFingerprint(), origin.getCertificateChainPem());
 			}
 		}
 	}
@@ -505,20 +545,23 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	/*
 	 * Creates a ChannelFlowOrigin in a ChannelFlowTarget for an originating User if it doesn't already exist.
 	 */
-	private void setChannelFlowOrigin(ChannelFlowTarget cft, FlowLimit unsentBuffer, AgentCredential origin) {
-		boolean foundOrigin = false;
+	private ChannelFlowOrigin createOrUpdateFlow(ChannelFlowTarget cft, FlowLimit unsentBuffer,
+			FlowLimit undeliveredBuffer, String sourceFingerprint, String sourceCertificateChainPem) {
+		ChannelFlowOrigin flow = null;
 		for (ChannelFlowOrigin cfo : cft.getChannelFlowOrigins()) {
-			if (origin.getFingerprint().equals(cfo.getSourceFingerprint())) {
-				foundOrigin = true;
+			if (sourceFingerprint.equals(cfo.getSourceFingerprint())) {
+				flow = cfo;
 				break;
 			}
 		}
-		if (!foundOrigin) {
-			ChannelFlowOrigin cfo = new ChannelFlowOrigin(cft);
-			cfo.setSourceFingerprint(origin.getFingerprint());
-			cfo.setSourceCertificateChainPem(origin.getCertificateChainPem());
-			cfo.setUnsentBuffer(unsentBuffer);
+		if (flow == null) {
+			flow = new ChannelFlowOrigin(cft);
+			flow.setSourceFingerprint(sourceFingerprint);
+			flow.setSourceCertificateChainPem(sourceCertificateChainPem);
 		}
+		flow.setUnsentBuffer(unsentBuffer);
+		flow.setUndeliveredBuffer(undeliveredBuffer);
+		return flow;
 	}
 
 	// -------------------------------------------------------------------------

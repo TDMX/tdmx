@@ -26,6 +26,7 @@ import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -44,6 +45,7 @@ import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowSession;
 import org.tdmx.lib.zone.domain.FlowTarget;
 import org.tdmx.lib.zone.domain.FlowTargetSession;
+import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
 
 public class ApiToDomainMapper {
@@ -70,6 +72,16 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		return new PageSpecifier(p.getNumber(), p.getSize());
+	}
+
+	public MessageDescriptor getDescriptor(Msg msg) {
+		MessageDescriptor md = new MessageDescriptor();
+		md.setMsgId(msg.getHeader().getMsgId());
+		md.setTxId(null); // TODO
+		md.setSentTimestamp(CalendarUtils.cast(msg.getHeader().getTimestamp()));
+		md.setTtlTimestamp(CalendarUtils.cast(msg.getHeader().getTtl()));
+		md.setPayloadSize(msg.getPayload().getLength());
+		return md;
 	}
 
 	public Message mapMessage(Header header, Payload payload) {

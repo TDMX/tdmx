@@ -1163,7 +1163,7 @@ public class ZASImpl implements ZAS {
 		// create the UC
 		credentialService.createOrUpdate(newCred);
 
-		// if the User matches an origin of some channel, then create Flows accordingly.
+		// if the User's address matches an origin of some channel, then create Flows accordingly.
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelFlowTargetSearchCriteria cftsc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(pageNo,
@@ -1175,7 +1175,7 @@ public class ZASImpl implements ZAS {
 
 			List<ChannelFlowTarget> originatingFlowTargets = channelService.search(zone, cftsc);
 			for (ChannelFlowTarget channelFlowTarget : originatingFlowTargets) {
-				channelService.createOriginatingUser(zone, channelFlowTarget.getId(), newCred);
+				channelService.createChannelFlowOrigin(zone, channelFlowTarget.getId(), newCred);
 			}
 			if (originatingFlowTargets.isEmpty()) {
 				more = false;

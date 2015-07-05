@@ -121,7 +121,8 @@ public enum ErrorCode {
 			305,
 			"Provided confirmation of non existent receiver's requested EndpointPermission."),
 
-	SubmitFlowControlClosed(306, "FlowControl closed."),
+	SubmitFlowControlClosed(306, "FlowControl closed - submit prohibited."),
+	ReceiveFlowControlClosed(306, "FlowControl closed - relay prohibited."),
 
 	;
 
