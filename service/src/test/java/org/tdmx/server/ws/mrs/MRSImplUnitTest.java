@@ -53,6 +53,7 @@ import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Flowsession;
 import org.tdmx.core.api.v01.msg.Flowtarget;
 import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -61,6 +62,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -399,6 +401,17 @@ public class MRSImplUnitTest {
 		assertEquals(s2.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getSecondary().getValidFrom()
 				.getTime());
 
+	}
+
+	@Test
+	public void testRelay_Message() throws Exception {
+		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName());
+
+		Relay req = new Relay();
+		req.setMsg(msg);
+
+		RelayResponse response = mrs.relay(req);
+		assertSuccess(response);
 	}
 
 	private void assertSuccess(Acknowledge ack) {
