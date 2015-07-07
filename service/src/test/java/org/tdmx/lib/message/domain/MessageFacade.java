@@ -20,11 +20,11 @@ package org.tdmx.lib.message.domain;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.UUID;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.FlowChannel;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
@@ -34,30 +34,13 @@ import org.tdmx.server.ws.DomainToApiMapper;
 
 public class MessageFacade {
 
-	public static Message createMessage() throws Exception {
-		Message m = new Message(UUID.randomUUID().toString(), new Date());
-
-		// Header fields.
-		m.setLiveUntilTS(new Date());
-		m.setExternalReference("External Reference Text");
-		m.setFlowSessionId("fs1");
-		m.setHeaderSignature("12345");
-
-		// payload fields
-		m.setChunksCRC("12345678");
-		m.setChunkSizeFactor(8);
-		m.setEncryptionContext(new byte[] { 1, 2, 3 });
-		m.setPayloadLength(1024);
-		m.setPayloadSignature("1234");
-		m.setPlaintextLength(8000);
-		return m;
-	}
-
-	public static Chunk createChunk(String msgId, int pos) throws Exception {
-		Chunk c = new Chunk(msgId, pos);
-		c.setMac("1234");
-		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
-		return c;
+	public static Chunk createChunk(String msgId, int pos) {
+		Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
+		chunk.setMsgId(msgId);
+		chunk.setData(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+		chunk.setMac("MAC"); // TODO
+		chunk.setPos(0);
+		return chunk;
 	}
 
 	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName)
@@ -69,11 +52,6 @@ public class MessageFacade {
 		ttlCal.add(Calendar.HOUR, 24);
 
 		// create the first chunk
-		org.tdmx.core.api.v01.msg.Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
-		chunk.setData(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1 });
-		chunk.setMac("MAC"); // TODO
-		chunk.setPos(0);
-
 		Header hdr = new Header();
 		hdr.setTimestamp(msgTs);
 		hdr.setTtl(ttlCal);
@@ -89,7 +67,7 @@ public class MessageFacade {
 		payload.setLength(100);
 		payload.setPlaintextLength(1000);
 		payload.setEncryptionContext(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
-		payload.setChunksCRC("CRC");
+		payload.setChunksCRC("CRC"); // TODO create payloadMACofMACs ( SHA256 ) #72
 		payload.setChunkSizeFactor(10);
 
 		SignatureUtils.createPayloadSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, payload, hdr);
@@ -100,7 +78,7 @@ public class MessageFacade {
 		SignatureUtils.createHeaderSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, hdr);
 
 		// link the chunk to the message
-		chunk.setMsgId(hdr.getMsgId());
+		Chunk chunk = createChunk(hdr.getMsgId(), 0);
 
 		Msg msg = new Msg();
 		msg.setHeader(hdr);

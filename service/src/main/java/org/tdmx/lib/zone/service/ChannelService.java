@@ -28,6 +28,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
@@ -133,6 +135,17 @@ public interface ChannelService {
 
 	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
 
+	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
+
+	/**
+	 * Fetch the ChannelFlowMessage which has the messageId provided.
+	 * 
+	 * @param zone
+	 * @param msgId
+	 * @return
+	 */
+	public ChannelFlowMessage findByMessageId(Zone zone, String msgId);
+
 	/**
 	 * Adds or updates the FlowTarget as ChannelFlowTarget within a Channel.
 	 * 
@@ -230,4 +243,5 @@ public interface ChannelService {
 	 * @return null if successful otherwise the reason.
 	 */
 	public SubmitMessageOperationStatus relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+
 }

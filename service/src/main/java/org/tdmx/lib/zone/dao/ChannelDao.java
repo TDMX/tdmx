@@ -24,6 +24,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
@@ -63,6 +64,15 @@ public interface ChannelDao {
 	public ChannelFlowOrigin loadChannelFlowOriginById(Long id);
 
 	/**
+	 * Fetch the ChannelFlowMessage ( no fetch plan ) by messageId.
+	 * 
+	 * @param zone
+	 * @param messageId
+	 * @return the ChannelFlowMessage or null if not found.
+	 */
+	public ChannelFlowMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId);
+
+	/**
 	 * Search for ChannelAuthorizations. FetchPlan includes Channel and Domain.
 	 * 
 	 * @param zone
@@ -97,5 +107,14 @@ public interface ChannelDao {
 	 * @return
 	 */
 	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
+
+	/**
+	 * Search for ChannelFlowMessages. FetchPlan includes ChannelFlowOrigin, Channel, Domain.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
 
 }

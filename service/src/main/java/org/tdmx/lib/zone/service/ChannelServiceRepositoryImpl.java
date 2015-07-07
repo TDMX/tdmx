@@ -42,6 +42,7 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
@@ -354,7 +355,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 
@@ -467,6 +475,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public Channel findById(Long id) {
 		return getChannelDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public ChannelFlowMessage findByMessageId(Zone zone, String msgId) {
+		return getChannelDao().loadChannelFlowMessageByMessageId(zone, msgId);
 	}
 
 	// -------------------------------------------------------------------------

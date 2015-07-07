@@ -33,6 +33,7 @@ public enum ErrorCode {
 	ServicesExist(500, "Services exists."),
 	FlowTargetNotFound(500, "FlowTarget not found."),
 	FlowNotFound(500, "Flow not found."),
+	MessageNotFound(500, "Message not found."),
 
 	MissingChannel(500, "Channel missing."),
 	MissingAuthorization(500, "Authorization missing."),
@@ -61,6 +62,7 @@ public enum ErrorCode {
 	MissingChunkMsgId(500, "Chunk msgId missing."),
 	MissingChunkData(500, "Chunk data missing."),
 	MissingChunkMac(500, "Chunk MAC missing."),
+	MissingChunkContinuationId(500, "Chunk continuationId missing."),
 	InvalidMessageSource(500, "Message source invalid."),
 	InvalidChunkPos(500, "Chunk pos invalid."),
 	InvalidChunkSizeFactor(500, "Chunk size factor invalid."),

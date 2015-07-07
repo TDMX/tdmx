@@ -54,6 +54,7 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.domain.Message;
@@ -64,6 +65,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
 import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
@@ -323,8 +325,45 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public UploadResponse upload(Upload parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		UploadResponse response = new UploadResponse();
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		String continuationId = parameters.getContinuation();
+		if (!StringUtils.hasText(continuationId)) {
+			setError(ErrorCode.MissingChunkContinuationId, response);
+			return response;
+		}
+
+		// validate Chunk fields present
+		if (validator.checkChunk(parameters.getChunk(), response) == null) {
+			return response;
+		}
+
+		// TODO check chunk's mac
+
+		Chunk c = a2d.mapChunk(parameters.getChunk());
+
+		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
+		// ChannelFlowOrigin to attach to.
+		Zone zone = getAgentService().getZone();
+
+		ChannelFlowMessage msg = channelService.findByMessageId(zone, c.getMsgId());
+		if (msg == null) {
+			setError(ErrorCode.MessageNotFound, response);
+			return response;
+		}
+		// TODO calculate the continuationId for the chunk and check that it matches the continuationId
+
+		chunkService.createOrUpdate(c);
+
+		// TODO calculate the next continuationId
+		response.setContinuation(null);
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override

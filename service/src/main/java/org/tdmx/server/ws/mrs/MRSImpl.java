@@ -138,7 +138,10 @@ public class MRSImpl implements MRS {
 			processChannelFlowTarget(parameters.getChannelflowtarget(), response);
 		} else if (parameters.getMsg() != null) {
 			processMessage(parameters.getMsg(), response);
+		} else if (parameters.getChunk() != null) {
+			// TODO relay in Chunk
 		} else {
+
 			// TODO other relays
 			setError(ErrorCode.MissingRelayPayload, response);
 		}

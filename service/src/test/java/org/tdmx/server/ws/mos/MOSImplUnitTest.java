@@ -47,7 +47,10 @@ import org.tdmx.core.api.v01.mos.ListFlow;
 import org.tdmx.core.api.v01.mos.ListFlowResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
+import org.tdmx.core.api.v01.mos.Upload;
+import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
@@ -225,7 +228,7 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
-	public void testSubmit() throws Exception {
+	public void testSubmitMessageAndUploadChunk() throws Exception {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
@@ -237,7 +240,18 @@ public class MOSImplUnitTest {
 		req.setMsg(msg);
 
 		SubmitResponse response = mos.submit(req);
-		assertSuccess(response, false);
+		assertSuccess(response, true);
+
+		assertNotNull(response.getContinuation());
+
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1);
+
+		Upload upl = new Upload();
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertSuccess(uplResponse, true); // FIXME - num chunks
 	}
 
 	private void assertSuccess(ContinuedAcknowledge ack, boolean hasContinuation) {

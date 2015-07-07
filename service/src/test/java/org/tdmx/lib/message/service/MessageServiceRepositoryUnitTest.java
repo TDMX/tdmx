@@ -21,6 +21,9 @@ package org.tdmx.lib.message.service;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Date;
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.message.domain.Message;
-import org.tdmx.lib.message.domain.MessageFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -42,7 +44,21 @@ public class MessageServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		Message m = MessageFacade.createMessage();
+		Message m = new Message(UUID.randomUUID().toString(), new Date());
+
+		// Header fields.
+		m.setLiveUntilTS(new Date());
+		m.setExternalReference("External Reference Text");
+		m.setFlowSessionId("fs1");
+		m.setHeaderSignature("12345");
+
+		// payload fields
+		m.setChunksCRC("12345678");
+		m.setChunkSizeFactor(8);
+		m.setEncryptionContext(new byte[] { 1, 2, 3 });
+		m.setPayloadLength(1024);
+		m.setPayloadSignature("1234");
+		m.setPlaintextLength(8000);
 		msgId = m.getMsgId();
 
 		service.createOrUpdate(m);

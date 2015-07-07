@@ -21,8 +21,6 @@ package org.tdmx.lib.message.service;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.UUID;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.message.domain.Chunk;
-import org.tdmx.lib.message.domain.MessageFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -45,7 +42,10 @@ public class ChunkServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		Chunk c = MessageFacade.createChunk(UUID.randomUUID().toString(), 1);
+		Chunk c = new Chunk("" + System.currentTimeMillis(), 0);
+		c.setMac("1234");
+		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
+
 		msgId = c.getMsgId();
 		pos = c.getPos();
 
@@ -82,11 +82,6 @@ public class ChunkServiceRepositoryUnitTest {
 	public void testLookup_NotFoundPos() throws Exception {
 		Chunk c = service.findByMsgIdAndPos(msgId, (short) -1);
 		assertNull(c);
-	}
-
-	@Test
-	public void testModify() throws Exception {
-		// TODO
 	}
 
 }
