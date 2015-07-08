@@ -42,9 +42,7 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.message.domain.Chunk;
-import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.message.service.ChunkService;
-import org.tdmx.lib.message.service.MessageService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
@@ -68,6 +66,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
+import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -110,7 +109,6 @@ public class MRSImpl implements MRS {
 	private AgentCredentialValidator credentialValidator;
 
 	private ChunkService chunkService;
-	private MessageService messageService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -342,7 +340,7 @@ public class MRSImpl implements MRS {
 		}
 
 		Chunk c = a2d.mapChunk(msg.getChunk());
-		Message m = a2d.mapMessage(header, payload);
+		MessageDescriptor md = a2d.mapMessage(msg);
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getFlowchannel().getSource()
 				.getUsercertificate(), header.getFlowchannel().getSource().getDomaincertificate(), header
@@ -414,11 +412,9 @@ public class MRSImpl implements MRS {
 				return;
 			}
 
-			MessageDescriptor md = a2d.getDescriptor(msg);
-
-			SubmitMessageOperationStatus status = channelService.relayMessage(zone, flow, md);
-			if (status != null) {
-				setError(mapSubmitOperationStatus(status), response);
+			SubmitMessageResultHolder result = channelService.relayMessage(zone, flow, md);
+			if (result.status != null) {
+				setError(mapSubmitOperationStatus(result.status), response);
 				return;
 			}
 
@@ -426,8 +422,7 @@ public class MRSImpl implements MRS {
 			getZonePartitionIdProvider().clearPartitionId();
 		}
 
-		// persist Message and Chunk via ChunkService and MessageService respectively
-		messageService.createOrUpdate(m);
+		// persist Chunk via ChunkService
 		chunkService.createOrUpdate(c);
 
 		response.setSuccess(true);
@@ -561,14 +556,6 @@ public class MRSImpl implements MRS {
 
 	public void setChunkService(ChunkService chunkService) {
 		this.chunkService = chunkService;
-	}
-
-	public MessageService getMessageService() {
-		return messageService;
-	}
-
-	public void setMessageService(MessageService messageService) {
-		this.messageService = messageService;
 	}
 
 	public int getBatchSize() {

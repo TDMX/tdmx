@@ -222,6 +222,11 @@ public interface ChannelService {
 		FLOW_CONTROL_CLOSED,
 	}
 
+	public class SubmitMessageResultHolder {
+		public SubmitMessageOperationStatus status;
+		public ChannelFlowMessage message;
+	}
+
 	/**
 	 * Submit a Message outbound called on the sender side.
 	 * 
@@ -229,9 +234,9 @@ public interface ChannelService {
 	 * @param flow
 	 *            detached Flow
 	 * @param msg
-	 * @return null if successful otherwise the reason.
+	 * @return
 	 */
-	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
 
 	/**
 	 * Relay a Message inbound called on the receiver side.
@@ -240,8 +245,8 @@ public interface ChannelService {
 	 * @param flow
 	 *            detached Flow
 	 * @param msg
-	 * @return null if successful otherwise the reason.
+	 * @return
 	 */
-	public SubmitMessageOperationStatus relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
 
 }

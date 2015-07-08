@@ -58,16 +58,6 @@
 	</bean>
 
 
-	<bean id="tdmx.lib.message.dao.MessageDao"
-		class="org.tdmx.lib.message.dao.MessageDaoImpl">
-	</bean>
-	
-	<bean id="tdmx.lib.message.MessageRepository"
-		class="org.tdmx.lib.message.service.MessageServiceRepositoryImpl">
-		<property name="messageDao"
-			ref="tdmx.lib.message.dao.MessageDao" />
-	</bean>
-
 	<bean id="tdmx.lib.message.dao.ChunkDao"
 		class="org.tdmx.lib.message.dao.ChunkDaoImpl">
 	</bean>

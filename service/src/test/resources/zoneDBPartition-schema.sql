@@ -177,8 +177,17 @@
 
     create table ChannelFlowMessage (
         id bigint not null,
+        chunkSizeFactor integer not null,
+        chunksCRC varchar(80) not null,
+        encryptionContext longvarbinary not null,
+        entropy varbinary(8) not null,
+        externalReference varchar(2048),
+        flowSessionId varchar(256) not null,
+        headerSignature varchar(128) not null,
         msgId varchar(64) not null,
-        payloadSize bigint not null,
+        payloadLength bigint not null,
+        payloadSignature varchar(128) not null,
+        plaintextLength bigint not null,
         sentTimestamp timestamp not null,
         ttlTimestamp timestamp not null,
         flowOrigin_id bigint not null,

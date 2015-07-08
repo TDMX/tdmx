@@ -68,6 +68,7 @@ public enum ErrorCode {
 	InvalidChunkSizeFactor(500, "Chunk size factor invalid."),
 	InvalidPayloadLength(500, "Payload length invalid."),
 	InvalidPlaintextLength(500, "Payload plaintext length invalid."),
+	InvalidChunkContinuationId(500, "Chunk continuationId invalid."),
 
 	MissingChannelDestinationService(500, "ChannelDestination Service missing."),
 	MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),

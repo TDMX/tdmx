@@ -368,15 +368,18 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageOperationStatus submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
+
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
 		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
-			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadSize())));
+		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadLength())));
 		if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
@@ -384,7 +387,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
 		getChannelDao().persist(m);
-		return null;
+
+		result.message = m;
+		return result;
 	}
 
 	@Override
@@ -403,16 +408,18 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageOperationStatus relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
 		if (FlowControlStatus.CLOSED == quota.getReceiverStatus()) {
 			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
 			// changes this status eventually
-			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadSize())));
+		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadLength())));
 		if (quota.getUndeliveredBytes().subtract(flow.getUndeliveredBuffer().getHighMarkBytes())
 				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close relay
@@ -421,7 +428,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
 		getChannelDao().persist(m);
-		return null;
+
+		result.message = m;
+		return result;
 	}
 
 	@Override

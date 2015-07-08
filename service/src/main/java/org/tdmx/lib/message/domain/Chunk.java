@@ -44,6 +44,8 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_MSGID_LEN = 64;
+
 	public static final int MAX_SHA1_MAC_LEN = 40;
 
 	// -------------------------------------------------------------------------
@@ -59,7 +61,7 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	// HEADER FIELDS
 	// -------------------------------------------------------------------------
-	@Column(length = Message.MAX_MSGID_LEN, nullable = false)
+	@Column(length = MAX_MSGID_LEN, nullable = false)
 	private String msgId;
 
 	@Column(nullable = false)

@@ -202,6 +202,23 @@ public class SignatureUtils {
 				&& checkFlowTargetSessionSignature(publicCert, alg, target, serviceName, fts);
 	}
 
+	public static String createContinuationId(int chunkPos, byte[] entropy, String msgId, int len) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(toValue(msgId));
+		sb.append(toValue(chunkPos));
+		sb.append(toValue(entropy));
+		String valueToHash = sb.toString();
+
+		DigestAlgorithm alg = DigestAlgorithm.SHA_256;
+		byte[] hashedByes;
+		try {
+			hashedByes = alg.kdf(StringToUtf8.toBytes(valueToHash));
+		} catch (CryptoException e) {
+			return null;
+		}
+		return ByteArray.asHex(hashedByes).substring(0, len);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

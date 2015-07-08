@@ -57,9 +57,7 @@ import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.message.domain.Chunk;
-import org.tdmx.lib.message.domain.Message;
 import org.tdmx.lib.message.service.ChunkService;
-import org.tdmx.lib.message.service.MessageService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
@@ -77,6 +75,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
+import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -110,7 +109,6 @@ public class MOSImpl implements MOS {
 	private AgentCredentialValidator credentialValidator;
 
 	private ChunkService chunkService;
-	private MessageService messageService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -218,7 +216,7 @@ public class MOSImpl implements MOS {
 
 		Chunk c = a2d.mapChunk(msg.getChunk());
 
-		Message m = a2d.mapMessage(header, payload);
+		MessageDescriptor md = a2d.mapMessage(msg);
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getFlowchannel().getSource()
 				.getUsercertificate(), header.getFlowchannel().getSource().getDomaincertificate(), header
@@ -263,18 +261,21 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		MessageDescriptor md = a2d.getDescriptor(msg);
-
-		SubmitMessageOperationStatus status = channelService.submitMessage(zone, flow, md);
-		if (status != null) {
-			setError(mapSubmitOperationStatus(status), response);
+		SubmitMessageResultHolder result = channelService.submitMessage(zone, flow, md);
+		if (result.status != null) {
+			setError(mapSubmitOperationStatus(result.status), response);
 			return response;
 		}
 
-		// persist Message and Chunk via ChunkService and MessageService respectively
-		messageService.createOrUpdate(m);
+		// persist Chunk
 		chunkService.createOrUpdate(c);
 
+		// give the caller the continuationId for the next chunk
+		String continuationId = result.message.getContinuationId(c.getPos() + 1);
+		if (continuationId == null) {
+			// last chunk - what to do? TODO
+		}
+		response.setContinuation(continuationId);
 		response.setSuccess(true);
 		return response;
 	}
@@ -355,12 +356,20 @@ public class MOSImpl implements MOS {
 			setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
-		// TODO calculate the continuationId for the chunk and check that it matches the continuationId
+		// calculate the continuationId for the chunk and check that it matches the continuationId
+		if (!continuationId.equals(msg.getContinuationId(c.getPos()))) {
+			setError(ErrorCode.InvalidChunkContinuationId, response);
+			return response;
+		}
 
 		chunkService.createOrUpdate(c);
 
-		// TODO calculate the next continuationId
-		response.setContinuation(null);
+		// calculate the next continuationId
+		String nextContinuationId = msg.getContinuationId(c.getPos() + 1);
+		if (nextContinuationId == null) {
+			// this was the last chunk - what to do ? TODO
+		}
+		response.setContinuation(nextContinuationId);
 
 		response.setSuccess(true);
 		return response;
@@ -517,14 +526,6 @@ public class MOSImpl implements MOS {
 
 	public void setChunkService(ChunkService chunkService) {
 		this.chunkService = chunkService;
-	}
-
-	public MessageService getMessageService() {
-		return messageService;
-	}
-
-	public void setMessageService(MessageService messageService) {
-		this.messageService = messageService;
 	}
 
 	public int getBatchSize() {

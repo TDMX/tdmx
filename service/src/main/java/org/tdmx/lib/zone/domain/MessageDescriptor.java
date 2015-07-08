@@ -38,11 +38,27 @@ public class MessageDescriptor implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
+	// -------------------------------------------------------------------------
+	// HEADER FIELDS
+	// -------------------------------------------------------------------------
+
 	private String msgId;
 	private String txId;
-	private long payloadSize;
 	private Date sentTimestamp;
 	private Date ttlTimestamp;
+	private String flowSessionId;
+	private String payloadSignature;
+	private String externalReference;
+	private String headerSignature;
+
+	// -------------------------------------------------------------------------
+	// PAYLOAD FIELDS
+	// -------------------------------------------------------------------------
+	private int chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
+	private long payloadLength; // total encrypted length = SUM length chunks
+	private byte[] encryptionContext; // sender input to encryption scheme
+	private long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
+	private String chunksCRC; // manifest of checksums for each chunk.
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -96,14 +112,6 @@ public class MessageDescriptor implements Serializable {
 		this.txId = txId;
 	}
 
-	public long getPayloadSize() {
-		return payloadSize;
-	}
-
-	public void setPayloadSize(long payloadSize) {
-		this.payloadSize = payloadSize;
-	}
-
 	public Date getSentTimestamp() {
 		return sentTimestamp;
 	}
@@ -118,6 +126,78 @@ public class MessageDescriptor implements Serializable {
 
 	public void setTtlTimestamp(Date ttlTimestamp) {
 		this.ttlTimestamp = ttlTimestamp;
+	}
+
+	public String getFlowSessionId() {
+		return flowSessionId;
+	}
+
+	public void setFlowSessionId(String flowSessionId) {
+		this.flowSessionId = flowSessionId;
+	}
+
+	public String getPayloadSignature() {
+		return payloadSignature;
+	}
+
+	public void setPayloadSignature(String payloadSignature) {
+		this.payloadSignature = payloadSignature;
+	}
+
+	public String getExternalReference() {
+		return externalReference;
+	}
+
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
+	}
+
+	public String getHeaderSignature() {
+		return headerSignature;
+	}
+
+	public void setHeaderSignature(String headerSignature) {
+		this.headerSignature = headerSignature;
+	}
+
+	public int getChunkSizeFactor() {
+		return chunkSizeFactor;
+	}
+
+	public void setChunkSizeFactor(int chunkSizeFactor) {
+		this.chunkSizeFactor = chunkSizeFactor;
+	}
+
+	public long getPayloadLength() {
+		return payloadLength;
+	}
+
+	public void setPayloadLength(long payloadLength) {
+		this.payloadLength = payloadLength;
+	}
+
+	public byte[] getEncryptionContext() {
+		return encryptionContext;
+	}
+
+	public void setEncryptionContext(byte[] encryptionContext) {
+		this.encryptionContext = encryptionContext;
+	}
+
+	public long getPlaintextLength() {
+		return plaintextLength;
+	}
+
+	public void setPlaintextLength(long plaintextLength) {
+		this.plaintextLength = plaintextLength;
+	}
+
+	public String getChunksCRC() {
+		return chunksCRC;
+	}
+
+	public void setChunksCRC(String chunksCRC) {
+		this.chunksCRC = chunksCRC;
 	}
 
 }
