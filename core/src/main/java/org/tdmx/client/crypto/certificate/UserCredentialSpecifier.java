@@ -40,6 +40,8 @@ public class UserCredentialSpecifier {
 	private PublicKeyAlgorithm keyAlgorithm;
 	private SignatureAlgorithm signatureAlgorithm;
 
+	// TODO serial#
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------

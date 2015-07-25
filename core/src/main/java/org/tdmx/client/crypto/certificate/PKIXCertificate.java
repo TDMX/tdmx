@@ -351,7 +351,8 @@ public class PKIXCertificate {
 		// TODO subjectKey == issuerKey identifiers
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())
+				|| zi.getCertificateType() != TdmxCertificateType.ZAC) {
 			return false;
 		}
 
@@ -423,7 +424,8 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())
+				|| zi.getCertificateType() != TdmxCertificateType.DAC) {
 			return false;
 		}
 
@@ -507,7 +509,8 @@ public class PKIXCertificate {
 		// TODO issuerKey identifiers present
 
 		TdmxZoneInfo zi = getTdmxZoneInfo();
-		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())) {
+		if (zi == null || !StringUtils.isLowerCase(zi.getZoneRoot())
+				|| zi.getCertificateType() != TdmxCertificateType.UC) {
 			// we must have the zone root normalized to uppercase.
 			return false;
 		}

@@ -41,6 +41,8 @@ public class DomainAdministrationCredentialSpecifier {
 	private PublicKeyAlgorithm keyAlgorithm;
 	private SignatureAlgorithm signatureAlgorithm;
 
+	// TODO serial#
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -49,7 +51,7 @@ public class DomainAdministrationCredentialSpecifier {
 	 * Construct a DomainAdministrationCredentialSpecifier for a Domain.
 	 * 
 	 * @param subdomainName
-	 *            will be normalized to uppercase and prefixed onto the issuing zoneApex.
+	 *            will be normalized to lowercase and prefixed onto the issuing zoneApex.
 	 */
 	public DomainAdministrationCredentialSpecifier(String subdomainName, PKIXCredential zoneAdministratorCredential) {
 		if (!StringUtils.hasText(subdomainName)) {

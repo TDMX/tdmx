@@ -50,17 +50,15 @@ public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ZoneAdministrationCredentialSpecifier(int version, String zoneRoot, String mrsUrl) {
+	// TODO remove mrsUrl add serial#
+	public ZoneAdministrationCredentialSpecifier(int version, String zoneRoot) {
 		if (!StringUtils.hasText(zoneRoot)) {
 			throw new IllegalArgumentException("Missing zoneRoot.");
 		}
 		if (!StringUtils.isLowerCase(zoneRoot)) {
 			throw new IllegalArgumentException("Uppercase zoneRoot.");
 		}
-		if (!StringUtils.hasText(mrsUrl)) {
-			throw new IllegalArgumentException("Missing mrsUrl.");
-		}
-		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot, mrsUrl);
+		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot, TdmxCertificateType.ZAC);
 	}
 
 	// -------------------------------------------------------------------------

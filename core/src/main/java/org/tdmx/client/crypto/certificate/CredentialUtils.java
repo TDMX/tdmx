@@ -26,7 +26,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -251,7 +250,10 @@ public class CredentialUtils {
 			NameConstraints nc = new NameConstraints(new GeneralSubtree[] { snSubtree }, null);
 			certBuilder.addExtension(Extension.nameConstraints, true, nc);
 
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, issuerPublicCert.getTdmxZoneInfo());
+			TdmxZoneInfo issuerZoneInfo = issuerPublicCert.getTdmxZoneInfo();
+			TdmxZoneInfo dacZoneInfo = new TdmxZoneInfo(issuerZoneInfo.getVersion(), issuerZoneInfo.getZoneRoot(),
+					TdmxCertificateType.DAC);
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, dacZoneInfo);
 
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -315,7 +317,10 @@ public class CredentialUtils {
 			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation | KeyUsage.keyEncipherment);
 			certBuilder.addExtension(Extension.keyUsage, false, ku);
 
-			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, issuerPublicCert.getTdmxZoneInfo());
+			TdmxZoneInfo issuerZoneInfo = issuerPublicCert.getTdmxZoneInfo();
+			TdmxZoneInfo ucZoneInfo = new TdmxZoneInfo(issuerZoneInfo.getVersion(), issuerZoneInfo.getZoneRoot(),
+					TdmxCertificateType.UC);
+			certBuilder.addExtension(TdmxZoneInfo.tdmxZoneInfo, false, ucZoneInfo);
 
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(issuerPrivateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
@@ -340,10 +345,13 @@ public class CredentialUtils {
 			return false;
 		}
 		// check that the zone info is identical in ZAC,DAC,UC
-		ASN1Primitive zi_zac = zac.getTdmxZoneInfo().toASN1Primitive();
-		ASN1Primitive zi_dac = dac.getTdmxZoneInfo().toASN1Primitive();
-		ASN1Primitive zi_uc = uc.getTdmxZoneInfo().toASN1Primitive();
-		if (!zi_zac.equals(zi_dac) || !zi_dac.equals(zi_uc)) {
+		TdmxZoneInfo zi_zac = zac.getTdmxZoneInfo();
+		TdmxZoneInfo zi_dac = dac.getTdmxZoneInfo();
+		TdmxZoneInfo zi_uc = uc.getTdmxZoneInfo();
+		if (zi_zac.getVersion() != zi_dac.getVersion() || zi_dac.getVersion() != zi_uc.getVersion()) {
+			return false;
+		}
+		if (!zi_zac.getZoneRoot().equals(zi_dac.getZoneRoot()) || !zi_dac.getZoneRoot().equals(zi_uc.getZoneRoot())) {
 			return false;
 		}
 		// check the signing of the chain terminating in the trust root anchor of the zac
@@ -360,9 +368,12 @@ public class CredentialUtils {
 			return false;
 		}
 		// check that the zone info is identical in ZAC,DAC,UC
-		ASN1Primitive zi_zac = zac.getTdmxZoneInfo().toASN1Primitive();
-		ASN1Primitive zi_dac = dac.getTdmxZoneInfo().toASN1Primitive();
-		if (!zi_zac.equals(zi_dac)) {
+		TdmxZoneInfo zi_zac = zac.getTdmxZoneInfo();
+		TdmxZoneInfo zi_dac = dac.getTdmxZoneInfo();
+		if (zi_zac.getVersion() != zi_dac.getVersion()) {
+			return false;
+		}
+		if (!zi_zac.getZoneRoot().equals(zi_dac.getZoneRoot())) {
 			return false;
 		}
 		// check the signing of the chain terminating in the trust root anchor of the zac

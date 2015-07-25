@@ -41,14 +41,14 @@ public class CertificateFacade {
 		return later;
 	}
 
-	public static TdmxZoneInfo createZI(String zoneRoot, String mrsUrl) {
-		TdmxZoneInfo zi = new TdmxZoneInfo(1, zoneRoot, mrsUrl);
+	public static TdmxZoneInfo createZI(String zoneRoot, int credentialType) {
+		TdmxZoneInfo zi = new TdmxZoneInfo(1, zoneRoot, credentialType);
 		return zi;
 	}
 
-	public static ZoneAdministrationCredentialSpecifier createZACS(int version, String zoneRoot, String mrsUrl,
-			Calendar validStart, Calendar validEnd) {
-		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(version, zoneRoot, mrsUrl);
+	public static ZoneAdministrationCredentialSpecifier createZACS(int version, String zoneRoot, Calendar validStart,
+			Calendar validEnd) {
+		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(version, zoneRoot);
 
 		req.setCn("name");
 		req.setTelephoneNumber("0417100000");
@@ -65,8 +65,7 @@ public class CertificateFacade {
 	}
 
 	public static PKIXCredential createZAC(String zoneApex, int validForYears) throws CryptoCertificateException {
-		ZoneAdministrationCredentialSpecifier req = createZACS(1, zoneApex, "https://mrsUrl/api", getNow(),
-				getNowPlusYears(validForYears));
+		ZoneAdministrationCredentialSpecifier req = createZACS(1, zoneApex, getNow(), getNowPlusYears(validForYears));
 		return CredentialUtils.createZoneAdministratorCredential(req);
 	}
 

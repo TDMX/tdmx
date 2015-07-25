@@ -41,8 +41,7 @@ public class CredentialFacade {
 		later.add(Calendar.YEAR, 10);
 		later.set(Calendar.MILLISECOND, 0);
 
-		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zoneRoot,
-				"https://mrsUrl/api");
+		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zoneRoot);
 		req.setCn("name");
 		req.setTelephoneNumber("0417100000");
 		req.setEmailAddress("pjk@gmail.com");

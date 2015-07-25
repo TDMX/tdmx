@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.crypto.certificate;
 
-import java.math.BigInteger;
 import java.util.Enumeration;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -40,7 +39,7 @@ public class TdmxZoneInfo extends ASN1Object {
 
 	private final ASN1Integer version;
 	private final DERIA5String zoneRoot;
-	private final DERIA5String mrsUrl;
+	private final TdmxCertificateType certificateType;
 
 	/**
 	 * Create a TdmxZoneInfo descriptor which describes a versioned TDMX relay interface for a normalized domain name
@@ -49,14 +48,14 @@ public class TdmxZoneInfo extends ASN1Object {
 	 * @param version
 	 *            currently only 1
 	 * @param zoneRoot
-	 *            must be uppercase
-	 * @param mrsUrl
-	 *            the MRS relay URL, ie. http://mrs.serviceprovider.com/api/v01/mrs
+	 *            must be lowercase
+	 * @param certificateType
+	 *            the type of certificate ZAC, DAC, or UC
 	 */
-	public TdmxZoneInfo(int version, String zoneRoot, String mrsUrl) {
+	public TdmxZoneInfo(int version, String zoneRoot, int certificateType) {
 		this.version = new ASN1Integer(version);
 		this.zoneRoot = new DERIA5String(zoneRoot);
-		this.mrsUrl = new DERIA5String(mrsUrl);
+		this.certificateType = TdmxCertificateType.lookup(certificateType);
 	}
 
 	public TdmxZoneInfo(ASN1Sequence seq) {
@@ -64,7 +63,7 @@ public class TdmxZoneInfo extends ASN1Object {
 
 		version = (ASN1Integer) e.nextElement();
 		zoneRoot = DERIA5String.getInstance(e.nextElement());
-		mrsUrl = DERIA5String.getInstance(e.nextElement());
+		certificateType = TdmxCertificateType.getInstance(e.nextElement());
 	}
 
 	public static TdmxZoneInfo getInstance(Object o) {
@@ -84,7 +83,7 @@ public class TdmxZoneInfo extends ASN1Object {
 	 *  TdmxZoneInfo ::= SEQUENCE {
 	 *      version Version,
 	 *      zoneRoot IA5String,
-	 *      mrsUrl IA5String
+	 *      certificateType TdmxCertificateType
 	 *  }
 	 * </pre>
 	 */
@@ -94,22 +93,21 @@ public class TdmxZoneInfo extends ASN1Object {
 
 		v.add(version);
 		v.add(zoneRoot);
-		v.add(mrsUrl);
+		v.add(certificateType);
 
 		return new DERSequence(v);
 	}
 
 	public int getVersion() {
-		BigInteger bi = version.getValue();
-		return bi.intValue();
+		return version.getValue().intValue();
 	}
 
 	public String getZoneRoot() {
 		return zoneRoot.getString();
 	}
 
-	public String getMrsUrl() {
-		return mrsUrl.getString();
+	public int getCertificateType() {
+		return certificateType.getValue().intValue();
 	}
 
 }

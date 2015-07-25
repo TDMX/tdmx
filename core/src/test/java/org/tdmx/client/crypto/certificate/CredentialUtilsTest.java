@@ -45,8 +45,7 @@ public class CredentialUtilsTest {
 
 		Calendar now = CertificateFacade.getNow();
 		Calendar to = CertificateFacade.getNowPlusYears(10);
-		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(1, "zone.root", "https://mrsUrl/api",
-				now, to);
+		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(1, "zone.root", now, to);
 
 		PKIXCredential cred = CredentialUtils.createZoneAdministratorCredential(req);
 
