@@ -245,6 +245,10 @@ public class PKIXCertificate {
 		return null;
 	}
 
+	public int getSerialNumber() {
+		return certificate.getSerialNumber().intValue();
+	}
+
 	public String getCommonName() {
 		return getFirstRDN(holder.getSubject(), BCStyle.CN);
 	}

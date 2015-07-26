@@ -34,6 +34,7 @@ public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	private final TdmxZoneInfo zoneInfo;
 
+	private int serialNumber = 1;
 	private String cn;
 	private String telephoneNumber;
 	private String emailAddress;
@@ -50,13 +51,16 @@ public class ZoneAdministrationCredentialSpecifier {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	// TODO remove mrsUrl add serial#
+
 	public ZoneAdministrationCredentialSpecifier(int version, String zoneRoot) {
 		if (!StringUtils.hasText(zoneRoot)) {
 			throw new IllegalArgumentException("Missing zoneRoot.");
 		}
 		if (!StringUtils.isLowerCase(zoneRoot)) {
 			throw new IllegalArgumentException("Uppercase zoneRoot.");
+		}
+		if (serialNumber < 0) {
+			throw new IllegalArgumentException("Negative serialNumber.");
 		}
 		this.zoneInfo = new TdmxZoneInfo(version, zoneRoot, TdmxCertificateType.ZAC);
 	}
@@ -87,6 +91,14 @@ public class ZoneAdministrationCredentialSpecifier {
 
 	public void setKeyAlgorithm(PublicKeyAlgorithm keyAlgorithm) {
 		this.keyAlgorithm = keyAlgorithm;
+	}
+
+	public int getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(int serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	public String getCn() {

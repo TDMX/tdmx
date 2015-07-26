@@ -34,13 +34,11 @@ public class UserCredentialSpecifier {
 	private PKIXCredential domainAdministratorCredential;
 
 	private String name;
-
+	private int serialNumber = 1;
 	private Calendar notBefore;
 	private Calendar notAfter;
 	private PublicKeyAlgorithm keyAlgorithm;
 	private SignatureAlgorithm signatureAlgorithm;
-
-	// TODO serial#
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -78,6 +76,14 @@ public class UserCredentialSpecifier {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(int serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {

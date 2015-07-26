@@ -35,13 +35,11 @@ public class DomainAdministrationCredentialSpecifier {
 	private final PKIXCredential zoneAdministratorCredential;
 
 	private final String domainName;
-
+	private int serialNumber = 1;
 	private Calendar notBefore;
 	private Calendar notAfter;
 	private PublicKeyAlgorithm keyAlgorithm;
 	private SignatureAlgorithm signatureAlgorithm;
-
-	// TODO serial#
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -94,6 +92,14 @@ public class DomainAdministrationCredentialSpecifier {
 
 	public String getDomainName() {
 		return domainName;
+	}
+
+	public int getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(int serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	public PublicKeyAlgorithm getKeyAlgorithm() {

@@ -110,8 +110,8 @@ public class CredentialUtils {
 		}
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, new BigInteger("1"), req
-				.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
+				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
 
 		try {
 			BasicConstraints cA = new BasicConstraints(1);
@@ -209,8 +209,8 @@ public class CredentialUtils {
 		subjectBuilder.addRDN(BCStyle.CN, req.getDomainName());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = issuerPublicCert.getSubjectName();
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, new BigInteger("1"), req
-				.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
+				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
 
 		try {
 			BasicConstraints cA = new BasicConstraints(0);
@@ -304,8 +304,8 @@ public class CredentialUtils {
 		subjectBuilder.addRDN(BCStyle.CN, req.getName());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = issuerPublicCert.getSubjectName();
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, new BigInteger("1"), req
-				.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
+				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
 
 		try {
 			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();

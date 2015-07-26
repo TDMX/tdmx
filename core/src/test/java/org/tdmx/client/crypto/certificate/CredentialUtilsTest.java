@@ -46,6 +46,7 @@ public class CredentialUtilsTest {
 		Calendar now = CertificateFacade.getNow();
 		Calendar to = CertificateFacade.getNowPlusYears(10);
 		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(1, "zone.root", now, to);
+		req.setSerialNumber(100);
 
 		PKIXCredential cred = CredentialUtils.createZoneAdministratorCredential(req);
 
@@ -56,6 +57,7 @@ public class CredentialUtilsTest {
 
 		PKIXCertificate c = cred.getCertificateChain()[0];
 
+		assertEquals(100, req.getSerialNumber());
 		assertEquals(req.getCountry(), c.getCountry());
 		assertEquals(req.getLocation(), c.getLocation());
 		assertEquals(req.getOrg(), c.getOrganization());
@@ -82,6 +84,7 @@ public class CredentialUtilsTest {
 		Calendar to = CertificateFacade.getNowPlusYears(2);
 
 		DomainAdministrationCredentialSpecifier req = CertificateFacade.createDACS(zac, now, to);
+		req.setSerialNumber(100);
 
 		PKIXCredential cred = CredentialUtils.createDomainAdministratorCredential(req);
 
@@ -99,6 +102,7 @@ public class CredentialUtilsTest {
 		assertEquals(req.getDomainName(), c.getCommonName());
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
+		assertEquals(100, req.getSerialNumber());
 		assertFalse(c.isTdmxZoneAdminCertificate());
 		assertTrue(c.isTdmxDomainAdminCertificate());
 		assertFalse(c.isTdmxUserCertificate());
@@ -114,6 +118,8 @@ public class CredentialUtilsTest {
 
 		UserCredentialSpecifier req = CertificateFacade.createUCS(dac, CertificateFacade.getNow(),
 				CertificateFacade.getNowPlusYears(1));
+		req.setSerialNumber(100);
+
 		PKIXCredential cred = CredentialUtils.createUserCredential(req);
 		assertNotNull(cred);
 		assertNotNull(cred.getCertificateChain());
@@ -129,6 +135,7 @@ public class CredentialUtilsTest {
 		assertEquals(req.getName(), c.getCommonName());
 		assertEquals(req.getNotAfter(), c.getNotAfter());
 		assertEquals(req.getNotBefore(), c.getNotBefore());
+		assertEquals(100, req.getSerialNumber());
 		assertFalse(c.isTdmxZoneAdminCertificate());
 		assertFalse(c.isTdmxDomainAdminCertificate());
 		assertTrue(c.isTdmxUserCertificate());
@@ -141,8 +148,16 @@ public class CredentialUtilsTest {
 	@Test
 	public void test_PKIXValidation_DAC_UC() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
+		// default serialnum
+		assertEquals(1, zac.getPublicCert().getSerialNumber());
+
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		// default serialnum
+		assertEquals(1, dac.getPublicCert().getSerialNumber());
+
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+		// default serialnum
+		assertEquals(1, uc.getPublicCert().getSerialNumber());
 
 		assertTrue(CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), uc.getPublicCert()));
 		assertTrue(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), dac.getPublicCert()));
