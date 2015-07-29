@@ -20,7 +20,10 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -30,56 +33,65 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
+
 /**
- * An Address (within a Domain) managed by a ServiceProvider
+ * An Destination is the combination of Address and Service at the receiving end's ServiceProvider.
+ * 
+ * Destinations are created by {@link MDS#setDestinationSession(org.tdmx.core.api.v01.mds.SetDestinationSession)} and
+ * deleted by {@link ZAS#deleteService(org.tdmx.core.api.v01.zas.DeleteService) and
+ * 
+ * @link ZAS#deleteAddress(org.tdmx.core.api.v01.zas.DeleteAddress)}
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "Address")
-public class Address implements Serializable {
+@Table(name = "Destination")
+public class Destination implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = -1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AddressIdGen")
-	@TableGenerator(name = "AddressIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DestinationIdGen")
+	@TableGenerator(name = "DestinationIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Domain domain;
+	private Address target;
 
-	@Column(length = MAX_NAME_LEN, nullable = false)
-	/**
-	 * The localName address part.
-	 */
-	private String localName;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private Service service;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "identifier", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN)),
+			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN)),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN)),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private DestinationSession destinationSession;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public Address() {
-
+	Destination() {
 	}
 
-	public Address(Domain domain, String localName) {
-		setDomain(domain);
-		setLocalName(localName);
-	}
-
-	public Address(Domain domain, Address other) {
-		setDomain(domain);
-		setLocalName(other.getLocalName());
+	public Destination(Address target, Service service) {
+		setTarget(target);
+		setService(service);
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,9 +101,11 @@ public class Address implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Address [id=");
+		builder.append("Destination [id=");
 		builder.append(id);
-		builder.append(", localName=").append(localName);
+		if (destinationSession != null) {
+			builder.append(", ds=").append(destinationSession);
+		}
 		builder.append("]");
 		return builder.toString();
 	}
@@ -104,12 +118,12 @@ public class Address implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setDomain(Domain domain) {
-		this.domain = domain;
+	private void setTarget(Address target) {
+		this.target = target;
 	}
 
-	private void setLocalName(String localName) {
-		this.localName = localName;
+	private void setService(Service service) {
+		this.service = service;
 	}
 
 	// -------------------------------------------------------------------------
@@ -124,12 +138,20 @@ public class Address implements Serializable {
 		this.id = id;
 	}
 
-	public String getLocalName() {
-		return localName;
+	public Address getTarget() {
+		return target;
 	}
 
-	public Domain getDomain() {
-		return domain;
+	public Service getService() {
+		return service;
+	}
+
+	public DestinationSession getDestinationSession() {
+		return destinationSession;
+	}
+
+	public void setDestinationSession(DestinationSession destinationSession) {
+		this.destinationSession = destinationSession;
 	}
 
 }

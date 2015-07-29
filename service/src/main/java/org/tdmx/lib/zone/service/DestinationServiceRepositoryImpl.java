@@ -24,21 +24,20 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.lib.zone.dao.FlowTargetDao;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.dao.DestinationDao;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * Transactional CRUD Services for FlowTarget Entity.
+ * Transactional CRUD Services for Destination Entity.
  * 
  * @author Peter Klauser
  * 
  */
-public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
+public class DestinationServiceRepositoryImpl implements DestinationService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,9 +46,9 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(FlowTargetServiceRepositoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DestinationServiceRepositoryImpl.class);
 
-	private FlowTargetDao flowTargetDao;
+	private DestinationDao destinationDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,74 +60,58 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void createOrUpdate(FlowTarget target) {
+	public void createOrUpdate(Destination target) {
 		if (target.getId() != null) {
-			FlowTarget storedTarget = getFlowTargetDao().loadById(target.getId());
+			Destination storedTarget = destinationDao.loadById(target.getId());
 			if (storedTarget != null) {
-				getFlowTargetDao().merge(target);
+				destinationDao.merge(target);
 			} else {
-				log.warn("Unable to find FlowTarget with id " + target.getId());
+				log.warn("Unable to find Destination with id " + target.getId());
 			}
 		} else {
-			getFlowTargetDao().persist(target);
+			destinationDao.persist(target);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ModifyOperationStatus modifyConcurrency(AgentCredential agent, Service service, int concurrencyLimit) {
-		FlowTarget existingFlowTarget = findByTargetService(agent, service);
-		if (existingFlowTarget == null) {
-			return ModifyOperationStatus.FLOWTARGET_NOT_FOUND;
-		}
-		FlowTargetConcurrency ftc = getFlowTargetDao().lock(existingFlowTarget.getConcurrency().getId());
-		ftc.setConcurrencyLimit(concurrencyLimit);
-		return ModifyOperationStatus.SUCCESS;
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB")
-	public void setSession(FlowTarget ft) {
-		FlowTarget flowTarget = findByTargetService(ft.getTarget(), ft.getService());
+	public void setSession(Destination ft) {
+		Destination flowTarget = findByDestination(ft.getTarget(), ft.getService());
 		if (flowTarget == null) {
 			createOrUpdate(ft);
 			flowTarget = ft;
 		} else {
-			flowTarget.setPrimary(ft.getPrimary());
-			flowTarget.setSecondary(ft.getSecondary());
-			flowTarget.setSignatureAlgorithm(ft.getSignatureAlgorithm());
-			flowTarget.setSignatureDate(ft.getSignatureDate());
-			flowTarget.setSignatureValue(ft.getSignatureValue());
+			flowTarget.setDestinationSession(ft.getDestinationSession());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void delete(FlowTarget target) {
-		FlowTarget storedTarget = getFlowTargetDao().loadById(target.getId());
+	public void delete(Destination target) {
+		Destination storedTarget = destinationDao.loadById(target.getId());
 		if (storedTarget != null) {
-			getFlowTargetDao().delete(storedTarget);
+			destinationDao.delete(storedTarget);
 		} else {
-			log.warn("Unable to find FlowTarget to delete with id " + target.getId());
+			log.warn("Unable to find Destination to delete with id " + target.getId());
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<FlowTarget> search(Zone zone, FlowTargetSearchCriteria criteria) {
-		return getFlowTargetDao().search(zone, criteria);
+	public List<Destination> search(Zone zone, DestinationSearchCriteria criteria) {
+		return destinationDao.search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public FlowTarget findByTargetService(AgentCredential agent, Service service) {
-		return getFlowTargetDao().loadByTargetService(agent, service);
+	public Destination findByDestination(Address address, Service service) {
+		return destinationDao.loadByDestination(address, service);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public FlowTarget findById(Long id) {
-		return getFlowTargetDao().loadById(id);
+	public Destination findById(Long id) {
+		return destinationDao.loadById(id);
 	}
 
 	// -------------------------------------------------------------------------
@@ -143,12 +126,12 @@ public class FlowTargetServiceRepositoryImpl implements FlowTargetService {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public FlowTargetDao getFlowTargetDao() {
-		return flowTargetDao;
+	public DestinationDao getDestinationDao() {
+		return destinationDao;
 	}
 
-	public void setFlowTargetDao(FlowTargetDao flowTargetDao) {
-		this.flowTargetDao = flowTargetDao;
+	public void setDestinationDao(DestinationDao destinationDao) {
+		this.destinationDao = destinationDao;
 	}
 
 }

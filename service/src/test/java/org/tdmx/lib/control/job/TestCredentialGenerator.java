@@ -71,8 +71,10 @@ public class TestCredentialGenerator {
 		return req;
 	}
 
-	public static PKIXCredential createZAC(String zoneApex, int validForYears) throws CryptoCertificateException {
+	public static PKIXCredential createZAC(String zoneApex, int validForYears, int serialNumber)
+			throws CryptoCertificateException {
 		ZoneAdministrationCredentialSpecifier req = createZACS(1, zoneApex, getNow(), getNowPlusYears(validForYears));
+		req.setSerialNumber(serialNumber);
 		return CredentialUtils.createZoneAdministratorCredential(req);
 	}
 
@@ -87,11 +89,11 @@ public class TestCredentialGenerator {
 		return req;
 	}
 
-	public static PKIXCredential createDAC(PKIXCredential zac, String subdomainName, int validForYears)
+	public static PKIXCredential createDAC(PKIXCredential zac, String subdomainName, int validForYears, int serialNumber)
 			throws CryptoCertificateException {
 		DomainAdministrationCredentialSpecifier req = createDACS(zac, subdomainName, getNow(),
 				getNowPlusYears(validForYears));
-
+		req.setSerialNumber(serialNumber);
 		return CredentialUtils.createDomainAdministratorCredential(req);
 	}
 
@@ -106,9 +108,10 @@ public class TestCredentialGenerator {
 		return req;
 	}
 
-	public static PKIXCredential createUC(PKIXCredential dac, String localName, int validForYears)
+	public static PKIXCredential createUC(PKIXCredential dac, String localName, int validForYears, int serialNumber)
 			throws CryptoCertificateException {
 		UserCredentialSpecifier req = createUCS(dac, localName, getNow(), getNowPlusYears(validForYears));
+		req.setSerialNumber(serialNumber);
 		PKIXCredential cred = CredentialUtils.createUserCredential(req);
 		return cred;
 	}

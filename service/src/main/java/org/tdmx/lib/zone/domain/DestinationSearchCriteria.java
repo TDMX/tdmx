@@ -21,12 +21,12 @@ package org.tdmx.lib.zone.domain;
 import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * The SearchCriteria for Flows ( part of a ChannelFlowTarget part of a Channel ).
+ * The SearchCriteria for a Destination.
  * 
  * @author Peter Klauser
  * 
  */
-public class ChannelFlowSearchCriteria extends ChannelSearchCriteria {
+public class DestinationSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,21 +36,21 @@ public class ChannelFlowSearchCriteria extends ChannelSearchCriteria {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * The SHA-256 Fingerprint of the Target Agent.
-	 */
-	private String targetFingerprint;
+	private final PageSpecifier pageSpecifier;
 
 	/**
-	 * The SHA-256 Fingerprint of the Source Agent.
+	 * Specify the each individual field of of the ChannelDestination to search for.
 	 */
-	private String sourceFingerprint;
+	private final ChannelDestination destination = new ChannelDestination();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ChannelFlowSearchCriteria(PageSpecifier pageSpecifier) {
-		super(pageSpecifier);
+	public DestinationSearchCriteria(PageSpecifier pageSpecifier) {
+		if (pageSpecifier == null) {
+			throw new IllegalArgumentException("Missing pageSpecifier");
+		}
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
@@ -68,21 +68,12 @@ public class ChannelFlowSearchCriteria extends ChannelSearchCriteria {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getTargetFingerprint() {
-		return targetFingerprint;
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
-	public void setTargetFingerprint(String targetFingerprint) {
-		this.targetFingerprint = targetFingerprint;
-	}
-
-	public String getSourceFingerprint() {
-		return sourceFingerprint;
-	}
-
-	public void setSourceFingerprint(String sourceFingerprint) {
-		this.sourceFingerprint = sourceFingerprint;
+	public ChannelDestination getDestination() {
+		return destination;
 	}
 
 }

@@ -19,23 +19,19 @@
 package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QAddress.address;
-import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
+import static org.tdmx.lib.zone.domain.QDestination.destination;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
-import static org.tdmx.lib.zone.domain.QFlowTarget.flowTarget;
-import static org.tdmx.lib.zone.domain.QFlowTargetConcurrency.flowTargetConcurrency;
 import static org.tdmx.lib.zone.domain.QService.service;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -43,7 +39,7 @@ import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.expr.BooleanExpression;
 
-public class FlowTargetDaoImpl implements FlowTargetDao {
+public class DestinationDaoImpl implements DestinationDao {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -64,80 +60,62 @@ public class FlowTargetDaoImpl implements FlowTargetDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void persist(FlowTarget value) {
+	public void persist(Destination value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(FlowTarget value) {
+	public void delete(Destination value) {
 		em.remove(value);
 	}
 
 	@Override
-	public FlowTargetConcurrency lock(Long concurrencyId) {
-		return new JPAQuery(em).setLockMode(LockModeType.PESSIMISTIC_WRITE).from(flowTargetConcurrency)
-				.where(flowTargetConcurrency.id.eq(concurrencyId)).uniqueResult(flowTargetConcurrency);
-	}
-
-	@Override
-	public FlowTarget merge(FlowTarget value) {
+	public Destination merge(Destination value) {
 		return em.merge(value);
 	}
 
 	@Override
-	public FlowTarget loadById(Long id) {
-		return new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch().where(flowTarget.id.eq(id))
-				.uniqueResult(flowTarget);
+	public Destination loadById(Long id) {
+		return new JPAQuery(em).from(destination).where(destination.id.eq(id)).uniqueResult(destination);
 	}
 
 	@Override
-	public FlowTarget loadByTargetService(AgentCredential agent, Service s) {
-		if (agent == null) {
-			throw new IllegalArgumentException("missing agent");
+	public Destination loadByDestination(Address a, Service s) {
+		if (a == null) {
+			throw new IllegalArgumentException("missing address");
 		}
 		if (s == null) {
 			throw new IllegalArgumentException("missing service");
 		}
-		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
-				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(flowTarget.service, service).fetch()
-				.where(agentCredential.eq(agent).and(service.eq(s)));
-		return query.uniqueResult(flowTarget);
+		JPAQuery query = new JPAQuery(em).from(destination).innerJoin(destination.target, address).fetch()
+				.innerJoin(destination.service, service).fetch().where(address.eq(a).and(service.eq(s)));
+		return query.uniqueResult(destination);
 	}
 
 	@Override
-	public List<FlowTarget> search(Zone zone, FlowTargetSearchCriteria criteria) {
+	public List<Destination> search(Zone zone, DestinationSearchCriteria criteria) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(flowTarget).innerJoin(flowTarget.concurrency).fetch()
-				.innerJoin(flowTarget.target, agentCredential).fetch().innerJoin(agentCredential.address, address)
-				.fetch().innerJoin(address.domain, domain).fetch().innerJoin(flowTarget.service, service).fetch();
+		JPAQuery query = new JPAQuery(em).from(destination).innerJoin(destination.target, address).fetch()
+				.innerJoin(address.domain, domain).fetch().innerJoin(destination.service, service).fetch();
 
-		BooleanExpression where = flowTarget.target.zone.eq(zone);
+		BooleanExpression where = domain.zone.eq(zone);
 
-		if (criteria.getTarget().getAgent() != null) {
-			where = where.and(agentCredential.eq(criteria.getTarget().getAgent()));
+		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+			where = where.and(address.localName.eq(criteria.getDestination().getLocalName()));
 		}
-		if (StringUtils.hasText(criteria.getTarget().getAddressName())) {
-			where = where.and(address.localName.eq(criteria.getTarget().getAddressName()));
+		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+			where = where.and(domain.domainName.eq(criteria.getDestination().getDomainName()));
 		}
-		if (StringUtils.hasText(criteria.getTarget().getDomainName())) {
-			where = where.and(domain.domainName.eq(criteria.getTarget().getDomainName()));
-		}
-		if (criteria.getTarget().getStatus() != null) {
-			where = where.and(agentCredential.credentialStatus.eq(criteria.getTarget().getStatus()));
-		}
-		if (StringUtils.hasText(criteria.getServiceName())) {
-			where = where.and(service.serviceName.eq(criteria.getServiceName()));
-		}
-		if (criteria.getService() != null) {
-			where = where.and(service.eq(criteria.getService()));
+		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+			where = where.and(service.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));
-		return query.list(flowTarget);
+		return query.list(destination);
 	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

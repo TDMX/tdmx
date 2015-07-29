@@ -21,14 +21,9 @@ package org.tdmx.lib.zone.dao;
 import java.util.List;
 
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTarget;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
@@ -49,19 +44,11 @@ public interface ChannelDao {
 
 	public void delete(Channel value);
 
-	public void delete(ChannelFlowTarget value);
-
-	public void delete(ChannelFlowOrigin value);
-
 	public void delete(ChannelFlowMessage value);
 
 	public FlowQuota lock(Long quotaId);
 
 	public Channel loadById(Long id);
-
-	public ChannelFlowTarget loadChannelFlowTargetById(Long id);
-
-	public ChannelFlowOrigin loadChannelFlowOriginById(Long id);
 
 	/**
 	 * Fetch the ChannelFlowMessage ( no fetch plan ) by messageId.
@@ -79,10 +66,10 @@ public interface ChannelDao {
 	 * @param criteria
 	 * @return
 	 */
-	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
+	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
 	/**
-	 * Search for Channels. No FetchPlan.
+	 * Search for Channels. No FetchPlan. //TODO FetchPlan includes ChannelAuthorization, Domain.
 	 * 
 	 * @param zone
 	 * @param criteria
@@ -91,25 +78,7 @@ public interface ChannelDao {
 	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
 
 	/**
-	 * Search for ChannelFlowTargets. FetchPlan includes Channel, Domain.
-	 * 
-	 * @param zone
-	 * @param criteria
-	 * @return
-	 */
-	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
-
-	/**
-	 * Search for ChannelFlowOrigins. FetchPlan includes ChannelFlowTarget, Channel, Domain.
-	 * 
-	 * @param zone
-	 * @param criteria
-	 * @return
-	 */
-	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
-
-	/**
-	 * Search for ChannelFlowMessages. FetchPlan includes ChannelFlowOrigin, Channel, Domain.
+	 * Search for ChannelFlowMessages. FetchPlan includes Channel, Domain.
 	 * 
 	 * @param zone
 	 * @param criteria

@@ -46,7 +46,8 @@ public class MessageDescriptor implements Serializable {
 	private String txId;
 	private Date sentTimestamp;
 	private Date ttlTimestamp;
-	private String flowSessionId;
+	private String encryptionContextId;
+
 	private String payloadSignature;
 	private String externalReference;
 	private String headerSignature;
@@ -54,7 +55,7 @@ public class MessageDescriptor implements Serializable {
 	// -------------------------------------------------------------------------
 	// PAYLOAD FIELDS
 	// -------------------------------------------------------------------------
-	private int chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
+	private long chunkSize; // chunkSize in Bytes
 	private long payloadLength; // total encrypted length = SUM length chunks
 	private byte[] encryptionContext; // sender input to encryption scheme
 	private long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
@@ -128,14 +129,6 @@ public class MessageDescriptor implements Serializable {
 		this.ttlTimestamp = ttlTimestamp;
 	}
 
-	public String getFlowSessionId() {
-		return flowSessionId;
-	}
-
-	public void setFlowSessionId(String flowSessionId) {
-		this.flowSessionId = flowSessionId;
-	}
-
 	public String getPayloadSignature() {
 		return payloadSignature;
 	}
@@ -152,6 +145,14 @@ public class MessageDescriptor implements Serializable {
 		this.externalReference = externalReference;
 	}
 
+	public String getEncryptionContextId() {
+		return encryptionContextId;
+	}
+
+	public void setEncryptionContextId(String encryptionContextId) {
+		this.encryptionContextId = encryptionContextId;
+	}
+
 	public String getHeaderSignature() {
 		return headerSignature;
 	}
@@ -160,12 +161,12 @@ public class MessageDescriptor implements Serializable {
 		this.headerSignature = headerSignature;
 	}
 
-	public int getChunkSizeFactor() {
-		return chunkSizeFactor;
+	public long getChunkSize() {
+		return chunkSize;
 	}
 
-	public void setChunkSizeFactor(int chunkSizeFactor) {
-		this.chunkSizeFactor = chunkSizeFactor;
+	public void setChunkSize(long chunkSize) {
+		this.chunkSize = chunkSize;
 	}
 
 	public long getPayloadLength() {

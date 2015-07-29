@@ -34,8 +34,8 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
 /**
- * An FlowQuota is separated as it's own instance from the ChannelFlowOrigin so that it can be updated with a higher
- * frequency without incurring the penalty of the data of the ChannelFlowOrigin not changing fast.
+ * An FlowQuota is separated as it's own instance from the Channel so that it can be updated with a higher frequency
+ * without incurring the penalty of the data of the Channel not changing fast.
  * 
  * @author Peter Klauser
  * 
@@ -55,11 +55,11 @@ public class FlowQuota implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowQuotaIdGen")
-	@TableGenerator(name = "FlowQuotaIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "FlowQuotaIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "quota")
-	private ChannelFlowOrigin flow;
+	private Channel channel;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
@@ -82,12 +82,20 @@ public class FlowQuota implements Serializable {
 	FlowQuota() {
 	}
 
-	public FlowQuota(ChannelFlowOrigin flow) {
-		setFlow(flow);
+	public FlowQuota(Channel channel) {
+		setChannel(channel);
 		setUndeliveredBytes(BigInteger.ZERO);
 		setUnsentBytes(BigInteger.ZERO);
 		setSenderStatus(FlowControlStatus.OPEN);
 		setReceiverStatus(FlowControlStatus.OPEN);
+	}
+
+	public FlowQuota(Channel channel, FlowQuota other) {
+		setChannel(channel);
+		setUndeliveredBytes(other.getUndeliveredBytes());
+		setUnsentBytes(other.getUnsentBytes());
+		setSenderStatus(other.getSenderStatus());
+		setReceiverStatus(other.getReceiverStatus());
 	}
 
 	// -------------------------------------------------------------------------
@@ -115,8 +123,8 @@ public class FlowQuota implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setFlow(ChannelFlowOrigin flow) {
-		this.flow = flow;
+	private void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	// -------------------------------------------------------------------------
@@ -161,10 +169,6 @@ public class FlowQuota implements Serializable {
 
 	public void setReceiverStatus(FlowControlStatus receiverStatus) {
 		this.receiverStatus = receiverStatus;
-	}
-
-	public ChannelFlowOrigin getFlow() {
-		return flow;
 	}
 
 }

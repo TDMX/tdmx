@@ -44,18 +44,9 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
-import org.tdmx.core.api.v01.mds.GetFlowTarget;
-import org.tdmx.core.api.v01.mds.GetFlowTargetResponse;
-import org.tdmx.core.api.v01.mds.ListChannelAuthorization;
-import org.tdmx.core.api.v01.mds.ListChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.mds.ListFlow;
-import org.tdmx.core.api.v01.mds.ListFlowResponse;
-import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
-import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
+import org.tdmx.core.api.v01.mds.ListChannel;
+import org.tdmx.core.api.v01.mds.ListChannelResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
-import org.tdmx.core.api.v01.msg.Flowsession;
-import org.tdmx.core.api.v01.msg.Flowtarget;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -67,14 +58,14 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -110,7 +101,7 @@ public class MDSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private FlowTargetService flowTargetService;
+	private DestinationService flowTargetService;
 
 	@Autowired
 	private MDS mds;
@@ -195,7 +186,7 @@ public class MDSImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		ListChannelAuthorization req = new ListChannelAuthorization();
+		ListChannel req = new ListChannel();
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -205,33 +196,11 @@ public class MDSImplUnitTest {
 		req.setServicename(service.getServiceName());
 		// TODO test without svc name fails
 
-		ListChannelAuthorizationResponse response = mds.listChannelAuthorization(req);
+		ListChannelResponse response = mds.listChannel(req);
 		assertSuccess(response);
 
 		// TODO others
-		assertEquals(1, response.getChannelauthorizations().size());
-	}
-
-	@Test
-	public void testListFlow_All() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		ListFlow req = new ListFlow();
-
-		Page p = new Page();
-		p.setNumber(0);
-		p.setSize(10);
-		req.setPage(p);
-
-		req.setPage(p);
-		req.setServicename(service.getServiceName());
-
-		ListFlowResponse response = mds.listFlow(req);
-		assertSuccess(response);
-
-		// TODO others
-		assertEquals(1, response.getFlows().size());
+		assertEquals(1, response.getChannelflows().size());
 	}
 
 	@Test
@@ -271,11 +240,11 @@ public class MDSImplUnitTest {
 		// tamper with signature doesn't work
 		fts.getSignaturevalue().setSignature("gugus");
 		response = mds.setFlowTargetSession(req);
-		assertError(ErrorCode.InvalidSignatureFlowTargetSession, response);
+		assertError(ErrorCode.InvalidSignatureDestinationSession, response);
 
 		// check that the channelflowtargets are set
 		boolean more = true;
-		// fetch ALL Channels which have this FlowTarget as Destination.
+		// fetch ALL Channels which have this Destination as Destination.
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(pageNo, 5));
 			sc.setDomain(domain);
@@ -312,12 +281,12 @@ public class MDSImplUnitTest {
 	}
 
 	private void removeFlowTargets(Domain domain) {
-		// delete any FlowTarget on the domain
-		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+		// delete any Destination on the domain
+		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
-		for (FlowTarget ft : ftlist) {
+		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		for (Destination ft : ftlist) {
 			flowTargetService.delete(ft);
 		}
 	}

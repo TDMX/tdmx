@@ -53,7 +53,7 @@ public class Account implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountIdGen")
-	@TableGenerator(name = "AccountIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "AccountIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = MAX_ACCOUNTID_LEN, nullable = false, unique = true)

@@ -33,8 +33,6 @@ import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.FlowDestinationFilter;
-import org.tdmx.core.api.v01.msg.FlowEndpointFilter;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -67,23 +65,17 @@ import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
-import org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.ModifyIpZone;
 import org.tdmx.core.api.v01.zas.ModifyIpZoneResponse;
-import org.tdmx.core.api.v01.zas.ModifyService;
-import org.tdmx.core.api.v01.zas.ModifyServiceResponse;
 import org.tdmx.core.api.v01.zas.ModifyUser;
 import org.tdmx.core.api.v01.zas.ModifyUserResponse;
 import org.tdmx.core.api.v01.zas.SearchAddress;
 import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.zas.SearchAdministratorResponse;
-import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
-import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.zas.SearchChannelResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
-import org.tdmx.core.api.v01.zas.SearchFlowResponse;
-import org.tdmx.core.api.v01.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.SearchIpZone;
 import org.tdmx.core.api.v01.zas.SearchIpZoneResponse;
 import org.tdmx.core.api.v01.zas.SearchService;
@@ -104,15 +96,10 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTarget;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -122,9 +109,8 @@ import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationOperationStatus;
 import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationResultHolder;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
-import org.tdmx.lib.zone.service.FlowTargetService.ModifyOperationStatus;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
@@ -148,7 +134,7 @@ public class ZASImpl implements ZAS {
 	private AddressService addressService;
 	private ServiceService serviceService;
 	private ChannelService channelService;
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
@@ -620,63 +606,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// delete any FlowTargets for any service
-		boolean moreFT = true;
-		while (moreFT) {
-			FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
-			casc.getTarget().setAgent(existingCred);
-
-			List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
-			for (FlowTarget ft : flowTargets) {
-				flowTargetService.delete(ft);
-			}
-			if (flowTargets.isEmpty()) {
-				moreFT = false;
-			}
-		}
-
 		// delete the UC
 		credentialService.delete(existingCred);
-
-		// delete any remaining Flows ( originating ) with this agent.
-		// we can do this AFTER the credential is removed since the ChannelFlowOrigin is not constrained to link to the
-		// AgentCredential of the UC being deleted.
-		boolean moreCFO = true;
-		while (moreCFO) {
-			ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, getBatchSize()));
-			sc.setDomain(existingCred.getDomain());
-			sc.setSourceFingerprint(existingCred.getFingerprint());
-
-			List<ChannelFlowOrigin> channelFlows = channelService.search(zone, sc);
-			for (ChannelFlowOrigin cfo : channelFlows) {
-				channelService.delete(cfo);
-			}
-			if (channelFlows.isEmpty()) {
-				moreCFO = false;
-			}
-		}
-
-		// ChannelFlowTargets (incl their Flows) which relate to the Agent should be deleted too, for any Service
-		// we can do this AFTER the credential is removed since the ChannelFlowTarget is not constrained to link to the
-		// FlowTarget.
-		boolean moreCFT = true;
-		while (moreCFT) {
-			ChannelFlowTargetSearchCriteria sc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0,
-					getBatchSize()));
-			sc.setDomain(existingCred.getDomain());
-			sc.setTargetFingerprint(existingCred.getFingerprint());
-
-			List<ChannelFlowTarget> channelFlowTargets = channelService.search(zone, sc);
-			for (ChannelFlowTarget cft : channelFlowTargets) {
-				channelService.delete(cft);
-			}
-			if (channelFlowTargets.isEmpty()) {
-				moreCFT = false;
-			}
-		}
-		// On message relay in, if the CFT doesn't exist, the sending SP will get a specific error message and can fail
-		// the message transfer, put the flow into a flowcontrolled/blocked state, and after all message delivery
-		// reports have been consumed or time-out, can be removed.
 
 		response.setSuccess(true);
 		return response;
@@ -689,43 +620,6 @@ public class ZASImpl implements ZAS {
 			@WebParam(partName = "parameters", name = "modifyIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyIpZone parameters) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	@WebResult(name = "modifyServiceResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyService")
-	public ModifyServiceResponse modifyService(
-			@WebParam(partName = "parameters", name = "modifyService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyService parameters) {
-		ModifyServiceResponse response = new ModifyServiceResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		Zone zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
-		if (zone == null) {
-			return response;
-		}
-
-		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
-		if (domain == null) {
-			setError(ErrorCode.DomainNotFound, response);
-			return response;
-		}
-		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(domain,
-				parameters.getService().getServicename());
-		if (existingService == null) {
-			setError(ErrorCode.ServiceNotFound, response);
-			return response;
-		}
-		existingService.setConcurrencyLimit(parameters.getConcurrencyLimit());
-
-		// update the existing service
-		serviceService.createOrUpdate(existingService);
-
-		response.setSuccess(true);
-		return response;
 	}
 
 	@Override
@@ -819,6 +713,8 @@ public class ZASImpl implements ZAS {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
 
+		// TODO serialNumber > existing User creds serialNumber on the Address
+
 		// create the DAC
 		credentialService.createOrUpdate(newCred);
 
@@ -855,9 +751,8 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// prohibit deleteService change if we have ChannelAuthorizations, which would get rid of
-		// ChannelFlowTargets and Flows
-		ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(0, 1));
+		// prohibit deleteService change if we have ChannelAuthorizations
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomain(domain);
 		sc.getDestination().setServiceName(existingService.getServiceName());
 		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
@@ -866,17 +761,19 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		// delete any FlowTargets
+		// delete any Destinations
 		boolean moreFT = true;
 		while (moreFT) {
-			FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
-			casc.setService(existingService);
+			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.getDestination().setServiceName(existingService.getServiceName());
+			// setService obj TODO
+			// setAddress obj TODO
 
-			List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
-			for (FlowTarget ft : flowTargets) {
-				flowTargetService.delete(ft);
+			List<Destination> destinations = destinationService.search(zone, casc);
+			for (Destination d : destinations) {
+				destinationService.delete(d);
 			}
-			if (flowTargets.isEmpty()) {
+			if (destinations.isEmpty()) {
 				moreFT = false;
 			}
 		}
@@ -919,7 +816,7 @@ public class ZASImpl implements ZAS {
 		sc.setServiceName(parameters.getFilter().getServicename());
 		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
-			response.getServicestates().add(d2a.mapService(s));
+			response.getServices().add(d2a.mapService(s));
 		}
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
@@ -960,6 +857,23 @@ public class ZASImpl implements ZAS {
 		if (a == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
+		}
+
+		// delete any Destinations for any service
+		boolean moreFT = true;
+		while (moreFT) {
+			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.getDestination().setDomainName(a.getDomain().getDomainName());
+			casc.getDestination().setLocalName(a.getLocalName());
+			// TODO by search by Address
+
+			List<Destination> destinations = destinationService.search(zone, casc);
+			for (Destination d : destinations) {
+				destinationService.delete(d);
+			}
+			if (destinations.isEmpty()) {
+				moreFT = false;
+			}
 		}
 
 		// delete the address
@@ -1160,79 +1074,12 @@ public class ZASImpl implements ZAS {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
 
+		// TODO serialNumber > existing User creds serialNumber on the Address
+
 		// create the UC
 		credentialService.createOrUpdate(newCred);
 
-		// if the User's address matches an origin of some channel, then create Flows accordingly.
-		boolean more = true;
-		for (int pageNo = 0; more; pageNo++) {
-			ChannelFlowTargetSearchCriteria cftsc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
-			cftsc.setDomain(newCred.getDomain());
-			cftsc.getOrigin().setLocalName(newCred.getAddress().getLocalName());
-			cftsc.getOrigin().setDomainName(newCred.getDomain().getDomainName());
-			// sc.getOrigin().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
-
-			List<ChannelFlowTarget> originatingFlowTargets = channelService.search(zone, cftsc);
-			for (ChannelFlowTarget channelFlowTarget : originatingFlowTargets) {
-				channelService.createChannelFlowOrigin(zone, channelFlowTarget.getId(), newCred);
-			}
-			if (originatingFlowTargets.isEmpty()) {
-				more = false;
-			}
-		}
-
 		response.setSuccess(true);
-		return response;
-	}
-
-	@Override
-	@WebResult(name = "searchChannelAuthorizationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchChannelAuthorization")
-	public SearchChannelAuthorizationResponse searchChannelAuthorization(
-			@WebParam(partName = "parameters", name = "searchChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchChannelAuthorization parameters) {
-		SearchChannelAuthorizationResponse response = new SearchChannelAuthorizationResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
-
-		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
-				a2d.mapPage(parameters.getPage()));
-		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
-			// we fix the search to search only the DAC's domain.
-			parameters.getFilter().setDomain(authorizedUser.getCommonName());
-		}
-		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
-			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
-				return response;
-			}
-			sc.setDomainName(parameters.getFilter().getDomain());
-		}
-		if (parameters.getFilter().getOrigin() != null) {
-			sc.getOrigin().setDomainName(parameters.getFilter().getOrigin().getDomain());
-			sc.getOrigin().setLocalName(parameters.getFilter().getOrigin().getLocalname());
-			sc.getOrigin().setServiceProvider(parameters.getFilter().getOrigin().getServiceprovider());
-		}
-		if (parameters.getFilter().getDestination() != null) {
-			sc.getDestination().setDomainName(parameters.getFilter().getDestination().getDomain());
-			sc.getDestination().setLocalName(parameters.getFilter().getDestination().getLocalname());
-			sc.getDestination().setServiceProvider(parameters.getFilter().getDestination().getServiceprovider());
-			sc.getDestination().setServiceName(parameters.getFilter().getDestination().getServicename());
-		}
-		sc.setUnconfirmed(parameters.getFilter().isUnconfirmedFlag()); // TODO test
-		List<org.tdmx.lib.zone.domain.ChannelAuthorization> channelAuthorizations = channelService.search(zone, sc);
-		for (org.tdmx.lib.zone.domain.ChannelAuthorization ca : channelAuthorizations) {
-			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(ca));
-		}
-		response.setSuccess(true);
-		response.setPage(parameters.getPage());
 		return response;
 	}
 
@@ -1266,7 +1113,6 @@ public class ZASImpl implements ZAS {
 		// create the service
 		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(domain, parameters.getService()
 				.getServicename());
-		s.setConcurrencyLimit(parameters.getConcurrencyLimit());
 
 		getServiceService().createOrUpdate(s);
 		response.setSuccess(true);
@@ -1316,12 +1162,12 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchFlowResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlow")
-	public org.tdmx.core.api.v01.zas.SearchFlowResponse searchFlow(
-			@WebParam(partName = "parameters", name = "searchFlow", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.SearchFlow parameters) {
+	@WebResult(name = "searchChannelResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
+	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchChannel")
+	public org.tdmx.core.api.v01.zas.SearchChannelResponse searchChannel(
+			@WebParam(partName = "parameters", name = "searchChannel", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.SearchChannel parameters) {
 
-		SearchFlowResponse response = new SearchFlowResponse();
+		SearchChannelResponse response = new SearchChannelResponse();
 		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
@@ -1332,185 +1178,32 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(a2d.mapPage(parameters.getPage()));
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+				a2d.mapPage(parameters.getPage()));
 		if (authorizedUser.isTdmxDomainAdminCertificate()) {
 			// we fix the search to search only the DAC's domain.
 			sc.setDomainName(authorizedUser.getCommonName());
 		}
-		if (parameters.getFilter().getSource() != null) {
-			FlowEndpointFilter src = parameters.getFilter().getSource();
-			if (StringUtils.hasText(src.getLocalname())) {
-				sc.getOrigin().setLocalName(src.getLocalname());
-			}
-			if (StringUtils.hasText(src.getDomain())) {
-				sc.getOrigin().setDomainName(src.getDomain());
-			}
-			if (StringUtils.hasText(src.getServiceprovider())) {
-				sc.getOrigin().setServiceProvider(src.getServiceprovider());
-			}
-			if (src.getUserIdentity() != null) {
-				// if a user credential is provided then it't not so much a search as a lookup
-
-				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(src.getUserIdentity()
-						.getUsercertificate(), src.getUserIdentity().getDomaincertificate(), src.getUserIdentity()
-						.getRootcertificate());
-				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-					setError(ErrorCode.InvalidUserCredentials, response);
-					return response;
-				}
-				sc.setSourceFingerprint(uc.getFingerprint());
-			}
+		if (parameters.getFilter().getOrigin() != null) {
+			sc.getOrigin().setDomainName(parameters.getFilter().getOrigin().getDomain());
+			sc.getOrigin().setLocalName(parameters.getFilter().getOrigin().getLocalname());
 		}
-		if (parameters.getFilter().getTarget() != null) {
-			FlowDestinationFilter trg = parameters.getFilter().getTarget();
-			if (StringUtils.hasText(trg.getLocalname())) {
-				sc.getDestination().setLocalName(trg.getLocalname());
-			}
-			if (StringUtils.hasText(trg.getDomain())) {
-				sc.getDestination().setDomainName(trg.getDomain());
-			}
-			if (StringUtils.hasText(trg.getServicename())) {
-				sc.getDestination().setServiceName(trg.getServicename());
-			}
-			if (StringUtils.hasText(trg.getServiceprovider())) {
-				sc.getDestination().setServiceProvider(trg.getServiceprovider());
-			}
-			if (trg.getUserIdentity() != null) {
-				// if a user credential is provided then it't not so much a search as a lookup
-
-				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(trg.getUserIdentity()
-						.getUsercertificate(), trg.getUserIdentity().getDomaincertificate(), trg.getUserIdentity()
-						.getRootcertificate());
-				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-					setError(ErrorCode.InvalidUserCredentials, response);
-					return response;
-				}
-				sc.setTargetFingerprint(uc.getFingerprint());
-			}
-
+		if (parameters.getFilter().getDestination() != null) {
+			sc.getDestination().setDomainName(parameters.getFilter().getDestination().getDomain());
+			sc.getDestination().setLocalName(parameters.getFilter().getDestination().getLocalname());
+			sc.getDestination().setServiceName(parameters.getFilter().getDestination().getServicename());
+		}
+		if (parameters.getFilter().isUnconfirmedFlag() != null) {
+			sc.setUnconfirmed(parameters.getFilter().isUnconfirmedFlag());
 		}
 
-		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
-		for (ChannelFlowOrigin flow : flows) {
-			response.getFlows().add(d2a.mapFlow(flow));
+		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
+		for (org.tdmx.lib.zone.domain.Channel c : channels) {
+			response.getChannelinfos().add(d2a.mapChannelInfo(c));
 		}
 
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
-		return response;
-	}
-
-	@Override
-	@WebResult(name = "searchFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTarget")
-	public org.tdmx.core.api.v01.zas.SearchFlowTargetResponse searchFlowTarget(
-			@WebParam(partName = "parameters", name = "searchFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.SearchFlowTarget parameters) {
-
-		SearchFlowTargetResponse response = new SearchFlowTargetResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
-
-		FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(a2d.mapPage(parameters.getPage()));
-		if (authorizedUser.isTdmxDomainAdminCertificate() && !StringUtils.hasText(parameters.getFilter().getDomain())) {
-			// we fix the search to search only the DAC's domain.
-			parameters.getFilter().setDomain(authorizedUser.getCommonName());
-		}
-		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
-			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
-				return response;
-			}
-			sc.getTarget().setDomainName(parameters.getFilter().getDomain());
-		}
-		if (parameters.getFilter().getUserIdentity() != null) {
-			// if a user credential is provided then it't not so much a search as a lookup
-
-			AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFilter()
-					.getUserIdentity().getUsercertificate(), parameters.getFilter().getUserIdentity()
-					.getDomaincertificate(), parameters.getFilter().getUserIdentity().getRootcertificate());
-			if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-				setError(ErrorCode.InvalidUserCredentials, response);
-				return response;
-			}
-			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
-				return response;
-			}
-			AgentCredential specificUser = credentialService.findByFingerprint(uc.getFingerprint());
-			if (specificUser != null) {
-				sc.getTarget().setAgent(specificUser);
-			}
-		}
-		sc.getTarget().setAddressName(parameters.getFilter().getLocalname());
-		if (parameters.getFilter().getStatus() != null) {
-			sc.getTarget().setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
-		}
-		sc.setServiceName(parameters.getFilter().getServicename());
-
-		List<FlowTarget> flowtargets = flowTargetService.search(zone, sc);
-		for (FlowTarget ft : flowtargets) {
-			response.getFlowtargets().add(d2a.mapFlowTarget(ft));
-		}
-
-		response.setSuccess(true);
-		response.setPage(parameters.getPage());
-		return response;
-	}
-
-	@Override
-	@WebResult(name = "modifyFlowTargetResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget")
-	public org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse modifyFlowTarget(
-			@WebParam(partName = "parameters", name = "modifyFlowTarget", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.ModifyFlowTarget parameters) {
-		ModifyFlowTargetResponse response = new ModifyFlowTargetResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFlowdestination()
-				.getTarget().getUsercertificate(), parameters.getFlowdestination().getTarget().getDomaincertificate(),
-				parameters.getFlowdestination().getTarget().getRootcertificate());
-		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
-			return response;
-		}
-
-		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
-		if (zone == null) {
-			return response;
-		}
-
-		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
-		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
-			return response;
-		}
-
-		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingCred.getDomain(),
-				parameters.getFlowdestination().getServicename());
-		if (existingService == null) {
-			setError(ErrorCode.ServiceNotFound, response);
-			return response;
-		}
-
-		ModifyOperationStatus status = flowTargetService.modifyConcurrency(existingCred, existingService,
-				parameters.getConcurrencyLimit());
-		if (ModifyOperationStatus.SUCCESS != status) {
-			setError(mapModifyConcurrencyOperationStatus(status), response);
-			return response;
-		}
-
-		response.setSuccess(true);
 		return response;
 	}
 
@@ -1640,15 +1333,6 @@ public class ZASImpl implements ZAS {
 		ack.setSuccess(false);
 	}
 
-	private ErrorCode mapModifyConcurrencyOperationStatus(ModifyOperationStatus status) {
-		switch (status) {
-		case FLOWTARGET_NOT_FOUND:
-			return ErrorCode.FlowTargetNotFound;
-		default:
-			return null;
-		}
-	}
-
 	private ErrorCode mapSetAuthorizationOperationStatus(SetAuthorizationOperationStatus status) {
 		switch (status) {
 		case RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH:
@@ -1738,12 +1422,12 @@ public class ZASImpl implements ZAS {
 		this.channelService = channelService;
 	}
 
-	public FlowTargetService getFlowTargetService() {
-		return flowTargetService;
+	public DestinationService getDestinationService() {
+		return destinationService;
 	}
 
-	public void setFlowTargetService(FlowTargetService flowTargetService) {
-		this.flowTargetService = flowTargetService;
+	public void setDestinationService(DestinationService destinationService) {
+		this.destinationService = destinationService;
 	}
 
 	public int getBatchSize() {

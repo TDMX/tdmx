@@ -22,11 +22,11 @@
 		<jxb:schemaBindings>
 			<jxb:package name="org.tdmx.core.api.v01.msg" />
 		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
+		<!-- just incase we need to modify enum values in the XML 
+        <jxb:bindings node="xs:simpleType[@name='NameOfSimpleType']">
             <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
+                <jxb:typesafeEnumMember value="090X" name="Z90X" />
+                <jxb:typesafeEnumMember value="0906" name="Z906" />
             </jxb:typesafeEnumClass>
         </jxb:bindings>
         
@@ -37,30 +37,12 @@
 		<jxb:schemaBindings>
 			<jxb:package name="org.tdmx.core.api.v01.tx" />
 		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
 	</jxb:bindings>
 
 	<jxb:bindings schemaLocation="wsdl/common.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
 			<jxb:package name="org.tdmx.core.api.v01.common" />
 		</jxb:schemaBindings>
-		<!-- 
-        <jxb:bindings node="xs:simpleType[@name='PremiumBarringOptionValueType']">
-            <jxb:typesafeEnumClass>
-                <jxb:typesafeEnumMember value="090X" name="ZERO_90X" />
-                <jxb:typesafeEnumMember value="0906" name="ZERO_906" />
-            </jxb:typesafeEnumClass>
-        </jxb:bindings>
-        
-         -->
 	</jxb:bindings>
 
 </jxb:bindings>

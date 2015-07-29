@@ -26,7 +26,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -154,7 +154,7 @@ public class TestDataGeneratorOutput {
 		private final AgentCredential ag;
 		private final PKIXCredential credential;
 
-		private final List<FlowTarget> flowTargets = new ArrayList<>();
+		private final List<Destination> flowTargets = new ArrayList<>();
 
 		public UCHolder(String domainName, String localName, AgentCredential ag, PKIXCredential credential) {
 			this.domainName = domainName;
@@ -179,7 +179,7 @@ public class TestDataGeneratorOutput {
 			return credential;
 		}
 
-		public List<FlowTarget> getFlowTargets() {
+		public List<Destination> getFlowTargets() {
 			return flowTargets;
 		}
 

@@ -30,20 +30,17 @@ import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
-import org.tdmx.core.api.v01.mds.GetFlowTarget;
-import org.tdmx.core.api.v01.mds.GetFlowTargetResponse;
-import org.tdmx.core.api.v01.mds.ListChannelAuthorization;
-import org.tdmx.core.api.v01.mds.ListChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.mds.ListFlow;
-import org.tdmx.core.api.v01.mds.ListFlowResponse;
+import org.tdmx.core.api.v01.mds.GetDestinationSession;
+import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
+import org.tdmx.core.api.v01.mds.ListChannel;
+import org.tdmx.core.api.v01.mds.ListChannelResponse;
 import org.tdmx.core.api.v01.mds.Receive;
 import org.tdmx.core.api.v01.mds.ReceiveResponse;
-import org.tdmx.core.api.v01.mds.SetFlowTargetSession;
-import org.tdmx.core.api.v01.mds.SetFlowTargetSessionResponse;
+import org.tdmx.core.api.v01.mds.SetDestinationSession;
+import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Flowtarget;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
@@ -58,24 +55,17 @@ import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
@@ -100,7 +90,7 @@ public class MDSImpl implements MDS {
 	private AddressService addressService;
 	private ServiceService serviceService;
 	private ChannelService channelService;
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
@@ -138,7 +128,6 @@ public class MDSImpl implements MDS {
 		ChannelEndpoint ep = new ChannelEndpoint();
 		ep.setDomain(existingCred.getDomain().getDomainName());
 		ep.setLocalname(existingCred.getAddress().getLocalName());
-		ep.setServiceprovider("TODO"); // TODO from the zone
 
 		response.setDestination(ep);
 		response.setSuccess(true);
@@ -146,14 +135,8 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public ForgetResponse forget(Forget parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public GetFlowTargetResponse getFlowTarget(GetFlowTarget parameters) {
-		GetFlowTargetResponse response = new GetFlowTargetResponse();
+	public GetDestinationSessionResponse getDestinationSession(GetDestinationSession parameters) {
+		GetDestinationSessionResponse response = new GetDestinationSessionResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
@@ -179,11 +162,11 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		// TODO find by fingerprint and serviceName
-		FlowTarget existingFlowTarget = flowTargetService.findByTargetService(existingCred, existingService);
-		if (existingFlowTarget != null) {
-			Flowtarget ft = d2a.mapFlowTarget(existingFlowTarget);
-			response.setFlowtarget(ft);
+		Destination existingDestination = destinationService.findByDestination(existingCred.getAddress(),
+				existingService);
+		if (existingDestination != null) {
+			Destinationsession ds = d2a.mapDestinationSession(existingDestination.getDestinationSession());
+			response.setDestinationsession(ds);
 		}
 
 		response.setSuccess(true);
@@ -191,56 +174,8 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public ListFlowResponse listFlow(ListFlow parameters) {
-		ListFlowResponse response = new ListFlowResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-		if (!StringUtils.hasText(parameters.getServicename())) {
-			setError(ErrorCode.MissingService, response);
-			return response;
-		}
-		Zone zone = getAgentService().getZone();
-
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(a2d.mapPage(parameters.getPage()));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setTargetFingerprint(authorizedUser.getFingerprint());
-		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
-		sc.getDestination().setServiceName(parameters.getServicename());
-		if (parameters.getOrigin() != null) {
-			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
-			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());
-			sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
-			if (parameters.getOrigin().getUserIdentity() != null) {
-				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getOrigin()
-						.getUserIdentity().getUsercertificate(), parameters.getOrigin().getUserIdentity()
-						.getDomaincertificate(), parameters.getOrigin().getUserIdentity().getRootcertificate());
-				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-					setError(ErrorCode.InvalidUserCredentials, response);
-					return response;
-				}
-				sc.setSourceFingerprint(uc.getFingerprint());
-			}
-		}
-		List<ChannelFlowOrigin> channelFlows = channelService.search(zone, sc);
-		for (ChannelFlowOrigin flow : channelFlows) {
-			response.getFlows().add(d2a.mapFlow(flow));
-		}
-
-		response.setSuccess(true);
-		return response;
-	}
-
-	@Override
-	public PrepareResponse prepare(Prepare parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SetFlowTargetSessionResponse setFlowTargetSession(SetFlowTargetSession parameters) {
-		SetFlowTargetSessionResponse response = new SetFlowTargetSessionResponse();
+	public SetDestinationSessionResponse setDestinationSession(SetDestinationSession parameters) {
+		SetDestinationSessionResponse response = new SetDestinationSessionResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
@@ -266,39 +201,37 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		// validate all FlowTargetSession fields are specified.
-		Flowtargetsession fts = validator.checkFlowtargetsession(parameters.getFlowtargetsession(), response);
-		if (fts == null) {
+		// validate all DestinationSession fields are specified.
+		Destinationsession ds = validator.checkDestinationsession(parameters.getDestinationsession(), response);
+		if (ds == null) {
 			return response;
 		}
 
 		UserIdentity id = d2a.mapUserIdentity(existingCred.getCertificateChain());
 		// check that the FTS signature is ok for the targetagent.
-		if (!SignatureUtils.checkFlowTargetSessionSignature(parameters.getServicename(), id,
-				parameters.getFlowtargetsession())) {
-			setError(ErrorCode.InvalidSignatureFlowTargetSession, response);
+		if (!SignatureUtils.checkFlowTargetSessionSignature(parameters.getServicename(), id, ds)) {
+			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return response;
 		}
 
-		FlowTarget ft = a2d.mapFlowTarget(existingCred, existingService, parameters.getFlowtargetsession());
-		flowTargetService.setSession(ft);
+		Destination d = a2d.mapDestination(existingCred.getAddress(), existingService, ds);
+		destinationService.setSession(d);
 
 		Zone zone = getAgentService().getZone();
 
 		boolean more = true;
-		// fetch ALL Channels which have this FlowTarget as Destination.
+		// fetch ALL Channels which have this Destination as Destination.
 		for (int pageNo = 0; more; pageNo++) {
-			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
+					getBatchSize()));
 			sc.setDomain(existingCred.getDomain());
 			sc.getDestination().setLocalName(existingCred.getAddress().getLocalName());
 			sc.getDestination().setDomainName(existingCred.getDomain().getDomainName());
 			sc.getDestination().setServiceName(existingService.getServiceName());
-			// sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
 
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
-				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
-				channelService.setChannelFlowTarget(zone, channel.getId(), cftd);
+				channelService.setChannelDestinationSession(zone, channel.getId(), d.getDestinationSession());
 			}
 			if (channels.isEmpty()) {
 				more = false;
@@ -322,14 +255,8 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public RollbackResponse rollback(Rollback parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ListChannelAuthorizationResponse listChannelAuthorization(ListChannelAuthorization parameters) {
-		ListChannelAuthorizationResponse response = new ListChannelAuthorizationResponse();
+	public ListChannelResponse listChannel(ListChannel parameters) {
+		ListChannelResponse response = new ListChannelResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
@@ -347,20 +274,36 @@ public class MDSImpl implements MDS {
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
 		sc.getDestination().setLocalName(authorizedUser.getTdmxUserName());
 		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
-		// FIXME SP: sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); // TODO SP
 		sc.getDestination().setServiceName(parameters.getServicename());
 		if (parameters.getOrigin() != null) {
 			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
 			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());
-			// FIXME SP: sc.getOrigin().setServiceProvider(parameters.getOrigin().getServiceprovider());
 		}
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
-		for (ChannelAuthorization channelAuth : channelAuths) {
-			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(channelAuth));
+		List<Channel> channels = channelService.search(zone, sc);
+		for (Channel c : channels) {
+			response.getChannelinfos().add(d2a.mapChannelInfo(c));
 		}
 
 		response.setSuccess(true);
 		return response;
+	}
+
+	@Override
+	public PrepareResponse prepare(Prepare parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ForgetResponse forget(Forget parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RollbackResponse rollback(Rollback parameters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -448,12 +391,12 @@ public class MDSImpl implements MDS {
 		this.channelService = channelService;
 	}
 
-	public FlowTargetService getFlowTargetService() {
-		return flowTargetService;
+	public DestinationService getDestinationService() {
+		return destinationService;
 	}
 
-	public void setFlowTargetService(FlowTargetService flowTargetService) {
-		this.flowTargetService = flowTargetService;
+	public void setDestinationService(DestinationService destinationService) {
+		this.destinationService = destinationService;
 	}
 
 	public AgentCredentialFactory getCredentialFactory() {

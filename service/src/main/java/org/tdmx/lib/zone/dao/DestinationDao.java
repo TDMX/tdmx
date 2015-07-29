@@ -20,32 +20,29 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetConcurrency;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
- * DAO for the FlowTarget Entity.
+ * DAO for the Destination Entity.
  * 
  * @author Peter
  * 
  */
-public interface FlowTargetDao {
+public interface DestinationDao {
 
-	public void persist(FlowTarget value);
+	public void persist(Destination value);
 
-	public void delete(FlowTarget value);
+	public void delete(Destination value);
 
-	public FlowTargetConcurrency lock(Long concurrencyId);
+	public Destination merge(Destination value);
 
-	public FlowTarget merge(FlowTarget value);
+	public Destination loadById(Long id);
 
-	public FlowTarget loadById(Long id);
+	public Destination loadByDestination(Address address, Service service);
 
-	public FlowTarget loadByTargetService(AgentCredential agent, Service service);
-
-	public List<FlowTarget> search(Zone zone, FlowTargetSearchCriteria criteria);
+	public List<Destination> search(Zone zone, DestinationSearchCriteria criteria);
 }

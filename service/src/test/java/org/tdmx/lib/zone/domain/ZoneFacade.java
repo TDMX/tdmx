@@ -25,7 +25,7 @@ import java.util.Date;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.msg.Flowtarget;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
@@ -57,9 +57,8 @@ public class ZoneFacade {
 		return a;
 	}
 
-	public static Service createService(Domain domain, String serviceName, int concurrencyLimit) throws Exception {
+	public static Service createService(Domain domain, String serviceName) throws Exception {
 		Service s = new Service(domain, serviceName);
-		s.setConcurrencyLimit(concurrencyLimit);
 		return s;
 	}
 
@@ -67,34 +66,28 @@ public class ZoneFacade {
 		ChannelOrigin co = new ChannelOrigin();
 		co.setLocalName(localName);
 		co.setDomainName(domainName);
-		co.setServiceProvider(serviceProvider);
 		return co;
 	}
 
-	public static ChannelDestination createChannelDestination(String localName, String domainName, String serviceName,
-			String serviceProvider) {
+	public static ChannelDestination createChannelDestination(String localName, String domainName, String serviceName) {
 		ChannelDestination cd = new ChannelDestination();
 		cd.setLocalName(localName);
 		cd.setDomainName(domainName);
 		cd.setServiceName(serviceName);
-		cd.setServiceProvider(serviceProvider);
 		return cd;
 	}
 
-	public static FlowTarget createFlowTarget(PKIXCredential userCred, AgentCredential userAgent, Service service) {
-		FlowTarget ft = new FlowTarget(userAgent, service);
+	public static Destination createDestination(PKIXCredential userCred, Address address, Service service) {
+		DestinationSession ds = new DestinationSession();
+		ds.setIdentifier("1");
+		ds.setScheme("encryptionscheme");
+		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME
 
-		FlowSession ps = new FlowSession();
-		ps.setIdentifier("1");
-		ps.setScheme("encryptionscheme");
-		ps.setSessionKey(new byte[] { 1, 2, 3 });
-		ps.setValidFrom(new Date());
-		ft.setPrimary(ps);
+		Destinationsession ads = d2a.mapDestinationSession(ds);
+		SignatureUtils.createFlowTargetSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				service.getServiceName(), ads);
 
-		Flowtarget aft = d2a.mapFlowTarget(ft);
-		SignatureUtils.createFlowTargetSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(), aft);
-
-		return a2d.mapFlowTarget(userAgent, service, aft.getFlowtargetsession());
+		return a2d.mapDestination(address, service, ads);
 	}
 
 	// TODO give DAC to be able to construct correct signatures

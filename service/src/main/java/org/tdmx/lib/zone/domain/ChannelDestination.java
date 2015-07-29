@@ -50,9 +50,6 @@ public class ChannelDestination implements Serializable {
 	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
 	private String domainName;
 
-	@Column(length = ChannelOrigin.MAX_URL_LEN, nullable = false)
-	private String serviceProvider;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -72,7 +69,6 @@ public class ChannelDestination implements Serializable {
 		builder.append(" serviceName=").append(serviceName);
 		builder.append(", localName=").append(localName);
 		builder.append(", domainName=").append(domainName);
-		builder.append(", serviceProvider=").append(serviceProvider);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -103,14 +99,6 @@ public class ChannelDestination implements Serializable {
 
 	public void setDomainName(String domainName) {
 		this.domainName = domainName;
-	}
-
-	public String getServiceProvider() {
-		return serviceProvider;
-	}
-
-	public void setServiceProvider(String serviceProvider) {
-		this.serviceProvider = serviceProvider;
 	}
 
 	public String getServiceName() {

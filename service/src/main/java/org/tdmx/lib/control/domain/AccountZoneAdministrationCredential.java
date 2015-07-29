@@ -61,7 +61,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountZoneCredentialIdGen")
-	@TableGenerator(name = "AccountZoneCredentialIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "AccountZoneCredentialIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)

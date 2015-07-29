@@ -55,7 +55,7 @@ public class Chunk implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChunkIdGen")
-	@TableGenerator(name = "ChunkIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "chunkObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ChunkIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "chunkObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	// -------------------------------------------------------------------------

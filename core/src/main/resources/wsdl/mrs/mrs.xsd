@@ -24,13 +24,13 @@
 	<!-- ********************************************* -->
 	<xs:complexType name="relayRequestType">
 		<xs:annotation>
-			<xs:documentation>a container for all relayed data between ServiceProviders.</xs:documentation>
+			<xs:documentation>a container for all relayed data between ServiceProviders. The session is bound to a particular channel.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="correlationID" minOccurs="0"/>
 			<xs:choice>
-				<xs:element ref="msg:authorization" minOccurs="0"/>
-				<xs:element ref="msg:channelflowtarget" minOccurs="0"/>
+				<xs:element ref="msg:permission" minOccurs="0"/>
+				<xs:element ref="msg:destinationsession" minOccurs="0"/>
 				<xs:element ref="msg:msg" minOccurs="0"/>
 				<xs:element ref="msg:chunk" minOccurs="0"/>
 				<xs:element ref="msg:dr" minOccurs="0"/>

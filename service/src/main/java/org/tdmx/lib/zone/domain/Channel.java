@@ -19,7 +19,6 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -39,6 +38,8 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
 import org.tdmx.core.api.v01.zas.ws.ZAS;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
  * An Channel (within a Domain of a Zone) is used as a point to associate a ChannelAuthorization and any
@@ -66,18 +67,9 @@ public class Channel implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO "Relay" Processingstatus, relay to include any existing destination FlowTargetSessions which are valid at
-	// opening time.
-
-	// TODO manage ChannelFlowSessions as cascaded entity.
-
-	// TODO update processing status ChannelService after successful/failed relay of its changed state
-
-	//
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelIdGen")
-	@TableGenerator(name = "ChannelIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ChannelIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -86,17 +78,41 @@ public class Channel implements Serializable {
 	@Embedded
 	@AttributeOverrides({
 			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "originSP", nullable = false)) })
+			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)) })
 	private ChannelOrigin origin;
 
 	@Embedded
 	@AttributeOverrides({
 			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false)),
 			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false)),
-			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)),
-			@AttributeOverride(name = "serviceProvider", column = @Column(name = "destSP", nullable = false)) })
+			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)) })
 	private ChannelDestination destination;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "identifier", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN)),
+			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN)),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN)),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate")),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+	private DestinationSession session;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false)),
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false)),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false)),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode")),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
+	private ProcessingState processingState;
+
+	/**
+	 * The quota association is "owned" ie. managed through this Channel
+	 */
+	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private FlowQuota quota;
 
 	/**
 	 * The authorization owned by this Channel.
@@ -104,8 +120,9 @@ public class Channel implements Serializable {
 	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private ChannelAuthorization authorization;
 
+	// we don't make getters nor setters for CMs because there can be too many, but we do want cascade of deletions
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ChannelFlowTarget> channelFlowTargets;
+	private Set<ChannelFlowMessage> channelFlowMessages;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -118,12 +135,16 @@ public class Channel implements Serializable {
 		setDomain(domain);
 		setOrigin(origin);
 		setDestination(destination);
+		setQuota(new FlowQuota(this));
+		setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 	}
 
 	public Channel(Domain domain, Channel other) {
 		setDomain(domain);
 		setOrigin(other.getOrigin());
 		setDestination(other.getDestination());
+		setQuota(new FlowQuota(this, other.getQuota()));
+		setProcessingState(other.getProcessingState());
 	}
 
 	// -------------------------------------------------------------------------
@@ -152,6 +173,8 @@ public class Channel implements Serializable {
 		builder.append(id);
 		builder.append(" origin=").append(origin);
 		builder.append(", destination=").append(destination);
+		builder.append(", ds=").append(session);
+		builder.append(", processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -166,6 +189,10 @@ public class Channel implements Serializable {
 
 	private void setDomain(Domain domain) {
 		this.domain = domain;
+	}
+
+	private void setQuota(FlowQuota quota) {
+		this.quota = quota;
 	}
 
 	// -------------------------------------------------------------------------
@@ -200,19 +227,32 @@ public class Channel implements Serializable {
 		this.destination = destination;
 	}
 
+	public DestinationSession getSession() {
+		return session;
+	}
+
+	public void setSession(DestinationSession session) {
+		this.session = session;
+	}
+
+	public ProcessingState getProcessingState() {
+		return processingState;
+	}
+
+	public void setProcessingState(ProcessingState processingState) {
+		this.processingState = processingState;
+	}
+
+	public FlowQuota getQuota() {
+		return quota;
+	}
+
 	public ChannelAuthorization getAuthorization() {
 		return authorization;
 	}
 
 	public void setAuthorization(ChannelAuthorization authorization) {
 		this.authorization = authorization;
-	}
-
-	public Set<ChannelFlowTarget> getChannelFlowTargets() {
-		if (channelFlowTargets == null) {
-			channelFlowTargets = new HashSet<>();
-		}
-		return channelFlowTargets;
 	}
 
 }

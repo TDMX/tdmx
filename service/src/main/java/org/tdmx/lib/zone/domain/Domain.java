@@ -52,7 +52,7 @@ public class Domain implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DomainIdGen")
-	@TableGenerator(name = "DomainIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "DomainIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

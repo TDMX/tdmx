@@ -24,13 +24,15 @@ import java.util.Date;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Chunk;
-import org.tdmx.core.api.v01.msg.FlowChannel;
+import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
+import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.system.lang.CalendarUtils;
-import org.tdmx.server.ws.DomainToApiMapper;
 
 public class MessageFacade {
 
@@ -51,24 +53,40 @@ public class MessageFacade {
 		Calendar ttlCal = CalendarUtils.getTimestamp(new Date());
 		ttlCal.add(Calendar.HOUR, 24);
 
+		// channel
+		Channel c = new Channel();
+		ChannelEndpoint o = new ChannelEndpoint();
+		o.setLocalname(sourceUser.getPublicCert().getTdmxUserName());
+		o.setDomain(sourceUser.getPublicCert().getTdmxDomainName());
+		c.setOrigin(o);
+		Destination d = new Destination();
+		d.setLocalname(targetUser.getPublicCert().getTdmxUserName());
+		d.setDomain(targetUser.getPublicCert().getTdmxDomainName());
+		d.setServicename(serviceName);
+		c.setDestination(d);
+
+		// the to user
+		UserIdentity to = new UserIdentity();
+		to.setUsercertificate(targetUser.getPublicCert().getX509Encoded());
+		to.setDomaincertificate(targetUser.getIssuerPublicCert().getX509Encoded());
+		to.setRootcertificate(targetUser.getZoneRootPublicCert().getX509Encoded());
+
 		// create the first chunk
 		Header hdr = new Header();
 		hdr.setTimestamp(msgTs);
 		hdr.setTtl(ttlCal);
 
-		FlowChannel fc = new FlowChannel();
-		fc.setServicename(serviceName);
-		fc.setSource(new DomainToApiMapper().mapUserIdentity(sourceUser.getCertificateChain()));
-		fc.setTarget(new DomainToApiMapper().mapUserIdentity(targetUser.getCertificateChain()));
-		hdr.setFlowchannel(fc);
-		hdr.setFlowsessionId("TODO"); // TODO
+		hdr.setChannel(c);
+		hdr.setTo(to);
+
+		hdr.setEncryptionContextId("TODO"); // TODO
 
 		Payload payload = new Payload();
 		payload.setLength(100);
 		payload.setPlaintextLength(1000);
 		payload.setEncryptionContext(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
-		payload.setChunksCRC("CRC"); // TODO create payloadMACofMACs ( SHA256 ) #72
-		payload.setChunkSizeFactor(10);
+		payload.setChunkSize(2048); // TODO create payloadMACofMACs ( SHA256 ) #72
+		payload.setMACofMACs("TODO"); // TODO
 
 		SignatureUtils.createPayloadSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, payload, hdr);
 

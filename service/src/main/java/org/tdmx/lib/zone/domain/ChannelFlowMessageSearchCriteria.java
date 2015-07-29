@@ -26,7 +26,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
  * @author Peter Klauser
  * 
  */
-public class ChannelFlowMessageSearchCriteria extends ChannelFlowSearchCriteria {
+public class ChannelFlowMessageSearchCriteria extends ChannelSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

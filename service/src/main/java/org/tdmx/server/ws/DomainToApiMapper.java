@@ -30,37 +30,32 @@ import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
+import org.tdmx.core.api.v01.msg.Channelinfo;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
-import org.tdmx.core.api.v01.msg.Flow;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.FlowControlLevel;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.FlowStatus;
 import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
-import org.tdmx.core.api.v01.msg.Flowsession;
-import org.tdmx.core.api.v01.msg.Flowtarget;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.IpAddressList;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.msg.Service;
-import org.tdmx.core.api.v01.msg.Servicestate;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
+import org.tdmx.core.api.v01.msg.UserSignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
+import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowQuota;
-import org.tdmx.lib.zone.domain.FlowSession;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSession;
 
 public class DomainToApiMapper {
 
@@ -81,21 +76,19 @@ public class DomainToApiMapper {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public Flow mapFlow(ChannelFlowOrigin fo) {
-		if (fo == null) {
+	public Channelinfo mapChannelInfo(org.tdmx.lib.zone.domain.Channel c) {
+		if (c == null) {
 			return null;
 		}
-		Flow f = new Flow();
+		Channelinfo ci = new Channelinfo();
 
-		f.setStatus(mapFlowStatus(fo.getQuota()));
-		f.setLevel(mapFlowControlLevel(fo.getQuota()));
-		f.setLimit(mapFlowControlLimit(fo.getUnsentBuffer(), fo.getUndeliveredBuffer()));
-		f.setFlowtargetsession(mapFlowTargetSession(fo.getFlowTarget().getFlowTargetSession()));
-
-		f.setSource(mapUserIdentity(fo.getSourceCertificateChain()));
-		f.setTarget(mapUserIdentity(fo.getFlowTarget().getTargetCertificateChain()));
-		f.setServicename(fo.getFlowTarget().getChannel().getDestination().getServiceName());
-		return f;
+		ci.setStatus(mapFlowStatus(c.getQuota()));
+		ci.setLevel(mapFlowControlLevel(c.getQuota()));
+		ci.setLimit(mapFlowControlLimit(c.getAuthorization().getUnsentBuffer(), c.getAuthorization()
+				.getUndeliveredBuffer()));
+		ci.setDestinationsession(mapDestinationSession(c.getSession()));
+		ci.setChannelauthorization(mapChannelAuthorization(c.getAuthorization()));
+		return ci;
 	}
 
 	public FlowControlLevel mapFlowControlLevel(FlowQuota quota) {
@@ -119,70 +112,31 @@ public class DomainToApiMapper {
 		return fl;
 	}
 
-	public Flowtargetsession mapFlowTargetSession(FlowTargetSession fts) {
+	public Destinationsession mapDestinationSession(DestinationSession fts) {
 		if (fts == null) {
 			return null;
 		}
-		Flowtargetsession f = new Flowtargetsession();
+		Destinationsession f = new Destinationsession();
 
-		if (fts.getPrimary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getPrimary()));
-		}
-		if (fts.getSecondary() != null) {
-			f.getFlowsessions().add(mapFlowSession(fts.getSecondary()));
-		}
 		if (fts.getSignature() != null) {
+			// TODO separate fn.
 			Signaturevalue sv = new Signaturevalue();
 			sv.setSignature(fts.getSignature().getValue());
 			sv.setTimestamp(CalendarUtils.cast(fts.getSignature().getSignatureDate()));
 			sv.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignature().getAlgorithm()));
 
-			f.setSignaturevalue(sv);
+			UserSignature t = new UserSignature();
+			t.setUserIdentity(mapUserIdentity(fts.getSignature().getCertificateChain()));
+			t.setSignaturevalue(sv);
+			f.setUsersignature(t);
+
 		}
+
+		f.setEncryptionContextId(fts.getIdentifier());
+		f.setScheme(fts.getScheme());
+		f.setSessionKey(fts.getSessionKey());
 
 		return f;
-	}
-
-	public Flowtarget mapFlowTarget(FlowTarget ft) {
-		if (ft == null) {
-			return null;
-		}
-		Flowtarget f = new Flowtarget();
-
-		f.setTarget(mapUserIdentity(ft.getTarget().getCertificateChain()));
-		f.setServicename(ft.getService().getServiceName());
-
-		f.setConcurrencyLevel(ft.getConcurrency().getConcurrencyLevel());
-		f.setConcurrencyLimit(ft.getConcurrency().getConcurrencyLimit());
-
-		Signaturevalue sv = new Signaturevalue();
-		sv.setSignature(ft.getSignatureValue());
-		sv.setTimestamp(CalendarUtils.cast(ft.getSignatureDate()));
-		sv.setSignatureAlgorithm(mapSignatureAlgorithm(ft.getSignatureAlgorithm()));
-
-		Flowtargetsession fts = new Flowtargetsession();
-		if (ft.getPrimary() != null) {
-			fts.getFlowsessions().add(mapFlowSession(ft.getPrimary()));
-		}
-		if (ft.getSecondary() != null) {
-			fts.getFlowsessions().add(mapFlowSession(ft.getSecondary()));
-		}
-		fts.setSignaturevalue(sv);
-		f.setFlowtargetsession(fts);
-
-		return f;
-	}
-
-	public Flowsession mapFlowSession(FlowSession fs) {
-		if (fs == null) {
-			return null;
-		}
-		Flowsession s = new Flowsession();
-		s.setFlowsessionId(fs.getIdentifier());
-		s.setScheme(fs.getScheme());
-		s.setSessionKey(fs.getSessionKey());
-		s.setValidFrom(CalendarUtils.cast(fs.getValidFrom()));
-		return s;
 	}
 
 	public User mapUser(AgentCredential cred) {
@@ -229,18 +183,14 @@ public class DomainToApiMapper {
 		return a;
 	}
 
-	public Servicestate mapService(org.tdmx.lib.zone.domain.Service service) {
+	public Service mapService(org.tdmx.lib.zone.domain.Service service) {
 		if (service == null) {
 			return null;
 		}
 		Service s = new Service();
 		s.setDomain(service.getDomain().getDomainName());
 		s.setServicename(service.getServiceName());
-
-		Servicestate ss = new Servicestate();
-		ss.setService(s);
-		ss.setConcurrencyLimit(service.getConcurrencyLimit());
-		return ss;
+		return s;
 	}
 
 	public ChannelEndpoint mapOrigin(org.tdmx.lib.zone.domain.ChannelOrigin origin) {
@@ -250,7 +200,6 @@ public class DomainToApiMapper {
 		ChannelEndpoint o = new ChannelEndpoint();
 		o.setDomain(origin.getDomainName());
 		o.setLocalname(origin.getLocalName());
-		o.setServiceprovider(origin.getServiceProvider());
 		return o;
 	}
 
@@ -261,7 +210,6 @@ public class DomainToApiMapper {
 		Destination d = new Destination();
 		d.setDomain(dest.getDomainName());
 		d.setLocalname(dest.getLocalName());
-		d.setServiceprovider(dest.getServiceProvider());
 		d.setServicename(dest.getServiceName());
 		return d;
 	}
@@ -379,14 +327,14 @@ public class DomainToApiMapper {
 		return l;
 	}
 
-	public EndpointPermission mapPermission(org.tdmx.lib.zone.domain.EndpointPermission ep) {
+	public Permission mapPermission(org.tdmx.lib.zone.domain.EndpointPermission ep) {
 		if (ep == null) {
 			return null;
 		}
-		EndpointPermission p = new EndpointPermission();
+		Permission p = new Permission();
 		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
 		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
-		p.setPermission(Permission.valueOf(ep.getGrant().toString()));
+		p.setPermission(Grant.valueOf(ep.getGrant().toString()));
 		p.setValidUntil(CalendarUtils.cast(ep.getValidUntil()));
 		return p;
 	}

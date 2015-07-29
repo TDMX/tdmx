@@ -54,7 +54,7 @@ public class Lock implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "LockIdGen")
-	@TableGenerator(name = "LockIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "LockIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@Column(length = MAX_NAME_LEN, unique = true)

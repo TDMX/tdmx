@@ -67,7 +67,7 @@ public class ServiceServiceRepositoryUnitTest {
 		domain = new Domain(zone, "SUBDOMAIN." + zone.getZoneApex());
 		domainService.createOrUpdate(domain);
 
-		Service s = ZoneFacade.createService(domain, serviceName, 10);
+		Service s = ZoneFacade.createService(domain, serviceName);
 		serviceService.createOrUpdate(s);
 	}
 
@@ -180,19 +180,6 @@ public class ServiceServiceRepositoryUnitTest {
 	public void testLookup_NotFound() throws Exception {
 		Service d = serviceService.findByName(domain, "gugus");
 		assertNull(d);
-	}
-
-	@Test
-	public void testModify() throws Exception {
-		Service d = serviceService.findByName(domain, serviceName);
-		d.setConcurrencyLimit(20);
-		serviceService.createOrUpdate(d);
-
-		Service d2 = serviceService.findByName(domain, serviceName);
-
-		assertEquals(d.getDomain().getDomainName(), d2.getDomain().getDomainName());
-		assertEquals(d.getServiceName(), d2.getServiceName());
-		assertEquals(d.getConcurrencyLimit(), d2.getConcurrencyLimit());
 	}
 
 }

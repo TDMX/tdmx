@@ -26,7 +26,7 @@
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 
@@ -42,7 +42,7 @@
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
@@ -56,7 +56,7 @@
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
@@ -70,7 +70,7 @@
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="flowTargetService" ref="tdmx.lib.zone.FlowTargetRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 	

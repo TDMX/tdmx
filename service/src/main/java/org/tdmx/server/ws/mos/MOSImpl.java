@@ -28,12 +28,14 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
+import org.tdmx.core.api.v01.mos.GetChannel;
+import org.tdmx.core.api.v01.mos.GetChannelResponse;
 import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatus;
 import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatusResponse;
-import org.tdmx.core.api.v01.mos.ListChannelAuthorization;
-import org.tdmx.core.api.v01.mos.ListChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.mos.ListFlow;
-import org.tdmx.core.api.v01.mos.ListFlowResponse;
+import org.tdmx.core.api.v01.mos.ListChannel;
+import org.tdmx.core.api.v01.mos.ListChannelResponse;
+import org.tdmx.core.api.v01.mos.Receipt;
+import org.tdmx.core.api.v01.mos.ReceiptResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
@@ -61,11 +63,9 @@ import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
@@ -76,8 +76,8 @@ import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
@@ -102,7 +102,7 @@ public class MOSImpl implements MOS {
 	private AddressService addressService;
 	private ServiceService serviceService;
 	private ChannelService channelService;
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
@@ -172,7 +172,6 @@ public class MOSImpl implements MOS {
 		ChannelEndpoint ep = new ChannelEndpoint();
 		ep.setDomain(existingCred.getDomain().getDomainName());
 		ep.setLocalname(existingCred.getAddress().getLocalName());
-		ep.setServiceprovider("TODO"); // TODO from the zone
 		response.setOrigin(ep);
 
 		response.setSuccess(true);
@@ -218,9 +217,9 @@ public class MOSImpl implements MOS {
 
 		MessageDescriptor md = a2d.mapMessage(msg);
 
-		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getFlowchannel().getSource()
-				.getUsercertificate(), header.getFlowchannel().getSource().getDomaincertificate(), header
-				.getFlowchannel().getSource().getRootcertificate());
+		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getUsersignature()
+				.getUserIdentity().getUsercertificate(), header.getUsersignature().getUserIdentity()
+				.getDomaincertificate(), header.getUsersignature().getUserIdentity().getRootcertificate());
 		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -230,9 +229,8 @@ public class MOSImpl implements MOS {
 			setError(ErrorCode.InvalidMessageSource, response);
 			return response;
 		}
-		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getFlowchannel().getTarget()
-				.getUsercertificate(), header.getFlowchannel().getTarget().getDomaincertificate(), header
-				.getFlowchannel().getTarget().getRootcertificate());
+		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
+				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
 		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -242,19 +240,22 @@ public class MOSImpl implements MOS {
 		// ChannelFlowOrigin to attach to.
 		Zone zone = getAgentService().getZone();
 
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(new PageSpecifier(0, 1));
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setSourceFingerprint(authorizedUser.getFingerprint());
-		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setTargetFingerprint(dstUc.getFingerprint());
-		sc.getDestination().setServiceName(header.getFlowchannel().getServicename());
+		// TODO header channel origin matches the srcUser
+		sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
+		sc.getOrigin().setLocalName(header.getChannel().getOrigin().getLocalname());
+		// TODO header channel dest matches the to User
+		sc.getDestination().setDomainName(header.getChannel().getDestination().getDomain());
+		sc.getDestination().setLocalName(header.getChannel().getDestination().getLocalname());
+		sc.getDestination().setServiceName(header.getChannel().getDestination().getServicename());
 
-		List<ChannelFlowOrigin> flows = channelService.search(zone, sc);
+		List<Channel> flows = channelService.search(zone, sc);
 		if (flows.isEmpty()) {
-			setError(ErrorCode.FlowNotFound, response);
+			setError(ErrorCode.ChannelNotFound, response);
 			return response;
 		}
-		ChannelFlowOrigin flow = flows.get(0);
+		Channel flow = flows.get(0);
 		// check the flow is not already throttled
 		if (FlowControlStatus.OPEN != flow.getQuota().getSenderStatus()) {
 			setError(ErrorCode.SubmitFlowControlClosed, response);
@@ -284,44 +285,6 @@ public class MOSImpl implements MOS {
 	public GetMessageDeliveryStatusResponse getMessageDeliveryStatus(GetMessageDeliveryStatus parameters) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public ListFlowResponse listFlow(ListFlow parameters) {
-		ListFlowResponse response = new ListFlowResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-		Zone zone = getAgentService().getZone();
-
-		ChannelFlowSearchCriteria sc = new ChannelFlowSearchCriteria(a2d.mapPage(parameters.getPage()));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
-		sc.setSourceFingerprint(authorizedUser.getFingerprint());
-		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
-		if (parameters.getDestination() != null) {
-			sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
-			sc.getDestination().setDomainName(parameters.getDestination().getDomain());
-			sc.getDestination().setServiceProvider(parameters.getDestination().getServiceprovider());
-			sc.getDestination().setServiceName(parameters.getDestination().getServicename());
-			if (parameters.getDestination().getUserIdentity() != null) {
-				AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getDestination()
-						.getUserIdentity().getUsercertificate(), parameters.getDestination().getUserIdentity()
-						.getDomaincertificate(), parameters.getDestination().getUserIdentity().getRootcertificate());
-				if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-					setError(ErrorCode.InvalidUserCredentials, response);
-					return response;
-				}
-				sc.setTargetFingerprint(uc.getFingerprint());
-			}
-		}
-		List<ChannelFlowOrigin> channelFlows = channelService.search(zone, sc);
-		for (ChannelFlowOrigin flow : channelFlows) {
-			response.getFlows().add(d2a.mapFlow(flow));
-		}
-
-		response.setSuccess(true);
-		return response;
 	}
 
 	@Override
@@ -376,8 +339,46 @@ public class MOSImpl implements MOS {
 	}
 
 	@Override
-	public ListChannelAuthorizationResponse listChannelAuthorization(ListChannelAuthorization parameters) {
-		ListChannelAuthorizationResponse response = new ListChannelAuthorizationResponse();
+	public ReceiptResponse receipt(Receipt parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public GetChannelResponse getChannel(GetChannel parameters) {
+		GetChannelResponse response = new GetChannelResponse();
+
+		PKIXCertificate authorizedUser = checkUserAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+
+		// TODO check we have all input parameters
+
+		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomainName(authorizedUser.getTdmxDomainName());
+
+		sc.getOrigin().setLocalName(authorizedUser.getTdmxUserName());
+		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getDestination().setDomainName(parameters.getDestination().getDomain());
+		sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
+		sc.getDestination().setServiceName(parameters.getDestination().getServicename());
+
+		List<Channel> channels = channelService.search(zone, sc);
+		for (Channel c : channels) {
+			// only 1
+			response.setChannelinfo(d2a.mapChannelInfo(c));
+		}
+
+		response.setSuccess(true);
+		return response;
+	}
+
+	@Override
+	public ListChannelResponse listChannel(ListChannel parameters) {
+		ListChannelResponse response = new ListChannelResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
 			return response;
@@ -391,16 +392,14 @@ public class MOSImpl implements MOS {
 
 		sc.getOrigin().setLocalName(authorizedUser.getTdmxUserName());
 		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
-		// FIXME SP: sc.getOrigin().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl());
 		if (parameters.getDestination() != null) {
 			sc.getDestination().setDomainName(parameters.getDestination().getDomain());
 			sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
 			sc.getDestination().setServiceName(parameters.getDestination().getServicename());
-			// FIXME SP: sc.getDestination().setServiceProvider(parameters.getDestination().getServiceprovider());
 		}
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
-		for (ChannelAuthorization channelAuth : channelAuths) {
-			response.getChannelauthorizations().add(d2a.mapChannelAuthorization(channelAuth));
+		List<Channel> channels = channelService.search(zone, sc);
+		for (Channel c : channels) {
+			response.getChannelinfos().add(d2a.mapChannelInfo(c));
 		}
 
 		response.setSuccess(true);
@@ -488,12 +487,12 @@ public class MOSImpl implements MOS {
 		this.channelService = channelService;
 	}
 
-	public FlowTargetService getFlowTargetService() {
-		return flowTargetService;
+	public DestinationService getDestinationService() {
+		return destinationService;
 	}
 
-	public void setFlowTargetService(FlowTargetService flowTargetService) {
-		this.flowTargetService = flowTargetService;
+	public void setDestinationService(DestinationService destinationService) {
+		this.destinationService = destinationService;
 	}
 
 	public AgentCredentialFactory getCredentialFactory() {

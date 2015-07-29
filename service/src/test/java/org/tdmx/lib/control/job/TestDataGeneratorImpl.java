@@ -57,12 +57,11 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -71,8 +70,8 @@ import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 
@@ -106,7 +105,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	private ChannelService channelService;
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -141,7 +140,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			PKIXCredential zac = null;
 			for (int i = 0; i < input.getNumZACs(); i++) {
 				// create the ZAC
-				zac = TestCredentialGenerator.createZAC(input.getZoneApex(), 10);
+				zac = TestCredentialGenerator.createZAC(input.getZoneApex(), 10, i + 1);
 
 				// create the AccountZoneAdministrationCredential in ControlDB
 				AccountZoneAdministrationCredential zAC = createAccountZoneAdministrationCredential(result.getAccount()
@@ -163,7 +162,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				for (int di = 0; zac != null && di < input.getNumDACsPerDomain(); di++) {
 					// create the DAC
 					String subdomain = DnsUtils.getSubdomain(domain.getDomainName(), zone.getZoneApex());
-					dac = TestCredentialGenerator.createDAC(zac, subdomain, 5);
+					dac = TestCredentialGenerator.createDAC(zac, subdomain, 5, di + 1);
 
 					// create the AgentCredential for the ZAC in ZoneDB
 					AgentCredential ac = createAgentCredential(zone, domain, null, dac);
@@ -186,7 +185,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					// per domain Address UC
 					for (int ui = 0; dac != null && ui < input.getNumUsersPerAddress(); ui++) {
 						// create the UC
-						PKIXCredential uc = TestCredentialGenerator.createUC(dac, add.getLocalName(), 2);
+						PKIXCredential uc = TestCredentialGenerator.createUC(dac, add.getLocalName(), 2, ui + 1);
 
 						// create the AgentCredential for the ZAC in ZoneDB
 						AgentCredential ac = createAgentCredential(zone, domain, add, uc);
@@ -240,11 +239,10 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				for (AddressHolder toAddressHolder : toDomain.getAddresses()) {
 					Address to = toAddressHolder.getAddress();
 
-					// TODO serviceprovider url from AccountZone to Zone
 					ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(), from.getDomain()
 							.getDomainName(), "SP");
 					ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(), to.getDomain()
-							.getDomainName(), service.getServiceName(), "SP");
+							.getDomainName(), service.getServiceName());
 
 					Channel sendChannel = null;
 					Channel recvChannel = null;
@@ -272,17 +270,17 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					}
 
 					for (UCHolder targetUser : toAddressHolder.getUcs()) {
-						AgentCredential target = targetUser.getAg();
+						Destination ft = ZoneFacade.createDestination(targetUser.getCredential(), to, service);
 
-						FlowTarget ft = ZoneFacade.createFlowTarget(targetUser.getCredential(), target, service);
-
-						flowTargetService.createOrUpdate(ft);
+						destinationService.createOrUpdate(ft);
 
 						// create the CFT equivalent of the FT in the Channel, for both receiving and sending sides
 						// which will also create the Flows
-						ChannelFlowTargetDescriptor cftd = ft.getDescriptor(result.getZone(), co);
-						channelService.setChannelFlowTarget(result.getZone(), recvChannel.getId(), cftd);
-						channelService.relayChannelFlowTarget(result.getZone(), sendChannel.getId(), cftd);
+
+						channelService.setChannelDestinationSession(result.getZone(), recvChannel.getId(),
+								ft.getDestinationSession());
+						channelService.relayChannelDestinationSession(result.getZone(), sendChannel.getId(),
+								ft.getDestinationSession());
 					}
 
 				}
@@ -316,8 +314,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 			// delete FlowTargets, depends on AgentCredentials & Services
 			deleteFlowTargets(zone);
 
-			// delete ChannelAuthorizations in ZoneDB
-			deleteChannelAuthorizations(zone);
+			// delete Channels with their ChannelAuthorizations in ZoneDB
+			deleteChannels(zone);
 
 			// delete AgentCredentials in ZoneDB
 			deleteAgentCredentials(zone);
@@ -420,11 +418,11 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	private void deleteFlowTargets(Zone zone) {
 		boolean more = true;
 		while (more) {
-			FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
+			DestinationSearchCriteria sc = new DestinationSearchCriteria(new PageSpecifier(0, 999));
 
-			List<FlowTarget> flowTargets = flowTargetService.search(zone, sc);
-			for (FlowTarget ft : flowTargets) {
-				flowTargetService.delete(ft);
+			List<Destination> flowTargets = destinationService.search(zone, sc);
+			for (Destination ft : flowTargets) {
+				destinationService.delete(ft);
 			}
 			if (flowTargets.isEmpty()) {
 				more = false;
@@ -447,16 +445,16 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 	}
 
-	private void deleteChannelAuthorizations(Zone zone) {
+	private void deleteChannels(Zone zone) {
 		boolean more = true;
 		while (more) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 
-			List<ChannelAuthorization> channelAuths = channelService.search(zone, sc);
-			for (ChannelAuthorization ca : channelAuths) {
-				channelService.delete(ca.getChannel());
+			List<Channel> channels = channelService.search(zone, sc);
+			for (Channel c : channels) {
+				channelService.delete(c);
 			}
-			if (channelAuths.isEmpty()) {
+			if (channels.isEmpty()) {
 				more = false;
 			}
 		}
@@ -692,12 +690,12 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		this.channelService = channelService;
 	}
 
-	public FlowTargetService getFlowTargetService() {
-		return flowTargetService;
+	public DestinationService getDestinationService() {
+		return destinationService;
 	}
 
-	public void setFlowTargetService(FlowTargetService flowTargetService) {
-		this.flowTargetService = flowTargetService;
+	public void setDestinationService(DestinationService destinationService) {
+		this.destinationService = destinationService;
 	}
 
 }

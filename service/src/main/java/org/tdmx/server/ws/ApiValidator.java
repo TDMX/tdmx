@@ -27,20 +27,17 @@ import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Channelflowtarget;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
-import org.tdmx.core.api.v01.msg.FlowChannel;
-import org.tdmx.core.api.v01.msg.FlowDestination;
-import org.tdmx.core.api.v01.msg.Flowsession;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
+import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
+import org.tdmx.core.api.v01.msg.UserSignature;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ApiValidator {
@@ -62,73 +59,27 @@ public class ApiValidator {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public Channelflowtarget checkChannelflowtarget(Channelflowtarget cft, Acknowledge ack) {
-		if (cft == null) {
-			setError(ErrorCode.MissingChannelFlowTarget, ack);
-		}
-		if (checkFlowDestination(cft, ack) == null) {
-			return null;
-		}
-		if (checkChannelEndpoint(cft.getOrigin(), ack) == null) {
-			return null;
-		}
-		if (checkFlowtargetsession(cft.getFlowtargetsession(), ack) == null) {
-			return null;
-		}
-		return cft;
-	}
-
-	public FlowDestination checkFlowDestination(FlowDestination fd, Acknowledge ack) {
-		if (fd == null) {
-			setError(ErrorCode.MissingFlowDestination, ack);
-		}
-		if (!StringUtils.hasText(fd.getServicename())) {
-			setError(ErrorCode.MissingService, ack);
-			return null;
-		}
-		if (checkUserIdentity(fd.getTarget(), ack) == null) {
-			return null;
-		}
-		return fd;
-	}
-
-	public Flowtargetsession checkFlowtargetsession(Flowtargetsession fts, Acknowledge ack) {
+	public Destinationsession checkDestinationsession(Destinationsession fts, Acknowledge ack) {
 		if (fts == null) {
-			setError(ErrorCode.MissingFlowTargetSession, ack);
+			setError(ErrorCode.MissingDestinationSession, ack);
 			return null;
 		}
-		if (checkSignaturevalue(fts.getSignaturevalue(), ack) == null) {
+		if (checkUsersignature(fts.getUsersignature(), ack) == null) {
 			return null;
 		}
-		for (Flowsession fs : fts.getFlowsessions()) {
-			if (checkFlowsession(fs, ack) == null) {
-				return null;
-			}
+		if (!StringUtils.hasText(fts.getEncryptionContextId())) {
+			setError(ErrorCode.MissingDestinationSessionEncryptionContextIdentifier, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(fts.getScheme())) {
+			setError(ErrorCode.MissingDestinationSessionScheme, ack);
+			return null;
+		}
+		if (fts.getSessionKey() == null) {
+			setError(ErrorCode.MissingDestinationSessionSessionKey, ack);
+			return null;
 		}
 		return fts;
-	}
-
-	public Flowsession checkFlowsession(Flowsession fs, Acknowledge ack) {
-		if (fs == null) {
-			setError(ErrorCode.MissingFlowSession, ack);
-		}
-		if (!StringUtils.hasText(fs.getFlowsessionId())) {
-			setError(ErrorCode.MissingFlowSessionIdentifier, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(fs.getScheme())) {
-			setError(ErrorCode.MissingFlowSessionScheme, ack);
-			return null;
-		}
-		if (fs.getValidFrom() == null) {
-			setError(ErrorCode.MissingFlowSessionValidFrom, ack);
-			return null;
-		}
-		if (fs.getSessionKey() == null) {
-			setError(ErrorCode.MissingFlowSessionSessionKey, ack);
-			return null;
-		}
-		return fs;
 	}
 
 	public Currentchannelauthorization checkChannelauthorization(Currentchannelauthorization ca, Acknowledge ack) {
@@ -155,7 +106,7 @@ public class ApiValidator {
 		return ca;
 	}
 
-	public EndpointPermission checkEndpointPermission(EndpointPermission perm, Acknowledge ack) {
+	public Permission checkEndpointPermission(Permission perm, Acknowledge ack) {
 		if (perm == null) {
 			setError(ErrorCode.MissingEndpointPermission, ack);
 			return null;
@@ -184,6 +135,20 @@ public class ApiValidator {
 			return null;
 		}
 		if (checkAdministratorIdentity(signature.getAdministratorIdentity(), ack) == null) {
+			return null;
+		}
+		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
+			return null;
+		}
+		return signature;
+	}
+
+	public UserSignature checkUsersignature(UserSignature signature, Acknowledge ack) {
+		if (signature == null) {
+			setError(ErrorCode.MissingUserSignature, ack);
+			return null;
+		}
+		if (checkUserIdentity(signature.getUserIdentity(), ack) == null) {
 			return null;
 		}
 		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
@@ -261,10 +226,6 @@ public class ApiValidator {
 			setError(ErrorCode.MissingChannelEndpointLocalname, ack);
 			return null;
 		}
-		if (!StringUtils.hasText(channelEndpoint.getServiceprovider())) {
-			setError(ErrorCode.MissingChannelEndpointServiceprovider, ack);
-			return null;
-		}
 		return channelEndpoint;
 	}
 
@@ -325,7 +286,17 @@ public class ApiValidator {
 			setError(ErrorCode.MissingHeader, ack);
 			return null;
 		}
-		if (checkFlowChannel(hdr.getFlowchannel(), ack) == null) {
+		if (checkChannel(hdr.getChannel(), ack) == null) {
+			return null;
+		}
+		if (checkUsersignature(hdr.getUsersignature(), ack) == null) {
+			return null;
+		}
+		if (hdr.getTo() == null) {
+			setError(ErrorCode.MissingHeaderTo, ack);
+			return null;
+		}
+		if (checkUserIdentity(hdr.getTo(), ack) == null) {
 			return null;
 		}
 		if (hdr.getTtl() == null) {
@@ -336,8 +307,8 @@ public class ApiValidator {
 			setError(ErrorCode.MissingHeaderTimestamp, ack);
 			return null;
 		}
-		if (!StringUtils.hasText(hdr.getFlowsessionId())) {
-			setError(ErrorCode.MissingHeaderFlowsessionId, ack);
+		if (!StringUtils.hasText(hdr.getEncryptionContextId())) {
+			setError(ErrorCode.MissingHeaderEncryptionContextId, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(hdr.getMsgId())) {
@@ -348,29 +319,7 @@ public class ApiValidator {
 			setError(ErrorCode.MissingHeaderPayloadSignature, ack);
 			return null;
 		}
-		if (!StringUtils.hasText(hdr.getHeaderSignature())) {
-			setError(ErrorCode.MissingHeaderSignature, ack);
-			return null;
-		}
 		return hdr;
-	}
-
-	public FlowChannel checkFlowChannel(FlowChannel fc, Acknowledge ack) {
-		if (fc == null) {
-			setError(ErrorCode.MissingHeaderFlowChannel, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(fc.getServicename())) {
-			setError(ErrorCode.MissingFlowChannelServicename, ack);
-			return null;
-		}
-		if (checkUserIdentity(fc.getSource(), ack) == null) {
-			return null;
-		}
-		if (checkUserIdentity(fc.getTarget(), ack) == null) {
-			return null;
-		}
-		return fc;
 	}
 
 	public Payload checkPayload(Payload payload, Acknowledge ack) {
@@ -379,15 +328,15 @@ public class ApiValidator {
 			return null;
 		}
 
-		if (!StringUtils.hasText(payload.getChunksCRC())) {
-			setError(ErrorCode.MissingPayloadChunksCRC, ack);
+		if (!StringUtils.hasText(payload.getMACofMACs())) {
+			setError(ErrorCode.MissingPayloadChunksMACofMACs, ack);
 			return null;
 		}
 		if (payload.getEncryptionContext() == null) {
 			setError(ErrorCode.MissingPayloadEncryptionContext, ack);
 			return null;
 		}
-		if (payload.getChunkSizeFactor() < 0) {
+		if (payload.getChunkSize() < 0) {
 			setError(ErrorCode.InvalidChunkSizeFactor, ack);
 			return null;
 		}
@@ -421,10 +370,10 @@ public class ApiValidator {
 			setError(ErrorCode.MissingAuthorization, ack);
 			return null;
 		}
-		if (checkChannel(auth.getChannel(), ack) == null) {
+		if (checkChannel(auth, ack) == null) {
 			return null;
 		}
-		if (checkEndpointPermission(auth, ack) == null) {
+		if (checkEndpointPermission(auth.getPermission(), ack) == null) {
 			return null;
 		}
 		return auth;

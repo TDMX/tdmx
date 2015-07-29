@@ -35,18 +35,18 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
@@ -70,11 +70,11 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private AddressService addressService;
 	private AgentCredentialService agentCredentialService;
 	private ChannelService channelService;
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	private int batchSize = 1000;
 
-	// TODO FlowTarget transfer
+	// TODO Destination transfer
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -162,12 +162,12 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		try {
 			more = true;
 			while (more) {
-				FlowTargetSearchCriteria casc = new FlowTargetSearchCriteria(new PageSpecifier(0, getBatchSize()));
-				List<FlowTarget> flowTargets = flowTargetService.search(zone, casc);
-				for (FlowTarget ft : flowTargets) {
-					flowTargetService.delete(ft);
+				DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
+				List<Destination> destinations = destinationService.search(zone, casc);
+				for (Destination d : destinations) {
+					destinationService.delete(d);
 				}
-				if (flowTargets.isEmpty()) {
+				if (destinations.isEmpty()) {
 					more = false;
 				}
 			}
@@ -176,9 +176,9 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			while (more) {
 				ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0,
 						getBatchSize()));
-				List<ChannelAuthorization> channels = channelService.search(zone, casc);
-				for (ChannelAuthorization c : channels) {
-					channelService.delete(c.getChannel());
+				List<Channel> channels = channelService.search(zone, casc);
+				for (Channel c : channels) {
+					channelService.delete(c);
 				}
 				if (channels.isEmpty()) {
 					more = false;
@@ -277,19 +277,18 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
 			sc.setDomain(oldDomain);
-			// TODO fetch ALL channelflowtargets and their flows for copy to new domain
 
-			List<ChannelAuthorization> channelAuths = null;
+			List<Channel> channels = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
-				channelAuths = channelService.search(oldZone, sc);
+				channels = channelService.search(oldZone, sc);
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			for (ChannelAuthorization oldCa : channelAuths) {
-				Channel newChannel = new Channel(newDomain, oldCa.getChannel());
+			for (Channel oldChannel : channels) {
+				Channel newChannel = new Channel(newDomain, oldChannel);
 
-				ChannelAuthorization newCa = new ChannelAuthorization(newChannel, oldCa);
+				ChannelAuthorization newCa = new ChannelAuthorization(newChannel, oldChannel.getAuthorization());
 				newChannel.setAuthorization(newCa);
 
 				zonePartitionIdProvider.setPartitionId(newPartitionId);
@@ -301,7 +300,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 					zonePartitionIdProvider.clearPartitionId();
 				}
 			}
-			if (channelAuths.isEmpty()) {
+			if (channels.isEmpty()) {
 				more = false;
 			}
 		}
@@ -335,7 +334,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				// services
 				transferServices(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
-				// addresses, nested UCs, flowtargets
+				// addresses, nested UCs, destinations
 				transferAddresses(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
 				transferChannelAuthorizations(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
@@ -373,6 +372,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				}
 
 				transferUserAgentCredentials(oldZone, oldPartitionId, newZone, newDomain, newAddress, newPartitionId);
+
+				transferDestinations(oldZone, oldPartitionId, newDomain, newAddress, newPartitionId);
 			}
 			if (addresses.isEmpty()) {
 				more = false;
@@ -506,8 +507,6 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 					zonePartitionIdProvider.clearPartitionId();
 				}
 
-				// transfer flow targets
-				transferFlowTargets(oldZone, oldPartitionId, a, newDomain, newCredential, newPartitionId);
 			}
 			if (credentials.isEmpty()) {
 				more = false;
@@ -515,32 +514,34 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		}
 	}
 
-	private void transferFlowTargets(Zone oldZone, String oldPartitionId, AgentCredential oldTarget, Domain newDomain,
-			AgentCredential newTarget, String newPartitionId) {
+	private void transferDestinations(Zone oldZone, String oldPartitionId, Domain newDomain, Address newAddress,
+			String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
-			FlowTargetSearchCriteria sc = new FlowTargetSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
-			sc.getTarget().setAgent(oldTarget);
+			DestinationSearchCriteria sc = new DestinationSearchCriteria(new PageSpecifier(pageNo, getBatchSize()));
+			sc.getDestination().setDomainName(newDomain.getDomainName());
+			sc.getDestination().setLocalName(newAddress.getLocalName());
 
-			List<FlowTarget> flowTargets = null;
+			List<Destination> destinations = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
-				flowTargets = flowTargetService.search(oldZone, sc);
+				destinations = destinationService.search(oldZone, sc);
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			zonePartitionIdProvider.setPartitionId(newPartitionId);
 			try {
-				for (FlowTarget ft : flowTargets) {
-					Service newService = serviceService.findByName(newDomain, ft.getService().getServiceName());
+				for (Destination d : destinations) {
+					Service newService = serviceService.findByName(newDomain, d.getService().getServiceName());
 
-					FlowTarget newFlowTarget = new FlowTarget(newTarget, newService, ft);
-					flowTargetService.createOrUpdate(newFlowTarget);
+					Destination newDestination = new Destination(newAddress, newService);
+					newDestination.setDestinationSession(d.getDestinationSession());
+					destinationService.createOrUpdate(newDestination);
 				}
 			} finally {
 				zonePartitionIdProvider.clearPartitionId();
 			}
-			if (flowTargets.isEmpty()) {
+			if (destinations.isEmpty()) {
 				more = false;
 			}
 		}
@@ -614,12 +615,12 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		this.channelService = channelService;
 	}
 
-	public FlowTargetService getFlowTargetService() {
-		return flowTargetService;
+	public DestinationService getDestinationService() {
+		return destinationService;
 	}
 
-	public void setFlowTargetService(FlowTargetService flowTargetService) {
-		this.flowTargetService = flowTargetService;
+	public void setDestinationService(DestinationService destinationService) {
+		this.destinationService = destinationService;
 	}
 
 	public int getBatchSize() {

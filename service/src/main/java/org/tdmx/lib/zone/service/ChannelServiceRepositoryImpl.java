@@ -31,33 +31,23 @@ import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.dao.ChannelDao;
-import org.tdmx.lib.zone.dao.FlowTargetDao;
+import org.tdmx.lib.zone.dao.DestinationDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
-import org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria;
-import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTarget;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
+import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
-import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowQuota;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -80,7 +70,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	private static final Logger log = LoggerFactory.getLogger(ChannelServiceRepositoryImpl.class);
 
 	private ChannelDao channelDao;
-	private FlowTargetDao flowTargetDao;
+	private DestinationDao destinationDao;
 	private ServiceDao serviceDao;
 	private AgentCredentialDao agentCredentialDao;
 
@@ -222,22 +212,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void relayAuthorization(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest,
-			EndpointPermission otherPerm) {
+	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm) {
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
-		Channel existingChannel = null;
-		boolean newChannel = false;
-		ChannelAuthorization existingCA = findByChannel(zone, domain, origin, dest);
+		Channel existingChannel = findById(channelId);
+		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
+		ChannelAuthorization existingCA = existingChannel.getAuthorization();
 		if (existingCA == null) {
-			// If no existing ca - then create one with empty data.
-			existingChannel = new Channel(domain, origin, dest);
-			newChannel = true;
 			existingCA = new ChannelAuthorization(existingChannel);
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
-		} else {
-			existingChannel = existingCA.getChannel();
+			existingChannel.setAuthorization(existingCA);
 		}
-
 		if (existingChannel.isSend()) {
 			// we are sender and we got relayed in a requested recv authorization
 			existingCA.setReqRecvAuthorization(otherPerm);
@@ -247,45 +231,22 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(otherPerm);
 		}
-
-		// persist the new ca
-		if (newChannel) {
-			getChannelDao().persist(existingChannel);
-		}
-
 	}
-
-	// TODO message relay in, creates channelfloworigin if doesn't exist for the flowtarget, adds the message and
-	// reduces the undelivered quota
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void setChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget) {
+	public void setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
 		Channel channel = findById(channelId);
-		setChannelFlowTarget(zone, channel, flowTarget);
+		setChannelDestinationSession(zone, channel, destinationSession);
 		// persist should not be necessary
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void relayChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget) {
+	public void relayChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
 		Channel channel = findById(channelId);
-		setChannelFlowTarget(zone, channel, flowTarget);
+		setChannelDestinationSession(zone, channel, destinationSession);
 		// persist should not be necessary
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB")
-	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
-			AgentCredential originatingUser) {
-		ChannelFlowOrigin flow = null;
-		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
-		if (storedCft != null) {
-			flow = createOrUpdateFlow(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(), storedCft
-					.getChannel().getAuthorization().getUndeliveredBuffer(), originatingUser.getFingerprint(),
-					originatingUser.getCertificateChainPem());
-		}
-		return flow;
 	}
 
 	@Override
@@ -315,48 +276,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
-	@Transactional(value = "ZoneDB")
-	public void delete(ChannelFlowTarget channelFlowTarget) {
-		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTarget.getId());
-		if (storedCft != null) {
-			getChannelDao().delete(storedCft);
-		} else {
-			log.warn("Unable to find ChannelFlowTarget to delete with id " + channelFlowTarget.getId());
-		}
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB")
-	public void delete(ChannelFlowOrigin channelFlowOrigin) {
-		ChannelFlowOrigin storedCfo = getChannelDao().loadChannelFlowOriginById(channelFlowOrigin.getId());
-		if (storedCfo != null) {
-			getChannelDao().delete(storedCfo);
-		} else {
-			log.warn("Unable to find ChannelFlowOrigin to delete with id " + channelFlowOrigin.getId());
-		}
-	}
-
-	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria) {
+	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 
@@ -368,11 +289,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+	public SubmitMessageResultHolder submitMessage(Zone zone, Channel channel, MessageDescriptor md) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
+		// TODO caller must have loaded Channel.ChannelAuthorization prior, or we move it to Channel.
+
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
+		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
 		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
 			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
@@ -380,12 +303,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadLength())));
-		if (quota.getUnsentBytes().subtract(flow.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+		if (quota.getUnsentBytes().subtract(channel.getAuthorization().getUnsentBuffer().getHighMarkBytes())
+				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
 		}
 
-		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
+		ChannelFlowMessage m = new ChannelFlowMessage(channel, md);
 		getChannelDao().persist(m);
 
 		result.message = m;
@@ -394,24 +318,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
-			AgentCredentialDescriptor sourceUser) {
-		ChannelFlowOrigin flow = null;
-		ChannelFlowTarget storedCft = getChannelDao().loadChannelFlowTargetById(channelFlowTargetId);
-		if (storedCft != null) {
-			flow = createOrUpdateFlow(storedCft, storedCft.getChannel().getAuthorization().getUnsentBuffer(), storedCft
-					.getChannel().getAuthorization().getUndeliveredBuffer(), sourceUser.getFingerprint(),
-					sourceUser.getCertificateChainPem());
-		}
-		return flow;
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md) {
+	public SubmitMessageResultHolder relayMessage(Zone zone, Channel channel, MessageDescriptor md) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(flow.getQuota().getId());
+		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
 		if (FlowControlStatus.CLOSED == quota.getReceiverStatus()) {
 			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
 			// changes this status eventually
@@ -420,13 +330,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadLength())));
-		if (quota.getUndeliveredBytes().subtract(flow.getUndeliveredBuffer().getHighMarkBytes())
+		if (quota.getUndeliveredBytes().subtract(channel.getAuthorization().getUndeliveredBuffer().getHighMarkBytes())
 				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close relay
 			quota.setReceiverStatus(FlowControlStatus.CLOSED);
 		}
 
-		ChannelFlowMessage m = new ChannelFlowMessage(flow, md);
+		ChannelFlowMessage m = new ChannelFlowMessage(channel, md);
 		getChannelDao().persist(m);
 
 		result.message = m;
@@ -448,9 +358,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (!StringUtils.hasText(origin.getDomainName())) {
 			throw new IllegalArgumentException("missing origin domainName");
 		}
-		if (!StringUtils.hasText(origin.getServiceProvider())) {
-			throw new IllegalArgumentException("missing origin serviceProvider");
-		}
 		if (dest == null) {
 			throw new IllegalArgumentException("missing dest");
 		}
@@ -460,9 +367,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (!StringUtils.hasText(dest.getDomainName())) {
 			throw new IllegalArgumentException("missing dest domainName");
 		}
-		if (!StringUtils.hasText(dest.getServiceProvider())) {
-			throw new IllegalArgumentException("missing dest serviceProvider");
-		}
 		if (!StringUtils.hasText(dest.getServiceName())) {
 			throw new IllegalArgumentException("missing dest serviceName");
 		}
@@ -470,14 +374,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		criteria.setDomain(domain);
 		criteria.getOrigin().setLocalName(origin.getLocalName());
 		criteria.getOrigin().setDomainName(origin.getDomainName());
-		criteria.getOrigin().setServiceProvider(origin.getServiceProvider());
 		criteria.getDestination().setLocalName(dest.getLocalName());
 		criteria.getDestination().setDomainName(dest.getDomainName());
-		criteria.getDestination().setServiceProvider(dest.getServiceProvider());
 		criteria.getDestination().setServiceName(dest.getServiceName());
-		List<ChannelAuthorization> auths = getChannelDao().search(zone, criteria);
+		List<Channel> auths = getChannelDao().search(zone, criteria);
 
-		return auths.isEmpty() ? null : auths.get(0);
+		return auths.isEmpty() ? null : auths.get(0).getAuthorization();
 	}
 
 	@Override
@@ -502,89 +404,34 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	private void handleChannelOpenClose(Zone zone, Channel channel) {
 		if (channel.isOpen() && channel.isRecv()) {
-			FlowTargetSearchCriteria ftsc = new FlowTargetSearchCriteria(new PageSpecifier(0, 100)); // TODO global hard
+			DestinationSearchCriteria ftsc = new DestinationSearchCriteria(new PageSpecifier(0, 100)); // TODO global
+																										// hard
 																										// limit
-			ftsc.getTarget().setAddressName(channel.getDestination().getLocalName());
-			ftsc.getTarget().setDomainName(channel.getDestination().getDomainName());
-			ftsc.setServiceName(channel.getDestination().getServiceName());
+			ftsc.getDestination().setLocalName(channel.getDestination().getLocalName());
+			ftsc.getDestination().setDomainName(channel.getDestination().getDomainName());
+			ftsc.getDestination().setServiceName(channel.getDestination().getServiceName());
 			// suspended agents don't have FlowTargets, nor ChannelFlowTargets, so we don't need to restrict here on
 			// "active" agents
 
-			List<FlowTarget> flowTargets = flowTargetDao.search(zone, ftsc);
-			for (FlowTarget ft : flowTargets) {
-				ChannelFlowTargetDescriptor cftd = ft.getDescriptor(zone, channel.getOrigin());
-				setChannelFlowTarget(zone, channel, cftd);
+			List<Destination> destinations = destinationDao.search(zone, ftsc);
+			for (Destination d : destinations) {
+				setChannelDestinationSession(zone, channel, d.getDestinationSession());
 			}
 		} else if (!channel.isOpen()) {
-			// if the channel is "CLOSED" we don't allow any ChannelFlowTargets ( nor Flows nor Messages )
-			channel.getChannelFlowTargets().clear();
+			// if the channel is "CLOSED" we don't allow any DestinationSession
+			channel.setSession(null);
 		}
 	}
 
-	private void setChannelFlowTarget(Zone zone, Channel channel, ChannelFlowTargetDescriptor channelFlowTarget) {
-		ChannelFlowTarget foundCft = null;
-		for (ChannelFlowTarget cft : channel.getChannelFlowTargets()) {
-			if (cft.getTargetFingerprint().equals(channelFlowTarget.getTarget().getFingerprint())) {
-				foundCft = cft;
-				break;
-			}
-		}
-		if (foundCft == null) {
-			// create a new CFT
-			foundCft = new ChannelFlowTarget(channel);
-
-			// link the new CFT to the channel
-			channel.getChannelFlowTargets().add(foundCft);
-			foundCft.setTargetFingerprint(channelFlowTarget.getTarget().getFingerprint());
-		}
-
-		foundCft.setFlowTargetSession(channelFlowTarget.getFlowTargetSession());
+	private void setChannelDestinationSession(Zone zone, Channel channel, DestinationSession destinationSession) {
+		channel.setSession(destinationSession);
 		// on the receiving side, we need to relay new ChannelFlowTargets to the sending side, except if we are both
 		// sender and receiver
 		if (!channel.isSend() && channel.isRecv()) {
-			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+			channel.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 		} else {
-			foundCft.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+			channel.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 		}
-		// every time we set a new FlowTarget we make sure all flows are pre-setup too.
-		if (channel.isSend()) {
-			// initialize the ChannelFlowOrigins for ALL known originating Agents
-			AgentCredentialSearchCriteria oasc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 100)); // TODO
-																												// global
-																												// hard
-																												// limit
-			oasc.setAddressName(channel.getOrigin().getLocalName());
-			oasc.setDomainName(channel.getOrigin().getDomainName());
-			oasc.setType(AgentCredentialType.UC);
-			List<AgentCredential> originatingAgents = agentCredentialDao.search(zone, oasc);
-
-			for (AgentCredential origin : originatingAgents) {
-				createOrUpdateFlow(foundCft, channel.getAuthorization().getUnsentBuffer(), channel.getAuthorization()
-						.getUndeliveredBuffer(), origin.getFingerprint(), origin.getCertificateChainPem());
-			}
-		}
-	}
-
-	/*
-	 * Creates a ChannelFlowOrigin in a ChannelFlowTarget for an originating User if it doesn't already exist.
-	 */
-	private ChannelFlowOrigin createOrUpdateFlow(ChannelFlowTarget cft, FlowLimit unsentBuffer,
-			FlowLimit undeliveredBuffer, String sourceFingerprint, String sourceCertificateChainPem) {
-		ChannelFlowOrigin flow = null;
-		for (ChannelFlowOrigin cfo : cft.getChannelFlowOrigins()) {
-			if (sourceFingerprint.equals(cfo.getSourceFingerprint())) {
-				flow = cfo;
-				break;
-			}
-		}
-		if (flow == null) {
-			flow = new ChannelFlowOrigin(cft);
-			flow.setSourceFingerprint(sourceFingerprint);
-			flow.setSourceCertificateChainPem(sourceCertificateChainPem);
-		}
-		flow.setUnsentBuffer(unsentBuffer);
-		flow.setUndeliveredBuffer(undeliveredBuffer);
-		return flow;
 	}
 
 	// -------------------------------------------------------------------------
@@ -599,12 +446,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		this.channelDao = channelDao;
 	}
 
-	public FlowTargetDao getFlowTargetDao() {
-		return flowTargetDao;
+	public DestinationDao getDestinationDao() {
+		return destinationDao;
 	}
 
-	public void setFlowTargetDao(FlowTargetDao flowTargetDao) {
-		this.flowTargetDao = flowTargetDao;
+	public void setDestinationDao(DestinationDao destinationDao) {
+		this.destinationDao = destinationDao;
 	}
 
 	public ServiceDao getServiceDao() {

@@ -152,23 +152,11 @@
 	<wsdl:message name="createServiceResponse">
 		<wsdl:part name="parameters" element="zas:createServiceResponse"/>
 	</wsdl:message>
-	<wsdl:message name="modifyServiceRequest">
-		<wsdl:part name="parameters" element="zas:modifyService"/>
-	</wsdl:message>
-	<wsdl:message name="modifyServiceResponse">
-		<wsdl:part name="parameters" element="zas:modifyServiceResponse"/>
-	</wsdl:message>
 	<wsdl:message name="deleteServiceRequest">
 		<wsdl:part name="parameters" element="zas:deleteService"/>
 	</wsdl:message>
 	<wsdl:message name="deleteServiceResponse">
 		<wsdl:part name="parameters" element="zas:deleteServiceResponse"/>
-	</wsdl:message>
-	<wsdl:message name="searchChannelAuthorizationRequest">
-		<wsdl:part name="parameters" element="zas:searchChannelAuthorization"/>
-	</wsdl:message>
-	<wsdl:message name="searchChannelAuthorizationResponse">
-		<wsdl:part name="parameters" element="zas:searchChannelAuthorizationResponse"/>
 	</wsdl:message>
 	<wsdl:message name="setChannelAuthorizationRequest">
 		<wsdl:part name="parameters" element="zas:setChannelAuthorization"/>
@@ -182,23 +170,11 @@
 	<wsdl:message name="deleteChannelAuthorizationResponse">
 		<wsdl:part name="parameters" element="zas:deleteChannelAuthorizationResponse"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowTargetRequest">
-		<wsdl:part name="parameters" element="zas:searchFlowTarget"/>
+	<wsdl:message name="searchChannelRequest">
+		<wsdl:part name="parameters" element="zas:searchChannel"/>
 	</wsdl:message>
-	<wsdl:message name="searchFlowTargetResponse">
-		<wsdl:part name="parameters" element="zas:searchFlowTargetResponse"/>
-	</wsdl:message>
-	<wsdl:message name="modifyFlowTargetRequest">
-		<wsdl:part name="parameters" element="zas:modifyFlowTarget"/>
-	</wsdl:message>
-	<wsdl:message name="modifyFlowTargetResponse">
-		<wsdl:part name="parameters" element="zas:modifyFlowTargetResponse"/>
-	</wsdl:message>
-	<wsdl:message name="searchFlowRequest">
-		<wsdl:part name="parameters" element="zas:searchFlow"/>
-	</wsdl:message>
-	<wsdl:message name="searchFlowResponse">
-		<wsdl:part name="parameters" element="zas:searchFlowResponse"/>
+	<wsdl:message name="searchChannelResponse">
+		<wsdl:part name="parameters" element="zas:searchChannelResponse"/>
 	</wsdl:message>
 	<wsdl:portType name="ZAS">
 		<wsdl:documentation>
@@ -358,26 +334,12 @@
 			<wsdl:input message="tns:createServiceRequest"/>
 			<wsdl:output message="tns:createServiceResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="modifyService">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:modifyServiceRequest"/>
-			<wsdl:output message="tns:modifyServiceResponse"/>
-		</wsdl:operation>
 		<wsdl:operation name="deleteService">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
 			<wsdl:input message="tns:deleteServiceRequest"/>
 			<wsdl:output message="tns:deleteServiceResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="searchChannelAuthorization">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:searchChannelAuthorizationRequest"/>
-			<wsdl:output message="tns:searchChannelAuthorizationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="setChannelAuthorization">
 			<wsdl:documentation>
@@ -393,26 +355,12 @@
 			<wsdl:input message="tns:deleteChannelAuthorizationRequest"/>
 			<wsdl:output message="tns:deleteChannelAuthorizationResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowTarget">
+		<wsdl:operation name="searchChannel">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:searchFlowTargetRequest"/>
-			<wsdl:output message="tns:searchFlowTargetResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="modifyFlowTarget">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:modifyFlowTargetRequest"/>
-			<wsdl:output message="tns:modifyFlowTargetResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="searchFlow">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:searchFlowRequest"/>
-			<wsdl:output message="tns:searchFlowResponse"/>
+			<wsdl:input message="tns:searchChannelRequest"/>
+			<wsdl:output message="tns:searchChannelResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="ZASBinding" type="tns:ZAS">
@@ -615,26 +563,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="modifyService">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyService"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
 		<wsdl:operation name="deleteService">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/deleteService"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="searchChannelAuthorization">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchChannelAuthorization"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -660,26 +590,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="searchFlowTarget">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlowTarget"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="modifyFlowTarget">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/modifyFlowTarget"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="searchFlow">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchFlow"/>
+		<wsdl:operation name="searchChannel">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchChannel"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

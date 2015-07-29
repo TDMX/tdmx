@@ -123,16 +123,16 @@
 
 	<bean id="tdmx.lib.zone.ChannelRepository" class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
 		<property name="channelDao" ref="tdmx.lib.zone.dao.ChannelDao" />
-		<property name="flowTargetDao" ref="tdmx.lib.zone.dao.FlowTargetDao" />
+		<property name="destinationDao" ref="tdmx.lib.zone.dao.DestinationDao" />
 		<property name="serviceDao" ref="tdmx.lib.zone.dao.ServiceDao" />
 		<property name="agentCredentialDao" ref="tdmx.lib.zone.dao.AgentCredentialDao" />
 	</bean>
 
-	<bean id="tdmx.lib.zone.dao.FlowTargetDao"	class="org.tdmx.lib.zone.dao.FlowTargetDaoImpl">
+	<bean id="tdmx.lib.zone.dao.DestinationDao"	class="org.tdmx.lib.zone.dao.DestinationDaoImpl">
 	</bean>
  
-	<bean id="tdmx.lib.zone.FlowTargetRepository" class="org.tdmx.lib.zone.service.FlowTargetServiceRepositoryImpl">
-		<property name="flowTargetDao" ref="tdmx.lib.zone.dao.FlowTargetDao" />
+	<bean id="tdmx.lib.zone.DestinationRepository" class="org.tdmx.lib.zone.service.DestinationServiceRepositoryImpl">
+		<property name="destinationDao" ref="tdmx.lib.zone.dao.DestinationDao" />
 	</bean>
 
 

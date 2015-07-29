@@ -52,6 +52,8 @@ import org.tdmx.core.api.v01.mos.ws.MOS;
 @Table(name = "ChannelFlowMessage")
 public class ChannelFlowMessage implements Serializable {
 
+	// TODO rename ChannelMessage
+
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -78,11 +80,11 @@ public class ChannelFlowMessage implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowMessageIdGen")
-	@TableGenerator(name = "ChannelFlowMessageIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelflowmessageObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ChannelFlowMessageIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelflowmessageObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private ChannelFlowOrigin flowOrigin;
+	private Channel channel;
 
 	// -------------------------------------------------------------------------
 	// HEADER FIELDS
@@ -98,7 +100,7 @@ public class ChannelFlowMessage implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date ttlTimestamp;
 
-	@Column(length = FlowSession.MAX_IDENTIFIER_LEN, nullable = false)
+	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String flowSessionId;
 
 	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
@@ -115,7 +117,7 @@ public class ChannelFlowMessage implements Serializable {
 	// -------------------------------------------------------------------------
 
 	@Column(nullable = false)
-	private int chunkSizeFactor; // chunkSizeBytes = 2^chunkSizeFactor
+	private long chunkSize; // chunkSize in Bytes
 
 	@Column(nullable = false)
 	private long payloadLength; // total encrypted length = SUM length chunks
@@ -145,18 +147,18 @@ public class ChannelFlowMessage implements Serializable {
 	ChannelFlowMessage() {
 	}
 
-	public ChannelFlowMessage(ChannelFlowOrigin flow, MessageDescriptor md) {
-		setFlowOrigin(flow);
+	public ChannelFlowMessage(Channel channel, MessageDescriptor md) {
+		setChannel(channel);
 		// header fields
 		setMsgId(md.getMsgId());
 		setSentTimestamp(md.getSentTimestamp());
 		setTtlTimestamp(md.getTtlTimestamp());
-		setFlowSessionId(md.getFlowSessionId());
+		setFlowSessionId(md.getEncryptionContextId());
 		setPayloadSignature(md.getPayloadSignature());
 		setExternalReference(md.getExternalReference());
 		setHeaderSignature(md.getHeaderSignature());
 		// payload fields
-		setChunkSizeFactor(md.getChunkSizeFactor());
+		setChunkSize(md.getChunkSize());
 		setPayloadLength(md.getPayloadLength());
 		setEncryptionContext(md.getEncryptionContext());
 		setPlaintextLength(md.getPlaintextLength());
@@ -180,24 +182,24 @@ public class ChannelFlowMessage implements Serializable {
 	 */
 	public String getContinuationId(int chunkPos) {
 		// if the chunk requested starts after the end of the payload then the previous chunk is the last
-		if (Math.pow(2, getChunkSizeFactor()) * chunkPos > getPayloadLength()) {
+		if ((getChunkSize() * chunkPos) > getPayloadLength()) {
 			return null;
 		}
 		return SignatureUtils.createContinuationId(chunkPos, getEntropy(), getMsgId(), LEN_CONTINUATION_ID);
 	}
 
-	public ChannelFlowOrigin getFlowOrigin() {
-		return flowOrigin;
+	public Channel getChannel() {
+		return channel;
 	}
 
-	public void setFlowOrigin(ChannelFlowOrigin flowOrigin) {
-		this.flowOrigin = flowOrigin;
+	public void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelFlowMsg [id=");
+		builder.append("ChannelFlowMessage [id=");
 		builder.append(id);
 		builder.append(" msgId=").append(msgId);
 		builder.append(" sentTimestamp=").append(sentTimestamp);
@@ -287,12 +289,12 @@ public class ChannelFlowMessage implements Serializable {
 		this.headerSignature = headerSignature;
 	}
 
-	public int getChunkSizeFactor() {
-		return chunkSizeFactor;
+	public long getChunkSize() {
+		return chunkSize;
 	}
 
-	public void setChunkSizeFactor(int chunkSizeFactor) {
-		this.chunkSizeFactor = chunkSizeFactor;
+	public void setChunkSize(long chunkSize) {
+		this.chunkSize = chunkSize;
 	}
 
 	public long getPayloadLength() {

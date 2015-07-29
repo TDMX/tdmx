@@ -26,7 +26,7 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="listChannelAuthorizationRequestType">
+	<xs:complexType name="listChannelRequestType">
 		<xs:annotation>
 			<xs:documentation>list the authorized channels associated with the source credential.</xs:documentation>
 		</xs:annotation>
@@ -39,32 +39,54 @@
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="listChannelAuthorizationResponseType">
+	<xs:complexType name="listChannelResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:channelauthorization" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:channelinfo" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="listFlowRequestType">
+	<xs:complexType name="getChannelRequestType">
 		<xs:annotation>
-			<xs:documentation>list the flow state of every flow of a channel. The origin of the channel is implicitly the User's address.</xs:documentation>
+			<xs:documentation>get the channel info to the given destination.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="destination" type="msg:FlowDestinationFilter"/>
-			<xs:element ref="common:page"/>
+			<xs:element name="destination" type="msg:ChannelDestination"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="listFlowResponseType">
+	<xs:complexType name="getChannelResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flow" minOccurs="0" maxOccurs="unbounded"/>
-					<xs:element ref="common:page"/>
+					<xs:element ref="msg:channelinfo" minOccurs="0"/>
 				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="receiptRequestType">
+		<xs:annotation>
+			<xs:documentation>receive a DeliveryReport either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice>
+				<xs:element ref="tx:transaction"/>
+				<xs:element ref="msg:session"/>
+			</xs:choice>
+			<xs:element ref="msg:waitTimeout"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="receiptResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge">
+				<xs:choice minOccurs="0">
+					<xs:sequence>
+						<xs:element ref="msg:dr"/>
+						<xs:element ref="msg:retryCount"/>
+					</xs:sequence>
+				</xs:choice>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -73,7 +95,7 @@
 			<xs:documentation>get the delivery status of a submitted Message.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element ref="msg:msgId" maxOccurs="256"/>
+			<xs:element ref="msg:msgId"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="getMessageDeliveryStatusResponseType">
@@ -117,12 +139,14 @@
 	<!-- ********************************************* -->
 	<xs:element name="getAddress" type="getAddressRequestType"/>
 	<xs:element name="getAddressResponse" type="getAddressResponseType"/>
-	<xs:element name="listChannelAuthorization" type="listChannelAuthorizationRequestType"/>
-	<xs:element name="listChannelAuthorizationResponse" type="listChannelAuthorizationResponseType"/>
-	<xs:element name="listFlow" type="listFlowRequestType"/>
-	<xs:element name="listFlowResponse" type="listFlowResponseType"/>
+	<xs:element name="listChannel" type="listChannelRequestType"/>
+	<xs:element name="listChannelResponse" type="listChannelResponseType"/>
+	<xs:element name="getChannel" type="getChannelRequestType"/>
+	<xs:element name="getChannelResponse" type="getChannelResponseType"/>
 	<xs:element name="getMessageDeliveryStatus" type="getMessageDeliveryStatusRequestType"/>
 	<xs:element name="getMessageDeliveryStatusResponse" type="getMessageDeliveryStatusResponseType"/>
+	<xs:element name="receipt" type="receiptRequestType"/>
+	<xs:element name="receiptResponse" type="receiptResponseType"/>
 	<xs:element name="submit" type="submitRequestType"/>
 	<xs:element name="submitResponse" type="submitResponseType"/>
 	<xs:element name="upload" type="uploadRequestType"/>

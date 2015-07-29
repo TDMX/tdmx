@@ -14,8 +14,6 @@
 				<xs:element ref="msg:service"/>
 				<xs:element ref="msg:channel"/>
 				<xs:element ref="msg:user"/>
-				<xs:element ref="msg:flowtarget"/>
-				<xs:element ref="msg:flow"/>
 			</xs:choice>
 		</xs:sequence>
 	</xs:complexType>

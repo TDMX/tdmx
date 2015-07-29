@@ -22,21 +22,14 @@ import java.util.List;
 
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowOrigin;
-import org.tdmx.lib.zone.domain.ChannelFlowSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTarget;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetDescriptor;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
@@ -108,18 +101,17 @@ public interface ChannelService {
 	/**
 	 * Relayed in EndpointPermission.
 	 * 
-	 * Creates ChannelAuthorization if no Channel exists, otherwise the EndpointPermission relayed in is set as either
-	 * the reqSendPermission or reqRecvPermission, which must be later confirmed by the domain administrator using
+	 * The Channel must be created if not existing before hand. FIXME
+	 * 
+	 * The EndpointPermission relayed in is set as either the reqSendPermission or reqRecvPermission, which must be
+	 * later confirmed by the domain administrator using
 	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
 	 * 
 	 * @param zone
-	 * @param domain
-	 * @param origin
-	 * @param dest
+	 * @param channelId
 	 * @param otherPerm
 	 */
-	public void relayAuthorization(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest,
-			EndpointPermission otherPerm);
+	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
 
 	public void createOrUpdate(Channel channel);
 
@@ -127,13 +119,7 @@ public interface ChannelService {
 
 	public Channel findById(Long id);
 
-	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
-
-	public List<ChannelAuthorization> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
-
-	public List<ChannelFlowTarget> search(Zone zone, ChannelFlowTargetSearchCriteria criteria);
-
-	public List<ChannelFlowOrigin> search(Zone zone, ChannelFlowSearchCriteria criteria);
+	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
 	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
 
@@ -147,21 +133,21 @@ public interface ChannelService {
 	public ChannelFlowMessage findByMessageId(Zone zone, String msgId);
 
 	/**
-	 * Adds or updates the FlowTarget as ChannelFlowTarget within a Channel.
+	 * Adds or updates the DestinationSession within a Channel.
 	 * 
 	 * This is called on the receiving end of the channel by the target's
-	 * {@link MDS#setFlowTargetSession(org.tdmx.core.api.v01.mds.SetFlowTargetSession)} propagation to each channel.
+	 * {@link MDS#setDestinationSession(org.tdmx.core.api.v01.mds.SetDestinationSession)} propagation to each channel.
 	 * 
 	 * @param zone
 	 *            the zone
 	 * @param channelId
 	 *            id of the channel
-	 * @param flowTarget
+	 * @param destinationSession
 	 */
-	public void setChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget);
+	public void setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession);
 
 	/**
-	 * Updates the FlowTarget as ChannelFlowTarget within a Channel.
+	 * Updates the DestinationSession within a Channel.
 	 * 
 	 * This is called on the sending end by the relay in of a remote ChannelFlowTarget via
 	 * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)}.
@@ -170,53 +156,16 @@ public interface ChannelService {
 	 *            the zone
 	 * @param channelId
 	 *            id of the channel
-	 * @param flowTarget
+	 * @param destinationSession
 	 */
-	public void relayChannelFlowTarget(Zone zone, Long channelId, ChannelFlowTargetDescriptor flowTarget);
+	public void relayChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession);
 
 	/**
-	 * Creates a Flow originating from the originatingUser and terminating in the ChannelFlowTarget referenced by
-	 * channelFlowId. This is the means to create Flows on the Originating side when originating Users are created when
-	 * ChannelAuthorizations exist.
-	 * 
-	 * @param zone
-	 * @param channelFlowTargetId
-	 * @param originatingUser
-	 */
-	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
-			AgentCredential originatingUser);
-
-	/**
-	 * Creates a Flow originating from the sourceUser and terminating in the ChannelFlowTarget referenced by
-	 * channelFlowId. This is the means to create Flows on the Destination side when inbound Messages are received.
-	 * 
-	 * @param zone
-	 * @param channelFlowTargetId
-	 * @param sourceUser
-	 */
-	public ChannelFlowOrigin createChannelFlowOrigin(Zone zone, Long channelFlowTargetId,
-			AgentCredentialDescriptor sourceUser);
-
-	/**
-	 * Delete the Channel, cascades to ChannelFlowTargets and their Flows, and the ChannelAuthorization.
+	 * Delete the Channel, cascades to the ChannelAuthorization and FlowQuota and ChannelMessages.
 	 * 
 	 * @param channel
 	 */
 	public void delete(Channel channel);
-
-	/**
-	 * ChannelFlowTargets can be deleted without the Channel's knowledge. Cascades to Flows.
-	 * 
-	 * @param channelFlowTarget
-	 */
-	public void delete(ChannelFlowTarget channelFlowTarget);
-
-	/**
-	 * ChannelFlowOrigins can be deleted without the ChannelFlowTarget's knowledge. Cascades to Messages.
-	 * 
-	 * @param channelFlowOrigin
-	 */
-	public void delete(ChannelFlowOrigin channelFlowOrigin);
 
 	public enum SubmitMessageOperationStatus {
 		FLOW_CONTROL_CLOSED,
@@ -231,22 +180,22 @@ public interface ChannelService {
 	 * Submit a Message outbound called on the sender side.
 	 * 
 	 * @param zone
-	 * @param flow
-	 *            detached Flow
+	 * @param channel
+	 *            detached Channel
 	 * @param msg
 	 * @return
 	 */
-	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+	public SubmitMessageResultHolder submitMessage(Zone zone, Channel channel, MessageDescriptor md);
 
 	/**
 	 * Relay a Message inbound called on the receiver side.
 	 * 
 	 * @param zone
-	 * @param flow
-	 *            detached Flow
+	 * @param channel
+	 *            detached Channel
 	 * @param msg
 	 * @return
 	 */
-	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelFlowOrigin flow, MessageDescriptor md);
+	public SubmitMessageResultHolder relayMessage(Zone zone, Channel channel, MessageDescriptor md);
 
 }

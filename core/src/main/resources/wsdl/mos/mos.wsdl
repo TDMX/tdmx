@@ -23,23 +23,29 @@
 	<wsdl:message name="getAddressResponse">
 		<wsdl:part name="parameters" element="mos:getAddressResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listChannelAuthorizationRequest">
-		<wsdl:part name="parameters" element="mos:listChannelAuthorization"/>
+	<wsdl:message name="listChannelRequest">
+		<wsdl:part name="parameters" element="mos:listChannel"/>
 	</wsdl:message>
-	<wsdl:message name="listChannelAuthorizationResponse">
-		<wsdl:part name="parameters" element="mos:listChannelAuthorizationResponse"/>
+	<wsdl:message name="listChannelResponse">
+		<wsdl:part name="parameters" element="mos:listChannelResponse"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowRequest">
-		<wsdl:part name="parameters" element="mos:listFlow"/>
+	<wsdl:message name="getChannelRequest">
+		<wsdl:part name="parameters" element="mos:getChannel"/>
 	</wsdl:message>
-	<wsdl:message name="listFlowResponse">
-		<wsdl:part name="parameters" element="mos:listFlowResponse"/>
+	<wsdl:message name="getChannelResponse">
+		<wsdl:part name="parameters" element="mos:getChannelResponse"/>
 	</wsdl:message>
 	<wsdl:message name="getMessageDeliveryStatusRequest">
 		<wsdl:part name="parameters" element="mos:getMessageDeliveryStatus"/>
 	</wsdl:message>
 	<wsdl:message name="getMessageDeliveryStatusResponse">
 		<wsdl:part name="parameters" element="mos:getMessageDeliveryStatusResponse"/>
+	</wsdl:message>
+	<wsdl:message name="receiptRequest">
+		<wsdl:part name="parameters" element="mos:receipt"/>
+	</wsdl:message>
+	<wsdl:message name="receiptResponse">
+		<wsdl:part name="parameters" element="mos:receiptResponse"/>
 	</wsdl:message>
 	<wsdl:message name="submitRequest">
 		<wsdl:part name="parameters" element="mos:submit"/>
@@ -94,19 +100,19 @@
 			<wsdl:input message="tns:getAddressRequest"/>
 			<wsdl:output message="tns:getAddressResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listChannelAuthorization">
+		<wsdl:operation name="listChannel">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listChannelAuthorizationRequest"/>
-			<wsdl:output message="tns:listChannelAuthorizationResponse"/>
+			<wsdl:input message="tns:listChannelRequest"/>
+			<wsdl:output message="tns:listChannelResponse"/>
 		</wsdl:operation>
-		<wsdl:operation name="listFlow">
+		<wsdl:operation name="getChannel">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:listFlowRequest"/>
-			<wsdl:output message="tns:listFlowResponse"/>
+			<wsdl:input message="tns:getChannelRequest"/>
+			<wsdl:output message="tns:getChannelResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="getMessageDeliveryStatus">
 			<wsdl:documentation>
@@ -114,6 +120,13 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:getMessageDeliveryStatusRequest"/>
 			<wsdl:output message="tns:getMessageDeliveryStatusResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="receipt">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:receiptRequest"/>
+			<wsdl:output message="tns:receiptResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="submit">
 			<wsdl:documentation>
@@ -176,8 +189,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listChannelAuthorization">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/listChannelAuthorization"/>
+		<wsdl:operation name="listChannel">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/listChannel"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -185,8 +198,8 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-		<wsdl:operation name="listFlow">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/listFlow"/>
+		<wsdl:operation name="getChannel">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/getChannel"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -196,6 +209,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="getMessageDeliveryStatus">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/getMessageDeliveryStatus"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="receipt">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/receipt"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

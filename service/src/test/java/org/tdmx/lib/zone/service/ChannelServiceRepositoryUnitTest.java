@@ -45,7 +45,7 @@ import org.tdmx.lib.zone.domain.Zone;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class ChannelAuthorizationServiceRepositoryUnitTest {
+public class ChannelServiceRepositoryUnitTest {
 
 	@Autowired
 	private TestDataGenerator dataGenerator;
@@ -102,9 +102,9 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_None() throws Exception {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+		List<Channel> channels = channelService.search(zone, criteria);
+		assertNotNull(channels);
+		assertEquals(1, channels.size());
 	}
 
 	@Test
@@ -114,11 +114,10 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getChannel().getOrigin().getLocalName());
 		criteria.getOrigin().setDomainName(ca.getChannel().getOrigin().getDomainName());
-		criteria.getOrigin().setServiceProvider(ca.getChannel().getOrigin().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+		List<Channel> channels = channelService.search(zone, criteria);
+		assertNotNull(channels);
+		assertEquals(1, channels.size());
 	}
 
 	@Test
@@ -129,11 +128,10 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		criteria.getDestination().setLocalName(ca.getChannel().getDestination().getLocalName());
 		criteria.getDestination().setDomainName(ca.getChannel().getDestination().getDomainName());
 		criteria.getDestination().setServiceName(ca.getChannel().getDestination().getServiceName());
-		criteria.getDestination().setServiceProvider(ca.getChannel().getDestination().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+		List<Channel> channels = channelService.search(zone, criteria);
+		assertNotNull(channels);
+		assertEquals(1, channels.size());
 	}
 
 	@Test
@@ -143,15 +141,13 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		criteria.getOrigin().setLocalName(ca.getChannel().getOrigin().getLocalName());
 		criteria.getOrigin().setDomainName(ca.getChannel().getOrigin().getDomainName());
-		criteria.getOrigin().setServiceProvider(ca.getChannel().getOrigin().getServiceProvider());
 		criteria.getDestination().setLocalName(ca.getChannel().getDestination().getLocalName());
 		criteria.getDestination().setDomainName(ca.getChannel().getDestination().getDomainName());
 		criteria.getDestination().setServiceName(ca.getChannel().getDestination().getServiceName());
-		criteria.getDestination().setServiceProvider(ca.getChannel().getDestination().getServiceProvider());
 
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+		List<Channel> channels = channelService.search(zone, criteria);
+		assertNotNull(channels);
+		assertEquals(1, channels.size());
 	}
 
 	@Test
@@ -173,9 +169,9 @@ public class ChannelAuthorizationServiceRepositoryUnitTest {
 		Zone gugus = new Zone(zone.getAccountZoneId(), zone.getZoneApex());
 		gugus.setId(new Random().nextLong());
 
-		List<ChannelAuthorization> channelAuths = channelService.search(gugus, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(0, channelAuths.size());
+		List<Channel> channels = channelService.search(gugus, criteria);
+		assertNotNull(channels);
+		assertEquals(0, channels.size());
 	}
 
 	@Test

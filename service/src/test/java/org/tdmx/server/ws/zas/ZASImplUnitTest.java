@@ -56,11 +56,8 @@ import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.DomainFilter;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
-import org.tdmx.core.api.v01.msg.FlowDestination;
-import org.tdmx.core.api.v01.msg.FlowFilter;
-import org.tdmx.core.api.v01.msg.FlowTargetFilter;
+import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
@@ -91,10 +88,6 @@ import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
-import org.tdmx.core.api.v01.zas.ModifyFlowTarget;
-import org.tdmx.core.api.v01.zas.ModifyFlowTargetResponse;
-import org.tdmx.core.api.v01.zas.ModifyService;
-import org.tdmx.core.api.v01.zas.ModifyServiceResponse;
 import org.tdmx.core.api.v01.zas.ModifyUser;
 import org.tdmx.core.api.v01.zas.ModifyUserResponse;
 import org.tdmx.core.api.v01.zas.SearchAddress;
@@ -105,10 +98,6 @@ import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
-import org.tdmx.core.api.v01.zas.SearchFlow;
-import org.tdmx.core.api.v01.zas.SearchFlowResponse;
-import org.tdmx.core.api.v01.zas.SearchFlowTarget;
-import org.tdmx.core.api.v01.zas.SearchFlowTargetResponse;
 import org.tdmx.core.api.v01.zas.SearchService;
 import org.tdmx.core.api.v01.zas.SearchServiceResponse;
 import org.tdmx.core.api.v01.zas.SearchUser;
@@ -128,7 +117,7 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
@@ -136,7 +125,7 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -172,7 +161,7 @@ public class ZASImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private FlowTargetService flowTargetService;
+	private DestinationService flowTargetService;
 
 	@Autowired
 	private ZAS zas;
@@ -528,7 +517,7 @@ public class ZASImplUnitTest {
 
 		SearchServiceResponse response = zas.searchService(req);
 		assertSuccess(response);
-		assertEquals(1, response.getServicestates().size());
+		assertEquals(1, response.getServices().size());
 	}
 
 	@Test
@@ -568,7 +557,7 @@ public class ZASImplUnitTest {
 
 		SearchServiceResponse response = zas.searchService(req);
 		assertSuccess(response);
-		assertEquals(1, response.getServicestates().size());
+		assertEquals(1, response.getServices().size());
 	}
 
 	@Test
@@ -589,7 +578,7 @@ public class ZASImplUnitTest {
 
 		SearchServiceResponse response = zas.searchService(req);
 		assertSuccess(response);
-		assertEquals(1, response.getServicestates().size());
+		assertEquals(1, response.getServices().size());
 	}
 
 	@Test
@@ -911,7 +900,6 @@ public class ZASImplUnitTest {
 
 		CreateService ca = new CreateService();
 		ca.setService(s);
-		ca.setConcurrencyLimit(1);
 
 		CreateServiceResponse response = zas.createService(ca);
 		assertSuccess(response);
@@ -929,7 +917,6 @@ public class ZASImplUnitTest {
 
 		CreateService ca = new CreateService();
 		ca.setService(service);
-		ca.setConcurrencyLimit(10);
 
 		CreateServiceResponse response = zas.createService(ca);
 		assertError(ErrorCode.DomainNotFound, response);
@@ -1004,12 +991,12 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		// delete any FlowTarget on the domain
-		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+		// delete any Destination on the domain
+		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
-		for (FlowTarget ft : ftlist) {
+		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		for (Destination ft : ftlist) {
 			flowTargetService.delete(ft);
 		}
 
@@ -1096,40 +1083,6 @@ public class ZASImplUnitTest {
 		// TODO check susp.
 	}
 
-	@Test
-	public void testModiyService_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		ModifyService ca = new ModifyService();
-		Service u = new Service();
-		u.setDomain(domain.getDomainName());
-		u.setServicename(service.getServiceName());
-
-		ca.setService(u);
-		ca.setConcurrencyLimit(100);
-		ModifyServiceResponse response = zas.modifyService(ca);
-		assertSuccess(response);
-		// TODO check susp.
-	}
-
-	@Test
-	public void testModiyService_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		ModifyService ca = new ModifyService();
-		Service u = new Service();
-		u.setDomain(domain.getDomainName());
-		u.setServicename(service.getServiceName());
-
-		ca.setService(u);
-		ca.setConcurrencyLimit(99);
-		ModifyServiceResponse response = zas.modifyService(ca);
-		assertSuccess(response);
-		// TODO check limit.
-	}
-
 	// TODO delete user which has is a target Channel.ChannelFlowTarget (+Flows)
 	@Test
 	public void testDeleteUser_DAC() {
@@ -1162,54 +1115,6 @@ public class ZASImplUnitTest {
 		ca.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(ca);
 		assertSuccess(response);
-	}
-
-	@Test
-	public void testModifyFlowTarget_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		FlowDestination fd = new FlowDestination();
-		fd.setServicename(service.getServiceName());
-		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
-		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
-		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
-		fd.setTarget(u);
-
-		ModifyFlowTarget ft = new ModifyFlowTarget();
-		ft.setFlowdestination(fd);
-		ft.setConcurrencyLimit(100);
-
-		ModifyFlowTargetResponse response = zas.modifyFlowTarget(ft);
-		assertSuccess(response);
-
-		// TODO test changed
-
-		// TODO testModifyFlowTarget_DAC
-	}
-
-	@Test
-	public void testModifyFlowTarget_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		FlowDestination fd = new FlowDestination();
-		fd.setServicename(service.getServiceName());
-		UserIdentity u = new UserIdentity();
-		u.setUsercertificate(uc.getPublicCert().getX509Encoded());
-		u.setDomaincertificate(dac.getPublicCert().getX509Encoded());
-		u.setRootcertificate(dac.getIssuerPublicCert().getX509Encoded());
-		fd.setTarget(u);
-
-		ModifyFlowTarget ft = new ModifyFlowTarget();
-		ft.setFlowdestination(fd);
-		ft.setConcurrencyLimit(999);
-
-		ModifyFlowTargetResponse response = zas.modifyFlowTarget(ft);
-		assertSuccess(response);
-
-		// TODO test changed
 	}
 
 	@Test
@@ -1414,26 +1319,6 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchFlow_DAC_All() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		SearchFlow req = new SearchFlow();
-
-		Page p = new Page();
-		p.setNumber(0);
-		p.setSize(10);
-		req.setPage(p);
-
-		FlowFilter ff = new FlowFilter();
-		req.setFilter(ff);
-
-		SearchFlowResponse response = zas.searchFlow(req);
-		assertSuccess(response);
-		assertEquals(1, response.getFlows().size());
-	}
-
-	@Test
 	public void testSetChannelAuthorization_SendRecvSameDomain() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1447,28 +1332,26 @@ public class ZASImplUnitTest {
 		dest.setDomain(domain.getDomainName());
 		dest.setLocalname(uc.getPublicCert().getCommonName());
 		dest.setServicename(service.getServiceName());
-		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain.getDomainName());
 		origin.setLocalname(uc.getPublicCert().getCommonName());
-		origin.setServiceprovider("SP"); // TODO
 		channel.setOrigin(origin);
 		auth.setChannel(channel);
 
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
-		EndpointPermission recvPermission = new EndpointPermission();
+		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		recvPermission.setPermission(Permission.ALLOW);
+		recvPermission.setPermission(Grant.ALLOW);
 		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setDestination(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
 
-		EndpointPermission sendPermission = new EndpointPermission();
+		Permission sendPermission = new Permission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		sendPermission.setPermission(Permission.ALLOW);
+		sendPermission.setPermission(Grant.ALLOW);
 		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setOrigin(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
@@ -1512,28 +1395,26 @@ public class ZASImplUnitTest {
 		dest.setDomain(domain.getDomainName());
 		dest.setLocalname(uc.getPublicCert().getCommonName());
 		dest.setServicename("gugus");
-		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain.getDomainName());
 		origin.setLocalname(uc.getPublicCert().getCommonName());
-		origin.setServiceprovider("SP"); // TODO
 		channel.setOrigin(origin);
 		auth.setChannel(channel);
 
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
-		EndpointPermission recvPermission = new EndpointPermission();
+		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		recvPermission.setPermission(Permission.ALLOW);
+		recvPermission.setPermission(Grant.ALLOW);
 		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setDestination(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
 
-		EndpointPermission sendPermission = new EndpointPermission();
+		Permission sendPermission = new Permission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		sendPermission.setPermission(Permission.ALLOW);
+		sendPermission.setPermission(Grant.ALLOW);
 		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
 		auth.setOrigin(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
@@ -1755,12 +1636,12 @@ public class ZASImplUnitTest {
 	}
 
 	private void removeFlowTargets(Domain domain) {
-		// delete any FlowTarget on the domain
-		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+		// delete any Destination on the domain
+		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
-		for (FlowTarget ft : ftlist) {
+		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		for (Destination ft : ftlist) {
 			flowTargetService.delete(ft);
 		}
 	}

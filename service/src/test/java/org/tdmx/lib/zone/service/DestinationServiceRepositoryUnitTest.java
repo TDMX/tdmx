@@ -21,7 +21,6 @@ package org.tdmx.lib.zone.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Random;
@@ -38,16 +37,17 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
-import org.tdmx.lib.zone.domain.FlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class FlowTargetServiceRepositoryUnitTest {
+public class DestinationServiceRepositoryUnitTest {
 
 	@Autowired
 	private TestDataGenerator dataGenerator;
@@ -55,13 +55,14 @@ public class FlowTargetServiceRepositoryUnitTest {
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
-	private FlowTargetService flowTargetService;
+	private DestinationService destinationService;
 
 	private TestDataGeneratorInput input;
 	private TestDataGeneratorOutput data;
 
 	private Zone zone;
 	private Domain domain;
+	private Address address;
 	private AgentCredential user;
 	private Service service;
 
@@ -81,6 +82,7 @@ public class FlowTargetServiceRepositoryUnitTest {
 
 		zone = data.getZone();
 		domain = data.getDomains().get(0).getDomain();
+		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		user = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getAg();
 		service = data.getDomains().get(0).getServices().get(0).getService();
 
@@ -98,91 +100,66 @@ public class FlowTargetServiceRepositoryUnitTest {
 	@Test
 	public void testAutoWire() throws Exception {
 		assertNotNull(dataGenerator);
-		assertNotNull(flowTargetService);
+		assertNotNull(destinationService);
 	}
 
 	@Test
 	public void testFindById_NotFound() throws Exception {
-		FlowTarget c = flowTargetService.findById(new Random().nextLong());
+		Destination c = destinationService.findById(new Random().nextLong());
 		assertNull(c);
 	}
 
 	@Test
 	public void testSearch_None() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		List<FlowTarget> flowTargets = flowTargetService.search(zone, criteria);
-		assertNotNull(flowTargets);
-		assertEquals(1, flowTargets.size());
+		DestinationSearchCriteria criteria = new DestinationSearchCriteria(new PageSpecifier(0, 999));
+		List<Destination> destinations = destinationService.search(zone, criteria);
+		assertNotNull(destinations);
+		assertEquals(1, destinations.size());
 	}
 
 	@Test
 	public void testLookup_FindByFlowTarget() throws Exception {
-		FlowTarget storedCA = flowTargetService.findByTargetService(user, service);
+		Destination storedCA = destinationService.findByDestination(address, service);
 		assertNotNull(storedCA);
 	}
 
 	@Test
 	public void testSearch_UnknownZone() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
+		DestinationSearchCriteria criteria = new DestinationSearchCriteria(new PageSpecifier(0, 999));
 		Zone gugus = new Zone(zone.getAccountZoneId(), zone.getZoneApex());
 		gugus.setId(new Random().nextLong());
 
-		List<FlowTarget> channelAuths = flowTargetService.search(gugus, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(0, channelAuths.size());
+		List<Destination> destinations = destinationService.search(gugus, criteria);
+		assertNotNull(destinations);
+		assertEquals(0, destinations.size());
 	}
 
 	@Test
 	public void testSearch_ServiceName() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		criteria.setServiceName(service.getServiceName());
-		List<FlowTarget> channelAuths = flowTargetService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+		DestinationSearchCriteria criteria = new DestinationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getDestination().setServiceName(service.getServiceName());
+		List<Destination> destinations = destinationService.search(zone, criteria);
+		assertNotNull(destinations);
+		assertEquals(1, destinations.size());
 	}
 
 	@Test
-	public void testSearch_TargetAddress() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getTarget().getAddressName();
-		List<FlowTarget> channelAuths = flowTargetService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
+	public void testSearch_AddressLocalname() throws Exception {
+		DestinationSearchCriteria criteria = new DestinationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getDestination().setLocalName(address.getLocalName());
+		List<Destination> destinations = destinationService.search(zone, criteria);
+		assertNotNull(destinations);
+		assertEquals(1, destinations.size());
 	}
 
 	@Test
-	public void testSearch_TargetUser() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getTarget().setAddressName(user.getAddress().getLocalName());
-		criteria.getTarget().setDomainName(user.getDomain().getDomainName());
-		criteria.getTarget().setStatus(user.getCredentialStatus());
-		List<FlowTarget> channelAuths = flowTargetService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
-	}
-
-	@Test
-	public void testSearch_TargetAgent() throws Exception {
-		FlowTargetSearchCriteria criteria = new FlowTargetSearchCriteria(new PageSpecifier(0, 999));
-		criteria.getTarget().setAgent(user);
-		List<FlowTarget> channelAuths = flowTargetService.search(zone, criteria);
-		assertNotNull(channelAuths);
-		assertEquals(1, channelAuths.size());
-	}
-
-	@Test
-	public void testModify() throws Exception {
-		FlowTarget storedCA = flowTargetService.findByTargetService(user, service);
-		assertNotNull(storedCA);
-		storedCA.getConcurrency().setConcurrencyLevel(999);
-		storedCA.getConcurrency().setConcurrencyLimit(1000);
-		flowTargetService.createOrUpdate(storedCA);
-
-		FlowTarget modifiedCA = flowTargetService.findByTargetService(user, service);
-		assertNotNull(modifiedCA);
-		assertTrue(modifiedCA != storedCA);
-		assertEquals(storedCA.getConcurrency().getConcurrencyLevel(), modifiedCA.getConcurrency().getConcurrencyLevel());
-		assertEquals(storedCA.getConcurrency().getConcurrencyLimit(), modifiedCA.getConcurrency().getConcurrencyLimit());
+	public void testSearch_AddressDomain() throws Exception {
+		DestinationSearchCriteria criteria = new DestinationSearchCriteria(new PageSpecifier(0, 999));
+		criteria.getDestination().setLocalName(address.getLocalName());
+		criteria.getDestination().setDomainName(domain.getDomainName());
+		List<Destination> destinations = destinationService.search(zone, criteria);
+		assertNotNull(destinations);
+		assertEquals(1, destinations.size());
 	}
 
 }

@@ -35,7 +35,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.EndpointPermission;
+import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
 
@@ -58,13 +58,11 @@ public class SignatureUtilsTest {
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain("domain");
 		origin.setLocalname("domain");
-		origin.setServiceprovider("sp");
 
 		Destination dest = new Destination();
 		dest.setDomain("domain");
 		dest.setLocalname("domain");
 		dest.setServicename("service");
-		dest.setServiceprovider("sp");
 
 		Channel channel = new Channel();
 		channel.setOrigin(origin);
@@ -72,9 +70,9 @@ public class SignatureUtilsTest {
 
 		Date futureDate = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 
-		EndpointPermission perm = new EndpointPermission();
+		Permission perm = new Permission();
 		perm.setMaxPlaintextSizeBytes(BigInteger.ONE);
-		perm.setPermission(Permission.ALLOW);
+		perm.setPermission(Grant.ALLOW);
 		perm.setValidUntil(CalendarUtils.getDate(futureDate));
 
 		SignatureUtils

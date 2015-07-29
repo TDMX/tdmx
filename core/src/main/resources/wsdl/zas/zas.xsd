@@ -283,7 +283,7 @@
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:servicestate" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:service" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
@@ -292,29 +292,9 @@
 	<xs:complexType name="createServiceRequestType">
 		<xs:sequence>
 			<xs:element ref="msg:service"/>
-			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>the default maximum receive concurrency for flow targets of this service.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="createServiceResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge"/>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="modifyServiceRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:service"/>
-			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>the default receive concurrency limit per target.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="modifyServiceResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
@@ -327,22 +307,6 @@
 	<xs:complexType name="deleteServiceResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge"/>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="searchChannelAuthorizationRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:ChannelAuthorizationFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="searchChannelAuthorizationResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:channelauthorization" minOccurs="0" maxOccurs="unbounded"/>
-					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationRequestType">
@@ -367,48 +331,17 @@
 			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="searchFlowTargetRequestType">
+	<xs:complexType name="searchChannelRequestType">
 		<xs:sequence>
-			<xs:element name="filter" type="msg:FlowTargetFilter"/>
+			<xs:element name="filter" type="msg:ChannelAuthorizationFilter"/>
 			<xs:element ref="common:page"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="searchFlowTargetResponseType">
+	<xs:complexType name="searchChannelResponseType">
 		<xs:complexContent>
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flowtarget" minOccurs="0" maxOccurs="unbounded"/>
-					<xs:element ref="common:page"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="modifyFlowTargetRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:flowdestination"/>
-			<xs:element name="concurrencyLimit" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>new maximum concurrency limit for the flow target.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="modifyFlowTargetResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge"/>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="searchFlowRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:FlowFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="searchFlowResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:flow" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="msg:channelinfo" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element ref="common:page"/>
 				</xs:sequence>
 			</xs:extension>
@@ -522,24 +455,12 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="createServiceResponse" type="createServiceResponseType"/>
-	<xs:element name="modifyService" type="modifyServiceRequestType">
-		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists. Postcondition: Service modified.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="modifyServiceResponse" type="modifyServiceResponseType"/>
 	<xs:element name="deleteService" type="deleteServiceRequestType">
 		<xs:annotation>
 			<xs:documentation>Authorization: ZAC/DAC. Precondition: Service exists, no ChannelAuthorizations exist. Postcondition: Service deleted.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteServiceResponse" type="deleteServiceResponseType"/>
-	<xs:element name="searchChannelAuthorization" type="searchChannelAuthorizationRequestType">
-		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for ChannelAuthorizations within own domain.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="searchChannelAuthorizationResponse" type="searchChannelAuthorizationResponseType"/>
 	<xs:element name="setChannelAuthorization" type="setChannelAuthorizationRequestType">
 		<xs:annotation>
 			<xs:documentation>Authorization: DAC only. Precondition: the current ChannelAuthorization being set must "confirm" any pending send or receive authorization from the other endpoint. Allowing Receive only possible if the service exists. Postcondition: ChannelAuthorization created if not existing before. TODO:manages flow targets automatically, allows flow states to instantiate automatically.</xs:documentation>
@@ -552,18 +473,6 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
-	<xs:element name="searchFlowTarget" type="searchFlowTargetRequestType">
-		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. DAC can only search for FlowTarget's in it's own domain.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="searchFlowTargetResponse" type="searchFlowTargetResponseType"/>
-	<xs:element name="modifyFlowTarget" type="modifyFlowTargetRequestType">
-		<xs:annotation>
-			<xs:documentation>Authorization: ZAC/DAC. DAC can only modify FlowTarget's concurrency settings in it's own domain.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="modifyFlowTargetResponse" type="modifyFlowTargetResponseType"/>
-	<xs:element name="searchFlow" type="searchFlowRequestType"/>
-	<xs:element name="searchFlowResponse" type="searchFlowResponseType"/>
+	<xs:element name="searchChannel" type="searchChannelRequestType"/>
+	<xs:element name="searchChannelResponse" type="searchChannelResponseType"/>
 </xs:schema>

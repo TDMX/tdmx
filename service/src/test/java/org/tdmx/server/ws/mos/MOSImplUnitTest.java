@@ -41,10 +41,8 @@ import org.tdmx.core.api.v01.common.ContinuedAcknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
-import org.tdmx.core.api.v01.mos.ListChannelAuthorization;
-import org.tdmx.core.api.v01.mos.ListChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.mos.ListFlow;
-import org.tdmx.core.api.v01.mos.ListFlowResponse;
+import org.tdmx.core.api.v01.mos.ListChannel;
+import org.tdmx.core.api.v01.mos.ListChannelResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
@@ -62,14 +60,14 @@ import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -105,7 +103,7 @@ public class MOSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private FlowTargetService flowTargetService;
+	private DestinationService flowTargetService;
 
 	@Autowired
 	private MOS mos;
@@ -186,11 +184,11 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
-	public void testListChannelAuthorization_All() {
+	public void testListChannel_All() {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		ListChannelAuthorization req = new ListChannelAuthorization();
+		ListChannel req = new ListChannel();
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -199,32 +197,11 @@ public class MOSImplUnitTest {
 
 		// TODO test without svc name fails
 
-		ListChannelAuthorizationResponse response = mos.listChannelAuthorization(req);
+		ListChannelResponse response = mos.listChannel(req);
 		assertSuccess(response);
 
 		// TODO others
-		assertEquals(1, response.getChannelauthorizations().size());
-	}
-
-	@Test
-	public void testListFlow_All() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		ListFlow req = new ListFlow();
-
-		Page p = new Page();
-		p.setNumber(0);
-		p.setSize(10);
-		req.setPage(p);
-
-		req.setPage(p);
-
-		ListFlowResponse response = mos.listFlow(req);
-		assertSuccess(response);
-
-		// TODO others
-		assertEquals(1, response.getFlows().size());
+		assertEquals(1, response.getChannelflows().size());
 	}
 
 	@Test
@@ -283,12 +260,12 @@ public class MOSImplUnitTest {
 	}
 
 	private void removeFlowTargets(Domain domain) {
-		// delete any FlowTarget on the domain
-		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+		// delete any Destination on the domain
+		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
-		for (FlowTarget ft : ftlist) {
+		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		for (Destination ft : ftlist) {
 			flowTargetService.delete(ft);
 		}
 	}

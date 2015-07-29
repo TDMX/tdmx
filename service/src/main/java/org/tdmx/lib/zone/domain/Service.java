@@ -39,9 +39,9 @@ import org.tdmx.server.ws.zas.ZASImpl;
  * doesn't exist already. A Service is deleted by a DomainAdministrator or ZoneAdministrator only if there are no
  * existing Channel's ( with Authorizations ).
  * 
- * FlowTargets which exist on the Service are deleted prior to deleting the Service, see
+ * Destinations which exist on the Service are deleted prior to deleting the Service, see
  * {@link ZASImpl#deleteService(org.tdmx.core.api.v01.zas.DeleteService)}. Prior deletion of ChannelAuthorizations makes
- * sure Flows and Messages are deleted cleanly before the service is removed.
+ * sure Destinations and Messages are deleted cleanly before the service is removed.
  * 
  * @author Peter Klauser
  * 
@@ -62,7 +62,7 @@ public class Service implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ServiceIdGen")
-	@TableGenerator(name = "ServiceIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ServiceIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -73,9 +73,6 @@ public class Service implements Serializable {
 	 */
 	@Column(length = MAX_NAME_LEN, nullable = false)
 	private String serviceName;
-
-	@Column(nullable = false)
-	private int concurrencyLimit = 1;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -92,7 +89,6 @@ public class Service implements Serializable {
 	public Service(Domain domain, Service other) {
 		setDomain(domain);
 		setServiceName(other.getServiceName());
-		setConcurrencyLimit(other.getConcurrencyLimit());
 	}
 
 	// -------------------------------------------------------------------------
@@ -143,14 +139,6 @@ public class Service implements Serializable {
 
 	public String getServiceName() {
 		return serviceName;
-	}
-
-	public int getConcurrencyLimit() {
-		return concurrencyLimit;
-	}
-
-	public void setConcurrencyLimit(int concurrencyLimit) {
-		this.concurrencyLimit = concurrencyLimit;
 	}
 
 }

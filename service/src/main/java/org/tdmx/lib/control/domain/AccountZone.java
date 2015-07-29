@@ -55,7 +55,7 @@ public class AccountZone implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountZoneIdGen")
-	@TableGenerator(name = "AccountZoneIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "AccountZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	// TODO index zoneApex for agent authentication service

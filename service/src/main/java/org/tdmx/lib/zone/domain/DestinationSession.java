@@ -20,66 +20,44 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.TableGenerator;
+import javax.persistence.Embeddable;
 
 /**
- * An FlowTargetConcurrency is separated as it's own instance from the FlowTarget so that it can be updated with a
- * higher frequency without incurring the penalty of the data of the FlowTarget not changing fast.
+ * A DestinationSession is an encryption public key information related to an Address'es Service.
  * 
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "FlowTargetConcurrency")
-public class FlowTargetConcurrency implements Serializable {
+@Embeddable
+public class DestinationSession implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final int MAX_IDENTIFIER_LEN = 256;
+	public static final int MAX_SCHEME_LEN = 16; // TODO check
+	public static final int MAX_SESSION_KEY_LEN = 8000; // TODO check
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowTargetConcurrencyIdGen")
-	@TableGenerator(name = "FlowTargetConcurrencyIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
-	private Long id;
+	// TODO rename encryptionContextId
+	private String identifier;
 
-	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "concurrency")
-	private FlowTarget flowTarget;
+	private String scheme;
 
-	@Column(nullable = false)
-	private int concurrencyLimit;
+	private byte[] sessionKey;
 
-	@Column(nullable = false)
-	private int concurrencyLevel;
+	private AgentSignature signature;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	FlowTargetConcurrency() {
-	}
+	public DestinationSession() {
 
-	public FlowTargetConcurrency(FlowTarget flowTarget, Service service) {
-		setFlowTarget(flowTarget);
-		this.concurrencyLimit = service.getConcurrencyLimit();
-	}
-
-	public FlowTargetConcurrency(FlowTarget flowTarget, FlowTargetConcurrency other) {
-		setFlowTarget(flowTarget);
-		setConcurrencyLimit(other.getConcurrencyLimit());
-		setConcurrencyLevel(other.getConcurrencyLevel());
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,10 +67,13 @@ public class FlowTargetConcurrency implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("FlowTargetConcurrency [id=");
-		builder.append(id);
-		builder.append(", concurrencyLimit=").append(concurrencyLimit);
-		builder.append(", concurrencyLevel=").append(concurrencyLevel);
+		builder.append("DestinationSession [");
+		builder.append("identifier=").append(identifier);
+		builder.append("scheme=").append(scheme);
+		if (sessionKey != null) {
+			builder.append(", sessionKey.size=").append(sessionKey.length);
+		}
+		builder.append(", signature=").append(signature);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -105,40 +86,39 @@ public class FlowTargetConcurrency implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setFlowTarget(FlowTarget flowTarget) {
-		this.flowTarget = flowTarget;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public Long getId() {
-		return id;
+	public String getIdentifier() {
+		return identifier;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 
-	public int getConcurrencyLimit() {
-		return concurrencyLimit;
+	public byte[] getSessionKey() {
+		return sessionKey;
 	}
 
-	public void setConcurrencyLimit(int concurrencyLimit) {
-		this.concurrencyLimit = concurrencyLimit;
+	public void setSessionKey(byte[] sessionKey) {
+		this.sessionKey = sessionKey;
 	}
 
-	public int getConcurrencyLevel() {
-		return concurrencyLevel;
+	public String getScheme() {
+		return scheme;
 	}
 
-	public void setConcurrencyLevel(int concurrencyLevel) {
-		this.concurrencyLevel = concurrencyLevel;
+	public void setScheme(String scheme) {
+		this.scheme = scheme;
 	}
 
-	public FlowTarget getFlowTarget() {
-		return flowTarget;
+	public AgentSignature getSignature() {
+		return signature;
 	}
 
+	public void setSignature(AgentSignature signature) {
+		this.signature = signature;
+	}
 }

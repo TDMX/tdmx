@@ -57,7 +57,7 @@ public class ControlJob implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ControlJobIdGen")
-	@TableGenerator(name = "ControlJobIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ControlJobIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	// TODO index on status, scheduledTime

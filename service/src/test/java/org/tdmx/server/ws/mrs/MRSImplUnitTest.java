@@ -45,14 +45,10 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
-import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Channelflowtarget;
 import org.tdmx.core.api.v01.msg.Destination;
-import org.tdmx.core.api.v01.msg.Flowsession;
-import org.tdmx.core.api.v01.msg.Flowtarget;
-import org.tdmx.core.api.v01.msg.Flowtargetsession;
+import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -69,7 +65,7 @@ import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowTarget;
 import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowTarget;
+import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
@@ -77,7 +73,7 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.FlowTargetService;
+import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -113,7 +109,7 @@ public class MRSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private FlowTargetService flowTargetService;
+	private DestinationService flowTargetService;
 
 	@Autowired
 	private MRS mrs;
@@ -197,28 +193,25 @@ public class MRSImplUnitTest {
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
-		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain2.getDomainName());
 		origin.setLocalname(address2.getLocalName());
-		origin.setServiceprovider("SP");
 		channel.setOrigin(origin);
 
-		Authorization auth = new Authorization();
-		auth.setChannel(channel);
+		Permission auth = new Permission();
 
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		auth.setPermission(Permission.ALLOW);
+		auth.setPermission(Grant.ALLOW);
 		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is origin, so reqSend at destination
 
 		Relay req = new Relay();
-		req.setAuthorization(auth);
+		req.setPermission(auth);
 
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
@@ -248,28 +241,25 @@ public class MRSImplUnitTest {
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
-		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain2.getDomainName());
 		origin.setLocalname(address2.getLocalName());
-		origin.setServiceprovider("SP");
 		channel.setOrigin(origin);
 
-		Authorization auth = new Authorization();
-		auth.setChannel(channel);
+		Permission auth = new Permission();
 
 		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
-		auth.setPermission(Permission.ALLOW);
+		auth.setPermission(Grant.ALLOW);
 		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac1, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
-		req.setAuthorization(auth);
+		req.setPermission(auth);
 
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
@@ -299,13 +289,11 @@ public class MRSImplUnitTest {
 		dest.setDomain(domain2.getDomainName());
 		dest.setLocalname(address2.getLocalName());
 		dest.setServicename(service2.getServiceName());
-		dest.setServiceprovider("SP"); // TODO
 		channel.setDestination(dest);
 
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setDomain(domain1.getDomainName());
 		origin.setLocalname(address1.getLocalName());
-		origin.setServiceprovider("SP");
 		channel.setOrigin(origin);
 
 		Flowtarget ft = new Flowtarget();
@@ -431,12 +419,12 @@ public class MRSImplUnitTest {
 	}
 
 	private void removeFlowTargets(Domain domain) {
-		// delete any FlowTarget on the domain
-		org.tdmx.lib.zone.domain.FlowTargetSearchCriteria ftSc = new org.tdmx.lib.zone.domain.FlowTargetSearchCriteria(
+		// delete any Destination on the domain
+		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<FlowTarget> ftlist = flowTargetService.search(zone, ftSc);
-		for (FlowTarget ft : ftlist) {
+		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		for (Destination ft : ftlist) {
 			flowTargetService.delete(ft);
 		}
 	}

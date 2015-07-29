@@ -64,7 +64,7 @@ public class ChannelAuthorization implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelAuthorizationIdGen")
-	@TableGenerator(name = "ChannelAuthorizationIdGen", table = "MaxValueEntry", pkColumnName = "NAME", pkColumnValue = "channelauthObjectId", valueColumnName = "value", allocationSize = 10)
+	@TableGenerator(name = "ChannelAuthorizationIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelauthObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@OneToOne(optional = false, fetch = FetchType.LAZY, mappedBy = "authorization")
@@ -156,14 +156,16 @@ public class ChannelAuthorization implements Serializable {
 
 	public ChannelAuthorization(Channel channel, ChannelAuthorization other) {
 		this(channel);
-		setProcessingState(other.getProcessingState());
-		setRecvAuthorization(other.getRecvAuthorization());
-		setReqRecvAuthorization(other.getReqRecvAuthorization());
-		setReqSendAuthorization(other.getReqSendAuthorization());
-		setSendAuthorization(other.getSendAuthorization());
-		setSignature(other.getSignature());
-		setUndeliveredBuffer(other.getUndeliveredBuffer());
-		setUnsentBuffer(other.getUnsentBuffer());
+		if (other != null) {
+			setProcessingState(other.getProcessingState());
+			setRecvAuthorization(other.getRecvAuthorization());
+			setReqRecvAuthorization(other.getReqRecvAuthorization());
+			setReqSendAuthorization(other.getReqSendAuthorization());
+			setSendAuthorization(other.getSendAuthorization());
+			setSignature(other.getSignature());
+			setUndeliveredBuffer(other.getUndeliveredBuffer());
+			setUnsentBuffer(other.getUnsentBuffer());
+		}
 	}
 
 	// -------------------------------------------------------------------------

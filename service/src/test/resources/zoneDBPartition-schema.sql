@@ -1,3 +1,76 @@
+    drop table Account if exists;
+
+    drop table AccountZone if exists;
+
+    drop table AccountZoneAdministrationCredential if exists;
+
+    drop table Address if exists;
+
+    drop table AgentCredential if exists;
+
+    drop table Channel if exists;
+
+    drop table ChannelAuthorization if exists;
+
+    drop table ChannelFlowMessage if exists;
+
+    drop table Chunk if exists;
+
+    drop table ConsoleUser if exists;
+
+    drop table ControlJob if exists;
+
+    drop table DatabasePartition if exists;
+
+    drop table Destination if exists;
+
+    drop table Domain if exists;
+
+    drop table FlowQuota if exists;
+
+    drop table LockEntry if exists;
+
+    drop table MaxValueEntry if exists;
+
+    drop table Service if exists;
+
+    drop table Zone if exists;
+
+    drop table PrimaryKeyGen if exists;
+
+    create table Account (
+        id bigint not null,
+        accountId varchar(16) not null,
+        email varchar(255),
+        firstName varchar(45),
+        lastName varchar(45),
+        primary key (id),
+        unique (accountId)
+    );
+
+    create table AccountZone (
+        id bigint not null,
+        accountId varchar(16) not null,
+        jobId bigint,
+        segment varchar(16) not null,
+        status varchar(16) not null,
+        zoneApex varchar(255) not null,
+        zonePartitionId varchar(16) not null,
+        primary key (id),
+        unique (zoneApex)
+    );
+
+    create table AccountZoneAdministrationCredential (
+        id bigint not null,
+        accountId varchar(16) not null,
+        certificateChainPem varchar(12000) not null,
+        credentialStatus varchar(16) not null,
+        fingerprint varchar(64) not null,
+        jobId bigint,
+        zoneApex varchar(255) not null,
+        primary key (id),
+        unique (fingerprint)
+    );
 
     create table Address (
         id bigint not null,
@@ -18,67 +91,30 @@
         primary key (id)
     );
 
-    create table Domain (
-        id bigint not null,
-        domainName varchar(255) not null,
-        zone_id bigint not null,
-        primary key (id)
-    );
-
-    create table FlowTarget (
-        id bigint not null,
-        primaryIdentifier varchar(256),
-        primaryScheme varchar(16),
-        primarySession varbinary(8000),
-        primaryValidFrom timestamp,
-        secondaryIdentifier varchar(256),
-        secondaryScheme varchar(16),
-        secondarySession varbinary(8000),
-        secondaryValidFrom timestamp,
-        signatureAlgorithm varchar(255),
-        signatureDate timestamp,
-        signatureValue varchar(128),
-        concurrency_id bigint not null,
-        service_id bigint not null,
-        target_id bigint not null,
-        primary key (id),
-        unique (concurrency_id)
-    );
-
-    create table FlowTargetConcurrency (
-        id bigint not null,
-        concurrencyLevel integer not null,
-        concurrencyLimit integer not null,
-        primary key (id)
-    );
-
-    create table Service (
-        id bigint not null,
-        concurrencyLimit integer not null,
-        serviceName varchar(255) not null,
-        domain_id bigint not null,
-        primary key (id)
-    );
-
-    create table Zone (
-        id bigint not null,
-        accountZoneId bigint not null,
-        zoneApex varchar(255) not null,
-        primary key (id)
-    );
-
     create table Channel (
         id bigint not null,
         destDomain varchar(255) not null,
         destAddress varchar(255) not null,
         destService varchar(255) not null,
-        destSP varchar(255) not null,
         originDomain varchar(255) not null,
         originAddress varchar(255) not null,
-        originSP varchar(255) not null,
+        processingErrorCode integer,
+        processingErrorMessage varchar(2048),
+        processingStatus varchar(12) not null,
+        processingId varchar(32) not null,
+        processingTimestamp timestamp not null,
+        dsIdentifier varchar(256),
+        dsScheme varchar(16),
+        dsSession varbinary(8000),
+        dsSignatureAlgorithm varchar(16),
+        dsTargetPem varchar(12000),
+        dsSignatureDate timestamp,
+        dsSignature varchar(128),
         authorization_id bigint not null,
         domain_id bigint not null,
+        quota_id bigint not null,
         primary key (id),
+        unique (quota_id),
         unique (authorization_id)
     );
 
@@ -128,56 +164,9 @@
         primary key (id)
     );
 
-    create table ChannelFlowTarget (
-        id bigint not null,
-        primaryIdentifier varchar(256),
-        primaryScheme varchar(16),
-        primarySession varbinary(8000),
-        primaryValidFrom timestamp,
-        secondaryIdentifier varchar(256),
-        secondaryScheme varchar(16),
-        secondarySession varbinary(8000),
-        secondaryValidFrom timestamp,
-        signatureAlgorithm varchar(16),
-        targetPem varchar(12000),
-        signatureDate timestamp,
-        signature varchar(128),
-        processingErrorCode integer,
-        processingErrorMessage varchar(2048),
-        processingStatus varchar(12) not null,
-        processingId varchar(32) not null,
-        processingTimestamp timestamp not null,
-        targetFingerprint varchar(64) not null,
-        channel_id bigint not null,
-        primary key (id)
-    );
-
-    create table FlowQuota (
-        id bigint not null,
-        receiverStatus varchar(8) not null,
-        senderStatus varchar(8) not null,
-        undeliveredBytes numeric not null,
-        unsentBytes numeric not null,
-        primary key (id)
-    );
-
-    create table ChannelFlowOrigin (
-        id bigint not null,
-        sourceCertificateChainPem varchar(12000) not null,
-        sourceFingerprint varchar(64) not null,
-        undeliveredHigh numeric,
-        undeliveredLow numeric,
-        unsentHigh numeric,
-        unsentLow numeric,
-        flowTarget_id bigint not null,
-        quota_id bigint not null,
-        primary key (id),
-        unique (quota_id)
-    );
-
     create table ChannelFlowMessage (
         id bigint not null,
-        chunkSizeFactor integer not null,
+        chunkSize bigint not null,
         chunksCRC varchar(80) not null,
         encryptionContext longvarbinary not null,
         entropy varbinary(8) not null,
@@ -190,10 +179,120 @@
         plaintextLength bigint not null,
         sentTimestamp timestamp not null,
         ttlTimestamp timestamp not null,
-        flowOrigin_id bigint not null,
+        channel_id bigint not null,
         primary key (id)
     );
 
+    create table Chunk (
+        id bigint not null,
+        data longvarbinary not null,
+        mac varchar(255) not null,
+        msgId varchar(64) not null,
+        pos integer not null,
+        primary key (id)
+    );
+
+    create table ConsoleUser (
+        loginName varchar(255) not null,
+        email varchar(255),
+        firstName varchar(255),
+        lastFailureAttempt timestamp,
+        lastName varchar(255),
+        lastSuccessfulLogin timestamp,
+        numConsecutiveFailures integer not null,
+        passwordHash varchar(255),
+        status integer,
+        primary key (loginName)
+    );
+
+    create table ControlJob (
+        id bigint not null,
+        data varbinary(16000) not null,
+        endTimestamp timestamp,
+        exception varbinary(16000),
+        jobId varchar(32) not null,
+        startTimestamp timestamp,
+        type varchar(128) not null,
+        scheduledTime timestamp not null,
+        status varchar(4) not null,
+        primary key (id),
+        unique (jobId)
+    );
+
+    create table DatabasePartition (
+        id bigint not null,
+        activationTimestamp timestamp,
+        dbType varchar(12) not null,
+        deactivationTimestamp timestamp,
+        obfuscatedPassword varchar(255) not null,
+        partitionId varchar(16),
+        segment varchar(16) not null,
+        sizeFactor integer not null,
+        url varchar(255) not null,
+        username varchar(255) not null,
+        primary key (id),
+        unique (partitionId)
+    );
+
+    create table Destination (
+        id bigint not null,
+        dsIdentifier varchar(256),
+        dsScheme varchar(16),
+        dsSession varbinary(8000),
+        dsSignatureAlgorithm varchar(16),
+        dsTargetPem varchar(12000),
+        dsSignatureDate timestamp,
+        dsSignature varchar(128),
+        service_id bigint not null,
+        target_id bigint not null,
+        primary key (id)
+    );
+
+    create table Domain (
+        id bigint not null,
+        domainName varchar(255) not null,
+        zone_id bigint not null,
+        primary key (id)
+    );
+
+    create table FlowQuota (
+        id bigint not null,
+        receiverStatus varchar(8) not null,
+        senderStatus varchar(8) not null,
+        undeliveredBytes numeric not null,
+        unsentBytes numeric not null,
+        primary key (id)
+    );
+
+    create table LockEntry (
+        id bigint not null,
+        lockName varchar(32),
+        lockedBy varchar(32),
+        lockedUntilTime timestamp,
+        primary key (id),
+        unique (lockName)
+    );
+
+    create table MaxValueEntry (
+        name varchar(16) not null,
+        value bigint not null,
+        primary key (name)
+    );
+
+    create table Service (
+        id bigint not null,
+        serviceName varchar(255) not null,
+        domain_id bigint not null,
+        primary key (id)
+    );
+
+    create table Zone (
+        id bigint not null,
+        accountZoneId bigint not null,
+        zoneApex varchar(255) not null,
+        primary key (id),
+        unique (zoneApex)
+    );
 
     alter table Address 
         add constraint FK1ED033D4E7351234 
@@ -216,6 +315,11 @@
         references Address;
 
     alter table Channel 
+        add constraint FK8F4414E3635CB8F2 
+        foreign key (quota_id) 
+        references FlowQuota;
+
+    alter table Channel 
         add constraint FK8F4414E3E7351234 
         foreign key (domain_id) 
         references Domain;
@@ -224,53 +328,33 @@
         add constraint FK8F4414E398CAEC51 
         foreign key (authorization_id) 
         references ChannelAuthorization;
-    
+
     alter table ChannelFlowMessage 
-        add constraint FKA6AD3E162BD68783 
-        foreign key (flowOrigin_id) 
-        references ChannelFlowOrigin;
-
-    alter table ChannelFlowOrigin 
-        add constraint FKB6E7F337635CB8F2 
-        foreign key (quota_id) 
-        references FlowQuota;
-
-    alter table ChannelFlowOrigin 
-        add constraint FKB6E7F337EB7EBA3 
-        foreign key (flowTarget_id) 
-        references ChannelFlowTarget;
-
-    alter table ChannelFlowTarget 
-        add constraint FKBE84B5A294FB8720 
+        add constraint FKA6AD3E1694FB8720 
         foreign key (channel_id) 
         references Channel;
+
+    alter table Destination 
+        add constraint FKE2FEBEE6700BEC3 
+        foreign key (target_id) 
+        references Address;
+
+    alter table Destination 
+        add constraint FKE2FEBEEEB7BD1E0 
+        foreign key (service_id) 
+        references Service;
 
     alter table Domain 
         add constraint FK7A58C0E4981D3FB4 
         foreign key (zone_id) 
         references Zone;
 
-    alter table FlowTarget 
-        add constraint FK8F7F207F473F0CC1 
-        foreign key (concurrency_id) 
-        references FlowTargetConcurrency;
-
-    alter table FlowTarget 
-        add constraint FK8F7F207F38E4420B 
-        foreign key (target_id) 
-        references AgentCredential;
-
-    alter table FlowTarget 
-        add constraint FK8F7F207FEB7BD1E0 
-        foreign key (service_id) 
-        references Service;
-
     alter table Service 
         add constraint FKD97C5E95E7351234 
         foreign key (domain_id) 
         references Domain;
 
-    create table MaxValueEntry (
+    create table PrimaryKeyGen (
          NAME varchar(255),
          value integer 
     ) ;
