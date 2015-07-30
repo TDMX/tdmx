@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -44,9 +43,14 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mds.GetAddress;
 import org.tdmx.core.api.v01.mds.GetAddressResponse;
+import org.tdmx.core.api.v01.mds.GetDestinationSession;
+import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ListChannel;
 import org.tdmx.core.api.v01.mds.ListChannelResponse;
+import org.tdmx.core.api.v01.mds.SetDestinationSession;
+import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -55,17 +59,16 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
-import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.DestinationService;
+import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -101,7 +104,7 @@ public class MDSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private DestinationService flowTargetService;
+	private DestinationService destinationService;
 
 	@Autowired
 	private MDS mds;
@@ -200,60 +203,56 @@ public class MDSImplUnitTest {
 		assertSuccess(response);
 
 		// TODO others
-		assertEquals(1, response.getChannelflows().size());
+		assertEquals(1, response.getChannelinfos().size());
 	}
 
 	@Test
-	public void testSetFlowTargetSession() {
+	public void testSetDestinationSession() {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		SetFlowTargetSession req = new SetFlowTargetSession();
+		SetDestinationSession req = new SetDestinationSession();
 		req.setServicename(service.getServiceName());
 
-		Flowtargetsession fts = new Flowtargetsession();
-		Flowsession fs1 = new Flowsession();
-		fs1.setFlowsessionId("id1");
-		fs1.setValidFrom(Calendar.getInstance());
-		fs1.setSessionKey(new byte[] { 1, 2, 3 });
-		fs1.setScheme("scheme-name");
-		fts.getFlowsessions().add(fs1);
+		Destinationsession ds = new Destinationsession();
+		ds.setEncryptionContextId("id1");
+		ds.setSessionKey(new byte[] { 1, 2, 3 });
+		ds.setScheme("scheme-name");
 
-		Flowtarget ft = new Flowtarget();
-		ft.setFlowtargetsession(fts);
-		ft.setServicename(service.getServiceName());
-		SignatureUtils.createFlowTargetSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+		SignatureUtils.createFlowTargetSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				service.getServiceName(), ds);
 
-		req.setFlowtargetsession(fts);
+		req.setDestinationsession(ds);
 
-		SetFlowTargetSessionResponse response = mds.setFlowTargetSession(req);
+		SetDestinationSessionResponse response = mds.setDestinationSession(req);
 		assertSuccess(response);
 		// TODO others
 
-		// do getFlowTarget to confirm FTS created
-		GetFlowTarget getReq = new GetFlowTarget();
-		getReq.setServicename(service.getServiceName());
-		GetFlowTargetResponse getRes = mds.getFlowTarget(getReq);
+		// do getDestinationSession to confirm DS created
+		GetDestinationSession getReq = new GetDestinationSession();
+		getReq.setServicename(service.getServiceName()); // TODO remove with session bound to service on MDS
+
+		GetDestinationSessionResponse getRes = mds.getDestinationSession(getReq);
 		assertSuccess(getRes);
-		assertNotNull(getRes.getFlowtarget());
+		assertNotNull(getRes.getDestinationsession());
 
 		// tamper with signature doesn't work
-		fts.getSignaturevalue().setSignature("gugus");
-		response = mds.setFlowTargetSession(req);
+		ds.getUsersignature().getSignaturevalue().setSignature("gugus");
+		response = mds.setDestinationSession(req);
 		assertError(ErrorCode.InvalidSignatureDestinationSession, response);
 
-		// check that the channelflowtargets are set
+		// check that the channeldestinationsessions are set
 		boolean more = true;
 		// fetch ALL Channels which have this Destination as Destination.
 		for (int pageNo = 0; more; pageNo++) {
-			ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(pageNo, 5));
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo, 5));
 			sc.setDomain(domain);
 			sc.getDestination().setLocalName(uc.getPublicCert().getCommonName());
 			sc.getDestination().setDomainName(domain.getDomainName());
 			sc.getDestination().setServiceName(service.getServiceName());
-			// sc.getDestination().setServiceProvider(authorizedUser.getTdmxZoneInfo().getMrsUrl()); TODO
 
 			List<Channel> channels = channelService.search(zone, sc);
+
 			for (Channel channel : channels) {
 				log.info("" + channel);
 			}
@@ -284,21 +283,21 @@ public class MDSImplUnitTest {
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
-		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
+		ftSc.getDestination().setDomainName(domain.getDomainName());
+		List<Destination> ftlist = destinationService.search(zone, ftSc);
 		for (Destination ft : ftlist) {
-			flowTargetService.delete(ft);
+			destinationService.delete(ft);
 		}
 	}
 
-	private void removeChannelAuthorizations(Domain domain) {
-		// delete any ChannelAuthorizations on the domain
+	private void removeChannels(Domain domain) {
+		// delete any Channels on the domain
 		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		caSc.setDomainName(domain.getDomainName());
-		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
-		for (ChannelAuthorization ca : calist) {
-			channelService.delete(ca.getChannel());
+		List<Channel> channels = channelService.search(zone, caSc);
+		for (Channel c : channels) {
+			channelService.delete(c);
 		}
 	}
 

@@ -347,6 +347,22 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="searchDestinationRequestType">
+		<xs:sequence>
+			<xs:element name="filter" type="msg:ChannelDestinationFilter"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="searchDestinationResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:destinationinfo" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--   REQUEST AND RESPONSE ELEMENTS                                   -->
 	<!--                                               -->
@@ -475,4 +491,6 @@
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
 	<xs:element name="searchChannel" type="searchChannelRequestType"/>
 	<xs:element name="searchChannelResponse" type="searchChannelResponseType"/>
+	<xs:element name="searchDestination" type="searchDestinationRequestType"/>
+	<xs:element name="searchDestinationResponse" type="searchDestinationResponseType"/>
 </xs:schema>

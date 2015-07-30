@@ -74,6 +74,8 @@ import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.zas.SearchAdministratorResponse;
 import org.tdmx.core.api.v01.zas.SearchChannelResponse;
+import org.tdmx.core.api.v01.zas.SearchDestination;
+import org.tdmx.core.api.v01.zas.SearchDestinationResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
 import org.tdmx.core.api.v01.zas.SearchIpZone;
@@ -96,6 +98,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
@@ -762,8 +765,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// delete any Destinations
-		boolean moreFT = true;
-		while (moreFT) {
+		boolean moreDestinations = true;
+		while (moreDestinations) {
 			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
 			casc.getDestination().setServiceName(existingService.getServiceName());
 			// setService obj TODO
@@ -774,7 +777,7 @@ public class ZASImpl implements ZAS {
 				destinationService.delete(d);
 			}
 			if (destinations.isEmpty()) {
-				moreFT = false;
+				moreDestinations = false;
 			}
 		}
 
@@ -860,8 +863,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// delete any Destinations for any service
-		boolean moreFT = true;
-		while (moreFT) {
+		boolean moreDestinations = true;
+		while (moreDestinations) {
 			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
 			casc.getDestination().setDomainName(a.getDomain().getDomainName());
 			casc.getDestination().setLocalName(a.getLocalName());
@@ -872,7 +875,7 @@ public class ZASImpl implements ZAS {
 				destinationService.delete(d);
 			}
 			if (destinations.isEmpty()) {
-				moreFT = false;
+				moreDestinations = false;
 			}
 		}
 
@@ -1200,6 +1203,47 @@ public class ZASImpl implements ZAS {
 		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Channel c : channels) {
 			response.getChannelinfos().add(d2a.mapChannelInfo(c));
+		}
+
+		response.setSuccess(true);
+		response.setPage(parameters.getPage());
+		return response;
+	}
+
+	@Override
+	public SearchDestinationResponse searchDestination(SearchDestination parameters) {
+
+		SearchDestinationResponse response = new SearchDestinationResponse();
+		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
+		if (authorizedUser == null) {
+			return response;
+		}
+
+		Zone zone = getAgentService().getZone();
+		if (zone == null) {
+			return response;
+		}
+
+		DestinationSearchCriteria sc = new DestinationSearchCriteria(a2d.mapPage(parameters.getPage()));
+
+		if (authorizedUser.isTdmxDomainAdminCertificate()) {
+			// we fix the search to search only the DAC's domain.
+			sc.getDestination().setDomainName(authorizedUser.getCommonName());
+		} else {
+			sc.getDestination().setDomainName(parameters.getFilter().getDomain());
+		}
+		sc.getDestination().setLocalName(parameters.getFilter().getLocalname());
+		sc.getDestination().setServiceName(parameters.getFilter().getServicename());
+
+		List<org.tdmx.lib.zone.domain.Destination> destinations = destinationService.search(zone, sc);
+		for (org.tdmx.lib.zone.domain.Destination d : destinations) {
+			ChannelDestination cd = new ChannelDestination();
+			cd.setDomainName(d.getTarget().getDomain().getDomainName());
+			cd.setLocalName(d.getTarget().getLocalName());
+			cd.setServiceName(d.getService().getServiceName());
+
+			// TODO check eager fetch dest.address.domain & dest.service
+			response.getDestinationinfos().add(d2a.mapDestinationInfo(cd, d.getDestinationSession()));
 		}
 
 		response.setSuccess(true);

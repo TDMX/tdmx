@@ -34,6 +34,7 @@ import org.tdmx.core.api.v01.msg.Channelinfo;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destination;
+import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.FlowControlLevel;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
@@ -45,12 +46,14 @@ import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.msg.Service;
+import org.tdmx.core.api.v01.msg.Sessioninfo;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.msg.UserSignature;
 import org.tdmx.core.system.lang.CalendarUtils;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
@@ -81,17 +84,19 @@ public class DomainToApiMapper {
 			return null;
 		}
 		Channelinfo ci = new Channelinfo();
-
+		ci.setChannelauthorization(mapChannelAuthorization(c.getAuthorization()));
 		ci.setStatus(mapFlowStatus(c.getQuota()));
 		ci.setLevel(mapFlowControlLevel(c.getQuota()));
 		ci.setLimit(mapFlowControlLimit(c.getAuthorization().getUnsentBuffer(), c.getAuthorization()
 				.getUndeliveredBuffer()));
-		ci.setDestinationsession(mapDestinationSession(c.getSession()));
-		ci.setChannelauthorization(mapChannelAuthorization(c.getAuthorization()));
+		ci.setSessioninfo(mapSessionInfo(c.getSession(), c.getProcessingState()));
 		return ci;
 	}
 
 	public FlowControlLevel mapFlowControlLevel(FlowQuota quota) {
+		if (quota == null) {
+			return null;
+		}
 		FlowControlLevel fcl = new FlowControlLevel();
 		fcl.setUnsentBuffer(quota.getUnsentBytes());
 		fcl.setUndeliveredBuffer(quota.getUndeliveredBytes());
@@ -99,6 +104,9 @@ public class DomainToApiMapper {
 	}
 
 	public FlowStatus mapFlowStatus(FlowQuota quota) {
+		if (quota == null) {
+			return null;
+		}
 		FlowStatus fs = new FlowStatus();
 		fs.setSenderStatus(mapFlowControlStatus(quota.getSenderStatus()));
 		fs.setReceiverStatus(mapFlowControlStatus(quota.getReceiverStatus()));
@@ -106,35 +114,45 @@ public class DomainToApiMapper {
 	}
 
 	public FlowControlLimit mapFlowControlLimit(FlowLimit unsentBuffer, FlowLimit undeliveredBuffer) {
+		if (unsentBuffer == null || undeliveredBuffer == null) {
+			return null;
+		}
 		FlowControlLimit fl = new FlowControlLimit();
 		fl.setUnsentBuffer(mapLimit(unsentBuffer));
 		fl.setUndeliveredBuffer(mapLimit(undeliveredBuffer));
 		return fl;
 	}
 
-	public Destinationsession mapDestinationSession(DestinationSession fts) {
-		if (fts == null) {
+	public Sessioninfo mapSessionInfo(DestinationSession ds, ProcessingState ps) {
+		if (ds == null || ps == null) {
+			return null;
+		}
+		Sessioninfo s = new Sessioninfo();
+		s.setDestinationsession(mapDestinationSession(ds));
+		s.setProcessingstatus(mapProcessingStatus(ps));
+		return s;
+	}
+
+	public Destinationinfo mapDestinationInfo(org.tdmx.lib.zone.domain.ChannelDestination d, DestinationSession ds) {
+		if (d == null || ds == null) {
+			return null;
+		}
+		Destinationinfo di = new Destinationinfo();
+		di.setDestinationsession(mapDestinationSession(ds));
+		di.setDestination(mapChannelDestination(d));
+		return di;
+	}
+
+	public Destinationsession mapDestinationSession(DestinationSession ds) {
+		if (ds == null) {
 			return null;
 		}
 		Destinationsession f = new Destinationsession();
 
-		if (fts.getSignature() != null) {
-			// TODO separate fn.
-			Signaturevalue sv = new Signaturevalue();
-			sv.setSignature(fts.getSignature().getValue());
-			sv.setTimestamp(CalendarUtils.cast(fts.getSignature().getSignatureDate()));
-			sv.setSignatureAlgorithm(mapSignatureAlgorithm(fts.getSignature().getAlgorithm()));
-
-			UserSignature t = new UserSignature();
-			t.setUserIdentity(mapUserIdentity(fts.getSignature().getCertificateChain()));
-			t.setSignaturevalue(sv);
-			f.setUsersignature(t);
-
-		}
-
-		f.setEncryptionContextId(fts.getIdentifier());
-		f.setScheme(fts.getScheme());
-		f.setSessionKey(fts.getSessionKey());
+		f.setUsersignature(mapUserSignature(ds.getSignature()));
+		f.setEncryptionContextId(ds.getIdentifier());
+		f.setScheme(ds.getScheme());
+		f.setSessionKey(ds.getSessionKey());
 
 		return f;
 	}
@@ -193,7 +211,7 @@ public class DomainToApiMapper {
 		return s;
 	}
 
-	public ChannelEndpoint mapOrigin(org.tdmx.lib.zone.domain.ChannelOrigin origin) {
+	public ChannelEndpoint mapChannelOrigin(org.tdmx.lib.zone.domain.ChannelOrigin origin) {
 		if (origin == null) {
 			return null;
 		}
@@ -203,7 +221,7 @@ public class DomainToApiMapper {
 		return o;
 	}
 
-	public Destination mapDestination(org.tdmx.lib.zone.domain.ChannelDestination dest) {
+	public Destination mapChannelDestination(org.tdmx.lib.zone.domain.ChannelDestination dest) {
 		if (dest == null) {
 			return null;
 		}
@@ -218,10 +236,9 @@ public class DomainToApiMapper {
 		if (channel == null) {
 			return null;
 		}
-
 		Channel c = new Channel();
-		c.setDestination(mapDestination(channel.getDestination()));
-		c.setOrigin(mapOrigin(channel.getOrigin()));
+		c.setDestination(mapChannelDestination(channel.getDestination()));
+		c.setOrigin(mapChannelOrigin(channel.getOrigin()));
 		return c;
 	}
 
@@ -280,6 +297,16 @@ public class DomainToApiMapper {
 		s.setAdministratorIdentity(mapAdministratorIdentity(agentSignature.getCertificateChain()));
 		s.setSignaturevalue(mapSignature(agentSignature));
 		return s;
+	}
+
+	public UserSignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+		if (agentSignature == null) {
+			return null;
+		}
+		UserSignature us = new UserSignature();
+		us.setSignaturevalue(mapSignature(agentSignature));
+		us.setUserIdentity(mapUserIdentity(agentSignature.getCertificateChain()));
+		return us;
 	}
 
 	public Signaturevalue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {

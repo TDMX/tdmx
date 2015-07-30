@@ -58,16 +58,16 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
-import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.DestinationService;
+import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -103,7 +103,7 @@ public class MOSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private DestinationService flowTargetService;
+	private DestinationService destinationService;
 
 	@Autowired
 	private MOS mos;
@@ -201,7 +201,7 @@ public class MOSImplUnitTest {
 		assertSuccess(response);
 
 		// TODO others
-		assertEquals(1, response.getChannelflows().size());
+		assertEquals(1, response.getChannelinfos().size());
 	}
 
 	@Test
@@ -263,21 +263,21 @@ public class MOSImplUnitTest {
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
-		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
-		for (Destination ft : ftlist) {
-			flowTargetService.delete(ft);
+		ftSc.getDestination().setDomainName(domain.getDomainName());
+		List<Destination> destinations = destinationService.search(zone, ftSc);
+		for (Destination d : destinations) {
+			destinationService.delete(d);
 		}
 	}
 
-	private void removeChannelAuthorizations(Domain domain) {
-		// delete any ChannelAuthorizations on the domain
+	private void removeChannels(Domain domain) {
+		// delete any Channels on the domain
 		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		caSc.setDomainName(domain.getDomainName());
-		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
-		for (ChannelAuthorization ca : calist) {
-			channelService.delete(ca.getChannel());
+		List<Channel> channels = channelService.search(zone, caSc);
+		for (Channel c : channels) {
+			channelService.delete(c);
 		}
 	}
 

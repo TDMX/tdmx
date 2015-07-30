@@ -176,6 +176,12 @@
 	<wsdl:message name="searchChannelResponse">
 		<wsdl:part name="parameters" element="zas:searchChannelResponse"/>
 	</wsdl:message>
+	<wsdl:message name="searchDestinationRequest">
+		<wsdl:part name="parameters" element="zas:searchDestination"/>
+	</wsdl:message>
+	<wsdl:message name="searchDestinationResponse">
+		<wsdl:part name="parameters" element="zas:searchDestinationResponse"/>
+	</wsdl:message>
 	<wsdl:portType name="ZAS">
 		<wsdl:documentation>
 				Bla Bla
@@ -361,6 +367,13 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:searchChannelRequest"/>
 			<wsdl:output message="tns:searchChannelResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="searchDestination">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:searchDestinationRequest"/>
+			<wsdl:output message="tns:searchDestinationResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="ZASBinding" type="tns:ZAS">
@@ -592,6 +605,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="searchChannel">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchChannel"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="searchDestination">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchDestination"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

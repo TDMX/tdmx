@@ -18,7 +18,6 @@
  */
 package org.tdmx.server.ws.mrs;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +47,7 @@ import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Destination;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
@@ -59,21 +59,15 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowTarget;
-import org.tdmx.lib.zone.domain.ChannelFlowTargetSearchCriteria;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.DestinationService;
+import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -109,7 +103,7 @@ public class MRSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private DestinationService flowTargetService;
+	private DestinationService destinationService;
 
 	@Autowired
 	private MRS mrs;
@@ -225,13 +219,13 @@ public class MRSImplUnitTest {
 		casc.getDestination().setDomainName(domain1.getDomainName());
 		casc.getDestination().setLocalName(address1.getLocalName());
 		casc.getDestination().setServiceName(service1.getServiceName());
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, casc);
-		assertEquals(1, channelAuths.size());
-		ChannelAuthorization ca = channelAuths.get(0);
-		assertNull(ca.getSendAuthorization());
-		assertNull(ca.getRecvAuthorization());
-		assertNull(ca.getReqRecvAuthorization());
-		assertNotNull(ca.getReqSendAuthorization());
+		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+		assertEquals(1, channels.size());
+		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+		assertNull(c.getAuthorization().getSendAuthorization());
+		assertNull(c.getAuthorization().getRecvAuthorization());
+		assertNull(c.getAuthorization().getReqRecvAuthorization());
+		assertNotNull(c.getAuthorization().getReqSendAuthorization());
 	}
 
 	@Test
@@ -272,17 +266,17 @@ public class MRSImplUnitTest {
 		casc.setDomainName(domain2.getDomainName());
 		casc.getOrigin().setDomainName(domain2.getDomainName());
 		casc.getOrigin().setLocalName(address2.getLocalName());
-		List<ChannelAuthorization> channelAuths = channelService.search(zone, casc);
-		assertEquals(1, channelAuths.size());
-		ChannelAuthorization ca = channelAuths.get(0);
-		assertNull(ca.getSendAuthorization());
-		assertNull(ca.getRecvAuthorization());
-		assertNotNull(ca.getReqRecvAuthorization());
-		assertNull(ca.getReqSendAuthorization());
+		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+		assertEquals(1, channels.size());
+		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+		assertNull(c.getAuthorization().getSendAuthorization());
+		assertNull(c.getAuthorization().getRecvAuthorization());
+		assertNotNull(c.getAuthorization().getReqRecvAuthorization());
+		assertNull(c.getAuthorization().getReqSendAuthorization());
 	}
 
 	@Test
-	public void testRelay_ChannelFlowTarget() {
+	public void testRelay_ChannelDestination() {
 		// the setup creates authorized channels from domain-0 -> domain-1
 		Channel channel = new Channel();
 		Destination dest = new Destination();
@@ -296,36 +290,17 @@ public class MRSImplUnitTest {
 		origin.setLocalname(address1.getLocalName());
 		channel.setOrigin(origin);
 
-		Flowtarget ft = new Flowtarget();
-		Flowtargetsession fts = new Flowtargetsession();
-		Flowsession s1 = new Flowsession();
-		s1.setFlowsessionId("id1");
-		s1.setScheme("scheme");
-		s1.setSessionKey(new byte[] { 1, 2, 3 });
-		s1.setValidFrom(CalendarUtils.getDate(new Date()));
+		Destinationsession ds = new Destinationsession();
+		ds.setEncryptionContextId("id1");
+		ds.setScheme("scheme");
+		ds.setSessionKey(new byte[] { 1, 2, 3 });
 
-		Flowsession s2 = new Flowsession();
-		s2.setFlowsessionId("id2");
-		s2.setScheme("scheme");
-		s2.setSessionKey(new byte[] { 4, 5, 6 });
-		s2.setValidFrom(CalendarUtils.getDate(new Date()));
-
-		fts.getFlowsessions().add(s1);
-		fts.getFlowsessions().add(s2);
-
-		ft.setFlowtargetsession(fts);
-		ft.setServicename(dest.getServicename());
-		SignatureUtils.createFlowTargetSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(), ft);
+		SignatureUtils.createFlowTargetSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				dest.getServicename(), ds);
 		// signer is destination, so reqRecv at origin
 
-		Channelflowtarget cft = new Channelflowtarget();
-		cft.setOrigin(origin);
-		cft.setServicename(dest.getServicename());
-		cft.setTarget(ft.getTarget());
-		cft.setFlowtargetsession(ft.getFlowtargetsession());
-
 		Relay req = new Relay();
-		req.setChannelflowtarget(cft);
+		req.setDestinationsession(ds);
 
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
@@ -334,31 +309,16 @@ public class MRSImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		ChannelFlowTargetSearchCriteria casc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0, 1));
+		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain1.getDomainName());
 		casc.getOrigin().setDomainName(domain1.getDomainName());
 		casc.getOrigin().setLocalName(address1.getLocalName());
-		List<ChannelFlowTarget> channelFlowTargets = channelService.search(zone, casc);
-		assertEquals(1, channelFlowTargets.size());
-		ChannelFlowTarget cFT = channelFlowTargets.get(0);
-		assertNotNull(cFT.getTargetFingerprint());
-		assertNotNull(cFT.getFlowTargetSession());
-		assertEquals(cft.getFlowtargetsession().getSignaturevalue().getSignature(), cFT.getFlowTargetSession()
-				.getSignature().getValue());
-		assertNotNull(cFT.getFlowTargetSession().getPrimary());
-		assertEquals(s1.getScheme(), cFT.getFlowTargetSession().getPrimary().getScheme());
-		assertArrayEquals(s1.getSessionKey(), cFT.getFlowTargetSession().getPrimary().getSessionKey());
-		assertEquals(s1.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getPrimary().getValidFrom()
-				.getTime());
-		assertNotNull(cFT.getFlowTargetSession().getSecondary());
-		assertEquals(s2.getScheme(), cFT.getFlowTargetSession().getSecondary().getScheme());
-		assertArrayEquals(s2.getSessionKey(), cFT.getFlowTargetSession().getSecondary().getSessionKey());
-		assertEquals(s2.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getSecondary().getValidFrom()
-				.getTime());
+		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+		assertEquals(1, channels.size());
 
 		// assert a second time relay of the same info is ok too.
 		req = new Relay();
-		req.setChannelflowtarget(cft);
+		req.setDestinationsession(ds);
 
 		response = mrs.relay(req);
 		assertSuccess(response);
@@ -367,27 +327,15 @@ public class MRSImplUnitTest {
 		r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		casc = new ChannelFlowTargetSearchCriteria(new PageSpecifier(0, 1));
+		casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain1.getDomainName());
 		casc.getOrigin().setDomainName(domain1.getDomainName());
 		casc.getOrigin().setLocalName(address1.getLocalName());
-		channelFlowTargets = channelService.search(zone, casc);
-		assertEquals(1, channelFlowTargets.size());
-		cFT = channelFlowTargets.get(0);
-		assertNotNull(cFT.getTargetFingerprint());
-		assertNotNull(cFT.getFlowTargetSession());
-		assertEquals(cft.getFlowtargetsession().getSignaturevalue().getSignature(), cFT.getFlowTargetSession()
-				.getSignature().getValue());
-		assertNotNull(cFT.getFlowTargetSession().getPrimary());
-		assertEquals(s1.getScheme(), cFT.getFlowTargetSession().getPrimary().getScheme());
-		assertArrayEquals(s1.getSessionKey(), cFT.getFlowTargetSession().getPrimary().getSessionKey());
-		assertEquals(s1.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getPrimary().getValidFrom()
-				.getTime());
-		assertNotNull(cFT.getFlowTargetSession().getSecondary());
-		assertEquals(s2.getScheme(), cFT.getFlowTargetSession().getSecondary().getScheme());
-		assertArrayEquals(s2.getSessionKey(), cFT.getFlowTargetSession().getSecondary().getSessionKey());
-		assertEquals(s2.getValidFrom().getTimeInMillis(), cFT.getFlowTargetSession().getSecondary().getValidFrom()
-				.getTime());
+		channels = channelService.search(zone, casc);
+		assertEquals(1, channels.size());
+		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+		assertEquals(ds.getUsersignature().getSignaturevalue().getSignature(), c.getSession().getSignature().getValue());
+		// TODO check other ds values are set on the channel.
 
 	}
 
@@ -418,58 +366,4 @@ public class MRSImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
-	private void removeFlowTargets(Domain domain) {
-		// delete any Destination on the domain
-		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
-		for (Destination ft : ftlist) {
-			flowTargetService.delete(ft);
-		}
-	}
-
-	private void removeChannelAuthorizations(Domain domain) {
-		// delete any ChannelAuthorizations on the domain
-		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		caSc.setDomainName(domain.getDomainName());
-		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
-		for (ChannelAuthorization ca : calist) {
-			channelService.delete(ca.getChannel());
-		}
-	}
-
-	private void removeAgentCredentials(Domain domain) {
-		// delete any UC+DAC on the domain
-		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
-				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(domain.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
-		for (AgentCredential ac : list) {
-			agentCredentialService.delete(ac);
-		}
-	}
-
-	private void removeAddresses(Domain domain) {
-		// delete any Address on the domain
-		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
-				new PageSpecifier(0, 1000));
-		adSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
-		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
-			addressService.delete(ad);
-		}
-	}
-
-	private void removeServices(Domain domain) {
-		// delete any services on the domain
-		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
-				new PageSpecifier(0, 1000));
-		sSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
-		for (org.tdmx.lib.zone.domain.Service s : services) {
-			serviceService.delete(s);
-		}
-	}
 }

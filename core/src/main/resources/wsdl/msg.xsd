@@ -282,7 +282,7 @@
 					<xs:documentation>the flow control limits for high mark and low mark set by channel authorization affects all flows.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element ref="destinationsession" minOccurs="0"/>
+			<xs:element ref="sessioninfo" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FlowControlLimit">
@@ -327,6 +327,15 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="Destination">
+		<xs:annotation>
+			<xs:documentation>a DestinationSession linked to a Service at an Address.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="destination"/>
+			<xs:element ref="destinationsession"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="DestinationSession">
 		<xs:annotation>
 			<xs:documentation>flowtargetsession is signed by the flow's target user and contains { channel.destination.Address+DomainName+serviceName +  flowsessionId + sessionKey+validFrom+scheme  + signaturevalue.timestamp</xs:documentation>
@@ -336,6 +345,12 @@
 			<xs:element name="scheme" type="cryptoscheme"/>
 			<xs:element name="sessionKey" type="xs:base64Binary"/>
 			<xs:element ref="usersignature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ChannelDestinationSession">
+		<xs:sequence>
+			<xs:element ref="destinationsession"/>
+			<xs:element ref="common:processingstatus"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="UserSignature">
@@ -458,6 +473,8 @@
 	<xs:element name="ipzone" type="ipzonename"/>
 	<xs:element name="channel" type="Channel"/>
 	<xs:element name="channelinfo" type="ChannelFlow"/>
+	<xs:element name="destinationinfo" type="Destination"/>
+	<xs:element name="sessioninfo" type="ChannelDestinationSession"/>
 	<xs:element name="rootcertificate" type="x509certificate"/>
 	<xs:element name="domaincertificate" type="x509certificate"/>
 	<xs:element name="usercertificate" type="x509certificate"/>

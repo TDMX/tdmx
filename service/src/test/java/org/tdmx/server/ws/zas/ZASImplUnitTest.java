@@ -50,6 +50,7 @@ import org.tdmx.core.api.v01.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
+import org.tdmx.core.api.v01.msg.ChannelDestinationFilter;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
@@ -94,8 +95,10 @@ import org.tdmx.core.api.v01.zas.SearchAddress;
 import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.zas.SearchAdministratorResponse;
-import org.tdmx.core.api.v01.zas.SearchChannelAuthorization;
-import org.tdmx.core.api.v01.zas.SearchChannelAuthorizationResponse;
+import org.tdmx.core.api.v01.zas.SearchChannel;
+import org.tdmx.core.api.v01.zas.SearchChannelResponse;
+import org.tdmx.core.api.v01.zas.SearchDestination;
+import org.tdmx.core.api.v01.zas.SearchDestinationResponse;
 import org.tdmx.core.api.v01.zas.SearchDomain;
 import org.tdmx.core.api.v01.zas.SearchDomainResponse;
 import org.tdmx.core.api.v01.zas.SearchService;
@@ -115,17 +118,15 @@ import org.tdmx.lib.control.job.TestCredentialGenerator;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.DestinationService;
+import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
@@ -161,7 +162,7 @@ public class ZASImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
-	private DestinationService flowTargetService;
+	private DestinationService destinationService;
 
 	@Autowired
 	private ZAS zas;
@@ -207,10 +208,10 @@ public class ZASImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		uc2 = TestCredentialGenerator.createUC(dac, address.getLocalName(), 2);
+		uc2 = TestCredentialGenerator.createUC(dac, address.getLocalName(), 2, 2);
 
 		String subdomain = domain.getDomainName().substring(0, domain.getDomainName().indexOf(zone.getZoneApex()) - 1);
-		dac2 = TestCredentialGenerator.createDAC(zac, subdomain, 2);
+		dac2 = TestCredentialGenerator.createDAC(zac, subdomain, 2, 2);
 		// ZAS should use the "authenticated agent" to set the partitionID
 	}
 
@@ -994,10 +995,10 @@ public class ZASImplUnitTest {
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
-		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
-		for (Destination ft : ftlist) {
-			flowTargetService.delete(ft);
+		ftSc.getDestination().setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Destination> ftlist = destinationService.search(zone, ftSc);
+		for (org.tdmx.lib.zone.domain.Destination ft : ftlist) {
+			destinationService.delete(ft);
 		}
 
 		// delete any Agent on the domain
@@ -1031,7 +1032,7 @@ public class ZASImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		removeFlowTargets(domain);
-		removeChannelAuthorizations(domain);
+		removeChannels(domain);
 		removeAgentCredentials(domain);
 		removeAddresses(domain);
 		removeServices(domain);
@@ -1174,7 +1175,7 @@ public class ZASImplUnitTest {
 	public void testCreateAdministrator_DomainNotExists() throws Exception {
 		// create new credential for non-existent domain
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
-		PKIXCredential dac3 = TestCredentialGenerator.createDAC(zac, "gugus", 2);
+		PKIXCredential dac3 = TestCredentialGenerator.createDAC(zac, "gugus", 2, 2);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1191,23 +1192,23 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchFlowTarget_DAC() {
+	public void testSearchDestination_DAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		SearchFlowTarget req = new SearchFlowTarget();
+		SearchDestination req = new SearchDestination();
 
 		Page p = new Page();
 		p.setNumber(0);
 		p.setSize(10);
 		req.setPage(p);
 
-		FlowTargetFilter ftf = new FlowTargetFilter();
+		ChannelDestinationFilter ftf = new ChannelDestinationFilter();
 		req.setFilter(ftf);
 
-		SearchFlowTargetResponse response = zas.searchFlowTarget(req);
+		SearchDestinationResponse response = zas.searchDestination(req);
 		assertSuccess(response);
-		assertEquals(1, response.getFlowtargets().size());
+		assertEquals(1, response.getDestinationinfos().size());
 		// TODO alternatives
 	}
 
@@ -1232,7 +1233,7 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		removeChannels(domain, service);
+		removeChannels(domain);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1266,7 +1267,7 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		removeChannels(domain, service);
+		removeChannels(domain);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1499,7 +1500,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateUser_DAC_NOK_AddressNotFound() throws Exception {
 		// create new credentials on unexisting address
-		PKIXCredential uc3 = TestCredentialGenerator.createUC(dac, "gugus", 2);
+		PKIXCredential uc3 = TestCredentialGenerator.createUC(dac, "gugus", 2, 2);
 
 		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -1517,11 +1518,11 @@ public class ZASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchChannelAuthorization_ZAC() {
+	public void testSearchChannel_ZAC() {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		SearchChannelAuthorization req = new SearchChannelAuthorization();
+		SearchChannel req = new SearchChannel();
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -1531,9 +1532,9 @@ public class ZASImplUnitTest {
 		ChannelAuthorizationFilter uf = new ChannelAuthorizationFilter();
 		req.setFilter(uf);
 
-		SearchChannelAuthorizationResponse response = zas.searchChannelAuthorization(req);
+		SearchChannelResponse response = zas.searchChannel(req);
 		assertSuccess(response);
-		assertEquals(1, response.getChannelauthorizations().size());
+		assertEquals(1, response.getChannelinfos().size());
 		// TODO alternatives
 	}
 
@@ -1542,7 +1543,7 @@ public class ZASImplUnitTest {
 		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
-		SearchChannelAuthorization req = new SearchChannelAuthorization();
+		SearchChannel req = new SearchChannel();
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -1552,12 +1553,12 @@ public class ZASImplUnitTest {
 		ChannelAuthorizationFilter uf = new ChannelAuthorizationFilter();
 		req.setFilter(uf);
 
-		SearchChannelAuthorizationResponse response = zas.searchChannelAuthorization(req);
+		SearchChannelResponse response = zas.searchChannel(req);
 		assertSuccess(response);
-		assertEquals(1, response.getChannelauthorizations().size());
+		assertEquals(1, response.getChannelinfos().size());
 		// TODO alternatives
 
-		Channelauthorization caToDel = response.getChannelauthorizations().get(0);
+		Channelauthorization caToDel = response.getChannelinfos().get(0).getChannelauthorization();
 
 		DeleteChannelAuthorization delReq = new DeleteChannelAuthorization();
 		delReq.setDomain(dac.getPublicCert().getCommonName());
@@ -1567,9 +1568,9 @@ public class ZASImplUnitTest {
 		assertSuccess(delRes);
 
 		// check it's gone
-		response = zas.searchChannelAuthorization(req);
+		response = zas.searchChannel(req);
 		assertSuccess(response);
-		assertEquals(0, response.getChannelauthorizations().size());
+		assertEquals(0, response.getChannelinfos().size());
 	}
 
 	@Test
@@ -1639,30 +1640,18 @@ public class ZASImplUnitTest {
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));
-		ftSc.getTarget().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = flowTargetService.search(zone, ftSc);
-		for (Destination ft : ftlist) {
-			flowTargetService.delete(ft);
+		ftSc.getDestination().setDomainName(domain.getDomainName());
+		List<org.tdmx.lib.zone.domain.Destination> ftlist = destinationService.search(zone, ftSc);
+		for (org.tdmx.lib.zone.domain.Destination ft : ftlist) {
+			destinationService.delete(ft);
 		}
 	}
 
-	private void removeChannelAuthorizations(Domain domain) {
+	private void removeChannels(Domain domain) {
 		// delete any ChannelAuthorizations on the domain
 		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
 				new PageSpecifier(0, 1000));
 		caSc.setDomainName(domain.getDomainName());
-		List<ChannelAuthorization> calist = channelService.search(zone, caSc);
-		for (ChannelAuthorization ca : calist) {
-			channelService.delete(ca.getChannel());
-		}
-	}
-
-	private void removeChannels(Domain domain, org.tdmx.lib.zone.domain.Service service) {
-		// delete any ChannelAuthorizations on the domain
-		org.tdmx.lib.zone.domain.ChannelSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelSearchCriteria(
-				new PageSpecifier(0, 1000));
-		caSc.setDomainName(domain.getDomainName());
-		caSc.getDestination().setServiceName(service.getServiceName());
 		List<org.tdmx.lib.zone.domain.Channel> channelList = channelService.search(zone, caSc);
 		for (org.tdmx.lib.zone.domain.Channel c : channelList) {
 			channelService.delete(c);
