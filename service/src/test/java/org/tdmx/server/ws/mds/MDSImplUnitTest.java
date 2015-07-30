@@ -219,7 +219,7 @@ public class MDSImplUnitTest {
 		ds.setSessionKey(new byte[] { 1, 2, 3 });
 		ds.setScheme("scheme-name");
 
-		SignatureUtils.createFlowTargetSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(),
+		SignatureUtils.createDestinationSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(),
 				service.getServiceName(), ds);
 
 		req.setDestinationsession(ds);

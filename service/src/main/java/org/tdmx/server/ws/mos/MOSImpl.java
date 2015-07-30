@@ -200,7 +200,7 @@ public class MOSImpl implements MOS {
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
-		if (!SignatureUtils.checkMsgId(header)) {
+		if (!SignatureUtils.checkMsgId(header, header.getUsersignature().getSignaturevalue().getTimestamp())) {
 			setError(ErrorCode.InvalidMsgId, response);
 			return response;
 		}

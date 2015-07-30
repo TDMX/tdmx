@@ -84,7 +84,7 @@ public class ZoneFacade {
 		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME
 
 		Destinationsession ads = d2a.mapDestinationSession(ds);
-		SignatureUtils.createFlowTargetSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
+		SignatureUtils.createDestinationSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
 				service.getServiceName(), ads);
 
 		return a2d.mapDestination(address, service, ads);

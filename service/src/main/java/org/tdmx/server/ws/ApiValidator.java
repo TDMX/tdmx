@@ -303,10 +303,6 @@ public class ApiValidator {
 			setError(ErrorCode.MissingHeaderTTL, ack);
 			return null;
 		}
-		if (hdr.getTimestamp() == null) {
-			setError(ErrorCode.MissingHeaderTimestamp, ack);
-			return null;
-		}
 		if (!StringUtils.hasText(hdr.getEncryptionContextId())) {
 			setError(ErrorCode.MissingHeaderEncryptionContextId, ack);
 			return null;

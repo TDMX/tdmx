@@ -73,7 +73,6 @@ public class MessageFacade {
 
 		// create the first chunk
 		Header hdr = new Header();
-		hdr.setTimestamp(msgTs);
 		hdr.setTtl(ttlCal);
 
 		hdr.setChannel(c);
@@ -91,9 +90,9 @@ public class MessageFacade {
 		SignatureUtils.createPayloadSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, payload, hdr);
 
 		// once we have the payload signature in the header, we can set the ID.
-		SignatureUtils.setMsgId(hdr);
+		SignatureUtils.setMsgId(hdr, msgTs);
 		// and sign the message header
-		SignatureUtils.createHeaderSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, hdr);
+		SignatureUtils.createHeaderSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, msgTs.getTime(), hdr);
 
 		// link the chunk to the message
 		Chunk chunk = createChunk(hdr.getMsgId(), 0);

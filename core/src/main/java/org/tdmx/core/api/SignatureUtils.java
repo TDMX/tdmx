@@ -65,13 +65,14 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public static boolean checkMsgId(Header header) {
-		return header != null && header.getMsgId() != null && header.getMsgId().equals(calculateMsgId(header));
+	public static boolean checkMsgId(Header header, Calendar sentTS) {
+		return header != null && sentTS != null && header.getMsgId() != null
+				&& header.getMsgId().equals(calculateMsgId(header, sentTS));
 	}
 
-	public static void setMsgId(Header header) {
+	public static void setMsgId(Header header, Calendar sentTS) {
 		if (header != null) {
-			header.setMsgId(calculateMsgId(header));
+			header.setMsgId(calculateMsgId(header, sentTS));
 		}
 	}
 
@@ -109,13 +110,28 @@ public class SignatureUtils {
 				valueToSign, signatureHex);
 	}
 
-	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Header header) {
+	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
+			Header header) {
+		UserSignature us = new UserSignature();
+
+		UserIdentity id = new UserIdentity();
+		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
+		id.setDomaincertificate(credential.getPublicCert().getX509Encoded());
+		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
+
+		Signaturevalue sig = new Signaturevalue();
+		sig.setTimestamp(CalendarUtils.getDate(signatureDate));
+		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
+
+		us.setSignaturevalue(sig);
+		us.setUserIdentity(id);
+		header.setUsersignature(us);
+
+		// TODO remove Msg.header.timestamp in API and rely on signatureTS.
+
 		String valueToSignHeader = getValueToSign(header);
-		header.getUsersignature().getSignaturevalue()
-				.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
-		header.getUsersignature().getSignaturevalue().setTimestamp(null); // TODO replace with Msg.header.timestamp.
-		header.getUsersignature().getSignaturevalue()
-				.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
+		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
+		// sig is in the header
 	}
 
 	public static boolean checkEndpointPermissionSignature(Channel channel, Permission perm, boolean checkValidUntil) {
@@ -177,9 +193,8 @@ public class SignatureUtils {
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static void createFlowTargetSessionSignature(PKIXCredential credential, SignatureAlgorithm alg,
+	public static void createDestinationSessionSignature(PKIXCredential credential, SignatureAlgorithm alg,
 			Date signatureDate, String serviceName, Destinationsession ft) {
-		// TODO DS.validFrom -> signatureTimestamp.
 
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
@@ -206,7 +221,7 @@ public class SignatureUtils {
 				.getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(fts.getUsersignature().getSignaturevalue().getTimestamp())
-				&& checkFlowTargetSessionSignature(publicCert, alg, target, serviceName, fts);
+				&& checkDestinationSessionSignature(publicCert, alg, target, serviceName, fts);
 	}
 
 	public static String createContinuationId(int chunkPos, byte[] entropy, String msgId, int len) {
@@ -234,16 +249,17 @@ public class SignatureUtils {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private static String calculateMsgId(Header header) {
+	private static String calculateMsgId(Header header, Calendar sentTS) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(toValue(header.getTimestamp())); // TODO signature timestamp
 		// channel
 		sb.append(toValue(header.getChannel().getOrigin().getLocalname()));
 		sb.append(toValue(header.getChannel().getOrigin().getDomain()));
 		sb.append(toValue(header.getChannel().getDestination().getLocalname()));
 		sb.append(toValue(header.getChannel().getDestination().getDomain()));
 		sb.append(toValue(header.getChannel().getDestination().getServicename()));
-		// makes the value unique per payload
+		// timestamp
+		sb.append(toValue(sentTS));
+		// payload signature with sentTS makes the msgId value unique per payload
 		sb.append(toValue(header.getPayloadSignature()));
 		String valueToHash = sb.toString();
 
@@ -273,13 +289,14 @@ public class SignatureUtils {
 		StringBuilder value = new StringBuilder();
 
 		value.append(toValue(header.getMsgId()));
-		value.append(toValue(header.getTimestamp()));
+		value.append(toValue(header.getUsersignature().getSignaturevalue().getTimestamp()));
 		value.append(toValue(header.getTtl()));
 		appendValueToSign(value, header.getChannel());
 		appendValueToSign(value, header.getTo());
 		value.append(toValue(header.getEncryptionContextId()));
 		value.append(toValue(header.getPayloadSignature()));
 		value.append(toValue(header.getExternalReference()));
+
 		return value.toString();
 	}
 
@@ -319,7 +336,7 @@ public class SignatureUtils {
 		return value.toString();
 	}
 
-	private static boolean checkFlowTargetSessionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
+	private static boolean checkDestinationSessionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
 			UserIdentity target, String serviceName, Destinationsession fts) {
 		String valueToSign = getValueToSign(serviceName, target, fts);
 		String signatureHex = fts.getUsersignature().getSignaturevalue().getSignature();

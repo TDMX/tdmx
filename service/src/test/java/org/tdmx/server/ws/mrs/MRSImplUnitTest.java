@@ -295,7 +295,7 @@ public class MRSImplUnitTest {
 		ds.setScheme("scheme");
 		ds.setSessionKey(new byte[] { 1, 2, 3 });
 
-		SignatureUtils.createFlowTargetSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(),
+		SignatureUtils.createDestinationSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(),
 				dest.getServicename(), ds);
 		// signer is destination, so reqRecv at origin
 

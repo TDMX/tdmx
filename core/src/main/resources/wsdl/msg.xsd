@@ -555,11 +555,6 @@
 	<xs:complexType name="Header">
 		<xs:sequence>
 			<xs:element ref="msgId"/>
-			<xs:element name="timestamp" type="timestamp">
-				<xs:annotation>
-					<xs:documentation>timestamp that the message was created by the originator.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="ttl" type="xs:dateTime">
 				<xs:annotation>
 					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>

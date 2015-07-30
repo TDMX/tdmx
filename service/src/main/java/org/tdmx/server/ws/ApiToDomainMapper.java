@@ -72,7 +72,7 @@ public class ApiToDomainMapper {
 		MessageDescriptor md = new MessageDescriptor();
 		md.setMsgId(msg.getHeader().getMsgId());
 		md.setTxId(null); // TODO
-		md.setSentTimestamp(CalendarUtils.cast(msg.getHeader().getTimestamp()));
+		md.setSentTimestamp(CalendarUtils.cast(msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp()));
 		md.setTtlTimestamp(CalendarUtils.cast(msg.getHeader().getTtl()));
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
 		md.setPayloadSignature(msg.getHeader().getPayloadSignature());
