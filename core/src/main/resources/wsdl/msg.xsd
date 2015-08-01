@@ -616,6 +616,21 @@
 			<xs:element ref="chunk"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="MessageReference">
+		<xs:sequence>
+			<xs:element ref="msgId"/>
+			<xs:element name="externalReference" type="common:longtext" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="headerSignature" type="signature">
+				<xs:annotation>
+					<xs:documentation>the senders original header signature.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="Chunk">
 		<xs:complexContent>
 			<xs:extension base="ChunkReference">
@@ -635,7 +650,7 @@
 	</xs:complexType>
 	<xs:complexType name="DeliveryReport">
 		<xs:sequence>
-			<xs:element ref="header"/>
+			<xs:element ref="msgRef"/>
 			<xs:element ref="receiptsignature" minOccurs="0"/>
 			<xs:element ref="common:processingstatus" minOccurs="0"/>
 		</xs:sequence>
@@ -683,6 +698,11 @@
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:element name="msg" type="Message">
+		<xs:annotation>
+			<xs:documentation>A message.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="msgRef" type="MessageReference">
 		<xs:annotation>
 			<xs:documentation>A message.</xs:documentation>
 		</xs:annotation>
