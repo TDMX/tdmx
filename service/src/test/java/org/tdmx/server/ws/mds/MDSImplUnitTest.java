@@ -41,8 +41,6 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
-import org.tdmx.core.api.v01.mds.GetAddress;
-import org.tdmx.core.api.v01.mds.GetAddressResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ListChannel;
@@ -171,20 +169,6 @@ public class MDSImplUnitTest {
 	}
 
 	@Test
-	public void testGetAddress() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
-		GetAddress req = new GetAddress();
-
-		GetAddressResponse response = mds.getAddress(req);
-		assertSuccess(response);
-		assertNotNull(response.getDestination());
-		assertEquals(domain.getDomainName(), response.getDestination().getDomain());
-		// TODO others
-	}
-
-	@Test
 	public void testListChannelAuthorization_All() {
 		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
 		authenticatedAgentService.setAuthenticatedAgent(r);
@@ -195,9 +179,6 @@ public class MDSImplUnitTest {
 		p.setNumber(0);
 		p.setSize(10);
 		req.setPage(p);
-
-		req.setServicename(service.getServiceName());
-		// TODO test without svc name fails
 
 		ListChannelResponse response = mds.listChannel(req);
 		assertSuccess(response);
@@ -212,7 +193,6 @@ public class MDSImplUnitTest {
 		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		SetDestinationSession req = new SetDestinationSession();
-		req.setServicename(service.getServiceName());
 
 		Destinationsession ds = new Destinationsession();
 		ds.setEncryptionContextId("id1");
@@ -230,11 +210,10 @@ public class MDSImplUnitTest {
 
 		// do getDestinationSession to confirm DS created
 		GetDestinationSession getReq = new GetDestinationSession();
-		getReq.setServicename(service.getServiceName()); // TODO remove with session bound to service on MDS
 
 		GetDestinationSessionResponse getRes = mds.getDestinationSession(getReq);
 		assertSuccess(getRes);
-		assertNotNull(getRes.getDestinationsession());
+		assertNotNull(getRes.getDestination().getDestinationsession());
 
 		// tamper with signature doesn't work
 		ds.getUsersignature().getSignaturevalue().setSignature("gugus");

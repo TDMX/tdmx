@@ -17,12 +17,6 @@
 			<xsd:include schemaLocation="mds.xsd"/>
 		</xsd:schema>
 	</wsdl:types>
-	<wsdl:message name="getAddressRequest">
-		<wsdl:part name="parameters" element="mds:getAddress"/>
-	</wsdl:message>
-	<wsdl:message name="getAddressResponse">
-		<wsdl:part name="parameters" element="mds:getAddressResponse"/>
-	</wsdl:message>
 	<wsdl:message name="listChannelRequest">
 		<wsdl:part name="parameters" element="mds:listChannel"/>
 	</wsdl:message>
@@ -87,13 +81,6 @@
 		<wsdl:documentation>
 				Bla Bla
 		</wsdl:documentation>
-		<wsdl:operation name="getAddress">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getAddressRequest"/>
-			<wsdl:output message="tns:getAddressResponse"/>
-		</wsdl:operation>
 		<wsdl:operation name="listChannel">
 			<wsdl:documentation>
 				Bla Bla
@@ -167,15 +154,6 @@
 	</wsdl:portType>
 	<wsdl:binding name="MDSBinding" type="tns:MDS">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="getAddress">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/getAddress"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
 		<wsdl:operation name="listChannel">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/listChannel"/>
 			<wsdl:input>

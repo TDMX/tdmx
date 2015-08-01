@@ -26,10 +26,10 @@ import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Authorization;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
@@ -229,7 +229,7 @@ public class ApiValidator {
 		return channelEndpoint;
 	}
 
-	public Destination checkChannelDestination(Destination dest, Acknowledge ack) {
+	public ChannelDestination checkChannelDestination(ChannelDestination dest, Acknowledge ack) {
 		if (checkChannelEndpoint(dest, ack) == null) {
 			return null;
 		}

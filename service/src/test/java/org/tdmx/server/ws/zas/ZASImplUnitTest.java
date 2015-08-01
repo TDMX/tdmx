@@ -50,12 +50,12 @@ import org.tdmx.core.api.v01.msg.AdministratorFilter;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelDestinationFilter;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.DomainFilter;
 import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.Grant;
@@ -1329,7 +1329,7 @@ public class ZASImplUnitTest {
 		Currentchannelauthorization auth = new Currentchannelauthorization();
 
 		Channel channel = new Channel();
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain.getDomainName());
 		dest.setLocalname(uc.getPublicCert().getCommonName());
 		dest.setServicename(service.getServiceName());
@@ -1392,7 +1392,7 @@ public class ZASImplUnitTest {
 		Currentchannelauthorization auth = new Currentchannelauthorization();
 
 		Channel channel = new Channel();
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain.getDomainName());
 		dest.setLocalname(uc.getPublicCert().getCommonName());
 		dest.setServicename("gugus");

@@ -203,7 +203,7 @@ public class ApiToDomainMapper {
 		return o;
 	}
 
-	public ChannelDestination mapChannelDestination(org.tdmx.core.api.v01.msg.Destination destination) {
+	public ChannelDestination mapChannelDestination(org.tdmx.core.api.v01.msg.ChannelDestination destination) {
 		if (destination == null) {
 			return null;
 		}

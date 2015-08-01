@@ -45,8 +45,8 @@ import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Msg;
@@ -183,7 +183,7 @@ public class MRSImplUnitTest {
 	@Test
 	public void testRelay_ChannelAuthorization_ReqSend() {
 		Channel channel = new Channel();
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
@@ -231,7 +231,7 @@ public class MRSImplUnitTest {
 	@Test
 	public void testRelay_ChannelAuthorization_ReqRecv() {
 		Channel channel = new Channel();
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
@@ -279,7 +279,7 @@ public class MRSImplUnitTest {
 	public void testRelay_ChannelDestination() {
 		// the setup creates authorized channels from domain-0 -> domain-1
 		Channel channel = new Channel();
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain2.getDomainName());
 		dest.setLocalname(address2.getLocalName());
 		dest.setServicename(service2.getServiceName());

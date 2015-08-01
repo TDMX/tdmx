@@ -28,8 +28,6 @@ import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
-import org.tdmx.core.api.v01.mds.GetAddress;
-import org.tdmx.core.api.v01.mds.GetAddressResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ListChannel;
@@ -39,7 +37,7 @@ import org.tdmx.core.api.v01.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
 import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
-import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.tx.Commit;
@@ -52,12 +50,13 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
-import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -111,30 +110,6 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public GetAddressResponse getAddress(GetAddress parameters) {
-		GetAddressResponse response = new GetAddressResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
-		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
-			return response;
-		}
-
-		ChannelEndpoint ep = new ChannelEndpoint();
-		ep.setDomain(existingCred.getDomain().getDomainName());
-		ep.setLocalname(existingCred.getAddress().getLocalName());
-
-		response.setDestination(ep);
-		response.setSuccess(true);
-		return response;
-	}
-
-	@Override
 	public GetDestinationSessionResponse getDestinationSession(GetDestinationSession parameters) {
 		GetDestinationSessionResponse response = new GetDestinationSessionResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
@@ -142,31 +117,17 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		if (!StringUtils.hasText(parameters.getServicename())) {
-			setError(ErrorCode.MissingService, response);
-			return response;
-		}
+		Destination d = null; // FIXME new session context
+		Service service = null; // FIXME
+		Address address = null; // FIXME
 
-		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
-		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
-			return response;
-		}
-
-		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingCred.getDomain(),
-				parameters.getServicename());
-		if (existingService == null) {
-			setError(ErrorCode.ServiceNotFound, response);
-			return response;
-		}
-
-		Destination existingDestination = destinationService.findByDestination(existingCred.getAddress(),
-				existingService);
-		if (existingDestination != null) {
-			Destinationsession ds = d2a.mapDestinationSession(existingDestination.getDestinationSession());
-			response.setDestinationsession(ds);
+		Destinationinfo info = new Destinationinfo();
+		info.setDomain(address.getDomain().getDomainName());
+		info.setLocalname(address.getLocalName());
+		info.setServicename(service.getServiceName());
+		if (d != null) {
+			Destination existingDestination = destinationService.findById(d.getId());
+			info.setDestinationsession(d2a.mapDestinationSession(existingDestination.getDestinationSession()));
 		}
 
 		response.setSuccess(true);
@@ -180,42 +141,27 @@ public class MDSImpl implements MDS {
 		if (authorizedUser == null) {
 			return response;
 		}
-
-		if (!StringUtils.hasText(parameters.getServicename())) {
-			setError(ErrorCode.MissingService, response);
-			return response;
-		}
-
-		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
-		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
-			return response;
-		}
-
-		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingCred.getDomain(),
-				parameters.getServicename());
-		if (existingService == null) {
-			setError(ErrorCode.ServiceNotFound, response);
-			return response;
-		}
-
 		// validate all DestinationSession fields are specified.
 		Destinationsession ds = validator.checkDestinationsession(parameters.getDestinationsession(), response);
 		if (ds == null) {
 			return response;
 		}
 
+		AgentCredential existingCred = null;
+		Destination d = null; // FIXME new session context
+		Service service = null; // FIXME
+		Address address = null; // FIXME
+
 		UserIdentity id = d2a.mapUserIdentity(existingCred.getCertificateChain());
 		// check that the FTS signature is ok for the targetagent.
-		if (!SignatureUtils.checkFlowTargetSessionSignature(parameters.getServicename(), id, ds)) {
+		if (!SignatureUtils.checkFlowTargetSessionSignature(service.getServiceName(), id, ds)) {
 			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return response;
 		}
 
-		Destination d = a2d.mapDestination(existingCred.getAddress(), existingService, ds);
-		destinationService.setSession(d);
+		// lookup existing service exists
+		Destination dest = a2d.mapDestination(address, service, ds);
+		destinationService.setSession(dest);
 
 		Zone zone = getAgentService().getZone();
 
@@ -225,9 +171,9 @@ public class MDSImpl implements MDS {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
 			sc.setDomain(existingCred.getDomain());
-			sc.getDestination().setLocalName(existingCred.getAddress().getLocalName());
-			sc.getDestination().setDomainName(existingCred.getDomain().getDomainName());
-			sc.getDestination().setServiceName(existingService.getServiceName());
+			sc.getDestination().setLocalName(address.getLocalName());
+			sc.getDestination().setDomainName(address.getDomain().getDomainName());
+			sc.getDestination().setServiceName(service.getServiceName());
 
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
@@ -262,11 +208,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		if (!StringUtils.hasText(parameters.getServicename())) {
-			setError(ErrorCode.MissingService, response);
-			return response;
-		}
-
+		Service service = null; // FIXME session context
 		Zone zone = getAgentService().getZone();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
@@ -274,7 +216,7 @@ public class MDSImpl implements MDS {
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
 		sc.getDestination().setLocalName(authorizedUser.getTdmxUserName());
 		sc.getDestination().setDomainName(authorizedUser.getTdmxDomainName());
-		sc.getDestination().setServiceName(parameters.getServicename());
+		sc.getDestination().setServiceName(service.getServiceName());
 		if (parameters.getOrigin() != null) {
 			sc.getOrigin().setDomainName(parameters.getOrigin().getDomain());
 			sc.getOrigin().setLocalName(parameters.getOrigin().getLocalname());

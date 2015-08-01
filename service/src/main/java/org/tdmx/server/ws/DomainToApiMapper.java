@@ -28,12 +28,12 @@ import org.tdmx.core.api.v01.msg.Administrator;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.Channelinfo;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.FlowControlLevel;
@@ -139,7 +139,9 @@ public class DomainToApiMapper {
 		}
 		Destinationinfo di = new Destinationinfo();
 		di.setDestinationsession(mapDestinationSession(ds));
-		di.setDestination(mapChannelDestination(d));
+		di.setDomain(d.getDomainName());
+		di.setLocalname(d.getLocalName());
+		di.setServicename(d.getServiceName());
 		return di;
 	}
 
@@ -221,11 +223,11 @@ public class DomainToApiMapper {
 		return o;
 	}
 
-	public Destination mapChannelDestination(org.tdmx.lib.zone.domain.ChannelDestination dest) {
+	public ChannelDestination mapChannelDestination(org.tdmx.lib.zone.domain.ChannelDestination dest) {
 		if (dest == null) {
 			return null;
 		}
-		Destination d = new Destination();
+		ChannelDestination d = new ChannelDestination();
 		d.setDomain(dest.getDomainName());
 		d.setLocalname(dest.getLocalName());
 		d.setServicename(dest.getServiceName());

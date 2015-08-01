@@ -33,8 +33,8 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateFacade;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.msg.Destination;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -59,7 +59,7 @@ public class SignatureUtilsTest {
 		origin.setDomain("domain");
 		origin.setLocalname("domain");
 
-		Destination dest = new Destination();
+		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain("domain");
 		dest.setLocalname("domain");
 		dest.setServicename("service");
