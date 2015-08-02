@@ -182,6 +182,42 @@
 	<wsdl:message name="searchDestinationResponse">
 		<wsdl:part name="parameters" element="zas:searchDestinationResponse"/>
 	</wsdl:message>
+	<wsdl:message name="listChannelMessageRequest">
+		<wsdl:part name="parameters" element="zas:listChannelMessage"/>
+	</wsdl:message>
+	<wsdl:message name="listChannelMessageResponse">
+		<wsdl:part name="parameters" element="zas:listChannelMessageResponse"/>
+	</wsdl:message>
+	<wsdl:message name="submitMessageRequest">
+		<wsdl:part name="parameters" element="zas:submitMessage"/>
+	</wsdl:message>
+	<wsdl:message name="submitMessageResponse">
+		<wsdl:part name="parameters" element="zas:submitMessageResponse"/>
+	</wsdl:message>
+	<wsdl:message name="uploadChunkRequest">
+		<wsdl:part name="parameters" element="zas:uploadChunk"/>
+	</wsdl:message>
+	<wsdl:message name="uploadChunkResponse">
+		<wsdl:part name="parameters" element="zas:uploadChunkResponse"/>
+	</wsdl:message>
+	<wsdl:message name="receiveMessageRequest">
+		<wsdl:part name="parameters" element="zas:receiveMessage"/>
+	</wsdl:message>
+	<wsdl:message name="receiveMessageResponse">
+		<wsdl:part name="parameters" element="zas:receiveMessageResponse"/>
+	</wsdl:message>
+	<wsdl:message name="downloadChunkRequest">
+		<wsdl:part name="parameters" element="zas:downloadChunk"/>
+	</wsdl:message>
+	<wsdl:message name="downloadChunkResponse">
+		<wsdl:part name="parameters" element="zas:downloadChunkResponse"/>
+	</wsdl:message>
+	<wsdl:message name="receiptMessageRequest">
+		<wsdl:part name="parameters" element="zas:receiptMessage"/>
+	</wsdl:message>
+	<wsdl:message name="receiptMessageResponse">
+		<wsdl:part name="parameters" element="zas:receiptMessageResponse"/>
+	</wsdl:message>
 	<wsdl:portType name="ZAS">
 		<wsdl:documentation>
 				Bla Bla
@@ -374,6 +410,48 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:searchDestinationRequest"/>
 			<wsdl:output message="tns:searchDestinationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="listChannelMessage">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:listChannelMessageRequest"/>
+			<wsdl:output message="tns:listChannelMessageResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="submitMessage">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:submitMessageRequest"/>
+			<wsdl:output message="tns:submitMessageResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="uploadChunk">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:uploadChunkRequest"/>
+			<wsdl:output message="tns:uploadChunkResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="receiveMessage">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:receiveMessageRequest"/>
+			<wsdl:output message="tns:receiveMessageResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="downloadChunk">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:downloadChunkRequest"/>
+			<wsdl:output message="tns:downloadChunkResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="receiptMessage">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:receiptMessageRequest"/>
+			<wsdl:output message="tns:receiptMessageResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="ZASBinding" type="tns:ZAS">
@@ -614,6 +692,60 @@
 		</wsdl:operation>
 		<wsdl:operation name="searchDestination">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/searchDestination"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="listChannelMessage">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/listChannelMessage"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="submitMessage">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/submitMessage"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="uploadChunk">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/uploadChunk"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="receiveMessage">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/receiveMessage"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="downloadChunk">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/downloadChunk"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="receiptMessage">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:zas-definition/receiptMessage"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

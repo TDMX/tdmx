@@ -35,12 +35,6 @@
 	<wsdl:message name="getChannelResponse">
 		<wsdl:part name="parameters" element="mos:getChannelResponse"/>
 	</wsdl:message>
-	<wsdl:message name="getMessageDeliveryStatusRequest">
-		<wsdl:part name="parameters" element="mos:getMessageDeliveryStatus"/>
-	</wsdl:message>
-	<wsdl:message name="getMessageDeliveryStatusResponse">
-		<wsdl:part name="parameters" element="mos:getMessageDeliveryStatusResponse"/>
-	</wsdl:message>
 	<wsdl:message name="receiptRequest">
 		<wsdl:part name="parameters" element="mos:receipt"/>
 	</wsdl:message>
@@ -113,13 +107,6 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:getChannelRequest"/>
 			<wsdl:output message="tns:getChannelResponse"/>
-		</wsdl:operation>
-		<wsdl:operation name="getMessageDeliveryStatus">
-			<wsdl:documentation>
-				Bla Bla
-			</wsdl:documentation>
-			<wsdl:input message="tns:getMessageDeliveryStatusRequest"/>
-			<wsdl:output message="tns:getMessageDeliveryStatusResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="receipt">
 			<wsdl:documentation>
@@ -200,15 +187,6 @@
 		</wsdl:operation>
 		<wsdl:operation name="getChannel">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/getChannel"/>
-			<wsdl:input>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"/>
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="getMessageDeliveryStatus">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/getMessageDeliveryStatus"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

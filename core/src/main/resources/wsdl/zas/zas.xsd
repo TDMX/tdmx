@@ -363,6 +363,105 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="listChannelMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="domain" type="msg:domainname"/>
+			<xs:element ref="msg:channel"/>
+			<xs:element ref="common:page"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listChannelMessageResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge">
+				<xs:sequence minOccurs="0">
+					<xs:element ref="msg:cms" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="submitMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:domain"/>
+			<xs:element ref="msg:msg"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="submitMessageResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="uploadChunkRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="common:continuation" minOccurs="0"/>
+			<xs:element ref="msg:chunk"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="uploadChunkResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="receiveMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:msgId"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="receiveMessageResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge">
+				<xs:sequence>
+					<xs:element ref="msg:msg"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="downloadChunkRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="common:continuation" minOccurs="0"/>
+			<xs:element ref="msg:chunkref"/>
+			<xs:element ref="msg:msgId"/>
+			<xs:element name="pos" type="xs:unsignedShort"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="downloadChunkResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge">
+				<xs:sequence>
+					<xs:element ref="msg:chunk"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="receiptMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>TODO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="msg:msgId"/>
+			<xs:element ref="msg:receiptsignature"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="receiptMessageResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:Acknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--   REQUEST AND RESPONSE ELEMENTS                                   -->
 	<!--                                               -->
@@ -489,8 +588,52 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="deleteChannelAuthorizationResponse" type="deleteChannelAuthorizationResponseType"/>
-	<xs:element name="searchChannel" type="searchChannelRequestType"/>
+	<xs:element name="searchChannel" type="searchChannelRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchChannelResponse" type="searchChannelResponseType"/>
-	<xs:element name="searchDestination" type="searchDestinationRequestType"/>
+	<xs:element name="searchDestination" type="searchDestinationRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="searchDestinationResponse" type="searchDestinationResponseType"/>
+	<xs:element name="listChannelMessage" type="listChannelMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="listChannelMessageResponse" type="listChannelMessageResponseType"/>
+	<xs:element name="submitMessage" type="submitMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="submitMessageResponse" type="submitMessageResponseType"/>
+	<xs:element name="uploadChunk" type="uploadChunkRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="uploadChunkResponse" type="uploadChunkResponseType"/>
+	<xs:element name="receiveMessage" type="receiveMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="receiveMessageResponse" type="receiveMessageResponseType"/>
+	<xs:element name="downloadChunk" type="downloadChunkRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="downloadChunkResponse" type="downloadChunkResponseType"/>
+	<xs:element name="receiptMessage" type="receiptMessageRequestType">
+		<xs:annotation>
+			<xs:documentation>Authorization: ZAC/DAC. TODO</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="receiptMessageResponse" type="receiptMessageResponseType"/>
 </xs:schema>

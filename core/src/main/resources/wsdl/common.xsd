@@ -99,7 +99,7 @@
 			<xs:documentation>operations which are not complete, this provides back the caller an authorization code for subsequent call. This provides the ServiceProvider with a mechanism to sequentialize calls from a calling agent.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="processingstatus" type="ProcessingStatus">
+	<xs:element name="ps" type="ProcessingStatus">
 		<xs:annotation>
 			<xs:documentation>task processing information.</xs:documentation>
 		</xs:annotation>

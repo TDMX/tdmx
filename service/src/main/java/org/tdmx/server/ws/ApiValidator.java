@@ -35,9 +35,9 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.core.api.v01.msg.Signaturevalue;
+import org.tdmx.core.api.v01.msg.SignatureValue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.UserSignature;
+import org.tdmx.core.api.v01.msg.Usersignature;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ApiValidator {
@@ -143,7 +143,7 @@ public class ApiValidator {
 		return signature;
 	}
 
-	public UserSignature checkUsersignature(UserSignature signature, Acknowledge ack) {
+	public Usersignature checkUsersignature(Usersignature signature, Acknowledge ack) {
 		if (signature == null) {
 			setError(ErrorCode.MissingUserSignature, ack);
 			return null;
@@ -157,7 +157,7 @@ public class ApiValidator {
 		return signature;
 	}
 
-	public Signaturevalue checkSignaturevalue(Signaturevalue sig, Acknowledge ack) {
+	public SignatureValue checkSignaturevalue(SignatureValue sig, Acknowledge ack) {
 		if (sig == null) {
 			setError(ErrorCode.MissingSignatureValue, ack);
 			return null;

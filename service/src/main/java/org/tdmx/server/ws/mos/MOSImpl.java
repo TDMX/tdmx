@@ -30,8 +30,6 @@ import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetChannel;
 import org.tdmx.core.api.v01.mos.GetChannelResponse;
-import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatus;
-import org.tdmx.core.api.v01.mos.GetMessageDeliveryStatusResponse;
 import org.tdmx.core.api.v01.mos.ListChannel;
 import org.tdmx.core.api.v01.mos.ListChannelResponse;
 import org.tdmx.core.api.v01.mos.Receipt;
@@ -279,12 +277,6 @@ public class MOSImpl implements MOS {
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	public GetMessageDeliveryStatusResponse getMessageDeliveryStatus(GetMessageDeliveryStatus parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

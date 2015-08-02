@@ -90,23 +90,6 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="getMessageDeliveryStatusRequestType">
-		<xs:annotation>
-			<xs:documentation>get the delivery status of a submitted Message.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:msgId"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getMessageDeliveryStatusResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:sequence minOccurs="0">
-					<xs:element ref="msg:dr" maxOccurs="256"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--    MOS SEND OPERATION TYPES                                                     -->
 	<!--                                        -->
@@ -143,8 +126,6 @@
 	<xs:element name="listChannelResponse" type="listChannelResponseType"/>
 	<xs:element name="getChannel" type="getChannelRequestType"/>
 	<xs:element name="getChannelResponse" type="getChannelResponseType"/>
-	<xs:element name="getMessageDeliveryStatus" type="getMessageDeliveryStatusRequestType"/>
-	<xs:element name="getMessageDeliveryStatusResponse" type="getMessageDeliveryStatusResponseType"/>
 	<xs:element name="receipt" type="receiptRequestType"/>
 	<xs:element name="receiptResponse" type="receiptResponseType"/>
 	<xs:element name="submit" type="submitRequestType"/>

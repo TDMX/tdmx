@@ -115,7 +115,7 @@ public class ApiToDomainMapper {
 		s.setScheme(ds.getScheme());
 		s.setSessionKey(ds.getSessionKey());
 
-		s.setSignature(mapAdministratorSignature(ds.getUsersignature()));
+		s.setSignature(mapUserSignature(ds.getUsersignature()));
 		return s;
 	}
 
@@ -153,7 +153,7 @@ public class ApiToDomainMapper {
 		return s;
 	}
 
-	public AgentSignature mapAdministratorSignature(org.tdmx.core.api.v01.msg.UserSignature signature) {
+	public AgentSignature mapUserSignature(org.tdmx.core.api.v01.msg.Usersignature signature) {
 		if (signature == null) {
 			return null;
 		}

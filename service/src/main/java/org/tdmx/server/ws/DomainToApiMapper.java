@@ -21,7 +21,7 @@ package org.tdmx.server.ws;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.core.api.v01.common.Processingstatus;
+import org.tdmx.core.api.v01.common.Ps;
 import org.tdmx.core.api.v01.common.Taskstatus;
 import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.Administrator;
@@ -48,10 +48,10 @@ import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.Sessioninfo;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
-import org.tdmx.core.api.v01.msg.Signaturevalue;
+import org.tdmx.core.api.v01.msg.SignatureValue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.UserSignature;
+import org.tdmx.core.api.v01.msg.Usersignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -129,7 +129,7 @@ public class DomainToApiMapper {
 		}
 		Sessioninfo s = new Sessioninfo();
 		s.setDestinationsession(mapDestinationSession(ds));
-		s.setProcessingstatus(mapProcessingStatus(ps));
+		s.setPs(mapProcessingStatus(ps));
 		return s;
 	}
 
@@ -269,12 +269,12 @@ public class DomainToApiMapper {
 			unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
 			c.setUnconfirmed(unconfirmed);
 		}
-		c.setProcessingstatus(mapProcessingStatus(ca.getProcessingState()));
+		c.setPs(mapProcessingStatus(ca.getProcessingState()));
 		return c;
 	}
 
-	public Processingstatus mapProcessingStatus(org.tdmx.lib.common.domain.ProcessingState ps) {
-		Processingstatus p = new Processingstatus();
+	public Ps mapProcessingStatus(org.tdmx.lib.common.domain.ProcessingState ps) {
+		Ps p = new Ps();
 		p.setStatus(Taskstatus.fromValue(ps.getStatus().toString()));
 		p.setTimestamp(CalendarUtils.cast(ps.getTimestamp()));
 		p.setError(mapError(ps.getErrorCode(), ps.getErrorMessage()));
@@ -301,21 +301,21 @@ public class DomainToApiMapper {
 		return s;
 	}
 
-	public UserSignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+	public Usersignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
 		if (agentSignature == null) {
 			return null;
 		}
-		UserSignature us = new UserSignature();
+		Usersignature us = new Usersignature();
 		us.setSignaturevalue(mapSignature(agentSignature));
 		us.setUserIdentity(mapUserIdentity(agentSignature.getCertificateChain()));
 		return us;
 	}
 
-	public Signaturevalue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+	public SignatureValue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
 		if (agentSignature == null) {
 			return null;
 		}
-		Signaturevalue sig = new Signaturevalue();
+		SignatureValue sig = new SignatureValue();
 		sig.setTimestamp(CalendarUtils.cast(agentSignature.getSignatureDate()));
 		sig.setSignature(agentSignature.getValue());
 		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));
