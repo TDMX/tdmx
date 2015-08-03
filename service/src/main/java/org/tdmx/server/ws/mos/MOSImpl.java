@@ -77,6 +77,7 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -95,6 +96,8 @@ public class MOSImpl implements MOS {
 	private static final Logger log = LoggerFactory.getLogger(MOSImpl.class);
 
 	private AuthenticatedAgentLookupService agentService;
+
+	private ServerSessionLookupService<MOSServerSession> sessionService;
 
 	private DomainService domainService;
 	private AddressService addressService;

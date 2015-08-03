@@ -66,6 +66,7 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -82,6 +83,8 @@ public class MDSImpl implements MDS {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MDSImpl.class);
+
+	private ServerSessionLookupService<MDSServerSession> sessionService;
 
 	private AuthenticatedAgentLookupService agentService;
 

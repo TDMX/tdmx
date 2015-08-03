@@ -60,6 +60,7 @@ import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -81,6 +82,8 @@ public class MRSImpl implements MRS {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
+
+	private ServerSessionLookupService<MRSServerSession> sessionService;
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
