@@ -66,12 +66,11 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
+import org.tdmx.server.ws.security.ServerSecurityManager;
 
 public class MDSImpl implements MDS {
 
@@ -84,9 +83,7 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MDSImpl.class);
 
-	private ServerSessionLookupService<MDSServerSession> sessionService;
-
-	private AuthenticatedAgentLookupService agentService;
+	private ServerSecurityManager<MDSServerSession> securityManager;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -114,6 +111,7 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public GetDestinationSessionResponse getDestinationSession(GetDestinationSession parameters) {
+
 		GetDestinationSessionResponse response = new GetDestinationSessionResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
@@ -296,12 +294,12 @@ public class MDSImpl implements MDS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AuthenticatedAgentLookupService getAgentService() {
-		return agentService;
+	public ServerSecurityManager<MDSServerSession> getSecurityManager() {
+		return securityManager;
 	}
 
-	public void setAgentService(AuthenticatedAgentLookupService agentService) {
-		this.agentService = agentService;
+	public void setSecurityManager(ServerSecurityManager<MDSServerSession> securityManager) {
+		this.securityManager = securityManager;
 	}
 
 	public DomainService getDomainService() {

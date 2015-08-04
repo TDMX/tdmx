@@ -29,7 +29,7 @@ import javax.net.ssl.X509TrustManager;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 @SuppressWarnings("rawtypes")
-public class ServerSessionManagerImpl implements ServerSessionManager, ServerSessionLookupService {
+public class ServerSessionManagerImpl implements ServerSessionManager, TrustManagerProvider, ServerSessionLookupService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -85,7 +85,7 @@ public class ServerSessionManagerImpl implements ServerSessionManager, ServerSes
 
 			}
 		};
-		return null;
+		return tm;
 	}
 
 	@Override

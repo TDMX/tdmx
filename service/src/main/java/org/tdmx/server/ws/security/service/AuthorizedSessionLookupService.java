@@ -18,31 +18,21 @@
  */
 package org.tdmx.server.ws.security.service;
 
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
+import org.tdmx.server.session.ServerSession;
 
 /**
- * Register/Clear/Get the AuthenticatedAgent with the current Thread.
- * 
- * Works together with the {@link AuthenticatedAgentLookupService} to provide the current ThreadLocal authenticated
- * agent.
+ * The Service to use to lookup the authenticated clients ServerSession.
  * 
  * @author Peter
  * 
  */
-public interface AuthenticatedAgentService extends AuthenticatedAgentLookupService {
+public interface AuthorizedSessionLookupService<E extends ServerSession> {
 
 	/**
-	 * Set the AuthorizationResult associated with the current Thread.
+	 * Returns the authorized ServerSession.
 	 * 
-	 * Setting the AuthorizationResult without it being cleared first for the thread calling will issue a warning.
-	 * 
-	 * @param agent
+	 * @return the authorized agent or null if there is none.
 	 */
-	public void setAuthenticatedAgent(AuthorizationResult authorization);
-
-	/**
-	 * Clear the AuthenticatedAgent so that none is associated with the current thread.
-	 */
-	public void clearAuthenticatedAgent();
+	public E getAuthenticatedSession();
 
 }

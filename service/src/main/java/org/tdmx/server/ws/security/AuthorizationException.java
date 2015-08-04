@@ -16,84 +16,34 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.security;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-
-public abstract class ServerSession {
+public class AuthorizationException extends IllegalStateException {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final String CREATED_TIMESTAMP = "CREATED_TIMESTAMP";
-	public static final String LAST_USED_TIMESTAMP = "LAST_USED_TIMESTAMP";
-	public static final String ZONE_DB_PARTITION_ID = "ZONE_DB_PARTITION_ID";
+
+	private static final long serialVersionUID = -5850961682589703534L;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	protected final Map<String, Object> attributeMap = new HashMap<>();
+	private static final Logger log = LoggerFactory.getLogger(AuthorizationException.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ServerSession() {
-		setAttribute(CREATED_TIMESTAMP, new Date());
-	}
-
-	class ServerSessionCertificateHolder {
-		private final PKIXCertificate cert;
-
-		public ServerSessionCertificateHolder(PKIXCertificate cert) {
-			this.cert = cert;
-		}
-
-		public PKIXCertificate getCert() {
-			return cert;
-		}
-
+	public AuthorizationException(String reason) {
+		super(reason);
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public Object getAttribute(String name) {
-		return attributeMap.get(name);
-	}
-
-	public void setAttribute(String name, Object object) {
-		attributeMap.put(name, object);
-	}
-
-	public void addAuthorizedCertificate(PKIXCertificate authorizedCert) {
-		attributeMap.put(authorizedCert.getFingerprint(), new ServerSessionCertificateHolder(authorizedCert));
-	}
-
-	public void removeAuthorizedCertificate(PKIXCertificate authorizedCert) {
-		attributeMap.remove(authorizedCert.getFingerprint());
-	}
-
-	/**
-	 * Find all PKIXCertificates which are authorized in the session.
-	 * 
-	 * @return
-	 */
-	public List<PKIXCertificate> getAuthorizedCertificates() {
-		List<PKIXCertificate> certificates = new ArrayList<>();
-		for (Map.Entry<String, Object> es : attributeMap.entrySet()) {
-			if (es.getValue() instanceof ServerSessionCertificateHolder) {
-				ServerSessionCertificateHolder ssv = (ServerSessionCertificateHolder) es.getValue();
-				certificates.add(ssv.getCert());
-			}
-		}
-		return certificates;
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -106,14 +56,5 @@ public abstract class ServerSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public Date getLastUsedTimestamp() {
-		Object lut = getAttribute(LAST_USED_TIMESTAMP);
-		return lut != null ? (Date) lut : null;
-	}
-
-	public void setLastUsedTimestamp(Date lut) {
-		setAttribute(LAST_USED_TIMESTAMP, lut);
-	}
 
 }

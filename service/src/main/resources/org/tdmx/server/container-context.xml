@@ -15,10 +15,10 @@
 		<property name="sslTestPort" value="${container.httpsPort}" />
  	</bean>
 
-	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthenticatedAgentServiceImpl">
+	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
 	</bean>
 	
-	<bean id="server.authorizationFilter" class="org.tdmx.server.ws.security.AgentAuthenticationFilter">
+	<bean id="server.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
 		<property name="authorizationService" ref="server.agentCredentialAuthorizationService" />
 		<property name="authenticatedAgentService" ref="server.authenticatedAgentService" />
 	</bean>

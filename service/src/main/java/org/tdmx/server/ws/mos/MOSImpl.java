@@ -56,6 +56,7 @@ import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -77,12 +78,12 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
+import org.tdmx.server.ws.security.ServerSecurityManager;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 public class MOSImpl implements MOS {
 
@@ -95,9 +96,9 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MOSImpl.class);
 
-	private AuthenticatedAgentLookupService agentService;
-
-	private ServerSessionLookupService<MOSServerSession> sessionService;
+	private ServerSecurityManager<MOSServerSession> securityManager; // TODO MDS Security Wrapper
+	private AuthorizedSessionService<MOSServerSession> authorizationService;
+	private ThreadLocalPartitionIdProvider partitionIdService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -157,6 +158,18 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public GetAddressResponse getAddress(GetAddress parameters) {
+		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+		getAuthorizationService().setAuthorizedSession(session);
+		try {
+			String partitionId = null; // TODO session.getZonePartitionId();
+			partitionIdService.setPartitionId(partitionId);
+			
+			delegate
+			// TODO
+		} finally {
+			getAuthorizationService().clearAuthorizedSession();
+			getPartitionIdService().clearPartitionId();
+		}
 		GetAddressResponse response = new GetAddressResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
@@ -181,6 +194,8 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public SubmitResponse submit(Submit parameters) {
+		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+
 		SubmitResponse response = new SubmitResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
@@ -341,6 +356,8 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public GetChannelResponse getChannel(GetChannel parameters) {
+		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+
 		GetChannelResponse response = new GetChannelResponse();
 
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
@@ -373,6 +390,8 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public ListChannelResponse listChannel(ListChannel parameters) {
+		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+
 		ListChannelResponse response = new ListChannelResponse();
 		PKIXCertificate authorizedUser = checkUserAuthorized(response);
 		if (authorizedUser == null) {
@@ -409,19 +428,6 @@ public class MOSImpl implements MOS {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private PKIXCertificate checkUserAuthorized(Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
-			return null;
-		}
-		if (!user.isTdmxUserCertificate()) {
-			setError(ErrorCode.NonUserAccess, ack);
-			return null;
-		}
-		return user;
-	}
-
 	private void setError(ErrorCode ec, Acknowledge ack) {
 		Error error = new Error();
 		error.setCode(ec.getErrorCode());
@@ -442,12 +448,28 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public AuthenticatedAgentLookupService getAgentService() {
-		return agentService;
+	public ServerSecurityManager<MOSServerSession> getSecurityManager() {
+		return securityManager;
 	}
 
-	public void setAgentService(AuthenticatedAgentLookupService agentService) {
-		this.agentService = agentService;
+	public void setSecurityManager(ServerSecurityManager<MOSServerSession> securityManager) {
+		this.securityManager = securityManager;
+	}
+
+	public AuthorizedSessionService<MOSServerSession> getAuthorizationService() {
+		return authorizationService;
+	}
+
+	public void setAuthorizationService(AuthorizedSessionService<MOSServerSession> authorizationService) {
+		this.authorizationService = authorizationService;
+	}
+
+	public ThreadLocalPartitionIdProvider getPartitionIdService() {
+		return partitionIdService;
+	}
+
+	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
+		this.partitionIdService = partitionIdService;
 	}
 
 	public DomainService getDomainService() {

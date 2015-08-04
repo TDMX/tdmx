@@ -127,12 +127,11 @@ import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentLookupService;
+import org.tdmx.server.ws.security.ServerSecurityManager;
 
 public class ZASImpl implements ZAS {
 
@@ -145,9 +144,8 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ZASImpl.class);
 
-	private ServerSessionLookupService<ZASServerSession> sessionService;
+	private ServerSecurityManager<ZASServerSession> securityManager;
 
-	private AuthenticatedAgentLookupService agentService;
 	private DomainService domainService;
 	private AddressService addressService;
 	private ServiceService serviceService;
@@ -1453,12 +1451,12 @@ public class ZASImpl implements ZAS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AuthenticatedAgentLookupService getAgentService() {
-		return agentService;
+	public ServerSecurityManager<ZASServerSession> getSecurityManager() {
+		return securityManager;
 	}
 
-	public void setAgentService(AuthenticatedAgentLookupService agentService) {
-		this.agentService = agentService;
+	public void setSecurityManager(ServerSecurityManager<ZASServerSession> securityManager) {
+		this.securityManager = securityManager;
 	}
 
 	public AgentCredentialFactory getCredentialFactory() {

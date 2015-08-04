@@ -7,6 +7,13 @@
 	<!-- ********************************************* -->
 	<!--           COMPLEX TYPES-->
 	<!-- ********************************************* -->
+	<xs:complexType name="Request">
+		<xs:attribute name="sessionId" type="text" use="required">
+			<xs:annotation>
+				<xs:documentation>The sessionId that the request is bound to.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
 	<xs:complexType name="Acknowledge">
 		<xs:sequence>
 			<xs:element ref="error" minOccurs="0"/>

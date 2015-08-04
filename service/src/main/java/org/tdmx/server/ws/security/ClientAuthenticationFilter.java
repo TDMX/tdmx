@@ -20,8 +20,6 @@ package org.tdmx.server.ws.security;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -34,12 +32,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationFailureCode;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 
-public class AgentAuthenticationFilter implements Filter {
+public class ClientAuthenticationFilter implements Filter {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -48,21 +46,11 @@ public class AgentAuthenticationFilter implements Filter {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AgentAuthenticationFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(ClientAuthenticationFilter.class);
 
 	private static String CLIENT_CERTIFICATE = "javax.servlet.request.X509Certificate";
-	private static Map<AuthorizationFailureCode, String> errorMessageMap = new HashMap<>();
-	static {
-		errorMessageMap.put(AuthorizationFailureCode.BAD_CERTIFICATE, "Bad Certificate.");
-		errorMessageMap.put(AuthorizationFailureCode.NON_TDMX, "Certificate is non TDMX.");
-		errorMessageMap.put(AuthorizationFailureCode.MISSING_CERT, "Missing Certificate.");
-		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_ZONE, "Unknown Zone.");
-		errorMessageMap.put(AuthorizationFailureCode.UNKNOWN_AGENT, "Unknown Certificate.");
-		errorMessageMap.put(AuthorizationFailureCode.AGENT_BLOCKED, "Blocked.");
-	}
 
-	private AgentCredentialAuthorizationService authorizationService;
-	private AuthenticatedAgentService authenticatedAgentService;
+	private AuthenticatedClientService authenticatedClientService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -81,29 +69,41 @@ public class AgentAuthenticationFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 			ServletException {
 		if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-			throw new ServletException("AgentAuthenticationFilter just supports HTTP requests");
+			throw new ServletException("ClientAuthenticationFilter just supports HTTP requests");
 		}
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+		log.debug("doFilter");
+
+		X509Certificate[] certs = (X509Certificate[]) httpRequest.getAttribute(CLIENT_CERTIFICATE);
+
+		PKIXCertificate[] pkixCerts = null;
 		try {
-			log.debug("doFilter");
+			pkixCerts = CertificateIOUtils.convert(certs);
 
-			X509Certificate[] certs = (X509Certificate[]) httpRequest.getAttribute(CLIENT_CERTIFICATE);
-			AuthorizationResult authorization = getAuthorizationService().isAuthorized(certs);
-			if (authorization.getFailureCode() == null) {
-				getAuthenticatedAgentService().setAuthenticatedAgent(authorization);
-
-				// the AuthorizationLookupService will give the agent further down the chain.
-				chain.doFilter(request, response);
-			} else {
-				// 401 - access denied, message mapped from errorMessageMap
-				httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-						errorMessageMap.get(authorization.getFailureCode()));
-			}
-		} finally {
-			getAuthenticatedAgentService().clearAuthenticatedAgent();
+		} catch (CryptoCertificateException e) {
+			log.warn("Unable to convert X509 certificate.", e);
+			// 401 - access denied
+			httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Bad Certificate.");
+			return;
 		}
+
+		try {
+			getAuthenticatedClientService().setAuthenticatedClient(pkixCerts[0]);
+			// the AuthenticatedClientLookupService will give the client identity further down the chain.
+			chain.doFilter(request, response);
+
+		} catch (AuthorizationException e) {
+			log.info("Unauthorized access.", e); // TODO future raise incident!
+			// 401 - access denied
+			httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Not Authorized.");
+			return;
+
+		} finally {
+			getAuthenticatedClientService().clearAuthenticatedClient();
+		}
+
 	}
 
 	@Override
@@ -123,20 +123,12 @@ public class AgentAuthenticationFilter implements Filter {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AgentCredentialAuthorizationService getAuthorizationService() {
-		return authorizationService;
+	public AuthenticatedClientService getAuthenticatedClientService() {
+		return authenticatedClientService;
 	}
 
-	public void setAuthorizationService(AgentCredentialAuthorizationService authorizationService) {
-		this.authorizationService = authorizationService;
-	}
-
-	public AuthenticatedAgentService getAuthenticatedAgentService() {
-		return authenticatedAgentService;
-	}
-
-	public void setAuthenticatedAgentService(AuthenticatedAgentService authenticatedAgentService) {
-		this.authenticatedAgentService = authenticatedAgentService;
+	public void setAuthenticatedClientService(AuthenticatedClientService authenticatedClientService) {
+		this.authenticatedClientService = authenticatedClientService;
 	}
 
 }

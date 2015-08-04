@@ -16,22 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-
-package org.tdmx.server.ws.security.service;
+package org.tdmx.server.ws.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
+import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.session.ServerSessionLookupService;
+import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
-/**
- * AuthenticatedAgentLookupService holds thread bound information about the logged in authorized Agent.
- * 
- * @author Peter Klauser
- * 
- */
-public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService {
+public class ServerSecurityManagerImpl<E extends ServerSession> implements ServerSecurityManager<E> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,9 +34,10 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(AuthenticatedAgentServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerSecurityManagerImpl.class);
 
-	private final ThreadLocal<AuthorizationResult> authStore = new ThreadLocal<AuthorizationResult>();
+	private AuthenticatedClientLookupService authenticatedClientService;
+	private ServerSessionLookupService<E> serverSessionService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -51,41 +46,22 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
 	@Override
-	public PKIXCertificate getAuthenticatedAgent() {
-		AuthorizationResult r = authStore.get();
-		return r != null ? r.getPublicCertificate() : null;
-	}
-
-	@Override
-	public void setAuthenticatedAgent(AuthorizationResult authorization) {
-		if (authStore.get() != null) {
-			log.warn("SECURITY WARNING: ThreadLocal not cleared when being set.");
-			clearAuthenticatedAgent();
+	public E getSession(String sessionId) throws AuthorizationException {
+		PKIXCertificate client = authenticatedClientService.getAuthenticatedClient();
+		if (client == null) {
+			throw new AuthorizationException("No PKIXCertificate.");
 		}
-		if (authorization.getFailureCode() != null) {
-			log.error("Illegal to setAuthenticatedAgent with AuthorizationResult with failurecode.");
-			throw new IllegalStateException();
+		E ss = serverSessionService.getSession(sessionId, client);
+		if (ss == null) {
+			throw new AuthorizationException("sessionId not associated with client.");
 		}
-		authStore.set(authorization);
+		return ss;
 	}
 
 	@Override
-	public String getZoneDbPartitionId() {
-		AuthorizationResult r = authStore.get();
-		return r != null ? r.getAccountZone().getZonePartitionId() : null;
-	}
-
-	@Override
-	public Zone getZone() {
-		AuthorizationResult r = authStore.get();
-		return r != null ? r.getZone() : null;
-	}
-
-	@Override
-	public void clearAuthenticatedAgent() {
-		authStore.remove();
+	public PKIXCertificate getAuthenticatedClient() {
+		return authenticatedClientService.getAuthenticatedClient();
 	}
 
 	// -------------------------------------------------------------------------
@@ -99,5 +75,21 @@ public class AuthenticatedAgentServiceImpl implements AuthenticatedAgentService 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public AuthenticatedClientLookupService getAuthenticatedClientService() {
+		return authenticatedClientService;
+	}
+
+	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
+		this.authenticatedClientService = authenticatedClientService;
+	}
+
+	public ServerSessionLookupService<E> getServerSessionService() {
+		return serverSessionService;
+	}
+
+	public void setServerSessionService(ServerSessionLookupService<E> serverSessionService) {
+		this.serverSessionService = serverSessionService;
+	}
 
 }

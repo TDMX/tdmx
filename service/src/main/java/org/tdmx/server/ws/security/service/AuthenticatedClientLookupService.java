@@ -16,44 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
-
-import java.util.Map;
+package org.tdmx.server.ws.security.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
-public interface ServerSessionManager {
+/**
+ * The Service to use to lookup the authenticated client's PKIXCertificate.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AuthenticatedClientLookupService {
 
 	/**
-	 * Creates a new session for a client with some initial attributes.
+	 * Returns the authenticated PKIXCertificate.
 	 * 
-	 * @param sessionId
-	 * @param cert
-	 * @param seedAttributes
+	 * @return the PKIXCertificate chain or null if there is none.
 	 */
-	public void createSession(String sessionId, PKIXCertificate cert, Map<String, String> seedAttributes);
-
-	/**
-	 * Add a new client certificate to an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
-	 */
-	public void addCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Remove a client certificate from an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
-	 */
-	public void removeCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Return the number of active sessions.
-	 * 
-	 * @return the number of active sessions.
-	 */
-	public int getSessionCount();
+	public PKIXCertificate getAuthenticatedClient();
 
 }

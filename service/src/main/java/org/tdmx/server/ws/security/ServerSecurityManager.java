@@ -16,38 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security.service;
+package org.tdmx.server.ws.security;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
-/**
- * The Service to use to lookup the authenticated agent's certificate and zone DB partition information.
- * 
- * @author Peter
- * 
- */
-public interface AuthenticatedAgentLookupService {
+public interface ServerSecurityManager<E extends ServerSession> extends AuthenticatedClientLookupService {
 
 	/**
-	 * Returns the authorized agent.
+	 * Return the ServerSession associated with the sessionID and authenticated client.
 	 * 
-	 * @return the authorized agent or null if there is none.
+	 * @param sessionId
+	 * @return the ServerSession associated with the sessionID and authenticated client.
+	 * @throws AuthorizationException
+	 *             if the authenticated client and sessionID are not associated.
 	 */
-	public PKIXCertificate getAuthenticatedAgent();
-
-	/**
-	 * Returns the ZoneDB partition used by the authorized agent.
-	 * 
-	 * @return the ZoneDB partition used by the authorized agent or null if there is none.
-	 */
-	public String getZoneDbPartitionId();
-
-	/**
-	 * Return the Zone of the authorized agent.
-	 * 
-	 * @return the Zone of the authorized agent.
-	 */
-	public Zone getZone();
-
+	public E getSession(String sessionId) throws AuthorizationException;
 }

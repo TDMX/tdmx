@@ -57,6 +57,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.job.Manageable;
+import org.tdmx.server.session.TrustManagerProvider;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.security.RequireClientCertificateFilter;
@@ -94,6 +95,7 @@ public class ServerContainer {
 	private String stopCommand;
 	private String stopAddress;
 
+	private TrustManagerProvider trustProvider;
 	private List<Manageable> manageables;
 
 	// -------------------------------------------------------------------------
@@ -110,7 +112,7 @@ public class ServerContainer {
 		Server server = new Server();
 
 		TrustingSslContextFactory sslExt = new TrustingSslContextFactory();
-		// we trust all client certs, with security in servlet "filters"
+		// we trust client certs known to our TrustManagerProvider, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
 		sslExt.setRenegotiationAllowed(isRenegotiationAllowed());
 		// we don't NEED client auth if we want to co-host a Restfull API on this server.
@@ -298,10 +300,10 @@ public class ServerContainer {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private static class TrustingSslContextFactory extends SslContextFactory {
+	private class TrustingSslContextFactory extends SslContextFactory {
 		@Override
 		protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls) throws Exception {
-			return SslContextFactory.TRUST_ALL_CERTS;
+			return new TrustManager[] { getTrustProvider().getTrustManager() };
 		}
 	}
 
@@ -475,6 +477,14 @@ public class ServerContainer {
 
 	public void setStopAddress(String stopAddress) {
 		this.stopAddress = stopAddress;
+	}
+
+	public TrustManagerProvider getTrustProvider() {
+		return trustProvider;
+	}
+
+	public void setTrustProvider(TrustManagerProvider trustProvider) {
+		this.trustProvider = trustProvider;
 	}
 
 	public List<Manageable> getManageables() {

@@ -5,7 +5,7 @@ public enum ErrorCode {
 	MissingCredentials(403, "Missing Credentials."),
 	NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
 	NonDomainAdministratorAccess(403, "Non DomainAdministrator access."),
-	NonUserAccess(403, "Non User access."),
+	NonUserAccess(403, "Non User access."), // TODO SCS
 	OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 	OutOfDomainAccess(403, "DAC only authorized on own domain."),
 	// business logic errors

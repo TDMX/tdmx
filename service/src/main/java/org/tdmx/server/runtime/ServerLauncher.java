@@ -28,6 +28,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.util.StringUtils;
 
+/**
+ * ServerLauncher <serviceName>
+ * 
+ * Instantiates SpringApplicationContext <serviceName> in classpath*:beanRefContext.xml.
+ * 
+ * Logs the SSL info from <serviceName>.sslInfo bean.
+ * 
+ * Starts a ServerContainer bean named <serviceName>.Container until stopped.
+ * 
+ * 
+ * @author Peter
+ * 
+ */
 public class ServerLauncher {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
@@ -36,6 +49,12 @@ public class ServerLauncher {
 	}
 
 	public static void main(String[] args) {
+		if (args == null || args.length != 1) {
+			log.error("argument[0] - <serviceName> missing.");
+			System.exit(-1);
+		}
+		String serviceName = args[0];
+
 		String javaVersion = System.getProperty("java.version");
 
 		StringTokenizer tokens = new StringTokenizer(javaVersion, ".-_");
@@ -52,16 +71,16 @@ public class ServerLauncher {
 
 		// Construct the SpringApplication
 		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
+		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory(serviceName);
 		ApplicationContext context = (ApplicationContext) beanFactoryReference.getFactory();
 
-		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean("server.sslInfo");
+		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean(serviceName + ".sslInfo");
 		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
 		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
 		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
 
 		// Start the Jetty
-		ServerContainer sc = (ServerContainer) context.getBean("server.Container");
+		ServerContainer sc = (ServerContainer) context.getBean(serviceName + ".Container");
 		sc.runUntilStopped();
 	}
 

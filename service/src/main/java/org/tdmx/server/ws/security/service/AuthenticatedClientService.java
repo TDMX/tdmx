@@ -16,44 +16,33 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
-
-import java.util.Map;
+package org.tdmx.server.ws.security.service;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
-public interface ServerSessionManager {
+/**
+ * Register/Clear/Get the authenticated PKIXCertificate with the current Thread.
+ * 
+ * Works together with the {@link AuthenticatedClientLookupService} to provide the current ThreadLocal authenticated
+ * agent.
+ * 
+ * @author Peter
+ * 
+ */
+public interface AuthenticatedClientService extends AuthenticatedClientLookupService {
 
 	/**
-	 * Creates a new session for a client with some initial attributes.
+	 * Set the PKIXCertificate associated with the current Thread.
 	 * 
-	 * @param sessionId
-	 * @param cert
-	 * @param seedAttributes
+	 * Setting the PKIXCertificate without it being cleared first for the thread calling will issue a warning.
+	 * 
+	 * @param agent
 	 */
-	public void createSession(String sessionId, PKIXCertificate cert, Map<String, String> seedAttributes);
+	public void setAuthenticatedClient(PKIXCertificate cert);
 
 	/**
-	 * Add a new client certificate to an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
+	 * Clear the PKIXCertificate so that none is associated with the current thread.
 	 */
-	public void addCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Remove a client certificate from an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
-	 */
-	public void removeCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Return the number of active sessions.
-	 * 
-	 * @return the number of active sessions.
-	 */
-	public int getSessionCount();
+	public void clearAuthenticatedClient();
 
 }

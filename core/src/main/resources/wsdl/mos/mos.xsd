@@ -12,10 +12,9 @@
 	<!--                  -->
 	<!-- ********************************************* -->
 	<xs:complexType name="getAddressRequestType">
-		<xs:annotation>
-			<xs:documentation>get the address associated with the source credential.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence/>
+		<xs:complexContent>
+			<xs:extension base="common:Request"/>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="getAddressResponseType">
 		<xs:complexContent>
@@ -30,14 +29,18 @@
 		<xs:annotation>
 			<xs:documentation>list the authorized channels associated with the source credential.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="destination" type="msg:ChannelDestinationFilter">
-				<xs:annotation>
-					<xs:documentation>a filter criteria of the channel destination.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="destination" type="msg:ChannelDestinationFilter">
+						<xs:annotation>
+							<xs:documentation>a filter criteria of the channel destination.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="listChannelResponseType">
 		<xs:complexContent>
@@ -53,9 +56,13 @@
 		<xs:annotation>
 			<xs:documentation>get the channel info to the given destination.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="destination" type="msg:ChannelDestination"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="destination" type="msg:ChannelDestination"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="getChannelResponseType">
 		<xs:complexContent>
@@ -70,13 +77,17 @@
 		<xs:annotation>
 			<xs:documentation>receive a DeliveryReport either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:choice>
-				<xs:element ref="tx:transaction"/>
-				<xs:element ref="msg:session"/>
-			</xs:choice>
-			<xs:element ref="msg:waitTimeout"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element ref="tx:transaction"/>
+						<xs:element ref="msg:session"/>
+					</xs:choice>
+					<xs:element ref="msg:waitTimeout"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="receiptResponseType">
 		<xs:complexContent>
@@ -95,10 +106,14 @@
 	<!--                                        -->
 	<!-- ********************************************* -->
 	<xs:complexType name="submitRequestType">
-		<xs:sequence>
-			<xs:element ref="tx:transaction" minOccurs="0"/>
-			<xs:element ref="msg:msg"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="tx:transaction" minOccurs="0"/>
+					<xs:element ref="msg:msg"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="submitResponseType">
 		<xs:complexContent>
@@ -106,10 +121,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="uploadRequestType">
-		<xs:sequence>
-			<xs:element ref="common:continuation" minOccurs="0"/>
-			<xs:element ref="msg:chunk"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="common:continuation" minOccurs="0"/>
+					<xs:element ref="msg:chunk"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="uploadResponseType">
 		<xs:complexContent>

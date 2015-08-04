@@ -18,42 +18,16 @@
  */
 package org.tdmx.server.session;
 
-import java.util.Map;
+import javax.net.ssl.X509TrustManager;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-
-public interface ServerSessionManager {
+public interface TrustManagerProvider {
 
 	/**
-	 * Creates a new session for a client with some initial attributes.
+	 * Provide an X509TrustManager which can decide which TLS client certificates are allowed to connect to the server.
+	 * The client certificates which are allowed are all those attached to sessions.
 	 * 
-	 * @param sessionId
-	 * @param cert
-	 * @param seedAttributes
+	 * @return
 	 */
-	public void createSession(String sessionId, PKIXCertificate cert, Map<String, String> seedAttributes);
-
-	/**
-	 * Add a new client certificate to an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
-	 */
-	public void addCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Remove a client certificate from an existing session.
-	 * 
-	 * @param sessionId
-	 * @param cert
-	 */
-	public void removeCertificate(String sessionId, PKIXCertificate cert);
-
-	/**
-	 * Return the number of active sessions.
-	 * 
-	 * @return the number of active sessions.
-	 */
-	public int getSessionCount();
+	public X509TrustManager getTrustManager();
 
 }

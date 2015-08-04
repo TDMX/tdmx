@@ -60,11 +60,12 @@ import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
-import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.security.ServerSecurityManager;
+import org.tdmx.server.ws.zas.ZASServerSession;
 
 public class MRSImpl implements MRS {
 
@@ -72,18 +73,12 @@ public class MRSImpl implements MRS {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// TODO #69 public trusted client authentication of SP. cn==SP mrs url, since we dont want to do PKIX validation for
-	// each request, but only for new connections, we can cache authorized client certificates, so using HTTS with
-	// keep-alive would not incur a significant performance penality w.r.t SSL level certificate trust checking
-	// or we have a different endpoint for relay sessions which authorize the client's certificates directly, cache them
-	// for the mrs endpoint and checks the PKIX validation to know/trusted roots.
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
 
-	private ServerSessionLookupService<MRSServerSession> sessionService;
+	private ServerSecurityManager<ZASServerSession> securityManager;
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -346,6 +341,14 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ServerSecurityManager<ZASServerSession> getSecurityManager() {
+		return securityManager;
+	}
+
+	public void setSecurityManager(ServerSecurityManager<ZASServerSession> securityManager) {
+		this.securityManager = securityManager;
+	}
 
 	public AccountZoneService getAccountZoneService() {
 		return accountZoneService;
