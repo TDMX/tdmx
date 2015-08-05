@@ -50,11 +50,15 @@
 	<!--             OPERATION TYPES-->
 	<!-- ********************************************* -->
 	<xs:complexType name="reportRequestType">
-		<xs:sequence>
-			<xs:element name="objectType" type="reportObjectType"/>
-			<xs:element name="timeframe" type="Timeframe"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="objectType" type="reportObjectType"/>
+					<xs:element name="timeframe" type="Timeframe"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="reportResponseType">
 		<xs:complexContent>
@@ -69,10 +73,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="incidentRequestType">
-		<xs:sequence>
-			<xs:element name="timeframe" type="Timeframe"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="timeframe" type="Timeframe"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="incidentResponseType">
 		<xs:complexContent>

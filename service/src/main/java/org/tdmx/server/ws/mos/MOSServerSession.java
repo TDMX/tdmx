@@ -18,8 +18,17 @@
  */
 package org.tdmx.server.ws.mos;
 
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
 
+/**
+ * The MOSServerSession is shared by all concurrently sending AgentCredentials of a particular Address.
+ * 
+ * @author Peter
+ * 
+ */
 public class MOSServerSession extends ServerSession {
 
 	// -------------------------------------------------------------------------
@@ -41,9 +50,33 @@ public class MOSServerSession extends ServerSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public AccountZone getAccountZone() {
+		return getAttribute(ACCOUNT_ZONE);
+	}
+
+	public Zone getZone() {
+		return getAttribute(ZONE);
+	}
+
+	public Address getOriginatingAddress() {
+		return getAttribute(ORIGIN_ADDRESS);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
+
+	void setAccountZone(AccountZone az) {
+		setAttribute(ACCOUNT_ZONE, az);
+	}
+
+	void setZone(Zone z) {
+		setAttribute(ZONE, z);
+	}
+
+	void setOriginatingAddress(Address a) {
+		setAttribute(ORIGIN_ADDRESS, a);
+	}
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS

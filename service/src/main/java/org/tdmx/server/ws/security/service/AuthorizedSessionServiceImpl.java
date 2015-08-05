@@ -51,7 +51,7 @@ public class AuthorizedSessionServiceImpl<E extends ServerSession> implements Au
 	// -------------------------------------------------------------------------
 
 	@Override
-	public E getAuthenticatedSession() {
+	public E getAuthorizedSession() {
 		return authStore.get();
 	}
 

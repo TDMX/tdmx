@@ -56,10 +56,9 @@ import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
-import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
-import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
@@ -82,8 +81,8 @@ import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.ServerSecurityManager;
-import org.tdmx.server.ws.security.service.AuthorizedSessionService;
+import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
 public class MOSImpl implements MOS {
 
@@ -96,9 +95,8 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MOSImpl.class);
 
-	private ServerSecurityManager<MOSServerSession> securityManager; // TODO MDS Security Wrapper
-	private AuthorizedSessionService<MOSServerSession> authorizationService;
-	private ThreadLocalPartitionIdProvider partitionIdService;
+	private AuthorizedSessionLookupService<MOSServerSession> authorizedSessionService;
+	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -127,6 +125,12 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 
 	@Override
+	public PrepareResponse prepare(Prepare parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public CommitResponse commit(Commit parameters) {
 		// TODO Auto-generated method stub
 		return null;
@@ -145,12 +149,6 @@ public class MOSImpl implements MOS {
 	}
 
 	@Override
-	public PrepareResponse prepare(Prepare parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public RecoverResponse recover(Recover parameters) {
 		// TODO Auto-generated method stub
 		return null;
@@ -158,34 +156,14 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public GetAddressResponse getAddress(GetAddress parameters) {
-		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
-		getAuthorizationService().setAuthorizedSession(session);
-		try {
-			String partitionId = null; // TODO session.getZonePartitionId();
-			partitionIdService.setPartitionId(partitionId);
-			
-			delegate
-			// TODO
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-		GetAddressResponse response = new GetAddressResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+		Address oa = session.getOriginatingAddress();
 
-		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(authorizedUser.getFingerprint());
-		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
-			return response;
-		}
+		GetAddressResponse response = new GetAddressResponse();
 
 		ChannelEndpoint ep = new ChannelEndpoint();
-		ep.setDomain(existingCred.getDomain().getDomainName());
-		ep.setLocalname(existingCred.getAddress().getLocalName());
+		ep.setDomain(oa.getDomain().getDomainName());
+		ep.setLocalname(oa.getLocalName());
 		response.setOrigin(ep);
 
 		response.setSuccess(true);
@@ -194,13 +172,10 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public SubmitResponse submit(Submit parameters) {
-		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
 
 		SubmitResponse response = new SubmitResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
 
 		// validate Msg fields present ( payload, header and chunk )
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
@@ -254,7 +229,7 @@ public class MOSImpl implements MOS {
 
 		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
 		// ChannelFlowOrigin to attach to.
-		Zone zone = getAgentService().getZone();
+		Zone zone = session.getZone();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
@@ -299,11 +274,9 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public UploadResponse upload(Upload parameters) {
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
 		UploadResponse response = new UploadResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
 
 		String continuationId = parameters.getContinuation();
 		if (!StringUtils.hasText(continuationId)) {
@@ -322,7 +295,7 @@ public class MOSImpl implements MOS {
 
 		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
 		// ChannelFlowOrigin to attach to.
-		Zone zone = getAgentService().getZone();
+		Zone zone = session.getZone();
 
 		ChannelFlowMessage msg = channelService.findByMessageId(zone, c.getMsgId());
 		if (msg == null) {
@@ -349,31 +322,21 @@ public class MOSImpl implements MOS {
 	}
 
 	@Override
-	public ReceiptResponse receipt(Receipt parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public GetChannelResponse getChannel(GetChannel parameters) {
-		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		GetChannelResponse response = new GetChannelResponse();
 
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-
-		Zone zone = getAgentService().getZone();
+		Address address = session.getOriginatingAddress();
+		Zone zone = session.getZone();
 
 		// TODO check we have all input parameters
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setDomain(address.getDomain());
 
-		sc.getOrigin().setLocalName(authorizedUser.getTdmxUserName());
-		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getOrigin().setLocalName(address.getLocalName());
+		sc.getOrigin().setDomainName(address.getDomain().getDomainName());
 		sc.getDestination().setDomainName(parameters.getDestination().getDomain());
 		sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
 		sc.getDestination().setServiceName(parameters.getDestination().getServicename());
@@ -390,22 +353,19 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public ListChannelResponse listChannel(ListChannel parameters) {
-		MOSServerSession session = getSecurityManager().getSession(parameters.getSessionId());
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		ListChannelResponse response = new ListChannelResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
 
-		Zone zone = getAgentService().getZone();
+		Address address = session.getOriginatingAddress();
+		Zone zone = session.getZone();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
 				a2d.mapPage(parameters.getPage()));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
+		sc.setDomain(address.getDomain());
 
-		sc.getOrigin().setLocalName(authorizedUser.getTdmxUserName());
-		sc.getOrigin().setDomainName(authorizedUser.getTdmxDomainName());
+		sc.getOrigin().setLocalName(address.getLocalName());
+		sc.getOrigin().setDomainName(address.getDomain().getDomainName());
 		if (parameters.getDestination() != null) {
 			sc.getDestination().setDomainName(parameters.getDestination().getDomain());
 			sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
@@ -418,6 +378,12 @@ public class MOSImpl implements MOS {
 
 		response.setSuccess(true);
 		return response;
+	}
+
+	@Override
+	public ReceiptResponse receipt(Receipt parameters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -448,29 +414,6 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public ServerSecurityManager<MOSServerSession> getSecurityManager() {
-		return securityManager;
-	}
-
-	public void setSecurityManager(ServerSecurityManager<MOSServerSession> securityManager) {
-		this.securityManager = securityManager;
-	}
-
-	public AuthorizedSessionService<MOSServerSession> getAuthorizationService() {
-		return authorizationService;
-	}
-
-	public void setAuthorizationService(AuthorizedSessionService<MOSServerSession> authorizationService) {
-		this.authorizationService = authorizationService;
-	}
-
-	public ThreadLocalPartitionIdProvider getPartitionIdService() {
-		return partitionIdService;
-	}
-
-	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
-		this.partitionIdService = partitionIdService;
-	}
 
 	public DomainService getDomainService() {
 		return domainService;

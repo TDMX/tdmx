@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws.zas;
 
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
 
 public class ZASServerSession extends ServerSession {
@@ -41,9 +43,25 @@ public class ZASServerSession extends ServerSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public AccountZone getAccountZone() {
+		return getAttribute(ACCOUNT_ZONE);
+	}
+
+	public Zone getZone() {
+		return getAttribute(ZONE);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
+
+	void setAccountZone(AccountZone az) {
+		setAttribute(ACCOUNT_ZONE, az);
+	}
+
+	void setZone(Zone z) {
+		setAttribute(ZONE, z);
+	}
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS

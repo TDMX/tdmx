@@ -131,7 +131,8 @@ import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.ServerSecurityManager;
+import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
 public class ZASImpl implements ZAS {
 
@@ -144,7 +145,8 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ZASImpl.class);
 
-	private ServerSecurityManager<ZASServerSession> securityManager;
+	private AuthorizedSessionLookupService<ZASServerSession> authorizedSessionService;
+	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -1451,12 +1453,20 @@ public class ZASImpl implements ZAS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServerSecurityManager<ZASServerSession> getSecurityManager() {
-		return securityManager;
+	public AuthorizedSessionLookupService<ZASServerSession> getAuthorizedSessionService() {
+		return authorizedSessionService;
 	}
 
-	public void setSecurityManager(ServerSecurityManager<ZASServerSession> securityManager) {
-		this.securityManager = securityManager;
+	public void setAuthorizedSessionService(AuthorizedSessionLookupService<ZASServerSession> authorizedSessionService) {
+		this.authorizedSessionService = authorizedSessionService;
+	}
+
+	public AuthenticatedClientLookupService getAuthenticatedClientService() {
+		return authenticatedClientService;
+	}
+
+	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
+		this.authenticatedClientService = authenticatedClientService;
 	}
 
 	public AgentCredentialFactory getCredentialFactory() {

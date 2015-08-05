@@ -70,7 +70,8 @@ import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.ServerSecurityManager;
+import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
 public class MDSImpl implements MDS {
 
@@ -83,7 +84,8 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MDSImpl.class);
 
-	private ServerSecurityManager<MDSServerSession> securityManager;
+	private AuthorizedSessionLookupService<MDSServerSession> authorizedSessionService;
+	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -111,12 +113,10 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public GetDestinationSessionResponse getDestinationSession(GetDestinationSession parameters) {
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+		Address da = session.getDestinationAddress();
 
 		GetDestinationSessionResponse response = new GetDestinationSessionResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
 
 		Destination d = null; // FIXME new session context
 		Service service = null; // FIXME
@@ -137,11 +137,11 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public SetDestinationSessionResponse setDestinationSession(SetDestinationSession parameters) {
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+
 		SetDestinationSessionResponse response = new SetDestinationSessionResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
+
 		// validate all DestinationSession fields are specified.
 		Destinationsession ds = validator.checkDestinationsession(parameters.getDestinationsession(), response);
 		if (ds == null) {
@@ -164,7 +164,7 @@ public class MDSImpl implements MDS {
 		Destination dest = a2d.mapDestination(address, service, ds);
 		destinationService.setSession(dest);
 
-		Zone zone = getAgentService().getZone();
+		Zone zone = session.getZone();
 
 		boolean more = true;
 		// fetch ALL Channels which have this Destination as Destination.
@@ -203,14 +203,13 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public ListChannelResponse listChannel(ListChannel parameters) {
-		ListChannelResponse response = new ListChannelResponse();
-		PKIXCertificate authorizedUser = checkUserAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
 
-		Service service = null; // FIXME session context
-		Zone zone = getAgentService().getZone();
+		ListChannelResponse response = new ListChannelResponse();
+
+		Service service = session.getService();
+		Zone zone = session.getZone();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
 				a2d.mapPage(parameters.getPage()));
@@ -269,19 +268,6 @@ public class MDSImpl implements MDS {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private PKIXCertificate checkUserAuthorized(Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
-			return null;
-		}
-		if (!user.isTdmxUserCertificate()) {
-			setError(ErrorCode.NonUserAccess, ack);
-			return null;
-		}
-		return user;
-	}
-
 	private void setError(ErrorCode ec, Acknowledge ack) {
 		Error error = new Error();
 		error.setCode(ec.getErrorCode());
@@ -294,12 +280,20 @@ public class MDSImpl implements MDS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServerSecurityManager<MDSServerSession> getSecurityManager() {
-		return securityManager;
+	public AuthorizedSessionLookupService<MDSServerSession> getAuthorizedSessionService() {
+		return authorizedSessionService;
 	}
 
-	public void setSecurityManager(ServerSecurityManager<MDSServerSession> securityManager) {
-		this.securityManager = securityManager;
+	public void setAuthorizedSessionService(AuthorizedSessionLookupService<MDSServerSession> authorizedSessionService) {
+		this.authorizedSessionService = authorizedSessionService;
+	}
+
+	public AuthenticatedClientLookupService getAuthenticatedClientService() {
+		return authenticatedClientService;
+	}
+
+	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
+		this.authenticatedClientService = authenticatedClientService;
 	}
 
 	public DomainService getDomainService() {

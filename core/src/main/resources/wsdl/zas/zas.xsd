@@ -12,10 +12,14 @@
 	<!---->
 	<!-- ********************************************* -->
 	<xs:complexType name="searchDomainRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:DomainFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:DomainFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchDomainResponseType">
 		<xs:complexContent>
@@ -28,9 +32,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createDomainRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:domain"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:domain"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createDomainResponseType">
 		<xs:complexContent>
@@ -38,9 +46,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteDomainRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:domain"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:domain"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteDomainResponseType">
 		<xs:complexContent>
@@ -48,10 +60,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchAdministratorRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:AdministratorFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:AdministratorFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchAdministratorResponseType">
 		<xs:complexContent>
@@ -64,19 +80,23 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createAdministratorRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:administratorIdentity"/>
-			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the status of the administrator shall be set. Defaults to ACTIVE.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:administratorIdentity"/>
+					<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the status of the administrator shall be set. Defaults to ACTIVE.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createAdministratorResponseType">
 		<xs:complexContent>
@@ -87,19 +107,23 @@
 		<xs:annotation>
 			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:administratorIdentity"/>
-			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:administratorIdentity"/>
+					<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="modifyAdministratorResponseType">
 		<xs:complexContent>
@@ -107,9 +131,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:administratorIdentity"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:administratorIdentity"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteAdministratorResponseType">
 		<xs:complexContent>
@@ -117,10 +145,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchAddressRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:AddressFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:AddressFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchAddressResponseType">
 		<xs:complexContent>
@@ -133,9 +165,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createAddressRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:address"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:address"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createAddressResponseType">
 		<xs:complexContent>
@@ -143,9 +179,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteAddressRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:address"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:address"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteAddressResponseType">
 		<xs:complexContent>
@@ -153,10 +193,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchIpZoneRequestType">
-		<xs:sequence>
-			<xs:element name="name" type="msg:ipzonename" minOccurs="0"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="name" type="msg:ipzonename" minOccurs="0"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchIpZoneResponseType">
 		<xs:complexContent>
@@ -172,9 +216,13 @@
 		<xs:annotation>
 			<xs:documentation>IpZones created by the Client are visible but not editable by all Administrators.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="ipzone" type="msg:IpZone"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="ipzone" type="msg:IpZone"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createIpZoneResponseType">
 		<xs:complexContent>
@@ -185,9 +233,13 @@
 		<xs:annotation>
 			<xs:documentation>modify the ipaddresses belonging to a zone.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="ipzone" type="msg:IpZone"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="ipzone" type="msg:IpZone"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="modifyIpZoneResponseType">
 		<xs:complexContent>
@@ -195,9 +247,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteIpZoneRequestType">
-		<xs:sequence>
-			<xs:element name="name" type="msg:ipzonename"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="name" type="msg:ipzonename"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteIpZoneResponseType">
 		<xs:complexContent>
@@ -205,10 +261,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchUserRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:UserFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:UserFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchUserResponseType">
 		<xs:complexContent>
@@ -221,19 +281,23 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createUserRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:userIdentity"/>
-			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the status of the user shall be set. Defaults to ACTIVE.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:userIdentity"/>
+					<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the status of the user shall be set. Defaults to ACTIVE.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createUserResponseType">
 		<xs:complexContent>
@@ -244,19 +308,23 @@
 		<xs:annotation>
 			<xs:documentation>modify the status or ipwhitelist of a user, the credential itself is immutable.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:userIdentity"/>
-			<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:userIdentity"/>
+					<xs:element name="status" type="msg:credentialStatus" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the status of the user shall be set.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="whitelist" type="msg:IpAddressList" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>if present, the whitelist is replaced with the provided whitelist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="modifyUserResponseType">
 		<xs:complexContent>
@@ -264,9 +332,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteUserRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:userIdentity"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:userIdentity"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteUserResponseType">
 		<xs:complexContent>
@@ -274,10 +346,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchServiceRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:ServiceFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:ServiceFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchServiceResponseType">
 		<xs:complexContent>
@@ -290,9 +366,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createServiceRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:service"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:service"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="createServiceResponseType">
 		<xs:complexContent>
@@ -300,9 +380,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteServiceRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:service"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:service"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteServiceResponseType">
 		<xs:complexContent>
@@ -310,10 +394,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:domain"/>
-			<xs:element ref="msg:currentchannelauthorization"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:domain"/>
+					<xs:element ref="msg:currentchannelauthorization"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="setChannelAuthorizationResponseType">
 		<xs:complexContent>
@@ -321,10 +409,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteChannelAuthorizationRequestType">
-		<xs:sequence>
-			<xs:element ref="msg:domain"/>
-			<xs:element name="channel" type="msg:Channel"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:domain"/>
+					<xs:element name="channel" type="msg:Channel"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="deleteChannelAuthorizationResponseType">
 		<xs:complexContent>
@@ -332,10 +424,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchChannelRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:ChannelAuthorizationFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:ChannelAuthorizationFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchChannelResponseType">
 		<xs:complexContent>
@@ -348,10 +444,14 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchDestinationRequestType">
-		<xs:sequence>
-			<xs:element name="filter" type="msg:ChannelDestinationFilter"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="filter" type="msg:ChannelDestinationFilter"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="searchDestinationResponseType">
 		<xs:complexContent>
@@ -367,11 +467,15 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="domain" type="msg:domainname"/>
-			<xs:element ref="msg:channel"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="domain" type="msg:domainname"/>
+					<xs:element ref="msg:channel"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="listChannelMessageResponseType">
 		<xs:complexContent>
@@ -387,10 +491,14 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:domain"/>
-			<xs:element ref="msg:msg"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:domain"/>
+					<xs:element ref="msg:msg"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="submitMessageResponseType">
 		<xs:complexContent>
@@ -401,10 +509,14 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="common:continuation" minOccurs="0"/>
-			<xs:element ref="msg:chunk"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="common:continuation" minOccurs="0"/>
+					<xs:element ref="msg:chunk"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="uploadChunkResponseType">
 		<xs:complexContent>
@@ -415,9 +527,13 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:msgId"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:msgId"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="receiveMessageResponseType">
 		<xs:complexContent>
@@ -432,12 +548,16 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="common:continuation" minOccurs="0"/>
-			<xs:element ref="msg:chunkref"/>
-			<xs:element ref="msg:msgId"/>
-			<xs:element name="pos" type="xs:unsignedShort"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="common:continuation" minOccurs="0"/>
+					<xs:element ref="msg:chunkref"/>
+					<xs:element ref="msg:msgId"/>
+					<xs:element name="pos" type="xs:unsignedShort"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="downloadChunkResponseType">
 		<xs:complexContent>
@@ -452,10 +572,14 @@
 		<xs:annotation>
 			<xs:documentation>TODO</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:msgId"/>
-			<xs:element ref="msg:receiptsignature"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:msgId"/>
+					<xs:element ref="msg:receiptsignature"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="receiptMessageResponseType">
 		<xs:complexContent>

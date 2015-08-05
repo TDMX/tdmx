@@ -33,12 +33,17 @@ public abstract class ServerSession {
 	// -------------------------------------------------------------------------
 	public static final String CREATED_TIMESTAMP = "CREATED_TIMESTAMP";
 	public static final String LAST_USED_TIMESTAMP = "LAST_USED_TIMESTAMP";
-	public static final String ZONE_DB_PARTITION_ID = "ZONE_DB_PARTITION_ID";
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	protected final Map<String, Object> attributeMap = new HashMap<>();
+
+	protected static final String ACCOUNT_ZONE = "ACCOUNT_ZONE";
+	protected static final String ZONE = "ZONE";
+	protected static final String ORIGIN_ADDRESS = "ORIGIN_ADDRESS";
+	protected static final String DESTINATION_ADDRESS = "DESTINATION_ADDRESS";
+	protected static final String SERVICE = "SERVICE";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,13 +68,6 @@ public abstract class ServerSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public Object getAttribute(String name) {
-		return attributeMap.get(name);
-	}
-
-	public void setAttribute(String name, Object object) {
-		attributeMap.put(name, object);
-	}
 
 	public void addAuthorizedCertificate(PKIXCertificate authorizedCert) {
 		attributeMap.put(authorizedCert.getFingerprint(), new ServerSessionCertificateHolder(authorizedCert));
@@ -99,6 +97,15 @@ public abstract class ServerSession {
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
+	@SuppressWarnings("unchecked")
+	protected <E extends Object> E getAttribute(String name) {
+		return (E) attributeMap.get(name);
+	}
+
+	protected <E extends Object> void setAttribute(String name, E object) {
+		attributeMap.put(name, object);
+	}
+
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
@@ -108,8 +115,7 @@ public abstract class ServerSession {
 	// -------------------------------------------------------------------------
 
 	public Date getLastUsedTimestamp() {
-		Object lut = getAttribute(LAST_USED_TIMESTAMP);
-		return lut != null ? (Date) lut : null;
+		return getAttribute(LAST_USED_TIMESTAMP);
 	}
 
 	public void setLastUsedTimestamp(Date lut) {

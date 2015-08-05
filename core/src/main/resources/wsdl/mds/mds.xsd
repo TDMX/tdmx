@@ -15,7 +15,11 @@
 		<xs:annotation>
 			<xs:documentation>get the destination for the calling agent.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence/>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="getDestinationSessionResponseType">
 		<xs:complexContent>
@@ -30,10 +34,14 @@
 		<xs:annotation>
 			<xs:documentation>list the authorized channel associated with the agent as destination.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="origin" type="msg:ChannelEndpointFilter" minOccurs="0"/>
-			<xs:element ref="common:page"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element name="origin" type="msg:ChannelEndpointFilter" minOccurs="0"/>
+					<xs:element ref="common:page"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="listChannelResponseType">
 		<xs:complexContent>
@@ -49,9 +57,13 @@
 		<xs:annotation>
 			<xs:documentation>set the session of this target credential for the service.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msg:destinationsession"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="msg:destinationsession"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="setDestinationSessionResponseType">
 		<xs:complexContent>
@@ -66,13 +78,17 @@
 		<xs:annotation>
 			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:choice>
-				<xs:element ref="tx:transaction"/>
-				<xs:element ref="msg:session"/>
-			</xs:choice>
-			<xs:element ref="msg:waitTimeout"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element ref="tx:transaction"/>
+						<xs:element ref="msg:session"/>
+					</xs:choice>
+					<xs:element ref="msg:waitTimeout"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="receiveResponseType">
 		<xs:complexContent>
@@ -90,10 +106,14 @@
 		<xs:annotation>
 			<xs:documentation>download a message chunk.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="common:continuation" minOccurs="0"/>
-			<xs:element ref="msg:chunkref"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="common:continuation" minOccurs="0"/>
+					<xs:element ref="msg:chunkref"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="downloadResponseType">
 		<xs:complexContent>

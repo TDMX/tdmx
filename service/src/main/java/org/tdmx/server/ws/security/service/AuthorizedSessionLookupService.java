@@ -33,6 +33,6 @@ public interface AuthorizedSessionLookupService<E extends ServerSession> {
 	 * 
 	 * @return the authorized agent or null if there is none.
 	 */
-	public E getAuthenticatedSession();
+	public E getAuthorizedSession();
 
 }

@@ -19,10 +19,14 @@
 		<xs:annotation>
 			<xs:documentation>delivery report included by transactional destinations when twoPhase commit is used.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="xid"/>
-			<xs:element ref="msg:receiptsignature" minOccurs="0"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="xid"/>
+					<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="prepareResponseType">
 		<xs:complexContent>
@@ -33,11 +37,15 @@
 		<xs:annotation>
 			<xs:documentation>delivery receipt is only possible for transactional destinations on onePhase commit.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="xid"/>
-			<xs:element name="onePhase" type="xs:boolean"/>
-			<xs:element ref="msg:receiptsignature" minOccurs="0"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="xid"/>
+					<xs:element name="onePhase" type="xs:boolean"/>
+					<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="commitResponseType">
 		<xs:complexContent>
@@ -45,9 +53,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="rollbackRequestType">
-		<xs:sequence>
-			<xs:element ref="xid"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="xid"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="rollbackResponseType">
 		<xs:complexContent>
@@ -55,7 +67,11 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="recoverRequestType">
-		<xs:sequence/>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="recoverResponseType">
 		<xs:complexContent>
@@ -63,9 +79,13 @@
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="forgetRequestType">
-		<xs:sequence>
-			<xs:element ref="xid"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="xid"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="forgetResponseType">
 		<xs:complexContent>
