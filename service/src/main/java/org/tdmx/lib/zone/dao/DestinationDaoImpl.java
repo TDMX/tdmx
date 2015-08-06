@@ -102,6 +102,12 @@ public class DestinationDaoImpl implements DestinationDao {
 
 		BooleanExpression where = domain.zone.eq(zone);
 
+		if (criteria.getAddress() != null) {
+			where = where.and(address.eq(criteria.getAddress()));
+		}
+		if (criteria.getService() != null) {
+			where = where.and(service.eq(criteria.getService()));
+		}
 		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
 			where = where.and(address.localName.eq(criteria.getDestination().getLocalName()));
 		}

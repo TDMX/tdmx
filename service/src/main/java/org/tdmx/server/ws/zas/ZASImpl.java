@@ -20,19 +20,17 @@ package org.tdmx.server.ws.zas;
 
 import java.util.List;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
+import org.tdmx.core.api.v01.msg.Service;
+import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.report.Incident;
 import org.tdmx.core.api.v01.report.IncidentResponse;
 import org.tdmx.core.api.v01.report.Report;
@@ -81,6 +79,7 @@ import org.tdmx.core.api.v01.zas.SearchAddress;
 import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
 import org.tdmx.core.api.v01.zas.SearchAdministratorResponse;
+import org.tdmx.core.api.v01.zas.SearchChannel;
 import org.tdmx.core.api.v01.zas.SearchChannelResponse;
 import org.tdmx.core.api.v01.zas.SearchDestination;
 import org.tdmx.core.api.v01.zas.SearchDestinationResponse;
@@ -172,35 +171,29 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	@WebResult(name = "createDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createDomain")
-	public CreateDomainResponse createDomain(
-			@WebParam(partName = "parameters", name = "createDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateDomain parameters) {
-		CreateDomainResponse response = new CreateDomainResponse();
+	public CreateDomainResponse createDomain(CreateDomain parameters) {
+		final CreateDomainResponse response = new CreateDomainResponse();
 
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
-
-		String domainName = checkZACDomainAuthorization(parameters.getDomain(), zone, response);
+		final Zone zone = session.getZone();
+		String domainName = checkZoneBoundDomainAuthorization(parameters.getDomain(), zone, response);
 		if (domainName == null) {
 			return response;
 		}
+
 		// check if the domain exists already
-		Domain existingDomain = getDomainService().findByName(zone, domainName);
+		final Domain existingDomain = getDomainService().findByName(zone, domainName);
 		if (existingDomain != null) {
 			setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
 		// create the domain
-		Domain domain = new Domain(zone, domainName);
+		final Domain domain = new Domain(zone, domainName);
 
 		getDomainService().createOrUpdate(domain);
 		response.setSuccess(true);
@@ -208,56 +201,50 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "deleteDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteDomain")
-	public DeleteDomainResponse deleteDomain(
-			@WebParam(partName = "parameters", name = "deleteDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteDomain parameters) {
-		DeleteDomainResponse response = new DeleteDomainResponse();
+	public DeleteDomainResponse deleteDomain(DeleteDomain parameters) {
+		final DeleteDomainResponse response = new DeleteDomainResponse();
 
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
 
-		String domainName = checkZACDomainAuthorization(parameters.getDomain(), zone, response);
+		final String domainName = checkZoneBoundDomainAuthorization(parameters.getDomain(), zone, response);
 		if (domainName == null) {
 			return response;
 		}
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, domainName);
+		final Domain domain = getDomainService().findByName(zone, domainName);
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check the domain can be deleted if it has no credentials
-		AgentCredentialSearchCriteria dcSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+		final AgentCredentialSearchCriteria dcSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
 		dcSc.setDomainName(parameters.getDomain());
 		dcSc.setType(AgentCredentialType.DAC);
-		List<AgentCredential> credentials = getCredentialService().search(zone, dcSc);
+		final List<AgentCredential> credentials = getCredentialService().search(zone, dcSc);
 		if (!credentials.isEmpty()) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
 		}
 
 		// and no addresses
-		AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
+		final AddressSearchCriteria sac = new AddressSearchCriteria(new PageSpecifier(0, 1));
 		sac.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone, sac);
+		final List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone, sac);
 		if (!addresses.isEmpty()) {
 			setError(ErrorCode.AddressesExist, response);
 			return response;
 		}
 
 		// and no services
-		ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
-		ssc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone, ssc);
+		final ServiceSearchCriteria ssc = new ServiceSearchCriteria(new PageSpecifier(0, 1));
+		ssc.setDomain(domain);
+		final List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone, ssc);
 		if (!services.isEmpty()) {
 			setError(ErrorCode.ServicesExist, response);
 			return response;
@@ -269,22 +256,17 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchDomainResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchDomain")
-	public SearchDomainResponse searchDomain(
-			@WebParam(partName = "parameters", name = "searchDomain", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchDomain parameters) {
+	public SearchDomainResponse searchDomain(SearchDomain parameters) {
+		final SearchDomainResponse response = new SearchDomainResponse();
 
-		SearchDomainResponse response = new SearchDomainResponse();
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
-		DomainSearchCriteria criteria = new DomainSearchCriteria(a2d.mapPage(parameters.getPage()));
+		final Zone zone = session.getZone();
+
+		final DomainSearchCriteria criteria = new DomainSearchCriteria(a2d.mapPage(parameters.getPage()));
 		// make sure client stipulates a domain which is within the zone.
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
@@ -293,7 +275,7 @@ public class ZASImpl implements ZAS {
 			}
 			criteria.setDomainName(parameters.getFilter().getDomain());
 		}
-		List<Domain> domains = domainService.search(zone, criteria);
+		final List<Domain> domains = domainService.search(zone, criteria);
 		for (Domain d : domains) {
 			response.getDomains().add(d.getDomainName());
 		}
@@ -303,50 +285,51 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchUserResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchUser")
-	public SearchUserResponse searchUser(
-			@WebParam(partName = "parameters", name = "searchUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchUser parameters) {
+	public SearchUserResponse searchUser(SearchUser parameters) {
+		final SearchUserResponse response = new SearchUserResponse();
 
-		SearchUserResponse response = new SearchUserResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
 
 		if (parameters.getFilter().getUserIdentity() != null) {
 			// if a user credential is provided then it't not so much a search as a lookup
+			final UserIdentity userIdentity = validator.checkUserIdentity(parameters.getFilter().getUserIdentity(),
+					response);
+			if (userIdentity == null) {
+				return response;
+			}
 
-			AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getFilter()
-					.getUserIdentity().getUsercertificate(), parameters.getFilter().getUserIdentity()
-					.getDomaincertificate(), parameters.getFilter().getUserIdentity().getRootcertificate());
+			final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(
+					userIdentity.getUsercertificate(), userIdentity.getDomaincertificate(),
+					userIdentity.getRootcertificate());
 			if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 				setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
 			}
 			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, uc.getDomainName(), response) == null) {
+			if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
 				return response;
 			}
-			AgentCredential c = credentialService.findByFingerprint(uc.getFingerprint());
+			final AgentCredential c = credentialService.findByFingerprint(uc.getFingerprint());
 			if (c != null) {
 				response.getUsers().add(d2a.mapUser(c));
 			}
 		} else {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(a2d.mapPage(parameters.getPage()));
-			if (authorizedUser.isTdmxDomainAdminCertificate()
-					&& !StringUtils.hasText(parameters.getFilter().getDomain())) {
+			final AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					a2d.mapPage(parameters.getPage()));
+			if (authorizedDomainName != null && !StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we fix the search to search only the DAC's domain.
-				parameters.getFilter().setDomain(authorizedUser.getCommonName());
+				parameters.getFilter().setDomain(authorizedDomainName);
 			}
 			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we check that the provided domain is the DAC's domain.
-				if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+				if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+						response) == null) {
 					return response;
 				}
 				sc.setDomainName(parameters.getFilter().getDomain());
@@ -356,7 +339,7 @@ public class ZASImpl implements ZAS {
 				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
 			}
 			sc.setType(AgentCredentialType.UC);
-			List<AgentCredential> credentials = credentialService.search(zone, sc);
+			final List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
 				response.getUsers().add(d2a.mapUser(c));
 			}
@@ -367,46 +350,43 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchAdministratorResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchAdministrator")
-	public SearchAdministratorResponse searchAdministrator(
-			@WebParam(partName = "parameters", name = "searchAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAdministrator parameters) {
+	public SearchAdministratorResponse searchAdministrator(SearchAdministrator parameters) {
 		SearchAdministratorResponse response = new SearchAdministratorResponse();
 
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
 
 		if (parameters.getFilter().getAdministratorIdentity() != null) {
-			AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getFilter()
+			final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getFilter()
 					.getAdministratorIdentity(), response);
 			if (dacIdentity == null) {
 				return response;
 			}
 
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
-					dacIdentity.getRootcertificate());
+			final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
+					dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
-			AgentCredential c = credentialService.findByFingerprint(dac.getFingerprint());
+			if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
+				return response;
+			}
+			final AgentCredential c = credentialService.findByFingerprint(dac.getFingerprint());
 			if (c != null) {
 				response.getAdministrators().add(d2a.mapAdministrator(c));
 			}
 		} else {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(a2d.mapPage(parameters.getPage()));
+			final AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					a2d.mapPage(parameters.getPage()));
 			if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 				// we check that the provided domain is the ZAC's root domain.
-				if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
-					setError(ErrorCode.OutOfZoneAccess, response);
+				if (checkZoneBoundDomainAuthorization(parameters.getFilter().getDomain(), zone, response) == null) {
 					return response;
 				}
 				sc.setDomainName(parameters.getFilter().getDomain());
@@ -415,7 +395,7 @@ public class ZASImpl implements ZAS {
 				sc.setStatus(AgentCredentialStatus.valueOf(parameters.getFilter().getStatus().value()));
 			}
 			sc.setType(AgentCredentialType.DAC);
-			List<AgentCredential> credentials = credentialService.search(zone, sc);
+			final List<AgentCredential> credentials = credentialService.search(zone, sc);
 			for (AgentCredential c : credentials) {
 				response.getAdministrators().add(d2a.mapAdministrator(c));
 			}
@@ -426,32 +406,36 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "modifyUserResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyUser")
-	public ModifyUserResponse modifyUser(
-			@WebParam(partName = "parameters", name = "modifyUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyUser parameters) {
-		ModifyUserResponse response = new ModifyUserResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+	public ModifyUserResponse modifyUser(ModifyUser parameters) {
+		final ModifyUserResponse response = new ModifyUserResponse();
+
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
+			return response;
+		}
+
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final UserIdentity userIdentity = validator.checkUserIdentity(parameters.getUserIdentity(), response);
+		if (userIdentity == null) {
 			return response;
 		}
 
 		// try to constuct the UC given the data provided
-		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
-				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
-				.getUserIdentity().getRootcertificate());
+		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(userIdentity.getUsercertificate(),
+				userIdentity.getDomaincertificate(), userIdentity.getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-
-		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
-		if (zone == null) {
+		// we check that the provided domain is the DAC's domain.
+		if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -468,157 +452,147 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchIpZoneResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchIpZone")
-	public SearchIpZoneResponse searchIpZone(
-			@WebParam(partName = "parameters", name = "searchIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchIpZone parameters) {
+	public SearchIpZoneResponse searchIpZone(SearchIpZone parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "createAddressResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createAddress")
-	public CreateAddressResponse createAddress(
-			@WebParam(partName = "parameters", name = "createAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAddress parameters) {
-		CreateAddressResponse response = new CreateAddressResponse();
+	public CreateAddressResponse createAddress(CreateAddress parameters) {
+		final CreateAddressResponse response = new CreateAddressResponse();
 
-		Zone zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
-		if (zone == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
+			return response;
+		}
+
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final Address address = validator.checkAddress(parameters.getAddress(), response);
+		if (address == null) {
+			return response;
+		}
+		final String domainName = checkDomainBoundDomainAuthorization(parameters.getAddress().getDomain(),
+				authorizedDomainName, zone, response);
+		if (domainName == null) {
 			return response;
 		}
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
-		if (domain == null) {
-			setError(ErrorCode.DomainNotFound, response);
-			return response;
-		}
-
-		// check if the domain exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(domain,
-				parameters.getAddress().getLocalname());
-		if (a != null) {
-			setError(ErrorCode.AddressExists, response);
-			return response;
-		}
-
-		// create the address
-		a = new org.tdmx.lib.zone.domain.Address(domain, parameters.getAddress().getLocalname());
-
-		getAddressService().createOrUpdate(a);
-		response.setSuccess(true);
-		return response;
-	}
-
-	@Override
-	@WebResult(name = "deleteChannelAuthorizationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteChannelAuthorization")
-	public DeleteChannelAuthorizationResponse deleteChannelAuthorization(
-			@WebParam(partName = "parameters", name = "deleteChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteChannelAuthorization parameters) {
-		DeleteChannelAuthorizationResponse response = new DeleteChannelAuthorizationResponse();
-
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
-			return response;
-		}
-		String domainName = parameters.getDomain();
-
-		// check DAC is authorized on the channelauths domain
-		Zone zone = checkDomainAuthorization(authorizedUser, domainName, response);
-		if (zone == null) {
-			return response;
-		}
-
-		// validate all channel and provided permission fields are specified.
-		Channel channel = validator.checkChannel(parameters.getChannel(), response);
-		if (channel == null) {
-			return response;
-		}
-
 		Domain domain = getDomainService().findByName(zone, domainName);
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
-		ChannelAuthorization ca = channelService.findByChannel(zone, domain, a2d.mapChannelOrigin(channel.getOrigin()),
-				a2d.mapChannelDestination(channel.getDestination()));
-		if (ca == null) {
+		// check if the domain exists already
+		final org.tdmx.lib.zone.domain.Address existingAddress = getAddressService().findByName(domain,
+				parameters.getAddress().getLocalname());
+		if (existingAddress != null) {
+			setError(ErrorCode.AddressExists, response);
+			return response;
+		}
+
+		// create the address
+		final org.tdmx.lib.zone.domain.Address newAddress = new org.tdmx.lib.zone.domain.Address(domain, parameters
+				.getAddress().getLocalname());
+
+		getAddressService().createOrUpdate(newAddress);
+		response.setSuccess(true);
+		return response;
+	}
+
+	@Override
+	public DeleteChannelAuthorizationResponse deleteChannelAuthorization(DeleteChannelAuthorization parameters) {
+		final DeleteChannelAuthorizationResponse response = new DeleteChannelAuthorizationResponse();
+
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
+			return response;
+		}
+
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final String domainName = parameters.getDomain();
+		if (checkDomainBoundDomainAuthorization(domainName, authorizedDomainName, zone, response) == null) {
+			return response;
+		}
+
+		// validate all channel and provided permission fields are specified.
+		final Channel channel = validator.checkChannel(parameters.getChannel(), response);
+		if (channel == null) {
+			return response;
+		}
+
+		final Domain existingDomain = getDomainService().findByName(zone, domainName);
+		if (existingDomain == null) {
+			setError(ErrorCode.DomainNotFound, response);
+			return response;
+		}
+
+		final ChannelAuthorization existingCA = channelService.findByChannel(zone, existingDomain,
+				a2d.mapChannelOrigin(channel.getOrigin()), a2d.mapChannelDestination(channel.getDestination()));
+		if (existingCA == null) {
 			setError(ErrorCode.ChannelAuthorizationNotFound, response);
 			return response;
 		}
-		// deleting the Channel will cascade to automatically delete all ChannelFlowTargets and Flows and the
-		// ChannelAuthorization.
-		channelService.delete(ca.getChannel());
+		// deleting the Channel will cascade to automatically delete all ChannelFlowMessages
+		channelService.delete(existingCA.getChannel());
 
 		response.setSuccess(true);
 		return response;
 	}
 
 	@Override
-	@WebResult(name = "incidentResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:report", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/incident")
-	public IncidentResponse incident(
-			@WebParam(partName = "parameters", name = "incident", targetNamespace = "urn:tdmx:api:v1.0:sp:report") Incident parameters) {
+	public IncidentResponse incident(Incident parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "createIpZoneResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createIpZone")
-	public CreateIpZoneResponse createIpZone(
-			@WebParam(partName = "parameters", name = "createIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateIpZone parameters) {
+	public CreateIpZoneResponse createIpZone(CreateIpZone parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "deleteIpZoneResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteIpZone")
-	public DeleteIpZoneResponse deleteIpZone(
-			@WebParam(partName = "parameters", name = "deleteIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteIpZone parameters) {
+	public DeleteIpZoneResponse deleteIpZone(DeleteIpZone parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "reportResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:report", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/report")
-	public ReportResponse report(
-			@WebParam(partName = "parameters", name = "report", targetNamespace = "urn:tdmx:api:v1.0:sp:report") Report parameters) {
+	public ReportResponse report(Report parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "deleteUserResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteUser")
-	public DeleteUserResponse deleteUser(
-			@WebParam(partName = "parameters", name = "deleteUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteUser parameters) {
-		DeleteUserResponse response = new DeleteUserResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+	public DeleteUserResponse deleteUser(DeleteUser parameters) {
+		final DeleteUserResponse response = new DeleteUserResponse();
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		// try to constuct the UC given the data provided
-		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		// try to construct the UC given the data provided
+		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
 				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
 				.getUserIdentity().getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-
-		// check user belongs to DAC's domain
-		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
-		if (zone == null) {
+		if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
 		// check that the UC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
@@ -632,44 +606,38 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "modifyIpZoneResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyIpZone")
-	public ModifyIpZoneResponse modifyIpZone(
-			@WebParam(partName = "parameters", name = "modifyIpZone", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyIpZone parameters) {
+	public ModifyIpZoneResponse modifyIpZone(ModifyIpZone parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	@WebResult(name = "searchAddressResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchAddress")
-	public SearchAddressResponse searchAddress(
-			@WebParam(partName = "parameters", name = "searchAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchAddress parameters) {
+	public SearchAddressResponse searchAddress(SearchAddress parameters) {
 		SearchAddressResponse response = new SearchAddressResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
 
-		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
+		final AddressSearchCriteria sc = new AddressSearchCriteria(a2d.mapPage(parameters.getPage()));
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
 			// we fix the search to search only the DAC's domain.
-			parameters.getFilter().setDomain(authorizedUser.getCommonName());
+			parameters.getFilter().setDomain(authorizedDomainName);
 		}
-		AddressSearchCriteria sc = new AddressSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+			if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+					response) == null) {
 				return response;
 			}
 			sc.setDomainName(parameters.getFilter().getDomain());
 		}
 		sc.setLocalName(parameters.getFilter().getLocalname());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, sc);
+
+		final List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Address a : addresses) {
 			response.getAddresses().add(d2a.mapAddress(a));
 		}
@@ -679,32 +647,30 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "createAdministratorResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createAdministrator")
-	public CreateAdministratorResponse createAdministrator(
-			@WebParam(partName = "parameters", name = "createAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateAdministrator parameters) {
-		CreateAdministratorResponse response = new CreateAdministratorResponse();
+	public CreateAdministratorResponse createAdministrator(CreateAdministrator parameters) {
+		final CreateAdministratorResponse response = new CreateAdministratorResponse();
 
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
-		// try to constuct new DAC given the data provided
-		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
-				response);
+		final Zone zone = session.getZone();
+
+		// try to construct new DAC given the data provided
+		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
+				parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
 
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
-				dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
+				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
+		}
+		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
 			return response;
 		}
 		if (!credentialValidator.isValid(dac)) {
@@ -713,20 +679,20 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, dac.getDomainName());
-		if (domain == null) {
+		final Domain existingDomain = getDomainService().findByName(zone, dac.getDomainName());
+		if (existingDomain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check that the DAC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
 		}
 
-		AgentCredential newCred = new AgentCredential(zone, domain, dac);
+		final AgentCredential newCred = new AgentCredential(zone, existingDomain, dac);
 		if (parameters.getStatus() != null) {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
@@ -741,28 +707,32 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "deleteServiceResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteService")
-	public DeleteServiceResponse deleteService(
-			@WebParam(partName = "parameters", name = "deleteService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteService parameters) {
-		DeleteServiceResponse response = new DeleteServiceResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+	public DeleteServiceResponse deleteService(DeleteService parameters) {
+		final DeleteServiceResponse response = new DeleteServiceResponse();
+
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = checkDomainAuthorization(authorizedUser, parameters.getService().getDomain(), response);
-		if (zone == null) {
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final Service service = validator.checkService(parameters.getService(), response);
+		if (service == null) {
+			return response;
+		}
+		if (checkDomainBoundDomainAuthorization(service.getDomain(), authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
-		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
-		if (domain == null) {
+		final Domain existingDomain = getDomainService().findByName(zone, parameters.getService().getDomain());
+		if (existingDomain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 		// lookup existing service exists
-		org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(domain,
+		final org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingDomain,
 				parameters.getService().getServicename());
 		if (existingService == null) {
 			setError(ErrorCode.ServiceNotFound, response);
@@ -770,10 +740,10 @@ public class ZASImpl implements ZAS {
 		}
 
 		// prohibit deleteService change if we have ChannelAuthorizations
-		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomain(domain);
+		final ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomain(existingDomain);
 		sc.getDestination().setServiceName(existingService.getServiceName());
-		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
+		final List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
 		if (!channels.isEmpty()) {
 			setError(ErrorCode.ChannelAuthorizationExist, response);
 			return response;
@@ -782,12 +752,10 @@ public class ZASImpl implements ZAS {
 		// delete any Destinations
 		boolean moreDestinations = true;
 		while (moreDestinations) {
-			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
-			casc.getDestination().setServiceName(existingService.getServiceName());
-			// setService obj TODO
-			// setAddress obj TODO
+			final DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.setService(existingService);
 
-			List<Destination> destinations = destinationService.search(zone, casc);
+			final List<Destination> destinations = destinationService.search(zone, casc);
 			for (Destination d : destinations) {
 				destinationService.delete(d);
 			}
@@ -804,35 +772,33 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchServiceResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchService")
-	public SearchServiceResponse searchService(
-			@WebParam(partName = "parameters", name = "searchService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SearchService parameters) {
-		SearchServiceResponse response = new SearchServiceResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+	public SearchServiceResponse searchService(SearchService parameters) {
+		final SearchServiceResponse response = new SearchServiceResponse();
+
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
 
-		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && authorizedUser.isTdmxDomainAdminCertificate()) {
+		final ServiceSearchCriteria sc = new ServiceSearchCriteria(a2d.mapPage(parameters.getPage()));
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
 			// we fix the search to search only the DAC's domain.
-			parameters.getFilter().setDomain(authorizedUser.getCommonName());
+			parameters.getFilter().setDomain(authorizedDomainName);
 		}
-		ServiceSearchCriteria sc = new ServiceSearchCriteria(a2d.mapPage(parameters.getPage()));
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			// we check that the provided domain is the DAC's domain.
-			if (checkDomainAuthorization(authorizedUser, parameters.getFilter().getDomain(), response) == null) {
+			if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+					response) == null) {
 				return response;
 			}
 			sc.setDomainName(parameters.getFilter().getDomain());
 		}
 		sc.setServiceName(parameters.getFilter().getServicename());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sc);
+
+		final List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Service s : services) {
 			response.getServices().add(d2a.mapService(s));
 		}
@@ -842,37 +808,47 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "deleteAddressResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteAddress")
-	public DeleteAddressResponse deleteAddress(
-			@WebParam(partName = "parameters", name = "deleteAddress", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAddress parameters) {
-		DeleteAddressResponse response = new DeleteAddressResponse();
+	public DeleteAddressResponse deleteAddress(DeleteAddress parameters) {
+		final DeleteAddressResponse response = new DeleteAddressResponse();
 
-		Zone zone = checkDomainAuthorization(parameters.getAddress().getDomain(), response);
-		if (zone == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
+			return response;
+		}
+
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final Address address = validator.checkAddress(parameters.getAddress(), response);
+		if (address == null) {
+			return response;
+		}
+		final String domainName = checkDomainBoundDomainAuthorization(parameters.getAddress().getDomain(),
+				authorizedDomainName, zone, response);
+		if (domainName == null) {
 			return response;
 		}
 
 		// check if there are any UCs
-		AgentCredentialSearchCriteria acSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
-		acSc.setAddressName(parameters.getAddress().getLocalname());
-		acSc.setDomainName(parameters.getAddress().getDomain());
+		final AgentCredentialSearchCriteria acSc = new AgentCredentialSearchCriteria(new PageSpecifier(0, 1));
+		acSc.setAddressName(address.getLocalname());
+		acSc.setDomainName(domainName);
 		acSc.setType(AgentCredentialType.UC);
-		List<AgentCredential> ucs = getCredentialService().search(zone, acSc);
+		final List<AgentCredential> ucs = getCredentialService().search(zone, acSc);
 		if (!ucs.isEmpty()) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}
 
-		Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
+		final Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
 		if (domain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 		// dont allow creation if we find the address exists already
-		org.tdmx.lib.zone.domain.Address a = getAddressService().findByName(domain,
-				parameters.getAddress().getLocalname());
-		if (a == null) {
+		final org.tdmx.lib.zone.domain.Address existingAddress = getAddressService().findByName(domain,
+				address.getLocalname());
+		if (existingAddress == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
 		}
@@ -880,12 +856,10 @@ public class ZASImpl implements ZAS {
 		// delete any Destinations for any service
 		boolean moreDestinations = true;
 		while (moreDestinations) {
-			DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
-			casc.getDestination().setDomainName(a.getDomain().getDomainName());
-			casc.getDestination().setLocalName(a.getLocalName());
-			// TODO by search by Address
+			final DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
+			casc.setAddress(existingAddress);
 
-			List<Destination> destinations = destinationService.search(zone, casc);
+			final List<Destination> destinations = destinationService.search(zone, casc);
 			for (Destination d : destinations) {
 				destinationService.delete(d);
 			}
@@ -895,43 +869,41 @@ public class ZASImpl implements ZAS {
 		}
 
 		// delete the address
-		getAddressService().delete(a);
+		getAddressService().delete(existingAddress);
 		response.setSuccess(true);
 		return response;
 	}
 
 	@Override
-	@WebResult(name = "modifyAdministratorResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/modifyAdministrator")
-	public ModifyAdministratorResponse modifyAdministrator(
-			@WebParam(partName = "parameters", name = "modifyAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") ModifyAdministrator parameters) {
-		ModifyAdministratorResponse response = new ModifyAdministratorResponse();
+	public ModifyAdministratorResponse modifyAdministrator(ModifyAdministrator parameters) {
+		final ModifyAdministratorResponse response = new ModifyAdministratorResponse();
 
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+
 		// try to constuct the DAC given the data provided
-		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
-				response);
+		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
+				parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
 
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
-				dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
+				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
+		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
+			return response;
+		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
@@ -947,26 +919,29 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "setChannelAuthorizationResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/setChannelAuthorization")
-	public SetChannelAuthorizationResponse setChannelAuthorization(
-			@WebParam(partName = "parameters", name = "setChannelAuthorization", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") SetChannelAuthorization parameters) {
+	public SetChannelAuthorizationResponse setChannelAuthorization(SetChannelAuthorization parameters) {
 		SetChannelAuthorizationResponse response = new SetChannelAuthorizationResponse();
 
-		PKIXCertificate authorizedUser = checkDACAuthorized(response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
-		String domainName = parameters.getDomain();
 
-		// check DAC is authorized on the channelauths domain
-		Zone zone = checkDomainAuthorization(authorizedUser, domainName, response);
-		if (zone == null) {
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final String domainName = parameters.getDomain();
+		if (!StringUtils.hasText(domainName)) {
+			// must have a domain
+			setError(ErrorCode.MissingDomain, response);
+			return response;
+		}
+		if (checkDomainBoundDomainAuthorization(domainName, authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
 		// validate all channel and provided permission fields are specified.
-		Currentchannelauthorization ca = validator.checkChannelauthorization(
+		final Currentchannelauthorization ca = validator.checkChannelauthorization(
 				parameters.getCurrentchannelauthorization(), response);
 		if (ca == null) {
 			return response;
@@ -976,6 +951,8 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 			return response;
 		}
+
+		// TODO check that the signer (administrator)'s domain matches the domainName
 
 		// check that the channel origin or channel destination matches the ca's domain
 		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain()) || domainName.equals(ca.getChannel()
@@ -997,6 +974,7 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
+			// TODO check that the signer of the permission's domain matches the origin's domain
 		}
 
 		if (domainName.equals(ca.getChannel().getDestination().getDomain())) {
@@ -1011,17 +989,18 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
+			// TODO check that the signer of the permission's domain matches the destination's domain
 		}
 
-		Domain domain = getDomainService().findByName(zone, domainName);
-		if (domain == null) {
+		final Domain existingDomain = getDomainService().findByName(zone, domainName);
+		if (existingDomain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// we construct a detached channel authorization from the provided request data
 
-		SetAuthorizationResultHolder operationStatus = channelService.setAuthorization(zone, domain,
+		final SetAuthorizationResultHolder operationStatus = channelService.setAuthorization(zone, existingDomain,
 				a2d.mapChannelOrigin(ca.getChannel().getOrigin()),
 				a2d.mapChannelDestination(ca.getChannel().getDestination()), a2d.mapChannelAuthorization(ca));
 		if (operationStatus.status != null) {
@@ -1041,53 +1020,52 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "createUserResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createUser")
-	public CreateUserResponse createUser(
-			@WebParam(partName = "parameters", name = "createUser", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateUser parameters) {
-		CreateUserResponse response = new CreateUserResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+	public CreateUserResponse createUser(CreateUser parameters) {
+		final CreateUserResponse response = new CreateUserResponse();
+
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		// try to constuct new UC given the data provided
-		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		// try to construct new UC given the data provided
+		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
 				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
 				.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-
-		// check the domain name of UC matches the DAC's domain or we are ZAC
-		Zone zone = checkDomainAuthorization(authorizedUser, uc.getDomainName(), response);
-		if (zone == null) {
+		if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, uc.getDomainName());
-		if (domain == null) {
+		final Domain existingDomain = getDomainService().findByName(zone, uc.getDomainName());
+		if (existingDomain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check if the address exists already
-		org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(domain, uc.getAddressName());
+		final org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(existingDomain,
+				uc.getAddressName());
 		if (address == null) {
 			setError(ErrorCode.AddressNotFound, response);
 			return response;
 		}
 
 		// check that the UC credential doesn't already exist
-		AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred != null) {
 			setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}
 
-		AgentCredential newCred = new AgentCredential(zone, domain, address, uc);
+		final AgentCredential newCred = new AgentCredential(zone, existingDomain, address, uc);
 		if (parameters.getStatus() != null) {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
@@ -1102,71 +1080,78 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "createServiceResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/createService")
-	public CreateServiceResponse createService(
-			@WebParam(partName = "parameters", name = "createService", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") CreateService parameters) {
-		CreateServiceResponse response = new CreateServiceResponse();
+	public CreateServiceResponse createService(CreateService parameters) {
+		final CreateServiceResponse response = new CreateServiceResponse();
 
-		Zone zone = checkDomainAuthorization(parameters.getService().getDomain(), response);
-		if (zone == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
+			return response;
+		}
+
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final Service service = validator.checkService(parameters.getService(), response);
+		if (service == null) {
+			return response;
+		}
+		if (checkDomainBoundDomainAuthorization(service.getDomain(), authorizedDomainName, zone, response) == null) {
 			return response;
 		}
 
 		// check if the domain exists already
-		Domain domain = getDomainService().findByName(zone, parameters.getService().getDomain());
-		if (domain == null) {
+		final Domain existingDomain = getDomainService().findByName(zone, service.getDomain());
+		if (existingDomain == null) {
 			setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check if the service exists already
-		org.tdmx.lib.zone.domain.Service service = getServiceService().findByName(domain,
-				parameters.getService().getServicename());
-		if (service != null) {
+		final org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingDomain,
+				service.getServicename());
+		if (existingService != null) {
 			setError(ErrorCode.ServiceExists, response);
 			return response;
 		}
 
 		// create the service
-		org.tdmx.lib.zone.domain.Service s = new org.tdmx.lib.zone.domain.Service(domain, parameters.getService()
-				.getServicename());
+		final org.tdmx.lib.zone.domain.Service newService = new org.tdmx.lib.zone.domain.Service(existingDomain,
+				service.getServicename());
 
-		getServiceService().createOrUpdate(s);
+		getServiceService().createOrUpdate(newService);
 		response.setSuccess(true);
 		return response;
 	}
 
 	@Override
-	@WebResult(name = "deleteAdministratorResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/deleteAdministrator")
-	public DeleteAdministratorResponse deleteAdministrator(
-			@WebParam(partName = "parameters", name = "deleteAdministrator", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") DeleteAdministrator parameters) {
-		DeleteAdministratorResponse response = new DeleteAdministratorResponse();
-		PKIXCertificate authorizedUser = checkZACAuthorized(getAgentService().getAuthenticatedAgent(), response);
-		if (authorizedUser == null) {
+	public DeleteAdministratorResponse deleteAdministrator(DeleteAdministrator parameters) {
+		final DeleteAdministratorResponse response = new DeleteAdministratorResponse();
+
+		final ZASServerSession session = getZACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+
 		// try to constuct the DAC given the data provided
-		AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getAdministratorIdentity(),
-				response);
+		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
+				parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(dacIdentity.getDomaincertificate(),
-				dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
+				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
+		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
+			return response;
+		}
 
 		// check that the DAC credential exists
-		AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
+		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred == null) {
 			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
@@ -1180,28 +1165,28 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	@WebResult(name = "searchChannelResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:zas", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:zas-definition/searchChannel")
-	public org.tdmx.core.api.v01.zas.SearchChannelResponse searchChannel(
-			@WebParam(partName = "parameters", name = "searchChannel", targetNamespace = "urn:tdmx:api:v1.0:sp:zas") org.tdmx.core.api.v01.zas.SearchChannel parameters) {
+	public SearchChannelResponse searchChannel(SearchChannel parameters) {
+		final SearchChannelResponse response = new SearchChannelResponse();
 
-		SearchChannelResponse response = new SearchChannelResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
+
+		final ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(a2d.mapPage(parameters
+				.getPage()));
+
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
+			parameters.getFilter().setDomain(authorizedDomainName);
+		}
+		if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+				response) == null) {
 			return response;
 		}
-
-		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
-				a2d.mapPage(parameters.getPage()));
-		if (authorizedUser.isTdmxDomainAdminCertificate()) {
-			// we fix the search to search only the DAC's domain.
-			sc.setDomainName(authorizedUser.getCommonName());
-		}
+		sc.setDomainName(parameters.getFilter().getDomain());
 		if (parameters.getFilter().getOrigin() != null) {
 			sc.getOrigin().setDomainName(parameters.getFilter().getOrigin().getDomain());
 			sc.getOrigin().setLocalName(parameters.getFilter().getOrigin().getLocalname());
@@ -1215,7 +1200,7 @@ public class ZASImpl implements ZAS {
 			sc.setUnconfirmed(parameters.getFilter().isUnconfirmedFlag());
 		}
 
-		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
+		final List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Channel c : channels) {
 			response.getChannelinfos().add(d2a.mapChannelInfo(c));
 		}
@@ -1227,30 +1212,33 @@ public class ZASImpl implements ZAS {
 
 	@Override
 	public SearchDestinationResponse searchDestination(SearchDestination parameters) {
+		final SearchDestinationResponse response = new SearchDestinationResponse();
 
-		SearchDestinationResponse response = new SearchDestinationResponse();
-		PKIXCertificate authorizedUser = checkZACorDACAuthorized(response);
-		if (authorizedUser == null) {
+		final ZASServerSession session = getZACorDACSession(response);
+		if (session == null) {
 			return response;
 		}
 
-		Zone zone = getAgentService().getZone();
-		if (zone == null) {
-			return response;
-		}
+		final Zone zone = session.getZone();
+		final String authorizedDomainName = session.getAuthorizedDomainName();
 
-		DestinationSearchCriteria sc = new DestinationSearchCriteria(a2d.mapPage(parameters.getPage()));
-
-		if (authorizedUser.isTdmxDomainAdminCertificate()) {
+		final DestinationSearchCriteria sc = new DestinationSearchCriteria(a2d.mapPage(parameters.getPage()));
+		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
 			// we fix the search to search only the DAC's domain.
-			sc.getDestination().setDomainName(authorizedUser.getCommonName());
-		} else {
+			parameters.getFilter().setDomain(authorizedDomainName);
+		}
+		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+			// we check that the provided domain is the DAC's domain.
+			if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+					response) == null) {
+				return response;
+			}
 			sc.getDestination().setDomainName(parameters.getFilter().getDomain());
 		}
 		sc.getDestination().setLocalName(parameters.getFilter().getLocalname());
 		sc.getDestination().setServiceName(parameters.getFilter().getServicename());
 
-		List<org.tdmx.lib.zone.domain.Destination> destinations = destinationService.search(zone, sc);
+		final List<org.tdmx.lib.zone.domain.Destination> destinations = destinationService.search(zone, sc);
 		for (org.tdmx.lib.zone.domain.Destination d : destinations) {
 			ChannelDestination cd = new ChannelDestination();
 			cd.setDomainName(d.getTarget().getDomain().getDomainName());
@@ -1329,95 +1317,51 @@ public class ZASImpl implements ZAS {
 		return true;
 	}
 
-	private PKIXCertificate checkZACAuthorized(PKIXCertificate user, Acknowledge ack) {
-		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
+	private String checkZoneBoundDomainAuthorization(String inputDomainName, Zone authorizedZone, Acknowledge ack) {
+		if (!checkDomain(inputDomainName, ack)) {
 			return null;
 		}
-		if (!user.isTdmxZoneAdminCertificate()) {
-			setError(ErrorCode.NonZoneAdministratorAccess, ack);
-			return null;
-		}
-		return user;
-	}
-
-	private PKIXCertificate checkZACorDACAuthorized(Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
-			return null;
-		}
-		if (!user.isTdmxZoneAdminCertificate() && !user.isTdmxDomainAdminCertificate()) {
-			setError(ErrorCode.NonDomainAdministratorAccess, ack);
-			return null;
-		}
-		return user;
-	}
-
-	private PKIXCertificate checkDACAuthorized(Acknowledge ack) {
-		PKIXCertificate user = getAgentService().getAuthenticatedAgent();
-		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
-			return null;
-		}
-		if (!user.isTdmxDomainAdminCertificate()) {
-			setError(ErrorCode.NonDomainAdministratorAccess, ack);
-			return null;
-		}
-		return user;
-	}
-
-	private Zone checkDomainAuthorization(PKIXCertificate authorizedAgent, String domain, Acknowledge ack) {
-		Zone zone = getAgentService().getZone();
-
-		if (!StringUtils.isSuffix(domain, zone.getZoneApex())) {
+		if (!StringUtils.isSuffix(inputDomainName, authorizedZone.getZoneApex())) {
 			setError(ErrorCode.OutOfZoneAccess, ack);
 			return null;
 		}
+		return inputDomainName;
+	}
 
-		// domain must match domain administrator of authorized user
-		if (authorizedAgent.isTdmxDomainAdminCertificate() && !authorizedAgent.getCommonName().equals(domain)) {
+	private String checkDomainBoundDomainAuthorization(String inputDomainName, String authorizedDomainName,
+			Zone authorizedZone, Acknowledge ack) {
+		String domainName = checkZoneBoundDomainAuthorization(inputDomainName, authorizedZone, ack);
+		if (domainName == null) {
+			return null;
+		}
+
+		if (!domainName.equals(authorizedDomainName)) {
 			setError(ErrorCode.OutOfDomainAccess, ack);
 			return null;
 		}
-		return zone;
-
+		return domainName;
 	}
 
-	/**
-	 * Checks the domain is within the authorized zone.
-	 * 
-	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the domain.
-	 */
-	private String checkZACDomainAuthorization(String domain, Zone zone, Acknowledge ack) {
-		if (!checkDomain(domain, ack)) {
+	private ZASServerSession getZACSession(Acknowledge ack) {
+		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
+		if (!session.isZAC()) {
+			setError(ErrorCode.NonZoneAdministratorAccess, ack);
 			return null;
 		}
-		if (!StringUtils.isSuffix(domain, zone.getZoneApex())) {
-			setError(ErrorCode.OutOfZoneAccess, ack);
-			return null;
-		}
-		return domain;
+		return session;
 	}
 
-	/**
-	 * Checks the AuthenticatedAgent is a ZAC or DAC, and return the agent's zoneApex. If the agent is not authorized
-	 * then the acknowledge's Error info will be set and null returned.
-	 * 
-	 * @param ack
-	 * @return null if not authorized, setting ack.Error, else the zoneApex.
-	 */
-	private Zone checkDomainAuthorization(String domain, Acknowledge ack) {
-		if (!checkDomain(domain, ack)) {
-			return null;
-		}
+	private ZASServerSession getZACorDACSession(Acknowledge ack) {
+		return authorizedSessionService.getAuthorizedSession();
+	}
 
-		PKIXCertificate user = checkZACorDACAuthorized(ack);
-		if (user == null) {
+	private ZASServerSession getDACSession(Acknowledge ack) {
+		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
+		if (!session.isDAC()) {
+			setError(ErrorCode.NonDomainAdministratorAccess, ack);
 			return null;
 		}
-		return checkDomainAuthorization(user, domain, ack);
+		return session;
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

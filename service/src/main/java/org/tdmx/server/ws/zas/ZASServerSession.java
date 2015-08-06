@@ -19,6 +19,7 @@
 package org.tdmx.server.ws.zas;
 
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
 
@@ -51,6 +52,27 @@ public class ZASServerSession extends ServerSession {
 		return getAttribute(ZONE);
 	}
 
+	public Domain getDomain() {
+		return getAttribute(DOMAIN);
+	}
+
+	public boolean isZAC() {
+		return getDomain() == null;
+	}
+
+	public boolean isDAC() {
+		return getDomain() != null;
+	}
+
+	/**
+	 * 
+	 * @return null if all domains within the zone are authorized, else just the specific domainName.
+	 */
+	public String getAuthorizedDomainName() {
+		Domain d = getDomain();
+		return d != null ? d.getDomainName() : null;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -61,6 +83,10 @@ public class ZASServerSession extends ServerSession {
 
 	void setZone(Zone z) {
 		setAttribute(ZONE, z);
+	}
+
+	void setDomain(Domain d) {
+		setAttribute(DOMAIN, d);
 	}
 
 	// -------------------------------------------------------------------------

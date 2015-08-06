@@ -33,6 +33,9 @@ public enum ErrorCode {
 	ServicesExist(500, "Services exists."),
 	MessageNotFound(500, "Message not found."),
 
+	MissingAddress(500, "Address missing."),
+	MissingDomain(500, "Domain missing."),
+	MissingLocalname(500, "Localname missing."),
 	MissingChannel(500, "Channel missing."),
 	MissingAuthorization(500, "Authorization missing."),
 	MissingChannelEndpoint(500, "ChannelEndpoint missing."),
@@ -40,6 +43,7 @@ public enum ErrorCode {
 	MissingFlowControlLimit(500, "FlowControlLimit missing."),
 	MissingDestinationSession(500, "DestinationSession missing."),
 	MissingService(500, "Service missing."),
+	MissingServiceName(500, "Servicename missing."),
 	MissingMessage(500, "Message missing."),
 	MissingHeader(500, "Header missing."),
 	MissingHeaderEncryptionContextId(500, "Header EncryptionContextId missing."),

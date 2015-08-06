@@ -43,6 +43,10 @@ public class DestinationSearchCriteria {
 	 */
 	private final ChannelDestination destination = new ChannelDestination();
 
+	private Address address;
+
+	private Service service;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -74,6 +78,22 @@ public class DestinationSearchCriteria {
 
 	public ChannelDestination getDestination() {
 		return destination;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public Service getService() {
+		return service;
+	}
+
+	public void setService(Service service) {
+		this.service = service;
 	}
 
 }

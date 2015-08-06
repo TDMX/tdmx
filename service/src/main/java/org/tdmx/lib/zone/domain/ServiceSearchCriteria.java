@@ -38,6 +38,8 @@ public class ServiceSearchCriteria {
 
 	private final PageSpecifier pageSpecifier;
 
+	private Domain domain;
+
 	/**
 	 * The fully qualified domain name ( includes the zoneApex ).
 	 */
@@ -72,6 +74,14 @@ public class ServiceSearchCriteria {
 	// -------------------------------------------------------------------------
 	public PageSpecifier getPageSpecifier() {
 		return pageSpecifier;
+	}
+
+	public Domain getDomain() {
+		return domain;
+	}
+
+	public void setDomain(Domain domain) {
+		this.domain = domain;
 	}
 
 	public String getDomainName() {

@@ -84,7 +84,9 @@ public class ServiceDaoImpl implements ServiceDao {
 		JPAQuery query = new JPAQuery(em).from(service).innerJoin(service.domain, domain).fetch();
 
 		BooleanExpression where = domain.zone.eq(zone);
-
+		if (criteria.getDomain() != null) {
+			where = where.and(domain.eq(criteria.getDomain()));
+		}
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}

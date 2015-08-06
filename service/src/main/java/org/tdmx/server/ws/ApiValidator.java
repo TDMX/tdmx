@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Authorization;
@@ -35,6 +36,7 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
+import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.SignatureValue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.msg.Usersignature;
@@ -211,6 +213,38 @@ public class ApiValidator {
 			return null;
 		}
 		return user;
+	}
+
+	public Address checkAddress(Address address, Acknowledge ack) {
+		if (address == null) {
+			setError(ErrorCode.MissingAddress, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(address.getDomain())) {
+			setError(ErrorCode.MissingDomain, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(address.getLocalname())) {
+			setError(ErrorCode.MissingLocalname, ack);
+			return null;
+		}
+		return address;
+	}
+
+	public Service checkService(Service service, Acknowledge ack) {
+		if (service == null) {
+			setError(ErrorCode.MissingService, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(service.getDomain())) {
+			setError(ErrorCode.MissingDomain, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(service.getServicename())) {
+			setError(ErrorCode.MissingServiceName, ack);
+			return null;
+		}
+		return service;
 	}
 
 	public ChannelEndpoint checkChannelEndpoint(ChannelEndpoint channelEndpoint, Acknowledge ack) {
