@@ -41,7 +41,7 @@ public class MOSServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<String, String> seedAttributes) {
+	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
 		MOSServerSession mss = new MOSServerSession();
 
 		// TODO instantiations

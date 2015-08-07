@@ -21,6 +21,7 @@ package org.tdmx.server.session;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 
 public interface ServerSessionManager {
 
@@ -31,7 +32,7 @@ public interface ServerSessionManager {
 	 * @param cert
 	 * @param seedAttributes
 	 */
-	public void createSession(String sessionId, PKIXCertificate cert, Map<String, String> seedAttributes);
+	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, String> seedAttributes);
 
 	/**
 	 * Add a new client certificate to an existing session.

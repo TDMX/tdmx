@@ -55,11 +55,8 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
-import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.Destination;
-import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -71,8 +68,7 @@ import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -92,7 +88,7 @@ public class MDSImplUnitTest {
 	@Autowired
 	private ZoneService zoneService;
 	@Autowired
-	private AuthenticatedAgentService authenticatedAgentService;
+	private AuthorizedSessionService<MDSServerSession> authorizedSessionService;
 	@Autowired
 	private DomainService domainService;
 	@Autowired
@@ -150,7 +146,7 @@ public class MDSImplUnitTest {
 
 	@After
 	public void doTeardown() {
-		authenticatedAgentService.clearAuthenticatedAgent();
+		authorizedSessionService.clearAuthorizedSession();
 
 		dataGenerator.tearDown(input, data);
 	}
@@ -160,7 +156,7 @@ public class MDSImplUnitTest {
 		assertNotNull(zoneService);
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
-		assertNotNull(authenticatedAgentService);
+		assertNotNull(authorizedSessionService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -170,8 +166,8 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testListChannelAuthorization_All() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		MDSServerSession s = new MDSServerSession(accountZone, zone, address, service);
+		authorizedSessionService.setAuthorizedSession(s);
 
 		ListChannel req = new ListChannel();
 
@@ -189,8 +185,8 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testSetDestinationSession() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		MDSServerSession s = new MDSServerSession(accountZone, zone, address, service);
+		authorizedSessionService.setAuthorizedSession(s);
 
 		SetDestinationSession req = new SetDestinationSession();
 
@@ -258,58 +254,4 @@ public class MDSImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
-	private void removeFlowTargets(Domain domain) {
-		// delete any Destination on the domain
-		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		ftSc.getDestination().setDomainName(domain.getDomainName());
-		List<Destination> ftlist = destinationService.search(zone, ftSc);
-		for (Destination ft : ftlist) {
-			destinationService.delete(ft);
-		}
-	}
-
-	private void removeChannels(Domain domain) {
-		// delete any Channels on the domain
-		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		caSc.setDomainName(domain.getDomainName());
-		List<Channel> channels = channelService.search(zone, caSc);
-		for (Channel c : channels) {
-			channelService.delete(c);
-		}
-	}
-
-	private void removeAgentCredentials(Domain domain) {
-		// delete any UC+DAC on the domain
-		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
-				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(domain.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
-		for (AgentCredential ac : list) {
-			agentCredentialService.delete(ac);
-		}
-	}
-
-	private void removeAddresses(Domain domain) {
-		// delete any Address on the domain
-		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
-				new PageSpecifier(0, 1000));
-		adSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
-		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
-			addressService.delete(ad);
-		}
-	}
-
-	private void removeServices(Domain domain) {
-		// delete any services on the domain
-		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
-				new PageSpecifier(0, 1000));
-		sSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
-		for (org.tdmx.lib.zone.domain.Service s : services) {
-			serviceService.delete(s);
-		}
-	}
 }

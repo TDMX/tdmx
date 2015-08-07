@@ -41,7 +41,7 @@ public class MDSServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<String, String> seedAttributes) {
+	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
 		MDSServerSession mss = new MDSServerSession();
 
 		// TODO instantiations

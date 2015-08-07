@@ -37,8 +37,12 @@ public class MDSServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MDSServerSession() {
+	public MDSServerSession(AccountZone az, Zone zone, Address address, Service service) {
 		super();
+		setAccountZone(az);
+		setZone(zone);
+		setDestinationAddress(address);
+		setService(service);
 	}
 
 	// -------------------------------------------------------------------------

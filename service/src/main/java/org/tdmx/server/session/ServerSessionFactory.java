@@ -22,6 +22,14 @@ import java.util.Map;
 
 public interface ServerSessionFactory {
 
+	public enum SeedAttribute {
+		AccountZoneId,
+		ZoneDbPartitionId,
+		ZoneId,
+		ServiceId,
+		AddressId,
+	}
+
 	/**
 	 * Initialize a ServerSession given the seedAttributes.
 	 * 
@@ -29,6 +37,6 @@ public interface ServerSessionFactory {
 	 *            the initial session attribute values which can be resolved to objects.
 	 * @return a new ServerSession initialized with the seedAttributes
 	 */
-	public ServerSession createServerSession(Map<String, String> seedAttributes);
+	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes);
 
 }

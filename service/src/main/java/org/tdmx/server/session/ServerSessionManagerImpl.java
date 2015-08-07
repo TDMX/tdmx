@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.net.ssl.X509TrustManager;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 
 @SuppressWarnings("rawtypes")
 public class ServerSessionManagerImpl implements ServerSessionManager, TrustManagerProvider, ServerSessionLookupService {
@@ -89,7 +90,7 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	}
 
 	@Override
-	public void createSession(String sessionId, PKIXCertificate cert, Map<String, String> seedAttributes) {
+	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, String> seedAttributes) {
 
 		ServerSession ss = sessionFactory.createServerSession(seedAttributes);
 		ss.addAuthorizedCertificate(cert);
