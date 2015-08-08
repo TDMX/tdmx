@@ -20,10 +20,14 @@ package org.tdmx.server.ws.mds;
 
 import java.util.Map;
 
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.session.AbstractServerSessionFactory;
 
-public class MDSServerSessionFactoryImpl implements ServerSessionFactory {
+public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MDSServerSession> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,14 +45,22 @@ public class MDSServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
-		MDSServerSession mss = new MDSServerSession();
+	public MDSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
-		// TODO instantiations
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
+			Service s = fetchService(seedAttributes.get(SeedAttribute.ServiceId));
+			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
 
-		return mss;
+			MDSServerSession mss = new MDSServerSession(az, z, d, a, s);
+			return mss;
+		} finally {
+			disassociateZoneDB();
+		}
 	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

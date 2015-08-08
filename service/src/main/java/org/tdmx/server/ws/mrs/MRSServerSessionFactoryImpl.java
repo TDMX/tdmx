@@ -20,10 +20,13 @@ package org.tdmx.server.ws.mrs;
 
 import java.util.Map;
 
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.session.AbstractServerSessionFactory;
 
-public class MRSServerSessionFactoryImpl implements ServerSessionFactory {
+public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MRSServerSession> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,12 +44,20 @@ public class MRSServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
-		MRSServerSession mss = new MRSServerSession();
+	public MRSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
-		// TODO instantiations
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
+			Channel c = fetchChannel(seedAttributes.get(SeedAttribute.ChannelId));
 
-		return mss;
+			MRSServerSession mss = new MRSServerSession(az, z, d, c);
+			return mss;
+		} finally {
+			disassociateZoneDB();
+		}
 	}
 
 	// -------------------------------------------------------------------------

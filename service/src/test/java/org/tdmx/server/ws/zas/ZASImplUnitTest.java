@@ -27,7 +27,9 @@ import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -130,9 +132,10 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -147,12 +150,14 @@ public class ZASImplUnitTest {
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
 	@Autowired
-	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	private AuthorizedSessionService<ZASServerSession> authorizedSessionService;
+	@Autowired
+	private ServerSessionFactory<ZASServerSession> serverSessionFactory;
 
 	@Autowired
-	private ZoneService zoneService;
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
-	private AuthenticatedAgentService authenticatedAgentService;
+	private ZoneService zoneService;
 	@Autowired
 	private DomainService domainService;
 	@Autowired
@@ -182,9 +187,8 @@ public class ZASImplUnitTest {
 	private PKIXCredential uc2;
 	private PKIXCredential dac2;
 
-	// private String localName;
-	// private String serviceName;
-	// private String domainName;
+	private ZASServerSession zacsession;
+	private ZASServerSession dacsession;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -212,22 +216,34 @@ public class ZASImplUnitTest {
 
 		String subdomain = domain.getDomainName().substring(0, domain.getDomainName().indexOf(zone.getZoneApex()) - 1);
 		dac2 = TestCredentialGenerator.createDAC(zac, subdomain, 2, 2);
-		// ZAS should use the "authenticated agent" to set the partitionID
+
+		Map<SeedAttribute, Long> zacSeedAttributeMap = new HashMap<>();
+		zacSeedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+		zacSeedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+		zacsession = serverSessionFactory.createServerSession(zacSeedAttributeMap);
+
+		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
+		dacsession = serverSessionFactory.createServerSession(seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authenticatedAgentService.clearAuthenticatedAgent();
+		authorizedSessionService.clearAuthorizedSession();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
+		assertNotNull(authorizedSessionService);
+		assertNotNull(serverSessionFactory);
+
 		assertNotNull(zoneService);
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
-		assertNotNull(authenticatedAgentService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -237,8 +253,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchDomain_ZAC_all() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchDomain req = new SearchDomain();
 
@@ -257,8 +272,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchDomain_ZAC_invalidDomain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchDomain req = new SearchDomain();
 
@@ -277,8 +291,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchDomain_DAC_notAuthorized() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchDomain req = new SearchDomain();
 
@@ -296,8 +309,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_ZAC_all() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -316,8 +328,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAddress_ZAC_all() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAddress req = new SearchAddress();
 
@@ -336,8 +347,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_ZAC_statusOnly() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -357,8 +367,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_ZAC_getUser() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -381,8 +390,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_ZAC_invalidZone() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -401,8 +409,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAddress_ZAC_invalidZone() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAddress req = new SearchAddress();
 
@@ -421,8 +428,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_DAC_all() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -441,8 +447,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAddress_DAC_all() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchAddress req = new SearchAddress();
 
@@ -461,8 +466,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_DAC_addressName() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -482,8 +486,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAddress_DAC_addressName() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchAddress req = new SearchAddress();
 
@@ -503,8 +506,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchService_ZAC_all() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchService req = new SearchService();
 
@@ -523,8 +525,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchService_ZAC_invalidZone() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchService req = new SearchService();
 
@@ -543,8 +544,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchService_DAC_all() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchService req = new SearchService();
 
@@ -563,8 +563,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchService_DAC_serviceName() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchService req = new SearchService();
 
@@ -584,8 +583,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_DAC_suspended() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -605,8 +603,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_DAC_invalidDomain() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -625,8 +622,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAddress_DAC_invalidDomain() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchAddress req = new SearchAddress();
 
@@ -645,8 +641,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchService_DAC_invalidDomain() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchService req = new SearchService();
 
@@ -665,8 +660,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchUser_DAC_getUser() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchUser req = new SearchUser();
 
@@ -689,8 +683,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateDomain_AuthorizationFailure_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		CreateDomain req = new CreateDomain();
 		req.setDomain(dac.getPublicCert().getCommonName()); // DAC's cn is the domain
@@ -700,8 +693,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateDomain_AuthorizationFailure_ZAC_nonsubdomain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateDomain req = new CreateDomain();
 		req.setDomain("not.a.subdomain.com"); // ZAC can only create subdomains of their root
@@ -711,8 +703,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateDomain_AuthorizationFailure_wrongDomain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateDomain req = new CreateDomain();
 		req.setDomain("UPPERCASE." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
@@ -722,8 +713,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateDomain_Success() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateDomain req = new CreateDomain();
 		req.setDomain("lowercasesubdomain." + zac.getPublicCert().getTdmxZoneInfo().getZoneRoot());
@@ -733,8 +723,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAdministrator_ZAC_all() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAdministrator req = new SearchAdministrator();
 
@@ -753,8 +742,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAdministrator_ZAC_domain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAdministrator req = new SearchAdministrator();
 
@@ -774,8 +762,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAdministrator_ZAC_suspended() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAdministrator req = new SearchAdministrator();
 
@@ -795,8 +782,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAdministrator_ZAC_nonsubdomainFails() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchAdministrator req = new SearchAdministrator();
 
@@ -815,8 +801,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchAdministrator_DAC_notallowed() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchAdministrator req = new SearchAdministrator();
 
@@ -840,8 +825,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAddress_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// create the address
 		Address ucAddress = new Address();
@@ -857,8 +841,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAddress_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		// create the address
 		Address ucAddress = new Address();
@@ -874,8 +857,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAddress_ZAC_MissingDomain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// create the address
 		Address ucAddress = new Address();
@@ -891,8 +873,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateService_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		// create the service
 		Service s = new Service();
@@ -908,8 +889,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateService_ZAC_MissingDomain() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// create the service
 		Service service = new Service();
@@ -943,8 +923,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteDomain_ZAC_DACsExist() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		DeleteDomain ca = new DeleteDomain();
 
@@ -955,8 +934,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteDomain_DAC_notAuthorized() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		DeleteDomain ca = new DeleteDomain();
 
@@ -967,8 +945,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteDomain_ZAC_AddressesExist() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// delete any DACs on the domain
 		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
@@ -989,8 +966,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteDomain_ZAC_ServicesExist() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
@@ -1028,10 +1004,9 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteDomain_ZAC_ok() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
-		removeFlowTargets(domain);
+		removeDestinations(domain);
 		removeChannels(domain);
 		removeAgentCredentials(domain);
 		removeAddresses(domain);
@@ -1052,8 +1027,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteUser_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
@@ -1068,8 +1042,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testModiyUser_ZAC_suspended() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		ModifyUser ca = new ModifyUser();
 		UserIdentity u = new UserIdentity();
@@ -1087,8 +1060,7 @@ public class ZASImplUnitTest {
 	// TODO delete user which has is a target Channel.ChannelFlowTarget (+Flows)
 	@Test
 	public void testDeleteUser_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		DeleteUser ca = new DeleteUser();
 		UserIdentity u = new UserIdentity();
@@ -1103,8 +1075,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testModiyUser_DAC_suspended() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		ModifyUser ca = new ModifyUser();
 		UserIdentity u = new UserIdentity();
@@ -1126,8 +1097,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1142,8 +1112,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_Success_DefaultStatus() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		AdministratorIdentity a = new AdministratorIdentity();
@@ -1157,8 +1126,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateAdministrator_DACExists() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1177,8 +1145,7 @@ public class ZASImplUnitTest {
 		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
 		PKIXCredential dac3 = TestCredentialGenerator.createDAC(zac, "gugus", 2, 2);
 
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateAdministrator ca = new CreateAdministrator();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1193,8 +1160,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchDestination_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchDestination req = new SearchDestination();
 
@@ -1214,8 +1180,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteService_ZAC_ChannelsExist() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1230,8 +1195,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteService_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		removeChannels(domain);
 
@@ -1248,8 +1212,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteService_DAC_ChannelsExist() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		DeleteService ca = new DeleteService();
 		Service s = new Service();
@@ -1264,8 +1227,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteService_DAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		removeChannels(domain);
 
@@ -1282,8 +1244,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteAddress_ZAC_ok() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		// create the address
 		Address ucAddress = new Address();
@@ -1305,8 +1266,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteAddress_ZAC_UCsExist() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		Address a = new Address();
 		a.setDomain(dac.getPublicCert().getCommonName());
@@ -1321,8 +1281,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSetChannelAuthorization_SendRecvSameDomain() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SetChannelAuthorization req = new SetChannelAuthorization();
 		req.setDomain(domain.getDomainName());
@@ -1384,8 +1343,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSetChannelAuthorization_SendRecvSameDomain_NoService() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SetChannelAuthorization req = new SetChannelAuthorization();
 		req.setDomain(domain.getDomainName());
@@ -1442,8 +1400,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testCreateUser_ZAC_UCExists() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1460,8 +1417,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateUser_ZAC_ok() {
 		// create new ZAC credential
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1480,8 +1436,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateUser_DAC_ok() {
 		// create new ZAC credential
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1502,8 +1457,7 @@ public class ZASImplUnitTest {
 		// create new credentials on unexisting address
 		PKIXCredential uc3 = TestCredentialGenerator.createUC(dac, "gugus", 2, 2);
 
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		CreateUser ca = new CreateUser();
 		ca.setStatus(CredentialStatus.ACTIVE);
@@ -1519,8 +1473,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testSearchChannel_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		SearchChannel req = new SearchChannel();
 
@@ -1540,8 +1493,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteChannelAuthorization() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		SearchChannel req = new SearchChannel();
 
@@ -1575,8 +1527,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testModifyAdministrator_ZAC_suspend() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		ModifyAdministrator ca = new ModifyAdministrator();
 		AdministratorIdentity u = new AdministratorIdentity();
@@ -1592,8 +1543,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteAdministrator_ZAC() {
-		AuthorizationResult r = new AuthorizationResult(zac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(zacsession);
 
 		DeleteAdministrator ca = new DeleteAdministrator();
 		AdministratorIdentity u = new AdministratorIdentity();
@@ -1607,8 +1557,7 @@ public class ZASImplUnitTest {
 
 	@Test
 	public void testDeleteAdministrator_DAC_notAuthorized() {
-		AuthorizationResult r = new AuthorizationResult(dac.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(dacsession);
 
 		DeleteAdministrator ca = new DeleteAdministrator();
 		AdministratorIdentity u = new AdministratorIdentity();
@@ -1636,7 +1585,7 @@ public class ZASImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
-	private void removeFlowTargets(Domain domain) {
+	private void removeDestinations(Domain domain) {
 		// delete any Destination on the domain
 		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
 				new PageSpecifier(0, 1000));

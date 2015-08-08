@@ -25,7 +25,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -67,6 +69,8 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
@@ -82,13 +86,16 @@ public class MDSImplUnitTest {
 	private AgentCredentialService agentCredentialService;
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
-	@Autowired
-	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
 	@Autowired
-	private ZoneService zoneService;
-	@Autowired
 	private AuthorizedSessionService<MDSServerSession> authorizedSessionService;
+	@Autowired
+	private ServerSessionFactory<MDSServerSession> serverSessionFactory;
+
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	@Autowired
+	private ZoneService zoneService;
 	@Autowired
 	private DomainService domainService;
 	@Autowired
@@ -115,9 +122,7 @@ public class MDSImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 
-	// private String localName;
-	// private String serviceName;
-	// private String domainName;
+	private MDSServerSession session;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -141,7 +146,14 @@ public class MDSImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		// ZAS should use the "authenticated agent" to set the partitionID
+		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
+		seedAttributeMap.put(SeedAttribute.ServiceId, service.getId());
+		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
+
+		session = serverSessionFactory.createServerSession(seedAttributeMap);
 	}
 
 	@After
@@ -153,10 +165,13 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testAutowired() {
-		assertNotNull(zoneService);
+		assertNotNull(authorizedSessionService);
+		assertNotNull(serverSessionFactory);
+
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
-		assertNotNull(authorizedSessionService);
+
+		assertNotNull(zoneService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -166,8 +181,7 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testListChannelAuthorization_All() {
-		MDSServerSession s = new MDSServerSession(accountZone, zone, address, service);
-		authorizedSessionService.setAuthorizedSession(s);
+		authorizedSessionService.setAuthorizedSession(session);
 
 		ListChannel req = new ListChannel();
 
@@ -185,8 +199,7 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testSetDestinationSession() {
-		MDSServerSession s = new MDSServerSession(accountZone, zone, address, service);
-		authorizedSessionService.setAuthorizedSession(s);
+		authorizedSessionService.setAuthorizedSession(session);
 
 		SetDestinationSession req = new SetDestinationSession();
 

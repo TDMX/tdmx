@@ -20,12 +20,13 @@ package org.tdmx.server.session;
 
 import java.util.Map;
 
-public interface ServerSessionFactory {
+public interface ServerSessionFactory<E extends ServerSession> {
 
 	public enum SeedAttribute {
 		AccountZoneId,
-		ZoneDbPartitionId,
 		ZoneId,
+		DomainId,
+		ChannelId,
 		ServiceId,
 		AddressId,
 	}
@@ -37,6 +38,6 @@ public interface ServerSessionFactory {
 	 *            the initial session attribute values which can be resolved to objects.
 	 * @return a new ServerSession initialized with the seedAttributes
 	 */
-	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes);
+	public E createServerSession(Map<SeedAttribute, Long> seedAttributes);
 
 }

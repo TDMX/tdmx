@@ -24,7 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -71,9 +73,10 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -87,13 +90,16 @@ public class MOSImplUnitTest {
 	private AgentCredentialService agentCredentialService;
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
-	@Autowired
-	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
 	@Autowired
-	private ZoneService zoneService;
+	private AuthorizedSessionService<MOSServerSession> authorizedSessionService;
 	@Autowired
-	private AuthenticatedAgentService authenticatedAgentService;
+	private ServerSessionFactory<MOSServerSession> serverSessionFactory;
+
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	@Autowired
+	private ZoneService zoneService;
 	@Autowired
 	private DomainService domainService;
 	@Autowired
@@ -120,9 +126,7 @@ public class MOSImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 
-	// private String localName;
-	// private String serviceName;
-	// private String domainName;
+	private MOSServerSession session;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -146,22 +150,30 @@ public class MOSImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		// ZAS should use the "authenticated agent" to set the partitionID
+		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
+		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
+
+		session = serverSessionFactory.createServerSession(seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authenticatedAgentService.clearAuthenticatedAgent();
+		authorizedSessionService.clearAuthorizedSession();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
+		assertNotNull(authorizedSessionService);
+		assertNotNull(serverSessionFactory);
+
 		assertNotNull(zoneService);
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
-		assertNotNull(authenticatedAgentService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -171,8 +183,7 @@ public class MOSImplUnitTest {
 
 	@Test
 	public void testGetAddress() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(session);
 
 		GetAddress req = new GetAddress();
 
@@ -185,8 +196,7 @@ public class MOSImplUnitTest {
 
 	@Test
 	public void testListChannel_All() {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(session);
 
 		ListChannel req = new ListChannel();
 
@@ -206,8 +216,7 @@ public class MOSImplUnitTest {
 
 	@Test
 	public void testSubmitMessageAndUploadChunk() throws Exception {
-		AuthorizationResult r = new AuthorizationResult(uc.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
+		authorizedSessionService.setAuthorizedSession(session);
 
 		Submit req = new Submit();
 

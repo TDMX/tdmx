@@ -20,10 +20,12 @@ package org.tdmx.server.ws.zas;
 
 import java.util.Map;
 
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.session.AbstractServerSessionFactory;
 
-public class ZASServerSessionFactoryImpl implements ServerSessionFactory {
+public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZASServerSession> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,12 +43,19 @@ public class ZASServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
-		ZASServerSession mss = new ZASServerSession();
+	public ZASServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
-		// TODO instantiations
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
 
-		return mss;
+			ZASServerSession zass = new ZASServerSession(az, z, d);
+			return zass;
+		} finally {
+			disassociateZoneDB();
+		}
 	}
 
 	// -------------------------------------------------------------------------

@@ -18,6 +18,10 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
 
 public class MRSServerSession extends ServerSession {
@@ -33,18 +37,53 @@ public class MRSServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MRSServerSession() {
+	public MRSServerSession(AccountZone az, Zone zone, Domain domain, Channel channel) {
 		super();
+		setAccountZone(az);
+		setZone(zone);
+		setDomain(domain);
+		setChannel(channel);
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public AccountZone getAccountZone() {
+		return getAttribute(ACCOUNT_ZONE);
+	}
+
+	public Zone getZone() {
+		return getAttribute(ZONE);
+	}
+
+	public Domain getDomain() {
+		return getAttribute(DOMAIN);
+	}
+
+	public Channel getChannel() {
+		return getAttribute(CHANNEL);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
+	void setAccountZone(AccountZone az) {
+		setAttribute(ACCOUNT_ZONE, az);
+	}
+
+	void setZone(Zone z) {
+		setAttribute(ZONE, z);
+	}
+
+	void setDomain(Domain d) {
+		setAttribute(DOMAIN, d);
+	}
+
+	void setChannel(Channel c) {
+		setAttribute(CHANNEL, c);
+	}
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------

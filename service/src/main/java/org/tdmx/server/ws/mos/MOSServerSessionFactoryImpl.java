@@ -20,10 +20,13 @@ package org.tdmx.server.ws.mos;
 
 import java.util.Map;
 
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.session.AbstractServerSessionFactory;
 
-public class MOSServerSessionFactoryImpl implements ServerSessionFactory {
+public class MOSServerSessionFactoryImpl extends AbstractServerSessionFactory<MOSServerSession> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,12 +44,20 @@ public class MOSServerSessionFactoryImpl implements ServerSessionFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ServerSession createServerSession(Map<SeedAttribute, String> seedAttributes) {
-		MOSServerSession mss = new MOSServerSession();
+	public MOSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
-		// TODO instantiations
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
+			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
 
-		return mss;
+			MOSServerSession mss = new MOSServerSession(az, z, d, a);
+			return mss;
+		} finally {
+			disassociateZoneDB();
+		}
 	}
 
 	// -------------------------------------------------------------------------

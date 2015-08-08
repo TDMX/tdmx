@@ -36,8 +36,11 @@ public class ZASServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ZASServerSession() {
+	public ZASServerSession(AccountZone az, Zone zone, Domain domain) {
 		super();
+		setAccountZone(az);
+		setZone(zone);
+		setDomain(domain);
 	}
 
 	// -------------------------------------------------------------------------

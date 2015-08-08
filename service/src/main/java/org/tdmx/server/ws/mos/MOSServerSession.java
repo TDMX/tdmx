@@ -20,6 +20,7 @@ package org.tdmx.server.ws.mos;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
 
@@ -42,8 +43,12 @@ public class MOSServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MOSServerSession() {
+	public MOSServerSession(AccountZone az, Zone zone, Domain domain, Address address) {
 		super();
+		setAccountZone(az);
+		setZone(zone);
+		setDomain(domain);
+		setOriginatingAddress(address);
 	}
 
 	// -------------------------------------------------------------------------
@@ -56,6 +61,10 @@ public class MOSServerSession extends ServerSession {
 
 	public Zone getZone() {
 		return getAttribute(ZONE);
+	}
+
+	public Domain getDomain() {
+		return getAttribute(DOMAIN);
 	}
 
 	public Address getOriginatingAddress() {
@@ -72,6 +81,10 @@ public class MOSServerSession extends ServerSession {
 
 	void setZone(Zone z) {
 		setAttribute(ZONE, z);
+	}
+
+	void setDomain(Domain d) {
+		setAttribute(DOMAIN, d);
 	}
 
 	void setOriginatingAddress(Address a) {

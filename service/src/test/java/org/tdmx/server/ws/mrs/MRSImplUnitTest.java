@@ -26,7 +26,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -71,9 +73,10 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.ServerSessionFactory;
+import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AgentCredentialAuthorizationService.AuthorizationResult;
-import org.tdmx.server.ws.security.service.AuthenticatedAgentService;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -88,10 +91,12 @@ public class MRSImplUnitTest {
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
 	@Autowired
-	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	private AuthorizedSessionService<MRSServerSession> authorizedSessionService;
 	@Autowired
-	private AuthenticatedAgentService authenticatedAgentService;
+	private ServerSessionFactory<MRSServerSession> serverSessionFactory;
 
+	@Autowired
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
 	@Autowired
@@ -125,9 +130,7 @@ public class MRSImplUnitTest {
 	private PKIXCredential uc1;
 	private PKIXCredential uc2;
 
-	// private String localName;
-	// private String serviceName;
-	// private String domainName;
+	private MRSServerSession session;
 
 	@Before
 	public void doSetup() throws Exception {
@@ -157,22 +160,32 @@ public class MRSImplUnitTest {
 		uc1 = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 		uc2 = data.getDomains().get(1).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		// ZAS should use the "authenticated agent" to set the partitionID
+		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+		seedAttributeMap.put(SeedAttribute.DomainId, domain1.getId());
+		seedAttributeMap.put(SeedAttribute.ServiceId, service1.getId());
+		seedAttributeMap.put(SeedAttribute.AddressId, address1.getId());
+
+		session = serverSessionFactory.createServerSession(seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authenticatedAgentService.clearAuthenticatedAgent();
+		authorizedSessionService.clearAuthorizedSession();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
-		assertNotNull(zoneService);
+		assertNotNull(authorizedSessionService);
+		assertNotNull(serverSessionFactory);
+
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
-		assertNotNull(authenticatedAgentService);
+
+		assertNotNull(zoneService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
@@ -182,6 +195,8 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelAuthorization_ReqSend() {
+		authorizedSessionService.setAuthorizedSession(session);
+
 		Channel channel = new Channel();
 		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
@@ -211,8 +226,6 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 
 		// check the CA exists and reqSend is set.
-		AuthorizationResult r = new AuthorizationResult(dac1.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain1.getDomainName());
@@ -230,6 +243,8 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelAuthorization_ReqRecv() {
+		authorizedSessionService.setAuthorizedSession(session);
+
 		Channel channel = new Channel();
 		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
@@ -259,8 +274,6 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 
 		// check CA exists and that the authorization is set as a reqRecv by someother.
-		AuthorizationResult r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
 
 		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain2.getDomainName());
@@ -277,6 +290,8 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelDestination() {
+		authorizedSessionService.setAuthorizedSession(session);
+
 		// the setup creates authorized channels from domain-0 -> domain-1
 		Channel channel = new Channel();
 		ChannelDestination dest = new ChannelDestination();
@@ -306,9 +321,6 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 
 		// check CA exists and that the authorization is set as a reqRecv by someother.
-		AuthorizationResult r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
 		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain1.getDomainName());
 		casc.getOrigin().setDomainName(domain1.getDomainName());
@@ -324,9 +336,6 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 
 		// check CA exists and that the authorization is set as a reqRecv by someother.
-		r = new AuthorizationResult(dac2.getPublicCert(), accountZone, zone);
-		authenticatedAgentService.setAuthenticatedAgent(r);
-
 		casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 		casc.setDomainName(domain1.getDomainName());
 		casc.getOrigin().setDomainName(domain1.getDomainName());

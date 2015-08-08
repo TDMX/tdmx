@@ -90,7 +90,7 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	}
 
 	@Override
-	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, String> seedAttributes) {
+	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
 
 		ServerSession ss = sessionFactory.createServerSession(seedAttributes);
 		ss.addAuthorizedCertificate(cert);

@@ -20,6 +20,7 @@ package org.tdmx.server.ws.mds;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
@@ -37,10 +38,11 @@ public class MDSServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MDSServerSession(AccountZone az, Zone zone, Address address, Service service) {
+	public MDSServerSession(AccountZone az, Zone zone, Domain domain, Address address, Service service) {
 		super();
 		setAccountZone(az);
 		setZone(zone);
+		setDomain(domain);
 		setDestinationAddress(address);
 		setService(service);
 	}
@@ -55,6 +57,10 @@ public class MDSServerSession extends ServerSession {
 
 	public Zone getZone() {
 		return getAttribute(ZONE);
+	}
+
+	public Domain getDomain() {
+		return getAttribute(DOMAIN);
 	}
 
 	public Address getDestinationAddress() {
@@ -75,6 +81,10 @@ public class MDSServerSession extends ServerSession {
 
 	void setZone(Zone z) {
 		setAttribute(ZONE, z);
+	}
+
+	void setDomain(Domain d) {
+		setAttribute(DOMAIN, d);
 	}
 
 	void setDestinationAddress(Address a) {

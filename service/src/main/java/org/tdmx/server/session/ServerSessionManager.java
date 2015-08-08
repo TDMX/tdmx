@@ -32,7 +32,7 @@ public interface ServerSessionManager {
 	 * @param cert
 	 * @param seedAttributes
 	 */
-	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, String> seedAttributes);
+	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes);
 
 	/**
 	 * Add a new client certificate to an existing session.
