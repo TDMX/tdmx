@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,8 +90,10 @@ public class MDSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	@Autowired
+	@Named("ws.MDS.AuthorizedSessionService")
 	private AuthorizedSessionService<MDSServerSession> authorizedSessionService;
 	@Autowired
+	@Named("ws.MDS.SessionFactory")
 	private ServerSessionFactory<MDSServerSession> serverSessionFactory;
 
 	@Autowired
@@ -108,6 +112,7 @@ public class MDSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
+	@Named("ws.MDS.Implementation")
 	private MDS mds;
 
 	private TestDataGeneratorInput input;

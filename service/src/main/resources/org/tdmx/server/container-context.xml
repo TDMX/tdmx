@@ -15,19 +15,11 @@
 		<property name="sslTestPort" value="${container.httpsPort}" />
  	</bean>
 
-	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
+	<bean id="server.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 	
 	<bean id="server.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
-		<property name="authorizationService" ref="server.agentCredentialAuthorizationService" />
-		<property name="authenticatedAgentService" ref="server.authenticatedAgentService" />
-	</bean>
-	
-	<bean id="server.agentCredentialAuthorizationService" class="org.tdmx.server.ws.security.service.AgentCredentialAuthorizationServiceImpl">
-		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository" />
-		<property name="agentCredentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
-		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="authenticatedClientService" ref="server.AuthenticatedClientService" />
 	</bean>
 	
 	<bean id="server.Container" class="org.tdmx.server.runtime.ServerContainer">
@@ -46,6 +38,18 @@
 
 		<property name="agentAuthorizationFilter" ref="server.authorizationFilter"/>
 		
+		<property name="trustProvider">
+			<bean class="org.tdmx.server.session.TrustManagerProviderImpl">
+				<property name="serverSessionTrustManagers">
+					<list value-type="org.tdmx.server.session.ServerSessionTrustManager">
+			            <ref bean="ws.ZAS.ServerSessionManager"/>
+			            <ref bean="ws.MOS.ServerSessionManager"/>
+			            <ref bean="ws.MDS.ServerSessionManager"/>
+			            <ref bean="ws.MRS.ServerSessionManager"/>
+			        </list>
+		        </property>
+			</bean>
+		</property>
 		<property name="manageables">
 			<list value-type="org.tdmx.lib.control.job.Manageable">
 	            <ref bean="tdmx.lib.control.job.JobExecutor"/>

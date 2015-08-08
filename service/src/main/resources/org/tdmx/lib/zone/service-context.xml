@@ -17,11 +17,6 @@
 	</bean>
 
 
-	<bean id="jdbc.zonedb.PartitionIdProvider" class="org.tdmx.lib.zone.service.ZonePartitionIdProviderImpl">
-		<property name="authenticatedAgentService" ref="server.authenticatedAgentService"/>
-		<property name="threadLocalProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
-	</bean>
-	
 	<bean id="jdbc.zonedb.DatabaseConfigurationProvider" class="org.tdmx.lib.control.datasource.DatabasePartitionConfigurationProvider">
 		<property name="partitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 		<!-- default properties -->
@@ -33,7 +28,7 @@
 
 
 	<bean id="jdbc.zonedb.dataSource" class="org.tdmx.lib.control.datasource.DynamicDataSource">
-		<property name="partitionIdProvider" ref="jdbc.zonedb.PartitionIdProvider"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="configurationProvider" ref="jdbc.zonedb.DatabaseConfigurationProvider"/>
 	</bean>
 

@@ -16,16 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
+package org.tdmx.server.ws.mrs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionLookupService;
-import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.core.api.v01.mrs.Relay;
+import org.tdmx.core.api.v01.mrs.RelayResponse;
+import org.tdmx.core.api.v01.mrs.ws.MRS;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.server.ws.security.ServerSecurityManager;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
-public class ServerSecurityManagerImpl<E extends ServerSession> implements ServerSecurityManager<E> {
+public class MRSSecurityWrapper implements MRS {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,10 +37,13 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerSecurityManagerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(MRSSecurityWrapper.class);
 
-	private AuthenticatedClientLookupService authenticatedClientService;
-	private ServerSessionLookupService<E> serverManager;
+	private ServerSecurityManager<MRSServerSession> securityManager;
+	private AuthorizedSessionService<MRSServerSession> authorizationService;
+	private ThreadLocalPartitionIdProvider partitionIdService;
+
+	private MRS delegate;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -46,22 +52,22 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	@Override
-	public E getSession(String sessionId) throws AuthorizationException {
-		PKIXCertificate client = authenticatedClientService.getAuthenticatedClient();
-		if (client == null) {
-			throw new AuthorizationException("No PKIXCertificate.");
-		}
-		E ss = serverManager.getSession(sessionId, client);
-		if (ss == null) {
-			throw new AuthorizationException("sessionId not associated with client.");
-		}
-		return ss;
-	}
 
 	@Override
-	public PKIXCertificate getAuthenticatedClient() {
-		return authenticatedClientService.getAuthenticatedClient();
+	public RelayResponse relay(Relay parameters) {
+		MRSServerSession session = null; // FIXME securityManager.getSession(parameters.getSessionId());
+		authorizationService.setAuthorizedSession(session);
+		try {
+			AccountZone az = session.getAccountZone();
+			partitionIdService.setPartitionId(az.getZonePartitionId());
+
+			return delegate.relay(parameters);
+
+		} finally {
+			getAuthorizationService().clearAuthorizedSession();
+			getPartitionIdService().clearPartitionId();
+		}
+
 	}
 
 	// -------------------------------------------------------------------------
@@ -76,20 +82,35 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AuthenticatedClientLookupService getAuthenticatedClientService() {
-		return authenticatedClientService;
+	public ServerSecurityManager<MRSServerSession> getSecurityManager() {
+		return securityManager;
 	}
 
-	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
-		this.authenticatedClientService = authenticatedClientService;
+	public void setSecurityManager(ServerSecurityManager<MRSServerSession> securityManager) {
+		this.securityManager = securityManager;
 	}
 
-	public ServerSessionLookupService<E> getServerManager() {
-		return serverManager;
+	public AuthorizedSessionService<MRSServerSession> getAuthorizationService() {
+		return authorizationService;
 	}
 
-	public void setServerManager(ServerSessionLookupService<E> serverManager) {
-		this.serverManager = serverManager;
+	public void setAuthorizationService(AuthorizedSessionService<MRSServerSession> authorizationService) {
+		this.authorizationService = authorizationService;
 	}
 
+	public ThreadLocalPartitionIdProvider getPartitionIdService() {
+		return partitionIdService;
+	}
+
+	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
+		this.partitionIdService = partitionIdService;
+	}
+
+	public MRS getDelegate() {
+		return delegate;
+	}
+
+	public void setDelegate(MRS delegate) {
+		this.delegate = delegate;
+	}
 }

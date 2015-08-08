@@ -415,6 +415,22 @@ public class MOSImpl implements MOS {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
+	public AuthorizedSessionLookupService<MOSServerSession> getAuthorizedSessionService() {
+		return authorizedSessionService;
+	}
+
+	public void setAuthorizedSessionService(AuthorizedSessionLookupService<MOSServerSession> authorizedSessionService) {
+		this.authorizedSessionService = authorizedSessionService;
+	}
+
+	public AuthenticatedClientLookupService getAuthenticatedClientService() {
+		return authenticatedClientService;
+	}
+
+	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
+		this.authenticatedClientService = authenticatedClientService;
+	}
+
 	public DomainService getDomainService() {
 		return domainService;
 	}

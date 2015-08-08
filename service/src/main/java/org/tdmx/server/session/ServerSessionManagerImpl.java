@@ -18,19 +18,15 @@
  */
 package org.tdmx.server.session;
 
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.ssl.X509TrustManager;
-
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 
-@SuppressWarnings("rawtypes")
-public class ServerSessionManagerImpl implements ServerSessionManager, TrustManagerProvider, ServerSessionLookupService {
+public class ServerSessionManagerImpl<E extends ServerSession> implements ServerSessionManager,
+		ServerSessionLookupService<E>, ServerSessionTrustManager {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -52,9 +48,9 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	/**
 	 * A Map of sessionId to ServerSession.
 	 */
-	private Map<String, ServerSession> sessionMap;
+	private Map<String, E> sessionMap;
 
-	private ServerSessionFactory sessionFactory;
+	private ServerSessionFactory<E> sessionFactory;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,36 +59,20 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
 	@Override
-	public X509TrustManager getTrustManager() {
-		X509TrustManager tm = new X509TrustManager() {
-
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return new X509Certificate[0];
-			}
-
-			@Override
-			public void checkServerTrusted(X509Certificate[] paramArrayOfX509Certificate, String paramString)
-					throws CertificateException {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void checkClientTrusted(X509Certificate[] paramArrayOfX509Certificate, String paramString)
-					throws CertificateException {
-				// TODO Auto-generated method stub
-
-			}
-		};
-		return tm;
+	public boolean isTrusted(PKIXCertificate cert) {
+		if (cert == null) {
+			return false;
+		}
+		PKIXCertificate existingCert = certificateMap.get(cert.getFingerprint());
+		return existingCert != null && existingCert.isIdentical(cert);
 	}
 
 	@Override
 	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
 
-		ServerSession ss = sessionFactory.createServerSession(seedAttributes);
+		E ss = sessionFactory.createServerSession(seedAttributes);
 		ss.addAuthorizedCertificate(cert);
 
 		sessionMap.put(sessionId, ss);
@@ -101,7 +81,7 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 
 	@Override
 	public void addCertificate(String sessionId, PKIXCertificate cert) {
-		ServerSession ss = sessionMap.get(sessionId);
+		E ss = sessionMap.get(sessionId);
 		ss.addAuthorizedCertificate(cert);
 		associate(sessionId, cert);
 	}
@@ -120,8 +100,8 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	}
 
 	@Override
-	public ServerSession getSession(String sessionId, PKIXCertificate cert) {
-		ServerSession ss = sessionMap.get(sessionId);
+	public E getSession(String sessionId, PKIXCertificate cert) {
+		E ss = sessionMap.get(sessionId);
 		if (ss != null) {
 			Set<String> sessionIds = certificateSessionMap.get(cert.getFingerprint());
 			if (sessionIds != null && sessionIds.contains(sessionId)) {
@@ -164,11 +144,11 @@ public class ServerSessionManagerImpl implements ServerSessionManager, TrustMana
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServerSessionFactory getSessionFactory() {
+	public ServerSessionFactory<E> getSessionFactory() {
 		return sessionFactory;
 	}
 
-	public void setSessionFactory(ServerSessionFactory sessionFactory) {
+	public void setSessionFactory(ServerSessionFactory<E> sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
 

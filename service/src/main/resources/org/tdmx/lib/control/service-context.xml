@@ -58,108 +58,82 @@
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.LockDao"
-		class="org.tdmx.lib.control.dao.LockDaoImpl">
+	<bean id="tdmx.lib.control.dao.LockDao" class="org.tdmx.lib.control.dao.LockDaoImpl">
 	</bean>
 	
-	<bean id="tdmx.lib.control.LockRepository"
-		class="org.tdmx.lib.control.service.LockServiceRepositoryImpl">
-		<property name="lockDao"
-			ref="tdmx.lib.control.dao.LockDao" />
+	<bean id="tdmx.lib.control.LockRepository" class="org.tdmx.lib.control.service.LockServiceRepositoryImpl">
+		<property name="lockDao" ref="tdmx.lib.control.dao.LockDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.MaxValueDao"
-		class="org.tdmx.lib.control.dao.MaxValueDaoImpl">
+	<bean id="tdmx.lib.control.dao.MaxValueDao"	class="org.tdmx.lib.control.dao.MaxValueDaoImpl">
 	</bean>
 	
-	<bean id="tdmx.lib.control.MaxValueRepository"
-		class="org.tdmx.lib.control.service.MaxValueServiceRepositoryImpl">
-		<property name="maxValueDao"
-			ref="tdmx.lib.control.dao.MaxValueDao" />
+	<bean id="tdmx.lib.control.MaxValueRepository" class="org.tdmx.lib.control.service.MaxValueServiceRepositoryImpl">
+		<property name="maxValueDao" ref="tdmx.lib.control.dao.MaxValueDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.AccountDao"
-		class="org.tdmx.lib.control.dao.AccountDaoImpl">
+	<bean id="tdmx.lib.control.dao.AccountDao" class="org.tdmx.lib.control.dao.AccountDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.control.AccountRepository"
-		class="org.tdmx.lib.control.service.AccountServiceRepositoryImpl">
-		<property name="accountDao"
-			ref="tdmx.lib.control.dao.AccountDao" />
+	<bean id="tdmx.lib.control.AccountRepository" class="org.tdmx.lib.control.service.AccountServiceRepositoryImpl">
+		<property name="accountDao"	ref="tdmx.lib.control.dao.AccountDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.AccountZoneDao"
-		class="org.tdmx.lib.control.dao.AccountZoneDaoImpl">
+	<bean id="tdmx.lib.control.dao.AccountZoneDao" class="org.tdmx.lib.control.dao.AccountZoneDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.control.AccountZoneRepository"
-		class="org.tdmx.lib.control.service.AccountZoneServiceRepositoryImpl">
-		<property name="accountZoneDao"
-			ref="tdmx.lib.control.dao.AccountZoneDao" />
+	<bean id="tdmx.lib.control.AccountZoneRepository" class="org.tdmx.lib.control.service.AccountZoneServiceRepositoryImpl">
+		<property name="accountZoneDao"	ref="tdmx.lib.control.dao.AccountZoneDao" />
 	</bean>
 	
 
-	<bean id="tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao"
-		class="org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDaoImpl">
+	<bean id="tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao" class="org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDaoImpl">
 	</bean>
 
-	<bean id="tdmx.lib.control.AccountZoneAdministrationCredentialRepository"
-		class="org.tdmx.lib.control.service.AccountZoneAdministrationCredentialServiceRepositoryImpl">
-		<property name="accountCredentialDao"
-			ref="tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao" />
+	<bean id="tdmx.lib.control.AccountZoneAdministrationCredentialRepository" class="org.tdmx.lib.control.service.AccountZoneAdministrationCredentialServiceRepositoryImpl">
+		<property name="accountCredentialDao" ref="tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.DatabasePartitionDao"
-		class="org.tdmx.lib.control.dao.DatabasePartitionDaoImpl">
+	<bean id="tdmx.lib.control.dao.DatabasePartitionDao" class="org.tdmx.lib.control.dao.DatabasePartitionDaoImpl">
 	</bean>
 	
-	<bean id="tdmx.lib.control.DatabasePartitionRepository"
-		class="org.tdmx.lib.control.service.DatabasePartitionServiceRepositoryImpl">
-		<property name="databasePartitionDao"
-			ref="tdmx.lib.control.dao.DatabasePartitionDao" />
+	<bean id="tdmx.lib.control.DatabasePartitionRepository"	class="org.tdmx.lib.control.service.DatabasePartitionServiceRepositoryImpl">
+		<property name="databasePartitionDao" ref="tdmx.lib.control.dao.DatabasePartitionDao" />
 	</bean>
 
 
-	<bean id="tdmx.lib.control.dao.ControlJobDao"
-		class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
+	<bean id="tdmx.lib.control.dao.ControlJobDao" class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
 	</bean>
 	
-	<bean id="tdmx.lib.control.ControlJobRepository"
-		class="org.tdmx.lib.control.service.ControlJobServiceRepositoryImpl">
-		<property name="controlJobDao"
-			ref="tdmx.lib.control.dao.ControlJobDao" />
+	<bean id="tdmx.lib.control.ControlJobRepository" class="org.tdmx.lib.control.service.ControlJobServiceRepositoryImpl">
+		<property name="controlJobDao" ref="tdmx.lib.control.dao.ControlJobDao" />
 	</bean>
 
 
 	<!-- NON TRANSACTIONAL HIGHER SERVICES -->
 	
 	
-	<bean id="tdmx.lib.control.ZonePartitionAllocationService"
-		class="org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationServiceImpl">
+	<bean id="tdmx.lib.control.ZonePartitionAllocationService" class="org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationServiceImpl">
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>
 
 
-	<bean id="tdmx.lib.control.AccountIdService"
-		class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
+	<bean id="tdmx.lib.control.AccountIdService" class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
 		<property name="maxValueKey" value="accountId"/>
 		<property name="batchSize" value="10"/>
 		<property name="initialLowValue" value="100000000"/>
-		<property name="maxValueService"
-			ref="tdmx.lib.control.MaxValueRepository" />
+		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>
 
-	<bean id="tdmx.lib.control.JobIdService"
-		class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
+	<bean id="tdmx.lib.control.JobIdService" class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
 		<property name="maxValueKey" value="jobId"/>
 		<property name="batchSize" value="10"/>
 		<property name="initialLowValue" value="1000000"/>
-		<property name="maxValueService"
-			ref="tdmx.lib.control.MaxValueRepository" />
+		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>
 
 

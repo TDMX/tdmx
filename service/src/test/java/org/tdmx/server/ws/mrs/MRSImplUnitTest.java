@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,8 +93,10 @@ public class MRSImplUnitTest {
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
 	@Autowired
+	@Named("ws.MRS.AuthorizedSessionService")
 	private AuthorizedSessionService<MRSServerSession> authorizedSessionService;
 	@Autowired
+	@Named("ws.MRS.SessionFactory")
 	private ServerSessionFactory<MRSServerSession> serverSessionFactory;
 
 	@Autowired
@@ -111,6 +115,7 @@ public class MRSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
+	@Named("ws.MRS.Implementation")
 	private MRS mrs;
 
 	private TestDataGeneratorInput input;

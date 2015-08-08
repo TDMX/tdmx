@@ -27,7 +27,7 @@
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
 	
-	<bean id="server.authenticatedAgentService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
+	<bean id="server.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 
 	<bean class="org.tdmx.lib.zone.service.MockZonePartitionIdInstaller" init-method="init">

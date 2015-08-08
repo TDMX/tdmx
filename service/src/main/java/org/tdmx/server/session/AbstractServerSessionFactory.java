@@ -61,10 +61,6 @@ public abstract class AbstractServerSessionFactory<E extends ServerSession> impl
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
-	protected AccountZone fetchAccountZone(Long accountZoneId) {
-		return accountZoneService.findById(accountZoneId);
-	}
-
 	protected void associateZoneDB(String zoneDbPartitionId) {
 		partitionIdProvider.setPartitionId(zoneDbPartitionId);
 	}
@@ -73,24 +69,28 @@ public abstract class AbstractServerSessionFactory<E extends ServerSession> impl
 		partitionIdProvider.clearPartitionId();
 	}
 
+	protected AccountZone fetchAccountZone(Long accountZoneId) {
+		return accountZoneId != null ? accountZoneService.findById(accountZoneId) : null;
+	}
+
 	protected Zone fetchZone(Long zoneId) {
-		return zoneService.findById(zoneId);
+		return zoneId != null ? zoneService.findById(zoneId) : null;
 	}
 
 	protected Domain fetchDomain(Long domainId) {
-		return domainService.findById(domainId);
+		return domainId != null ? domainService.findById(domainId) : null;
 	}
 
 	protected Address fetchAddress(Long addressId) {
-		return addressService.findById(addressId);
+		return addressId != null ? addressService.findById(addressId) : null;
 	}
 
 	protected Service fetchService(Long serviceId) {
-		return serviceService.findById(serviceId);
+		return serviceId != null ? serviceService.findById(serviceId) : null;
 	}
 
 	protected Channel fetchChannel(Long channelId) {
-		return channelService.findById(channelId);
+		return channelId != null ? channelService.findById(channelId) : null;
 	}
 
 	// -------------------------------------------------------------------------

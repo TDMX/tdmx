@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -150,8 +152,10 @@ public class ZASImplUnitTest {
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
 	@Autowired
+	@Named("ws.ZAS.AuthorizedSessionService")
 	private AuthorizedSessionService<ZASServerSession> authorizedSessionService;
 	@Autowired
+	@Named("ws.ZAS.SessionFactory")
 	private ServerSessionFactory<ZASServerSession> serverSessionFactory;
 
 	@Autowired
@@ -170,6 +174,7 @@ public class ZASImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
+	@Named("ws.ZAS.Implementation")
 	private ZAS zas;
 
 	private TestDataGeneratorInput input;

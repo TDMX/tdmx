@@ -18,10 +18,6 @@
  */
 package org.tdmx.server.ws.mrs;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.SignatureUtils;
@@ -35,16 +31,11 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
@@ -59,13 +50,11 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.ServerSecurityManager;
-import org.tdmx.server.ws.zas.ZASServerSession;
+import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
 public class MRSImpl implements MRS {
 
@@ -78,12 +67,7 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MRSImpl.class);
 
-	private ServerSecurityManager<ZASServerSession> securityManager;
-
-	private AccountZoneService accountZoneService;
-	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
-
-	private ZoneService zoneService;
+	private AuthorizedSessionLookupService<MRSServerSession> authorizedSessionService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -112,10 +96,7 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	@WebResult(name = "relayResponse", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs", partName = "parameters")
-	@WebMethod(action = "urn:tdmx:api:v1.0:sp:mrs-definition/relay")
-	public RelayResponse relay(
-			@WebParam(partName = "parameters", name = "relay", targetNamespace = "urn:tdmx:api:v1.0:sp:mrs") Relay parameters) {
+	public RelayResponse relay(Relay parameters) {
 		RelayResponse response = new RelayResponse();
 		if (parameters.getPermission() != null) {
 			processChannelAuthorization(parameters.getPermission(), response);
@@ -143,11 +124,21 @@ public class MRSImpl implements MRS {
 
 	// handle the channel authorization relayed inbound.
 	private void processChannelAuthorization(Permission auth, RelayResponse response) {
+		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
+
 		// check that the Channel and EndpointPermission represented by the Auth is complete
 		if (validator.checkEndpointPermission(auth, response) == null) {
 			return;
 		}
+		Channel sessionChannel = session.getChannel();
+
 		org.tdmx.core.api.v01.msg.Channel channel = null; // TODO map from "session"
+		if (sessionChannel != null) {
+			channel = d2a.mapChannel(sessionChannel);
+		} else {
+			// temporary channel concept SCS->MRS
+
+		}
 		if (!SignatureUtils.checkEndpointPermissionSignature(channel, auth, true)) {
 			setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 			return;
@@ -186,34 +177,29 @@ public class MRSImpl implements MRS {
 		 * 
 		 * if (accountZone == null) { setError(ErrorCode.ZoneNotFound, response); return; }
 		 */
-		ChannelOrigin origin = null; // FIXME part of session concept for first CA relay
-		ChannelDestination dest = null; // FIXME part of session concept for first CA relay
-		Zone zone = null; // FIXME
-		AccountZone accountZone = null; // FIXME
-		Long channelId = null; // TODO session id
+		Zone zone = session.getZone();
+		Long channelId = sessionChannel.getId(); // FIXME
 
 		// using the ZoneDB specified in the AccountZone's partitionID, find the Zone and then Domain
 		// and then call ChannelService#relayChannelAuthorization
-		try {
-			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
-
-			channelService.relayAuthorization(zone, channelId, otherPerm);
-		} finally {
-			getZonePartitionIdProvider().clearPartitionId();
-		}
+		channelService.relayAuthorization(zone, channelId, otherPerm);
 
 		response.setSuccess(true);
 	}
 
 	// handle the channel destinationsession relayed inbound.
 	private void processChannelDestinationSession(Destinationsession ds, RelayResponse response) {
+		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
+
 		// check that the Channel and EndpointPermission represented by the Auth is complete
 		if (validator.checkDestinationsession(ds, response) == null) {
 			return;
 		}
-		org.tdmx.core.api.v01.msg.Channel channel = null; // TODO fix to session
-		String serviceName = null; // TODO fix to session
-		if (!SignatureUtils.checkFlowTargetSessionSignature(serviceName, ds.getUsersignature().getUserIdentity(), ds)) {
+		Channel sessionChannel = session.getChannel();
+
+		org.tdmx.core.api.v01.msg.Channel channel = d2a.mapChannel(sessionChannel);
+		if (!SignatureUtils.checkFlowTargetSessionSignature(channel.getDestination().getServicename(), ds
+				.getUsersignature().getUserIdentity(), ds)) {
 			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return;
 		}
@@ -229,24 +215,19 @@ public class MRSImpl implements MRS {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
-		DestinationSession fts = a2d.mapDestinationSession(ds);
+		DestinationSession cds = a2d.mapDestinationSession(ds);
 
-		Zone zone = null; // FIXME
-		AccountZone accountZone = null; // FIXME
-		Long channelId = null; // TODO session id
+		Zone zone = session.getZone();
 
-		try {
-			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
+		channelService.relayChannelDestinationSession(zone, sessionChannel.getId(), cds);
 
-			channelService.relayChannelDestinationSession(zone, channelId, fts); // TODO adapt DS
-		} finally {
-			getZonePartitionIdProvider().clearPartitionId();
-		}
 		response.setSuccess(true);
 	}
 
 	// handle the message inbound
 	private void processMessage(Msg msg, RelayResponse response) {
+		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
+
 		// check that the Message provided is complete
 		if (validator.checkMessage(msg, response) == null) {
 			return;
@@ -283,23 +264,14 @@ public class MRSImpl implements MRS {
 			return;
 		}
 
-		Zone zone = null; // FIXME
-		AccountZone accountZone = null; // FIXME
-		Long channelId = null; // TODO session id
-		Channel channel = null; // TODO session detached channel no ds.
+		Zone zone = session.getZone();
+		Channel channel = session.getChannel();
 
-		try {
-			getZonePartitionIdProvider().setPartitionId(accountZone.getZonePartitionId());
-
-			// check the flow is not already throttled
-			SubmitMessageResultHolder result = channelService.relayMessage(zone, channel, md);
-			if (result.status != null) {
-				setError(mapSubmitOperationStatus(result.status), response);
-				return;
-			}
-
-		} finally {
-			getZonePartitionIdProvider().clearPartitionId();
+		// check the flow is not already throttled
+		SubmitMessageResultHolder result = channelService.relayMessage(zone, channel, md);
+		if (result.status != null) {
+			setError(mapSubmitOperationStatus(result.status), response);
+			return;
 		}
 
 		// persist Chunk via ChunkService
@@ -325,53 +297,16 @@ public class MRSImpl implements MRS {
 		}
 	}
 
-	private AccountZone lookupAccountZoneByDomain(String searchDomain) {
-		AccountZone accountZone = null;
-		while (accountZone == null && searchDomain.indexOf(".") != -1) {
-			accountZone = accountZoneService.findByZoneApex(searchDomain);
-			if (accountZone == null) {
-				searchDomain = searchDomain.substring(searchDomain.indexOf(".") + 1); // strip off domain prefix to try
-																						// to
-				// converge on the zone root.
-			}
-		}
-		return accountZone;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServerSecurityManager<ZASServerSession> getSecurityManager() {
-		return securityManager;
+	public AuthorizedSessionLookupService<MRSServerSession> getAuthorizedSessionService() {
+		return authorizedSessionService;
 	}
 
-	public void setSecurityManager(ServerSecurityManager<ZASServerSession> securityManager) {
-		this.securityManager = securityManager;
-	}
-
-	public AccountZoneService getAccountZoneService() {
-		return accountZoneService;
-	}
-
-	public void setAccountZoneService(AccountZoneService accountZoneService) {
-		this.accountZoneService = accountZoneService;
-	}
-
-	public ThreadLocalPartitionIdProvider getZonePartitionIdProvider() {
-		return zonePartitionIdProvider;
-	}
-
-	public void setZonePartitionIdProvider(ThreadLocalPartitionIdProvider zonePartitionIdProvider) {
-		this.zonePartitionIdProvider = zonePartitionIdProvider;
-	}
-
-	public ZoneService getZoneService() {
-		return zoneService;
-	}
-
-	public void setZoneService(ZoneService zoneService) {
-		this.zoneService = zoneService;
+	public void setAuthorizedSessionService(AuthorizedSessionLookupService<MRSServerSession> authorizedSessionService) {
+		this.authorizedSessionService = authorizedSessionService;
 	}
 
 	public DomainService getDomainService() {

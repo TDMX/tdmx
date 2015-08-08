@@ -15,63 +15,184 @@
 	
 	<!-- JAX-WS server configuration goes here! -->
 
-	
 
-	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASImpl" >
-		<property name="agentService" ref="server.authenticatedAgentService"/>
-		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
-		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
-		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
-		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
-		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
-		<property name="batchSize" value="100"/>
+	<bean id="ws.ZAS.AuthorizedSessionService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
 	</bean>
 
-	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSImpl" >
-		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
-		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
-
+	<bean id="ws.ZAS.SessionFactory" class="org.tdmx.server.ws.zas.ZASServerSessionFactoryImpl" >
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
 		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+	</bean>
+	
+	<bean id="ws.ZAS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+		<property name="sessionFactory" ref="ws.ZAS.SessionFactory"/>
+	</bean>
+	
+	<bean id="ws.ZAS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="serverManager" ref="ws.ZAS.ServerSessionManager"/>
+	</bean>
+	
+	<bean id="ws.ZAS" class="org.tdmx.server.ws.zas.ZASSecurityWrapper">
+		<property name="securityManager" ref="ws.ZAS.ServerSecurityManager"/>
+		<property name="authorizationService" ref="ws.ZAS.AuthorizedSessionService"/>
+		<property name="partitionIdService" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="delegate" ref="ws.ZAS.Implementation"/>
+	</bean>
+
+	<bean id="ws.ZAS.Implementation" class="org.tdmx.server.ws.zas.ZASImpl" >
+		<property name="authorizedSessionService" ref="ws.ZAS.AuthorizedSessionService"/>
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
+		<property name="batchSize" value="100"/>
+	</bean>
+
+
+
+	<bean id="ws.MOS.AuthorizedSessionService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
+	</bean>
+
+	<bean id="ws.MOS.SessionFactory" class="org.tdmx.server.ws.mos.MOSServerSessionFactoryImpl" >
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+	</bean>
+	
+	<bean id="ws.MOS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+		<property name="sessionFactory" ref="ws.MOS.SessionFactory"/>
+	</bean>
+	
+	<bean id="ws.MOS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="serverManager" ref="ws.MOS.ServerSessionManager"/>
+	</bean>
+	
+	<bean id="ws.MOS" class="org.tdmx.server.ws.mos.MOSSecurityWrapper">
+		<property name="securityManager" ref="ws.MOS.ServerSecurityManager"/>
+		<property name="authorizationService" ref="ws.MOS.AuthorizedSessionService"/>
+		<property name="partitionIdService" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="delegate" ref="ws.MOS.Implementation"/>
+	</bean>
+
+	<bean id="ws.MOS.Implementation" class="org.tdmx.server.ws.mos.MOSImpl" >
+		<property name="authorizedSessionService" ref="ws.MOS.AuthorizedSessionService"/>
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 
-	<bean id="ws.MOS" class="org.tdmx.server.ws.mos.MOSImpl" >
-		<property name="agentService" ref="server.authenticatedAgentService"/>
-		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
-		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
-		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
-		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
-		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
-		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
-		<property name="batchSize" value="100"/>
+
+
+	<bean id="ws.MDS.AuthorizedSessionService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
 	</bean>
 
-	<bean id="ws.MDS" class="org.tdmx.server.ws.mds.MDSImpl" >
-		<property name="agentService" ref="server.authenticatedAgentService"/>
+	<bean id="ws.MDS.SessionFactory" class="org.tdmx.server.ws.mds.MDSServerSessionFactoryImpl" >
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
 		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
 		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+	</bean>
+	
+	<bean id="ws.MDS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+		<property name="sessionFactory" ref="ws.MDS.SessionFactory"/>
+	</bean>
+	
+	<bean id="ws.MDS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="serverManager" ref="ws.MDS.ServerSessionManager"/>
+	</bean>
+	
+	<bean id="ws.MDS" class="org.tdmx.server.ws.mds.MDSSecurityWrapper">
+		<property name="securityManager" ref="ws.MDS.ServerSecurityManager"/>
+		<property name="authorizationService" ref="ws.MDS.AuthorizedSessionService"/>
+		<property name="partitionIdService" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="delegate" ref="ws.MDS.Implementation"/>
+	</bean>
+
+	<bean id="ws.MDS.Implementation" class="org.tdmx.server.ws.mds.MDSImpl" >
+		<property name="authorizedSessionService" ref="ws.MDS.AuthorizedSessionService"/>
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 	
+	
+	
+	<bean id="ws.MRS.AuthorizedSessionService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
+	</bean>
+
+	<bean id="ws.MRS.SessionFactory" class="org.tdmx.server.ws.mrs.MRSServerSessionFactoryImpl" >
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+	</bean>
+	
+	<bean id="ws.MRS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+		<property name="sessionFactory" ref="ws.MRS.SessionFactory"/>
+	</bean>
+	
+	<bean id="ws.MRS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
+		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="serverManager" ref="ws.MRS.ServerSessionManager"/>
+	</bean>
+	
+	<bean id="ws.MRS" class="org.tdmx.server.ws.mrs.MRSSecurityWrapper">
+		<property name="securityManager" ref="ws.MRS.ServerSecurityManager"/>
+		<property name="authorizationService" ref="ws.MRS.AuthorizedSessionService"/>
+		<property name="partitionIdService" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="delegate" ref="ws.MRS.Implementation"/>
+	</bean>
+
+	<bean id="ws.MRS.Implementation" class="org.tdmx.server.ws.mrs.MRSImpl" >
+		<property name="authorizedSessionService" ref="ws.MRS.AuthorizedSessionService"/>
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
+		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
+		<property name="batchSize" value="100"/>
+	</bean>
+
 </beans>

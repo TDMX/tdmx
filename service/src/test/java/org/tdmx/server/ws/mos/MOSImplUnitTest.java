@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,8 +94,10 @@ public class MOSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	@Autowired
+	@Named("ws.MOS.AuthorizedSessionService")
 	private AuthorizedSessionService<MOSServerSession> authorizedSessionService;
 	@Autowired
+	@Named("ws.ZAS.SessionFactory")
 	private ServerSessionFactory<MOSServerSession> serverSessionFactory;
 
 	@Autowired
@@ -112,6 +116,7 @@ public class MOSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
+	@Named("ws.MOS.Implementation")
 	private MOS mos;
 
 	private TestDataGeneratorInput input;

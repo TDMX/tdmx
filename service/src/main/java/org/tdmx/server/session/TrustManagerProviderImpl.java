@@ -16,16 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
+package org.tdmx.server.session;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.List;
+
+import javax.net.ssl.X509TrustManager;
+
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionLookupService;
-import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
-public class ServerSecurityManagerImpl<E extends ServerSession> implements ServerSecurityManager<E> {
+public class TrustManagerProviderImpl implements TrustManagerProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,10 +37,8 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerSecurityManagerImpl.class);
 
-	private AuthenticatedClientLookupService authenticatedClientService;
-	private ServerSessionLookupService<E> serverManager;
+	private List<ServerSessionTrustManager> serverSessionTrustManagers;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -46,22 +47,40 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	@Override
-	public E getSession(String sessionId) throws AuthorizationException {
-		PKIXCertificate client = authenticatedClientService.getAuthenticatedClient();
-		if (client == null) {
-			throw new AuthorizationException("No PKIXCertificate.");
-		}
-		E ss = serverManager.getSession(sessionId, client);
-		if (ss == null) {
-			throw new AuthorizationException("sessionId not associated with client.");
-		}
-		return ss;
-	}
 
 	@Override
-	public PKIXCertificate getAuthenticatedClient() {
-		return authenticatedClientService.getAuthenticatedClient();
+	public X509TrustManager getTrustManager() {
+
+		return new X509TrustManager() {
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				try {
+					PKIXCertificate[] certs = CertificateIOUtils.convert(chain);
+					boolean anyTrusted = false;
+					for (ServerSessionTrustManager tm : getServerSessionTrustManagers()) {
+						if (tm.isTrusted(certs[0])) {
+							anyTrusted = true;
+							break;
+						}
+					}
+					if (!anyTrusted) {
+						throw new CertificateException("Not authorized.");
+					}
+				} catch (CryptoCertificateException e) {
+					throw new CertificateException(e.getMessage(), e);
+				}
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		};
 	}
 
 	// -------------------------------------------------------------------------
@@ -76,20 +95,12 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public AuthenticatedClientLookupService getAuthenticatedClientService() {
-		return authenticatedClientService;
+	public List<ServerSessionTrustManager> getServerSessionTrustManagers() {
+		return serverSessionTrustManagers;
 	}
 
-	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
-		this.authenticatedClientService = authenticatedClientService;
-	}
-
-	public ServerSessionLookupService<E> getServerManager() {
-		return serverManager;
-	}
-
-	public void setServerManager(ServerSessionLookupService<E> serverManager) {
-		this.serverManager = serverManager;
+	public void setServerSessionTrustManagers(List<ServerSessionTrustManager> serverSessionTrustManagers) {
+		this.serverSessionTrustManagers = serverSessionTrustManagers;
 	}
 
 }
