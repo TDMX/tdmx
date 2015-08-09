@@ -19,9 +19,8 @@
 package org.tdmx.server.ws.security;
 
 import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
-public interface ServerSecurityManager<E extends ServerSession> extends AuthenticatedClientLookupService {
+public interface ServerSecurityManager<E extends ServerSession> {
 
 	/**
 	 * Return the ServerSession associated with the sessionID and authenticated client.

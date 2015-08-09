@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:tdmx:api:v1.0:sp:scs-definition" xmlns:scs="urn:tdmx:api:v1.0:sp:scs" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="urn:tdmx:api:v1.0:sp:scs-definition" name="SCS">
+	<wsdl:documentation>
+		Bla Bla...
+	</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="urn:tdmx:api:v1.0:sp:scs" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:scs="urn:tdmx:api:v1.0:sp:scs">
+			<xsd:include schemaLocation="scs.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="relayRequest">
+		<wsdl:part name="parameters" element="scs:relay"/>
+	</wsdl:message>
+	<wsdl:message name="relayResponse">
+		<wsdl:part name="parameters" element="scs:relayResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="SCS">
+		<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+		<wsdl:operation name="relay">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:relayRequest"/>
+			<wsdl:output message="tns:relayResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="SCSBinding" type="tns:SCS">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="relay">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/relay"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="SessionControlService">
+		<wsdl:port name="SCS" binding="tns:SCSBinding">
+			<soap:address location="http://serviceprovider.com/api/v1.0/sp/scs"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

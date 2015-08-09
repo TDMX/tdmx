@@ -23,6 +23,7 @@ import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorizatio
 import static org.tdmx.lib.zone.domain.QChannelFlowMessage.channelFlowMessage;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
+import static org.tdmx.lib.zone.domain.QTemporaryChannel.temporaryChannel;
 
 import java.util.List;
 
@@ -37,6 +38,8 @@ import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
@@ -113,7 +116,7 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (criteria.getDomain() != null) {
-			where = where.and(channel.domain.eq(criteria.getDomain()));
+			where = where.and(domain.eq(criteria.getDomain()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
 			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
@@ -160,7 +163,7 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));
 		}
 		if (criteria.getDomain() != null) {
-			where = where.and(channel.domain.eq(criteria.getDomain()));
+			where = where.and(domain.eq(criteria.getDomain()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
 			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
@@ -181,6 +184,42 @@ public class ChannelDaoImpl implements ChannelDao {
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));
 		return query.list(channel);
+	}
+
+	@Override
+	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		JPAQuery query = new JPAQuery(em).from(temporaryChannel).innerJoin(temporaryChannel.domain, domain).fetch();
+
+		BooleanExpression where = domain.zone.eq(zone);
+
+		if (StringUtils.hasText(criteria.getDomainName())) {
+			where = where.and(domain.domainName.eq(criteria.getDomainName()));
+		}
+		if (criteria.getDomain() != null) {
+			where = where.and(domain.eq(criteria.getDomain()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
+			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
+			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
+		}
+		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
+		}
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(temporaryChannel);
 	}
 
 	@Override

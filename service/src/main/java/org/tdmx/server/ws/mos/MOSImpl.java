@@ -64,6 +64,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
@@ -158,11 +159,12 @@ public class MOSImpl implements MOS {
 	public GetAddressResponse getAddress(GetAddress parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 		Address oa = session.getOriginatingAddress();
+		Domain domain = session.getDomain();
 
 		GetAddressResponse response = new GetAddressResponse();
 
 		ChannelEndpoint ep = new ChannelEndpoint();
-		ep.setDomain(oa.getDomain().getDomainName());
+		ep.setDomain(domain.getDomainName());
 		ep.setLocalname(oa.getLocalName());
 		response.setOrigin(ep);
 
@@ -227,8 +229,7 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
-		// ChannelFlowOrigin to attach to.
+		// create originating ChannelFlowMessage
 		Zone zone = session.getZone();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
@@ -327,16 +328,19 @@ public class MOSImpl implements MOS {
 
 		GetChannelResponse response = new GetChannelResponse();
 
-		Address address = session.getOriginatingAddress();
-		Zone zone = session.getZone();
+		if (validator.checkChannelDestination(parameters.getDestination(), response) == null) {
+			return response;
+		}
 
-		// TODO check we have all input parameters
+		Zone zone = session.getZone();
+		Address address = session.getOriginatingAddress();
+		Domain domain = session.getDomain();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomain(address.getDomain());
+		sc.setDomain(domain);
 
 		sc.getOrigin().setLocalName(address.getLocalName());
-		sc.getOrigin().setDomainName(address.getDomain().getDomainName());
+		sc.getOrigin().setDomainName(domain.getDomainName());
 		sc.getDestination().setDomainName(parameters.getDestination().getDomain());
 		sc.getDestination().setLocalName(parameters.getDestination().getLocalname());
 		sc.getDestination().setServiceName(parameters.getDestination().getServicename());
@@ -357,15 +361,16 @@ public class MOSImpl implements MOS {
 
 		ListChannelResponse response = new ListChannelResponse();
 
-		Address address = session.getOriginatingAddress();
 		Zone zone = session.getZone();
+		Domain domain = session.getDomain();
+		Address address = session.getOriginatingAddress();
 
 		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
 				a2d.mapPage(parameters.getPage()));
-		sc.setDomain(address.getDomain());
+		sc.setDomain(domain);
 
 		sc.getOrigin().setLocalName(address.getLocalName());
-		sc.getOrigin().setDomainName(address.getDomain().getDomainName());
+		sc.getOrigin().setDomainName(domain.getDomainName());
 		if (parameters.getDestination() != null) {
 			sc.getDestination().setDomainName(parameters.getDestination().getDomain());
 			sc.getDestination().setLocalName(parameters.getDestination().getLocalname());

@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
@@ -45,6 +44,8 @@ import org.tdmx.core.api.v01.common.ContinuedAcknowledge;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
+import org.tdmx.core.api.v01.mos.GetChannel;
+import org.tdmx.core.api.v01.mos.GetChannelResponse;
 import org.tdmx.core.api.v01.mos.ListChannel;
 import org.tdmx.core.api.v01.mos.ListChannelResponse;
 import org.tdmx.core.api.v01.mos.Submit;
@@ -52,19 +53,15 @@ import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
 import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
-import org.tdmx.lib.zone.domain.AgentCredential;
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.Destination;
-import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -77,8 +74,9 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.session.ServerSessionFactory;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
+import org.tdmx.server.session.ServerSessionManager;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthorizedSessionService;
+import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -94,11 +92,13 @@ public class MOSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	@Autowired
-	@Named("ws.MOS.AuthorizedSessionService")
-	private AuthorizedSessionService<MOSServerSession> authorizedSessionService;
-	@Autowired
-	@Named("ws.ZAS.SessionFactory")
+	@Named("ws.MOS.SessionFactory")
 	private ServerSessionFactory<MOSServerSession> serverSessionFactory;
+	@Autowired
+	private AuthenticatedClientService authenticatedClientService;
+	@Autowired
+	@Named("ws.MOS.ServerSessionManager")
+	private ServerSessionManager serverSessionManager;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -116,7 +116,7 @@ public class MOSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
-	@Named("ws.MOS.Implementation")
+	@Named("ws.MOS")
 	private MOS mos;
 
 	private TestDataGeneratorInput input;
@@ -131,7 +131,7 @@ public class MOSImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 
-	private MOSServerSession session;
+	private final String UC_SESSION_ID = "UC-1";
 
 	@Before
 	public void doSetup() throws Exception {
@@ -161,20 +161,21 @@ public class MOSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
 		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
 
-		session = serverSessionFactory.createServerSession(seedAttributeMap);
+		serverSessionManager.createSession(UC_SESSION_ID, uc.getPublicCert(), seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authorizedSessionService.clearAuthorizedSession();
+		authenticatedClientService.clearAuthenticatedClient();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
-		assertNotNull(authorizedSessionService);
 		assertNotNull(serverSessionFactory);
+		assertNotNull(serverSessionManager);
+		assertNotNull(authenticatedClientService);
 
 		assertNotNull(zoneService);
 		assertNotNull(agentCredentialService);
@@ -188,9 +189,10 @@ public class MOSImplUnitTest {
 
 	@Test
 	public void testGetAddress() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		GetAddress req = new GetAddress();
+		req.setSessionId(UC_SESSION_ID);
 
 		GetAddressResponse response = mos.getAddress(req);
 		assertSuccess(response);
@@ -200,10 +202,30 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
+	public void testGetChannel() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		GetChannel req = new GetChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		ChannelDestination cd = new ChannelDestination();
+		cd.setDomain(domain.getDomainName());
+		cd.setLocalname(address.getLocalName());
+		cd.setServicename(service.getServiceName());
+		req.setDestination(cd);
+
+		GetChannelResponse response = mos.getChannel(req);
+		assertSuccess(response);
+		assertNotNull(response.getChannelinfo());
+		// TODO others
+	}
+
+	@Test
 	public void testListChannel_All() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -221,9 +243,10 @@ public class MOSImplUnitTest {
 
 	@Test
 	public void testSubmitMessageAndUploadChunk() throws Exception {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
 
 		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName());
 		// TODO setup msg, create signatures
@@ -238,6 +261,8 @@ public class MOSImplUnitTest {
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1);
 
 		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
 		upl.setContinuation(response.getContinuation());
 		upl.setChunk(chunk);
 
@@ -273,58 +298,4 @@ public class MOSImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
-	private void removeFlowTargets(Domain domain) {
-		// delete any Destination on the domain
-		org.tdmx.lib.zone.domain.DestinationSearchCriteria ftSc = new org.tdmx.lib.zone.domain.DestinationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		ftSc.getDestination().setDomainName(domain.getDomainName());
-		List<Destination> destinations = destinationService.search(zone, ftSc);
-		for (Destination d : destinations) {
-			destinationService.delete(d);
-		}
-	}
-
-	private void removeChannels(Domain domain) {
-		// delete any Channels on the domain
-		org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria caSc = new org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria(
-				new PageSpecifier(0, 1000));
-		caSc.setDomainName(domain.getDomainName());
-		List<Channel> channels = channelService.search(zone, caSc);
-		for (Channel c : channels) {
-			channelService.delete(c);
-		}
-	}
-
-	private void removeAgentCredentials(Domain domain) {
-		// delete any UC+DAC on the domain
-		org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria dacSc = new org.tdmx.lib.zone.domain.AgentCredentialSearchCriteria(
-				new PageSpecifier(0, 1000));
-		dacSc.setDomainName(domain.getDomainName());
-		List<AgentCredential> list = agentCredentialService.search(zone, dacSc);
-		for (AgentCredential ac : list) {
-			agentCredentialService.delete(ac);
-		}
-	}
-
-	private void removeAddresses(Domain domain) {
-		// delete any Address on the domain
-		org.tdmx.lib.zone.domain.AddressSearchCriteria adSc = new org.tdmx.lib.zone.domain.AddressSearchCriteria(
-				new PageSpecifier(0, 1000));
-		adSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Address> addresses = addressService.search(zone, adSc);
-		for (org.tdmx.lib.zone.domain.Address ad : addresses) {
-			addressService.delete(ad);
-		}
-	}
-
-	private void removeServices(Domain domain) {
-		// delete any services on the domain
-		org.tdmx.lib.zone.domain.ServiceSearchCriteria sSc = new org.tdmx.lib.zone.domain.ServiceSearchCriteria(
-				new PageSpecifier(0, 1000));
-		sSc.setDomainName(domain.getDomainName());
-		List<org.tdmx.lib.zone.domain.Service> services = serviceService.search(zone, sSc);
-		for (org.tdmx.lib.zone.domain.Service s : services) {
-			serviceService.delete(s);
-		}
-	}
 }

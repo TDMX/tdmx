@@ -77,6 +77,7 @@ public enum ErrorCode {
 	InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),
 	InvalidSignatureChannelAuthorization(500, "ChannelAuthorization signature invalid."),
 	InvalidSignatureDestinationSession(500, "DestinationSession signature invalid."),
+	InvalidSignerDestinationSession(500, "DestinationSession signature not signed by authenticated client."),
 	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
 	InvalidMsgId(500, "Message ID invalid."),

@@ -33,6 +33,7 @@ import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -114,6 +115,18 @@ public interface ChannelService {
 	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
 
 	public void createOrUpdate(Channel channel);
+
+	/**
+	 * Lookup a TemporaryChannel in the Domain.
+	 * 
+	 * @param zone
+	 * @param domain
+	 * @param origin
+	 * @param dest
+	 * @return null if none exist, otherwise the TemporaryChannel matching the origin and destination.
+	 */
+	public TemporaryChannel findByTemporaryChannel(Zone zone, Domain domain, ChannelOrigin origin,
+			ChannelDestination dest);
 
 	public ChannelAuthorization findByChannel(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest);
 

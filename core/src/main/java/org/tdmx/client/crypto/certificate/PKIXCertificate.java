@@ -306,7 +306,7 @@ public class PKIXCertificate {
 	 */
 	public String getTdmxDomainName() {
 		if (isTdmxUserCertificate()) {
-			getLastRDN(getSubjectName(), BCStyle.OU);
+			return getLastRDN(getSubjectName(), BCStyle.OU);
 		} else if (isTdmxDomainAdminCertificate()) {
 			return getCommonName();
 		}

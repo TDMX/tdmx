@@ -198,8 +198,7 @@ public class MRSImpl implements MRS {
 		Channel sessionChannel = session.getChannel();
 
 		org.tdmx.core.api.v01.msg.Channel channel = d2a.mapChannel(sessionChannel);
-		if (!SignatureUtils.checkFlowTargetSessionSignature(channel.getDestination().getServicename(), ds
-				.getUsersignature().getUserIdentity(), ds)) {
+		if (!SignatureUtils.checkDestinationSessionSignature(channel.getDestination().getServicename(), ds)) {
 			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return;
 		}

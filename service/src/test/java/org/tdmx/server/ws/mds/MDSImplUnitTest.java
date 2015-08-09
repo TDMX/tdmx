@@ -73,8 +73,9 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.session.ServerSessionFactory;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
+import org.tdmx.server.session.ServerSessionManager;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthorizedSessionService;
+import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -90,11 +91,13 @@ public class MDSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	@Autowired
-	@Named("ws.MDS.AuthorizedSessionService")
-	private AuthorizedSessionService<MDSServerSession> authorizedSessionService;
-	@Autowired
 	@Named("ws.MDS.SessionFactory")
 	private ServerSessionFactory<MDSServerSession> serverSessionFactory;
+	@Autowired
+	private AuthenticatedClientService authenticatedClientService;
+	@Autowired
+	@Named("ws.MDS.ServerSessionManager")
+	private ServerSessionManager serverSessionManager;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -112,7 +115,7 @@ public class MDSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
-	@Named("ws.MDS.Implementation")
+	@Named("ws.MDS")
 	private MDS mds;
 
 	private TestDataGeneratorInput input;
@@ -127,7 +130,7 @@ public class MDSImplUnitTest {
 	private PKIXCredential dac;
 	private PKIXCredential uc;
 
-	private MDSServerSession session;
+	private final String UC_SESSION_ID = "UC-1";
 
 	@Before
 	public void doSetup() throws Exception {
@@ -158,20 +161,21 @@ public class MDSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.ServiceId, service.getId());
 		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
 
-		session = serverSessionFactory.createServerSession(seedAttributeMap);
+		serverSessionManager.createSession(UC_SESSION_ID, uc.getPublicCert(), seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authorizedSessionService.clearAuthorizedSession();
+		authenticatedClientService.clearAuthenticatedClient();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
-		assertNotNull(authorizedSessionService);
 		assertNotNull(serverSessionFactory);
+		assertNotNull(serverSessionManager);
+		assertNotNull(authenticatedClientService);
 
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
@@ -186,9 +190,10 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testListChannelAuthorization_All() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
 
 		Page p = new Page();
 		p.setNumber(0);
@@ -204,9 +209,10 @@ public class MDSImplUnitTest {
 
 	@Test
 	public void testSetDestinationSession() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		SetDestinationSession req = new SetDestinationSession();
+		req.setSessionId(UC_SESSION_ID);
 
 		Destinationsession ds = new Destinationsession();
 		ds.setEncryptionContextId("id1");
@@ -224,9 +230,11 @@ public class MDSImplUnitTest {
 
 		// do getDestinationSession to confirm DS created
 		GetDestinationSession getReq = new GetDestinationSession();
+		getReq.setSessionId(UC_SESSION_ID);
 
 		GetDestinationSessionResponse getRes = mds.getDestinationSession(getReq);
 		assertSuccess(getRes);
+		assertNotNull(getRes.getDestination());
 		assertNotNull(getRes.getDestination().getDestinationsession());
 
 		// tamper with signature doesn't work
@@ -235,25 +243,36 @@ public class MDSImplUnitTest {
 		assertError(ErrorCode.InvalidSignatureDestinationSession, response);
 
 		// check that the channeldestinationsessions are set
-		boolean more = true;
-		// fetch ALL Channels which have this Destination as Destination.
-		for (int pageNo = 0; more; pageNo++) {
-			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo, 5));
-			sc.setDomain(domain);
-			sc.getDestination().setLocalName(uc.getPublicCert().getCommonName());
-			sc.getDestination().setDomainName(domain.getDomainName());
-			sc.getDestination().setServiceName(service.getServiceName());
+		boolean setCft = false;
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			boolean more = true;
+			// fetch ALL Channels which have this Destination as Destination.
+			for (int pageNo = 0; more; pageNo++) {
+				ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(
+						pageNo, 5));
+				sc.setDomain(domain);
+				sc.getDestination().setLocalName(uc.getPublicCert().getCommonName());
+				sc.getDestination().setDomainName(domain.getDomainName());
+				sc.getDestination().setServiceName(service.getServiceName());
 
-			List<Channel> channels = channelService.search(zone, sc);
+				List<Channel> channels = channelService.search(zone, sc);
 
-			for (Channel channel : channels) {
-				log.info("" + channel);
+				for (Channel channel : channels) {
+					log.info("" + channel);
+					if (channel.getSession() != null) {
+						setCft = true;
+					}
+				}
+				if (channels.isEmpty()) {
+					more = false;
+				}
 			}
-			if (channels.isEmpty()) {
-				more = false;
-			}
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
 		}
-
+		assertTrue(setCft);
 	}
 
 	private void assertSuccess(Acknowledge ack) {

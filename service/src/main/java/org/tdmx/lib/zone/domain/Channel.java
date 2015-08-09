@@ -169,7 +169,7 @@ public class Channel implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelAuthorization [id=");
+		builder.append("Channel [id=");
 		builder.append(id);
 		builder.append(" origin=").append(origin);
 		builder.append(", destination=").append(destination);

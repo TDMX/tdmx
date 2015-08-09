@@ -77,8 +77,9 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.session.ServerSessionFactory;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
+import org.tdmx.server.session.ServerSessionManager;
 import org.tdmx.server.ws.ErrorCode;
-import org.tdmx.server.ws.security.service.AuthorizedSessionService;
+import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -92,12 +93,15 @@ public class MRSImplUnitTest {
 	private AgentCredentialService agentCredentialService;
 	@Autowired
 	private AgentCredentialFactory agentCredentialFactory;
-	@Autowired
-	@Named("ws.MRS.AuthorizedSessionService")
-	private AuthorizedSessionService<MRSServerSession> authorizedSessionService;
+
 	@Autowired
 	@Named("ws.MRS.SessionFactory")
 	private ServerSessionFactory<MRSServerSession> serverSessionFactory;
+	@Autowired
+	private AuthenticatedClientService authenticatedClientService;
+	@Autowired
+	@Named("ws.MRS.ServerSessionManager")
+	private ServerSessionManager serverSessionManager;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -115,7 +119,7 @@ public class MRSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
-	@Named("ws.MRS.Implementation")
+	@Named("ws.MRS")
 	private MRS mrs;
 
 	private TestDataGeneratorInput input;
@@ -135,7 +139,7 @@ public class MRSImplUnitTest {
 	private PKIXCredential uc1;
 	private PKIXCredential uc2;
 
-	private MRSServerSession session;
+	private final String ZAC_SESSION_ID = "ZAC-1";
 
 	@Before
 	public void doSetup() throws Exception {
@@ -172,20 +176,21 @@ public class MRSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.ServiceId, service1.getId());
 		seedAttributeMap.put(SeedAttribute.AddressId, address1.getId());
 
-		session = serverSessionFactory.createServerSession(seedAttributeMap);
+		serverSessionManager.createSession(ZAC_SESSION_ID, zac.getPublicCert(), seedAttributeMap);
 	}
 
 	@After
 	public void doTeardown() {
-		authorizedSessionService.clearAuthorizedSession();
+		authenticatedClientService.clearAuthenticatedClient();
 
 		dataGenerator.tearDown(input, data);
 	}
 
 	@Test
 	public void testAutowired() {
-		assertNotNull(authorizedSessionService);
 		assertNotNull(serverSessionFactory);
+		assertNotNull(serverSessionManager);
+		assertNotNull(authenticatedClientService);
 
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
@@ -200,7 +205,7 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelAuthorization_ReqSend() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
 		Channel channel = new Channel();
 		ChannelDestination dest = new ChannelDestination();
@@ -225,6 +230,8 @@ public class MRSImplUnitTest {
 		// signer is origin, so reqSend at destination
 
 		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
 		req.setPermission(auth);
 
 		RelayResponse response = mrs.relay(req);
@@ -248,7 +255,7 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelAuthorization_ReqRecv() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
 		Channel channel = new Channel();
 		ChannelDestination dest = new ChannelDestination();
@@ -273,6 +280,8 @@ public class MRSImplUnitTest {
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
 		req.setPermission(auth);
 
 		RelayResponse response = mrs.relay(req);
@@ -295,7 +304,7 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_ChannelDestination() {
-		authorizedSessionService.setAuthorizedSession(session);
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
 		// the setup creates authorized channels from domain-0 -> domain-1
 		Channel channel = new Channel();
@@ -320,6 +329,8 @@ public class MRSImplUnitTest {
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
 		req.setDestinationsession(ds);
 
 		RelayResponse response = mrs.relay(req);
@@ -335,6 +346,8 @@ public class MRSImplUnitTest {
 
 		// assert a second time relay of the same info is ok too.
 		req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
 		req.setDestinationsession(ds);
 
 		response = mrs.relay(req);
@@ -355,9 +368,13 @@ public class MRSImplUnitTest {
 
 	@Test
 	public void testRelay_Message() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
+
 		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName());
 
 		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
 		req.setMsg(msg);
 
 		RelayResponse response = mrs.relay(req);

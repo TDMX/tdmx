@@ -55,7 +55,7 @@ public class MRSSecurityWrapper implements MRS {
 
 	@Override
 	public RelayResponse relay(Relay parameters) {
-		MRSServerSession session = null; // FIXME securityManager.getSession(parameters.getSessionId());
+		MRSServerSession session = securityManager.getSession(parameters.getSessionId());
 		authorizationService.setAuthorizedSession(session);
 		try {
 			AccountZone az = session.getAccountZone();

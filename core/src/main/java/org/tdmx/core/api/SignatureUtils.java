@@ -116,18 +116,16 @@ public class SignatureUtils {
 
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
-		id.setDomaincertificate(credential.getPublicCert().getX509Encoded());
+		id.setDomaincertificate(credential.getIssuerPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
 		SignatureValue sig = new SignatureValue();
-		sig.setTimestamp(CalendarUtils.getDate(signatureDate));
+		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
 		us.setSignaturevalue(sig);
 		us.setUserIdentity(id);
 		header.setUsersignature(us);
-
-		// TODO remove Msg.header.timestamp in API and rely on signatureTS.
 
 		String valueToSignHeader = getValueToSign(header);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
@@ -210,18 +208,18 @@ public class SignatureUtils {
 		signature.setSignaturevalue(sig);
 		ft.setUsersignature(signature);
 
-		String valueToSign = getValueToSign(serviceName, id, ft);
+		String valueToSign = getValueToSign(serviceName, ft);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static boolean checkFlowTargetSessionSignature(String serviceName, UserIdentity target,
-			Destinationsession fts) {
-		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(target.getUsercertificate());
+	public static boolean checkDestinationSessionSignature(String serviceName, Destinationsession fts) {
+		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(fts.getUsersignature().getUserIdentity()
+				.getUsercertificate());
 		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(fts.getUsersignature().getSignaturevalue()
 				.getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(fts.getUsersignature().getSignaturevalue().getTimestamp())
-				&& checkDestinationSessionSignature(publicCert, alg, target, serviceName, fts);
+				&& checkDestinationSessionSignature(publicCert, alg, serviceName, fts);
 	}
 
 	public static String createContinuationId(int chunkPos, byte[] entropy, String msgId, int len) {
@@ -337,15 +335,15 @@ public class SignatureUtils {
 	}
 
 	private static boolean checkDestinationSessionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
-			UserIdentity target, String serviceName, Destinationsession fts) {
-		String valueToSign = getValueToSign(serviceName, target, fts);
+			String serviceName, Destinationsession fts) {
+		String valueToSign = getValueToSign(serviceName, fts);
 		String signatureHex = fts.getUsersignature().getSignaturevalue().getSignature();
 
 		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
 				valueToSign, signatureHex);
 	}
 
-	private static String getValueToSign(String serviceName, UserIdentity target, Destinationsession ds) {
+	private static String getValueToSign(String serviceName, Destinationsession ds) {
 		StringBuilder value = new StringBuilder();
 		// serviceName
 		value.append(toValue(serviceName));
@@ -356,7 +354,7 @@ public class SignatureUtils {
 		value.append(toValue(ds.getSessionKey()));
 
 		// signer
-		appendValueToSign(value, target);
+		appendValueToSign(value, ds.getUsersignature().getUserIdentity());
 		// signature details
 		value.append(toValue(ds.getUsersignature().getSignaturevalue().getTimestamp()));
 		value.append(toValue(ds.getUsersignature().getSignaturevalue().getSignatureAlgorithm()));

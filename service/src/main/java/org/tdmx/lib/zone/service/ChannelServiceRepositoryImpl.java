@@ -50,6 +50,8 @@ import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -380,6 +382,46 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		List<Channel> auths = getChannelDao().search(zone, criteria);
 
 		return auths.isEmpty() ? null : auths.get(0).getAuthorization();
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public TemporaryChannel findByTemporaryChannel(Zone zone, Domain domain, ChannelOrigin origin,
+			ChannelDestination dest) {
+		if (domain == null) {
+			throw new IllegalArgumentException("missing domain");
+		}
+		if (origin == null) {
+			throw new IllegalArgumentException("missing origin");
+		}
+		if (!StringUtils.hasText(origin.getLocalName())) {
+			throw new IllegalArgumentException("missing origin localName");
+		}
+		if (!StringUtils.hasText(origin.getDomainName())) {
+			throw new IllegalArgumentException("missing origin domainName");
+		}
+		if (dest == null) {
+			throw new IllegalArgumentException("missing dest");
+		}
+		if (!StringUtils.hasText(dest.getLocalName())) {
+			throw new IllegalArgumentException("missing dest localName");
+		}
+		if (!StringUtils.hasText(dest.getDomainName())) {
+			throw new IllegalArgumentException("missing dest domainName");
+		}
+		if (!StringUtils.hasText(dest.getServiceName())) {
+			throw new IllegalArgumentException("missing dest serviceName");
+		}
+		TemporaryChannelSearchCriteria criteria = new TemporaryChannelSearchCriteria(new PageSpecifier(0, 1));
+		criteria.setDomain(domain);
+		criteria.getOrigin().setLocalName(origin.getLocalName());
+		criteria.getOrigin().setDomainName(origin.getDomainName());
+		criteria.getDestination().setLocalName(dest.getLocalName());
+		criteria.getDestination().setDomainName(dest.getDomainName());
+		criteria.getDestination().setServiceName(dest.getServiceName());
+		List<TemporaryChannel> tempChannels = getChannelDao().search(zone, criteria);
+
+		return tempChannels.isEmpty() ? null : tempChannels.get(0);
 	}
 
 	@Override

@@ -571,6 +571,7 @@ public class ZASImpl implements ZAS {
 	@Override
 	public DeleteUserResponse deleteUser(DeleteUser parameters) {
 		final DeleteUserResponse response = new DeleteUserResponse();
+
 		final ZASServerSession session = getZACorDACSession(response);
 		if (session == null) {
 			return response;
@@ -1182,9 +1183,11 @@ public class ZASImpl implements ZAS {
 		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
 			parameters.getFilter().setDomain(authorizedDomainName);
 		}
-		if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
-				response) == null) {
-			return response;
+		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
+			if (checkDomainBoundDomainAuthorization(parameters.getFilter().getDomain(), authorizedDomainName, zone,
+					response) == null) {
+				return response;
+			}
 		}
 		sc.setDomainName(parameters.getFilter().getDomain());
 		if (parameters.getFilter().getOrigin() != null) {
@@ -1335,7 +1338,8 @@ public class ZASImpl implements ZAS {
 			return null;
 		}
 
-		if (!domainName.equals(authorizedDomainName)) {
+		// authorizedDomainName is null if ALL domains (within the Zone) are authorized
+		if (StringUtils.hasText(authorizedDomainName) && !domainName.equals(authorizedDomainName)) {
 			setError(ErrorCode.OutOfDomainAccess, ack);
 			return null;
 		}

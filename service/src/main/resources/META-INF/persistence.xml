@@ -27,6 +27,7 @@
 		<class>org.tdmx.lib.zone.domain.Address</class>
 		<class>org.tdmx.lib.zone.domain.Service</class>
 		<class>org.tdmx.lib.zone.domain.Destination</class>
+		<class>org.tdmx.lib.zone.domain.TemporaryChannel</class>
 		<class>org.tdmx.lib.zone.domain.Channel</class>
 		<class>org.tdmx.lib.zone.domain.ChannelAuthorization</class>
 		<class>org.tdmx.lib.zone.domain.FlowQuota</class>

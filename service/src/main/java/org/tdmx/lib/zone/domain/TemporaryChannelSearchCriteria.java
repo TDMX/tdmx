@@ -16,16 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.security;
+package org.tdmx.lib.zone.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionLookupService;
-import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.lib.common.domain.PageSpecifier;
 
-public class ServerSecurityManagerImpl<E extends ServerSession> implements ServerSecurityManager<E> {
+/**
+ * The SearchCriteria for a TemporaryChannels.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class TemporaryChannelSearchCriteria extends ChannelSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,33 +35,17 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerSecurityManagerImpl.class);
-
-	private AuthenticatedClientLookupService authenticatedClientService;
-	private ServerSessionLookupService<E> serverManager;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	public TemporaryChannelSearchCriteria(PageSpecifier pageSpecifier) {
+		super(pageSpecifier);
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	@Override
-	public E getSession(String sessionId) throws AuthorizationException {
-		if (sessionId == null) {
-			throw new AuthorizationException("No sessionId.");
-		}
-		PKIXCertificate client = authenticatedClientService.getAuthenticatedClient();
-		if (client == null) {
-			throw new AuthorizationException("No PKIXCertificate.");
-		}
-		E ss = serverManager.getSession(sessionId, client);
-		if (ss == null) {
-			throw new AuthorizationException("sessionId not associated with client.");
-		}
-		return ss;
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -73,21 +58,5 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public AuthenticatedClientLookupService getAuthenticatedClientService() {
-		return authenticatedClientService;
-	}
-
-	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
-		this.authenticatedClientService = authenticatedClientService;
-	}
-
-	public ServerSessionLookupService<E> getServerManager() {
-		return serverManager;
-	}
-
-	public void setServerManager(ServerSessionLookupService<E> serverManager) {
-		this.serverManager = serverManager;
-	}
 
 }

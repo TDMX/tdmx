@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
@@ -39,7 +40,6 @@ import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -52,10 +52,10 @@ import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -114,22 +114,23 @@ public class MDSImpl implements MDS {
 	@Override
 	public GetDestinationSessionResponse getDestinationSession(GetDestinationSession parameters) {
 		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
-		Address da = session.getDestinationAddress();
 
 		GetDestinationSessionResponse response = new GetDestinationSessionResponse();
 
-		Destination d = null; // FIXME new session context
-		Service service = null; // FIXME
-		Address address = null; // FIXME
+		Address address = session.getDestinationAddress();
+		Domain domain = session.getDomain();
+		Service service = session.getService();
+
+		Destination dest = destinationService.findByDestination(address, service);
 
 		Destinationinfo info = new Destinationinfo();
-		info.setDomain(address.getDomain().getDomainName());
+		info.setDomain(domain.getDomainName());
 		info.setLocalname(address.getLocalName());
 		info.setServicename(service.getServiceName());
-		if (d != null) {
-			Destination existingDestination = destinationService.findById(d.getId());
-			info.setDestinationsession(d2a.mapDestinationSession(existingDestination.getDestinationSession()));
+		if (dest != null) {
+			info.setDestinationsession(d2a.mapDestinationSession(dest.getDestinationSession()));
 		}
+		response.setDestination(info);
 
 		response.setSuccess(true);
 		return response;
@@ -148,14 +149,20 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		AgentCredential existingCred = null;
-		Destination d = null; // FIXME new session context
-		Service service = null; // FIXME
-		Address address = null; // FIXME
+		Address address = session.getDestinationAddress();
+		Domain domain = session.getDomain();
+		Service service = session.getService();
 
-		UserIdentity id = d2a.mapUserIdentity(existingCred.getCertificateChain());
+		// check authUser is ds.signer
+		PKIXCertificate uc = CertificateIOUtils.safeDecodeX509(ds.getUsersignature().getUserIdentity()
+				.getUsercertificate());
+		if (uc == null || !authorizedUser.isIdentical(uc)) {
+			setError(ErrorCode.InvalidSignerDestinationSession, response);
+			return response;
+		}
+
 		// check that the FTS signature is ok for the targetagent.
-		if (!SignatureUtils.checkFlowTargetSessionSignature(service.getServiceName(), id, ds)) {
+		if (!SignatureUtils.checkDestinationSessionSignature(service.getServiceName(), ds)) {
 			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return response;
 		}
@@ -171,14 +178,14 @@ public class MDSImpl implements MDS {
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
 					getBatchSize()));
-			sc.setDomain(existingCred.getDomain());
+			sc.setDomain(domain);
 			sc.getDestination().setLocalName(address.getLocalName());
-			sc.getDestination().setDomainName(address.getDomain().getDomainName());
+			sc.getDestination().setDomainName(domain.getDomainName());
 			sc.getDestination().setServiceName(service.getServiceName());
 
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
-				channelService.setChannelDestinationSession(zone, channel.getId(), d.getDestinationSession());
+				channelService.setChannelDestinationSession(zone, channel.getId(), dest.getDestinationSession());
 			}
 			if (channels.isEmpty()) {
 				more = false;

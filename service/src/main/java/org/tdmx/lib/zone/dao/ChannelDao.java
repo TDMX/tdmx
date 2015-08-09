@@ -26,6 +26,8 @@ import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -76,6 +78,15 @@ public interface ChannelDao {
 	 * @return
 	 */
 	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
+
+	/**
+	 * Search for TemporaryChannels. No FetchPlan.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
 	/**
 	 * Search for ChannelFlowMessages. FetchPlan includes Channel, Domain.

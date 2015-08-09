@@ -21,6 +21,7 @@ package org.tdmx.server.session;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
@@ -38,17 +39,17 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 	/**
 	 * A Map of Certificate fingerprint to Certificate
 	 */
-	private Map<String, PKIXCertificate> certificateMap;
+	private final Map<String, PKIXCertificate> certificateMap = new ConcurrentHashMap<>();
 
 	/**
 	 * A Map of Certificate fingerprint to sessionID.
 	 */
-	private Map<String, Set<String>> certificateSessionMap;
+	private final Map<String, Set<String>> certificateSessionMap = new ConcurrentHashMap<>();;
 
 	/**
 	 * A Map of sessionId to ServerSession.
 	 */
-	private Map<String, E> sessionMap;
+	private final Map<String, E> sessionMap = new ConcurrentHashMap<>();
 
 	private ServerSessionFactory<E> sessionFactory;
 
