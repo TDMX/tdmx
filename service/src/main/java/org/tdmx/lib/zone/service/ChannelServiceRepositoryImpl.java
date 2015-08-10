@@ -216,7 +216,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm) {
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
-		Channel existingChannel = findById(channelId);
+		Channel existingChannel = findById(channelId, false, true);
 		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
 		ChannelAuthorization existingCA = existingChannel.getAuthorization();
 		if (existingCA == null) {
@@ -238,7 +238,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
-		Channel channel = findById(channelId);
+		Channel channel = findById(channelId, false, false);
 		setChannelDestinationSession(zone, channel, destinationSession);
 		// persist should not be necessary
 	}
@@ -246,21 +246,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void relayChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
-		Channel channel = findById(channelId);
+		Channel channel = findById(channelId, false, false);
 		setChannelDestinationSession(zone, channel, destinationSession);
 		// persist should not be necessary
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void createOrUpdate(Channel channel) {
+	public void create(Channel channel) {
 		if (channel.getId() != null) {
-			Channel storedAuth = getChannelDao().loadById(channel.getId());
-			if (storedAuth != null) {
-				getChannelDao().merge(channel);
-			} else {
-				log.warn("Unable to find Channel with id " + channel.getId());
-			}
+			log.warn("Unable to persist Channel with id " + channel.getId());
 		} else {
 			getChannelDao().persist(channel);
 		}
@@ -269,11 +264,28 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(Channel channel) {
-		Channel storedAuth = getChannelDao().loadById(channel.getId());
-		if (storedAuth != null) {
-			getChannelDao().delete(storedAuth);
+		Channel storedChannel = getChannelDao().loadById(channel.getId(), false, false);
+		if (storedChannel != null) {
+			getChannelDao().delete(storedChannel);
 		} else {
 			log.warn("Unable to find Channel to delete with id " + channel.getId());
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void create(TemporaryChannel channel) {
+		getChannelDao().persist(channel);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void delete(TemporaryChannel tempChannel) {
+		TemporaryChannel storedTempChannel = getChannelDao().loadByTempId(tempChannel.getId());
+		if (storedTempChannel != null) {
+			getChannelDao().delete(storedTempChannel);
+		} else {
+			log.warn("Unable to find TemporaryChannel to delete with id " + tempChannel.getId());
 		}
 	}
 
@@ -286,6 +298,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 
@@ -426,8 +444,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public Channel findById(Long id) {
-		return getChannelDao().loadById(id);
+	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth) {
+		return getChannelDao().loadById(id, includeFlowQuota, includeAuth);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public TemporaryChannel findByTempChannelId(Long tempChannelId) {
+		return getChannelDao().loadByTempId(tempChannelId);
 	}
 
 	@Override
@@ -467,7 +491,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	private void setChannelDestinationSession(Zone zone, Channel channel, DestinationSession destinationSession) {
 		channel.setSession(destinationSession);
-		// on the receiving side, we need to relay new ChannelFlowTargets to the sending side, except if we are both
+		// on the receiving side, we need to relay new Channel DestinationSessions to the sending side, except if we are
+		// both
 		// sender and receiver
 		if (!channel.isSend() && channel.isRecv()) {
 			channel.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));

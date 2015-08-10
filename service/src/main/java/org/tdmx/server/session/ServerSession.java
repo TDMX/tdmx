@@ -43,6 +43,7 @@ public abstract class ServerSession {
 	protected static final String ZONE = "ZONE";
 	protected static final String DOMAIN = "DOMAIN";
 	protected static final String CHANNEL = "CHANNEL";
+	protected static final String TEMP_CHANNEL = "TEMP_CHANNEL";
 	protected static final String ORIGIN_ADDRESS = "ORIGIN_ADDRESS";
 	protected static final String DESTINATION_ADDRESS = "DESTINATION_ADDRESS";
 	protected static final String SERVICE = "SERVICE";

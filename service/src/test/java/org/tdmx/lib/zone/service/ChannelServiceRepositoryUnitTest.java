@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
 
@@ -95,7 +94,13 @@ public class ChannelServiceRepositoryUnitTest {
 
 	@Test
 	public void testFindById_NotFound() throws Exception {
-		Channel c = channelService.findById(new Random().nextLong());
+		Channel c = channelService.findById(new Random().nextLong(), false, false);
+		assertNull(c);
+		c = channelService.findById(new Random().nextLong(), false, true);
+		assertNull(c);
+		c = channelService.findById(new Random().nextLong(), true, false);
+		assertNull(c);
+		c = channelService.findById(new Random().nextLong(), true, true);
 		assertNull(c);
 	}
 
@@ -172,30 +177,6 @@ public class ChannelServiceRepositoryUnitTest {
 		List<Channel> channels = channelService.search(gugus, criteria);
 		assertNotNull(channels);
 		assertEquals(0, channels.size());
-	}
-
-	@Test
-	public void testModify() throws Exception {
-		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
-		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca.getChannel()
-				.getOrigin(), ca.getChannel().getDestination());
-		assertNotNull(storedCA);
-		storedCA.getUndeliveredBuffer().setHighMarkBytes(BigInteger.TEN);
-		storedCA.getUndeliveredBuffer().setLowMarkBytes(BigInteger.ONE);
-		storedCA.getUnsentBuffer().setHighMarkBytes(BigInteger.TEN);
-		storedCA.getUnsentBuffer().setLowMarkBytes(BigInteger.ONE);
-		channelService.createOrUpdate(storedCA.getChannel());
-
-		ChannelAuthorization modifiedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca
-				.getChannel().getOrigin(), ca.getChannel().getDestination());
-		assertNotNull(modifiedCA);
-		assertEquals(storedCA.getUndeliveredBuffer().getHighMarkBytes(), modifiedCA.getUndeliveredBuffer()
-				.getHighMarkBytes());
-		assertEquals(storedCA.getUndeliveredBuffer().getLowMarkBytes(), modifiedCA.getUndeliveredBuffer()
-				.getLowMarkBytes());
-		assertEquals(storedCA.getUnsentBuffer().getHighMarkBytes(), modifiedCA.getUnsentBuffer().getHighMarkBytes());
-		assertEquals(storedCA.getUnsentBuffer().getLowMarkBytes(), modifiedCA.getUnsentBuffer().getLowMarkBytes());
-
 	}
 
 }

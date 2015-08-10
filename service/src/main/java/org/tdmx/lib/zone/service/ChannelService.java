@@ -34,6 +34,7 @@ import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -114,7 +115,9 @@ public interface ChannelService {
 	 */
 	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
 
-	public void createOrUpdate(Channel channel);
+	public void create(Channel channel);
+
+	public void create(TemporaryChannel channel);
 
 	/**
 	 * Lookup a TemporaryChannel in the Domain.
@@ -130,9 +133,21 @@ public interface ChannelService {
 
 	public ChannelAuthorization findByChannel(Zone zone, Domain domain, ChannelOrigin origin, ChannelDestination dest);
 
-	public Channel findById(Long id);
+	/**
+	 * Fetch the Channel incl. FlowQuota
+	 * 
+	 * @param id
+	 * @param includeFlowQuota
+	 *            fetchPlan
+	 * @param includeAuth
+	 *            fetchPlan
+	 * @return
+	 */
+	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth);
 
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
+
+	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
 	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
 
@@ -144,6 +159,14 @@ public interface ChannelService {
 	 * @return
 	 */
 	public ChannelFlowMessage findByMessageId(Zone zone, String msgId);
+
+	/**
+	 * Fetch the TemporaryChannel which has the id provided.
+	 * 
+	 * @param findByTempChannelId
+	 * @return
+	 */
+	public TemporaryChannel findByTempChannelId(Long tempChannelId);
 
 	/**
 	 * Adds or updates the DestinationSession within a Channel.
@@ -162,7 +185,7 @@ public interface ChannelService {
 	/**
 	 * Updates the DestinationSession within a Channel.
 	 * 
-	 * This is called on the sending end by the relay in of a remote ChannelFlowTarget via
+	 * This is called on the sending end by the relay in of a remote channel DestinationSession via
 	 * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)}.
 	 * 
 	 * @param zone
@@ -179,6 +202,14 @@ public interface ChannelService {
 	 * @param channel
 	 */
 	public void delete(Channel channel);
+
+	/**
+	 * Delete a TemporaryChannel.
+	 * 
+	 * @param tempChannel
+	 *            the temporary channel
+	 */
+	public void delete(TemporaryChannel tempChannel);
 
 	public enum SubmitMessageOperationStatus {
 		FLOW_CONTROL_CLOSED,

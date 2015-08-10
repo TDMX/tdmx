@@ -64,6 +64,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
@@ -78,6 +79,8 @@ import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.session.ServerSessionFactory;
 import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
 import org.tdmx.server.session.ServerSessionManager;
+import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 
@@ -128,6 +131,7 @@ public class MRSImplUnitTest {
 	private Zone zone;
 	private org.tdmx.lib.zone.domain.Domain domain1;
 	private org.tdmx.lib.zone.domain.Domain domain2;
+	private org.tdmx.lib.zone.domain.ChannelAuthorization auth1;
 	private org.tdmx.lib.zone.domain.Service service1;
 	private org.tdmx.lib.zone.domain.Service service2;
 	private org.tdmx.lib.zone.domain.Address address1;
@@ -140,6 +144,10 @@ public class MRSImplUnitTest {
 	private PKIXCredential uc2;
 
 	private final String ZAC_SESSION_ID = "ZAC-1";
+	private final String DAC_SESSION_ID = "DAC-1";
+
+	private final DomainToApiMapper d2a = new DomainToApiMapper();
+	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 
 	@Before
 	public void doSetup() throws Exception {
@@ -160,6 +168,7 @@ public class MRSImplUnitTest {
 		zac = data.getZacs().get(0).getCredential();
 		domain1 = data.getDomains().get(0).getDomain();
 		domain2 = data.getDomains().get(1).getDomain();
+		auth1 = data.getDomains().get(0).getAuths().get(0);
 		service1 = data.getDomains().get(0).getServices().get(0).getService();
 		service2 = data.getDomains().get(1).getServices().get(0).getService();
 		dac1 = data.getDomains().get(0).getDacs().get(0).getCredential();
@@ -173,10 +182,10 @@ public class MRSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
 		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
 		seedAttributeMap.put(SeedAttribute.DomainId, domain1.getId());
-		seedAttributeMap.put(SeedAttribute.ServiceId, service1.getId());
-		seedAttributeMap.put(SeedAttribute.AddressId, address1.getId());
+		seedAttributeMap.put(SeedAttribute.ChannelId, auth1.getChannel().getId());
 
 		serverSessionManager.createSession(ZAC_SESSION_ID, zac.getPublicCert(), seedAttributeMap);
+
 	}
 
 	@After
@@ -204,20 +213,38 @@ public class MRSImplUnitTest {
 	}
 
 	@Test
-	public void testRelay_ChannelAuthorization_ReqSend() {
-		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
-
+	public void testRelay_ChannelAuthorization_ReqSendSetAtOriginRelayedToDest() {
+		// channel
 		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain2.getDomainName());
+		origin.setLocalname(address2.getLocalName());
+		channel.setOrigin(origin);
+
 		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
 		channel.setDestination(dest);
 
-		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(domain2.getDomainName());
-		origin.setLocalname(address2.getLocalName());
-		channel.setOrigin(origin);
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			TemporaryChannel tc = new TemporaryChannel(domain1, a2d.mapChannelOrigin(origin),
+					a2d.mapChannelDestination(dest));
+			channelService.create(tc);
+
+			Map<SeedAttribute, Long> firstAttributeMap = new HashMap<>();
+			firstAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+			firstAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+			firstAttributeMap.put(SeedAttribute.DomainId, domain1.getId());
+			firstAttributeMap.put(SeedAttribute.TemporaryChannelId, tc.getId());
+
+			serverSessionManager.createSession(DAC_SESSION_ID, dac2.getPublicCert(), firstAttributeMap);
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		authenticatedClientService.setAuthenticatedClient(dac2.getPublicCert());
 
 		Permission auth = new Permission();
 
@@ -230,7 +257,7 @@ public class MRSImplUnitTest {
 		// signer is origin, so reqSend at destination
 
 		Relay req = new Relay();
-		req.setSessionId(ZAC_SESSION_ID);
+		req.setSessionId(DAC_SESSION_ID);
 
 		req.setPermission(auth);
 
@@ -238,36 +265,63 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 
 		// check the CA exists and reqSend is set.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
 
-		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		casc.setDomainName(domain1.getDomainName());
-		casc.getDestination().setDomainName(domain1.getDomainName());
-		casc.getDestination().setLocalName(address1.getLocalName());
-		casc.getDestination().setServiceName(service1.getServiceName());
-		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
-		assertEquals(1, channels.size());
-		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-		assertNull(c.getAuthorization().getSendAuthorization());
-		assertNull(c.getAuthorization().getRecvAuthorization());
-		assertNull(c.getAuthorization().getReqRecvAuthorization());
-		assertNotNull(c.getAuthorization().getReqSendAuthorization());
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getDestination().setDomainName(domain1.getDomainName());
+			casc.getDestination().setLocalName(address1.getLocalName());
+			casc.getDestination().setServiceName(service1.getServiceName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+			assertNull(c.getAuthorization().getSendAuthorization());
+			assertNull(c.getAuthorization().getRecvAuthorization());
+			assertNull(c.getAuthorization().getReqRecvAuthorization());
+			assertNotNull(c.getAuthorization().getReqSendAuthorization());
+
+			// test that the temp channel is deleted
+			assertNull(channelService.findByTemporaryChannel(zone, domain1, a2d.mapChannelOrigin(origin),
+					a2d.mapChannelDestination(dest)));
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 	}
 
 	@Test
-	public void testRelay_ChannelAuthorization_ReqRecv() {
-		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
-
+	public void testRelay_ChannelAuthorization_ReqRecvSetAtDestRelayedToOrigin() {
 		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain2.getDomainName());
+		origin.setLocalname(address2.getLocalName());
+		channel.setOrigin(origin);
+
 		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
 		channel.setDestination(dest);
 
-		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(domain2.getDomainName());
-		origin.setLocalname(address2.getLocalName());
-		channel.setOrigin(origin);
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			TemporaryChannel tc = new TemporaryChannel(domain2, a2d.mapChannelOrigin(origin),
+					a2d.mapChannelDestination(dest));
+			channelService.create(tc);
+
+			Map<SeedAttribute, Long> firstAttributeMap = new HashMap<>();
+			firstAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
+			firstAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
+			firstAttributeMap.put(SeedAttribute.DomainId, domain2.getId());
+			firstAttributeMap.put(SeedAttribute.TemporaryChannelId, tc.getId());
+
+			serverSessionManager.createSession(DAC_SESSION_ID, dac1.getPublicCert(), firstAttributeMap);
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		authenticatedClientService.setAuthenticatedClient(dac1.getPublicCert());
 
 		Permission auth = new Permission();
 
@@ -280,7 +334,7 @@ public class MRSImplUnitTest {
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
-		req.setSessionId(ZAC_SESSION_ID);
+		req.setSessionId(DAC_SESSION_ID);
 
 		req.setPermission(auth);
 
@@ -289,43 +343,43 @@ public class MRSImplUnitTest {
 
 		// check CA exists and that the authorization is set as a reqRecv by someother.
 
-		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		casc.setDomainName(domain2.getDomainName());
-		casc.getOrigin().setDomainName(domain2.getDomainName());
-		casc.getOrigin().setLocalName(address2.getLocalName());
-		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
-		assertEquals(1, channels.size());
-		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-		assertNull(c.getAuthorization().getSendAuthorization());
-		assertNull(c.getAuthorization().getRecvAuthorization());
-		assertNotNull(c.getAuthorization().getReqRecvAuthorization());
-		assertNull(c.getAuthorization().getReqSendAuthorization());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain2.getDomainName());
+			casc.getOrigin().setDomainName(domain2.getDomainName());
+			casc.getOrigin().setLocalName(address2.getLocalName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+			assertNull(c.getAuthorization().getSendAuthorization());
+			assertNull(c.getAuthorization().getRecvAuthorization());
+			assertNotNull(c.getAuthorization().getReqRecvAuthorization());
+			assertNull(c.getAuthorization().getReqSendAuthorization());
+
+			// test that the temp channel is deleted
+			assertNull(channelService.findByTemporaryChannel(zone, domain2, a2d.mapChannelOrigin(origin),
+					a2d.mapChannelDestination(dest)));
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 	}
 
 	@Test
 	public void testRelay_ChannelDestination() {
 		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
-		// the setup creates authorized channels from domain-0 -> domain-1
-		Channel channel = new Channel();
-		ChannelDestination dest = new ChannelDestination();
-		dest.setDomain(domain2.getDomainName());
-		dest.setLocalname(address2.getLocalName());
-		dest.setServicename(service2.getServiceName());
-		channel.setDestination(dest);
-
-		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(domain1.getDomainName());
-		origin.setLocalname(address1.getLocalName());
-		channel.setOrigin(origin);
+		Channel channel = d2a.mapChannel(auth1.getChannel());
 
 		Destinationsession ds = new Destinationsession();
 		ds.setEncryptionContextId("id1");
 		ds.setScheme("scheme");
 		ds.setSessionKey(new byte[] { 1, 2, 3 });
 
-		SignatureUtils.createDestinationSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(),
-				dest.getServicename(), ds);
+		SignatureUtils.createDestinationSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel
+				.getDestination().getServicename(), ds);
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
@@ -336,13 +390,19 @@ public class MRSImplUnitTest {
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
 
-		// check CA exists and that the authorization is set as a reqRecv by someother.
-		ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		casc.setDomainName(domain1.getDomainName());
-		casc.getOrigin().setDomainName(domain1.getDomainName());
-		casc.getOrigin().setLocalName(address1.getLocalName());
-		List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
-		assertEquals(1, channels.size());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			// check CA exists and that the authorization is set as a reqRecv by someother.
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getOrigin().setDomainName(domain1.getDomainName());
+			casc.getOrigin().setLocalName(address1.getLocalName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 
 		// assert a second time relay of the same info is ok too.
 		req = new Relay();
@@ -353,16 +413,25 @@ public class MRSImplUnitTest {
 		response = mrs.relay(req);
 		assertSuccess(response);
 
-		// check CA exists and that the authorization is set as a reqRecv by someother.
-		casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-		casc.setDomainName(domain1.getDomainName());
-		casc.getOrigin().setDomainName(domain1.getDomainName());
-		casc.getOrigin().setLocalName(address1.getLocalName());
-		channels = channelService.search(zone, casc);
-		assertEquals(1, channels.size());
-		org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-		assertEquals(ds.getUsersignature().getSignaturevalue().getSignature(), c.getSession().getSignature().getValue());
-		// TODO check other ds values are set on the channel.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			// check CA exists and that the authorization is set as a reqRecv by someother.
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			// check CA exists and that the authorization is set as a reqRecv by someother.
+			casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getOrigin().setDomainName(domain1.getDomainName());
+			casc.getOrigin().setLocalName(address1.getLocalName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
+			assertEquals(ds.getUsersignature().getSignaturevalue().getSignature(), c.getSession().getSignature()
+					.getValue());
+			// TODO check other ds values are set on the channel.
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 
 	}
 

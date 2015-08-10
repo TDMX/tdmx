@@ -27,6 +27,7 @@ public interface ServerSessionFactory<E extends ServerSession> {
 		ZoneId,
 		DomainId,
 		ChannelId,
+		TemporaryChannelId,
 		ServiceId,
 		AddressId,
 	}

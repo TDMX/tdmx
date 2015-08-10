@@ -21,7 +21,6 @@ package org.tdmx.server.ws.mrs;
 import java.util.Map;
 
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.AbstractServerSessionFactory;
@@ -51,9 +50,14 @@ public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MR
 		try {
 			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
 			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
-			Channel c = fetchChannel(seedAttributes.get(SeedAttribute.ChannelId));
+			MRSServerSession mss = new MRSServerSession(az, z, d);
+			if (seedAttributes.containsKey(SeedAttribute.ChannelId)) {
+				mss.setChannel(fetchChannel(seedAttributes.get(SeedAttribute.ChannelId)));
+			}
+			if (seedAttributes.containsKey(SeedAttribute.TemporaryChannelId)) {
+				mss.setTemporaryChannel(fetchTemporaryChannel(seedAttributes.get(SeedAttribute.TemporaryChannelId)));
+			}
 
-			MRSServerSession mss = new MRSServerSession(az, z, d, c);
 			return mss;
 		} finally {
 			disassociateZoneDB();

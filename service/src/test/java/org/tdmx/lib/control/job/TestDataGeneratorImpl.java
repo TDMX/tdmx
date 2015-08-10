@@ -64,6 +64,8 @@ import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
 import org.tdmx.lib.zone.service.AddressService;
@@ -251,7 +253,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 					if (from.getDomain().getDomainName().equals(to.getDomain().getDomainName())) {
 						ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(
 								fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
-						channelService.createOrUpdate(sendRecvCa.getChannel());
+						channelService.create(sendRecvCa.getChannel());
 						fromDomain.getAuths().add(sendRecvCa);
 						sendChannel = sendRecvCa.getChannel();
 						recvChannel = sendRecvCa.getChannel();
@@ -261,10 +263,10 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 						ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(toDomain.getDomain(),
 								toDac.getCredential(), toDac.getAg(), co, cd);
 
-						channelService.createOrUpdate(sendCa.getChannel());
+						channelService.create(sendCa.getChannel());
 						fromDomain.getAuths().add(sendCa);
 						sendChannel = sendCa.getChannel();
-						channelService.createOrUpdate(recvCa.getChannel());
+						channelService.create(recvCa.getChannel());
 						toDomain.getAuths().add(recvCa);
 						recvChannel = recvCa.getChannel();
 					}
@@ -312,7 +314,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		try {
 
 			// delete FlowTargets, depends on AgentCredentials & Services
-			deleteFlowTargets(zone);
+			deleteDestinations(zone);
 
 			// delete Channels with their ChannelAuthorizations in ZoneDB
 			deleteChannels(zone);
@@ -325,6 +327,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 			// delete Services in ZoneDB
 			deleteServices(zone);
+
+			// delete TemporaryChannels depends on Domains
+			deleteTemporaryChannels(zone);
 
 			// delete Domains in ZoneDB
 			deleteDomains(zone);
@@ -415,7 +420,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 	}
 
-	private void deleteFlowTargets(Zone zone) {
+	private void deleteDestinations(Zone zone) {
 		boolean more = true;
 		while (more) {
 			DestinationSearchCriteria sc = new DestinationSearchCriteria(new PageSpecifier(0, 999));
@@ -440,6 +445,21 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				agentCredentialService.delete(ac);
 			}
 			if (agentcredentials.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void deleteTemporaryChannels(Zone zone) {
+		boolean more = true;
+		while (more) {
+			TemporaryChannelSearchCriteria sc = new TemporaryChannelSearchCriteria(new PageSpecifier(0, 999));
+
+			List<TemporaryChannel> channels = channelService.search(zone, sc);
+			for (TemporaryChannel c : channels) {
+				channelService.delete(c);
+			}
+			if (channels.isEmpty()) {
 				more = false;
 			}
 		}

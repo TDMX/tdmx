@@ -244,6 +244,16 @@ public class DomainToApiMapper {
 		return c;
 	}
 
+	public Channel mapChannel(org.tdmx.lib.zone.domain.TemporaryChannel channel) {
+		if (channel == null) {
+			return null;
+		}
+		Channel c = new Channel();
+		c.setDestination(mapChannelDestination(channel.getDestination()));
+		c.setOrigin(mapChannelOrigin(channel.getOrigin()));
+		return c;
+	}
+
 	public Channelauthorization mapChannelAuthorization(org.tdmx.lib.zone.domain.ChannelAuthorization ca) {
 		if (ca == null) {
 			return null;

@@ -295,7 +295,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				try {
 
 					// add the zone to the new partition.
-					channelService.createOrUpdate(newChannel);
+					channelService.create(newChannel);
 				} finally {
 					zonePartitionIdProvider.clearPartitionId();
 				}

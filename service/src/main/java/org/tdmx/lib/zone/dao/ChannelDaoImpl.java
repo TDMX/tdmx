@@ -72,6 +72,11 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
+	public void persist(TemporaryChannel value) {
+		em.persist(value);
+	}
+
+	@Override
 	public void delete(Channel value) {
 		em.remove(value);
 	}
@@ -92,8 +97,26 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
-	public Channel loadById(Long id) {
-		return new JPAQuery(em).from(channel).where(channel.id.eq(id)).uniqueResult(channel);
+	public void delete(TemporaryChannel value) {
+		em.remove(value);
+	}
+
+	@Override
+	public Channel loadById(Long id, boolean includeFlowQuota, boolean includeAuth) {
+		JPAQuery q = new JPAQuery(em).from(channel);
+		if (includeFlowQuota) {
+			q = q.innerJoin(channel.quota, flowQuota).fetch();
+		}
+		if (includeAuth) {
+			q = q.innerJoin(channel.authorization, channelAuthorization).fetch();
+		}
+		return q.where(channel.id.eq(id)).uniqueResult(channel);
+	}
+
+	@Override
+	public TemporaryChannel loadByTempId(Long tempChannelId) {
+		return new JPAQuery(em).from(temporaryChannel).where(temporaryChannel.id.eq(tempChannelId))
+				.uniqueResult(temporaryChannel);
 	}
 
 	@Override

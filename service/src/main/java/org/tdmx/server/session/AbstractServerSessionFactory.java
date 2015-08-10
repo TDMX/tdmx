@@ -25,6 +25,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.ChannelService;
@@ -89,8 +90,19 @@ public abstract class AbstractServerSessionFactory<E extends ServerSession> impl
 		return serviceId != null ? serviceService.findById(serviceId) : null;
 	}
 
+	/**
+	 * Fetch the Channel with the FlowQuota, so this can be locked directly changes in the channel messages without
+	 * re-fetching the Channel
+	 * 
+	 * @param channelId
+	 * @return
+	 */
 	protected Channel fetchChannel(Long channelId) {
-		return channelId != null ? channelService.findById(channelId) : null;
+		return channelId != null ? channelService.findById(channelId, true, false) : null;
+	}
+
+	protected TemporaryChannel fetchTemporaryChannel(Long tempChannelId) {
+		return tempChannelId != null ? channelService.findByTempChannelId(tempChannelId) : null;
 	}
 
 	// -------------------------------------------------------------------------

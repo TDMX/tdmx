@@ -32,6 +32,8 @@
 
     drop table MaxValueEntry if exists;
 
+    drop table TemporaryChannel if exists;
+
     drop table Service if exists;
 
     drop table Zone if exists;
@@ -279,6 +281,17 @@
         primary key (name)
     );
 
+    create table TemporaryChannel (
+        id bigint not null,
+        destDomain varchar(255) not null,
+        destAddress varchar(255) not null,
+        destService varchar(255) not null,
+        originDomain varchar(255) not null,
+        originAddress varchar(255) not null,
+        domain_id bigint not null,
+        primary key (id)
+    );
+
     create table Service (
         id bigint not null,
         serviceName varchar(255) not null,
@@ -351,6 +364,11 @@
 
     alter table Service 
         add constraint FKD97C5E95E7351234 
+        foreign key (domain_id) 
+        references Domain;
+
+    alter table TemporaryChannel 
+        add constraint FKDF0D4D92E7351234 
         foreign key (domain_id) 
         references Domain;
 

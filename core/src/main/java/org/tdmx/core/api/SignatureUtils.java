@@ -150,7 +150,7 @@ public class SignatureUtils {
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
 		SignatureValue sig = new SignatureValue();
-		sig.setTimestamp(CalendarUtils.getDate(signatureDate));
+		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
 		Administratorsignature signature = new Administratorsignature();
@@ -179,7 +179,7 @@ public class SignatureUtils {
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
 		SignatureValue sig = new SignatureValue();
-		sig.setTimestamp(CalendarUtils.getDate(signatureDate));
+		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
 		Administratorsignature signature = new Administratorsignature();
@@ -200,7 +200,7 @@ public class SignatureUtils {
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
 		SignatureValue sig = new SignatureValue();
-		sig.setTimestamp(CalendarUtils.getDate(signatureDate));
+		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
 		Usersignature signature = new Usersignature();

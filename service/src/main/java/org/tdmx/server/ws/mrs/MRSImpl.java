@@ -39,6 +39,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -130,15 +131,18 @@ public class MRSImpl implements MRS {
 		if (validator.checkEndpointPermission(auth, response) == null) {
 			return;
 		}
-		Channel sessionChannel = session.getChannel();
 
-		org.tdmx.core.api.v01.msg.Channel channel = null; // TODO map from "session"
+		org.tdmx.core.api.v01.msg.Channel channel = null;
+
+		Channel sessionChannel = session.getChannel();
 		if (sessionChannel != null) {
 			channel = d2a.mapChannel(sessionChannel);
-		} else {
-			// temporary channel concept SCS->MRS
-
 		}
+		TemporaryChannel tempChannel = session.getTemporaryChannel();
+		if (tempChannel != null) {
+			channel = d2a.mapChannel(tempChannel);
+		}
+
 		if (!SignatureUtils.checkEndpointPermissionSignature(channel, auth, true)) {
 			setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 			return;
@@ -178,16 +182,22 @@ public class MRSImpl implements MRS {
 		 * if (accountZone == null) { setError(ErrorCode.ZoneNotFound, response); return; }
 		 */
 		Zone zone = session.getZone();
-		Long channelId = sessionChannel.getId(); // FIXME
+		if (tempChannel != null && sessionChannel == null) {
+			sessionChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(), tempChannel.getDestination());
+			channelService.create(sessionChannel);
+			channelService.delete(tempChannel);
+			session.setTemporaryChannel(null);
+			session.setChannel(sessionChannel);
+		}
 
 		// using the ZoneDB specified in the AccountZone's partitionID, find the Zone and then Domain
 		// and then call ChannelService#relayChannelAuthorization
-		channelService.relayAuthorization(zone, channelId, otherPerm);
+		channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
 
 		response.setSuccess(true);
 	}
 
-	// handle the channel destinationsession relayed inbound.
+	// handle the channel destination session relayed inbound.
 	private void processChannelDestinationSession(Destinationsession ds, RelayResponse response) {
 		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 
@@ -195,9 +205,10 @@ public class MRSImpl implements MRS {
 		if (validator.checkDestinationsession(ds, response) == null) {
 			return;
 		}
-		Channel sessionChannel = session.getChannel();
 
+		Channel sessionChannel = session.getChannel();
 		org.tdmx.core.api.v01.msg.Channel channel = d2a.mapChannel(sessionChannel);
+
 		if (!SignatureUtils.checkDestinationSessionSignature(channel.getDestination().getServicename(), ds)) {
 			setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return;

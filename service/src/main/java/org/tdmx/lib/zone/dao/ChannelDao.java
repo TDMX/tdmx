@@ -40,17 +40,23 @@ public interface ChannelDao {
 
 	public void persist(Channel value);
 
+	public void persist(TemporaryChannel value);
+
 	public Channel merge(Channel value);
 
 	public void persist(ChannelFlowMessage value);
 
 	public void delete(Channel value);
 
+	public void delete(TemporaryChannel value);
+
 	public void delete(ChannelFlowMessage value);
 
 	public FlowQuota lock(Long quotaId);
 
-	public Channel loadById(Long id);
+	public Channel loadById(Long id, boolean includeFlowQuota, boolean includeAuth);
+
+	public TemporaryChannel loadByTempId(Long tempChannelId);
 
 	/**
 	 * Fetch the ChannelFlowMessage ( no fetch plan ) by messageId.
