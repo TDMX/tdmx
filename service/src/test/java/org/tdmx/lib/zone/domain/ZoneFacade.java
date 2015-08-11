@@ -142,6 +142,8 @@ public class ZoneFacade {
 		c.setSignature(signature);
 
 		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+
+		channel.getQuota().updateAuthorizationInfo();
 		return c;
 	}
 
@@ -182,6 +184,8 @@ public class ZoneFacade {
 		c.setSignature(signature);
 
 		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+
+		channel.getQuota().updateAuthorizationInfo();
 		return c;
 	}
 
@@ -220,6 +224,8 @@ public class ZoneFacade {
 		c.setSignature(signature);
 
 		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+
+		channel.getQuota().updateAuthorizationInfo();
 		return c;
 	}
 

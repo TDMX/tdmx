@@ -160,10 +160,10 @@ public class Channel implements Serializable {
 	}
 
 	public boolean isOpen() {
-		return authorization.getSendAuthorization() != null
-				&& EndpointPermissionGrant.ALLOW == authorization.getSendAuthorization().getGrant()
-				&& authorization.getRecvAuthorization() != null
-				&& EndpointPermissionGrant.ALLOW == authorization.getRecvAuthorization().getGrant();
+		return (authorization.getSendAuthorization() != null && EndpointPermissionGrant.ALLOW == authorization
+				.getSendAuthorization().getGrant())
+				|| (authorization.getRecvAuthorization() != null && EndpointPermissionGrant.ALLOW == authorization
+						.getRecvAuthorization().getGrant());
 	}
 
 	@Override

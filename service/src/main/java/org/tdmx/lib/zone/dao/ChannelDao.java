@@ -68,7 +68,7 @@ public interface ChannelDao {
 	public ChannelFlowMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId);
 
 	/**
-	 * Search for ChannelAuthorizations. FetchPlan includes Channel and Domain.
+	 * Search for Channels. FetchPlan includes ChannelAuthorizations, FlowQuota and Domain.
 	 * 
 	 * @param zone
 	 * @param criteria
@@ -77,7 +77,7 @@ public interface ChannelDao {
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
 	/**
-	 * Search for Channels. No FetchPlan. //TODO FetchPlan includes ChannelAuthorization, Domain.
+	 * Search for Channels. No FetchPlan.
 	 * 
 	 * @param zone
 	 * @param criteria

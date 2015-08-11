@@ -26,7 +26,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
  * @author Peter Klauser
  * 
  */
-public abstract class ChannelSearchCriteria {
+public class ChannelSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

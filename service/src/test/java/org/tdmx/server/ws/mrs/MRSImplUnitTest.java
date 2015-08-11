@@ -131,7 +131,7 @@ public class MRSImplUnitTest {
 	private Zone zone;
 	private org.tdmx.lib.zone.domain.Domain domain1;
 	private org.tdmx.lib.zone.domain.Domain domain2;
-	private org.tdmx.lib.zone.domain.ChannelAuthorization auth1;
+	private org.tdmx.lib.zone.domain.ChannelAuthorization recvAuth2;
 	private org.tdmx.lib.zone.domain.Service service1;
 	private org.tdmx.lib.zone.domain.Service service2;
 	private org.tdmx.lib.zone.domain.Address address1;
@@ -168,21 +168,21 @@ public class MRSImplUnitTest {
 		zac = data.getZacs().get(0).getCredential();
 		domain1 = data.getDomains().get(0).getDomain();
 		domain2 = data.getDomains().get(1).getDomain();
-		auth1 = data.getDomains().get(0).getAuths().get(0);
 		service1 = data.getDomains().get(0).getServices().get(0).getService();
 		service2 = data.getDomains().get(1).getServices().get(0).getService();
 		dac1 = data.getDomains().get(0).getDacs().get(0).getCredential();
 		dac2 = data.getDomains().get(1).getDacs().get(0).getCredential();
 		address1 = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		address2 = data.getDomains().get(1).getAddresses().get(0).getAddress();
+		recvAuth2 = data.getDomains().get(1).getAuths().get(0);
 		uc1 = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 		uc2 = data.getDomains().get(1).getAddresses().get(0).getUcs().get(0).getCredential();
 
 		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
 		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
 		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		seedAttributeMap.put(SeedAttribute.DomainId, domain1.getId());
-		seedAttributeMap.put(SeedAttribute.ChannelId, auth1.getChannel().getId());
+		seedAttributeMap.put(SeedAttribute.DomainId, domain2.getId());
+		seedAttributeMap.put(SeedAttribute.ChannelId, recvAuth2.getChannel().getId());
 
 		serverSessionManager.createSession(ZAC_SESSION_ID, zac.getPublicCert(), seedAttributeMap);
 
@@ -371,7 +371,11 @@ public class MRSImplUnitTest {
 	public void testRelay_ChannelDestination() {
 		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
-		Channel channel = d2a.mapChannel(auth1.getChannel());
+		Channel channel = d2a.mapChannel(recvAuth2.getChannel());
+
+		assertEquals(channel.getDestination().getDomain(), domain2.getDomainName());
+		assertEquals(channel.getDestination().getLocalname(), address2.getLocalName());
+		assertEquals(channel.getDestination().getServicename(), service2.getServiceName());
 
 		Destinationsession ds = new Destinationsession();
 		ds.setEncryptionContextId("id1");
@@ -395,7 +399,7 @@ public class MRSImplUnitTest {
 
 			// check CA exists and that the authorization is set as a reqRecv by someother.
 			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-			casc.setDomainName(domain1.getDomainName());
+			casc.setDomainName(domain2.getDomainName());
 			casc.getOrigin().setDomainName(domain1.getDomainName());
 			casc.getOrigin().setLocalName(address1.getLocalName());
 			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
@@ -420,7 +424,7 @@ public class MRSImplUnitTest {
 			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 			// check CA exists and that the authorization is set as a reqRecv by someother.
 			casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-			casc.setDomainName(domain1.getDomainName());
+			casc.setDomainName(domain2.getDomainName());
 			casc.getOrigin().setDomainName(domain1.getDomainName());
 			casc.getOrigin().setLocalName(address1.getLocalName());
 			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
@@ -438,6 +442,12 @@ public class MRSImplUnitTest {
 	@Test
 	public void testRelay_Message() throws Exception {
 		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
+
+		Channel channel = d2a.mapChannel(recvAuth2.getChannel());
+
+		assertEquals(channel.getDestination().getDomain(), domain2.getDomainName());
+		assertEquals(channel.getDestination().getLocalname(), address2.getLocalName());
+		assertEquals(channel.getDestination().getServicename(), service2.getServiceName());
 
 		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName());
 

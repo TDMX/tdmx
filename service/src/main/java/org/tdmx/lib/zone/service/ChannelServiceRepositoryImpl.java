@@ -36,12 +36,13 @@ import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelAuthorizationStatus;
 import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
-import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
@@ -123,10 +124,20 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 					return resultHolder;
 				}
 			}
+			if (auth.getUnsentBuffer() == null) {
+				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_MISSING;
+				return resultHolder;
+			}
+			if (auth.getUndeliveredBuffer() == null) {
+				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING;
+				return resultHolder;
+			}
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+			existingCA.setUnsentBuffer(auth.getUnsentBuffer());
+			existingCA.setUndeliveredBuffer(auth.getUndeliveredBuffer());
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
 		} else if (existingChannel.isSend()) {
@@ -145,6 +156,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
+			if (auth.getUnsentBuffer() == null) {
+				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_MISSING;
+				return resultHolder;
+			}
+			if (auth.getUndeliveredBuffer() != null) {
+				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_PROVIDED;
+				return resultHolder;
+			}
 			// we are sender and there shall be no pending send authorization
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(null);
@@ -158,6 +177,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
+			existingCA.setUnsentBuffer(auth.getUnsentBuffer());
 		} else {
 			// 3) recvAuth(+confirming requested sendAuth)
 			// - no reqRecvAuth allowed in existing ca.
@@ -185,6 +205,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
+			if (auth.getUndeliveredBuffer() == null) {
+				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING;
+				return resultHolder;
+			}
+			if (auth.getUnsentBuffer() != null) {
+				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_PROVIDED;
+				return resultHolder;
+			}
 			existingCA.setReqSendAuthorization(null);
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
@@ -197,11 +225,23 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
+			existingCA.setUndeliveredBuffer(auth.getUndeliveredBuffer());
 		}
 
-		// if the channel is "OPEN" and we are a receiving channel, then initialize any ChannelFlowTargets from the
-		// existing FlowTargets of receivers.
-		handleChannelOpenClose(zone, existingChannel);
+		// replicate the CA data into the flowQuota
+		existingChannel.getQuota().updateAuthorizationInfo();
+
+		// if the channel is "OPEN" and we are a receiving channel, then initialize any ChannelDestinationSessions from
+		// any existing Destination.
+		if (existingChannel.isOpen() && existingChannel.isRecv()) {
+			Destination d = destinationDao.loadByChannelDestination(zone, existingChannel.getDestination());
+			if (d != null) {
+				setChannelDestinationSession(zone, existingChannel, d.getDestinationSession());
+			}
+		} else if (!existingChannel.isOpen()) {
+			// if the channel is "CLOSED" we don't allow any DestinationSession
+			existingChannel.setSession(null);
+		}
 
 		// persist the new ca
 		if (newChannel) {
@@ -219,11 +259,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		Channel existingChannel = findById(channelId, false, true);
 		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
 		ChannelAuthorization existingCA = existingChannel.getAuthorization();
-		if (existingCA == null) {
-			existingCA = new ChannelAuthorization(existingChannel);
-			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
-			existingChannel.setAuthorization(existingCA);
-		}
 		if (existingChannel.isSend()) {
 			// we are sender and we got relayed in a requested recv authorization
 			existingCA.setReqRecvAuthorization(otherPerm);
@@ -233,6 +268,34 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(otherPerm);
 		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public Channel relayInitialAuthorization(Zone zone, Long tempChannelId, EndpointPermission otherPerm) {
+		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
+		TemporaryChannel tempChannel = findByTempChannelId(tempChannelId);
+
+		Channel newChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(), tempChannel.getDestination());
+		ChannelAuthorization newCA = new ChannelAuthorization(newChannel);
+		newCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
+
+		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
+		if (newChannel.isSend()) {
+			// we are sender and we got relayed in a requested recv authorization
+			newCA.setReqRecvAuthorization(otherPerm);
+			newCA.setReqSendAuthorization(null);
+		} else {
+			// we are receiver and we received a requested send authorization
+			newCA.setReqRecvAuthorization(null);
+			newCA.setReqSendAuthorization(otherPerm);
+		}
+		// update the denormalized CA data in flowquota
+		newChannel.getQuota().updateAuthorizationInfo();
+
+		channelDao.persist(newChannel);
+		channelDao.delete(tempChannel);
+		return newChannel;
 	}
 
 	@Override
@@ -291,6 +354,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria) {
+		return getChannelDao().search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
@@ -312,19 +381,23 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public SubmitMessageResultHolder submitMessage(Zone zone, Channel channel, MessageDescriptor md) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
-		// TODO caller must have loaded Channel.ChannelAuthorization prior, or we move it to Channel.
+		// TODO MOS submit messge - check sender cert matches origin of channel sending on.
 
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
+		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
+			// we are not currently authorized to send out.
+			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			return result;
+		}
 		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
-			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
 			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadLength())));
-		if (quota.getUnsentBytes().subtract(channel.getAuthorization().getUnsentBuffer().getHighMarkBytes())
-				.compareTo(BigInteger.ZERO) > 0) {
+		if (quota.getUnsentBytes().subtract(quota.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
 		}
@@ -342,6 +415,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
+		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
+			// we are not currently authorized to receive
+			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
+			return result;
+		}
 		if (FlowControlStatus.CLOSED == quota.getReceiverStatus()) {
 			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
 			// changes this status eventually
@@ -350,7 +428,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadLength())));
-		if (quota.getUndeliveredBytes().subtract(channel.getAuthorization().getUndeliveredBuffer().getHighMarkBytes())
+		if (quota.getUndeliveredBytes().subtract(quota.getUndeliveredBuffer().getHighMarkBytes())
 				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close relay
 			quota.setReceiverStatus(FlowControlStatus.CLOSED);
@@ -467,27 +545,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void handleChannelOpenClose(Zone zone, Channel channel) {
-		if (channel.isOpen() && channel.isRecv()) {
-			DestinationSearchCriteria ftsc = new DestinationSearchCriteria(new PageSpecifier(0, 100)); // TODO global
-																										// hard
-																										// limit
-			ftsc.getDestination().setLocalName(channel.getDestination().getLocalName());
-			ftsc.getDestination().setDomainName(channel.getDestination().getDomainName());
-			ftsc.getDestination().setServiceName(channel.getDestination().getServiceName());
-			// suspended agents don't have FlowTargets, nor ChannelFlowTargets, so we don't need to restrict here on
-			// "active" agents
-
-			List<Destination> destinations = destinationDao.search(zone, ftsc);
-			for (Destination d : destinations) {
-				setChannelDestinationSession(zone, channel, d.getDestinationSession());
-			}
-		} else if (!channel.isOpen()) {
-			// if the channel is "CLOSED" we don't allow any DestinationSession
-			channel.setSession(null);
-		}
-	}
 
 	private void setChannelDestinationSession(Zone zone, Channel channel, DestinationSession destinationSession) {
 		channel.setSession(destinationSession);

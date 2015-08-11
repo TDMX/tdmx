@@ -29,6 +29,7 @@ import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
@@ -49,10 +50,14 @@ public interface ChannelService {
 		SENDER_AUTHORIZATION_CONFIRMATION_MISSING,
 		SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH,
 		SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED,
+		SENDER_UNSENT_BUFFER_LIMIT_MISSING,
+		SENDER_UNSENT_BUFFER_LIMIT_PROVIDED,
 		RECEIVER_SERVICE_NOT_FOUND, // allowing reception only when service exists.
 		RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING,
 		RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED,
-		RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH
+		RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH,
+		RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING,
+		RECEIVER_UNDELIVERED_BUFFER_LIMIT_PROVIDED,
 	}
 
 	public class SetAuthorizationResultHolder {
@@ -103,8 +108,6 @@ public interface ChannelService {
 	/**
 	 * Relayed in EndpointPermission.
 	 * 
-	 * The Channel must be created if not existing before hand. FIXME
-	 * 
 	 * The EndpointPermission relayed in is set as either the reqSendPermission or reqRecvPermission, which must be
 	 * later confirmed by the domain administrator using
 	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
@@ -114,6 +117,19 @@ public interface ChannelService {
 	 * @param otherPerm
 	 */
 	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
+
+	/**
+	 * Initial relayed in EndpointPermission.
+	 * 
+	 * Creates the Channel, deletes the TemporaryChannel, and the EndpointPermission relayed in is set as either the
+	 * reqSendPermission or reqRecvPermission, which must be later confirmed by the domain administrator using
+	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
+	 * 
+	 * @param zone
+	 * @param tempChannelId
+	 * @param otherPerm
+	 */
+	public Channel relayInitialAuthorization(Zone zone, Long tempChannelId, EndpointPermission otherPerm);
 
 	public void create(Channel channel);
 
@@ -144,6 +160,8 @@ public interface ChannelService {
 	 * @return
 	 */
 	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth);
+
+	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
 
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
@@ -213,6 +231,7 @@ public interface ChannelService {
 
 	public enum SubmitMessageOperationStatus {
 		FLOW_CONTROL_CLOSED,
+		CHANNEL_CLOSED,
 	}
 
 	public class SubmitMessageResultHolder {

@@ -225,19 +225,19 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(domain.eq(criteria.getDomain()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
-			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+			where = where.and(temporaryChannel.origin.localName.eq(criteria.getOrigin().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
-			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+			where = where.and(temporaryChannel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
+			where = where.and(temporaryChannel.destination.localName.eq(criteria.getDestination().getLocalName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
+			where = where.and(temporaryChannel.destination.domainName.eq(criteria.getDestination().getDomainName()));
 		}
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
+			where = where.and(temporaryChannel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria

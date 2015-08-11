@@ -21,7 +21,10 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 import java.math.BigInteger;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -75,6 +78,20 @@ public class FlowQuota implements Serializable {
 	@Column(nullable = false)
 	private BigInteger undeliveredBytes;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = ChannelAuthorizationStatus.MAX_AUTH_STATUS_LEN, nullable = false)
+	private ChannelAuthorizationStatus authorizationStatus;
+
+	@Embedded
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh")),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow")) })
+	private FlowLimit unsentBuffer;
+
+	@Embedded
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh")),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow")) })
+	private FlowLimit undeliveredBuffer;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -88,6 +105,7 @@ public class FlowQuota implements Serializable {
 		setUnsentBytes(BigInteger.ZERO);
 		setSenderStatus(FlowControlStatus.OPEN);
 		setReceiverStatus(FlowControlStatus.OPEN);
+		updateAuthorizationInfo(); // not usesfull here since there is no CA defined yet.
 	}
 
 	public FlowQuota(Channel channel, FlowQuota other) {
@@ -96,21 +114,39 @@ public class FlowQuota implements Serializable {
 		setUnsentBytes(other.getUnsentBytes());
 		setSenderStatus(other.getSenderStatus());
 		setReceiverStatus(other.getReceiverStatus());
+		setAuthorizationStatus(other.getAuthorizationStatus());
+		setUndeliveredBuffer(other.getUndeliveredBuffer());
+		setUnsentBuffer(other.getUnsentBuffer());
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Update the FlowQuota's denormalized data regarding the authorization state and flow control limits.
+	 */
+	public void updateAuthorizationInfo() {
+		if (channel != null && channel.getAuthorization() != null) {
+			setAuthorizationStatus(channel.isOpen() ? ChannelAuthorizationStatus.OPEN
+					: ChannelAuthorizationStatus.CLOSED);
+			setUndeliveredBuffer(channel.getAuthorization().getUndeliveredBuffer());
+			setUnsentBuffer(channel.getAuthorization().getUnsentBuffer());
+		}
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("FlowQuota [id=");
 		builder.append(id);
-		builder.append(", unsentBytes=").append(unsentBytes);
-		builder.append(", undeliveredBytes=").append(undeliveredBytes);
 		builder.append(", senderStatus=").append(senderStatus);
 		builder.append(", receiverStatus=").append(receiverStatus);
+		builder.append(", unsentBytes=").append(unsentBytes);
+		builder.append(", undeliveredBytes=").append(undeliveredBytes);
+		builder.append(", authorizationStatus=").append(authorizationStatus);
+		builder.append(", unsentBuffer=").append(unsentBuffer);
+		builder.append(", undeliveredBuffer=").append(undeliveredBuffer);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -169,6 +205,30 @@ public class FlowQuota implements Serializable {
 
 	public void setReceiverStatus(FlowControlStatus receiverStatus) {
 		this.receiverStatus = receiverStatus;
+	}
+
+	public ChannelAuthorizationStatus getAuthorizationStatus() {
+		return authorizationStatus;
+	}
+
+	public void setAuthorizationStatus(ChannelAuthorizationStatus authorizationStatus) {
+		this.authorizationStatus = authorizationStatus;
+	}
+
+	public FlowLimit getUnsentBuffer() {
+		return unsentBuffer;
+	}
+
+	public void setUnsentBuffer(FlowLimit unsentBuffer) {
+		this.unsentBuffer = unsentBuffer;
+	}
+
+	public FlowLimit getUndeliveredBuffer() {
+		return undeliveredBuffer;
+	}
+
+	public void setUndeliveredBuffer(FlowLimit undeliveredBuffer) {
+		this.undeliveredBuffer = undeliveredBuffer;
 	}
 
 }

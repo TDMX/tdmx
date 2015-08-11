@@ -29,7 +29,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
@@ -77,6 +79,29 @@ public class DestinationDaoImpl implements DestinationDao {
 	@Override
 	public Destination loadById(Long id) {
 		return new JPAQuery(em).from(destination).where(destination.id.eq(id)).uniqueResult(destination);
+	}
+
+	@Override
+	public Destination loadByChannelDestination(Zone zone, ChannelDestination dest) {
+		if (dest == null) {
+			throw new IllegalArgumentException("missing dest");
+		}
+		if (!StringUtils.hasText(dest.getLocalName())) {
+			throw new IllegalArgumentException("missing address");
+		}
+		if (!StringUtils.hasText(dest.getServiceName())) {
+			throw new IllegalArgumentException("missing service");
+		}
+		if (!StringUtils.hasText(dest.getDomainName())) {
+			throw new IllegalArgumentException("missing domain");
+		}
+		DestinationSearchCriteria ftsc = new DestinationSearchCriteria(new PageSpecifier(0, 1));
+		ftsc.getDestination().setLocalName(dest.getLocalName());
+		ftsc.getDestination().setDomainName(dest.getDomainName());
+		ftsc.getDestination().setServiceName(dest.getServiceName());
+
+		List<Destination> destinations = search(zone, ftsc);
+		return destinations.isEmpty() ? null : destinations.get(0);
 	}
 
 	@Override

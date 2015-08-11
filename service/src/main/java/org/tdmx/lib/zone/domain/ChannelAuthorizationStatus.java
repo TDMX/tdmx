@@ -16,36 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.zone.dao;
+package org.tdmx.lib.zone.domain;
 
-import java.util.List;
+public enum ChannelAuthorizationStatus {
 
-import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.Destination;
-import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
-import org.tdmx.lib.zone.domain.Service;
-import org.tdmx.lib.zone.domain.Zone;
+	OPEN,
+	CLOSED, ;
 
-/**
- * DAO for the Destination Entity.
- * 
- * @author Peter
- * 
- */
-public interface DestinationDao {
-
-	public void persist(Destination value);
-
-	public void delete(Destination value);
-
-	public Destination merge(Destination value);
-
-	public Destination loadById(Long id);
-
-	public Destination loadByDestination(Address address, Service service);
-
-	public Destination loadByChannelDestination(Zone zone, ChannelDestination dest);
-
-	public List<Destination> search(Zone zone, DestinationSearchCriteria criteria);
+	public static final int MAX_AUTH_STATUS_LEN = 8;
 }

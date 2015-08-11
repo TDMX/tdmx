@@ -64,8 +64,8 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -232,7 +232,10 @@ public class MOSImpl implements MOS {
 		// create originating ChannelFlowMessage
 		Zone zone = session.getZone();
 
-		ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		// TODO consider caching the last used Channel in the session to avoid this search if always sending to the same
+		// dest.
+
+		ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(0, 1));
 		sc.setDomainName(authorizedUser.getTdmxDomainName());
 		// TODO header channel origin matches the srcUser
 		sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
@@ -242,19 +245,14 @@ public class MOSImpl implements MOS {
 		sc.getDestination().setLocalName(header.getChannel().getDestination().getLocalname());
 		sc.getDestination().setServiceName(header.getChannel().getDestination().getServicename());
 
-		List<Channel> flows = channelService.search(zone, sc);
-		if (flows.isEmpty()) {
+		List<Channel> channels = channelService.search(zone, sc);
+		if (channels.isEmpty()) {
 			setError(ErrorCode.ChannelNotFound, response);
 			return response;
 		}
-		Channel flow = flows.get(0);
-		// check the flow is not already throttled
-		if (FlowControlStatus.OPEN != flow.getQuota().getSenderStatus()) {
-			setError(ErrorCode.SubmitFlowControlClosed, response);
-			return response;
-		}
+		Channel channel = channels.get(0);
 
-		SubmitMessageResultHolder result = channelService.submitMessage(zone, flow, md);
+		SubmitMessageResultHolder result = channelService.submitMessage(zone, channel, md);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
 			return response;
@@ -411,6 +409,8 @@ public class MOSImpl implements MOS {
 		switch (status) {
 		case FLOW_CONTROL_CLOSED:
 			return ErrorCode.SubmitFlowControlClosed;
+		case CHANNEL_CLOSED:
+			return ErrorCode.SubmitChannelClosed;
 		default:
 			return null;
 		}

@@ -161,38 +161,15 @@ public class MRSImpl implements MRS {
 			return;
 		}
 
-		// we need to find the local Domain to be able then to set/process the CA on it.
-		/*
-		 * String remoteDomain = dac.getDomainName(); String localDomain = null; if
-		 * (auth.getChannel().getDestination().getDomain().equals(remoteDomain)) { // if the signer's domain matches the
-		 * channel destination's domain then this is a reqRecvAuthorization at // the // origin, where we need to lookup
-		 * the zone and domain of the origin, given the domain of the origin. localDomain =
-		 * auth.getChannel().getOrigin().getDomain(); } else { // if the signer's domain matches the channel origin's
-		 * domain then the CA is a reqSendAuthorization at the // destination, where we need to lookup the zone of the
-		 * destination, but we only have the domain of the // destination. localDomain =
-		 * auth.getChannel().getDestination().getDomain(); }
-		 * 
-		 * // TODO the ROOT CA of the signing party needs to be trusted in DNS! We don't want to allow someone just to
-		 * fake // channel authorizations and inject them via the relay without also spoofing DNS too!
-		 * 
-		 * // TODO lookup the origin or destination domain in DNS and retrieve their zone root information AccountZone
-		 * accountZone = null; if (accountZone == null) { // FIXME! temporary fallback on recursive lookup of domain to
-		 * domain parent until matches with a zone. accountZone = lookupAccountZoneByDomain(localDomain); }
-		 * 
-		 * if (accountZone == null) { setError(ErrorCode.ZoneNotFound, response); return; }
-		 */
 		Zone zone = session.getZone();
-		if (tempChannel != null && sessionChannel == null) {
-			sessionChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(), tempChannel.getDestination());
-			channelService.create(sessionChannel);
-			channelService.delete(tempChannel);
+		if (sessionChannel != null) {
+			channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
+		} else if (tempChannel != null) {
+			// create a new Channel and swap the tempChannel for newChannel
+			Channel newChannel = channelService.relayInitialAuthorization(zone, tempChannel.getId(), otherPerm);
 			session.setTemporaryChannel(null);
-			session.setChannel(sessionChannel);
+			session.setChannel(newChannel);
 		}
-
-		// using the ZoneDB specified in the AccountZone's partitionID, find the Zone and then Domain
-		// and then call ChannelService#relayChannelAuthorization
-		channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
 
 		response.setSuccess(true);
 	}
@@ -302,6 +279,8 @@ public class MRSImpl implements MRS {
 		switch (status) {
 		case FLOW_CONTROL_CLOSED:
 			return ErrorCode.ReceiveFlowControlClosed;
+		case CHANNEL_CLOSED:
+			return ErrorCode.ReceiveChannelClosed;
 		default:
 			return null;
 		}
