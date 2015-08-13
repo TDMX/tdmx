@@ -41,7 +41,6 @@ import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
@@ -350,12 +349,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		} else {
 			log.warn("Unable to find TemporaryChannel to delete with id " + tempChannel.getId());
 		}
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
 	}
 
 	@Override

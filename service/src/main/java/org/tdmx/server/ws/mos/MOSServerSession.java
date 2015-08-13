@@ -20,6 +20,7 @@ package org.tdmx.server.ws.mos;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.session.ServerSession;
@@ -39,6 +40,7 @@ public class MOSServerSession extends ServerSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final String LAST_CHANNEL_USED = "LAST_CHANNEL_USED";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -69,6 +71,14 @@ public class MOSServerSession extends ServerSession {
 
 	public Address getOriginatingAddress() {
 		return getAttribute(ORIGIN_ADDRESS);
+	}
+
+	public Channel getLastChannelUsed() {
+		return getAttribute(LAST_CHANNEL_USED);
+	}
+
+	public void setLastChannelUsed(Channel channel) {
+		setAttribute(LAST_CHANNEL_USED, channel);
 	}
 
 	// -------------------------------------------------------------------------

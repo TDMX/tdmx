@@ -20,40 +20,37 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-
 /**
- * An ChannelOrigin describes the address at the originating end of a Channel.
+ * An ChannelName describes a Channel.
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class ChannelOrigin implements Serializable {
+public class ChannelName implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_URL_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
+	private static final long serialVersionUID = 1L;
 
-	@Column(length = Address.MAX_NAME_LEN, nullable = false)
-	private String localName;
+	// -------------------------------------------------------------------------
+	// HEADER FIELDS
+	// -------------------------------------------------------------------------
 
-	@Column(length = Domain.MAX_NAME_LEN, nullable = false)
-	private String domainName;
+	private final ChannelOrigin origin;
+	private final ChannelDestination destination;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ChannelOrigin() {
-
+	public ChannelName(ChannelOrigin origin, ChannelDestination destination) {
+		this.origin = origin;
+		this.destination = destination;
 	}
 
 	// -------------------------------------------------------------------------
@@ -63,9 +60,9 @@ public class ChannelOrigin implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelOrigin [");
-		builder.append(" localName=").append(localName);
-		builder.append(", domainName=").append(domainName);
+		builder.append("ChannelDescriptor [");
+		builder.append(" origin=").append(origin);
+		builder.append(" destination=").append(destination);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -74,8 +71,8 @@ public class ChannelOrigin implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((domainName == null) ? 0 : domainName.hashCode());
-		result = prime * result + ((localName == null) ? 0 : localName.hashCode());
+		result = prime * result + ((destination == null) ? 0 : destination.hashCode());
+		result = prime * result + ((origin == null) ? 0 : origin.hashCode());
 		return result;
 	}
 
@@ -87,26 +84,30 @@ public class ChannelOrigin implements Serializable {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof ChannelOrigin)) {
+		if (!(obj instanceof ChannelName)) {
 			return false;
 		}
-		ChannelOrigin other = (ChannelOrigin) obj;
-		if (domainName == null) {
-			if (other.domainName != null) {
+		ChannelName other = (ChannelName) obj;
+		if (destination == null) {
+			if (other.destination != null) {
 				return false;
 			}
-		} else if (!domainName.equals(other.domainName)) {
+		} else if (!destination.equals(other.destination)) {
 			return false;
 		}
-		if (localName == null) {
-			if (other.localName != null) {
+		if (origin == null) {
+			if (other.origin != null) {
 				return false;
 			}
-		} else if (!localName.equals(other.localName)) {
+		} else if (!origin.equals(other.origin)) {
 			return false;
 		}
 		return true;
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
@@ -116,20 +117,12 @@ public class ChannelOrigin implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getLocalName() {
-		return localName;
+	public ChannelOrigin getOrigin() {
+		return origin;
 	}
 
-	public void setLocalName(String localName) {
-		this.localName = localName;
-	}
-
-	public String getDomainName() {
-		return domainName;
-	}
-
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public ChannelDestination getDestination() {
+		return destination;
 	}
 
 }

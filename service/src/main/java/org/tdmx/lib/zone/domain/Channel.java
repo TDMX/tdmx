@@ -151,6 +151,10 @@ public class Channel implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public ChannelName getChannelName() {
+		return new ChannelName(origin, destination);
+	}
+
 	public boolean isSend() {
 		return domain.getDomainName().equals(origin.getDomainName());
 	}

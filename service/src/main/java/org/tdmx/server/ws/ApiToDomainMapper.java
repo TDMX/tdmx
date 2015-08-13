@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.core.api.v01.common.Page;
+import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Msg;
@@ -33,6 +34,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelName;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSession;
@@ -66,6 +68,14 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		return new PageSpecifier(p.getNumber(), p.getSize());
+	}
+
+	public ChannelName mapChannelName(Channel c) {
+		if (c == null) {
+			return null;
+		}
+		ChannelName cn = new ChannelName(mapChannelOrigin(c.getOrigin()), mapChannelDestination(c.getDestination()));
+		return cn;
 	}
 
 	public MessageDescriptor mapMessage(Msg msg) {

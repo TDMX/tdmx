@@ -64,7 +64,7 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelName;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
@@ -232,25 +232,29 @@ public class MOSImpl implements MOS {
 		// create originating ChannelFlowMessage
 		Zone zone = session.getZone();
 
-		// TODO consider caching the last used Channel in the session to avoid this search if always sending to the same
-		// dest.
+		// cache the last used Channel in the session to avoid this search if always sending to the same dest.
+		ChannelName cn = a2d.mapChannelName(header.getChannel());
 
-		ChannelSearchCriteria sc = new ChannelSearchCriteria(new PageSpecifier(0, 1));
-		sc.setDomainName(authorizedUser.getTdmxDomainName());
-		// TODO header channel origin matches the srcUser
-		sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
-		sc.getOrigin().setLocalName(header.getChannel().getOrigin().getLocalname());
-		// TODO header channel dest matches the to User
-		sc.getDestination().setDomainName(header.getChannel().getDestination().getDomain());
-		sc.getDestination().setLocalName(header.getChannel().getDestination().getLocalname());
-		sc.getDestination().setServiceName(header.getChannel().getDestination().getServicename());
+		Channel channel = session.getLastChannelUsed();
+		if (channel == null || !cn.equals(channel.getChannelName())) {
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			sc.setDomainName(authorizedUser.getTdmxDomainName());
+			// TODO header channel origin matches the srcUser
+			sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
+			sc.getOrigin().setLocalName(header.getChannel().getOrigin().getLocalname());
+			// TODO header channel dest matches the to User
+			sc.getDestination().setDomainName(header.getChannel().getDestination().getDomain());
+			sc.getDestination().setLocalName(header.getChannel().getDestination().getLocalname());
+			sc.getDestination().setServiceName(header.getChannel().getDestination().getServicename());
 
-		List<Channel> channels = channelService.search(zone, sc);
-		if (channels.isEmpty()) {
-			setError(ErrorCode.ChannelNotFound, response);
-			return response;
+			List<Channel> channels = channelService.search(zone, sc);
+			if (channels.isEmpty()) {
+				setError(ErrorCode.ChannelNotFound, response);
+				return response;
+			}
+			channel = channels.get(0);
+			session.setLastChannelUsed(channel);
 		}
-		Channel channel = channels.get(0);
 
 		SubmitMessageResultHolder result = channelService.submitMessage(zone, channel, md);
 		if (result.status != null) {

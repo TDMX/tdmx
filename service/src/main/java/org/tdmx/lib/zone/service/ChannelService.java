@@ -29,7 +29,6 @@ import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
-import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
@@ -160,8 +159,6 @@ public interface ChannelService {
 	 * @return
 	 */
 	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth);
-
-	public List<Channel> search(Zone zone, ChannelSearchCriteria criteria);
 
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
