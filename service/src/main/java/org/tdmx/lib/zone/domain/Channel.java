@@ -122,7 +122,7 @@ public class Channel implements Serializable {
 
 	// we don't make getters nor setters for CMs because there can be too many, but we do want cascade of deletions
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ChannelFlowMessage> channelFlowMessages;
+	private Set<ChannelMessage> channelFlowMessages;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

@@ -63,10 +63,9 @@ import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelName;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -208,7 +207,7 @@ public class MOSImpl implements MOS {
 
 		Chunk c = a2d.mapChunk(msg.getChunk());
 
-		MessageDescriptor md = a2d.mapMessage(msg);
+		ChannelMessage m = a2d.mapMessage(msg);
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getUsersignature()
 				.getUserIdentity().getUsercertificate(), header.getUsersignature().getUserIdentity()
@@ -229,7 +228,7 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		// create originating ChannelFlowMessage
+		// create originating ChannelMessage
 		Zone zone = session.getZone();
 
 		// cache the last used Channel in the session to avoid this search if always sending to the same dest.
@@ -256,7 +255,8 @@ public class MOSImpl implements MOS {
 			session.setLastChannelUsed(channel);
 		}
 
-		SubmitMessageResultHolder result = channelService.submitMessage(zone, channel, md);
+		m.setChannel(channel);
+		SubmitMessageResultHolder result = channelService.submitMessage(zone, m);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
 			return response;
@@ -266,7 +266,8 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// give the caller the continuationId for the next chunk
-		String continuationId = result.message.getContinuationId(c.getPos() + 1);
+		String continuationId = result.message.getContinuationId(c.getPos() + 1, new byte[] { 1 }); // FIXME session
+																									// entropy
 		if (continuationId == null) {
 			// last chunk - what to do? TODO
 		}
@@ -296,17 +297,17 @@ public class MOSImpl implements MOS {
 
 		Chunk c = a2d.mapChunk(parameters.getChunk());
 
-		// create originating ChannelFlowMessage using the flowchannel's src and trg fingerprints to locate the
+		// create originating ChannelMessage using the flowchannel's src and trg fingerprints to locate the
 		// ChannelFlowOrigin to attach to.
 		Zone zone = session.getZone();
 
-		ChannelFlowMessage msg = channelService.findByMessageId(zone, c.getMsgId());
+		ChannelMessage msg = channelService.findByMessageId(zone, c.getMsgId());
 		if (msg == null) {
 			setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
 		// calculate the continuationId for the chunk and check that it matches the continuationId
-		if (!continuationId.equals(msg.getContinuationId(c.getPos()))) {
+		if (!continuationId.equals(msg.getContinuationId(c.getPos(), new byte[] { 1 }))) { // FIXME sessionid
 			setError(ErrorCode.InvalidChunkContinuationId, response);
 			return response;
 		}
@@ -314,9 +315,10 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// calculate the next continuationId
-		String nextContinuationId = msg.getContinuationId(c.getPos() + 1);
+		String nextContinuationId = msg.getContinuationId(c.getPos() + 1, new byte[] { 1 });// FIXME sessionid
 		if (nextContinuationId == null) {
 			// this was the last chunk - what to do ? TODO
+
 		}
 		response.setContinuation(nextContinuationId);
 

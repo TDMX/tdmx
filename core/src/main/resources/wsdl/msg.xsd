@@ -581,7 +581,7 @@
 					<xs:documentation>the signature value of the Message's payload element fields, including a MACofMACs of all the chunks of the ciphertext. Note that there is a cryptographically secure digital signature of the message payload typically in the encryption scheme ( on the payload plaintext ). The payloadSignature issuer is the that of the header signature issuer.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="externalReference" type="common:longtext" minOccurs="0">
+			<xs:element name="externalReference" type="common:text" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
 				</xs:annotation>

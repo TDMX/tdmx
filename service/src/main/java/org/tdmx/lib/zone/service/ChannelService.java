@@ -26,13 +26,12 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
-import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -164,16 +163,16 @@ public interface ChannelService {
 
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
-	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
+	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
 
 	/**
-	 * Fetch the ChannelFlowMessage which has the messageId provided.
+	 * Fetch the ChannelMessage which has the messageId provided.
 	 * 
 	 * @param zone
 	 * @param msgId
 	 * @return
 	 */
-	public ChannelFlowMessage findByMessageId(Zone zone, String msgId);
+	public ChannelMessage findByMessageId(Zone zone, String msgId);
 
 	/**
 	 * Fetch the TemporaryChannel which has the id provided.
@@ -233,29 +232,27 @@ public interface ChannelService {
 
 	public class SubmitMessageResultHolder {
 		public SubmitMessageOperationStatus status;
-		public ChannelFlowMessage message;
+		public ChannelMessage message;
 	}
 
 	/**
 	 * Submit a Message outbound called on the sender side.
 	 * 
 	 * @param zone
-	 * @param channel
-	 *            detached Channel
 	 * @param msg
+	 *            detached ChannelMessage
 	 * @return
 	 */
-	public SubmitMessageResultHolder submitMessage(Zone zone, Channel channel, MessageDescriptor md);
+	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Relay a Message inbound called on the receiver side.
 	 * 
 	 * @param zone
-	 * @param channel
-	 *            detached Channel
 	 * @param msg
+	 *            detached ChannelMessage
 	 * @return
 	 */
-	public SubmitMessageResultHolder relayMessage(Zone zone, Channel channel, MessageDescriptor md);
+	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelMessage msg);
 
 }

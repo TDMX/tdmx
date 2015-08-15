@@ -21,8 +21,11 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -35,52 +38,48 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.mrs.ws.MRS;
 
 /**
- * An ChannelFlowMessage is a message in a Flow.
+ * An ChannelMessage is a message in a Flow.
  * 
- * ChannelFlowMessages are created at by the {@link MOS#submit(org.tdmx.core.api.v01.mos.Submit)} when the Channel's
- * FlowControl permits sending.
+ * ChannelMessages are created at by the {@link MOS#submit(org.tdmx.core.api.v01.mos.Submit)} when the Channel's
+ * FlowControl permits sending on the originating side, and when relayed in with
+ * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)} at the destination side .
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "ChannelFlowMessage")
-public class ChannelFlowMessage implements Serializable {
-
-	// TODO rename ChannelMessage
+@Table(name = "ChannelMessage")
+public class ChannelMessage implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_MSGID_LEN = 64;
 
-	public static final int MAX_ENTROPY_LEN = 8;
-
 	public static final int MAX_SHA256_MAC_LEN = 80;
 
-	public static final int MAX_EXTREF_LEN = 2048;
+	public static final int MAX_EXTREF_LEN = 256;
 
 	public static final int MAX_SIGNATURE_LEN = 128;
 
 	public static final int MAX_CRCMANIFEST_LEN = 8000;
 
-	public static final int LEN_CONTINUATION_ID = 8;
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
+	private static final int LEN_CONTINUATION_ID = 8;
 
-	// TODO "Relay" Processingstatus of flowcontrolstatus
+	// TODO "Relay" Processingstatus of msg relay
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelFlowMessageIdGen")
-	@TableGenerator(name = "ChannelFlowMessageIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelflowmessageObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelMessageIdGen")
+	@TableGenerator(name = "ChannelMessageIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelmessageObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -94,23 +93,32 @@ public class ChannelFlowMessage implements Serializable {
 
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date sentTimestamp;
-
-	@Column(nullable = false)
-	@Temporal(TemporalType.TIMESTAMP)
 	private Date ttlTimestamp;
 
+	/**
+	 * The public certificate of the receiving Agent.
+	 * 
+	 * NOTE: Maximum length is defined by {@link AgentCredential#MAX_CERTIFICATECHAIN_LEN}
+	 */
+	@Column(name = "receiverPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
+	private String receiverCertificateChainPem;
+
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
-	private String flowSessionId;
+	private String encryptionContextId;
 
 	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
 	private String payloadSignature;
 
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "signatureDate", column = @Column(name = "senderSignatureDate", nullable = false)),
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "senderPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)),
+			@AttributeOverride(name = "value", column = @Column(name = "senderSignature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "senderSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)) })
+	private AgentSignature signature;
+
 	@Column(length = MAX_EXTREF_LEN)
 	private String externalReference;
-
-	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
-	private String headerSignature;
 
 	// -------------------------------------------------------------------------
 	// PAYLOAD FIELDS
@@ -131,42 +139,34 @@ public class ChannelFlowMessage implements Serializable {
 	private long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
 
 	@Column(length = MAX_SHA256_MAC_LEN, nullable = false)
-	private String chunksCRC; // manifest of checksums for each chunk. //TODO change to MACofMACs
+	private String macOfMacs;
 
 	// -------------------------------------------------------------------------
 	// CONTROL FIELDS
 	// -------------------------------------------------------------------------
 
-	@Column(length = MAX_ENTROPY_LEN, nullable = false)
-	private byte[] entropy;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	ChannelFlowMessage() {
+	public ChannelMessage() {
 	}
 
-	public ChannelFlowMessage(Channel channel, MessageDescriptor md) {
-		setChannel(channel);
-		// header fields
-		setMsgId(md.getMsgId());
-		setSentTimestamp(md.getSentTimestamp());
-		setTtlTimestamp(md.getTtlTimestamp());
-		setFlowSessionId(md.getEncryptionContextId());
-		setPayloadSignature(md.getPayloadSignature());
-		setExternalReference(md.getExternalReference());
-		setHeaderSignature(md.getHeaderSignature());
-		// payload fields
-		setChunkSize(md.getChunkSize());
-		setPayloadLength(md.getPayloadLength());
-		setEncryptionContext(md.getEncryptionContext());
-		setPlaintextLength(md.getPlaintextLength());
-		setChunksCRC(md.getChunksCRC());
-
-		// the entropy is read only once the cfm is instantiated.
-		setEntropy(EntropySource.getRandomBytes(MAX_ENTROPY_LEN));
-	}
+	// public ChannelMessage(Channel channel, ChannelMessage other) {
+	// setChannel(channel);
+	// // header fields
+	// setMsgId(other.getMsgId());
+	// setTtlTimestamp(other.getTtlTimestamp());
+	// setEncryptionContextId(other.getEncryptionContextId());
+	// setExternalReference(other.getExternalReference());
+	// setPayloadSignature(other.getPayloadSignature());
+	// // payload fields
+	// setChunkSize(other.getChunkSize());
+	// setPayloadLength(other.getPayloadLength());
+	// setEncryptionContext(other.getEncryptionContext());
+	// setPlaintextLength(other.getPlaintextLength());
+	// setMacOfMacs(other.getMacOfMacs());
+	// }
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -180,12 +180,12 @@ public class ChannelFlowMessage implements Serializable {
 	 * @param chunkPos
 	 * @return null if no chunk at the requested pos
 	 */
-	public String getContinuationId(int chunkPos) {
+	public String getContinuationId(int chunkPos, byte[] entropy) {
 		// if the chunk requested starts after the end of the payload then the previous chunk is the last
 		if ((getChunkSize() * chunkPos) > getPayloadLength()) {
 			return null;
 		}
-		return SignatureUtils.createContinuationId(chunkPos, getEntropy(), getMsgId(), LEN_CONTINUATION_ID);
+		return SignatureUtils.createContinuationId(chunkPos, entropy, getMsgId(), LEN_CONTINUATION_ID);
 	}
 
 	public Channel getChannel() {
@@ -199,10 +199,9 @@ public class ChannelFlowMessage implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelFlowMessage [id=");
+		builder.append("ChannelMessage [id=");
 		builder.append(id);
 		builder.append(" msgId=").append(msgId);
-		builder.append(" sentTimestamp=").append(sentTimestamp);
 		builder.append(" ttlTimestamp=").append(ttlTimestamp);
 		builder.append(" payloadLength=").append(payloadLength);
 		builder.append("]");
@@ -216,10 +215,6 @@ public class ChannelFlowMessage implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void setEntropy(byte[] entropy) {
-		this.entropy = entropy;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -241,28 +236,12 @@ public class ChannelFlowMessage implements Serializable {
 		this.msgId = msgId;
 	}
 
-	public Date getSentTimestamp() {
-		return sentTimestamp;
-	}
-
-	public void setSentTimestamp(Date sentTimestamp) {
-		this.sentTimestamp = sentTimestamp;
-	}
-
 	public Date getTtlTimestamp() {
 		return ttlTimestamp;
 	}
 
 	public void setTtlTimestamp(Date ttlTimestamp) {
 		this.ttlTimestamp = ttlTimestamp;
-	}
-
-	public String getFlowSessionId() {
-		return flowSessionId;
-	}
-
-	public void setFlowSessionId(String flowSessionId) {
-		this.flowSessionId = flowSessionId;
 	}
 
 	public String getPayloadSignature() {
@@ -279,14 +258,6 @@ public class ChannelFlowMessage implements Serializable {
 
 	public void setExternalReference(String externalReference) {
 		this.externalReference = externalReference;
-	}
-
-	public String getHeaderSignature() {
-		return headerSignature;
-	}
-
-	public void setHeaderSignature(String headerSignature) {
-		this.headerSignature = headerSignature;
 	}
 
 	public long getChunkSize() {
@@ -321,16 +292,36 @@ public class ChannelFlowMessage implements Serializable {
 		this.plaintextLength = plaintextLength;
 	}
 
-	public String getChunksCRC() {
-		return chunksCRC;
+	public String getEncryptionContextId() {
+		return encryptionContextId;
 	}
 
-	public void setChunksCRC(String chunksCRC) {
-		this.chunksCRC = chunksCRC;
+	public void setEncryptionContextId(String encryptionContextId) {
+		this.encryptionContextId = encryptionContextId;
 	}
 
-	public byte[] getEntropy() {
-		return entropy;
+	public String getReceiverCertificateChainPem() {
+		return receiverCertificateChainPem;
+	}
+
+	public void setReceiverCertificateChainPem(String receiverCertificateChainPem) {
+		this.receiverCertificateChainPem = receiverCertificateChainPem;
+	}
+
+	public AgentSignature getSignature() {
+		return signature;
+	}
+
+	public void setSignature(AgentSignature signature) {
+		this.signature = signature;
+	}
+
+	public String getMacOfMacs() {
+		return macOfMacs;
+	}
+
+	public void setMacOfMacs(String macOfMacs) {
+		this.macOfMacs = macOfMacs;
 	}
 
 }

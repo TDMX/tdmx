@@ -36,9 +36,9 @@ import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.EndpointPermission;
-import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -235,7 +235,7 @@ public class MRSImpl implements MRS {
 		}
 
 		Chunk c = a2d.mapChunk(msg.getChunk());
-		MessageDescriptor md = a2d.mapMessage(msg);
+		ChannelMessage m = a2d.mapMessage(msg);
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getUsersignature()
 				.getUserIdentity().getUsercertificate(), header.getUsersignature().getUserIdentity()
@@ -254,8 +254,9 @@ public class MRSImpl implements MRS {
 		Zone zone = session.getZone();
 		Channel channel = session.getChannel();
 
-		// check the flow is not already throttled
-		SubmitMessageResultHolder result = channelService.relayMessage(zone, channel, md);
+		m.setChannel(channel);
+
+		SubmitMessageResultHolder result = channelService.relayMessage(zone, m);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
 			return;

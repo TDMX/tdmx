@@ -38,8 +38,8 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationStatus;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSession;
@@ -48,7 +48,6 @@ import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
-import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
@@ -359,7 +358,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
+	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
 	}
 
@@ -371,13 +370,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder submitMessage(Zone zone, Channel channel, MessageDescriptor md) {
+	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
 		// TODO MOS submit messge - check sender cert matches origin of channel sending on.
 
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
+		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to send out.
 			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
@@ -389,25 +388,23 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(md.getPayloadLength())));
+		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(msg.getPayloadLength())));
 		if (quota.getUnsentBytes().subtract(quota.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
 		}
 
-		ChannelFlowMessage m = new ChannelFlowMessage(channel, md);
-		getChannelDao().persist(m);
-
-		result.message = m;
+		getChannelDao().persist(msg);
+		result.message = msg;
 		return result;
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder relayMessage(Zone zone, Channel channel, MessageDescriptor md) {
+	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(channel.getQuota().getId());
+		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to receive
 			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
@@ -420,17 +417,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(md.getPayloadLength())));
+		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(msg.getPayloadLength())));
 		if (quota.getUndeliveredBytes().subtract(quota.getUndeliveredBuffer().getHighMarkBytes())
 				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close relay
 			quota.setReceiverStatus(FlowControlStatus.CLOSED);
 		}
 
-		ChannelFlowMessage m = new ChannelFlowMessage(channel, md);
-		getChannelDao().persist(m);
+		getChannelDao().persist(msg);
 
-		result.message = m;
+		result.message = msg;
 		return result;
 	}
 
@@ -527,7 +523,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelFlowMessage findByMessageId(Zone zone, String msgId) {
+	public ChannelMessage findByMessageId(Zone zone, String msgId) {
 		return getChannelDao().loadChannelFlowMessageByMessageId(zone, msgId);
 	}
 

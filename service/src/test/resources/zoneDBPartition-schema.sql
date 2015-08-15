@@ -12,7 +12,7 @@
 
     drop table ChannelAuthorization if exists;
 
-    drop table ChannelFlowMessage if exists;
+    drop table ChannelMessage if exists;
 
     drop table Chunk if exists;
 
@@ -166,24 +166,27 @@
         primary key (id)
     );
 
-    create table ChannelFlowMessage (
+    create table ChannelMessage (
         id bigint not null,
         chunkSize bigint not null,
-        chunksCRC varchar(80) not null,
         encryptionContext longvarbinary not null,
-        entropy varbinary(8) not null,
-        externalReference varchar(2048),
-        flowSessionId varchar(256) not null,
-        headerSignature varchar(128) not null,
+        encryptionContextId varchar(256) not null,
+        externalReference varchar(256),
+        macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
         payloadLength bigint not null,
         payloadSignature varchar(128) not null,
         plaintextLength bigint not null,
-        sentTimestamp timestamp not null,
+        receiverPem varchar(12000) not null,
+        senderSignatureAlgorithm varchar(16) not null,
+        senderPem varchar(12000) not null,
+        senderSignatureDate timestamp not null,
+        senderSignature varchar(128) not null,
         ttlTimestamp timestamp not null,
         channel_id bigint not null,
         primary key (id)
     );
+
 
     create table Chunk (
         id bigint not null,
@@ -347,8 +350,8 @@
         foreign key (authorization_id) 
         references ChannelAuthorization;
 
-    alter table ChannelFlowMessage 
-        add constraint FKA6AD3E1694FB8720 
+    alter table ChannelMessage 
+        add constraint FKCC8BCDA494FB8720 
         foreign key (channel_id) 
         references Channel;
 

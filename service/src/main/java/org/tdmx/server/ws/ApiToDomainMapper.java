@@ -34,6 +34,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelName;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Destination;
@@ -41,7 +42,6 @@ import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowLimit;
-import org.tdmx.lib.zone.domain.MessageDescriptor;
 import org.tdmx.lib.zone.domain.Service;
 
 public class ApiToDomainMapper {
@@ -78,22 +78,23 @@ public class ApiToDomainMapper {
 		return cn;
 	}
 
-	public MessageDescriptor mapMessage(Msg msg) {
-		MessageDescriptor md = new MessageDescriptor();
+	public ChannelMessage mapMessage(Msg msg) {
+		ChannelMessage md = new ChannelMessage();
 		md.setMsgId(msg.getHeader().getMsgId());
-		md.setTxId(null); // TODO
-		md.setSentTimestamp(CalendarUtils.cast(msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp()));
 		md.setTtlTimestamp(CalendarUtils.cast(msg.getHeader().getTtl()));
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
 		md.setPayloadSignature(msg.getHeader().getPayloadSignature());
 		md.setExternalReference(msg.getHeader().getExternalReference());
-		md.setHeaderSignature(msg.getHeader().getUsersignature().getSignaturevalue().getSignature());
+		md.setReceiverCertificateChainPem(CertificateIOUtils.safeX509certsToPem(msg.getHeader().getTo()
+				.getUsercertificate(), msg.getHeader().getTo().getDomaincertificate(), msg.getHeader().getTo()
+				.getRootcertificate()));
+		md.setSignature(mapUserSignature(msg.getHeader().getUsersignature()));
 
 		md.setChunkSize(msg.getPayload().getChunkSize());
 		md.setPayloadLength(msg.getPayload().getLength());
 		md.setEncryptionContext(msg.getPayload().getEncryptionContext());
 		md.setPlaintextLength(msg.getPayload().getPlaintextLength());
-		md.setChunksCRC(msg.getPayload().getMACofMACs());
+		md.setMacOfMacs(msg.getPayload().getMACofMACs());
 		return md;
 	}
 

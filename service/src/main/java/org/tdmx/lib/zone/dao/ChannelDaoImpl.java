@@ -20,7 +20,7 @@ package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QChannel.channel;
 import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
-import static org.tdmx.lib.zone.domain.QChannelFlowMessage.channelFlowMessage;
+import static org.tdmx.lib.zone.domain.QChannelMessage.channelMessage;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
 import static org.tdmx.lib.zone.domain.QTemporaryChannel.temporaryChannel;
@@ -34,8 +34,8 @@ import javax.persistence.PersistenceContext;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -87,12 +87,12 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
-	public void persist(ChannelFlowMessage value) {
+	public void persist(ChannelMessage value) {
 		em.persist(value);
 	}
 
 	@Override
-	public void delete(ChannelFlowMessage value) {
+	public void delete(ChannelMessage value) {
 		em.remove(value);
 	}
 
@@ -246,29 +246,29 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
-	public ChannelFlowMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId) {
+	public ChannelMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
 		if (messageId == null) {
 			throw new IllegalArgumentException("missing messageId");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelFlowMessage).where(channelFlowMessage.msgId.eq(messageId));
-		return query.uniqueResult(channelFlowMessage);
+		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.msgId.eq(messageId));
+		return query.uniqueResult(channelMessage);
 	}
 
 	@Override
-	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
+	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelFlowMessage).innerJoin(channel).fetch()
+		JPAQuery query = new JPAQuery(em).from(channelMessage).innerJoin(channel).fetch()
 				.innerJoin(channel.domain, domain).fetch();
 
 		BooleanExpression where = domain.zone.eq(zone);
 
 		if (StringUtils.hasText(criteria.getMsgId())) {
-			where = where.and(channelFlowMessage.msgId.eq(criteria.getMsgId()));
+			where = where.and(channelMessage.msgId.eq(criteria.getMsgId()));
 		}
 		if (StringUtils.hasText(criteria.getDomainName())) {
 			where = where.and(domain.domainName.eq(criteria.getDomainName()));
@@ -294,7 +294,7 @@ public class ChannelDaoImpl implements ChannelDao {
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
 				.getPageSpecifier().getFirstResult()));
-		return query.list(channelFlowMessage);
+		return query.list(channelMessage);
 	}
 
 	// -------------------------------------------------------------------------

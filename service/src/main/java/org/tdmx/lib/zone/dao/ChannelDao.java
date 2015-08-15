@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelFlowMessage;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
@@ -44,13 +44,13 @@ public interface ChannelDao {
 
 	public Channel merge(Channel value);
 
-	public void persist(ChannelFlowMessage value);
+	public void persist(ChannelMessage value);
 
 	public void delete(Channel value);
 
 	public void delete(TemporaryChannel value);
 
-	public void delete(ChannelFlowMessage value);
+	public void delete(ChannelMessage value);
 
 	public FlowQuota lock(Long quotaId);
 
@@ -59,13 +59,13 @@ public interface ChannelDao {
 	public TemporaryChannel loadByTempId(Long tempChannelId);
 
 	/**
-	 * Fetch the ChannelFlowMessage ( no fetch plan ) by messageId.
+	 * Fetch the ChannelMessage ( no fetch plan ) by messageId.
 	 * 
 	 * @param zone
 	 * @param messageId
-	 * @return the ChannelFlowMessage or null if not found.
+	 * @return the ChannelMessage or null if not found.
 	 */
-	public ChannelFlowMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId);
+	public ChannelMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId);
 
 	/**
 	 * Search for Channels. FetchPlan includes ChannelAuthorizations, FlowQuota and Domain.
@@ -101,6 +101,6 @@ public interface ChannelDao {
 	 * @param criteria
 	 * @return
 	 */
-	public List<ChannelFlowMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
+	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
 
 }
