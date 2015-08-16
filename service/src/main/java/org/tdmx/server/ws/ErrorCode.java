@@ -3,12 +3,14 @@ package org.tdmx.server.ws;
 public enum ErrorCode {
 	// authorization errors
 	MissingCredentials(403, "Missing Credentials."),
-	NonZoneAdministratorAccess(403, "Non ZoneAdministrator access."),
-	NonDomainAdministratorAccess(403, "Non DomainAdministrator access."),
-	NonUserAccess(403, "Non User access."), // TODO SCS
+	NonAdministratorAccess(403, "Non Administrator access."),
+	NonUserAccess(403, "Non User access."),
+	NonPKIXAccess(403, "Non PKIX access."),
+	SuspendedAccess(403, "Suspended access."),
 	OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 	OutOfDomainAccess(403, "DAC only authorized on own domain."),
 	// business logic errors
+	NoSessionCapacity(500, "No capacity for new sessions."),
 	ZoneNotFound(500, "Zone not found."),
 	DomainNotSpecified(500, "Domain not supplied."),
 	NotNormalizedDomain(500, "Domain not normalized to uppercase."),

@@ -1349,7 +1349,7 @@ public class ZASImpl implements ZAS {
 	private ZASServerSession getZACSession(Acknowledge ack) {
 		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
 		if (!session.isZAC()) {
-			setError(ErrorCode.NonZoneAdministratorAccess, ack);
+			setError(ErrorCode.NonAdministratorAccess, ack);
 			return null;
 		}
 		return session;
@@ -1362,7 +1362,7 @@ public class ZASImpl implements ZAS {
 	private ZASServerSession getDACSession(Acknowledge ack) {
 		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
 		if (!session.isDAC()) {
-			setError(ErrorCode.NonDomainAdministratorAccess, ack);
+			setError(ErrorCode.NonAdministratorAccess, ack);
 			return null;
 		}
 		return session;

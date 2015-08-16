@@ -316,7 +316,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchDomainResponse response = zas.searchDomain(req);
-		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+		assertError(ErrorCode.NonAdministratorAccess, response);
 	}
 
 	@Test
@@ -721,7 +721,7 @@ public class ZASImplUnitTest {
 
 		req.setDomain(dac.getPublicCert().getCommonName()); // DAC's cn is the domain
 		CreateDomainResponse response = zas.createDomain(req);
-		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+		assertError(ErrorCode.NonAdministratorAccess, response);
 	}
 
 	@Test
@@ -858,7 +858,7 @@ public class ZASImplUnitTest {
 		req.setFilter(uf);
 
 		SearchAdministratorResponse response = zas.searchAdministrator(req);
-		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+		assertError(ErrorCode.NonAdministratorAccess, response);
 	}
 
 	@Test
@@ -996,7 +996,7 @@ public class ZASImplUnitTest {
 
 		req.setDomain(domain.getDomainName());
 		DeleteDomainResponse response = zas.deleteDomain(req);
-		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+		assertError(ErrorCode.NonAdministratorAccess, response);
 	}
 
 	@Test
@@ -1672,7 +1672,7 @@ public class ZASImplUnitTest {
 
 		req.setAdministratorIdentity(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(req);
-		assertError(ErrorCode.NonZoneAdministratorAccess, response);
+		assertError(ErrorCode.NonAdministratorAccess, response);
 	}
 
 	private void assertSuccess(Acknowledge ack) {

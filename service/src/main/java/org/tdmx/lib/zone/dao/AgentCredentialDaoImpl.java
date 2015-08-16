@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.dao;
 import static org.tdmx.lib.zone.domain.QAddress.address;
 import static org.tdmx.lib.zone.domain.QAgentCredential.agentCredential;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
+import static org.tdmx.lib.zone.domain.QZone.zone;
 
 import java.util.List;
 
@@ -83,7 +84,7 @@ public class AgentCredentialDaoImpl implements AgentCredentialDao {
 			throw new IllegalArgumentException("missing fingerprint");
 		}
 		JPAQuery query = new JPAQuery(em).from(agentCredential).leftJoin(agentCredential.domain, domain).fetch()
-				.leftJoin(agentCredential.address, address).fetch();
+				.leftJoin(agentCredential.zone, zone).fetch().leftJoin(agentCredential.address, address).fetch();
 		query.where(agentCredential.fingerprint.eq(fingerprint));
 		return query.uniqueResult(agentCredential);
 	}

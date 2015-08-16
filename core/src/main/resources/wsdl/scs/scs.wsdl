@@ -8,28 +8,94 @@
 			<xsd:include schemaLocation="scs.xsd"/>
 		</xsd:schema>
 	</wsdl:types>
-	<wsdl:message name="relayRequest">
-		<wsdl:part name="parameters" element="scs:relay"/>
+	<wsdl:message name="getMOSSessionRequest">
+		<wsdl:part name="parameters" element="scs:getMOSSession"/>
 	</wsdl:message>
-	<wsdl:message name="relayResponse">
-		<wsdl:part name="parameters" element="scs:relayResponse"/>
+	<wsdl:message name="getMOSSessionResponse">
+		<wsdl:part name="parameters" element="scs:getMOSSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getMDSSessionRequest">
+		<wsdl:part name="parameters" element="scs:getMDSSession"/>
+	</wsdl:message>
+	<wsdl:message name="getMDSSessionResponse">
+		<wsdl:part name="parameters" element="scs:getMDSSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getMRSSessionRequest">
+		<wsdl:part name="parameters" element="scs:getMRSSession"/>
+	</wsdl:message>
+	<wsdl:message name="getMRSSessionResponse">
+		<wsdl:part name="parameters" element="scs:getMRSSessionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getZASSessionRequest">
+		<wsdl:part name="parameters" element="scs:getZASSession"/>
+	</wsdl:message>
+	<wsdl:message name="getZASSessionResponse">
+		<wsdl:part name="parameters" element="scs:getZASSessionResponse"/>
 	</wsdl:message>
 	<wsdl:portType name="SCS">
 		<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-		<wsdl:operation name="relay">
+		<wsdl:operation name="getMOSSession">
 			<wsdl:documentation>
 				Bla Bla
 			</wsdl:documentation>
-			<wsdl:input message="tns:relayRequest"/>
-			<wsdl:output message="tns:relayResponse"/>
+			<wsdl:input message="tns:getMOSSessionRequest"/>
+			<wsdl:output message="tns:getMOSSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getMDSSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getMDSSessionRequest"/>
+			<wsdl:output message="tns:getMDSSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getMRSSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getMRSSessionRequest"/>
+			<wsdl:output message="tns:getMRSSessionResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="getZASSession">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:getZASSessionRequest"/>
+			<wsdl:output message="tns:getZASSessionResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="SCSBinding" type="tns:SCS">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="relay">
-			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/relay"/>
+		<wsdl:operation name="getMOSSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/getMOSSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getMDSSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/getMDSSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getMRSSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/getMRSSession"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="getZASSession">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:scs-definition/getZASSession"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

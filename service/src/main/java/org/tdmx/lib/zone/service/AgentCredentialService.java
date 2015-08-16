@@ -37,7 +37,8 @@ public interface AgentCredentialService {
 	public AgentCredential findById(Long id);
 
 	/**
-	 * Credentials are universally unique given their SHA256 fingerprint.
+	 * Credentials are universally unique given their SHA256 fingerprint. Fetch plan includes Address, Domain and the
+	 * Zone.
 	 * 
 	 * @param fingerprint
 	 * @return

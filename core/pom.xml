@@ -112,6 +112,23 @@
 										</extraarg>
 									</extraargs>
 								</wsdlOption>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/scs/scs.wsdl
+									</wsdl>
+									<extraargs>
+										<extraarg>-verbose</extraarg>
+										<extraarg>-validate</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/scs-schema-binding.xml
+										</extraarg>
+										<extraarg>-b</extraarg>
+										<extraarg>
+											${basedir}/src/main/resources/scs-definitions-binding.xml
+										</extraarg>
+									</extraargs>
+								</wsdlOption>
 							</wsdlOptions>
 						</configuration>
 						<goals>

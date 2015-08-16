@@ -4,34 +4,175 @@
 	<xs:annotation>
 		<xs:documentation>This schema defines the request entities.</xs:documentation>
 	</xs:annotation>
-	<xs:simpleType name="relayCorrelationID">
+	<xs:simpleType name="text">
 		<xs:annotation>
-			<xs:documentation>correlationId used to sequentialize the transfer of chunks of a message.</xs:documentation>
+			<xs:documentation>Free text limited to 256 characters.</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:string"/>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="256"/>
+		</xs:restriction>
 	</xs:simpleType>
-	<!-- ********************************************* -->
-	<!--   MRS CONTROL OPERATION TYPES                               -->
-	<!--                  -->
-	<!-- ********************************************* -->
-	<xs:complexType name="relayRequestType">
+	<xs:simpleType name="longtext">
 		<xs:annotation>
-			<xs:documentation>a container for all relayed data between ServiceProviders. The session is bound to a particular channel.</xs:documentation>
+			<xs:documentation>Free text limited to 2048 characters.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="2048"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="errorcode">
+		<xs:restriction base="xs:int"/>
+	</xs:simpleType>
+	<xs:simpleType name="certificate">
+		<xs:restriction base="xs:base64Binary">
+			<xs:maxLength value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Acknowledge">
+		<xs:sequence>
+			<xs:element ref="error" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="success" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>true if the operation succeeded, else false and an error element is provided below.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="Error">
+		<xs:sequence>
+			<xs:element name="description" type="longtext"/>
+		</xs:sequence>
+		<xs:attribute name="code" type="errorcode" use="required"/>
+	</xs:complexType>
+	<xs:element name="error" type="Error">
+		<xs:annotation>
+			<xs:documentation>operations which have failed.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="ServerEndpoint">
+		<xs:annotation>
+			<xs:documentation>the information regarding a session and it's server endpoint.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="url" type="text">
+				<xs:annotation>
+					<xs:documentation>the HTTPS url of the server.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="tlsCertificate" type="certificate">
+				<xs:annotation>
+					<xs:documentation>the public certificate which the server supplies ( must be trusted by the client or TLS connection will not take place ).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="relayResponseType">
+	<xs:element name="endpoint" type="ServerEndpoint">
 		<xs:annotation>
-			<xs:documentation>if the relayRequest did not contain any "RelayContent" then the nextAuthID is supplied in the synchronous response, rather than in an asynchrnous RelayAck message.</xs:documentation>
+			<xs:documentation>the server's HTTPS endpoint information.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="SessionBinding">
+		<xs:annotation>
+			<xs:documentation>the parameters to which the session is bound.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="sessionId" type="text">
+				<xs:annotation>
+					<xs:documentation>the sessionId that the calliing client must for each call to the server.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="address" type="text" minOccurs="0"/>
+			<xs:element name="domain" type="text" minOccurs="0"/>
+			<xs:element name="zone" type="text" minOccurs="0"/>
+			<xs:element name="service" type="text" minOccurs="0"/>
+			<xs:element name="provider" type="text" minOccurs="0"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="session" type="SessionBinding">
+		<xs:annotation>
+			<xs:documentation>the sessionId and parameters bound to the session.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- ********************************************* -->
+	<!--   Session Control Service OPERATION TYPES                               -->
+	<!--                  -->
+	<!-- ********************************************* -->
+	<xs:complexType name="getMOSSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>request a MOS session. The calling client TDMX certificate implicitly provides the originating address and domain of the session.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="getMOSSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="Acknowledge">
+				<xs:sequence>
+					<xs:element ref="endpoint" minOccurs="0"/>
+					<xs:element ref="session" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getMDSSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>request a MDS session. The calling client TDMX certificate implicitly provides the destination address and domain of the session. The serviceName of the destination is a parameter.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="servicename" type="text"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="getMDSSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="Acknowledge">
+				<xs:sequence>
+					<xs:element ref="endpoint" minOccurs="0"/>
+					<xs:element ref="session" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getZASSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>request a ZAS session. The calling client TDMX certificate implicitly provides the originating address and domain of the session.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="getZASSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="Acknowledge">
+				<xs:sequence>
+					<xs:element ref="endpoint" minOccurs="0"/>
+					<xs:element ref="session" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="getMRSSessionRequestType">
+		<xs:annotation>
+			<xs:documentation>request a MRS session. The calling client must provide a PKIX public certificate which is defines the DNS hostname to which the service provider is bound for the duration of the sessin.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="getMRSSessionResponseType">
+		<xs:complexContent>
+			<xs:extension base="Acknowledge">
+				<xs:sequence>
+					<xs:element ref="endpoint" minOccurs="0"/>
+					<xs:element ref="session" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--    REQUEST AND RESPONSE ELEMENTS                                              -->
 	<!--                                               -->
 	<!-- ********************************************* -->
-	<xs:element name="relay" type="relayRequestType"/>
-	<xs:element name="relayResponse" type="relayResponseType"/>
+	<xs:element name="getMOSSession" type="getMOSSessionRequestType"/>
+	<xs:element name="getMOSSessionResponse" type="getMOSSessionResponseType"/>
+	<xs:element name="getMDSSession" type="getMDSSessionRequestType"/>
+	<xs:element name="getMDSSessionResponse" type="getMDSSessionResponseType"/>
+	<xs:element name="getZASSession" type="getZASSessionRequestType"/>
+	<xs:element name="getZASSessionResponse" type="getZASSessionResponseType"/>
+	<xs:element name="getMRSSession" type="getMRSSessionRequestType"/>
+	<xs:element name="getMRSSessionResponse" type="getMRSSessionResponseType"/>
 </xs:schema>
