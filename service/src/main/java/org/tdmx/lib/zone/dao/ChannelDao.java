@@ -23,7 +23,7 @@ import java.util.List;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -65,7 +65,7 @@ public interface ChannelDao {
 	 * @param messageId
 	 * @return the ChannelMessage or null if not found.
 	 */
-	public ChannelMessage loadChannelFlowMessageByMessageId(Zone zone, String messageId);
+	public ChannelMessage loadChannelMessageByMessageId(Zone zone, String messageId);
 
 	/**
 	 * Search for Channels. FetchPlan includes ChannelAuthorizations, FlowQuota and Domain.
@@ -101,6 +101,6 @@ public interface ChannelDao {
 	 * @param criteria
 	 * @return
 	 */
-	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
+	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 }

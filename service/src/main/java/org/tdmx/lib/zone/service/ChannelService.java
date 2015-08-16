@@ -26,7 +26,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelFlowMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
@@ -163,7 +163,7 @@ public interface ChannelService {
 
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
-	public List<ChannelMessage> search(Zone zone, ChannelFlowMessageSearchCriteria criteria);
+	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 	/**
 	 * Fetch the ChannelMessage which has the messageId provided.

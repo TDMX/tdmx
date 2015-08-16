@@ -21,12 +21,12 @@ package org.tdmx.lib.zone.domain;
 import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * The SearchCriteria for ChannelFlowMessages ( part of a ChannelFlowOrigin ).
+ * The SearchCriteria for ChannelMessages.
  * 
  * @author Peter Klauser
  * 
  */
-public class ChannelFlowMessageSearchCriteria extends ChannelSearchCriteria {
+public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -44,7 +44,7 @@ public class ChannelFlowMessageSearchCriteria extends ChannelSearchCriteria {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ChannelFlowMessageSearchCriteria(PageSpecifier pageSpecifier) {
+	public ChannelMessageSearchCriteria(PageSpecifier pageSpecifier) {
 		super(pageSpecifier);
 	}
 
