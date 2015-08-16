@@ -81,6 +81,7 @@ import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.mos.MOSServerSession.MessageContextHolder;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
@@ -115,6 +116,8 @@ public class MOSImpl implements MOS {
 	private final ApiValidator validator = new ApiValidator();
 
 	private int batchSize = 100;
+
+	// TODO idea - keep an atomic integer of "msg"count being sent and make this a part of the factor for MOS load
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -186,8 +189,6 @@ public class MOSImpl implements MOS {
 		Transaction tx = parameters.getTransaction();
 
 		// TODO check chunk's mac
-
-		// check chunk's mac is 1st CRC in payload CRC manifest
 
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
@@ -265,11 +266,13 @@ public class MOSImpl implements MOS {
 		// persist Chunk
 		chunkService.createOrUpdate(c);
 
+		// add the sent message to the session.
+		MessageContextHolder mch = session.addMessage(result.message);
+
 		// give the caller the continuationId for the next chunk
-		String continuationId = result.message.getContinuationId(c.getPos() + 1, new byte[] { 1 }); // FIXME session
-																									// entropy
+		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null) {
-			// last chunk - what to do? TODO
+			// last chunk - what to do? TODO last chunk y/n? transaction y/n?
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
@@ -301,13 +304,13 @@ public class MOSImpl implements MOS {
 		// ChannelFlowOrigin to attach to.
 		Zone zone = session.getZone();
 
-		ChannelMessage msg = channelService.findByMessageId(zone, c.getMsgId());
-		if (msg == null) {
+		MessageContextHolder mch = session.getMessage(parameters.getChunk().getMsgId());
+		if (mch == null) {
 			setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
 		// calculate the continuationId for the chunk and check that it matches the continuationId
-		if (!continuationId.equals(msg.getContinuationId(c.getPos(), new byte[] { 1 }))) { // FIXME sessionid
+		if (!continuationId.equals(mch.getContinuationId(c.getPos()))) {
 			setError(ErrorCode.InvalidChunkContinuationId, response);
 			return response;
 		}
@@ -315,9 +318,10 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// calculate the next continuationId
-		String nextContinuationId = msg.getContinuationId(c.getPos() + 1, new byte[] { 1 });// FIXME sessionid
+		String nextContinuationId = mch.getContinuationId(c.getPos() + 1);
 		if (nextContinuationId == null) {
-			// this was the last chunk - what to do ? TODO
+			// this was the last chunk - what to do ? TODO transaction y/n?
+			// when to delete the msg from the
 
 		}
 		response.setContinuation(nextContinuationId);

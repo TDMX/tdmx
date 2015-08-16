@@ -38,7 +38,6 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 
@@ -60,20 +59,15 @@ public class ChannelMessage implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_MSGID_LEN = 64;
-
 	public static final int MAX_SHA256_MAC_LEN = 80;
-
 	public static final int MAX_EXTREF_LEN = 256;
-
 	public static final int MAX_SIGNATURE_LEN = 128;
-
 	public static final int MAX_CRCMANIFEST_LEN = 8000;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
-	private static final int LEN_CONTINUATION_ID = 8;
 
 	// TODO "Relay" Processingstatus of msg relay
 
@@ -171,22 +165,6 @@ public class ChannelMessage implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Create the continuationId for the chunkPos. The continuationId is a truncated Hash of the msgId, chunkPos and the
-	 * "secret" entropy which the client doesn't know so cannot create the continuationId themselves. This forces the
-	 * client to have to receive the continuationId from the server before sending the next chunk.
-	 * 
-	 * @param chunkPos
-	 * @return null if no chunk at the requested pos
-	 */
-	public String getContinuationId(int chunkPos, byte[] entropy) {
-		// if the chunk requested starts after the end of the payload then the previous chunk is the last
-		if ((getChunkSize() * chunkPos) > getPayloadLength()) {
-			return null;
-		}
-		return SignatureUtils.createContinuationId(chunkPos, entropy, getMsgId(), LEN_CONTINUATION_ID);
-	}
 
 	public Channel getChannel() {
 		return channel;
