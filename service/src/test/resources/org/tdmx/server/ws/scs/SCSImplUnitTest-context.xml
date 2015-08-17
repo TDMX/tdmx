@@ -13,5 +13,8 @@
 
 	<import resource="classpath:/org/tdmx/test-context.xml"/>
 
+	<!-- overrides -->
+	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.allocation.MockServerSessionAllocationServiceImpl">
+	</bean>
 	
 </beans>

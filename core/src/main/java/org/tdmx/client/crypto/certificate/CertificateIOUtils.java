@@ -246,38 +246,6 @@ public class CertificateIOUtils {
 		}
 	}
 
-	/**
-	 * Encode a PKIXCertificate as a binary DER encoded X509 certificate.
-	 * 
-	 * @param cert
-	 *            the PKIXCertificate
-	 * @return a binary DER encoded X509 certificate
-	 * @throws CryptoCertificateException
-	 *             if there are any problems.
-	 */
-	public static byte[] encodeX509(PKIXCertificate cert) throws CryptoCertificateException {
-		try {
-			if (cert != null && cert.getCertificate() != null) {
-				return cert.getCertificate().getEncoded();
-			}
-		} catch (CertificateException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
-		}
-		return null;
-	}
-
-	public static byte[] safeEncodeX509(PKIXCertificate cert) {
-		try {
-			if (cert != null && cert.getCertificate() != null) {
-				return cert.getCertificate().getEncoded();
-			}
-		} catch (CertificateException e) {
-			log.warn("Error encoding PKIXCertificate.", e);
-			return null;
-		}
-		return null;
-	}
-
 	public static boolean pkixValidate(X509Certificate[] certs, KeyStore trustStore) throws CryptoCertificateException {
 		try {
 			CertificateFactory cf = CertificateFactory.getInstance(X509CERTIFICATE_FACTORY_ALGORITHM);

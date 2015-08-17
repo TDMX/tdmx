@@ -18,20 +18,18 @@
  */
 package org.tdmx.server.ws.scs;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Named;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -44,16 +42,20 @@ import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.scs.Acknowledge;
+import org.tdmx.core.api.v01.scs.GetMDSSession;
+import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
+import org.tdmx.core.api.v01.scs.GetMOSSession;
+import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
-import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -64,7 +66,8 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
-import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
+import org.tdmx.server.session.allocation.MockServerSessionAllocationServiceImpl;
+import org.tdmx.server.session.allocation.ServerSessionEndpoint;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
@@ -102,6 +105,9 @@ public class SCSImplUnitTest {
 	private DestinationService destinationService;
 
 	@Autowired
+	private MockServerSessionAllocationServiceImpl mockServerSesionAllocationService;
+
+	@Autowired
 	@Named("ws.SCS")
 	private SCS scs;
 
@@ -122,6 +128,8 @@ public class SCSImplUnitTest {
 	private PKIXCredential dac2;
 	private PKIXCredential uc1;
 	private PKIXCredential uc2;
+
+	private ServerSessionEndpoint sse;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -155,12 +163,9 @@ public class SCSImplUnitTest {
 		uc1 = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 		uc2 = data.getDomains().get(1).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
-		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
-		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		seedAttributeMap.put(SeedAttribute.DomainId, domain2.getId());
-		seedAttributeMap.put(SeedAttribute.ChannelId, recvAuth2.getChannel().getId());
-
+		sse = new ServerSessionEndpoint("SID" + System.currentTimeMillis(), "https://" + System.currentTimeMillis()
+				+ "/scs", uc2.getPublicCert());
+		mockServerSesionAllocationService.setEndpoint(sse);
 	}
 
 	@After
@@ -173,6 +178,8 @@ public class SCSImplUnitTest {
 	@Test
 	public void testAutowired() {
 		assertNotNull(authenticatedClientService);
+		assertNotNull(mockServerSesionAllocationService);
+		assertNotNull(zonePartitionIdProvider);
 
 		assertNotNull(agentCredentialService);
 		assertNotNull(agentCredentialFactory);
@@ -186,6 +193,169 @@ public class SCSImplUnitTest {
 	}
 
 	@Test
+	public void test_getMOSSession() {
+		authenticatedClientService.setAuthenticatedClient(uc1.getPublicCert());
+
+		GetMOSSession req = new GetMOSSession();
+
+		GetMOSSessionResponse response = scs.getMOSSession(req);
+		assertSuccess(response);
+
+		assertNotNull(response.getEndpoint());
+		assertEquals(sse.getHttpsUrl(), response.getEndpoint().getUrl());
+		assertArrayEquals(sse.getPublicCertificate().getX509Encoded(), response.getEndpoint().getTlsCertificate());
+		assertNotNull(response.getSession());
+		assertEquals(sse.getSessionId(), response.getSession().getSessionId());
+		assertEquals(zone.getZoneApex(), response.getSession().getZone());
+		assertEquals(address1.getLocalName(), response.getSession().getAddress());
+		assertEquals(address1.getDomain().getDomainName(), response.getSession().getDomain());
+		assertNull(response.getSession().getProvider()); // TODO maybe change future to set with own SP
+		assertNull(response.getSession().getService());
+	}
+
+	@Test
+	public void test_getMOSSession_SuspendedUser() {
+		authenticatedClientService.setAuthenticatedClient(uc1.getPublicCert());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			AgentCredential user = agentCredentialService.findByFingerprint(uc1.getPublicCert().getFingerprint());
+			user.setCredentialStatus(AgentCredentialStatus.SUSPENDED);
+			agentCredentialService.createOrUpdate(user);
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		GetMOSSession req = new GetMOSSession();
+
+		GetMOSSessionResponse response = scs.getMOSSession(req);
+		assertError(ErrorCode.SuspendedAccess, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	public void test_getMOSSession_NonExistentUser() {
+		authenticatedClientService.setAuthenticatedClient(uc1.getPublicCert());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			AgentCredential user = agentCredentialService.findByFingerprint(uc1.getPublicCert().getFingerprint());
+			agentCredentialService.delete(user);
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		GetMOSSession req = new GetMOSSession();
+
+		GetMOSSessionResponse response = scs.getMOSSession(req);
+		assertError(ErrorCode.UserCredentialNotFound, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	public void test_getMDSSession() {
+		authenticatedClientService.setAuthenticatedClient(uc2.getPublicCert());
+
+		GetMDSSession req = new GetMDSSession();
+		req.setServicename(service2.getServiceName());
+
+		GetMDSSessionResponse response = scs.getMDSSession(req);
+		assertSuccess(response);
+
+		assertNotNull(response.getEndpoint());
+		assertEquals(sse.getHttpsUrl(), response.getEndpoint().getUrl());
+		assertArrayEquals(sse.getPublicCertificate().getX509Encoded(), response.getEndpoint().getTlsCertificate());
+		assertNotNull(response.getSession());
+		assertEquals(sse.getSessionId(), response.getSession().getSessionId());
+		assertEquals(zone.getZoneApex(), response.getSession().getZone());
+		assertEquals(address2.getLocalName(), response.getSession().getAddress());
+		assertEquals(address2.getDomain().getDomainName(), response.getSession().getDomain());
+		assertEquals(service2.getServiceName(), response.getSession().getService());
+		assertNull(response.getSession().getProvider()); // TODO maybe change future to set with own SP
+	}
+
+	@Test
+	public void test_getMDSSession_SuspendedUser() {
+		authenticatedClientService.setAuthenticatedClient(uc1.getPublicCert());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			AgentCredential user = agentCredentialService.findByFingerprint(uc1.getPublicCert().getFingerprint());
+			user.setCredentialStatus(AgentCredentialStatus.SUSPENDED);
+			agentCredentialService.createOrUpdate(user);
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		GetMOSSession req = new GetMOSSession();
+
+		GetMOSSessionResponse response = scs.getMOSSession(req);
+		assertError(ErrorCode.SuspendedAccess, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	public void test_getMDSSession_NonExistentUser() {
+		authenticatedClientService.setAuthenticatedClient(uc2.getPublicCert());
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			AgentCredential user = agentCredentialService.findByFingerprint(uc2.getPublicCert().getFingerprint());
+			agentCredentialService.delete(user);
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		GetMDSSession req = new GetMDSSession();
+		req.setServicename(service2.getServiceName());
+
+		GetMDSSessionResponse response = scs.getMDSSession(req);
+		assertError(ErrorCode.UserCredentialNotFound, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	public void test_getMDSSession_ServiceNotFound() {
+		authenticatedClientService.setAuthenticatedClient(uc2.getPublicCert());
+
+		GetMDSSession req = new GetMDSSession();
+		req.setServicename("gugus");
+
+		GetMDSSessionResponse response = scs.getMDSSession(req);
+		assertError(ErrorCode.ServiceNotFound, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	public void test_getMDSSession_MissingService() {
+		authenticatedClientService.setAuthenticatedClient(uc2.getPublicCert());
+
+		GetMDSSession req = new GetMDSSession();
+		req.setServicename("");
+
+		GetMDSSessionResponse response = scs.getMDSSession(req);
+		assertError(ErrorCode.MissingServiceName, response);
+
+		assertNull(response.getEndpoint());
+		assertNull(response.getSession());
+	}
+
+	@Test
+	@Ignore
 	public void test_getMRSSession() {
 		// channel
 		Channel channel = new Channel();
@@ -205,30 +375,6 @@ public class SCSImplUnitTest {
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);
 
-		// check the CA exists and reqSend is set.
-		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
-		try {
-
-			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
-			casc.setDomainName(domain1.getDomainName());
-			casc.getDestination().setDomainName(domain1.getDomainName());
-			casc.getDestination().setLocalName(address1.getLocalName());
-			casc.getDestination().setServiceName(service1.getServiceName());
-			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
-			assertEquals(1, channels.size());
-			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-			assertNull(c.getAuthorization().getSendAuthorization());
-			assertNull(c.getAuthorization().getRecvAuthorization());
-			assertNull(c.getAuthorization().getReqRecvAuthorization());
-			assertNotNull(c.getAuthorization().getReqSendAuthorization());
-
-			// test that the temp channel is deleted
-			assertNull(channelService.findByTemporaryChannel(zone, domain1, a2d.mapChannelOrigin(origin),
-					a2d.mapChannelDestination(dest)));
-
-		} finally {
-			zonePartitionIdProvider.clearPartitionId();
-		}
 	}
 
 	private void assertSuccess(Acknowledge ack) {

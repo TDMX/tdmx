@@ -16,31 +16,22 @@
 		
 
 	<jaxws:endpoint id="mdsEndpoint_V01" implementor="#ws.MDS" address="/v1.0/mds">
-	
 	</jaxws:endpoint>
-
-
-
 
 	
 	<jaxws:endpoint id="mosEndpoint_V01" implementor="#ws.MOS" address="/v1.0/mos">
-	
 	</jaxws:endpoint>
-
-
-
 
 
 	<jaxws:endpoint id="mrsEndpoint_V01" implementor="#ws.MRS" address="/v1.0/mrs">
-	
 	</jaxws:endpoint>
 
 
-
-
-
 	<jaxws:endpoint id="zasEndpoint_V01" implementor="#ws.ZAS" address="/v1.0/zas">
-	
+	</jaxws:endpoint>
+
+
+	<jaxws:endpoint id="scsEndpoint_V01" implementor="#ws.SCS" address="/v1.0/scs">
 	</jaxws:endpoint>
 
 </beans>

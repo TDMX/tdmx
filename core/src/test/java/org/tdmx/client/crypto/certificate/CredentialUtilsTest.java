@@ -170,15 +170,15 @@ public class CredentialUtilsTest {
 	@Test
 	public void dumpUserCert() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
-		byte[] bs = CertificateIOUtils.encodeX509(zac.getCertificateChain()[0]);
+		byte[] bs = zac.getPublicCert().getX509Encoded();
 		FileUtils.storeFileContents("za.crt", bs, ".tmp");
 
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
-		bs = CertificateIOUtils.encodeX509(dac.getCertificateChain()[0]);
+		bs = dac.getPublicCert().getX509Encoded();
 		FileUtils.storeFileContents("da.crt", bs, ".tmp");
 
 		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
-		bs = CertificateIOUtils.encodeX509(uc.getCertificateChain()[0]);
+		bs = uc.getPublicCert().getX509Encoded();
 		FileUtils.storeFileContents("uc.crt", bs, ".tmp");
 
 	}

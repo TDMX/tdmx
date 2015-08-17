@@ -20,7 +20,6 @@ package org.tdmx.server.ws.scs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.scs.Acknowledge;
 import org.tdmx.core.api.v01.scs.Endpoint;
@@ -41,6 +40,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -69,7 +69,7 @@ public class SCSImpl implements SCS {
 	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private AccountZoneService accountZoneService;
-	private ThreadLocalPartitionIdProvider partitionIdService;
+	private ThreadLocalPartitionIdProvider partitionIdProvider;
 	private ServerSessionAllocationService sessionAllocationService;
 
 	private DomainService domainService;
@@ -97,7 +97,12 @@ public class SCSImpl implements SCS {
 		if (sp == null) {
 			return response;
 		}
-		// TODO Auto-generated method stub
+
+		String serviceProviderName = sp.getCommonName();
+
+		// TODO check DNS trust that the channel's origin or destination domain points to the serviceProvider
+
+		// TODO SCS ssl trust - all TDMX usercerts and otherwise fallback to std. PKIX
 
 		response.setSuccess(true);
 		return response;
@@ -126,12 +131,11 @@ public class SCSImpl implements SCS {
 
 		AgentCredential existingCred = getAgentCredential(az, user, response);
 		if (existingCred == null) {
-			return null;
+			return response;
 		}
 
-		Service service = serviceService.findByName(existingCred.getDomain(), serviceName);
+		Service service = getService(az, existingCred.getDomain(), serviceName, response);
 		if (service == null) {
-			setError(ErrorCode.ServiceNotFound, response);
 			return response;
 		}
 
@@ -150,7 +154,7 @@ public class SCSImpl implements SCS {
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
-		endpoint.setTlsCertificate(CertificateIOUtils.safeEncodeX509(ep.getPublicCertificate()));
+		endpoint.setTlsCertificate(ep.getPublicCertificate().getX509Encoded());
 		endpoint.setUrl(ep.getHttpsUrl());
 		response.setEndpoint(endpoint);
 
@@ -175,7 +179,7 @@ public class SCSImpl implements SCS {
 
 		AgentCredential existingCred = getAgentCredential(az, user, response);
 		if (existingCred == null) {
-			return null;
+			return response;
 		}
 
 		ServerSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, existingCred);
@@ -193,7 +197,7 @@ public class SCSImpl implements SCS {
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
-		endpoint.setTlsCertificate(CertificateIOUtils.safeEncodeX509(ep.getPublicCertificate()));
+		endpoint.setTlsCertificate(ep.getPublicCertificate().getX509Encoded());
 		endpoint.setUrl(ep.getHttpsUrl());
 		response.setEndpoint(endpoint);
 
@@ -217,7 +221,7 @@ public class SCSImpl implements SCS {
 
 		AgentCredential existingCred = getAgentCredential(az, admin, response);
 		if (existingCred == null) {
-			return null;
+			return response;
 		}
 
 		ServerSessionEndpoint ep = sessionAllocationService.associateZASSession(az, existingCred);
@@ -235,7 +239,7 @@ public class SCSImpl implements SCS {
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
-		endpoint.setTlsCertificate(CertificateIOUtils.safeEncodeX509(ep.getPublicCertificate()));
+		endpoint.setTlsCertificate(ep.getPublicCertificate().getX509Encoded());
 		endpoint.setUrl(ep.getHttpsUrl());
 		response.setEndpoint(endpoint);
 
@@ -309,7 +313,7 @@ public class SCSImpl implements SCS {
 
 	private AgentCredential getAgentCredential(AccountZone az, PKIXCertificate cert, Acknowledge ack) {
 		// check the credential used exists and is active.
-		partitionIdService.setPartitionId(az.getZonePartitionId());
+		partitionIdProvider.setPartitionId(az.getZonePartitionId());
 		try {
 			AgentCredential existingUser = credentialService.findByFingerprint(cert.getFingerprint());
 			if (existingUser == null) {
@@ -339,7 +343,22 @@ public class SCSImpl implements SCS {
 			}
 			return existingUser;
 		} finally {
-			partitionIdService.clearPartitionId();
+			partitionIdProvider.clearPartitionId();
+		}
+	}
+
+	private Service getService(AccountZone az, Domain domain, String serviceName, Acknowledge ack) {
+		// check the credential used exists and is active.
+		partitionIdProvider.setPartitionId(az.getZonePartitionId());
+		try {
+			Service service = serviceService.findByName(domain, serviceName);
+			if (service == null) {
+				setError(ErrorCode.ServiceNotFound, ack);
+				return null;
+			}
+			return service;
+		} finally {
+			partitionIdProvider.clearPartitionId();
 		}
 	}
 
@@ -363,12 +382,12 @@ public class SCSImpl implements SCS {
 		this.sessionAllocationService = sessionAllocationService;
 	}
 
-	public ThreadLocalPartitionIdProvider getPartitionIdService() {
-		return partitionIdService;
+	public ThreadLocalPartitionIdProvider getPartitionIdProvider() {
+		return partitionIdProvider;
 	}
 
-	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
-		this.partitionIdService = partitionIdService;
+	public void setPartitionIdProvider(ThreadLocalPartitionIdProvider partitionIdProvider) {
+		this.partitionIdProvider = partitionIdProvider;
 	}
 
 	public AccountZoneService getAccountZoneService() {
