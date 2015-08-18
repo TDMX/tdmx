@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.session;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -24,10 +24,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
-public class ServerSessionManagerImpl<E extends ServerSession> implements ServerSessionManager,
-		ServerSessionLookupService<E>, ServerSessionTrustManager {
+public class WebServiceSessionManagerImpl<E extends WebServiceSession> implements WebServiceSessionManager,
+		WebServiceSessionLookupService<E>, WebServiceSessionTrustManager {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,11 +47,13 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 	private final Map<String, Set<String>> certificateSessionMap = new ConcurrentHashMap<>();;
 
 	/**
-	 * A Map of sessionId to ServerSession.
+	 * A Map of sessionId to WebServiceSession.
 	 */
 	private final Map<String, E> sessionMap = new ConcurrentHashMap<>();
 
-	private ServerSessionFactory<E> sessionFactory;
+	private ApiName apiName;
+
+	private WebServiceSessionFactory<E> sessionFactory;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -71,33 +73,31 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 	}
 
 	@Override
-	public void createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
+	public int createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
 
 		E ss = sessionFactory.createServerSession(seedAttributes);
 		ss.addAuthorizedCertificate(cert);
 
 		sessionMap.put(sessionId, ss);
 		associate(sessionId, cert);
+		return getSessionCount();
 	}
 
 	@Override
-	public void addCertificate(String sessionId, PKIXCertificate cert) {
+	public int addCertificate(String sessionId, PKIXCertificate cert) {
 		E ss = sessionMap.get(sessionId);
 		ss.addAuthorizedCertificate(cert);
 		associate(sessionId, cert);
+		return getSessionCount();
 	}
 
 	@Override
-	public void removeCertificate(String sessionId, PKIXCertificate cert) {
-		ServerSession ss = sessionMap.get(sessionId);
+	public int removeCertificate(String sessionId, PKIXCertificate cert) {
+		WebServiceSession ss = sessionMap.get(sessionId);
 		ss.removeAuthorizedCertificate(cert);
 
 		disassociate(sessionId, cert);
-	}
-
-	@Override
-	public int getSessionCount() {
-		return sessionMap.size();
+		return getSessionCount();
 	}
 
 	@Override
@@ -112,6 +112,11 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 		return null;
 	}
 
+	@Override
+	public ApiName getApiName() {
+		return apiName;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -119,6 +124,10 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private int getSessionCount() {
+		return sessionMap.size();
+	}
 
 	private synchronized void associate(String sessionId, PKIXCertificate cert) {
 		certificateMap.put(cert.getFingerprint(), cert);
@@ -145,12 +154,16 @@ public class ServerSessionManagerImpl<E extends ServerSession> implements Server
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ServerSessionFactory<E> getSessionFactory() {
+	public WebServiceSessionFactory<E> getSessionFactory() {
 		return sessionFactory;
 	}
 
-	public void setSessionFactory(ServerSessionFactory<E> sessionFactory) {
+	public void setSessionFactory(WebServiceSessionFactory<E> sessionFactory) {
 		this.sessionFactory = sessionFactory;
+	}
+
+	public void setApiName(ApiName apiName) {
+		this.apiName = apiName;
 	}
 
 }

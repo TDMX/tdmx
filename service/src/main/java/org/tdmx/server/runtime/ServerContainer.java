@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.cert.CRL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -56,8 +57,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.control.job.Manageable;
-import org.tdmx.server.session.TrustManagerProvider;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.security.RequireClientCertificateFilter;
@@ -106,13 +105,13 @@ public class ServerContainer {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void runUntilStopped() {
+	public void runUntilStopped(String[] args) {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
 		Server server = new Server();
 
 		TrustingSslContextFactory sslExt = new TrustingSslContextFactory();
-		// we trust client certs known to our TrustManagerProvider, with security in servlet "filters"
+		// we trust client certs known to our ApiName, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
 		sslExt.setRenegotiationAllowed(isRenegotiationAllowed());
 		// we don't NEED client auth if we want to co-host a Restfull API on this server.
@@ -259,14 +258,16 @@ public class ServerContainer {
 		contexts.addHandler(wsContext);
 		contexts.addHandler(rsContext);
 		try {
-			// start jobs
-			actionOnManageables(true);
+			// init jobs
+			initManageables(args);
 
 			// Start the server
 			server.start();
 
 			Thread monitor = new MonitorThread(server, getStopPort(), getStopCommand(), getStopAddress());
 			monitor.start();
+
+			startManageables();
 
 			// Wait for the server to be stopped by the MonitorThread.
 			server.join();
@@ -283,16 +284,21 @@ public class ServerContainer {
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
-	void actionOnManageables(boolean start) {
-		List<Manageable> manageables = getManageables();
-		if (manageables != null) {
-			for (Manageable m : manageables) {
-				if (start) {
-					m.start();
-				} else {
-					m.stop();
-				}
-			}
+	void initManageables(String[] cmdLineArgs) {
+		for (Manageable m : getManageables()) {
+			m.init(cmdLineArgs);
+		}
+	}
+
+	void startManageables() {
+		for (Manageable m : getManageables()) {
+			m.start();
+		}
+	}
+
+	void stopManageables() {
+		for (Manageable m : getManageables()) {
+			m.stop();
 		}
 	}
 
@@ -363,7 +369,7 @@ public class ServerContainer {
 			}
 
 			// stop all dependents
-			actionOnManageables(false);
+			stopManageables();
 
 			try {
 				server.stop();
@@ -488,6 +494,9 @@ public class ServerContainer {
 	}
 
 	public List<Manageable> getManageables() {
+		if (manageables == null) {
+			manageables = new ArrayList<>();
+		}
 		return manageables;
 	}
 

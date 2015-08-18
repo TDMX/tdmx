@@ -23,9 +23,9 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
-public class MRSServerSession extends ServerSession {
+public class MRSServerSession extends WebServiceSession {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

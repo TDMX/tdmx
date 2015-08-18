@@ -81,7 +81,7 @@ public class ServerLauncher {
 
 		// Start the Jetty
 		ServerContainer sc = (ServerContainer) context.getBean(serviceName + ".Container");
-		sc.runUntilStopped();
+		sc.runUntilStopped(args);
 	}
 
 }

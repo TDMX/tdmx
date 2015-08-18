@@ -76,13 +76,14 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
-import org.tdmx.server.session.ServerSessionFactory;
-import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
-import org.tdmx.server.session.ServerSessionManager;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
+import org.tdmx.server.ws.session.ApiName;
+import org.tdmx.server.ws.session.WebServiceSessionFactory;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -99,12 +100,12 @@ public class MRSImplUnitTest {
 
 	@Autowired
 	@Named("ws.MRS.SessionFactory")
-	private ServerSessionFactory<MRSServerSession> serverSessionFactory;
+	private WebServiceSessionFactory<MRSServerSession> serverSessionFactory;
 	@Autowired
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.MRS.ServerSessionManager")
-	private ServerSessionManager serverSessionManager;
+	private WebServiceSessionManager serverSessionManager;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -207,6 +208,8 @@ public class MRSImplUnitTest {
 		assertNotNull(zoneService);
 		assertNotNull(domainService);
 		assertNotNull(addressService);
+
+		assertEquals(ApiName.MRS, serverSessionManager.getApiName());
 
 		// the service under test...
 		assertNotNull(mrs);

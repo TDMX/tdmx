@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.server.ws.session;
 
-public interface Manageable {
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
-	public void start();
+public interface WebServiceSessionTrustManager {
 
-	public void stop();
+	public boolean isTrusted(PKIXCertificate cert);
 
 }

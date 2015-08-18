@@ -25,7 +25,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.AbstractServerSessionFactory;
+import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MDSServerSession> {
 

@@ -21,9 +21,9 @@ package org.tdmx.server.ws.zas;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
-public class ZASServerSession extends ServerSession {
+public class ZASServerSession extends WebServiceSession {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

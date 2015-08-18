@@ -99,7 +99,12 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public void init(String[] cmdLineArgs) {
+	}
+
 	public void init() {
+		// setup primarily with spring bean init method.
 		if (jobConverterList != null) {
 			for (JobConverter<?> c : jobConverterList) {
 				jobConverterMap.put(c.getType(), c);
@@ -118,7 +123,6 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 
 	@Override
 	public void start() {
-		init();
 		started = true;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
 				TimeUnit.SECONDS);

@@ -18,18 +18,18 @@
  */
 package org.tdmx.server.ws.security.service;
 
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
 /**
- * The Service to use to lookup the authenticated clients ServerSession.
+ * The Service to use to lookup the authenticated clients WebServiceSession.
  * 
  * @author Peter
  * 
  */
-public interface AuthorizedSessionLookupService<E extends ServerSession> {
+public interface AuthorizedSessionLookupService<E extends WebServiceSession> {
 
 	/**
-	 * Returns the authorized ServerSession.
+	 * Returns the authorized WebServiceSession.
 	 * 
 	 * @return the authorized agent or null if there is none.
 	 */

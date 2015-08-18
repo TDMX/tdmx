@@ -16,29 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.runtime;
 
-import java.util.Map;
+public interface Manageable {
 
-public interface ServerSessionFactory<E extends ServerSession> {
+	public void init(String[] cmdLineArgs);
 
-	public enum SeedAttribute {
-		AccountZoneId,
-		ZoneId,
-		DomainId,
-		ChannelId,
-		TemporaryChannelId,
-		ServiceId,
-		AddressId,
-	}
+	public void start();
 
-	/**
-	 * Initialize a ServerSession given the seedAttributes.
-	 * 
-	 * @param seedAttributes
-	 *            the initial session attribute values which can be resolved to objects.
-	 * @return a new ServerSession initialized with the seedAttributes
-	 */
-	public E createServerSession(Map<SeedAttribute, Long> seedAttributes);
+	public void stop();
 
 }

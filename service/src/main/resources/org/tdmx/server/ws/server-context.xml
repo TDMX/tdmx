@@ -29,8 +29,9 @@
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 	</bean>
 	
-	<bean id="ws.ZAS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+	<bean id="ws.ZAS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.ZAS.SessionFactory"/>
+		<property name="apiName" value="ZAS"/>
 	</bean>
 	
 	<bean id="ws.ZAS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -74,8 +75,9 @@
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 	</bean>
 	
-	<bean id="ws.MOS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+	<bean id="ws.MOS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MOS.SessionFactory"/>
+		<property name="apiName" value="MOS"/>
 	</bean>
 	
 	<bean id="ws.MOS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -120,8 +122,9 @@
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 	</bean>
 	
-	<bean id="ws.MDS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+	<bean id="ws.MDS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MDS.SessionFactory"/>
+		<property name="apiName" value="MDS"/>
 	</bean>
 	
 	<bean id="ws.MDS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -165,8 +168,9 @@
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 	</bean>
 	
-	<bean id="ws.MRS.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+	<bean id="ws.MRS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MRS.SessionFactory"/>
+		<property name="apiName" value="MRS"/>
 	</bean>
 	
 	<bean id="ws.MRS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -196,7 +200,7 @@
 	</bean>
 
 
-	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.allocation.ServerSessionAllocationServiceImpl">
+	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.ServerSessionAllocationServiceImpl">
 	</bean>
 
 	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >

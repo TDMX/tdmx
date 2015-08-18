@@ -61,8 +61,7 @@ public class SslServerSocketInfo {
 			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 			log.debug("Creating a server socket on port " + sslTestPort);
-			SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(sslTestPort);
-			try {
+			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(sslTestPort)) {
 				supportedCipherSuites = serverSocket.getSupportedCipherSuites();
 				for (int i = 0; i < supportedCipherSuites.length; i++) {
 					log.debug("supported cipher suite: " + supportedCipherSuites[i]);
@@ -73,8 +72,6 @@ public class SslServerSocketInfo {
 					log.debug("supported ssl protocol: " + supportedProtocols[i]);
 				}
 
-			} finally {
-				serverSocket.close();
 			}
 
 		} catch (IOException e) {

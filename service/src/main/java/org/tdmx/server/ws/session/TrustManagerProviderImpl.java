@@ -16,17 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session.allocation;
+package org.tdmx.server.ws.session;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.List;
+
+import javax.net.ssl.X509TrustManager;
+
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.runtime.TrustManagerProvider;
 
-/**
- * A valueType holding information about the HTTPS endpoint of a backend server.
- * 
- * @author Peter
- * 
- */
-public class ServerSessionEndpoint {
+public class TrustManagerProviderImpl implements TrustManagerProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,22 +38,51 @@ public class ServerSessionEndpoint {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private final String sessionId;
-	private final String httpsUrl;
-	private final PKIXCertificate publicCertificate;
+
+	private List<WebServiceSessionTrustManager> serverSessionTrustManagers;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ServerSessionEndpoint(String sessionId, String httpsUrl, PKIXCertificate publicCertificate) {
-		this.sessionId = sessionId;
-		this.httpsUrl = httpsUrl;
-		this.publicCertificate = publicCertificate;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public X509TrustManager getTrustManager() {
+
+		return new X509TrustManager() {
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				try {
+					PKIXCertificate[] certs = CertificateIOUtils.convert(chain);
+					boolean anyTrusted = false;
+					for (WebServiceSessionTrustManager tm : getServerSessionTrustManagers()) {
+						if (tm.isTrusted(certs[0])) {
+							anyTrusted = true;
+							break;
+						}
+					}
+					if (!anyTrusted) {
+						throw new CertificateException("Not authorized.");
+					}
+				} catch (CryptoCertificateException e) {
+					throw new CertificateException(e.getMessage(), e);
+				}
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		};
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -64,16 +96,12 @@ public class ServerSessionEndpoint {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getSessionId() {
-		return sessionId;
+	public List<WebServiceSessionTrustManager> getServerSessionTrustManagers() {
+		return serverSessionTrustManagers;
 	}
 
-	public String getHttpsUrl() {
-		return httpsUrl;
-	}
-
-	public PKIXCertificate getPublicCertificate() {
-		return publicCertificate;
+	public void setServerSessionTrustManagers(List<WebServiceSessionTrustManager> serverSessionTrustManagers) {
+		this.serverSessionTrustManagers = serverSessionTrustManagers;
 	}
 
 }

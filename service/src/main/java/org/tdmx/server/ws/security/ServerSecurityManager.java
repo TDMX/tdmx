@@ -18,15 +18,15 @@
  */
 package org.tdmx.server.ws.security;
 
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
-public interface ServerSecurityManager<E extends ServerSession> {
+public interface ServerSecurityManager<E extends WebServiceSession> {
 
 	/**
-	 * Return the ServerSession associated with the sessionID and authenticated client.
+	 * Return the WebServiceSession associated with the sessionID and authenticated client.
 	 * 
 	 * @param sessionId
-	 * @return the ServerSession associated with the sessionID and authenticated client.
+	 * @return the WebServiceSession associated with the sessionID and authenticated client.
 	 * @throws AuthorizationException
 	 *             if the authenticated client and sessionID are not associated.
 	 */

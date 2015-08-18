@@ -16,15 +16,38 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session.allocation;
+package org.tdmx.server.session;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 
 public interface ServerSessionAllocationService {
 
-	// TODO impl
+	/**
+	 * Allocate a MRSSession on the least loaded MRS server serving the channel's account's segment. Use for first time
+	 * authorizations.
+	 * 
+	 * @param az
+	 * @param client
+	 * @param tempChannel
+	 * @return null if no capacity for new sessions.
+	 */
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client,
+			TemporaryChannel tempChannel);
+
+	/**
+	 * Allocate a MRSSession on the least loaded MRS server serving the channel's account's segment.
+	 * 
+	 * @param az
+	 * @param client
+	 * @param channel
+	 * @return null if no capacity for new sessions.
+	 */
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client, Channel channel);
 
 	/**
 	 * Allocate a MDSSession on the least loaded MDS server serving the account's segment.
@@ -34,7 +57,7 @@ public interface ServerSessionAllocationService {
 	 * @param service
 	 * @return null if no capacity for new sessions.
 	 */
-	public ServerSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service);
+	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service);
 
 	/**
 	 * Allocate a MOSSession on the least loaded MOS server serving the account's segment.
@@ -43,7 +66,7 @@ public interface ServerSessionAllocationService {
 	 * @param agent
 	 * @return null if no capacity for new sessions.
 	 */
-	public ServerSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent);
+	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent);
 
 	/**
 	 * Allocate a ZASSession on the least loaded ZAS server serving the account's segment.
@@ -52,5 +75,5 @@ public interface ServerSessionAllocationService {
 	 * @param agent
 	 * @return null if no capacity for new sessions.
 	 */
-	public ServerSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent);
+	public WebServiceSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent);
 }

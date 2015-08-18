@@ -21,11 +21,11 @@ package org.tdmx.server.ws.security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.ServerSession;
-import org.tdmx.server.session.ServerSessionLookupService;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.server.ws.session.WebServiceSession;
+import org.tdmx.server.ws.session.WebServiceSessionLookupService;
 
-public class ServerSecurityManagerImpl<E extends ServerSession> implements ServerSecurityManager<E> {
+public class ServerSecurityManagerImpl<E extends WebServiceSession> implements ServerSecurityManager<E> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,7 +37,7 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 	private static final Logger log = LoggerFactory.getLogger(ServerSecurityManagerImpl.class);
 
 	private AuthenticatedClientLookupService authenticatedClientService;
-	private ServerSessionLookupService<E> serverManager;
+	private WebServiceSessionLookupService<E> serverManager;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -82,11 +82,11 @@ public class ServerSecurityManagerImpl<E extends ServerSession> implements Serve
 		this.authenticatedClientService = authenticatedClientService;
 	}
 
-	public ServerSessionLookupService<E> getServerManager() {
+	public WebServiceSessionLookupService<E> getServerManager() {
 		return serverManager;
 	}
 
-	public void setServerManager(ServerSessionLookupService<E> serverManager) {
+	public void setServerManager(WebServiceSessionLookupService<E> serverManager) {
 		this.serverManager = serverManager;
 	}
 

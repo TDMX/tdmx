@@ -23,9 +23,9 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
-public class MDSServerSession extends ServerSession {
+public class MDSServerSession extends WebServiceSession {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

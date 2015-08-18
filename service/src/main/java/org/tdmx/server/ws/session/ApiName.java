@@ -16,18 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.session;
 
-import javax.net.ssl.X509TrustManager;
+/**
+ * The individual service.
+ * 
+ * @author Peter
+ * 
+ */
+public enum ApiName {
 
-public interface TrustManagerProvider {
-
-	/**
-	 * Provide an X509TrustManager which can decide which TLS client certificates are allowed to connect to the server.
-	 * The client certificates which are allowed are all those attached to sessions.
-	 * 
-	 * @return
-	 */
-	public X509TrustManager getTrustManager();
-
+	MOS,
+	MDS,
+	MRS,
+	ZAS,
+	SCS, ;
 }

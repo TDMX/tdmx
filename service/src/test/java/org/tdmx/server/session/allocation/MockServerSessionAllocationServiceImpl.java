@@ -18,34 +18,50 @@
  */
 package org.tdmx.server.session.allocation;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.server.session.ServerSessionAllocationService;
+import org.tdmx.server.session.WebServiceSessionEndpoint;
 
 public class MockServerSessionAllocationServiceImpl implements ServerSessionAllocationService {
 
-	private ServerSessionEndpoint endpoint;
+	private WebServiceSessionEndpoint endpoint;
 
 	@Override
-	public ServerSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
-		return endpoint;
-	}
-
-	@Override
-	public ServerSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
+	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
 		return endpoint;
 	}
 
 	@Override
-	public ServerSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
+	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
 		return endpoint;
 	}
 
-	public ServerSessionEndpoint getEndpoint() {
+	@Override
+	public WebServiceSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
 		return endpoint;
 	}
 
-	public void setEndpoint(ServerSessionEndpoint endpoint) {
+	@Override
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client,
+			TemporaryChannel tempChannel) {
+		return endpoint;
+	}
+
+	@Override
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client, Channel channel) {
+		return endpoint;
+	}
+
+	public WebServiceSessionEndpoint getEndpoint() {
+		return endpoint;
+	}
+
+	public void setEndpoint(WebServiceSessionEndpoint endpoint) {
 		this.endpoint = endpoint;
 	}
 

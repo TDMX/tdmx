@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.session;
 
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -33,7 +33,7 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 
-public abstract class AbstractServerSessionFactory<E extends ServerSession> implements ServerSessionFactory<E> {
+public abstract class AbstractServerSessionFactory<E extends WebServiceSession> implements WebServiceSessionFactory<E> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

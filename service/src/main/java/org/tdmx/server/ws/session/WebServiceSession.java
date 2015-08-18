@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.session;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
-public abstract class ServerSession {
+public abstract class WebServiceSession {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -51,7 +51,7 @@ public abstract class ServerSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ServerSession() {
+	public WebServiceSession() {
 		setAttribute(CREATED_TIMESTAMP, new Date());
 	}
 

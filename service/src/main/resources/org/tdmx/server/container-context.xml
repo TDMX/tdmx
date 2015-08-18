@@ -39,9 +39,9 @@
 		<property name="agentAuthorizationFilter" ref="server.authorizationFilter"/>
 		
 		<property name="trustProvider">
-			<bean class="org.tdmx.server.session.TrustManagerProviderImpl">
+			<bean class="org.tdmx.server.ws.session.TrustManagerProviderImpl">
 				<property name="serverSessionTrustManagers">
-					<list value-type="org.tdmx.server.session.ServerSessionTrustManager">
+					<list value-type="org.tdmx.server.ws.session.WebServiceSessionTrustManager">
 			            <ref bean="ws.ZAS.ServerSessionManager"/>
 			            <ref bean="ws.MOS.ServerSessionManager"/>
 			            <ref bean="ws.MDS.ServerSessionManager"/>
@@ -51,7 +51,7 @@
 			</bean>
 		</property>
 		<property name="manageables">
-			<list value-type="org.tdmx.lib.control.job.Manageable">
+			<list value-type="org.tdmx.server.runtime.Manageable">
 	            <ref bean="tdmx.lib.control.job.JobExecutor"/>
 	        </list>
         </property>

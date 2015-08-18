@@ -18,17 +18,15 @@
  */
 package org.tdmx.server.session;
 
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.List;
-
-import javax.net.ssl.X509TrustManager;
-
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
-public class TrustManagerProviderImpl implements TrustManagerProvider {
+/**
+ * A valueType holding information about the HTTPS endpoint of a backend server.
+ * 
+ * @author Peter
+ * 
+ */
+public class WebServiceSessionEndpoint {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,51 +35,22 @@ public class TrustManagerProviderImpl implements TrustManagerProvider {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-
-	private List<ServerSessionTrustManager> serverSessionTrustManagers;
+	private final String sessionId;
+	private final String httpsUrl;
+	private final PKIXCertificate publicCertificate;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	public WebServiceSessionEndpoint(String sessionId, String httpsUrl, PKIXCertificate publicCertificate) {
+		this.sessionId = sessionId;
+		this.httpsUrl = httpsUrl;
+		this.publicCertificate = publicCertificate;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public X509TrustManager getTrustManager() {
-
-		return new X509TrustManager() {
-
-			@Override
-			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-				try {
-					PKIXCertificate[] certs = CertificateIOUtils.convert(chain);
-					boolean anyTrusted = false;
-					for (ServerSessionTrustManager tm : getServerSessionTrustManagers()) {
-						if (tm.isTrusted(certs[0])) {
-							anyTrusted = true;
-							break;
-						}
-					}
-					if (!anyTrusted) {
-						throw new CertificateException("Not authorized.");
-					}
-				} catch (CryptoCertificateException e) {
-					throw new CertificateException(e.getMessage(), e);
-				}
-			}
-
-			@Override
-			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			}
-
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return null;
-			}
-		};
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -95,12 +64,16 @@ public class TrustManagerProviderImpl implements TrustManagerProvider {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public List<ServerSessionTrustManager> getServerSessionTrustManagers() {
-		return serverSessionTrustManagers;
+	public String getSessionId() {
+		return sessionId;
 	}
 
-	public void setServerSessionTrustManagers(List<ServerSessionTrustManager> serverSessionTrustManagers) {
-		this.serverSessionTrustManagers = serverSessionTrustManagers;
+	public String getHttpsUrl() {
+		return httpsUrl;
+	}
+
+	public PKIXCertificate getPublicCertificate() {
+		return publicCertificate;
 	}
 
 }

@@ -16,11 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session.allocation;
+package org.tdmx.server.session;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
 
 public class ServerSessionAllocationServiceImpl implements ServerSessionAllocationService {
 
@@ -41,19 +44,32 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ServerSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
+	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ServerSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
+	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ServerSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
+	public WebServiceSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client,
+			TemporaryChannel tempChannel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client, Channel channel) {
 		// TODO Auto-generated method stub
 		return null;
 	}

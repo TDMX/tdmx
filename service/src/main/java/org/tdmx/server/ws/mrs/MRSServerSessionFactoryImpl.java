@@ -23,7 +23,7 @@ import java.util.Map;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.AbstractServerSessionFactory;
+import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MRSServerSession> {
 

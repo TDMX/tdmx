@@ -72,11 +72,12 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
-import org.tdmx.server.session.ServerSessionFactory;
-import org.tdmx.server.session.ServerSessionFactory.SeedAttribute;
-import org.tdmx.server.session.ServerSessionManager;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
+import org.tdmx.server.ws.session.ApiName;
+import org.tdmx.server.ws.session.WebServiceSessionFactory;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -93,12 +94,12 @@ public class MOSImplUnitTest {
 
 	@Autowired
 	@Named("ws.MOS.SessionFactory")
-	private ServerSessionFactory<MOSServerSession> serverSessionFactory;
+	private WebServiceSessionFactory<MOSServerSession> serverSessionFactory;
 	@Autowired
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.MOS.ServerSessionManager")
-	private ServerSessionManager serverSessionManager;
+	private WebServiceSessionManager serverSessionManager;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -183,6 +184,7 @@ public class MOSImplUnitTest {
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
+		assertEquals(ApiName.MOS, serverSessionManager.getApiName());
 		// the service under test...
 		assertNotNull(mos);
 	}

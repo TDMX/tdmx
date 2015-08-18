@@ -50,8 +50,8 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.server.session.allocation.ServerSessionAllocationService;
-import org.tdmx.server.session.allocation.ServerSessionEndpoint;
+import org.tdmx.server.session.ServerSessionAllocationService;
+import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
@@ -70,6 +70,7 @@ public class SCSImpl implements SCS {
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider partitionIdProvider;
+
 	private ServerSessionAllocationService sessionAllocationService;
 
 	private DomainService domainService;
@@ -139,7 +140,7 @@ public class SCSImpl implements SCS {
 			return response;
 		}
 
-		ServerSessionEndpoint ep = sessionAllocationService.associateMDSSession(az, existingCred, service);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateMDSSession(az, existingCred, service);
 		if (ep == null) {
 			setError(ErrorCode.NoSessionCapacity, response);
 			return response;
@@ -182,7 +183,7 @@ public class SCSImpl implements SCS {
 			return response;
 		}
 
-		ServerSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, existingCred);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, existingCred);
 		if (ep == null) {
 			setError(ErrorCode.NoSessionCapacity, response);
 			return response;
@@ -224,7 +225,7 @@ public class SCSImpl implements SCS {
 			return response;
 		}
 
-		ServerSessionEndpoint ep = sessionAllocationService.associateZASSession(az, existingCred);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateZASSession(az, existingCred);
 		if (ep == null) {
 			setError(ErrorCode.NoSessionCapacity, response);
 			return response;

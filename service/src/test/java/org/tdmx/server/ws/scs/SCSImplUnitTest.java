@@ -66,8 +66,8 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.session.allocation.MockServerSessionAllocationServiceImpl;
-import org.tdmx.server.session.allocation.ServerSessionEndpoint;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
@@ -129,7 +129,7 @@ public class SCSImplUnitTest {
 	private PKIXCredential uc1;
 	private PKIXCredential uc2;
 
-	private ServerSessionEndpoint sse;
+	private WebServiceSessionEndpoint sse;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -163,7 +163,7 @@ public class SCSImplUnitTest {
 		uc1 = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 		uc2 = data.getDomains().get(1).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		sse = new ServerSessionEndpoint("SID" + System.currentTimeMillis(), "https://" + System.currentTimeMillis()
+		sse = new WebServiceSessionEndpoint("SID" + System.currentTimeMillis(), "https://" + System.currentTimeMillis()
 				+ "/scs", uc2.getPublicCert());
 		mockServerSesionAllocationService.setEndpoint(sse);
 	}

@@ -16,18 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.runtime;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import javax.net.ssl.X509TrustManager;
 
-public interface ServerSessionLookupService<E extends ServerSession> {
+public interface TrustManagerProvider {
 
 	/**
-	 * Return the ServerSession associated with the Certificate and sessionID
+	 * Provide an X509TrustManager which can decide which TLS client certificates are allowed to connect to the server.
+	 * The client certificates which are allowed are all those attached to sessions.
 	 * 
-	 * @param sessionId
-	 * @param cert
-	 * @return null if there is no association of sessionID and Certificate.
+	 * @return
 	 */
-	public E getSession(String sessionId, PKIXCertificate cert);
+	public X509TrustManager getTrustManager();
+
 }

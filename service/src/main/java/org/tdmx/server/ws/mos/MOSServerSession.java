@@ -29,7 +29,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
 /**
  * The MOSServerSession is shared by all concurrently sending AgentCredentials of a particular Address.
@@ -37,7 +37,7 @@ import org.tdmx.server.session.ServerSession;
  * @author Peter
  * 
  */
-public class MOSServerSession extends ServerSession {
+public class MOSServerSession extends WebServiceSession {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

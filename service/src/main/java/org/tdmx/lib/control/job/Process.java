@@ -18,6 +18,8 @@
  */
 package org.tdmx.lib.control.job;
 
+import org.tdmx.server.runtime.Manageable;
+
 
 public interface Process extends Runnable, Manageable {
 

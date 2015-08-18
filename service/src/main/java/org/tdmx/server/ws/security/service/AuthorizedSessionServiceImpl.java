@@ -21,7 +21,7 @@ package org.tdmx.server.ws.security.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
 /**
  * AuthorizedSessionLookupService holds thread bound information about the logged in authorized Agent.
@@ -29,7 +29,7 @@ import org.tdmx.server.session.ServerSession;
  * @author Peter Klauser
  * 
  */
-public class AuthorizedSessionServiceImpl<E extends ServerSession> implements AuthorizedSessionService<E> {
+public class AuthorizedSessionServiceImpl<E extends WebServiceSession> implements AuthorizedSessionService<E> {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

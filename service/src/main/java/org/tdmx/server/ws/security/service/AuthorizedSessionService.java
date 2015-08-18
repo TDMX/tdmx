@@ -18,10 +18,10 @@
  */
 package org.tdmx.server.ws.security.service;
 
-import org.tdmx.server.session.ServerSession;
+import org.tdmx.server.ws.session.WebServiceSession;
 
 /**
- * Register/Clear/Get the authorized ServerSession with the current Thread.
+ * Register/Clear/Get the authorized WebServiceSession with the current Thread.
  * 
  * Works together with the {@link AuthorizedSessionLookupService} to provide the current ThreadLocal authenticated
  * agent.
@@ -29,7 +29,7 @@ import org.tdmx.server.session.ServerSession;
  * @author Peter
  * 
  */
-public interface AuthorizedSessionService<E extends ServerSession> extends AuthorizedSessionLookupService<E> {
+public interface AuthorizedSessionService<E extends WebServiceSession> extends AuthorizedSessionLookupService<E> {
 
 	/**
 	 * Set the authorized Session associated with the current Thread.

@@ -16,12 +16,29 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.ws.session;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import java.util.Map;
 
-public interface ServerSessionTrustManager {
+public interface WebServiceSessionFactory<E extends WebServiceSession> {
 
-	public boolean isTrusted(PKIXCertificate cert);
+	public enum SeedAttribute {
+		AccountZoneId,
+		ZoneId,
+		DomainId,
+		ChannelId,
+		TemporaryChannelId,
+		ServiceId,
+		AddressId,
+	}
+
+	/**
+	 * Initialize a WebServiceSession given the seedAttributes.
+	 * 
+	 * @param seedAttributes
+	 *            the initial session attribute values which can be resolved to objects.
+	 * @return a new WebServiceSession initialized with the seedAttributes
+	 */
+	public E createServerSession(Map<SeedAttribute, Long> seedAttributes);
 
 }
