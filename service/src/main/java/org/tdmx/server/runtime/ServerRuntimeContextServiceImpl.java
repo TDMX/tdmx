@@ -27,7 +27,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SslServerSocketInfo {
+public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,13 +36,26 @@ public class SslServerSocketInfo {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SslServerSocketInfo.class);
-
-	private int sslTestPort;
+	private static final Logger log = LoggerFactory.getLogger(ServerRuntimeContextServiceImpl.class);
 
 	private String[] supportedCipherSuites;
 	private String[] supportedProtocols;
 	private String defaultTrustManagerFactoryAlgorithm;
+
+	private String serverAddress;
+	private int httpsPort;
+
+	private String[] httpsCiphers;
+	private String[] httpsProtocols;
+	private boolean renegotiationAllowed;
+	private int connectionIdleTimeoutSec;
+
+	private String stopAddress;
+	private int stopPort;
+	private String stopCommand;
+
+	private String keyStoreFile;
+	private String keyStorePassword;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,8 +73,8 @@ public class SslServerSocketInfo {
 			log.debug("Locating server socket factory for SSL...");
 			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
-			log.debug("Creating a server socket on port " + sslTestPort);
-			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(sslTestPort)) {
+			log.debug("Creating a server socket on port " + httpsPort);
+			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(httpsPort)) {
 				supportedCipherSuites = serverSocket.getSupportedCipherSuites();
 				for (int i = 0; i < supportedCipherSuites.length; i++) {
 					log.debug("supported cipher suite: " + supportedCipherSuites[i]);
@@ -71,7 +84,6 @@ public class SslServerSocketInfo {
 				for (int i = 0; i < supportedProtocols.length; i++) {
 					log.debug("supported ssl protocol: " + supportedProtocols[i]);
 				}
-
 			}
 
 		} catch (IOException e) {
@@ -90,32 +102,118 @@ public class SslServerSocketInfo {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public int getSslTestPort() {
-		return sslTestPort;
-	}
 
-	public void setSslTestPort(int sslTestPort) {
-		this.sslTestPort = sslTestPort;
-	}
-
+	@Override
 	public String[] getSupportedCipherSuites() {
 		return supportedCipherSuites;
 	}
 
-	public void setSupportedCipherSuites(String[] supportedCipherSuites) {
-		this.supportedCipherSuites = supportedCipherSuites;
-	}
-
+	@Override
 	public String[] getSupportedProtocols() {
 		return supportedProtocols;
 	}
 
-	public void setSupportedProtocols(String[] supportedProtocols) {
-		this.supportedProtocols = supportedProtocols;
-	}
-
+	@Override
 	public String getDefaultTrustManagerFactoryAlgorithm() {
 		return defaultTrustManagerFactoryAlgorithm;
 	}
 
+	@Override
+	public String getServerAddress() {
+		return serverAddress;
+	}
+
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
+	}
+
+	@Override
+	public int getHttpsPort() {
+		return httpsPort;
+	}
+
+	public void setHttpsPort(int httpsPort) {
+		this.httpsPort = httpsPort;
+	}
+
+	@Override
+	public String[] getHttpsCiphers() {
+		return httpsCiphers;
+	}
+
+	public void setHttpsCiphers(String[] httpsCiphers) {
+		this.httpsCiphers = httpsCiphers;
+	}
+
+	@Override
+	public String[] getHttpsProtocols() {
+		return httpsProtocols;
+	}
+
+	public void setHttpsProtocols(String[] httpsProtocols) {
+		this.httpsProtocols = httpsProtocols;
+	}
+
+	@Override
+	public boolean isRenegotiationAllowed() {
+		return renegotiationAllowed;
+	}
+
+	public void setRenegotiationAllowed(boolean renegotiationAllowed) {
+		this.renegotiationAllowed = renegotiationAllowed;
+	}
+
+	@Override
+	public String getStopAddress() {
+		return stopAddress;
+	}
+
+	public void setStopAddress(String stopAddress) {
+		this.stopAddress = stopAddress;
+	}
+
+	@Override
+	public int getStopPort() {
+		return stopPort;
+	}
+
+	public void setStopPort(int stopPort) {
+		this.stopPort = stopPort;
+	}
+
+	@Override
+	public String getStopCommand() {
+		return stopCommand;
+	}
+
+	public void setStopCommand(String stopCommand) {
+		this.stopCommand = stopCommand;
+	}
+
+	@Override
+	public String getKeyStoreFile() {
+		return keyStoreFile;
+	}
+
+	public void setKeyStoreFile(String keyStoreFile) {
+		this.keyStoreFile = keyStoreFile;
+	}
+
+	@Override
+	public String getKeyStorePassword() {
+		return keyStorePassword;
+	}
+
+	public void setKeyStorePassword(String keyStorePassword) {
+		this.keyStorePassword = keyStorePassword;
+	}
+
+	@Override
+	public int getConnectionIdleTimeoutSec() {
+		return connectionIdleTimeoutSec;
+	}
+
+	public void setConnectionIdleTimeoutSec(int connectionIdleTimeoutSec) {
+		this.connectionIdleTimeoutSec = connectionIdleTimeoutSec;
+	}
 }

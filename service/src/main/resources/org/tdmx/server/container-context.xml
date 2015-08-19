@@ -11,32 +11,31 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
  
- 	<bean id="server.sslInfo" class="org.tdmx.server.runtime.SslServerSocketInfo" init-method="init">
-		<property name="sslTestPort" value="${container.httpsPort}" />
- 	</bean>
-
-	<bean id="server.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
-	</bean>
-	
-	<bean id="server.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
-		<property name="authenticatedClientService" ref="server.AuthenticatedClientService" />
-	</bean>
-	
-	<bean id="server.Container" class="org.tdmx.server.runtime.ServerContainer">
-		<property name="serverAddress" value="${container.serverAddress}" />
+ 	<bean id="ws.Configuration" class="org.tdmx.server.runtime.WebServerRuntimeContextService" init-method="init">
 		<property name="httpsPort" value="${container.httpsPort}" />
+		<property name="serverAddress" value="${container.serverAddress}" />
 		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
 		<property name="httpsProtocols" value="${container.httpsProtocols}"/>
 		<property name="renegotiationAllowed" value="${container.tlsRenegotiationAllowed}"/>
-		<property name="keyStoreFile" value="${container.keyStoreFile}"/>
-		<property name="keyStorePassword" value="${container.keyStorePassword}"/>
-		<property name="connectionIdleTimeoutSec" value="${container.connectionIdleTimeoutSec}"/>
-		
 		<property name="stopAddress" value="${container.stopAddress}" />
 		<property name="stopPort" value="${container.stopPort}" />
 		<property name="stopCommand" value="${container.stopCommand}" />
+		<property name="keyStoreFile" value="${ws.generated.keyStoreFile}"/>
+		<property name="keyStorePassword" value="${ws.generated.keyStorePassword}"/>
+		<property name="connectionIdleTimeoutSec" value="${container.connectionIdleTimeoutSec}"/>
+ 	</bean>
 
-		<property name="agentAuthorizationFilter" ref="server.authorizationFilter"/>
+	<bean id="ws.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
+	</bean>
+	
+	<bean id="ws.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
+		<property name="authenticatedClientService" ref="ws.AuthenticatedClientService" />
+	</bean>
+	
+	<bean id="ws.Container" class="org.tdmx.server.runtime.ServerContainer">
+		<property name="runtimeContext" ref="ws.Configuration"/>
+		
+		<property name="agentAuthorizationFilter" ref="ws.authorizationFilter"/>
 		
 		<property name="trustProvider">
 			<bean class="org.tdmx.server.ws.session.TrustManagerProviderImpl">

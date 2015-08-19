@@ -82,7 +82,7 @@ public class JobExecutionServiceUnitTest {
 		service.setJobExecutorList(jeL);
 		service.setExceptionConverter(exceptionConverter);
 
-		service.init(null);
+		service.init();
 
 		service.start();
 	}

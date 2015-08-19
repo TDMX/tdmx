@@ -5,7 +5,7 @@
        http://www.springframework.org/schema/beans 
        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 
-	<bean id="server" class="org.springframework.context.support.ClassPathXmlApplicationContext">
+	<bean id="applicationContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
      <constructor-arg>
        <list>
          <value>server-context.xml</value>

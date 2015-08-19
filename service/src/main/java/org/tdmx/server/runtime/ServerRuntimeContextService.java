@@ -18,8 +18,33 @@
  */
 package org.tdmx.server.runtime;
 
-public interface ServerContainer {
+public interface ServerRuntimeContextService {
 
-	public void runUntilStopped(String[] args);
+	public String[] getSupportedCipherSuites();
 
+	public String[] getSupportedProtocols();
+
+	public String getDefaultTrustManagerFactoryAlgorithm();
+
+	public String getServerAddress();
+
+	public int getHttpsPort();
+
+	public String[] getHttpsCiphers();
+
+	public String[] getHttpsProtocols();
+
+	public boolean isRenegotiationAllowed();
+
+	public String getStopAddress();
+
+	public int getStopPort();
+
+	public String getStopCommand();
+
+	public String getKeyStoreFile();
+
+	public String getKeyStorePassword();
+
+	public int getConnectionIdleTimeoutSec();
 }

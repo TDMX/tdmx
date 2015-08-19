@@ -99,10 +99,6 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void init(String[] cmdLineArgs) {
-	}
-
 	public void init() {
 		// setup primarily with spring bean init method.
 		if (jobConverterList != null) {
@@ -119,6 +115,10 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 		scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("JobExecutionService"));
 
 		jobRunners = Executors.newFixedThreadPool(getMaxConcurrentJobs(), new NamedThreadFactory("JobRunner"));
+	}
+
+	@Override
+	public void initialize() {
 	}
 
 	@Override

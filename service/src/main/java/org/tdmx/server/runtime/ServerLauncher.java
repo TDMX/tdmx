@@ -74,7 +74,7 @@ public class ServerLauncher {
 		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory(serviceName);
 		ApplicationContext context = (ApplicationContext) beanFactoryReference.getFactory();
 
-		SslServerSocketInfo si = (SslServerSocketInfo) context.getBean(serviceName + ".sslInfo");
+		ServerRuntimeContextService si = (ServerRuntimeContextService) context.getBean(serviceName + ".Configuration");
 		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
 		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
 		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());

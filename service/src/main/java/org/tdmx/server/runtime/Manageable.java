@@ -20,7 +20,7 @@ package org.tdmx.server.runtime;
 
 public interface Manageable {
 
-	public void init(String[] cmdLineArgs);
+	public void initialize();
 
 	public void start();
 

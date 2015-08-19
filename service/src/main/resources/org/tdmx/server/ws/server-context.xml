@@ -35,7 +35,7 @@
 	</bean>
 	
 	<bean id="ws.ZAS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="serverManager" ref="ws.ZAS.ServerSessionManager"/>
 	</bean>
 	
@@ -48,7 +48,7 @@
 
 	<bean id="ws.ZAS.Implementation" class="org.tdmx.server.ws.zas.ZASImpl" >
 		<property name="authorizedSessionService" ref="ws.ZAS.AuthorizedSessionService"/>
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
@@ -81,7 +81,7 @@
 	</bean>
 	
 	<bean id="ws.MOS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="serverManager" ref="ws.MOS.ServerSessionManager"/>
 	</bean>
 	
@@ -94,7 +94,7 @@
 
 	<bean id="ws.MOS.Implementation" class="org.tdmx.server.ws.mos.MOSImpl" >
 		<property name="authorizedSessionService" ref="ws.MOS.AuthorizedSessionService"/>
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
@@ -128,7 +128,7 @@
 	</bean>
 	
 	<bean id="ws.MDS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="serverManager" ref="ws.MDS.ServerSessionManager"/>
 	</bean>
 	
@@ -141,7 +141,7 @@
 
 	<bean id="ws.MDS.Implementation" class="org.tdmx.server.ws.mds.MDSImpl" >
 		<property name="authorizedSessionService" ref="ws.MDS.AuthorizedSessionService"/>
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
 		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
@@ -174,7 +174,7 @@
 	</bean>
 	
 	<bean id="ws.MRS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="serverManager" ref="ws.MRS.ServerSessionManager"/>
 	</bean>
 	
@@ -204,7 +204,7 @@
 	</bean>
 
 	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >
-		<property name="authenticatedClientService" ref="server.authenticatedClientService"/>
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		
 		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
