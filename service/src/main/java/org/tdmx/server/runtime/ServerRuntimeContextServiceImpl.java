@@ -19,6 +19,7 @@
 package org.tdmx.server.runtime;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -72,6 +73,9 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 
 			log.debug("Locating server socket factory for SSL...");
 			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
+			InetAddress serverInterface = InetAddress.getByName(serverAddress);
+			log.debug("Server IP " + serverInterface.getHostAddress());
 
 			log.debug("Creating a server socket on port " + httpsPort);
 			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(httpsPort)) {

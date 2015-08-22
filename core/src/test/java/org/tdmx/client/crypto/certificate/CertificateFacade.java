@@ -46,6 +46,15 @@ public class CertificateFacade {
 		return zi;
 	}
 
+	public static ServerIpCredentialSpecifier createServerIp(String ipAddress, Calendar validStart, Calendar validEnd) {
+		ServerIpCredentialSpecifier req = new ServerIpCredentialSpecifier(ipAddress);
+		req.setNotBefore(validStart);
+		req.setNotAfter(validEnd);
+		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
+		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		return req;
+	}
+
 	public static ZoneAdministrationCredentialSpecifier createZACS(int version, String zoneRoot, Calendar validStart,
 			Calendar validEnd) {
 		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(version, zoneRoot);
@@ -62,6 +71,11 @@ public class CertificateFacade {
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		return req;
+	}
+
+	public static PKIXCredential createServerIp(String ipAddress, int validForYears) throws CryptoCertificateException {
+		ServerIpCredentialSpecifier req = createServerIp(ipAddress, getNow(), getNowPlusYears(validForYears));
+		return CredentialUtils.createServerIpCredential(req);
 	}
 
 	public static PKIXCredential createZAC(String zoneApex, int validForYears) throws CryptoCertificateException {

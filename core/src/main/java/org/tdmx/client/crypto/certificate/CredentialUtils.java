@@ -168,6 +168,54 @@ public class CredentialUtils {
 	}
 
 	/**
+	 * Create the credentials of a ServerIp.
+	 * 
+	 * The default validity is 1 year.
+	 * 
+	 * @param req
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public static PKIXCredential createServerIpCredential(ServerIpCredentialSpecifier req)
+			throws CryptoCertificateException {
+		KeyPair kp = null;
+		try {
+			kp = req.getKeyAlgorithm().generateNewKeyPair();
+		} catch (CryptoException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_KEYPAIR_GENERATION, e);
+		}
+
+		PublicKey publicKey = kp.getPublic();
+		PrivateKey privateKey = kp.getPrivate();
+
+		X500NameBuilder subjectBuilder = new X500NameBuilder();
+		if (StringUtils.hasText(req.getIpAddress())) {
+			subjectBuilder.addRDN(BCStyle.CN, req.getIpAddress());
+		}
+		X500Name subject = subjectBuilder.build();
+		X500Name issuer = subject;
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(1), req
+				.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+
+		try {
+
+			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation);
+			certBuilder.addExtension(Extension.keyUsage, false, ku);
+
+			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
+			byte[] certBytes = certBuilder.build(signer).getEncoded();
+
+			PKIXCertificate c = CertificateIOUtils.decodeX509(certBytes);
+
+			return new PKIXCredential(c, privateKey);
+		} catch (CertIOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
+		}
+	}
+
+	/**
 	 * Create the credentials of a DomainAdministrator.
 	 * 
 	 * @param req

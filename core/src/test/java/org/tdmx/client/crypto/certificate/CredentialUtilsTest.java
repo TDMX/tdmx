@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetAddress;
 import java.util.Calendar;
 
 import org.junit.Before;
@@ -168,6 +169,25 @@ public class CredentialUtilsTest {
 	}
 
 	@Test
+	public void testServerIpCert() throws Exception {
+		String ipAddress = "10.10.10.10";
+		PKIXCredential serverCred = CertificateFacade.createServerIp(ipAddress, 1);
+
+		assertEquals(1, serverCred.getCertificateChain().length);
+		assertEquals(ipAddress, serverCred.getPublicCert().getCommonName());
+	}
+
+	@Test
+	public void testServerIpCertLocalhost() throws Exception {
+		InetAddress inetAddress = InetAddress.getLocalHost();
+
+		PKIXCredential serverCred = CertificateFacade.createServerIp(inetAddress.getHostAddress(), 1);
+
+		assertEquals(1, serverCred.getCertificateChain().length);
+		assertEquals(inetAddress.getHostAddress(), serverCred.getPublicCert().getCommonName());
+	}
+
+	@Test
 	public void dumpUserCert() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		byte[] bs = zac.getPublicCert().getX509Encoded();
@@ -181,6 +201,9 @@ public class CredentialUtilsTest {
 		bs = uc.getPublicCert().getX509Encoded();
 		FileUtils.storeFileContents("uc.crt", bs, ".tmp");
 
+		PKIXCredential serverIp = CertificateFacade.createServerIp(InetAddress.getLocalHost().getHostAddress(), 1);
+		bs = serverIp.getPublicCert().getX509Encoded();
+		FileUtils.storeFileContents("srv.crt", bs, ".tmp");
 	}
 
 }
