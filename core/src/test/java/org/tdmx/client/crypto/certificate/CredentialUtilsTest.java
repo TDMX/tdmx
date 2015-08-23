@@ -175,6 +175,8 @@ public class CredentialUtilsTest {
 
 		assertEquals(1, serverCred.getCertificateChain().length);
 		assertEquals(ipAddress, serverCred.getPublicCert().getCommonName());
+
+		assertTrue(CredentialUtils.isValidServerIpCertificate(serverCred.getPublicCert()));
 	}
 
 	@Test
@@ -185,6 +187,8 @@ public class CredentialUtilsTest {
 
 		assertEquals(1, serverCred.getCertificateChain().length);
 		assertEquals(inetAddress.getHostAddress(), serverCred.getPublicCert().getCommonName());
+
+		assertTrue(CredentialUtils.isValidServerIpCertificate(serverCred.getPublicCert()));
 	}
 
 	@Test

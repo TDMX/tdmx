@@ -50,6 +50,8 @@ public class CredentialUtils {
 	// -------------------------------------------------------------------------
 	public static final String TDMX_DOMAIN_CA_OU = "tdmx-domain";
 
+	private static final int SERVER_SERIAL = 1;
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -194,8 +196,9 @@ public class CredentialUtils {
 		}
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(1), req
-				.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer,
+				BigInteger.valueOf(SERVER_SERIAL), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject,
+				publicKey);
 
 		try {
 
@@ -440,6 +443,39 @@ public class CredentialUtils {
 		// check the signing of the chain terminating in the trust root anchor of the zac
 		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
 		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { zac };
+		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
+		// TODO check that a ZAC which is not valid anymore will "fail"
+	}
+
+	public static boolean isValidServerIpCertificate(PKIXCertificate serverIp) throws CryptoCertificateException {
+		if (serverIp.getSerialNumber() != SERVER_SERIAL) {
+			return false;
+		}
+		if (serverIp.isCA()) {
+			return false;
+		}
+		if (serverIp.getCountry() != null) {
+			return false;
+		}
+		if (serverIp.getLocation() != null) {
+			return false;
+		}
+		if (serverIp.getOrganization() != null) {
+			return false;
+		}
+		if (serverIp.getOrgUnit() != null) {
+			return false;
+		}
+		if (serverIp.getEmailAddress() != null) {
+			return false;
+		}
+		// check the TDMX zone info extension doesn't exist
+		if (serverIp.getTdmxZoneInfo() != null) {
+			return false;
+		}
+		// check the signing is correct and the validity interval is ok
+		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { serverIp }, "jks");
+		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { serverIp };
 		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
 		// TODO check that a ZAC which is not valid anymore will "fail"
 	}

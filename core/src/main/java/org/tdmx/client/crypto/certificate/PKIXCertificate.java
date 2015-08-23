@@ -564,6 +564,11 @@ public class PKIXCertificate {
 		return null;
 	}
 
+	/**
+	 * Get the Certificate information as a String.
+	 * 
+	 * @return
+	 */
 	public String getInfo() {
 		return certificate.toString();
 	}
