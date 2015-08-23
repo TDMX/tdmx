@@ -40,6 +40,8 @@ import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.UniqueIdService;
+import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
  * 
@@ -48,7 +50,7 @@ import org.tdmx.lib.control.service.UniqueIdService;
  * @author Peter Klauser
  * 
  */
-public class JobExecutionProcessImpl implements Process, JobFactory {
+public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -87,7 +89,7 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService jobRunners = null;
-	private final LinkedList<Future<?>> jobStatus = new LinkedList<>();
+	private final List<Future<?>> jobStatus = new LinkedList<>();
 	private final Object syncObject = new Object();
 	private Future<?> fastTrigger = null;
 
@@ -118,11 +120,7 @@ public class JobExecutionProcessImpl implements Process, JobFactory {
 	}
 
 	@Override
-	public void initialize() {
-	}
-
-	@Override
-	public void start() {
+	public void start(String segment, List<WebServiceApiName> apis) {
 		started = true;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
 				TimeUnit.SECONDS);

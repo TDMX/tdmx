@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="
-       http://www.springframework.org/schema/beans 
-       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
-       http://www.springframework.org/schema/tx 
-       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
-       http://www.springframework.org/schema/aop 
-       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
- 
- 	<bean id="ws.Configuration" class="org.tdmx.server.runtime.WebServerRuntimeContextService" init-method="init">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+	
+
+
+
+	<bean id="ws.Configuration" class="org.tdmx.server.runtime.WebServerRuntimeContextService" init-method="init">
 		<property name="httpsPort" value="${container.httpsPort}" />
 		<property name="serverAddress" value="${container.serverAddress}" />
 		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
@@ -32,7 +37,11 @@
 		<property name="authenticatedClientService" ref="ws.AuthenticatedClientService" />
 	</bean>
 	
-	<bean id="ws.Container" class="org.tdmx.server.runtime.ServerContainer">
+	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+		<property name="timeoutCheckIntervalSec" value="60"/>
+	</bean>
+
+	<bean id="ws.Server" class="org.tdmx.server.runtime.WebServiceServerContainer">
 		<property name="runtimeContext" ref="ws.Configuration"/>
 		
 		<property name="agentAuthorizationFilter" ref="ws.authorizationFilter"/>
@@ -52,11 +61,10 @@
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
 	            <ref bean="tdmx.lib.control.job.JobExecutor"/>
+	            <ref bean="ws.ServerSessionManager"/>
 	        </list>
         </property>
 		
 	</bean>
 
-	
-	
 </beans>

@@ -136,7 +136,7 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
-import org.tdmx.server.ws.session.ApiName;
+import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
@@ -257,7 +257,7 @@ public class ZASImplUnitTest {
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
-		assertEquals(ApiName.ZAS, serverSessionManager.getApiName());
+		assertEquals(WebServiceApiName.ZAS, serverSessionManager.getApiName());
 
 		// the service under test...
 		assertNotNull(zas);

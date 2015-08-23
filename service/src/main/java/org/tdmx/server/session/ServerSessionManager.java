@@ -16,68 +16,46 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ws.session;
+package org.tdmx.server.session;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
-public interface WebServiceSessionManager {
+public interface ServerSessionManager {
 
 	/**
-	 * Return the name of the API that this ServerSessionManager is managing.
+	 * Creates a new API session for a client with some initial attributes.
 	 * 
-	 * @return
-	 */
-	public WebServiceApiName getApiName();
-
-	/**
-	 * Creates a new session for a client with some initial attributes.
-	 * 
+	 * @param apiName
 	 * @param sessionId
 	 * @param cert
 	 * @param seedAttributes
 	 * @return the number of active sessions.
 	 */
-	public int createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes);
+	public int createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
+			Map<SeedAttribute, Long> seedAttributes);
 
 	/**
-	 * Removes the session with the sessionId.
+	 * Add a new client certificate to an existing API session.
 	 * 
-	 * @param sessionId
-	 * @return
-	 */
-	public int deleteSession(String sessionId);
-
-	/**
-	 * Return a list of sessions which have not been used after the lastCutoffDate or who's creation date is prior to
-	 * the creationCutoffDate.
-	 * 
-	 * @param lastCutoffDate
-	 * @param creationCutoffDate
-	 * @return
-	 */
-	public List<WebServiceSession> getIdleSessions(Date lastCutoffDate, Date creationCutoffDate);
-
-	/**
-	 * Add a new client certificate to an existing session.
-	 * 
+	 * @param apiName
 	 * @param sessionId
 	 * @param cert
 	 * @return the number of active sessions.
 	 */
-	public int addCertificate(String sessionId, PKIXCertificate cert);
+	public int addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
 
 	/**
-	 * Remove a client certificate from an existing session.
+	 * Remove a client certificate from an existing API session.
 	 * 
+	 * @param apiName
 	 * @param sessionId
 	 * @param cert
 	 * @return the number of active sessions.
 	 */
-	public int removeCertificate(String sessionId, PKIXCertificate cert);
+	public int removeCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
 
 }

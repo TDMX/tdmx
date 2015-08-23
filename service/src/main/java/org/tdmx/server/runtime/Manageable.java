@@ -18,11 +18,13 @@
  */
 package org.tdmx.server.runtime;
 
+import java.util.List;
+
+import org.tdmx.server.ws.session.WebServiceApiName;
+
 public interface Manageable {
 
-	public void initialize();
-
-	public void start();
+	public void start(String segment, List<WebServiceApiName> apis);
 
 	public void stop();
 

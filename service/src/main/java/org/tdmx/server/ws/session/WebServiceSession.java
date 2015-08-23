@@ -125,4 +125,8 @@ public abstract class WebServiceSession {
 		setAttribute(LAST_USED_TIMESTAMP, lut);
 	}
 
+	public Date getCreationTimestamp() {
+		return getAttribute(CREATED_TIMESTAMP);
+	}
+
 }

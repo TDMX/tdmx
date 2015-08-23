@@ -84,7 +84,7 @@ public class JobExecutionServiceUnitTest {
 
 		service.init();
 
-		service.start();
+		service.start(null, null);
 	}
 
 	@After

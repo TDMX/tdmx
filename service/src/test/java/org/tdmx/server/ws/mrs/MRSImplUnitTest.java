@@ -80,7 +80,7 @@ import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
-import org.tdmx.server.ws.session.ApiName;
+import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
@@ -209,7 +209,7 @@ public class MRSImplUnitTest {
 		assertNotNull(domainService);
 		assertNotNull(addressService);
 
-		assertEquals(ApiName.MRS, serverSessionManager.getApiName());
+		assertEquals(WebServiceApiName.MRS, serverSessionManager.getApiName());
 
 		// the service under test...
 		assertNotNull(mrs);

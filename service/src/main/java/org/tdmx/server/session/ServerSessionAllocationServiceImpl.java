@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -34,6 +36,7 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(ServerSessionAllocationServiceImpl.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

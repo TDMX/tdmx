@@ -18,8 +18,16 @@
  */
 package org.tdmx.server.runtime;
 
+import java.util.List;
+
+import org.tdmx.server.ws.session.WebServiceApiName;
+
 public interface ServerContainer {
 
-	public void runUntilStopped(String[] args);
+	public void start(String segment, List<WebServiceApiName> apis) throws Exception;
+
+	public void stop();
+
+	public void awaitTermination();
 
 }

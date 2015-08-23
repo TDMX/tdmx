@@ -26,7 +26,7 @@ public interface ServerRuntimeContextService {
 
 	public String getDefaultTrustManagerFactoryAlgorithm();
 
-	public String getServerAddress();
+	public String getServerLocalIPAddress();
 
 	public int getHttpsPort();
 
@@ -36,7 +36,7 @@ public interface ServerRuntimeContextService {
 
 	public boolean isRenegotiationAllowed();
 
-	public String getStopAddress();
+	public String getStopLocalIPAddress();
 
 	public int getStopPort();
 

@@ -16,11 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.server.ws.session;
 
-import org.tdmx.server.runtime.Manageable;
+/**
+ * The individual service.
+ * 
+ * @author Peter
+ * 
+ */
+public enum WebServiceApiName {
 
-
-public interface Process extends Runnable, Manageable {
-
+	MOS,
+	MDS,
+	MRS,
+	ZAS, ;
 }

@@ -27,6 +27,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextService {
 
@@ -43,6 +44,7 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	private String[] supportedProtocols;
 	private String defaultTrustManagerFactoryAlgorithm;
 
+	private String serverLocalIPAddress;
 	private String serverAddress;
 	private int httpsPort;
 
@@ -51,6 +53,7 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	private boolean renegotiationAllowed;
 	private int connectionIdleTimeoutSec;
 
+	private String stopLocalIPAddress;
 	private String stopAddress;
 	private int stopPort;
 	private String stopCommand;
@@ -74,8 +77,15 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 			log.debug("Locating server socket factory for SSL...");
 			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
-			InetAddress serverInterface = InetAddress.getByName(serverAddress);
-			log.debug("Server IP " + serverInterface.getHostAddress());
+			InetAddress serverInterface = StringUtils.hasText(serverAddress) ? InetAddress.getByName(serverAddress)
+					: InetAddress.getLocalHost();
+			serverLocalIPAddress = serverInterface.getHostAddress();
+			log.debug("ServerContainer IP " + serverLocalIPAddress + ":" + httpsPort);
+
+			InetAddress stopInterface = StringUtils.hasText(stopAddress) ? InetAddress.getByName(stopAddress)
+					: InetAddress.getLocalHost();
+			stopLocalIPAddress = stopInterface.getHostAddress();
+			log.debug("Stop IP " + stopLocalIPAddress + ":" + stopPort);
 
 			log.debug("Creating a server socket on port " + httpsPort);
 			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(httpsPort)) {
@@ -93,6 +103,16 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 		} catch (IOException e) {
 			log.warn("Unable to determine SSL capabilities of the JVM.", e);
 		}
+	}
+
+	@Override
+	public String getServerLocalIPAddress() {
+		return serverLocalIPAddress;
+	}
+
+	@Override
+	public String getStopLocalIPAddress() {
+		return stopLocalIPAddress;
 	}
 
 	// -------------------------------------------------------------------------
@@ -122,7 +142,6 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 		return defaultTrustManagerFactoryAlgorithm;
 	}
 
-	@Override
 	public String getServerAddress() {
 		return serverAddress;
 	}
@@ -167,7 +186,6 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 		this.renegotiationAllowed = renegotiationAllowed;
 	}
 
-	@Override
 	public String getStopAddress() {
 		return stopAddress;
 	}
@@ -220,4 +238,5 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	public void setConnectionIdleTimeoutSec(int connectionIdleTimeoutSec) {
 		this.connectionIdleTimeoutSec = connectionIdleTimeoutSec;
 	}
+
 }

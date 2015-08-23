@@ -18,8 +18,12 @@
  */
 package org.tdmx.server.ws.session;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,14 +48,14 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 	/**
 	 * A Map of Certificate fingerprint to sessionID.
 	 */
-	private final Map<String, Set<String>> certificateSessionMap = new ConcurrentHashMap<>();;
+	private final Map<String, Set<String>> certificateSessionMap = new ConcurrentHashMap<>();
 
 	/**
 	 * A Map of sessionId to WebServiceSession.
 	 */
 	private final Map<String, E> sessionMap = new ConcurrentHashMap<>();
 
-	private ApiName apiName;
+	private WebServiceApiName apiName;
 
 	private WebServiceSessionFactory<E> sessionFactory;
 
@@ -84,6 +88,17 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 	}
 
 	@Override
+	public int deleteSession(String sessionId) {
+		E ss = sessionMap.remove(sessionId);
+		if (ss != null) {
+			for (PKIXCertificate authCert : ss.getAuthorizedCertificates()) {
+				disassociate(sessionId, authCert);
+			}
+		}
+		return getSessionCount();
+	}
+
+	@Override
 	public int addCertificate(String sessionId, PKIXCertificate cert) {
 		E ss = sessionMap.get(sessionId);
 		ss.addAuthorizedCertificate(cert);
@@ -106,6 +121,7 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 		if (ss != null) {
 			Set<String> sessionIds = certificateSessionMap.get(cert.getFingerprint());
 			if (sessionIds != null && sessionIds.contains(sessionId)) {
+				ss.setLastUsedTimestamp(new Date());
 				return ss;
 			}
 		}
@@ -113,8 +129,25 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 	}
 
 	@Override
-	public ApiName getApiName() {
+	public WebServiceApiName getApiName() {
 		return apiName;
+	}
+
+	@Override
+	public List<WebServiceSession> getIdleSessions(Date lastCutoffDate, Date creationCutoffDate) {
+		List<WebServiceSession> result = new ArrayList<>();
+		for (Entry<String, E> e : sessionMap.entrySet()) {
+			WebServiceSession ss = e.getValue();
+			if (creationCutoffDate != null && creationCutoffDate.before(ss.getCreationTimestamp())) {
+				result.add(ss);
+				continue;
+			}
+			if (lastCutoffDate != null && lastCutoffDate.after(ss.getLastUsedTimestamp())) {
+				result.add(ss);
+				continue;
+			}
+		}
+		return result;
 	}
 
 	// -------------------------------------------------------------------------
@@ -162,7 +195,7 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 		this.sessionFactory = sessionFactory;
 	}
 
-	public void setApiName(ApiName apiName) {
+	public void setApiName(WebServiceApiName apiName) {
 		this.apiName = apiName;
 	}
 

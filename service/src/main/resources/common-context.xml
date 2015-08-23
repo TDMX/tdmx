@@ -26,11 +26,9 @@
 
 	<!-- WS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/ws/container-context.xml"/>
 
 	<!-- RS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
-
-	<!-- CONTAINER -->
-	<import resource="classpath:/org/tdmx/server/container-context.xml"/>
 
 </beans>

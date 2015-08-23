@@ -22,11 +22,9 @@ import java.security.KeyStore;
 import java.security.cert.CRL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 
 import javax.net.ssl.TrustManager;
-import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
 import org.apache.cxf.transport.servlet.CXFServlet;
@@ -44,7 +42,6 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -52,11 +49,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
-import org.tdmx.server.ws.security.RequireClientCertificateFilter;
-import org.tdmx.server.ws.security.SessionProhibitionFilter;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-public class WebServiceServerContainer implements ServerContainer {
+public class RxServerContainer implements ServerContainer {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -65,7 +60,7 @@ public class WebServiceServerContainer implements ServerContainer {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(WebServiceServerContainer.class);
+	private static final Logger log = LoggerFactory.getLogger(RxServerContainer.class);
 
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
 	private static final String HTTP_1_1 = "http/1.1";
@@ -77,6 +72,7 @@ public class WebServiceServerContainer implements ServerContainer {
 
 	private TrustManagerProvider trustProvider;
 	private List<Manageable> manageables;
+
 	private Server jetty;
 
 	// -------------------------------------------------------------------------
@@ -97,8 +93,7 @@ public class WebServiceServerContainer implements ServerContainer {
 		// we trust client certs known to our ServerName, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
 		sslExt.setRenegotiationAllowed(runtimeContext.isRenegotiationAllowed());
-		// we don't NEED client auth if we want to co-host a Restfull API on this server.
-		sslExt.setWantClientAuth(true);
+		sslExt.setWantClientAuth(false);
 
 		sslExt.setIncludeCipherSuites(runtimeContext.getHttpsCiphers());
 		sslExt.setIncludeProtocols(runtimeContext.getHttpsProtocols());
@@ -128,19 +123,6 @@ public class WebServiceServerContainer implements ServerContainer {
 		httpsExt.setHost(runtimeContext.getServerLocalIPAddress());
 		httpsExt.setIdleTimeout(runtimeContext.getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
 
-		TrustingSslContextFactory sslInt = new TrustingSslContextFactory();
-		// we trust all client certs, with security in servlet "filters"
-		// sslContextFactory.setCertAlias("server");
-		sslInt.setRenegotiationAllowed(runtimeContext.isRenegotiationAllowed());
-		// we don't want client auth on internal apis
-		sslInt.setWantClientAuth(false);
-
-		sslInt.setIncludeCipherSuites(runtimeContext.getHttpsCiphers());
-		sslInt.setIncludeProtocols(runtimeContext.getHttpsProtocols());
-		sslInt.setKeyStoreType("jks");
-		sslInt.setKeyStorePath(runtimeContext.getKeyStoreFile());
-		sslInt.setKeyStorePassword(runtimeContext.getKeyStorePassword());
-
 		// Set the connectors
 		jetty.setConnectors(new Connector[] { httpsExt });
 
@@ -162,45 +144,32 @@ public class WebServiceServerContainer implements ServerContainer {
 		jetty.setHandler(stats);
 
 		NCSARequestLog requestLog = new AsyncNCSARequestLog();
-		requestLog.setFilename("ws-yyyy_mm_dd.log");
+		requestLog.setFilename("rx-yyyy_mm_dd.log");
 		requestLog.setExtended(true);
 		requestLog.setRetainDays(7);
 		requestLogHandler.setRequestLog(requestLog);
 
-		ServletContextHandler wsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
+		ServletContextHandler rsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
 				| ServletContextHandler.NO_SESSIONS);
-		wsContext.setContextPath("/api");
+		rsContext.setContextPath("/rs");
 		// Setup Spring context
-		wsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
-		wsContext.setInitParameter("parentContextKey", "applicationContext");
-		wsContext.setInitParameter("locatorFactorySelector", "classpath*:beanRefContext.xml");
-		wsContext.setInitParameter("contextConfigLocation", "classpath:/ws-context.xml");
+		rsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
+		rsContext.setInitParameter("parentContextKey", "applicationContext");
+		rsContext.setInitParameter("locatorFactorySelector", "classpath*:beanRefContext.xml");
+		rsContext.setInitParameter("contextConfigLocation", "classpath:/rs-context.xml");
 
 		// Add filters
-		FilterHolder sf = new FilterHolder();
-		sf.setFilter(new SessionProhibitionFilter());
-		wsContext.addFilter(sf, "/*", EnumSet.allOf(DispatcherType.class));
+		/*
+		 * FilterHolder rsfh = new FilterHolder(); rsfh.setFilter(getAgentAuthorizationFilter());
+		 * rsContext.addFilter(rsfh, "/sas/*", EnumSet.of(DispatcherType.REQUEST));
+		 */
+		// Add servlets
+		ServletHolder rsSh = new ServletHolder(CXFServlet.class);
+		rsSh.setInitOrder(1);
+		rsContext.addServlet(rsSh, "/*");
 
-		FilterHolder cf = new FilterHolder();
-		cf.setFilter(new RequireClientCertificateFilter());
-		wsContext.addFilter(cf, "/*", EnumSet.allOf(DispatcherType.class));
-
-		FilterHolder fh = new FilterHolder();
-		fh.setFilter(getAgentAuthorizationFilter());
-		wsContext.addFilter(fh, "/v1.0/sp/mds/*", EnumSet.of(DispatcherType.REQUEST));
-		wsContext.addFilter(fh, "/v1.0/sp/mos/*", EnumSet.of(DispatcherType.REQUEST));
-		wsContext.addFilter(fh, "/v1.0/sp/zas/*", EnumSet.of(DispatcherType.REQUEST));
-		wsContext.addFilter(fh, "/v1.0/sp/mrs/*", EnumSet.of(DispatcherType.REQUEST));
-
-		ServletHolder wsSh = new ServletHolder(CXFServlet.class);
-		wsSh.setInitOrder(1);
-		wsContext.addServlet(wsSh, "/*");
-
-		contexts.addHandler(wsContext);
-		// Start the server
+		contexts.addHandler(rsContext);
 		jetty.start();
-
-		startManageables(segment, apis);
 	}
 
 	@Override
