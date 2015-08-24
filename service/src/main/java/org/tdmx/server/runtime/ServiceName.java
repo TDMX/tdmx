@@ -19,13 +19,15 @@
 package org.tdmx.server.runtime;
 
 /**
- * The name of an independent server.
+ * The name of an independent service.
  * 
  * @author Peter
  * 
  */
-public enum ServerName {
+public enum ServiceName {
 
 	WS,
-	SCS, ;
+	RS,
+	SCS,
+	JOB;
 }

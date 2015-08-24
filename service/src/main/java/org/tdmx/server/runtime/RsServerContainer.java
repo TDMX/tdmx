@@ -18,14 +18,7 @@
  */
 package org.tdmx.server.runtime;
 
-import java.security.KeyStore;
-import java.security.cert.CRL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import javax.net.ssl.TrustManager;
-import javax.servlet.Filter;
 
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.eclipse.jetty.server.AsyncNCSARequestLog;
@@ -51,7 +44,7 @@ import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-public class RxServerContainer implements ServerContainer {
+public class RsServerContainer implements ServerContainer {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -60,18 +53,25 @@ public class RxServerContainer implements ServerContainer {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(RxServerContainer.class);
+	private static final Logger log = LoggerFactory.getLogger(RsServerContainer.class);
 
 	private static final int MILLIS_IN_ONE_SECOND = 1000;
 	private static final String HTTP_1_1 = "http/1.1";
 	private static final String HTTPS = "https";
 
-	private ServerRuntimeContextService runtimeContext;
+	private String serverAddress;
 
-	private Filter agentAuthorizationFilter;
+	private int httpsPort;
+	private String contextPath;
+	private boolean renegotiationAllowed;
+	private String[] cipherSuites;
+	private String[] httpsProtocols;
+	private String keystorePath;
+	private String keystorePassword;
+	private String keystoreType;
+	private String keyStoreAlias;
 
-	private TrustManagerProvider trustProvider;
-	private List<Manageable> manageables;
+	private int connectionIdleTimeoutSec;
 
 	private Server jetty;
 
@@ -89,17 +89,18 @@ public class RxServerContainer implements ServerContainer {
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();
 
-		TrustingSslContextFactory sslExt = new TrustingSslContextFactory();
-		// we trust client certs known to our ServerName, with security in servlet "filters"
+		SslContextFactory sslCF = new SslContextFactory();
+		// we trust client certs known to our ServiceName, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
-		sslExt.setRenegotiationAllowed(runtimeContext.isRenegotiationAllowed());
-		sslExt.setWantClientAuth(false);
+		sslCF.setRenegotiationAllowed(renegotiationAllowed);
+		sslCF.setWantClientAuth(false);
 
-		sslExt.setIncludeCipherSuites(runtimeContext.getHttpsCiphers());
-		sslExt.setIncludeProtocols(runtimeContext.getHttpsProtocols());
-		sslExt.setKeyStoreType("jks");
-		sslExt.setKeyStorePath(runtimeContext.getKeyStoreFile());
-		sslExt.setKeyStorePassword(runtimeContext.getKeyStorePassword());
+		sslCF.setIncludeCipherSuites(cipherSuites);
+		sslCF.setIncludeProtocols(httpsProtocols);
+		sslCF.setKeyStoreType(keystoreType);
+		sslCF.setKeyStorePath(keystorePath);
+		sslCF.setKeyStorePassword(keystorePassword);
+		sslCF.setCertAlias(keyStoreAlias);
 		// TODO check if needed
 		// sslContextFactory.setKeyManagerPassword("changeme");
 
@@ -108,23 +109,23 @@ public class RxServerContainer implements ServerContainer {
 		// argument to effectively clone the contents. On this HttpConfiguration object we add a
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty ServerContainer.
-		HttpConfiguration httpsConfigExt = new HttpConfiguration();
-		httpsConfigExt.setSecureScheme(HTTPS);
-		httpsConfigExt.setSecurePort(runtimeContext.getHttpsPort());
-		httpsConfigExt.setOutputBufferSize(32768);
-		httpsConfigExt.addCustomizer(new SecureRequestCustomizer());
+		HttpConfiguration httpsConfig = new HttpConfiguration();
+		httpsConfig.setSecureScheme(HTTPS);
+		httpsConfig.setSecurePort(httpsPort);
+		httpsConfig.setOutputBufferSize(32768);
+		httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
 		// HTTPS connector
 		// We create a second ServerConnector, passing in the http configuration we just made along with the
 		// previously created ssl context factory. Next we set the port and a longer idle timeout.
-		ServerConnector httpsExt = new ServerConnector(jetty, new SslConnectionFactory(sslExt, HTTP_1_1),
-				new HttpConnectionFactory(httpsConfigExt));
-		httpsExt.setPort(runtimeContext.getHttpsPort());
-		httpsExt.setHost(runtimeContext.getServerLocalIPAddress());
-		httpsExt.setIdleTimeout(runtimeContext.getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
+		ServerConnector httpsCon = new ServerConnector(jetty, new SslConnectionFactory(sslCF, HTTP_1_1),
+				new HttpConnectionFactory(httpsConfig));
+		httpsCon.setPort(httpsPort);
+		httpsCon.setHost(serverAddress);
+		httpsCon.setIdleTimeout(connectionIdleTimeoutSec * MILLIS_IN_ONE_SECOND);
 
 		// Set the connectors
-		jetty.setConnectors(new Connector[] { httpsExt });
+		jetty.setConnectors(new Connector[] { httpsCon });
 
 		// The following section adds some handlers, deployers and webapp providers.
 		// See: http://www.eclipse.org/jetty/documentation/current/advanced-embedding.html for details.
@@ -151,7 +152,7 @@ public class RxServerContainer implements ServerContainer {
 
 		ServletContextHandler rsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
 				| ServletContextHandler.NO_SESSIONS);
-		rsContext.setContextPath("/rs");
+		rsContext.setContextPath(contextPath);
 		// Setup Spring context
 		rsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
 		rsContext.setInitParameter("parentContextKey", "applicationContext");
@@ -177,8 +178,6 @@ public class RxServerContainer implements ServerContainer {
 		if (jetty != null) {
 			try {
 				jetty.stop();
-
-				stopManageables();
 			} catch (Exception e) {
 				log.error("Unable to stop jetty.", e);
 			}
@@ -201,58 +200,99 @@ public class RxServerContainer implements ServerContainer {
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
-	void startManageables(String segment, List<WebServiceApiName> apis) {
-		for (Manageable m : getManageables()) {
-			m.start(segment, apis);
-		}
-	}
-
-	void stopManageables() {
-		for (Manageable m : getManageables()) {
-			m.stop();
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private class TrustingSslContextFactory extends SslContextFactory {
-		@Override
-		protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls) throws Exception {
-			return new TrustManager[] { getTrustProvider().getTrustManager() };
-		}
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public Filter getAgentAuthorizationFilter() {
-		return agentAuthorizationFilter;
+	public String getServerAddress() {
+		return serverAddress;
 	}
 
-	public void setAgentAuthorizationFilter(Filter agentAuthorizationFilter) {
-		this.agentAuthorizationFilter = agentAuthorizationFilter;
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
 	}
 
-	public TrustManagerProvider getTrustProvider() {
-		return trustProvider;
+	public int getHttpsPort() {
+		return httpsPort;
 	}
 
-	public void setTrustProvider(TrustManagerProvider trustProvider) {
-		this.trustProvider = trustProvider;
+	public void setHttpsPort(int httpsPort) {
+		this.httpsPort = httpsPort;
 	}
 
-	public List<Manageable> getManageables() {
-		if (manageables == null) {
-			manageables = new ArrayList<>();
-		}
-		return manageables;
+	public String getContextPath() {
+		return contextPath;
 	}
 
-	public void setManageables(List<Manageable> manageables) {
-		this.manageables = manageables;
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
 	}
 
+	public boolean isRenegotiationAllowed() {
+		return renegotiationAllowed;
+	}
+
+	public void setRenegotiationAllowed(boolean renegotiationAllowed) {
+		this.renegotiationAllowed = renegotiationAllowed;
+	}
+
+	public String[] getCipherSuites() {
+		return cipherSuites;
+	}
+
+	public void setCipherSuites(String[] cipherSuites) {
+		this.cipherSuites = cipherSuites;
+	}
+
+	public String[] getHttpsProtocols() {
+		return httpsProtocols;
+	}
+
+	public void setHttpsProtocols(String[] httpsProtocols) {
+		this.httpsProtocols = httpsProtocols;
+	}
+
+	public String getKeystorePath() {
+		return keystorePath;
+	}
+
+	public void setKeystorePath(String keystorePath) {
+		this.keystorePath = keystorePath;
+	}
+
+	public String getKeystorePassword() {
+		return keystorePassword;
+	}
+
+	public void setKeystorePassword(String keystorePassword) {
+		this.keystorePassword = keystorePassword;
+	}
+
+	public String getKeystoreType() {
+		return keystoreType;
+	}
+
+	public void setKeystoreType(String keystoreType) {
+		this.keystoreType = keystoreType;
+	}
+
+	public String getKeyStoreAlias() {
+		return keyStoreAlias;
+	}
+
+	public void setKeyStoreAlias(String keyStoreAlias) {
+		this.keyStoreAlias = keyStoreAlias;
+	}
+
+	public int getConnectionIdleTimeoutSec() {
+		return connectionIdleTimeoutSec;
+	}
+
+	public void setConnectionIdleTimeoutSec(int connectionIdleTimeoutSec) {
+		this.connectionIdleTimeoutSec = connectionIdleTimeoutSec;
+	}
 }

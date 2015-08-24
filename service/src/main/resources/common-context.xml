@@ -14,6 +14,7 @@
 	<!-- CONFIGURATION -->
 	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
 	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/ssl-context.xml"/>
 	
 	<!-- LIBRARIES -->
 	<import resource="classpath:/org/tdmx/lib/console/service-context.xml"/>
@@ -23,6 +24,7 @@
 	
 	<!-- JOBS -->
 	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/job/container-context.xml"/>
 
 	<!-- WS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
@@ -30,5 +32,6 @@
 
 	<!-- RS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/rs/container-context.xml"/>
 
 </beans>

@@ -71,12 +71,17 @@ public class WebServiceServerContainer implements ServerContainer {
 	private static final String HTTP_1_1 = "http/1.1";
 	private static final String HTTPS = "https";
 
+	private boolean renegotiationAllowed;
+	private String[] cipherSuites;
+	private String[] httpsProtocols;
+	private int connectionIdleTimeoutSec;
 	private ServerRuntimeContextService runtimeContext;
 
 	private Filter agentAuthorizationFilter;
 
 	private TrustManagerProvider trustProvider;
 	private List<Manageable> manageables;
+
 	private Server jetty;
 
 	// -------------------------------------------------------------------------
@@ -93,18 +98,18 @@ public class WebServiceServerContainer implements ServerContainer {
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();
 
-		TrustingSslContextFactory sslExt = new TrustingSslContextFactory();
-		// we trust client certs known to our ServerName, with security in servlet "filters"
+		TrustingSslContextFactory sslCF = new TrustingSslContextFactory();
+		// we trust client certs known to our ServiceName, with security in servlet "filters"
 		// sslContextFactory.setCertAlias("server");
-		sslExt.setRenegotiationAllowed(runtimeContext.isRenegotiationAllowed());
-		// we don't NEED client auth if we want to co-host a Restfull API on this server.
-		sslExt.setWantClientAuth(true);
+		sslCF.setRenegotiationAllowed(renegotiationAllowed);
+		sslCF.setNeedClientAuth(true);
 
-		sslExt.setIncludeCipherSuites(runtimeContext.getHttpsCiphers());
-		sslExt.setIncludeProtocols(runtimeContext.getHttpsProtocols());
-		sslExt.setKeyStoreType("jks");
-		sslExt.setKeyStorePath(runtimeContext.getKeyStoreFile());
-		sslExt.setKeyStorePassword(runtimeContext.getKeyStorePassword());
+		sslCF.setIncludeCipherSuites(cipherSuites);
+		sslCF.setIncludeProtocols(httpsProtocols);
+		sslCF.setKeyStoreType(runtimeContext.getKeyStoreType());
+		sslCF.setKeyStorePath(runtimeContext.getKeyStoreFile());
+		sslCF.setKeyStorePassword(runtimeContext.getKeyStorePassword());
+		sslCF.setCertAlias(runtimeContext.getKeyStoreAlias());
 		// TODO check if needed
 		// sslContextFactory.setKeyManagerPassword("changeme");
 
@@ -113,36 +118,23 @@ public class WebServiceServerContainer implements ServerContainer {
 		// argument to effectively clone the contents. On this HttpConfiguration object we add a
 		// SecureRequestCustomizer which is how a new connector is able to resolve the https connection before
 		// handing control over to the Jetty ServerContainer.
-		HttpConfiguration httpsConfigExt = new HttpConfiguration();
-		httpsConfigExt.setSecureScheme(HTTPS);
-		httpsConfigExt.setSecurePort(runtimeContext.getHttpsPort());
-		httpsConfigExt.setOutputBufferSize(32768);
-		httpsConfigExt.addCustomizer(new SecureRequestCustomizer());
+		HttpConfiguration httpsConf = new HttpConfiguration();
+		httpsConf.setSecureScheme(HTTPS);
+		httpsConf.setSecurePort(runtimeContext.getHttpsPort());
+		httpsConf.setOutputBufferSize(32768);
+		httpsConf.addCustomizer(new SecureRequestCustomizer());
 
 		// HTTPS connector
 		// We create a second ServerConnector, passing in the http configuration we just made along with the
 		// previously created ssl context factory. Next we set the port and a longer idle timeout.
-		ServerConnector httpsExt = new ServerConnector(jetty, new SslConnectionFactory(sslExt, HTTP_1_1),
-				new HttpConnectionFactory(httpsConfigExt));
-		httpsExt.setPort(runtimeContext.getHttpsPort());
-		httpsExt.setHost(runtimeContext.getServerLocalIPAddress());
-		httpsExt.setIdleTimeout(runtimeContext.getConnectionIdleTimeoutSec() * MILLIS_IN_ONE_SECOND);
-
-		TrustingSslContextFactory sslInt = new TrustingSslContextFactory();
-		// we trust all client certs, with security in servlet "filters"
-		// sslContextFactory.setCertAlias("server");
-		sslInt.setRenegotiationAllowed(runtimeContext.isRenegotiationAllowed());
-		// we don't want client auth on internal apis
-		sslInt.setWantClientAuth(false);
-
-		sslInt.setIncludeCipherSuites(runtimeContext.getHttpsCiphers());
-		sslInt.setIncludeProtocols(runtimeContext.getHttpsProtocols());
-		sslInt.setKeyStoreType("jks");
-		sslInt.setKeyStorePath(runtimeContext.getKeyStoreFile());
-		sslInt.setKeyStorePassword(runtimeContext.getKeyStorePassword());
+		ServerConnector httpsCon = new ServerConnector(jetty, new SslConnectionFactory(sslCF, HTTP_1_1),
+				new HttpConnectionFactory(httpsConf));
+		httpsCon.setPort(runtimeContext.getHttpsPort());
+		httpsCon.setHost(runtimeContext.getServerLocalIPAddress());
+		httpsCon.setIdleTimeout(connectionIdleTimeoutSec * MILLIS_IN_ONE_SECOND);
 
 		// Set the connectors
-		jetty.setConnectors(new Connector[] { httpsExt });
+		jetty.setConnectors(new Connector[] { httpsCon });
 
 		// The following section adds some handlers, deployers and webapp providers.
 		// See: http://www.eclipse.org/jetty/documentation/current/advanced-embedding.html for details.
@@ -169,7 +161,7 @@ public class WebServiceServerContainer implements ServerContainer {
 
 		ServletContextHandler wsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
 				| ServletContextHandler.NO_SESSIONS);
-		wsContext.setContextPath("/api");
+		wsContext.setContextPath(runtimeContext.getContextPath());
 		// Setup Spring context
 		wsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
 		wsContext.setInitParameter("parentContextKey", "applicationContext");
@@ -258,6 +250,46 @@ public class WebServiceServerContainer implements ServerContainer {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public boolean isRenegotiationAllowed() {
+		return renegotiationAllowed;
+	}
+
+	public void setRenegotiationAllowed(boolean renegotiationAllowed) {
+		this.renegotiationAllowed = renegotiationAllowed;
+	}
+
+	public String[] getCipherSuites() {
+		return cipherSuites;
+	}
+
+	public void setCipherSuites(String[] cipherSuites) {
+		this.cipherSuites = cipherSuites;
+	}
+
+	public String[] getHttpsProtocols() {
+		return httpsProtocols;
+	}
+
+	public void setHttpsProtocols(String[] httpsProtocols) {
+		this.httpsProtocols = httpsProtocols;
+	}
+
+	public int getConnectionIdleTimeoutSec() {
+		return connectionIdleTimeoutSec;
+	}
+
+	public void setConnectionIdleTimeoutSec(int connectionIdleTimeoutSec) {
+		this.connectionIdleTimeoutSec = connectionIdleTimeoutSec;
+	}
+
+	public ServerRuntimeContextService getRuntimeContext() {
+		return runtimeContext;
+	}
+
+	public void setRuntimeContext(ServerRuntimeContextService runtimeContext) {
+		this.runtimeContext = runtimeContext;
+	}
 
 	public Filter getAgentAuthorizationFilter() {
 		return agentAuthorizationFilter;

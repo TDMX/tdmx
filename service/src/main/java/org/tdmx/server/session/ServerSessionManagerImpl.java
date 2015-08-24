@@ -113,6 +113,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 
 	@Override
 	public void stop() {
+		if (scheduledThreadPool == null) {
+			return; // never initialized
+		}
 		scheduledThreadPool.shutdown();
 		try {
 			scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);

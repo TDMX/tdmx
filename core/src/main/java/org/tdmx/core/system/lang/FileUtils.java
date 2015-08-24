@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
 
 public class FileUtils {
 
-	private static Logger log = LoggerFactory.getLogger(FileUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
+
+	private FileUtils() {
+	};
 
 	/**
 	 * read the contents of the file at filePath.

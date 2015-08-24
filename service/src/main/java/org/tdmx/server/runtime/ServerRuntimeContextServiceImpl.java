@@ -20,13 +20,18 @@ package org.tdmx.server.runtime;
 
 import java.io.IOException;
 import java.net.InetAddress;
-
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
+import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.KeyStoreUtils;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.ServerIpCredentialSpecifier;
+import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextService {
@@ -40,26 +45,19 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ServerRuntimeContextServiceImpl.class);
 
-	private String[] supportedCipherSuites;
-	private String[] supportedProtocols;
-	private String defaultTrustManagerFactoryAlgorithm;
-
-	private String serverLocalIPAddress;
 	private String serverAddress;
+	private String serverLocalIPAddress;
 	private int httpsPort;
-
-	private String[] httpsCiphers;
-	private String[] httpsProtocols;
-	private boolean renegotiationAllowed;
-	private int connectionIdleTimeoutSec;
-
-	private String stopLocalIPAddress;
-	private String stopAddress;
-	private int stopPort;
-	private String stopCommand;
+	private String contextPath;
 
 	private String keyStoreFile;
+	private String keyStoreType;
 	private String keyStorePassword;
+	private String keyStoreAlias;
+
+	private PublicKeyAlgorithm keyAlgorithm;
+	private SignatureAlgorithm signatureAlgorithm;
+	private int certificateValidityDays;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -69,39 +67,33 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	public void init() {
-
 		try {
-			defaultTrustManagerFactoryAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-			log.debug("TrustManagerFactory.getDefaultAlgorithm() " + defaultTrustManagerFactoryAlgorithm);
-
-			log.debug("Locating server socket factory for SSL...");
-			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-
 			InetAddress serverInterface = StringUtils.hasText(serverAddress) ? InetAddress.getByName(serverAddress)
 					: InetAddress.getLocalHost();
 			serverLocalIPAddress = serverInterface.getHostAddress();
 			log.debug("ServerContainer IP " + serverLocalIPAddress + ":" + httpsPort);
 
-			InetAddress stopInterface = StringUtils.hasText(stopAddress) ? InetAddress.getByName(stopAddress)
-					: InetAddress.getLocalHost();
-			stopLocalIPAddress = stopInterface.getHostAddress();
-			log.debug("Stop IP " + stopLocalIPAddress + ":" + stopPort);
+		} catch (IOException e) {
+			String errorMsg = "Unable to determine the IP address of the server [" + serverAddress + "]";
+			log.warn(errorMsg, e);
+			throw new RuntimeException(errorMsg, e);
+		}
 
-			log.debug("Creating a server socket on port " + httpsPort);
-			try (SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(httpsPort)) {
-				supportedCipherSuites = serverSocket.getSupportedCipherSuites();
-				for (int i = 0; i < supportedCipherSuites.length; i++) {
-					log.debug("supported cipher suite: " + supportedCipherSuites[i]);
-				}
+		try {
+			PKIXCredential serverCert = createServerPrivateKey();
 
-				supportedProtocols = serverSocket.getSupportedProtocols();
-				for (int i = 0; i < supportedProtocols.length; i++) {
-					log.debug("supported ssl protocol: " + supportedProtocols[i]);
-				}
-			}
+			byte[] keystore = KeyStoreUtils.saveKeyStore(serverCert, keyStoreType, keyStorePassword, keyStoreAlias);
+
+			FileUtils.storeFileContents(keyStoreFile, keystore, ".tmp");
+		} catch (CryptoCertificateException e) {
+			String errorMsg = "Unable to create servers private credential [" + serverLocalIPAddress + "]";
+			log.warn(errorMsg, e);
+			throw new RuntimeException(errorMsg, e);
 
 		} catch (IOException e) {
-			log.warn("Unable to determine SSL capabilities of the JVM.", e);
+			String errorMsg = "Unable to store servers private credential [" + keyStoreFile + "]";
+			log.warn(errorMsg, e);
+			throw new RuntimeException(errorMsg, e);
 		}
 	}
 
@@ -111,8 +103,33 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	}
 
 	@Override
-	public String getStopLocalIPAddress() {
-		return stopLocalIPAddress;
+	public int getHttpsPort() {
+		return httpsPort;
+	}
+
+	@Override
+	public String getContextPath() {
+		return contextPath;
+	}
+
+	@Override
+	public String getKeyStoreFile() {
+		return keyStoreFile;
+	}
+
+	@Override
+	public String getKeyStorePassword() {
+		return keyStorePassword;
+	}
+
+	@Override
+	public String getKeyStoreType() {
+		return keyStoreType;
+	}
+
+	@Override
+	public String getKeyStoreAlias() {
+		return keyStoreAlias;
 	}
 
 	// -------------------------------------------------------------------------
@@ -123,24 +140,24 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private PKIXCredential createServerPrivateKey() throws CryptoCertificateException {
+		Calendar now = Calendar.getInstance();
+		Calendar later = Calendar.getInstance();
+		later.add(Calendar.DATE, certificateValidityDays);
+
+		ServerIpCredentialSpecifier sics = new ServerIpCredentialSpecifier(serverLocalIPAddress);
+		sics.setKeyAlgorithm(keyAlgorithm);
+		sics.setSignatureAlgorithm(signatureAlgorithm);
+
+		sics.setNotAfter(later);
+		sics.setNotBefore(now);
+
+		return CredentialUtils.createServerIpCredential(sics);
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	@Override
-	public String[] getSupportedCipherSuites() {
-		return supportedCipherSuites;
-	}
-
-	@Override
-	public String[] getSupportedProtocols() {
-		return supportedProtocols;
-	}
-
-	@Override
-	public String getDefaultTrustManagerFactoryAlgorithm() {
-		return defaultTrustManagerFactoryAlgorithm;
-	}
 
 	public String getServerAddress() {
 		return serverAddress;
@@ -150,93 +167,52 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 		this.serverAddress = serverAddress;
 	}
 
-	@Override
-	public int getHttpsPort() {
-		return httpsPort;
-	}
-
 	public void setHttpsPort(int httpsPort) {
 		this.httpsPort = httpsPort;
-	}
-
-	@Override
-	public String[] getHttpsCiphers() {
-		return httpsCiphers;
-	}
-
-	public void setHttpsCiphers(String[] httpsCiphers) {
-		this.httpsCiphers = httpsCiphers;
-	}
-
-	@Override
-	public String[] getHttpsProtocols() {
-		return httpsProtocols;
-	}
-
-	public void setHttpsProtocols(String[] httpsProtocols) {
-		this.httpsProtocols = httpsProtocols;
-	}
-
-	@Override
-	public boolean isRenegotiationAllowed() {
-		return renegotiationAllowed;
-	}
-
-	public void setRenegotiationAllowed(boolean renegotiationAllowed) {
-		this.renegotiationAllowed = renegotiationAllowed;
-	}
-
-	public String getStopAddress() {
-		return stopAddress;
-	}
-
-	public void setStopAddress(String stopAddress) {
-		this.stopAddress = stopAddress;
-	}
-
-	@Override
-	public int getStopPort() {
-		return stopPort;
-	}
-
-	public void setStopPort(int stopPort) {
-		this.stopPort = stopPort;
-	}
-
-	@Override
-	public String getStopCommand() {
-		return stopCommand;
-	}
-
-	public void setStopCommand(String stopCommand) {
-		this.stopCommand = stopCommand;
-	}
-
-	@Override
-	public String getKeyStoreFile() {
-		return keyStoreFile;
 	}
 
 	public void setKeyStoreFile(String keyStoreFile) {
 		this.keyStoreFile = keyStoreFile;
 	}
 
-	@Override
-	public String getKeyStorePassword() {
-		return keyStorePassword;
+	public PublicKeyAlgorithm getKeyAlgorithm() {
+		return keyAlgorithm;
+	}
+
+	public void setKeyAlgorithm(PublicKeyAlgorithm keyAlgorithm) {
+		this.keyAlgorithm = keyAlgorithm;
+	}
+
+	public SignatureAlgorithm getSignatureAlgorithm() {
+		return signatureAlgorithm;
+	}
+
+	public void setSignatureAlgorithm(SignatureAlgorithm signatureAlgorithm) {
+		this.signatureAlgorithm = signatureAlgorithm;
+	}
+
+	public int getCertificateValidityDays() {
+		return certificateValidityDays;
+	}
+
+	public void setCertificateValidityDays(int certificateValidityDays) {
+		this.certificateValidityDays = certificateValidityDays;
 	}
 
 	public void setKeyStorePassword(String keyStorePassword) {
 		this.keyStorePassword = keyStorePassword;
 	}
 
-	@Override
-	public int getConnectionIdleTimeoutSec() {
-		return connectionIdleTimeoutSec;
+	public void setKeyStoreAlias(String keyStoreAlias) {
+		this.keyStoreAlias = keyStoreAlias;
 	}
 
-	public void setConnectionIdleTimeoutSec(int connectionIdleTimeoutSec) {
-		this.connectionIdleTimeoutSec = connectionIdleTimeoutSec;
+	public void setKeyStoreType(String keyStoreType) {
+		this.keyStoreType = keyStoreType;
+	}
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
 	}
 
 }

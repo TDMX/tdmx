@@ -18,10 +18,14 @@
  */
 package org.tdmx.server.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
-public class WebServerRuntimeContextServiceImpl extends ServerRuntimeContextServiceImpl {
+public class BackgroundJobServerContainer implements ServerContainer {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -30,7 +34,9 @@ public class WebServerRuntimeContextServiceImpl extends ServerRuntimeContextServ
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(WebServerRuntimeContextServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(BackgroundJobServerContainer.class);
+
+	private List<Manageable> manageables;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -39,11 +45,23 @@ public class WebServerRuntimeContextServiceImpl extends ServerRuntimeContextServ
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	@Override
-	public void init() {
-		super.init();
 
-		// TODO generate ip based cert.
+	@Override
+	public void start(String segment, List<WebServiceApiName> apis) throws Exception {
+		for (Manageable m : getManageables()) {
+			m.start(segment, apis);
+		}
+	}
+
+	@Override
+	public void stop() {
+		for (Manageable m : getManageables()) {
+			m.stop();
+		}
+	}
+
+	@Override
+	public void awaitTermination() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -57,5 +75,16 @@ public class WebServerRuntimeContextServiceImpl extends ServerRuntimeContextServ
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public List<Manageable> getManageables() {
+		if (manageables == null) {
+			manageables = new ArrayList<>();
+		}
+		return manageables;
+	}
+
+	public void setManageables(List<Manageable> manageables) {
+		this.manageables = manageables;
+	}
 
 }

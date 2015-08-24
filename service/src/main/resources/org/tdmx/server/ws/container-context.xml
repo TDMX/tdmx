@@ -16,33 +16,39 @@
 
 
 
-	<bean id="ws.Configuration" class="org.tdmx.server.runtime.WebServerRuntimeContextService" init-method="init">
-		<property name="httpsPort" value="${container.httpsPort}" />
-		<property name="serverAddress" value="${container.serverAddress}" />
-		<property name="httpsCiphers" value="${container.httpsCipherList}"/>
-		<property name="httpsProtocols" value="${container.httpsProtocols}"/>
-		<property name="renegotiationAllowed" value="${container.tlsRenegotiationAllowed}"/>
-		<property name="stopAddress" value="${container.stopAddress}" />
-		<property name="stopPort" value="${container.stopPort}" />
-		<property name="stopCommand" value="${container.stopCommand}" />
-		<property name="keyStoreFile" value="${ws.generated.keyStoreFile}"/>
-		<property name="keyStorePassword" value="${ws.generated.keyStorePassword}"/>
-		<property name="connectionIdleTimeoutSec" value="${container.connectionIdleTimeoutSec}"/>
+	<bean id="ws.Configuration" class="org.tdmx.server.runtime.ServerRuntimeContextServiceImpl" init-method="init">
+		<property name="httpsPort" value="${ws.httpsPort}" />
+		<property name="serverAddress" value="${ws.serverAddress}" />
+		<property name="contextPath" value="${ws.contextPath}"/>
+		<property name="keyStoreFile" value="${ws.keyStoreFile}"/>
+		<property name="keyStorePassword" value="${ws.keyStorePassword}"/>
+		<property name="keyStoreAlias" value="${ws.keyStoreAlias}"/>
+		<property name="keyStoreType" value="${ws.keyStoreType}"/>
+		
+		<property name="certificateValidityDays" value="${ws.certificateValidityDays}"/>
+		<property name="keyAlgorithm" value="${ws.certificateKeyAlgorithm}"/>
+		<property name="signatureAlgorithm" value="${ws.certificateSignatureAlgorithm}"/>
+		
  	</bean>
 
 	<bean id="ws.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 	
 	<bean id="ws.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
-		<property name="authenticatedClientService" ref="ws.AuthenticatedClientService" />
+		<property name="authenticatedClientService" ref="ws.authenticatedClientService" />
 	</bean>
 	
-	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
-		<property name="timeoutCheckIntervalSec" value="60"/>
+	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl" init-method="init">
+		<property name="timeoutCheckIntervalSec" value="${ws.sessionTimeoutCheckIntervalSec}"/>
 	</bean>
 
-	<bean id="ws.Server" class="org.tdmx.server.runtime.WebServiceServerContainer">
+	<bean id="WS.Server" class="org.tdmx.server.runtime.WebServiceServerContainer">
 		<property name="runtimeContext" ref="ws.Configuration"/>
+
+		<property name="cipherSuites" value="${ws.httpsCipherList}"/>
+		<property name="httpsProtocols" value="${ws.httpsProtocols}"/>
+		<property name="renegotiationAllowed" value="${ws.tlsRenegotiationAllowed}"/>
+		<property name="connectionIdleTimeoutSec" value="${ws.sslConnectionIdleTimeoutSec}"/>
 		
 		<property name="agentAuthorizationFilter" ref="ws.authorizationFilter"/>
 		
@@ -60,7 +66,6 @@
 		</property>
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
-	            <ref bean="tdmx.lib.control.job.JobExecutor"/>
 	            <ref bean="ws.ServerSessionManager"/>
 	        </list>
         </property>

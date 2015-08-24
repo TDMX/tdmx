@@ -36,7 +36,7 @@ import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.springframework.util.StringUtils;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
@@ -44,7 +44,7 @@ import org.tdmx.server.ws.session.WebServiceApiName;
  * 
  * usage:
  * 
- * --server={WS|RX|SCS|ROS|JOB}* defines which servers to start
+ * --service={WS|RX|SCS|ROS|JOB}* defines which service to start
  * 
  * --api={MOS,MDS,MRS,ZAS} when WS is the server, this defines which APIs are started
  * 
@@ -68,7 +68,7 @@ public class ServerLauncher {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerContainer.class);
 
-	private static final String SERVER_ARG_PREFIX = "--server=";
+	private static final String SERVICE_ARG_PREFIX = "--service=";
 	private static final String API_ARG_PREFIX = "--api=";
 	private static final String SEGMENT_ARG_PREFIX = "--segment=";
 	private static final String STOP_PORT_ARG_PREFIX = "--stopPort=";
@@ -76,6 +76,7 @@ public class ServerLauncher {
 	private static final String STOP_CMD_ARG_PREFIX = "--stopCmd=";
 	private static final String DEFAULT_STOP_CMD = "STOP";
 	private static final String STOP_ADDRESS_ARG_PREFIX = "--stopAddress=";
+	private static final String DEFAULT_SEGMENT = "DEFAULT";
 
 	private static ApplicationContext context;
 
@@ -83,19 +84,19 @@ public class ServerLauncher {
 	}
 
 	public static void main(String[] args) throws UnknownHostException {
-		List<ServerName> servers = new ArrayList<>();
+		List<ServiceName> services = new ArrayList<>();
 		List<WebServiceApiName> apis = new ArrayList<>();
-		String segment = null;
+		String segment = DEFAULT_SEGMENT;
 
 		String stopCmd = DEFAULT_STOP_CMD;
 		String stopIpAddress = InetAddress.getLocalHost().getHostAddress();
 		int stopPort = DEFAULT_STOP_PORT;
 
 		for (String arg : args != null ? args : new String[0]) {
-			if (StringUtils.hasText(arg) && arg.startsWith(SERVER_ARG_PREFIX)) {
-				for (ServerName srvName : ServerName.values()) {
+			if (StringUtils.hasText(arg) && arg.startsWith(SERVICE_ARG_PREFIX)) {
+				for (ServiceName srvName : ServiceName.values()) {
 					if (arg.toUpperCase().indexOf(srvName.toString()) != -1) {
-						servers.add(srvName);
+						services.add(srvName);
 					}
 				}
 			}
@@ -120,8 +121,14 @@ public class ServerLauncher {
 			}
 		}
 
-		if (servers.size() == 0) {
-			log.error("Missing argument " + SERVER_ARG_PREFIX);
+		if (services.size() == 0) {
+			log.error("Missing argument " + SERVICE_ARG_PREFIX);
+			System.exit(-1);
+		}
+		if (services.contains(ServiceName.WS) && apis.isEmpty()) {
+			log.error("Missing argument " + API_ARG_PREFIX + " in conjunction with " + SERVICE_ARG_PREFIX
+					+ ServiceName.WS);
+			log.error("Possible values {" + StringUtils.arrayToCommaDelimitedString(ServiceName.values()) + "}");
 			System.exit(-1);
 		}
 
@@ -139,31 +146,35 @@ public class ServerLauncher {
 			System.exit(-1);
 		}
 
-		if (!StringUtils.hasText(segment)) {
-			log.info("Non segmented operation.");
-			segment = null;
-		} else {
-			log.info("Segment: " + segment);
-		}
+		log.info("services " + StringUtils.arrayToCommaDelimitedString(services.toArray()));
+		log.info("segment: " + segment);
+		log.info("api " + StringUtils.arrayToCommaDelimitedString(apis.toArray()));
 
 		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
 		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
 		context = (ApplicationContext) beanFactoryReference.getFactory();
 
+		// dump out some information about SSL on the JVM
+		JvmSslContext si = (JvmSslContext) context.getBean("jvm.JvmSslContext");
+		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
+		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
+		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
+
 		try {
-			MonitorThread monitor = new MonitorThread(servers, stopPort, stopCmd, stopIpAddress);
+			MonitorThread monitor = new MonitorThread(services, stopPort, stopCmd, stopIpAddress);
 			monitor.start();
 
-			startup(servers, segment, apis);
+			startup(services, segment, apis);
 
 		} catch (Exception e) {
-			log.error("Unable to start " + servers, e);
-			shutdown(servers);
+			log.error("Unable to start " + services, e);
+			shutdown(services);
 		}
 	}
 
-	private static void shutdown(List<ServerName> servers) {
-		for (ServerName srvName : servers) {
+	private static void shutdown(List<ServiceName> services) {
+		for (ServiceName srvName : services) {
+			log.info("Stop service " + srvName);
 			ServerContainer sc = (ServerContainer) context.getBean(srvName + ".Server");
 			try {
 				sc.stop();
@@ -171,7 +182,8 @@ public class ServerLauncher {
 				log.warn("Unable to stop " + srvName, e);
 			}
 		}
-		for (ServerName srvName : servers) {
+		for (ServiceName srvName : services) {
+			log.info("Await termination of service " + srvName);
 			ServerContainer sc = (ServerContainer) context.getBean(srvName + ".Server");
 			try {
 				sc.awaitTermination();
@@ -181,22 +193,11 @@ public class ServerLauncher {
 		}
 	}
 
-	private static void startup(List<ServerName> servers, String segment, List<WebServiceApiName> apis)
+	private static void startup(List<ServiceName> services, String segment, List<WebServiceApiName> apis)
 			throws Exception {
-		// Construct the SpringApplication
-		// Log config info about the Containers
-		for (ServerName srvName : servers) {
-			ServerRuntimeContextService si = (ServerRuntimeContextService) context.getBean(srvName + ".Configuration");
-			if (si != null) {
-				log.info("JVM supportedCipherSuites: "
-						+ StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
-				log.info("JVM supportedProtocols: "
-						+ StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
-				log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
-			}
-		}
 		// Start the Containers
-		for (ServerName srvName : servers) {
+		for (ServiceName srvName : services) {
+			log.info("Start service " + srvName);
 			ServerContainer sc = (ServerContainer) context.getBean(srvName + ".Server");
 			sc.start(segment, apis);
 		}
@@ -207,15 +208,15 @@ public class ServerLauncher {
 		private final Logger log = LoggerFactory.getLogger(MonitorThread.class);
 
 		private final ServerSocket socket;
-		private final List<ServerName> servers;
+		private final List<ServiceName> services;
 		private final String stopCommand;
 
-		public MonitorThread(List<ServerName> servers, int port, String stopCommand, String localAddr)
+		public MonitorThread(List<ServiceName> services, int port, String stopCommand, String localAddr)
 				throws IOException {
 			setDaemon(true);
 			setName("ServerLauncher#StopMonitor");
 			this.stopCommand = stopCommand;
-			this.servers = servers;
+			this.services = services;
 			this.socket = new ServerSocket(port, 1, InetAddress.getByName(localAddr));
 		}
 
@@ -259,8 +260,8 @@ public class ServerLauncher {
 				}
 			}
 
-			// stop all servers
-			shutdown(servers);
+			// stop all services
+			shutdown(services);
 
 			try {
 				socket.close();

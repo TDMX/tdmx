@@ -20,31 +20,18 @@ package org.tdmx.server.runtime;
 
 public interface ServerRuntimeContextService {
 
-	public String[] getSupportedCipherSuites();
-
-	public String[] getSupportedProtocols();
-
-	public String getDefaultTrustManagerFactoryAlgorithm();
-
 	public String getServerLocalIPAddress();
 
 	public int getHttpsPort();
 
-	public String[] getHttpsCiphers();
-
-	public String[] getHttpsProtocols();
-
-	public boolean isRenegotiationAllowed();
-
-	public String getStopLocalIPAddress();
-
-	public int getStopPort();
-
-	public String getStopCommand();
+	public String getContextPath();
 
 	public String getKeyStoreFile();
 
 	public String getKeyStorePassword();
 
-	public int getConnectionIdleTimeoutSec();
+	public String getKeyStoreType();
+
+	public String getKeyStoreAlias();
+
 }
