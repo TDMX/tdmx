@@ -106,6 +106,14 @@
 	</bean>
 
 
+	<bean id="tdmx.lib.control.dao.PartitionControlServerDao" class="org.tdmx.lib.control.dao.PartitionControlServerDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.PartitionControlServerRepository" class="org.tdmx.lib.control.service.PartitionControlServerServiceRepositoryImpl">
+		<property name="partitionControlServerDao"	ref="tdmx.lib.control.dao.PartitionControlServerDao" />
+	</bean>
+	
+
 	<bean id="tdmx.lib.control.dao.ControlJobDao" class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
 	</bean>
 	

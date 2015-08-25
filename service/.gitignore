@@ -1,3 +1,5 @@
 /jetty*.log
 /*.cer
 /ws.keystore
+/rx-2015_08_24.log
+/ws-2015_08_24.log
