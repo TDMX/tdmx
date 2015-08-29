@@ -18,20 +18,20 @@
  */
 package org.tdmx.server.pcs;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 /**
- * A ServerHandle is a value type holding a SessionKey and the information describing the session.
+ * A ServiceHandle is a value type holding a HTTPS URL (key) and the information describing the service.
+ * 
+ * The HTTPS URL contains the API as part of the path.
  * 
  * @author Peter
  *
  */
-public class SessionHandle {
+public class ServiceHandle {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,25 +40,24 @@ public class SessionHandle {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionHandle.class);
+	private static final Logger log = LoggerFactory.getLogger(ServiceHandle.class);
+
+	private final String httpsUrl;
 
 	private final String segment;
 	private final WebServiceApiName api;
-	private final String sessionKey;
-	private final Map<SeedAttribute, Long> seedAttributes;
-
-	private String sessionId;
+	private final PKIXCertificate publicCertificate;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public SessionHandle(String segment, WebServiceApiName api, String sessionKey,
-			Map<SeedAttribute, Long> seedAttributes) {
+	public ServiceHandle(String segment, WebServiceApiName api, String sessionKey, String httpsUrl,
+			PKIXCertificate publicCertificate) {
 		this.segment = segment;
 		this.api = api;
-		this.sessionKey = sessionKey;
-		this.seedAttributes = seedAttributes;
+		this.httpsUrl = httpsUrl;
+		this.publicCertificate = publicCertificate;
 	}
 
 	// -------------------------------------------------------------------------
@@ -85,20 +84,12 @@ public class SessionHandle {
 		return api;
 	}
 
-	public String getSessionKey() {
-		return sessionKey;
+	public String getHttpsUrl() {
+		return httpsUrl;
 	}
 
-	public Map<SeedAttribute, Long> getSeedAttributes() {
-		return seedAttributes;
-	}
-
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
+	public PKIXCertificate getPublicCertificate() {
+		return publicCertificate;
 	}
 
 }
