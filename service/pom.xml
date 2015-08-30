@@ -482,7 +482,13 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+    		<groupId>org.mockito</groupId>
+    		<artifactId>mockito-core</artifactId>
+    		<version>1.10.19</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
 		<!-- <dependency> <groupId>plugon.libraries</groupId> <artifactId>lib-system</artifactId> 
 			<version>0.0.1-SNAPSHOT</version> <type>jar</type> <scope>compile</scope> 
 			</dependency> <dependency> <groupId>smt.foundation</groupId> <artifactId>foundation-springframework</artifactId> 

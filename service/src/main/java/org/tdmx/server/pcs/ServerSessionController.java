@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -27,10 +29,40 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 public interface ServerSessionController {
 
 	public static class ServerServiceStatistics {
-		int mosLoadValue;
-		int mdsLoadValue;
-		int mrsLoadValue;
-		int zasLoadValue;
+		private final List<ServiceStatistic> stats = new ArrayList<ServiceStatistic>(WebServiceApiName.values().length);
+
+		public void addStatistic(ServiceStatistic s) {
+			stats.add(s);
+		}
+
+		public List<ServiceStatistic> getStatistics() {
+			return stats;
+		}
+	}
+
+	public static class ServiceStatistic {
+		private final WebServiceApiName api;
+		private final String httpsUrl;
+		private final int loadValue;
+
+		public ServiceStatistic(WebServiceApiName api, String httpsUrl, int loadValue) {
+			this.api = api;
+			this.httpsUrl = httpsUrl;
+			this.loadValue = loadValue;
+		}
+
+		public WebServiceApiName getApi() {
+			return api;
+		}
+
+		public String getHttpsUrl() {
+			return httpsUrl;
+		}
+
+		public int getLoadValue() {
+			return loadValue;
+		}
+
 	}
 
 	/**

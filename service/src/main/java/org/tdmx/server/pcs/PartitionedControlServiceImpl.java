@@ -19,6 +19,7 @@
 package org.tdmx.server.pcs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.server.pcs.ServerSessionController.ServerServiceStatistics;
+import org.tdmx.server.pcs.ServerSessionController.ServiceStatistic;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -65,40 +67,29 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	 */
 	private int sessionIdLength = 24;
 
+	private int maximumRoundRobinSize = 4;
+
 	/**
 	 * Map keyed by WebServiceApiName to Map keyed by sessionKey to SessionHolder.
 	 * 
 	 * Note: the SessionHolder holds a set of all certificate fingerprints which are related to the session, so we can
 	 * easily navigate from session to certificate.
 	 */
-	private Map<WebServiceApiName, Map<String, SessionHolder>> sessionMap = new HashMap<>();
+	private final Map<WebServiceApiName, Map<String, SessionHolder>> sessionMap = new HashMap<>();
 
 	/**
 	 * Map keyed by Certificate fingerprint to List of SessionHolders.
 	 */
-	private Map<String, Set<SessionHolder>> certificateMap = new ConcurrentHashMap<>();
+	private final Map<String, Set<SessionHolder>> certificateMap = new ConcurrentHashMap<>();
 
 	/**
 	 * Map keyed by WebServiceApiName to ServerApiHolder.
 	 */
-	private Map<WebServiceApiName, ServerApiHolder> serverMap = new HashMap<>();
+	private final Map<WebServiceApiName, ServerApiHolder> serverMap = new HashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public PartitionedControlServiceImpl() {
-		// initialize sessionMap
-		sessionMap.put(WebServiceApiName.MOS, new ConcurrentHashMap<>());
-		sessionMap.put(WebServiceApiName.MDS, new ConcurrentHashMap<>());
-		sessionMap.put(WebServiceApiName.MRS, new ConcurrentHashMap<>());
-		sessionMap.put(WebServiceApiName.ZAS, new ConcurrentHashMap<>());
-		// initialize serverMap
-		serverMap.put(WebServiceApiName.MOS, new ServerApiHolder());
-		serverMap.put(WebServiceApiName.MDS, new ServerApiHolder());
-		serverMap.put(WebServiceApiName.MRS, new ServerApiHolder());
-		serverMap.put(WebServiceApiName.ZAS, new ServerApiHolder());
-	}
 
 	/**
 	 * A helper value type holding the SessionHandle.
@@ -106,7 +97,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	 * @author Peter
 	 *
 	 */
-	private static class SessionHolder {
+	public static class SessionHolder {
 		private final SessionHandle handle;
 		/**
 		 * Set of Certificate fingerprints which share this Session.
@@ -141,16 +132,8 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 			return this.sessionEndpoint != null ? this.sessionEndpoint.getHttpsUrl() : null;
 		}
 
-		public boolean hasCertificates() {
-			return !certificateSet.isEmpty();
-		}
-
 		public void addCertificate(String fingerprint) {
 			certificateSet.add(fingerprint);
-		}
-
-		public void removeCertificate(String fingerprint) {
-			certificateSet.remove(fingerprint);
 		}
 
 		public boolean containsCertificate(String fingerprint) {
@@ -197,7 +180,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	 * @author Peter
 	 *
 	 */
-	private static class ServerHolder {
+	public static class ServerHolder {
 		private final ServiceHandle handle;
 		private final ServerSessionController ssm;
 
@@ -238,10 +221,15 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	 * @author Peter
 	 *
 	 */
-	private static class ServerApiHolder {
+	public static class ServerApiHolder {
 		private final Map<String, ServerHolder> serverMap = new ConcurrentHashMap<>();
 		private final AtomicInteger totalLoad = new AtomicInteger(0);
+		private final int roundRobinLen;
 		private int roundRobinIndex = 0;
+
+		public ServerApiHolder(int roundRobinLen) {
+			this.roundRobinLen = roundRobinLen;
+		}
 
 		/**
 		 * Notify that a server's load value has changed.
@@ -272,7 +260,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 		 * 1) if any server exists which has less than half the average load, then this is used immediately ( fast ramp
 		 * up )
 		 * 
-		 * 2) round robin select from the servers which have less than the average load
+		 * 2) round robin select from up to roundRobinLen servers which have less than the average load
 		 * 
 		 * 3) (unlikely) first one if every server has exactly the same load :)
 		 * 
@@ -292,6 +280,9 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 					return entry.getValue();
 				} else if (serverLoadValue < aveLoad) {
 					potentials.add(entry.getValue());
+					if (potentials.size() >= roundRobinLen) {
+						break;
+					}
 				}
 			}
 			// case 3 - very exceptional
@@ -302,6 +293,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 			}
 			// case 2 - next round robin
 			roundRobinIndex += 1;
+			roundRobinIndex %= roundRobinLen;
 			return potentials.get(roundRobinIndex % potentials.size());
 		}
 
@@ -330,7 +322,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 		// lookup any existing sessionholder
 		SessionHolder existingSession = null;
 		synchronized (this) {
-			apiSessionMap.get(sessionData.getSessionKey());
+			existingSession = apiSessionMap.get(sessionData.getSessionKey());
 			if (existingSession == null) {
 				existingSession = new SessionHolder(sessionData);
 				apiSessionMap.put(existingSession.getSessionKey(), existingSession);
@@ -352,7 +344,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 					// we need to allocate the new session for the client on a backend server with the least load
 					ServerServiceStatistics stats = api.getSsm().createSession(sessionData.getApi(), sessionId,
 							clientCertificate, sessionData.getSeedAttributes());
-					updateServerStats(api.getHandle().getHttpsUrl(), stats);
+					updateServerStats(stats);
 
 					WebServiceSessionEndpoint wsse = new WebServiceSessionEndpoint(sessionId,
 							api.getHandle().getHttpsUrl(), api.getHandle().getPublicCertificate());
@@ -371,7 +363,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 							.get(existingSession.getSessionEndpoint().getHttpsUrl());
 					ServerServiceStatistics stats = existingServer.getSsm().addCertificate(sessionData.getApi(),
 							existingSession.getHandle().getSessionId(), clientCertificate);
-					updateServerStats(existingSession.getSessionEndpoint().getHttpsUrl(), stats);
+					updateServerStats(stats);
 				}
 				return existingSession.getSessionEndpoint();
 			}
@@ -380,24 +372,16 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	}
 
 	@Override
-	public void registerService(ServiceHandle service, ServerSessionController ssm) {
-		Map<String, ServerHolder> serviceMap = serverMap.get(service.getApi()).getServerMap();
-		if (serviceMap.get(service.getHttpsUrl()) != null) {
-			log.warn("Server exists. " + service.getHttpsUrl());
-		} else {
-			ServerHolder holder = new ServerHolder(service, ssm);
-			serviceMap.put(service.getHttpsUrl(), holder);
+	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm) {
+		for (ServiceHandle service : services) {
+			registerService(service, ssm);
 		}
 	}
 
 	@Override
-	public void unregisterService(ServiceHandle service) {
-		Map<String, ServerHolder> serviceMap = serverMap.get(service.getApi()).getServerMap();
-		if (serviceMap.get(service.getHttpsUrl()) == null) {
-			log.warn("Server doesn't exist. " + service.getHttpsUrl());
-		} else {
-			serviceMap.remove(service.getHttpsUrl());
-			removeServiceSessions(service.getApi(), service.getHttpsUrl());
+	public void unregisterServer(List<ServiceHandle> services) {
+		for (ServiceHandle service : services) {
+			unregisterService(service);
 		}
 	}
 
@@ -419,6 +403,17 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	public void start(String segment, List<WebServiceApiName> apis) {
 		// the partition control service always handles ALL apis for a segment
 		this.segment = segment;
+		// initialize sessionMap
+		sessionMap.put(WebServiceApiName.MOS, new ConcurrentHashMap<>());
+		sessionMap.put(WebServiceApiName.MDS, new ConcurrentHashMap<>());
+		sessionMap.put(WebServiceApiName.MRS, new ConcurrentHashMap<>());
+		sessionMap.put(WebServiceApiName.ZAS, new ConcurrentHashMap<>());
+		// initialize serverMap
+		serverMap.put(WebServiceApiName.MOS, new ServerApiHolder(getMaximumRoundRobinSize()));
+		serverMap.put(WebServiceApiName.MDS, new ServerApiHolder(getMaximumRoundRobinSize()));
+		serverMap.put(WebServiceApiName.MRS, new ServerApiHolder(getMaximumRoundRobinSize()));
+		serverMap.put(WebServiceApiName.ZAS, new ServerApiHolder(getMaximumRoundRobinSize()));
+
 		clear();
 	}
 
@@ -440,6 +435,26 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 		// the session Id is a
 		byte[] rnd = EntropySource.getRandomBytes(getSessionIdLength() / 2);
 		return ByteArray.asHex(rnd);
+	}
+
+	private void registerService(ServiceHandle service, ServerSessionController ssm) {
+		Map<String, ServerHolder> serviceMap = serverMap.get(service.getApi()).getServerMap();
+		if (serviceMap.get(service.getHttpsUrl()) != null) {
+			log.warn("Server exists. " + service.getHttpsUrl());
+		} else {
+			ServerHolder holder = new ServerHolder(service, ssm);
+			serviceMap.put(service.getHttpsUrl(), holder);
+		}
+	}
+
+	private void unregisterService(ServiceHandle service) {
+		Map<String, ServerHolder> serviceMap = serverMap.get(service.getApi()).getServerMap();
+		if (serviceMap.get(service.getHttpsUrl()) == null) {
+			log.warn("Server doesn't exist. " + service.getHttpsUrl());
+		} else {
+			serviceMap.remove(service.getHttpsUrl());
+			removeServiceSessions(service.getApi(), service.getHttpsUrl());
+		}
 	}
 
 	private void clear() {
@@ -501,22 +516,10 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 		}
 	}
 
-	private void updateServerStats(String httpsUrl, ServerServiceStatistics stats) {
-		ServerApiHolder s = serverMap.get(WebServiceApiName.MOS);
-		if (s != null) {
-			s.adjustLoad(httpsUrl, stats.mosLoadValue);
-		}
-		s = serverMap.get(WebServiceApiName.MDS);
-		if (s != null) {
-			s.adjustLoad(httpsUrl, stats.mdsLoadValue);
-		}
-		s = serverMap.get(WebServiceApiName.MRS);
-		if (s != null) {
-			s.adjustLoad(httpsUrl, stats.mrsLoadValue);
-		}
-		s = serverMap.get(WebServiceApiName.ZAS);
-		if (s != null) {
-			s.adjustLoad(httpsUrl, stats.zasLoadValue);
+	private void updateServerStats(ServerServiceStatistics stats) {
+		for (ServiceStatistic stat : stats.getStatistics()) {
+			ServerApiHolder s = serverMap.get(stat.getApi());
+			s.adjustLoad(stat.getHttpsUrl(), stat.getLoadValue());
 		}
 	}
 
@@ -534,6 +537,42 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 
 	public void setSessionIdLength(int sessionIdLength) {
 		this.sessionIdLength = sessionIdLength;
+	}
+
+	public List<SessionHolder> getApiSessions(WebServiceApiName api) {
+		List<SessionHolder> result = new ArrayList<>();
+		result.addAll(sessionMap.get(api).values());
+		return Collections.unmodifiableList(result);
+	}
+
+	public List<String> getCertificateFingerprints() {
+		List<String> result = new ArrayList<>();
+		result.addAll(certificateMap.keySet());
+		return Collections.unmodifiableList(result);
+	}
+
+	public List<SessionHolder> getCertificateSessions(String fingerprint) {
+		List<SessionHolder> result = new ArrayList<>();
+		result.addAll(certificateMap.get(fingerprint));
+		return Collections.unmodifiableList(result);
+	}
+
+	public List<ServerHolder> getServers(WebServiceApiName api) {
+		List<ServerHolder> result = new ArrayList<>();
+		result.addAll(serverMap.get(api).serverMap.values());
+		return Collections.unmodifiableList(result);
+	}
+
+	public int getTotalLoad(WebServiceApiName api) {
+		return serverMap.get(api).totalLoad.get();
+	}
+
+	public int getMaximumRoundRobinSize() {
+		return maximumRoundRobinSize;
+	}
+
+	public void setMaximumRoundRobinSize(int maximumRoundRobinSize) {
+		this.maximumRoundRobinSize = maximumRoundRobinSize;
 	}
 
 }

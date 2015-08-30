@@ -52,8 +52,7 @@ public class ServiceHandle {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ServiceHandle(String segment, WebServiceApiName api, String sessionKey, String httpsUrl,
-			PKIXCertificate publicCertificate) {
+	public ServiceHandle(String segment, WebServiceApiName api, String httpsUrl, PKIXCertificate publicCertificate) {
 		this.segment = segment;
 		this.api = api;
 		this.httpsUrl = httpsUrl;

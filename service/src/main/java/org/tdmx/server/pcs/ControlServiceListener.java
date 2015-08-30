@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.List;
 import java.util.Set;
 
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -25,20 +26,20 @@ import org.tdmx.server.ws.session.WebServiceApiName;
 public interface ControlServiceListener {
 
 	/**
-	 * On the attachment of a Service to the ControlService.
+	 * On the attachment of a Server with it's supported Services to the ControlService.
 	 * 
-	 * @param service
+	 * @param services
 	 * @param ssm
 	 *            callback
 	 */
-	public void registerService(ServiceHandle service, ServerSessionController ssm);
+	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm);
 
 	/**
-	 * On the detachment of a Service from the ControlService.
+	 * On the detachment of a Server with it's supported Services from the ControlService.
 	 * 
-	 * @param service
+	 * @param services
 	 */
-	public void unregisterService(ServiceHandle service);
+	public void unregisterServer(List<ServiceHandle> services);
 
 	/**
 	 * WebServiceSessionManagers notify the ControlService when session's have not been used for some time and are
