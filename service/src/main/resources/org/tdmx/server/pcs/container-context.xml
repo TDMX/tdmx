@@ -16,10 +16,12 @@
 
 
 
-	<bean id="JOB.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
+	<bean id="PCS.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
-	            <ref bean="tdmx.lib.control.job.JobExecutor"/>
+				<!-- order important here to start service before connector -->
+	            <ref bean="pcs.RemoteControlService"/>
+	            <ref bean="pcs.RemoteControlConnector"/>
 	        </list>
         </property>
 		

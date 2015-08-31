@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+	<bean id="pcs.RemoteControlService" class="org.tdmx.server.pcs.RemoteControlServiceImpl" >
+		<property name="sessionIdLength" value="32" />
+		<property name="maximumRoundRobinSize" value="4" />
+	</bean>
+
+	<bean id="pcs.RemoteControlConnector" class="org.tdmx.server.pcs.RemoteControlServiceConnector" >
+		<property name="controlListener" ref="pcs.RemoteControlService" />
+		<property name="controlService" ref="pcs.RemoteControlService" />
+		<property name="serverAddress" value="${pcs.serverAddress}" />
+		<property name="localPort" value="${pcs.localPort}" />
+		<property name="channelbufferSize" value="${pcs.channelbufferSize}" />
+		<property name="tcpNoDelay" value="${pcs.tcpNoDelay}" />
+		<property name="shutdownTimeoutMs" value="${pcs.shutdownTimeoutMs}" />
+		
+	</bean>
+
+</beans>

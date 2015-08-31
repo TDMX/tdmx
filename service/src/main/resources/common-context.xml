@@ -34,4 +34,8 @@
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/rs/container-context.xml"/>
 
+	<!-- PCS CONFIG -->
+	<import resource="classpath:/org/tdmx/server/pcs/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/pcs/container-context.xml"/>
+
 </beans>

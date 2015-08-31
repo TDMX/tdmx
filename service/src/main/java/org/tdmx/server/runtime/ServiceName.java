@@ -26,8 +26,9 @@ package org.tdmx.server.runtime;
  */
 public enum ServiceName {
 
-	WS,
-	RS,
-	SCS,
-	JOB;
+	WS, // Web(SOAP) Services - MOS,MDS,MRS,ZAS APIs
+	RS, // RESTful Services
+	SCS, // SessionControlService
+	PCS, // PartitionControlService
+	JOB; // Background Jobs
 }

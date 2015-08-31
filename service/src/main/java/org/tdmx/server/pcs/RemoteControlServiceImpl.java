@@ -46,7 +46,7 @@ import org.tdmx.server.ws.session.WebServiceApiName;
  * @author Peter
  *
  */
-public class PartitionedControlServiceImpl implements ControlService, ControlServiceListener, Manageable {
+public class RemoteControlServiceImpl implements ControlService, ControlServiceListener, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -55,7 +55,7 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(PartitionedControlServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(RemoteControlServiceImpl.class);
 
 	/**
 	 * The segment is determined at startup time.
@@ -67,6 +67,10 @@ public class PartitionedControlServiceImpl implements ControlService, ControlSer
 	 */
 	private int sessionIdLength = 24;
 
+	/**
+	 * The maximum number of servers to consider for roundrobin load allocation. Having a small value here means that
+	 * less servers are load balanced which have capacity and we can find these servers faster.
+	 */
 	private int maximumRoundRobinSize = 4;
 
 	/**

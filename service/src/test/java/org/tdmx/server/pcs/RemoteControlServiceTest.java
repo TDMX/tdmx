@@ -18,16 +18,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.PartitionedControlServiceImpl.ServerHolder;
+import org.tdmx.server.pcs.RemoteControlServiceImpl.ServerHolder;
 import org.tdmx.server.pcs.ServerSessionController.ServerServiceStatistics;
 import org.tdmx.server.pcs.ServerSessionController.ServiceStatistic;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
-public class PartitionControlServiceTest {
+public class RemoteControlServiceTest {
 
-	PartitionedControlServiceImpl sut;
+	RemoteControlServiceImpl sut;
 
 	private String segment = "segment";
 	private Map<SeedAttribute, Long> seedAttributes;
@@ -36,7 +36,7 @@ public class PartitionControlServiceTest {
 	public void setUp() throws Exception {
 		seedAttributes = new HashMap<>();
 
-		sut = new PartitionedControlServiceImpl();
+		sut = new RemoteControlServiceImpl();
 		sut.setSessionIdLength(10);
 		sut.start(segment, null);
 	}
@@ -175,7 +175,7 @@ public class PartitionControlServiceTest {
 
 	@Test
 	public void testStart() {
-		PartitionedControlServiceImpl s = new PartitionedControlServiceImpl();
+		RemoteControlServiceImpl s = new RemoteControlServiceImpl();
 		s.start("gugus", Arrays.<WebServiceApiName> asList(WebServiceApiName.MOS, WebServiceApiName.MDS,
 				WebServiceApiName.MRS, WebServiceApiName.ZAS));
 		assertEquals("gugus", s.getSegment());
@@ -183,7 +183,7 @@ public class PartitionControlServiceTest {
 
 	@Test
 	public void testStop() {
-		PartitionedControlServiceImpl s = new PartitionedControlServiceImpl();
+		RemoteControlServiceImpl s = new RemoteControlServiceImpl();
 		s.start("gugus", null);
 		assertEquals("gugus", s.getSegment());
 		s.stop();
