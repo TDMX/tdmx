@@ -21,6 +21,7 @@ package org.tdmx.server.pcs;
 import java.util.List;
 import java.util.Set;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 public interface ControlServiceListener {
@@ -49,4 +50,11 @@ public interface ControlServiceListener {
 	 * @param sessionIds
 	 */
 	public void notifySessionsRemoved(WebServiceApiName api, Set<String> sessionIds);
+
+	/**
+	 * Invalidate the certificate in all sessions which it belongs to.
+	 * 
+	 * @param cert
+	 */
+	public void invalidateCertificate(PKIXCertificate cert);
 }

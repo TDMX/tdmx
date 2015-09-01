@@ -72,12 +72,11 @@ public interface WebServiceSessionManager {
 	public int addCertificate(String sessionId, PKIXCertificate cert);
 
 	/**
-	 * Remove a client certificate from an existing session.
+	 * Remove a client certificate from all sessions.
 	 * 
-	 * @param sessionId
 	 * @param cert
 	 * @return the number of active sessions.
 	 */
-	public int removeCertificate(String sessionId, PKIXCertificate cert);
+	public int removeCertificate(PKIXCertificate cert);
 
 }

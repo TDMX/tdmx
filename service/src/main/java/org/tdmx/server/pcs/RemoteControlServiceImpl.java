@@ -140,6 +140,10 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 			certificateSet.add(fingerprint);
 		}
 
+		public void removeCertificate(String fingerprint) {
+			certificateSet.remove(fingerprint);
+		}
+
 		public boolean containsCertificate(String fingerprint) {
 			return certificateSet.contains(fingerprint);
 		}
@@ -319,7 +323,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 			return null;
 		}
 
-		ServerApiHolder server = serverMap.get(sessionData.getApi());
+		ServerApiHolder servers = serverMap.get(sessionData.getApi());
 
 		// we lookup in the sessions for the api requested
 		Map<String, SessionHolder> apiSessionMap = sessionMap.get(sessionData.getApi());
@@ -336,14 +340,14 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 		// we've hooked the session into the map, but it may be "new" and need to allocate the endpoint
 		synchronized (existingSession) {
 			if (existingSession.getSessionEndpoint() == null) {
-				ServerHolder api = server.getLoadBalancedServer();
+				ServerHolder api = servers.getLoadBalancedServer();
 				if (api != null) {
 					// create the sessionId
 					String sessionId = generateSessionId();
 					existingSession.getHandle().setSessionId(sessionId);
 
 					// associate the client with the session
-					associate(existingSession, clientCertificate);
+					associateCert(existingSession, clientCertificate);
 
 					// we need to allocate the new session for the client on a backend server with the least load
 					ServerServiceStatistics stats = api.getSsm().createSession(sessionData.getApi(), sessionId,
@@ -360,10 +364,10 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 			} else {
 				// we have an existing session which is allocated on a server
 				if (!existingSession.containsCertificate(clientCertificate.getFingerprint())) {
-					associate(existingSession, clientCertificate);
+					associateCert(existingSession, clientCertificate);
 
 					// add the client certificate to the backend server's existing session
-					ServerHolder existingServer = server.getServerMap()
+					ServerHolder existingServer = servers.getServerMap()
 							.get(existingSession.getSessionEndpoint().getHttpsUrl());
 					ServerServiceStatistics stats = existingServer.getSsm().addCertificate(sessionData.getApi(),
 							existingSession.getHandle().getSessionId(), clientCertificate);
@@ -398,8 +402,36 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 			SessionHolder session = entry.getValue();
 			if (sessionIds.contains(session.getHandle().getSessionId())) {
 				it.remove();
-				disassociate(session);
+				disassociateSession(session);
 			}
+		}
+	}
+
+	@Override
+	public void invalidateCertificate(PKIXCertificate cert) {
+		Set<SessionHolder> sessions = certificateMap.remove(cert.getFingerprint());
+
+		// the set of servers which need to have the certificate removed
+		Set<ServerSessionController> serverControllers = new HashSet<>();
+
+		if (sessions != null) {
+			for (SessionHolder session : sessions) {
+				ServerApiHolder servers = serverMap.get(session.getHandle().getApi());
+				ServerHolder server = servers.getServerMap().get(session.getSessionEndpoint().getHttpsUrl());
+				if (server != null) {
+					// we remove the cert from the session , potentially orphaning the session which will be
+					// removed by #notifySessionsRemoved later
+					session.removeCertificate(cert.getFingerprint());
+
+					// add the server to the list to remove the certificate
+					serverControllers.add(server.getSsm());
+				}
+			}
+		}
+
+		for (ServerSessionController serverController : serverControllers) {
+			ServerServiceStatistics stats = serverController.removeCertificate(cert);
+			updateServerStats(stats);
 		}
 	}
 
@@ -489,12 +521,12 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 			SessionHolder session = entry.getValue();
 			if (httpsUrl.equals(session.getHttpsUrl())) {
 				it.remove();
-				disassociate(session);
+				disassociateSession(session);
 			}
 		}
 	}
 
-	private void disassociate(SessionHolder existingSession) {
+	private void disassociateSession(SessionHolder existingSession) {
 		synchronized (certificateMap) {
 			for (String fingerprint : existingSession.getCertificates()) {
 				Set<SessionHolder> clientSessions = certificateMap.get(fingerprint);
@@ -508,7 +540,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 		}
 	}
 
-	private void associate(SessionHolder existingSession, PKIXCertificate clientCertificate) {
+	private void associateCert(SessionHolder existingSession, PKIXCertificate clientCertificate) {
 		synchronized (certificateMap) {
 			existingSession.addCertificate(clientCertificate.getFingerprint());
 			Set<SessionHolder> clientSessions = certificateMap.get(clientCertificate.getFingerprint());

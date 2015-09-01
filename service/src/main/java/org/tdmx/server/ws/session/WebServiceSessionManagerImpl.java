@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
-public class WebServiceSessionManagerImpl<E extends WebServiceSession> implements WebServiceSessionManager,
-		WebServiceSessionLookupService<E>, WebServiceSessionTrustManager {
+public class WebServiceSessionManagerImpl<E extends WebServiceSession>
+		implements WebServiceSessionManager, WebServiceSessionLookupService<E>, WebServiceSessionTrustManager {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -78,7 +78,6 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 
 	@Override
 	public int createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
-
 		E ss = sessionFactory.createServerSession(seedAttributes);
 		ss.addAuthorizedCertificate(cert);
 
@@ -107,11 +106,14 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession> implement
 	}
 
 	@Override
-	public int removeCertificate(String sessionId, PKIXCertificate cert) {
-		WebServiceSession ss = sessionMap.get(sessionId);
-		ss.removeAuthorizedCertificate(cert);
-
-		disassociate(sessionId, cert);
+	public int removeCertificate(PKIXCertificate cert) {
+		Set<String> sessionIds = certificateSessionMap.remove(cert.getFingerprint());
+		if (sessionIds != null) {
+			for (String sessionId : sessionIds) {
+				WebServiceSession ss = sessionMap.get(sessionId);
+				ss.removeAuthorizedCertificate(cert);
+			}
+		}
 		return getSessionCount();
 	}
 

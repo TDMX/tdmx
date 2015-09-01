@@ -88,13 +88,11 @@ public interface ServerSessionController {
 	public ServerServiceStatistics addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
 
 	/**
-	 * Remove a client certificate from an existing API session.
+	 * Remove a client certificate from all sessions.
 	 * 
-	 * @param apiName
-	 * @param sessionId
 	 * @param cert
 	 * @return the server statistics
 	 */
-	public ServerServiceStatistics removeCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
+	public ServerServiceStatistics removeCertificate(PKIXCertificate cert);
 
 }

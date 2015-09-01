@@ -1,6 +1,7 @@
 package org.tdmx.server.pcs;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -171,6 +172,60 @@ public class RemoteControlServiceTest {
 
 		assertEquals(0, sut.getApiSessions(WebServiceApiName.MOS).size());
 		assertEquals(0, sut.getApiSessions(WebServiceApiName.MDS).size());
+	}
+
+	@Test
+	public void testNotifyInvalidateCertificate() {
+		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
+		ServerSessionController ssm = mock(ServerSessionController.class);
+		ServiceHandle mossh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-mos", serviceCert);
+		ServiceHandle mdssh = new ServiceHandle(segment, WebServiceApiName.MDS, "url-mds", serviceCert);
+		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
+		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
+		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
+		assertEquals(0, sut.getApiSessions(WebServiceApiName.MOS).size());
+		assertEquals(0, sut.getApiSessions(WebServiceApiName.MDS).size());
+
+		PKIXCertificate clientCert = mock(PKIXCertificate.class);
+		when(clientCert.getFingerprint()).thenReturn("client-fingerprint-1");
+		SessionHandle sesh = new SessionHandle(segment, WebServiceApiName.MOS, "sessionKey-1", seedAttributes);
+
+		ServerServiceStatistics stats = new ServerServiceStatistics();
+		ServiceStatistic mos = new ServiceStatistic(WebServiceApiName.MOS, "url-mos", 100);
+		stats.addStatistic(mos);
+		ServiceStatistic mds = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 50);
+		stats.addStatistic(mds);
+		when(ssm.createSession(Matchers.eq(WebServiceApiName.MOS), Matchers.isA(String.class),
+				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(stats);
+
+		WebServiceSessionEndpoint wsse = sut.associateApiSession(sesh, clientCert);
+		assertNotNull(wsse);
+		assertEquals(1, sut.getApiSessions(WebServiceApiName.MOS).size());
+		assertEquals(0, sut.getApiSessions(WebServiceApiName.MDS).size());
+
+		ServerServiceStatistics stats2 = new ServerServiceStatistics();
+		ServiceStatistic mos2 = new ServiceStatistic(WebServiceApiName.MOS, "url-mos", 110);
+		stats2.addStatistic(mos2);
+		ServiceStatistic mds2 = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 40);
+		stats2.addStatistic(mds2);
+
+		when(ssm.removeCertificate(Matchers.same(clientCert))).thenReturn(stats2);
+		sut.invalidateCertificate(clientCert);
+
+		// the session remains, but it will not have any certs
+		assertEquals(1, sut.getApiSessions(WebServiceApiName.MOS).size());
+		assertEquals(0, sut.getApiSessions(WebServiceApiName.MDS).size());
+		assertTrue(sut.getApiSessions(WebServiceApiName.MOS).get(0).getCertificates().isEmpty());
+		assertFalse(sut.getCertificateFingerprints().contains(clientCert.getFingerprint()));
+
+		ServerHolder mosserver = sut.getServers(WebServiceApiName.MOS).get(0);
+		assertEquals(110, mosserver.getLoadValue());
+		assertEquals(110, sut.getTotalLoad(WebServiceApiName.MOS));
+		ServerHolder mdsserver = sut.getServers(WebServiceApiName.MDS).get(0);
+		assertEquals(40, mdsserver.getLoadValue());
+		assertEquals(40, sut.getTotalLoad(WebServiceApiName.MDS));
+
+		// TODO invalidate session later.
 	}
 
 	@Test
