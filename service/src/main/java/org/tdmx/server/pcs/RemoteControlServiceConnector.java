@@ -219,7 +219,7 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
-			shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			// FIXME (release protobuf next rel.) shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
 		}
 	}
 

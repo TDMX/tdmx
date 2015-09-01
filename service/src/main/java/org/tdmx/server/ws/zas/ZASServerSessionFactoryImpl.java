@@ -49,6 +49,7 @@ public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZA
 		associateZoneDB(az.getZonePartitionId());
 		try {
 			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			// note domain is null for ZACs
 			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
 
 			ZASServerSession zass = new ZASServerSession(az, z, d);

@@ -209,6 +209,19 @@ public class AgentCredential implements Serializable {
 	}
 
 	/**
+	 * Get the agent's public certificate.
+	 * 
+	 * @return the Agent's public certificate.
+	 */
+	public PKIXCertificate getPublicCertificate() {
+		PKIXCertificate[] certs = getCertificateChain();
+		if (certs != null && certs.length > 0) {
+			return certs[0];
+		}
+		return null;
+	}
+
+	/**
 	 * Reverse map the AgentCredential to a Descriptor which can be mapped easier to other entities.
 	 * 
 	 * @return a AgentCredentialDescriptor describing this AgentCredential.
