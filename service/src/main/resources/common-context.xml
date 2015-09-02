@@ -30,6 +30,10 @@
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ws/container-context.xml"/>
 
+	<!-- SCS CONFIG -->
+	<import resource="classpath:/org/tdmx/server/scs/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/scs/container-context.xml"/>
+
 	<!-- RS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/rs/container-context.xml"/>

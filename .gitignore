@@ -2,6 +2,7 @@
 .project
 .classpath
 target
+*.log
 /service/tdmx-configuration.properties
 /service/server.keystore
 /deployment/ssl/server.keystore

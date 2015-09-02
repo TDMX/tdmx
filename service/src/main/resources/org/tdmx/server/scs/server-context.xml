@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+	
+
+	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.ServerSessionAllocationServiceImpl">
+	</bean>
+
+	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >
+		<property name="authenticatedClientService" ref="scs.authenticatedClientService"/>
+				
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="sessionAllocationService" ref="scs.SessionAllocationService"/>
+
+		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
+	</bean>
+
+
+</beans>

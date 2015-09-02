@@ -31,7 +31,4 @@
 	</jaxws:endpoint>
 
 
-	<jaxws:endpoint id="scsEndpoint_V01" implementor="#ws.SCS" address="/v1.0/scs">
-	</jaxws:endpoint>
-
 </beans>

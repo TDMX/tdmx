@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+	
+
+	<bean id="scs.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
+	</bean>
+	
+	<bean id="scs.authorizationFilter" class="org.tdmx.server.ws.security.ClientAuthenticationFilter">
+		<property name="authenticatedClientService" ref="scs.authenticatedClientService" />
+	</bean>
+	
+
+
+	<bean id="SCS.Server" class="org.tdmx.server.scs.SCSWebServiceServerContainer" init-method="init">
+
+		<property name="cipherSuites" value="${scs.httpsCipherList}"/>
+		<property name="httpsProtocols" value="${scs.httpsProtocols}"/>
+		<property name="renegotiationAllowed" value="${scs.tlsRenegotiationAllowed}"/>
+		<property name="connectionIdleTimeoutSec" value="${scs.sslConnectionIdleTimeoutSec}"/>
+		<property name="httpsPort" value="${scs.httpsPort}" />
+		<property name="serverAddress" value="${scs.serverAddress}" />
+		<property name="contextPath" value="${scs.contextPath}"/>
+		<property name="keyStoreFile" value="${scs.keyStoreFile}"/>
+		<property name="keyStorePassword" value="${scs.keyStorePassword}"/>
+		<property name="keyStoreAlias" value="${scs.keyStoreAlias}"/>
+		<property name="keyStoreType" value="${scs.keyStoreType}"/>
+		
+		<property name="agentAuthorizationFilter" ref="scs.authorizationFilter"/>
+		
+		<!-- 
+		<property name="manageables">
+			<list value-type="org.tdmx.server.runtime.Manageable">
+	        </list>
+        </property>
+		 -->
+		 
+		
+	</bean>
+
+</beans>

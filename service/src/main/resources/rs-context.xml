@@ -47,7 +47,7 @@
            <property name="supportUnwrapped" value="true"/>		 
 	</bean>
 	
-	<jaxrs:server id="services" address="/sp">
+	<jaxrs:server id="services" address="/v1.0/rs">
 		<jaxrs:serviceBeans>
 			<ref bean="rs.SAS" />
 		</jaxrs:serviceBeans>

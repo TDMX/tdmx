@@ -198,26 +198,4 @@
 	</bean>
 
 
-	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.ServerSessionAllocationServiceImpl">
-	</bean>
-
-	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >
-		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
-		
-		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
-		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
-		<property name="sessionAllocationService" ref="scs.SessionAllocationService"/>
-
-		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
-		<property name="credentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
-		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
-		
-		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
-		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
-		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
-		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
-		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
-	</bean>
-
-
 </beans>

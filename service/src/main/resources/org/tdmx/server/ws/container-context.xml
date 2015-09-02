@@ -16,7 +16,7 @@
 
 
 
-	<bean id="ws.Configuration" class="org.tdmx.server.runtime.ServerRuntimeContextServiceImpl" init-method="init">
+	<bean id="ws.Configuration" class="org.tdmx.server.ws.ServerRuntimeContextServiceImpl" init-method="init">
 		<property name="httpsPort" value="${ws.httpsPort}" />
 		<property name="serverAddress" value="${ws.serverAddress}" />
 		<property name="contextPath" value="${ws.contextPath}"/>
@@ -42,7 +42,7 @@
 		<property name="timeoutCheckIntervalSec" value="${ws.sessionTimeoutCheckIntervalSec}"/>
 	</bean>
 
-	<bean id="WS.Server" class="org.tdmx.server.runtime.WebServiceServerContainer">
+	<bean id="WS.Server" class="org.tdmx.server.ws.WebServiceServerContainer">
 		<property name="runtimeContext" ref="ws.Configuration"/>
 
 		<property name="cipherSuites" value="${ws.httpsCipherList}"/>
@@ -53,7 +53,7 @@
 		<property name="agentAuthorizationFilter" ref="ws.authorizationFilter"/>
 		
 		<property name="trustProvider">
-			<bean class="org.tdmx.server.ws.session.TrustManagerProviderImpl">
+			<bean class="org.tdmx.server.ws.TrustManagerProviderImpl">
 				<property name="serverSessionTrustManagers">
 					<list value-type="org.tdmx.server.ws.session.WebServiceSessionTrustManager">
 			            <ref bean="ws.ZAS.ServerSessionManager"/>
