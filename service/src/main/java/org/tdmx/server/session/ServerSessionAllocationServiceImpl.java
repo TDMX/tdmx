@@ -107,4 +107,12 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 		this.handleFactory = handleFactory;
 	}
 
+	public ControlService getControlService() {
+		return controlService;
+	}
+
+	public void setControlService(ControlService controlService) {
+		this.controlService = controlService;
+	}
+
 }

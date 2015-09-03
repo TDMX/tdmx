@@ -42,12 +42,11 @@
 		
 		<property name="agentAuthorizationFilter" ref="scs.authorizationFilter"/>
 		
-		<!-- 
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
-	        </list>
+ 				<ref bean="scs.LocalControlService"/>
+ 	        </list>
         </property>
-		 -->
 		 
 		
 	</bean>

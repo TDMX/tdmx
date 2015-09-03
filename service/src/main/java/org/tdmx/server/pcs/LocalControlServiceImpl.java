@@ -18,12 +18,16 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
-public class LocalControlServiceImpl implements ControlService {
+public class LocalControlServiceImpl implements ControlService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,6 +50,18 @@ public class LocalControlServiceImpl implements ControlService {
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void start(String segment, List<WebServiceApiName> apis) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+
 	}
 
 	// -------------------------------------------------------------------------
