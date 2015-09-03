@@ -71,6 +71,9 @@ public class RsServerContainer implements ServerContainer {
 	private String keystorePassword;
 	private String keystoreType;
 	private String keyStoreAlias;
+	private String trustStoreFile;
+	private String trustStoreType;
+	private String trustStorePassword;
 
 	private int connectionIdleTimeoutSec;
 
@@ -102,8 +105,9 @@ public class RsServerContainer implements ServerContainer {
 		sslCF.setKeyStorePath(keystorePath);
 		sslCF.setKeyStorePassword(keystorePassword);
 		sslCF.setCertAlias(keyStoreAlias);
-		// TODO check if needed
-		// sslContextFactory.setKeyManagerPassword("changeme");
+		sslCF.setTrustStorePath(trustStoreFile);
+		sslCF.setTrustStoreType(trustStoreType);
+		sslCF.setTrustStorePassword(trustStorePassword);
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an
@@ -151,8 +155,8 @@ public class RsServerContainer implements ServerContainer {
 		requestLog.setRetainDays(7);
 		requestLogHandler.setRequestLog(requestLog);
 
-		ServletContextHandler rsContext = new ServletContextHandler(ServletContextHandler.NO_SECURITY
-				| ServletContextHandler.NO_SESSIONS);
+		ServletContextHandler rsContext = new ServletContextHandler(
+				ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
 		rsContext.setContextPath(contextPath);
 		// Setup Spring context
 		rsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
@@ -287,6 +291,30 @@ public class RsServerContainer implements ServerContainer {
 
 	public void setKeyStoreAlias(String keyStoreAlias) {
 		this.keyStoreAlias = keyStoreAlias;
+	}
+
+	public String getTrustStoreFile() {
+		return trustStoreFile;
+	}
+
+	public void setTrustStoreFile(String trustStoreFile) {
+		this.trustStoreFile = trustStoreFile;
+	}
+
+	public String getTrustStoreType() {
+		return trustStoreType;
+	}
+
+	public void setTrustStoreType(String trustStoreType) {
+		this.trustStoreType = trustStoreType;
+	}
+
+	public String getTrustStorePassword() {
+		return trustStorePassword;
+	}
+
+	public void setTrustStorePassword(String trustStorePassword) {
+		this.trustStorePassword = trustStorePassword;
 	}
 
 	public int getConnectionIdleTimeoutSec() {

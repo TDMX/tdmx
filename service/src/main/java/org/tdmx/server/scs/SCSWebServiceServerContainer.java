@@ -22,12 +22,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.CRL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
@@ -90,6 +93,9 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	private String keyStoreType;
 	private String keyStorePassword;
 	private String keyStoreAlias;
+	private String trustStoreFile;
+	private String trustStoreType;
+	private String trustStorePassword;
 
 	private Filter agentAuthorizationFilter;
 
@@ -125,10 +131,9 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();
 
-		TrustingSslContextFactory sslCF = new TrustingSslContextFactory();
+		ClosedPKIXSslContextFactory sslCF = new ClosedPKIXSslContextFactory();
 		sslCF.setRenegotiationAllowed(renegotiationAllowed);
 		sslCF.setWantClientAuth(true);
-		sslCF.setTrustAll(true);
 
 		sslCF.setIncludeCipherSuites(cipherSuites);
 		sslCF.setIncludeProtocols(httpsProtocols);
@@ -136,6 +141,10 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		sslCF.setKeyStorePath(keyStoreFile);
 		sslCF.setKeyStorePassword(keyStorePassword);
 		sslCF.setCertAlias(keyStoreAlias);
+		sslCF.setTrustStorePath(trustStoreFile);
+		sslCF.setTrustStoreType(trustStoreType);
+		sslCF.setTrustStorePassword(trustStorePassword);
+
 		// TODO check if needed
 		// sslContextFactory.setKeyManagerPassword("changeme");
 
@@ -263,11 +272,43 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private class TrustingSslContextFactory extends SslContextFactory {
+	private class ClosedPKIXSslContextFactory extends SslContextFactory {
 		@Override
 		protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls)
 				throws Exception {
-			return new TrustManager[] { null }; // TODO -
+			TrustManager[] managers = super.getTrustManagers(trustStore, crls);
+			TrustManager[] wrap = new TrustManager[managers.length];
+			for (int i = 0; i < managers.length; i++) {
+				final TrustManager tm = managers[i];
+				if (tm instanceof X509TrustManager) {
+					final X509TrustManager xt = (X509TrustManager) tm;
+
+					wrap[i] = new X509TrustManager() {
+
+						@Override
+						public void checkClientTrusted(X509Certificate[] chain, String authType)
+								throws CertificateException {
+							xt.checkClientTrusted(chain, authType);
+						}
+
+						@Override
+						public void checkServerTrusted(X509Certificate[] chain, String authType)
+								throws CertificateException {
+							xt.checkServerTrusted(chain, authType);
+						}
+
+						@Override
+						public X509Certificate[] getAcceptedIssuers() {
+							// we don't publicly state that we accept any CA names
+							return new X509Certificate[0];
+						}
+
+					};
+				} else {
+					wrap[i] = tm;
+				}
+			}
+			return wrap;
 		}
 	}
 
@@ -361,6 +402,30 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 
 	public void setKeyStoreAlias(String keyStoreAlias) {
 		this.keyStoreAlias = keyStoreAlias;
+	}
+
+	public String getTrustStoreFile() {
+		return trustStoreFile;
+	}
+
+	public void setTrustStoreFile(String trustStoreFile) {
+		this.trustStoreFile = trustStoreFile;
+	}
+
+	public String getTrustStoreType() {
+		return trustStoreType;
+	}
+
+	public void setTrustStoreType(String trustStoreType) {
+		this.trustStoreType = trustStoreType;
+	}
+
+	public String getTrustStorePassword() {
+		return trustStorePassword;
+	}
+
+	public void setTrustStorePassword(String trustStorePassword) {
+		this.trustStorePassword = trustStorePassword;
 	}
 
 	public Filter getAgentAuthorizationFilter() {

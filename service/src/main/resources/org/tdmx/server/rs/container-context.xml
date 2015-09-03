@@ -14,8 +14,6 @@
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 	
 
-
-
 	<bean id="RS.Server" class="org.tdmx.server.rs.RsServerContainer">
 		<property name="httpsPort" value="${rs.httpsPort}" />
 		<property name="serverAddress" value="${rs.serverAddress}" />
@@ -25,6 +23,9 @@
 		<property name="keystorePath" value="${rs.keyStoreFile}"/>
 		<property name="keystorePassword" value="${rs.keyStorePassword}"/>
 		<property name="keystoreType" value="${rs.keystoreType}"/>
+		<property name="trustStoreFile" value="${rs.trustStoreFile}"/>
+		<property name="trustStorePassword" value="${rs.trustStorePassword}"/>
+		<property name="trustStoreType" value="${rs.trustStoreType}"/>
 		
 		<property name="connectionIdleTimeoutSec" value="${rs.sslConnectionIdleTimeoutSec}"/>
 		<property name="contextPath" value="${rs.contextPath}"/>

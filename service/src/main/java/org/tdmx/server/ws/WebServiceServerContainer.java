@@ -112,8 +112,6 @@ public class WebServiceServerContainer implements ServerContainer {
 		sslCF.setKeyStorePath(runtimeContext.getKeyStoreFile());
 		sslCF.setKeyStorePassword(runtimeContext.getKeyStorePassword());
 		sslCF.setCertAlias(runtimeContext.getKeyStoreAlias());
-		// TODO check if needed
-		// sslContextFactory.setKeyManagerPassword("changeme");
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an

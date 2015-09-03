@@ -78,8 +78,8 @@ public class TrustManagerProviderImpl implements TrustManagerProvider {
 			}
 
 			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return null;
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return new java.security.cert.X509Certificate[] {};
 			}
 		};
 	}
