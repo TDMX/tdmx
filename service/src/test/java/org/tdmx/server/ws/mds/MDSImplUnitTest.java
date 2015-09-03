@@ -75,8 +75,8 @@ import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -95,6 +95,7 @@ public class MDSImplUnitTest {
 	@Named("ws.MDS.SessionFactory")
 	private WebServiceSessionFactory<MDSServerSession> serverSessionFactory;
 	@Autowired
+	@Named("ws.authenticatedClientService")
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.MDS.ServerSessionManager")
@@ -251,8 +252,8 @@ public class MDSImplUnitTest {
 			boolean more = true;
 			// fetch ALL Channels which have this Destination as Destination.
 			for (int pageNo = 0; more; pageNo++) {
-				ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(
-						pageNo, 5));
+				ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+						new PageSpecifier(pageNo, 5));
 				sc.setDomain(domain);
 				sc.getDestination().setLocalName(uc.getPublicCert().getCommonName());
 				sc.getDestination().setDomainName(domain.getDomainName());

@@ -76,8 +76,8 @@ import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -96,6 +96,7 @@ public class MOSImplUnitTest {
 	@Named("ws.MOS.SessionFactory")
 	private WebServiceSessionFactory<MOSServerSession> serverSessionFactory;
 	@Autowired
+	@Named("ws.authenticatedClientService")
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.MOS.ServerSessionManager")

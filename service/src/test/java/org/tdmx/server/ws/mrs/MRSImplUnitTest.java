@@ -82,8 +82,8 @@ import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -102,6 +102,7 @@ public class MRSImplUnitTest {
 	@Named("ws.MRS.SessionFactory")
 	private WebServiceSessionFactory<MRSServerSession> serverSessionFactory;
 	@Autowired
+	@Named("ws.authenticatedClientService")
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.MRS.ServerSessionManager")
@@ -385,8 +386,8 @@ public class MRSImplUnitTest {
 		ds.setScheme("scheme");
 		ds.setSessionKey(new byte[] { 1, 2, 3 });
 
-		SignatureUtils.createDestinationSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel
-				.getDestination().getServicename(), ds);
+		SignatureUtils.createDestinationSessionSignature(uc2, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				channel.getDestination().getServicename(), ds);
 		// signer is destination, so reqRecv at origin
 
 		Relay req = new Relay();
@@ -433,8 +434,8 @@ public class MRSImplUnitTest {
 			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
 			assertEquals(1, channels.size());
 			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-			assertEquals(ds.getUsersignature().getSignaturevalue().getSignature(), c.getSession().getSignature()
-					.getValue());
+			assertEquals(ds.getUsersignature().getSignaturevalue().getSignature(),
+					c.getSession().getSignature().getValue());
 			// TODO check other ds values are set on the channel.
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();

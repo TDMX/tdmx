@@ -93,7 +93,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	private String keyStoreType;
 	private String keyStorePassword;
 	private String keyStoreAlias;
-	private String trustStoreFile;
+	private String trustStoreFile; // TODO eventually from DB!
 	private String trustStoreType;
 	private String trustStorePassword;
 

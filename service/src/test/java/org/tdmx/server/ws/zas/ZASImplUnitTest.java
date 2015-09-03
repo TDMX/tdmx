@@ -138,8 +138,8 @@ import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionManager;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -157,6 +157,7 @@ public class ZASImplUnitTest {
 	@Named("ws.ZAS.SessionFactory")
 	private WebServiceSessionFactory<ZASServerSession> serverSessionFactory;
 	@Autowired
+	@Named("ws.authenticatedClientService")
 	private AuthenticatedClientService authenticatedClientService;
 	@Autowired
 	@Named("ws.ZAS.ServerSessionManager")

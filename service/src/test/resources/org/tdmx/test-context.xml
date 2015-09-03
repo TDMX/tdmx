@@ -23,13 +23,17 @@
 	<!-- JOB SPRING CONFIG -->
 	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 
-	<!-- WS SPRING CONFIG -->
+	<!-- SERVICE CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/scs/server-context.xml"/>
 	
 	<bean id="ws.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 
+	<bean id="scs.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
+	</bean>
+	
 	<bean class="org.tdmx.lib.zone.service.MockZonePartitionIdInstaller" init-method="init">
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>

@@ -87,6 +87,7 @@ public class SCSImplUnitTest {
 	private AgentCredentialFactory agentCredentialFactory;
 
 	@Autowired
+	@Named("scs.authenticatedClientService")
 	private AuthenticatedClientService authenticatedClientService;
 
 	@Autowired
@@ -163,8 +164,8 @@ public class SCSImplUnitTest {
 		uc1 = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 		uc2 = data.getDomains().get(1).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		sse = new WebServiceSessionEndpoint("SID" + System.currentTimeMillis(), "https://" + System.currentTimeMillis()
-				+ "/scs", uc2.getPublicCert());
+		sse = new WebServiceSessionEndpoint("SID" + System.currentTimeMillis(),
+				"https://" + System.currentTimeMillis() + "/scs", uc2.getPublicCert());
 		mockServerSesionAllocationService.setEndpoint(sse);
 	}
 
