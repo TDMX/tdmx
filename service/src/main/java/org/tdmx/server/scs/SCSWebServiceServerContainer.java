@@ -133,7 +133,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 
 		ClosedPKIXSslContextFactory sslCF = new ClosedPKIXSslContextFactory();
 		sslCF.setRenegotiationAllowed(renegotiationAllowed);
-		sslCF.setWantClientAuth(true);
+		sslCF.setNeedClientAuth(true);
 
 		sslCF.setIncludeCipherSuites(cipherSuites);
 		sslCF.setIncludeProtocols(httpsProtocols);
@@ -288,13 +288,23 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 						@Override
 						public void checkClientTrusted(X509Certificate[] chain, String authType)
 								throws CertificateException {
-							xt.checkClientTrusted(chain, authType);
+							try {
+								xt.checkClientTrusted(chain, authType);
+							} catch (RuntimeException re) {
+								log.warn("checkClientTrusted failed.", re);
+								throw re;
+							}
 						}
 
 						@Override
 						public void checkServerTrusted(X509Certificate[] chain, String authType)
 								throws CertificateException {
-							xt.checkServerTrusted(chain, authType);
+							try {
+								xt.checkServerTrusted(chain, authType);
+							} catch (RuntimeException re) {
+								log.warn("checkServerTrusted failed.", re);
+								throw re;
+							}
 						}
 
 						@Override
