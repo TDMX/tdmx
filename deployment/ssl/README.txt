@@ -14,3 +14,7 @@ keytool -import -trustcacerts -file startssl-root.cer -keystore server.keystore 
 
 keytool -import -trustcacerts -alias server -file server.crt -keystore server.keystore
 
+
+### SCS ###
+
+cn=<segment-lowercase>.scs.tdmx.org
