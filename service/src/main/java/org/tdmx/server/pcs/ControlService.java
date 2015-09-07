@@ -24,7 +24,8 @@ import org.tdmx.server.session.WebServiceSessionEndpoint;
 public interface ControlService {
 
 	/**
-	 * Try and associate the clientCertificate a session for the API in the sessionData.
+	 * Try and associate the clientCertificate a session for the API in the sessionData. Called by SessionControlService
+	 * towards the PartitionControlService.
 	 * 
 	 * @param sessionData
 	 * @param clientCertificate

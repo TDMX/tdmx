@@ -29,6 +29,12 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
+import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
@@ -212,6 +218,27 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		AssociateApiSessionResponse response = responseBuilder.build();
 
 		return response;
+	}
+
+	@Override
+	public RegisterServerResponse registerServer(RpcController controller, RegisterServerRequest request)
+			throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public NotifySessionRemovedResponse notifySessionsRemoved(RpcController controller,
+			NotifySessionRemovedRequest request) throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InvalidateCertificateResponse invalidateCertificate(RpcController controller,
+			InvalidateCertificateRequest request) throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

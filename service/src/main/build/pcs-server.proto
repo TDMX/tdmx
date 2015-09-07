@@ -37,8 +37,44 @@ message SessionHandle {
 }
 
 
+message RegisterServerRequest {
+	repeated ServiceHandle service = 1;
+}
+
+message RegisterServerResponse {
+}
+
+
+message ServiceHandle {
+	optional string segment = 1;
+	optional string apiName = 2;
+	optional string httpsUrl = 3;
+    optional bytes serverCert = 4;
+}
+
+
+message NotifySessionRemovedRequest {
+	optional string apiName = 1;
+	repeated string sessionId = 2;
+}
+
+message NotifySessionRemovedResponse {
+}
+
+
+message InvalidateCertificateRequest {
+    optional bytes clientCert = 1;
+}
+
+message InvalidateCertificateResponse {
+}
+
+
 
 service ControlServiceProxy {
     rpc associateApiSession(AssociateApiSessionRequest) returns (AssociateApiSessionResponse);
+    rpc registerServer(RegisterServerRequest) returns (RegisterServerResponse);
+    rpc notifySessionsRemoved(NotifySessionRemovedRequest) returns (NotifySessionRemovedResponse);
+    rpc invalidateCertificate(InvalidateCertificateRequest) returns (InvalidateCertificateResponse);
 }
 
