@@ -23,10 +23,15 @@
 		<property name="controlService" ref="pcs.RemoteControlService" />
 		<property name="serverAddress" value="${pcs.serverAddress}" />
 		<property name="localPort" value="${pcs.localPort}" />
-		<property name="channelbufferSize" value="${pcs.channelbufferSize}" />
+
+		<property name="coreRpcExecutorThreads" value="${pcs.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${pcs.maxRpcExecutorThreads}"/>
+		<property name="acceptorThreads" value="${pcs.acceptorThreads}"/>
+		<property name="ioThreads" value="${pcs.ioThreads}"/>
+		<property name="ioBufferSize" value="${pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="${pcs.tcpNoDelay}" />
-		<property name="shutdownTimeoutMs" value="${pcs.shutdownTimeoutMs}" />
 		
+		<property name="shutdownTimeoutMs" value="${pcs.shutdownTimeoutMs}" />
 	</bean>
 
 </beans>

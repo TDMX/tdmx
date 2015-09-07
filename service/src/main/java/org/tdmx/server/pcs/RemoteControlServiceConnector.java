@@ -26,13 +26,14 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.server.pcs.protobuf.PCSServer.BlockingPingService;
-import org.tdmx.server.pcs.protobuf.PCSServer.Ping;
-import org.tdmx.server.pcs.protobuf.PCSServer.Pong;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.BlockingService;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -45,10 +46,6 @@ import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.NullLogger;
 import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerPipelineFactory;
-import com.googlecode.protobuf.pro.duplex.timeout.RpcTimeoutChecker;
-import com.googlecode.protobuf.pro.duplex.timeout.RpcTimeoutExecutor;
-import com.googlecode.protobuf.pro.duplex.timeout.TimeoutChecker;
-import com.googlecode.protobuf.pro.duplex.timeout.TimeoutExecutor;
 import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -61,7 +58,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  * @author Peter
  *
  */
-public class RemoteControlServiceConnector implements Manageable, BlockingPingService.BlockingInterface {
+public class RemoteControlServiceConnector implements Manageable, ControlServiceProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -87,9 +84,13 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 	 */
 	private String serverAddress;
 	private int localPort;
-	private int channelbufferSize = 1048576;
+	private long shutdownTimeoutMs = 20000;
+	private int coreRpcExecutorThreads = 2;
+	private int maxRpcExecutorThreads = 10;
+	private int acceptorThreads = 2;
+	private int ioThreads = 16;
+	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
-	private long shutdownTimeoutMs;
 
 	/**
 	 * The segment handled by this PartitionControlService.
@@ -121,7 +122,7 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 
 		PeerInfo serverInfo = new PeerInfo(serverHostname, localPort);
 
-		RpcServerCallExecutor executor = new ThreadPoolCallExecutor(3, 200);
+		RpcServerCallExecutor executor = new ThreadPoolCallExecutor(coreRpcExecutorThreads, maxRpcExecutorThreads);
 
 		DuplexTcpServerPipelineFactory serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
 		serverFactory.setRpcServerCallExecutor(executor);
@@ -138,11 +139,6 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 
 		NullLogger logger = new NullLogger();
 		serverFactory.setLogger(logger);
-
-		RpcTimeoutExecutor timeoutExecutor = new TimeoutExecutor(1, 5);
-		RpcTimeoutChecker timeoutChecker = new TimeoutChecker();
-		timeoutChecker.setTimeoutExecutor(timeoutExecutor);
-		timeoutChecker.startChecking(serverFactory.getRpcClientRegistry());
 
 		// setup a RPC event listener - it just logs what happens
 		RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
@@ -172,21 +168,21 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
 		// we give the server a blocking and non blocking (pong capable) Ping Service
-		BlockingService bPingService = BlockingPingService.newReflectiveBlockingService(this);
+		BlockingService bPingService = ControlServiceProxy.newReflectiveBlockingService(this);
 		serverFactory.getRpcServiceRegistry().registerService(bPingService);
 
 		// Configure the server.
 		ServerBootstrap bootstrap = new ServerBootstrap();
-		NioEventLoopGroup boss = new NioEventLoopGroup(2,
-				new RenamingThreadFactoryProxy("boss", Executors.defaultThreadFactory()));
-		NioEventLoopGroup workers = new NioEventLoopGroup(16,
+		NioEventLoopGroup boss = new NioEventLoopGroup(acceptorThreads,
+				new RenamingThreadFactoryProxy("acceptor", Executors.defaultThreadFactory()));
+		NioEventLoopGroup workers = new NioEventLoopGroup(ioThreads,
 				new RenamingThreadFactoryProxy("worker", Executors.defaultThreadFactory()));
 		bootstrap.group(boss, workers);
 		bootstrap.channel(NioServerSocketChannel.class);
-		bootstrap.option(ChannelOption.SO_SNDBUF, channelbufferSize);
-		bootstrap.option(ChannelOption.SO_RCVBUF, channelbufferSize);
-		bootstrap.childOption(ChannelOption.SO_RCVBUF, channelbufferSize);
-		bootstrap.childOption(ChannelOption.SO_SNDBUF, channelbufferSize);
+		bootstrap.option(ChannelOption.SO_SNDBUF, ioBufferSize);
+		bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
+		bootstrap.childOption(ChannelOption.SO_RCVBUF, ioBufferSize);
+		bootstrap.childOption(ChannelOption.SO_SNDBUF, ioBufferSize);
 		bootstrap.option(ChannelOption.TCP_NODELAY, tcpNoDelay);
 		bootstrap.childHandler(serverFactory);
 		bootstrap.localAddress(serverInfo.getPort());
@@ -196,8 +192,6 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 		shutdownHandler.addResource(boss);
 		shutdownHandler.addResource(workers);
 		shutdownHandler.addResource(executor);
-		shutdownHandler.addResource(timeoutChecker);
-		shutdownHandler.addResource(timeoutExecutor);
 
 		bootstrap.bind();
 
@@ -205,13 +199,17 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 	}
 
 	@Override
-	public Pong ping(RpcController controller, Ping request) throws ServiceException {
-		Pong.Builder responseBuilder = Pong.newBuilder().setSequenceNo(request.getSequenceNo())
-				.setPongData(request.getPingPayload());
+	public AssociateApiSessionResponse associateApiSession(RpcController controller, AssociateApiSessionRequest request)
+			throws ServiceException {
+		AssociateApiSessionResponse.Builder responseBuilder = AssociateApiSessionResponse.newBuilder();
+		responseBuilder.setHttpsUrl(request.getHandle().getSessionKey()); // TODO
+		responseBuilder.setSessionId(request.getHandle().getApiName()); // TODO
+		responseBuilder.setServerCert(ByteString.copyFrom(request.getPkixCertificate().toByteArray()));
 
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("Call from " + channel.getPeerInfo());
 
-		Pong response = responseBuilder.build();
+		AssociateApiSessionResponse response = responseBuilder.build();
 
 		return response;
 	}
@@ -267,12 +265,44 @@ public class RemoteControlServiceConnector implements Manageable, BlockingPingSe
 		this.localPort = localPort;
 	}
 
-	public int getChannelbufferSize() {
-		return channelbufferSize;
+	public int getCoreRpcExecutorThreads() {
+		return coreRpcExecutorThreads;
 	}
 
-	public void setChannelbufferSize(int channelbufferSize) {
-		this.channelbufferSize = channelbufferSize;
+	public void setCoreRpcExecutorThreads(int coreRpcExecutorThreads) {
+		this.coreRpcExecutorThreads = coreRpcExecutorThreads;
+	}
+
+	public int getMaxRpcExecutorThreads() {
+		return maxRpcExecutorThreads;
+	}
+
+	public void setMaxRpcExecutorThreads(int maxRpcExecutorThreads) {
+		this.maxRpcExecutorThreads = maxRpcExecutorThreads;
+	}
+
+	public int getAcceptorThreads() {
+		return acceptorThreads;
+	}
+
+	public void setAcceptorThreads(int acceptorThreads) {
+		this.acceptorThreads = acceptorThreads;
+	}
+
+	public int getIoThreads() {
+		return ioThreads;
+	}
+
+	public void setIoThreads(int ioThreads) {
+		this.ioThreads = ioThreads;
+	}
+
+	public int getIoBufferSize() {
+		return ioBufferSize;
+	}
+
+	public void setIoBufferSize(int ioBufferSize) {
+		this.ioBufferSize = ioBufferSize;
 	}
 
 	public boolean isTcpNoDelay() {

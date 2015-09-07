@@ -18,13 +18,19 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.Map.Entry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.protobuf.PCSServer.BlockingPingService;
-import org.tdmx.server.pcs.protobuf.PCSServer.Ping;
-import org.tdmx.server.pcs.protobuf.PCSServer.Pong;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue;
+import org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
@@ -58,27 +64,36 @@ public class LocalControlServiceClient implements ControlService {
 	@Override
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
 		if (!rpcClient.isClosed()) {
-			// TODO real api
-
-			BlockingPingService.BlockingInterface blockingService = BlockingPingService.newBlockingStub(rpcClient);
+			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
 			controller.setTimeoutMs(0);
 
-			Ping.Builder pingBuilder = Ping.newBuilder();
-			pingBuilder.setSequenceNo(1);
-			pingBuilder.setPingDurationMs(1000);
-			pingBuilder.setPingPayload(ByteString.copyFromUtf8("Hello World!"));
-			pingBuilder.setPingPercentComplete(false);
-			pingBuilder.setPongRequired(false);
-			pingBuilder.setPongBlocking(true);
-			pingBuilder.setPongDurationMs(1000);
-			pingBuilder.setPongTimeoutMs(0);
-			pingBuilder.setPongPercentComplete(false);
+			org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle.Builder sh = org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle
+					.newBuilder();
+			sh.setApiName(sessionData.getApi().name());
+			sh.setSegment(sessionData.getSegment());
+			sh.setSessionKey(sessionData.getSessionKey());
+			for (Entry<SeedAttribute, Long> entry : sessionData.getSeedAttributes().entrySet()) {
+				AttributeValue.Builder attr = AttributeValue.newBuilder();
+				attr.setName(AttributeId.valueOf(entry.getKey().name()));
+				attr.setValue(entry.getValue());
+				sh.addAttribute(attr);
+			}
+			AssociateApiSessionRequest.Builder reqBuilder = AssociateApiSessionRequest.newBuilder();
+			reqBuilder.setHandle(sh);
+			reqBuilder.setPkixCertificate(ByteString.copyFrom(clientCertificate.getX509Encoded()));
 
-			Ping ping = pingBuilder.build();
+			AssociateApiSessionRequest request = reqBuilder.build();
 			try {
-				Pong pong = blockingService.ping(controller, ping);
-
+				AssociateApiSessionResponse response = blockingService.associateApiSession(controller, request);
+				if (response != null && response.getServerCert() != null) {
+					WebServiceSessionEndpoint sep = new WebServiceSessionEndpoint(response.getSessionId(),
+							response.getHttpsUrl(),
+							CertificateIOUtils.safeDecodeX509(response.getServerCert().toByteArray()));
+					return sep;
+				} else {
+					log.info("No WebServiceSessionEndpoint allocated.");
+				}
 			} catch (ServiceException e) {
 				log.warn("Call failed.", e);
 			}

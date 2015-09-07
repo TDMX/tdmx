@@ -23,6 +23,13 @@ import org.tdmx.server.session.WebServiceSessionEndpoint;
 
 public interface ControlService {
 
+	/**
+	 * Try and associate the clientCertificate a session for the API in the sessionData.
+	 * 
+	 * @param sessionData
+	 * @param clientCertificate
+	 * @return null if no capacity available.
+	 */
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate);
 
 }
