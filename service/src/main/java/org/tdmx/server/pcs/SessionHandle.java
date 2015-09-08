@@ -47,6 +47,9 @@ public class SessionHandle {
 	private final String sessionKey;
 	private final Map<SeedAttribute, Long> seedAttributes;
 
+	/**
+	 * The sessionId is determined later after instantiation.
+	 */
 	private String sessionId;
 
 	// -------------------------------------------------------------------------

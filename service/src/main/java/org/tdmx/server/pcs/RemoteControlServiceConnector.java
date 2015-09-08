@@ -20,14 +20,22 @@ package org.tdmx.server.pcs;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
@@ -36,7 +44,9 @@ import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerResponse;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
@@ -66,6 +76,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  */
 public class RemoteControlServiceConnector implements Manageable, ControlServiceProxy.BlockingInterface {
 
+	// TODO LATER: use SSL context for protobuf communications
+
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -86,7 +98,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	private ControlService controlService;
 
 	/**
-	 * The interface address for multi-homed hosts. Leave empty if not multihomed.
+	 * The interface address for multi-homed hosts. Leave empty if not multi-homed.
 	 */
 	private String serverAddress;
 	private int localPort;
@@ -163,6 +175,11 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 			@Override
 			public void connectionLost(RpcClientChannel clientChannel) {
 				log.info("connectionLost " + clientChannel);
+				// we unregister the server's services from the control service
+				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) clientChannel
+						.getAttribute(ReverseRpcServerSessionController.SERVICES);
+				controlListener.unregisterServer(ssm.getServices());
+				// there should be no more references to the RpcClient which should be garbage collected.
 			}
 
 			@Override
@@ -207,47 +224,146 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	@Override
 	public AssociateApiSessionResponse associateApiSession(RpcController controller, AssociateApiSessionRequest request)
 			throws ServiceException {
-		AssociateApiSessionResponse.Builder responseBuilder = AssociateApiSessionResponse.newBuilder();
-		responseBuilder.setHttpsUrl(request.getHandle().getSessionKey()); // TODO
-		responseBuilder.setSessionId(request.getHandle().getApiName()); // TODO
-		responseBuilder.setServerCert(ByteString.copyFrom(request.getPkixCertificate().toByteArray()));
 
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
-		log.info("Call from " + channel.getPeerInfo());
+		log.info("associateApiSession call from " + channel.getPeerInfo());
 
-		AssociateApiSessionResponse response = responseBuilder.build();
+		SessionHandle sh = mapSession(request.getHandle());
+		PKIXCertificate clientCert = CertificateIOUtils.safeDecodeX509(request.getPkixCertificate().toByteArray());
+		WebServiceSessionEndpoint wsse = controlService.associateApiSession(sh, clientCert);
 
-		return response;
+		AssociateApiSessionResponse.Builder responseBuilder = AssociateApiSessionResponse.newBuilder();
+		if (wsse != null) {
+			responseBuilder.setHttpsUrl(wsse.getHttpsUrl());
+			responseBuilder.setSessionId(wsse.getSessionId());
+			responseBuilder.setServerCert(ByteString.copyFrom(wsse.getPublicCertificate().getX509Encoded()));
+		}
+		return responseBuilder.build();
 	}
 
 	@Override
 	public RegisterServerResponse registerServer(RpcController controller, RegisterServerRequest request)
 			throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("registerServer call from " + channel.getPeerInfo());
+
+		List<ServiceHandle> services = mapServices(request.getServiceList());
+
+		ReverseRpcServerSessionController ssm = new ReverseRpcServerSessionController(channel, services);
+
+		controlListener.registerServer(services, ssm);
+		RegisterServerResponse.Builder responseBuilder = RegisterServerResponse.newBuilder();
+		return responseBuilder.build();
 	}
 
 	@Override
 	public NotifySessionRemovedResponse notifySessionsRemoved(RpcController controller,
 			NotifySessionRemovedRequest request) throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("notifySessionsRemoved call from " + channel.getPeerInfo());
+
+		Set<String> sessionIds = new HashSet<>();
+		sessionIds.addAll(request.getSessionIdList());
+
+		controlListener.notifySessionsRemoved(mapApi(request.getApiName()), sessionIds);
+		NotifySessionRemovedResponse.Builder responseBuilder = NotifySessionRemovedResponse.newBuilder();
+		return responseBuilder.build();
 	}
 
 	@Override
 	public InvalidateCertificateResponse invalidateCertificate(RpcController controller,
 			InvalidateCertificateRequest request) throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("invalidateCertificate call from " + channel.getPeerInfo());
+
+		PKIXCertificate clientCert = CertificateIOUtils.safeDecodeX509(request.getClientCert().toByteArray());
+		controlListener.invalidateCertificate(clientCert);
+
+		InvalidateCertificateResponse.Builder responseBuilder = InvalidateCertificateResponse.newBuilder();
+		return responseBuilder.build();
 	}
 
 	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
-			// FIXME (release protobuf next rel.) shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
 		}
 	}
 
+	private static class ReverseRpcServerSessionController implements ServerSessionController {
+		public static final String SSM = "SSM";
+		private static final String SERVICES = "SERVICES";
+
+		private final RpcClientChannel channel;
+
+		public ReverseRpcServerSessionController(RpcClientChannel channel, List<ServiceHandle> services) {
+			this.channel = channel;
+
+			this.channel.setAttribute(SSM, this);
+			this.channel.setAttribute(SERVICES, services);
+		}
+
+		@SuppressWarnings("unchecked")
+		public List<ServiceHandle> getServices() {
+			return (List<ServiceHandle>) this.channel.getAttribute(SERVICES);
+		}
+
+		@Override
+		public ServerServiceStatistics createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
+				Map<SeedAttribute, Long> seedAttributes) {
+
+			// ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
+			// final ClientRpcController controller = rpcClient.newRpcController();
+			// controller.setTimeoutMs(0);
+			//
+			// org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle.Builder sh =
+			// org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle
+			// .newBuilder();
+			// sh.setApiName(sessionData.getApi().name());
+			// sh.setSegment(sessionData.getSegment());
+			// sh.setSessionKey(sessionData.getSessionKey());
+			// for (Entry<SeedAttribute, Long> entry : sessionData.getSeedAttributes().entrySet()) {
+			// AttributeValue.Builder attr = AttributeValue.newBuilder();
+			// attr.setName(AttributeId.valueOf(entry.getKey().name()));
+			// attr.setValue(entry.getValue());
+			// sh.addAttribute(attr);
+			// }
+			// AssociateApiSessionRequest.Builder reqBuilder = AssociateApiSessionRequest.newBuilder();
+			// reqBuilder.setHandle(sh);
+			// reqBuilder.setPkixCertificate(ByteString.copyFrom(clientCertificate.getX509Encoded()));
+			//
+			// AssociateApiSessionRequest request = reqBuilder.build();
+			// try {
+			// AssociateApiSessionResponse response = blockingService.associateApiSession(controller, request);
+			// if (response != null && response.getServerCert() != null) {
+			// WebServiceSessionEndpoint sep = new WebServiceSessionEndpoint(response.getSessionId(),
+			// response.getHttpsUrl(),
+			// CertificateIOUtils.safeDecodeX509(response.getServerCert().toByteArray()));
+			// return sep;
+			// } else {
+			// log.info("No WebServiceSessionEndpoint allocated.");
+			// }
+			// } catch (ServiceException e) {
+			// log.warn("Call failed.", e);
+			// }
+
+			return null;
+		}
+
+		@Override
+		public ServerServiceStatistics addCertificate(WebServiceApiName apiName, String sessionId,
+				PKIXCertificate cert) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public ServerServiceStatistics removeCertificate(PKIXCertificate cert) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -255,6 +371,50 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+	private SessionHandle mapSession(org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle sh) {
+		if (sh == null) {
+			return null;
+		}
+		SessionHandle handle = new SessionHandle(sh.getSegment(), mapApi(sh.getApiName()), sh.getSessionKey(),
+				mapAttributes(sh.getAttributeList()));
+		return handle;
+	}
+
+	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue> attrs) {
+		if (attrs == null) {
+			return null;
+		}
+		Map<SeedAttribute, Long> attributes = new HashMap<>();
+		for (org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue attr : attrs) {
+			attributes.put(map(attr.getName()), attr.getValue());
+		}
+		return attributes;
+	}
+
+	private List<ServiceHandle> mapServices(List<org.tdmx.server.pcs.protobuf.PCSServer.ServiceHandle> services) {
+		if (services == null) {
+			return null;
+		}
+		List<ServiceHandle> result = new ArrayList<>();
+		for (org.tdmx.server.pcs.protobuf.PCSServer.ServiceHandle service : services) {
+			PKIXCertificate serverCert = CertificateIOUtils.safeDecodeX509(service.getServerCert().toByteArray());
+			ServiceHandle handle = new ServiceHandle(service.getSegment(), mapApi(service.getApiName()),
+					service.getHttpsUrl(), serverCert);
+			result.add(handle);
+		}
+		return result;
+	}
+
+	private SeedAttribute map(AttributeId name) {
+		if (name == null) {
+			return null;
+		}
+		return SeedAttribute.valueOf(name.name());
+	}
+
+	private WebServiceApiName mapApi(String apiName) {
+		return apiName != null ? WebServiceApiName.valueOf(apiName) : null;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
