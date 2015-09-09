@@ -163,7 +163,7 @@ public class MDSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.ServiceId, service.getId());
 		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
 
-		serverSessionManager.createSession(UC_SESSION_ID, uc.getPublicCert(), seedAttributeMap);
+		serverSessionManager.createSession(UC_SESSION_ID, "pcs-1", uc.getPublicCert(), seedAttributeMap);
 	}
 
 	@After

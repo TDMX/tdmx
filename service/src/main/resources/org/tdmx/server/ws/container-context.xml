@@ -39,6 +39,14 @@
 	</bean>
 	
 	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl" init-method="init">
+		<property name="connectTimeoutMillis" value="5000"/>
+		<property name="connectResponseTimeoutMillis" value="10000"/>
+		<property name="coreRpcExecutorThreads" value="2"/>
+		<property name="maxRpcExecutorThreads" value="10"/>
+		<property name="ioThreads" value="16"/>
+		<property name="ioBufferSize" value="1048576"/>
+		<property name="tcpNoDelay" value="true"/>
+
 		<property name="timeoutCheckIntervalSec" value="${ws.sessionTimeoutCheckIntervalSec}"/>
 	</bean>
 

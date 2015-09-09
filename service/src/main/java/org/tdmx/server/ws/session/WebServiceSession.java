@@ -39,6 +39,8 @@ public abstract class WebServiceSession {
 	// -------------------------------------------------------------------------
 	protected final Map<String, Object> attributeMap = new HashMap<>();
 
+	protected static final String CONTROLLER_ID = "CONTROLLER_ID";
+
 	protected static final String ACCOUNT_ZONE = "ACCOUNT_ZONE";
 	protected static final String ZONE = "ZONE";
 	protected static final String DOMAIN = "DOMAIN";
@@ -129,4 +131,11 @@ public abstract class WebServiceSession {
 		return getAttribute(CREATED_TIMESTAMP);
 	}
 
+	public void setControllerId(String controllerId) {
+		setAttribute(CONTROLLER_ID, controllerId);
+	}
+
+	public String getControllerId() {
+		return getAttribute(CONTROLLER_ID);
+	}
 }

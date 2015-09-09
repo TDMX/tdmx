@@ -18,8 +18,6 @@
  */
 package org.tdmx.server.pcs;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -27,43 +25,6 @@ import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public interface ServerSessionController {
-
-	public static class ServerServiceStatistics {
-		private final List<ServiceStatistic> stats = new ArrayList<ServiceStatistic>(WebServiceApiName.values().length);
-
-		public void addStatistic(ServiceStatistic s) {
-			stats.add(s);
-		}
-
-		public List<ServiceStatistic> getStatistics() {
-			return stats;
-		}
-	}
-
-	public static class ServiceStatistic {
-		private final WebServiceApiName api;
-		private final String httpsUrl;
-		private final int loadValue;
-
-		public ServiceStatistic(WebServiceApiName api, String httpsUrl, int loadValue) {
-			this.api = api;
-			this.httpsUrl = httpsUrl;
-			this.loadValue = loadValue;
-		}
-
-		public WebServiceApiName getApi() {
-			return api;
-		}
-
-		public String getHttpsUrl() {
-			return httpsUrl;
-		}
-
-		public int getLoadValue() {
-			return loadValue;
-		}
-
-	}
 
 	/**
 	 * Creates a new API session for a client with some initial attributes.
@@ -74,7 +35,7 @@ public interface ServerSessionController {
 	 * @param seedAttributes
 	 * @return the server statistics
 	 */
-	public ServerServiceStatistics createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
+	public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
 			Map<SeedAttribute, Long> seedAttributes);
 
 	/**
@@ -85,7 +46,7 @@ public interface ServerSessionController {
 	 * @param cert
 	 * @return the server statistics
 	 */
-	public ServerServiceStatistics addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
+	public ServiceStatistic addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert);
 
 	/**
 	 * Remove a client certificate from all sessions.
@@ -95,4 +56,5 @@ public interface ServerSessionController {
 	 */
 	public ServerServiceStatistics removeCertificate(PKIXCertificate cert);
 
+	public ServerServiceStatistics getStatistics();
 }

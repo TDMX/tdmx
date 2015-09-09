@@ -309,7 +309,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		}
 
 		@Override
-		public ServerServiceStatistics createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
+		public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
 				Map<SeedAttribute, Long> seedAttributes) {
 
 			// ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
@@ -351,14 +351,19 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		}
 
 		@Override
-		public ServerServiceStatistics addCertificate(WebServiceApiName apiName, String sessionId,
-				PKIXCertificate cert) {
+		public ServiceStatistic addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ServerServiceStatistics removeCertificate(PKIXCertificate cert) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public ServerServiceStatistics getStatistics() {
 			// TODO Auto-generated method stub
 			return null;
 		}

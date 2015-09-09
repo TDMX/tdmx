@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
-import org.tdmx.server.pcs.ServerSessionController.ServerServiceStatistics;
-import org.tdmx.server.pcs.ServerSessionController.ServiceStatistic;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -350,9 +348,9 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 					associateCert(existingSession, clientCertificate);
 
 					// we need to allocate the new session for the client on a backend server with the least load
-					ServerServiceStatistics stats = api.getSsm().createSession(sessionData.getApi(), sessionId,
+					ServiceStatistic stat = api.getSsm().createSession(sessionData.getApi(), sessionId,
 							clientCertificate, sessionData.getSeedAttributes());
-					updateServerStats(stats);
+					updateServerStat(stat);
 
 					WebServiceSessionEndpoint wsse = new WebServiceSessionEndpoint(sessionId,
 							api.getHandle().getHttpsUrl(), api.getHandle().getPublicCertificate());
@@ -369,9 +367,9 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 					// add the client certificate to the backend server's existing session
 					ServerHolder existingServer = servers.getServerMap()
 							.get(existingSession.getSessionEndpoint().getHttpsUrl());
-					ServerServiceStatistics stats = existingServer.getSsm().addCertificate(sessionData.getApi(),
+					ServiceStatistic stat = existingServer.getSsm().addCertificate(sessionData.getApi(),
 							existingSession.getHandle().getSessionId(), clientCertificate);
-					updateServerStats(stats);
+					updateServerStat(stat);
 				}
 				return existingSession.getSessionEndpoint();
 			}
@@ -554,9 +552,13 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 
 	private void updateServerStats(ServerServiceStatistics stats) {
 		for (ServiceStatistic stat : stats.getStatistics()) {
-			ServerApiHolder s = serverMap.get(stat.getApi());
-			s.adjustLoad(stat.getHttpsUrl(), stat.getLoadValue());
+			updateServerStat(stat);
 		}
+	}
+
+	private void updateServerStat(ServiceStatistic stat) {
+		ServerApiHolder s = serverMap.get(stat.getApi());
+		s.adjustLoad(stat.getHttpsUrl(), stat.getLoadValue());
 	}
 
 	// -------------------------------------------------------------------------

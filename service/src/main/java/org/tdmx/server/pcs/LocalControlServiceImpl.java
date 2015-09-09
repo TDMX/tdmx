@@ -55,6 +55,8 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	// TODO configuration properties in file
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -189,7 +191,9 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 
 	@Override
 	public void stop() {
-		shutdownHandler.shutdown();
+		if (shutdownHandler != null) {
+			shutdownHandler.shutdown();
+		}
 	}
 
 	// -------------------------------------------------------------------------

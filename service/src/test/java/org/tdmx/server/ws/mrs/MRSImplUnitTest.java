@@ -186,7 +186,7 @@ public class MRSImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.DomainId, domain2.getId());
 		seedAttributeMap.put(SeedAttribute.ChannelId, recvAuth2.getChannel().getId());
 
-		serverSessionManager.createSession(ZAC_SESSION_ID, zac.getPublicCert(), seedAttributeMap);
+		serverSessionManager.createSession(ZAC_SESSION_ID, "pcs-1", zac.getPublicCert(), seedAttributeMap);
 
 	}
 
@@ -243,7 +243,7 @@ public class MRSImplUnitTest {
 			firstAttributeMap.put(SeedAttribute.DomainId, domain1.getId());
 			firstAttributeMap.put(SeedAttribute.TemporaryChannelId, tc.getId());
 
-			serverSessionManager.createSession(DAC_SESSION_ID, dac2.getPublicCert(), firstAttributeMap);
+			serverSessionManager.createSession(DAC_SESSION_ID, "pcs-1", dac2.getPublicCert(), firstAttributeMap);
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}
@@ -320,7 +320,7 @@ public class MRSImplUnitTest {
 			firstAttributeMap.put(SeedAttribute.DomainId, domain2.getId());
 			firstAttributeMap.put(SeedAttribute.TemporaryChannelId, tc.getId());
 
-			serverSessionManager.createSession(DAC_SESSION_ID, dac1.getPublicCert(), firstAttributeMap);
+			serverSessionManager.createSession(DAC_SESSION_ID, "pcs-1", dac1.getPublicCert(), firstAttributeMap);
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}

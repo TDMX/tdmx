@@ -77,8 +77,10 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	}
 
 	@Override
-	public int createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes) {
+	public int createSession(String sessionId, String controllerId, PKIXCertificate cert,
+			Map<SeedAttribute, Long> seedAttributes) {
 		E ss = sessionFactory.createServerSession(seedAttributes);
+		ss.setControllerId(controllerId);
 		ss.addAuthorizedCertificate(cert);
 
 		sessionMap.put(sessionId, ss);
@@ -87,14 +89,19 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	}
 
 	@Override
-	public int deleteSession(String sessionId) {
-		E ss = sessionMap.remove(sessionId);
-		if (ss != null) {
-			for (PKIXCertificate authCert : ss.getAuthorizedCertificates()) {
-				disassociate(sessionId, authCert);
+	public void disconnectController(String controllerId) {
+		if (controllerId == null) {
+			return;
+		}
+		List<String> sessionIds = new ArrayList<>();
+		for (Entry<String, E> session : sessionMap.entrySet()) {
+			if (controllerId.equals(session.getValue().getControllerId())) {
+				sessionIds.add(session.getKey());
 			}
 		}
-		return getSessionCount();
+		for (String sessionId : sessionIds) {
+			deleteSession(sessionId);
+		}
 	}
 
 	@Override
@@ -162,6 +169,15 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 
 	private int getSessionCount() {
 		return sessionMap.size();
+	}
+
+	private void deleteSession(String sessionId) {
+		E ss = sessionMap.remove(sessionId);
+		if (ss != null) {
+			for (PKIXCertificate authCert : ss.getAuthorizedCertificates()) {
+				disassociate(sessionId, authCert);
+			}
+		}
 	}
 
 	private synchronized void associate(String sessionId, PKIXCertificate cert) {

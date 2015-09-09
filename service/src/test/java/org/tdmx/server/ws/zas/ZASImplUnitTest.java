@@ -230,13 +230,13 @@ public class ZASImplUnitTest {
 		Map<SeedAttribute, Long> zacSeedAttributeMap = new HashMap<>();
 		zacSeedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
 		zacSeedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		serverSessionManager.createSession(ZAC_SESSION_ID, zac.getPublicCert(), zacSeedAttributeMap);
+		serverSessionManager.createSession(ZAC_SESSION_ID, "pcs-1", zac.getPublicCert(), zacSeedAttributeMap);
 
 		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
 		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
 		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
 		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
-		serverSessionManager.createSession(DAC_SESSION_ID, dac.getPublicCert(), seedAttributeMap);
+		serverSessionManager.createSession(DAC_SESSION_ID, "pcs-1", dac.getPublicCert(), seedAttributeMap);
 	}
 
 	@After

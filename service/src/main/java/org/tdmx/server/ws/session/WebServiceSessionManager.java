@@ -35,22 +35,23 @@ public interface WebServiceSessionManager {
 	public WebServiceApiName getApiName();
 
 	/**
-	 * Creates a new session for a client with some initial attributes.
+	 * Creates a new session for a client with some initial attributes. The sessionId belongs to the controllerId.
 	 * 
 	 * @param sessionId
+	 * @param controllerId
 	 * @param cert
 	 * @param seedAttributes
 	 * @return the number of active sessions.
 	 */
-	public int createSession(String sessionId, PKIXCertificate cert, Map<SeedAttribute, Long> seedAttributes);
+	public int createSession(String sessionId, String controllerId, PKIXCertificate cert,
+			Map<SeedAttribute, Long> seedAttributes);
 
 	/**
-	 * Removes the session with the sessionId.
+	 * Removes all sessions controlled by the controller.
 	 * 
-	 * @param sessionId
-	 * @return
+	 * @param controllerId
 	 */
-	public int deleteSession(String sessionId);
+	public void disconnectController(String controllerId);
 
 	/**
 	 * Return a list of sessions which have not been used after the lastCutoffDate or who's creation date is prior to

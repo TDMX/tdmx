@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.pcs.RemoteControlServiceImpl.ServerHolder;
-import org.tdmx.server.pcs.ServerSessionController.ServerServiceStatistics;
-import org.tdmx.server.pcs.ServerSessionController.ServiceStatistic;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
@@ -85,7 +83,7 @@ public class RemoteControlServiceTest {
 		ServiceStatistic mds = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 50);
 		stats.addStatistic(mds);
 		when(ssm.createSession(Matchers.eq(WebServiceApiName.MOS), Matchers.isA(String.class),
-				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(stats);
+				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(mos);
 
 		WebServiceSessionEndpoint wsse = sut.associateApiSession(sesh, clientCert);
 		assertNotNull(wsse);
@@ -100,8 +98,8 @@ public class RemoteControlServiceTest {
 		assertEquals(100, mosserver.getLoadValue());
 		assertEquals(100, sut.getTotalLoad(WebServiceApiName.MOS));
 		ServerHolder mdsserver = sut.getServers(WebServiceApiName.MDS).get(0);
-		assertEquals(50, mdsserver.getLoadValue());
-		assertEquals(50, sut.getTotalLoad(WebServiceApiName.MDS));
+		assertEquals(0, mdsserver.getLoadValue());
+		assertEquals(0, sut.getTotalLoad(WebServiceApiName.MDS));
 
 		PKIXCertificate clientCert2 = mock(PKIXCertificate.class);
 		when(clientCert2.getFingerprint()).thenReturn("client-fingerprint-2");
@@ -112,7 +110,7 @@ public class RemoteControlServiceTest {
 		mds = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 49);
 		stats.addStatistic(mds);
 		when(ssm.addCertificate(Matchers.eq(WebServiceApiName.MOS), Matchers.isA(String.class),
-				Matchers.same(clientCert2))).thenReturn(stats);
+				Matchers.same(clientCert2))).thenReturn(mos);
 
 		wsse = sut.associateApiSession(sesh, clientCert2);
 		assertNotNull(wsse);
@@ -125,8 +123,8 @@ public class RemoteControlServiceTest {
 
 		assertEquals(101, mosserver.getLoadValue());
 		assertEquals(101, sut.getTotalLoad(WebServiceApiName.MOS));
-		assertEquals(49, mdsserver.getLoadValue());
-		assertEquals(49, sut.getTotalLoad(WebServiceApiName.MDS));
+		assertEquals(0, mdsserver.getLoadValue());
+		assertEquals(0, sut.getTotalLoad(WebServiceApiName.MDS));
 	}
 
 	@Test
@@ -162,7 +160,7 @@ public class RemoteControlServiceTest {
 		ServiceStatistic mds = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 50);
 		stats.addStatistic(mds);
 		when(ssm.createSession(Matchers.eq(WebServiceApiName.MOS), Matchers.isA(String.class),
-				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(stats);
+				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(mos);
 
 		WebServiceSessionEndpoint wsse = sut.associateApiSession(sesh, clientCert);
 		assertEquals(1, sut.getApiSessions(WebServiceApiName.MOS).size());
@@ -196,7 +194,7 @@ public class RemoteControlServiceTest {
 		ServiceStatistic mds = new ServiceStatistic(WebServiceApiName.MDS, "url-mds", 50);
 		stats.addStatistic(mds);
 		when(ssm.createSession(Matchers.eq(WebServiceApiName.MOS), Matchers.isA(String.class),
-				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(stats);
+				Matchers.same(clientCert), Matchers.same(seedAttributes))).thenReturn(mos);
 
 		WebServiceSessionEndpoint wsse = sut.associateApiSession(sesh, clientCert);
 		assertNotNull(wsse);
