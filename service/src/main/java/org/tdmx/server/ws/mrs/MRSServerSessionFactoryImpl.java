@@ -43,14 +43,14 @@ public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MR
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MRSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+	public MRSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
 		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
 		try {
 			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
 			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
-			MRSServerSession mss = new MRSServerSession(az, z, d);
+			MRSServerSession mss = new MRSServerSession(sessionId, az, z, d);
 			if (seedAttributes.containsKey(SeedAttribute.ChannelId)) {
 				mss.setChannel(fetchChannel(seedAttributes.get(SeedAttribute.ChannelId)));
 			}

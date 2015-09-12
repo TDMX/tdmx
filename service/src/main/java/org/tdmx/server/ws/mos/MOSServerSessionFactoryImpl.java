@@ -44,7 +44,7 @@ public class MOSServerSessionFactoryImpl extends AbstractServerSessionFactory<MO
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MOSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+	public MOSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
 		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
@@ -53,7 +53,7 @@ public class MOSServerSessionFactoryImpl extends AbstractServerSessionFactory<MO
 			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
 			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
 
-			MOSServerSession mss = new MOSServerSession(az, z, d, a);
+			MOSServerSession mss = new MOSServerSession(sessionId, az, z, d, a);
 			return mss;
 		} finally {
 			disassociateZoneDB();

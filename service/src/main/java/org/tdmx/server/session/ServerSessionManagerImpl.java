@@ -19,10 +19,13 @@
 package org.tdmx.server.session;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,16 +33,26 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.job.NamedThreadFactory;
-import org.tdmx.server.pcs.ServerServiceStatistics;
-import org.tdmx.server.pcs.ServerSessionController;
-import org.tdmx.server.pcs.ServiceStatistic;
+import org.tdmx.server.pcs.ServiceHandle;
+import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
+import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest;
+import org.tdmx.server.pcs.protobuf.PCSClient.SessionManagerProxy;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.ws.ServerRuntimeContextService;
 import org.tdmx.server.ws.session.WebServiceApiName;
+import org.tdmx.server.ws.session.WebServiceSession;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
+import com.google.protobuf.BlockingService;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClient;
@@ -66,7 +79,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  * 
  */
-public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSessionController {
+public class ServerSessionManagerImpl implements Manageable, Runnable, SessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -99,13 +112,17 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 
 	// - internal
 	private List<WebServiceApiName> apiList;
+	private Map<WebServiceApiName, WebServiceSessionManagerHolder> apiManagerMap = null;
 	private String segment;
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService sessionTimeoutExecutor = null;
+
+	private ServerRuntimeContextService runtimeService;
 	/**
-	 * The WebServiceSessionManagers for MOS, MDS, MRS, ZAS arranged in a Map.
+	 * The WebServiceSessionManagers for MOS, MDS, MRS, ZAS. A subset of these are started at startup time and placed in
+	 * the apiManagerMap.
 	 */
-	private Map<WebServiceApiName, WebServiceSessionManager> apiManagerMap = null;
+	private List<WebServiceSessionManager> webServiceSessionManagers;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -116,31 +133,79 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
-			Map<SeedAttribute, Long> seedAttributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(RpcController controller,
+			CreateSessionRequest request) throws ServiceException {
+		WebServiceApiName api = mapApi(request.getApiName());
+		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
+		if (h != null) {
+			String controllerId = getControllerId((RpcClientChannel) controller);
+			PKIXCertificate cert = CertificateIOUtils.safeDecodeX509(request.getClientCert().toByteArray());
+			int loadValue = h.getSessionManager().createSession(request.getSessionId(), controllerId, cert,
+					mapAttributes(request.getAttributeList()));
+			h.setLoadValue(loadValue);
 
-	@Override
-	public ServiceStatistic addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ServerServiceStatistics removeCertificate(PKIXCertificate cert) {
-		for (Entry<WebServiceApiName, WebServiceSessionManager> apis : apiManagerMap.entrySet()) {
-			log.info("Removing cert " + cert.getFingerprint() + " from " + apis.getKey());
-			apis.getValue().removeCertificate(cert);
+			// formulate the result
+			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+					.newBuilder();
+			statisticBuilder.setApiName(api.name());
+			statisticBuilder.setHttpsUrl(h.getHandle().getHttpsUrl());
+			statisticBuilder.setLoadValue(loadValue);
+			return statisticBuilder.build();
 		}
 		return null;
 	}
 
 	@Override
-	public ServerServiceStatistics getStatistics() {
-		// TODO Auto-generated method stub
+	public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(RpcController controller,
+			AddCertificateRequest request) throws ServiceException {
+		WebServiceApiName api = mapApi(request.getApiName());
+		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
+		if (h != null) {
+			PKIXCertificate cert = CertificateIOUtils.safeDecodeX509(request.getClientCert().toByteArray());
+			int loadValue = h.getSessionManager().addCertificate(request.getSessionId(), cert);
+			h.setLoadValue(loadValue);
+
+			// formulate the result
+			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+					.newBuilder();
+			statisticBuilder.setApiName(api.name());
+			statisticBuilder.setHttpsUrl(h.getHandle().getHttpsUrl());
+			statisticBuilder.setLoadValue(loadValue);
+			return statisticBuilder.build();
+		}
 		return null;
+	}
+
+	@Override
+	public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(RpcController controller,
+			RemoveCertificateRequest request) throws ServiceException {
+		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
+			WebServiceSessionManagerHolder h = apis.getValue();
+			PKIXCertificate cert = CertificateIOUtils.safeDecodeX509(request.getClientCert().toByteArray());
+			int loadValue = h.getSessionManager().removeCertificate(cert);
+			h.setLoadValue(loadValue);
+
+			return getStatistics(controller, null);
+		}
+		return null;
+	}
+
+	@Override
+	public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(RpcController controller,
+			GetStatisticsRequest request) throws ServiceException {
+		org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder stats = org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics
+				.newBuilder();
+		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
+			WebServiceSessionManagerHolder h = apis.getValue();
+
+			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder stat = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+					.newBuilder();
+			stat.setApiName(apis.getKey().name());
+			stat.setHttpsUrl(h.getHandle().getHttpsUrl());
+			stat.setLoadValue(h.getLoadValue());
+			stats.addStatistics(stat);
+		}
+		return stats.build();
 	}
 
 	public void init() {
@@ -156,6 +221,8 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 		this.segment = segment;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getTimeoutCheckIntervalSec(), getTimeoutCheckIntervalSec(),
 				TimeUnit.SECONDS);
+
+		runtimeService.getPublicKey();
 
 		try {
 			clientFactory = new DuplexTcpClientPipelineFactory();
@@ -202,10 +269,10 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 					if (client != null) {
 						client.setRpcClient(null);
 
-						for (Entry<WebServiceApiName, WebServiceSessionManager> apis : apiManagerMap.entrySet()) {
+						for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
 							String controllerId = getControllerId(clientChannel);
 							log.info("Disconnecting controller " + controllerId + " from " + apis.getKey());
-							apis.getValue().disconnectController(controllerId);
+							apis.getValue().getSessionManager().disconnectController(controllerId);
 						}
 					}
 				}
@@ -221,6 +288,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 			};
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
+
+			BlockingService sessionManagerServiceProxy = SessionManagerProxy.newReflectiveBlockingService(this);
+			clientFactory.getRpcServiceRegistry().registerService(sessionManagerServiceProxy);
 
 			bootstrap = new Bootstrap();
 			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
@@ -260,23 +330,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 		}
 	}
 
-	private RpcClient connect(String serverHostname, int serverPort) throws Exception {
-		PeerInfo server = new PeerInfo(serverHostname, serverPort);
-
-		return clientFactory.peerWith(server, bootstrap);
-	}
-
-	private void registerServer() {
-		// TODO server handles
-		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> entry : channelMap.entrySet()) {
-			entry.getValue().registerServer(null, null);
-		}
-	}
-
-	private String getControllerId(RpcClientChannel channel) {
-		return channel.getPeerInfo().toString();
-	}
-
 	@Override
 	public void stop() {
 		if (scheduledThreadPool == null) {
@@ -302,8 +355,30 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 
 	@Override
 	public void run() {
-		for (WebServiceApiName api : apiList) {
-			processIdleSessions(api);
+		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
+			log.info("Processing idle sessions for " + apis.getKey() + " in segment " + segment);
+			WebServiceSessionManagerHolder h = apis.getValue();
+
+			Date lastCutoffDate = new Date(); // TODO
+			Date creationCutoffDate = new Date(); // TODO
+			List<WebServiceSession> sessions = h.getSessionManager().getIdleSessions(lastCutoffDate,
+					creationCutoffDate);
+
+			for (Entry<RpcClientChannel, LocalControlServiceListenerClient> channel : channelMap.entrySet()) {
+				Set<String> sessionIds = new HashSet<>();
+				String controllerId = getControllerId(channel.getKey());
+
+				for (WebServiceSession session : sessions) {
+					if (controllerId.equals(session.getControllerId())) {
+						sessionIds.add(session.getSessionId());
+					}
+				}
+				if (!sessionIds.isEmpty()) {
+					channel.getValue().notifySessionsRemoved(apis.getKey(), sessionIds);
+
+				}
+
+			}
 		}
 	}
 
@@ -314,22 +389,104 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, ServerSes
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+	/**
+	 * A helper value type holding the ServerHandle.
+	 * 
+	 * @author Peter
+	 *
+	 */
+	private static class WebServiceSessionManagerHolder {
+		private final ServiceHandle handle;
+		private final WebServiceSessionManager sessionManager;
 
-	private void processIdleSessions(WebServiceApiName api) {
-		log.info("Processing idle sessions for " + api + " in segment " + segment);
-		// TODO
+		private int loadValue;
+
+		// TODO use this
+		public WebServiceSessionManagerHolder(ServiceHandle handle, WebServiceSessionManager sessionManager) {
+			if (handle == null) {
+				throw new IllegalArgumentException();
+			}
+			if (sessionManager == null) {
+				throw new IllegalArgumentException();
+			}
+			this.handle = handle;
+			this.sessionManager = sessionManager;
+		}
+
+		public ServiceHandle getHandle() {
+			return handle;
+		}
+
+		public WebServiceSessionManager getSessionManager() {
+			return sessionManager;
+		}
+
+		public int getLoadValue() {
+			return loadValue;
+		}
+
+		public void setLoadValue(int loadValue) {
+			this.loadValue = loadValue;
+		}
+	}
+
+	private RpcClient connect(String serverHostname, int serverPort) throws Exception {
+		PeerInfo server = new PeerInfo(serverHostname, serverPort);
+
+		return clientFactory.peerWith(server, bootstrap);
+	}
+
+	private void registerServer() {
+		// TODO server handles
+		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> entry : channelMap.entrySet()) {
+			entry.getValue().registerServer(null, null);
+		}
+	}
+
+	private String getControllerId(RpcClientChannel channel) {
+		return channel.getPeerInfo().toString();
+	}
+
+	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attrs) {
+		if (attrs == null) {
+			return null;
+		}
+		Map<SeedAttribute, Long> attributes = new HashMap<>();
+		for (org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue attr : attrs) {
+			attributes.put(map(attr.getName()), attr.getValue());
+		}
+		return attributes;
+	}
+
+	private SeedAttribute map(AttributeId name) {
+		if (name == null) {
+			return null;
+		}
+		return SeedAttribute.valueOf(name.name());
+	}
+
+	private WebServiceApiName mapApi(String apiName) {
+		return apiName != null ? WebServiceApiName.valueOf(apiName) : null;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public void setApiManagerMap(Map<WebServiceApiName, WebServiceSessionManager> apiManagerMap) {
-		this.apiManagerMap = apiManagerMap;
+	public ServerRuntimeContextService getRuntimeService() {
+		return runtimeService;
 	}
 
-	public Map<WebServiceApiName, WebServiceSessionManager> getApiManagerMap() {
-		return apiManagerMap;
+	public void setRuntimeService(ServerRuntimeContextService runtimeService) {
+		this.runtimeService = runtimeService;
+	}
+
+	public List<WebServiceSessionManager> getWebServiceSessionManagers() {
+		return webServiceSessionManagers;
+	}
+
+	public void setWebServiceSessionManagers(List<WebServiceSessionManager> webServiceSessionManagers) {
+		this.webServiceSessionManagers = webServiceSessionManagers;
 	}
 
 	public int getTimeoutCheckIntervalSec() {

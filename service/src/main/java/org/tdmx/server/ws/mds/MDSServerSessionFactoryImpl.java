@@ -45,7 +45,7 @@ public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MD
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MDSServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+	public MDSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
 		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
@@ -55,7 +55,7 @@ public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MD
 			Service s = fetchService(seedAttributes.get(SeedAttribute.ServiceId));
 			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
 
-			MDSServerSession mss = new MDSServerSession(az, z, d, a, s);
+			MDSServerSession mss = new MDSServerSession(sessionId, az, z, d, a, s);
 			return mss;
 		} finally {
 			disassociateZoneDB();

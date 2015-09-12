@@ -90,6 +90,7 @@ public class LocalControlServiceListenerClient implements ControlServiceListener
 
 	}
 
+	// TODO remove
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);

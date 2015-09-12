@@ -43,7 +43,7 @@ public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZA
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ZASServerSession createServerSession(Map<SeedAttribute, Long> seedAttributes) {
+	public ZASServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
 		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
@@ -52,7 +52,7 @@ public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZA
 			// note domain is null for ZACs
 			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
 
-			ZASServerSession zass = new ZASServerSession(az, z, d);
+			ZASServerSession zass = new ZASServerSession(sessionId, az, z, d);
 			return zass;
 		} finally {
 			disassociateZoneDB();

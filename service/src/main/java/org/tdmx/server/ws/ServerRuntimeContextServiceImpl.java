@@ -29,6 +29,7 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.ServerIpCredentialSpecifier;
 import org.tdmx.core.system.lang.FileUtils;
@@ -59,6 +60,9 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	private SignatureAlgorithm signatureAlgorithm;
 	private int certificateValidityDays;
 
+	// internal
+	private PKIXCertificate publicKey;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -85,6 +89,9 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 			byte[] keystore = KeyStoreUtils.saveKeyStore(serverCert, keyStoreType, keyStorePassword, keyStoreAlias);
 
 			FileUtils.storeFileContents(keyStoreFile, keystore, ".tmp");
+
+			publicKey = serverCert.getPublicCert();
+
 		} catch (CryptoCertificateException e) {
 			String errorMsg = "Unable to create servers private credential [" + serverLocalIPAddress + "]";
 			log.warn(errorMsg, e);
@@ -130,6 +137,11 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	@Override
 	public String getKeyStoreAlias() {
 		return keyStoreAlias;
+	}
+
+	@Override
+	public PKIXCertificate getPublicKey() {
+		return publicKey;
 	}
 
 	// -------------------------------------------------------------------------

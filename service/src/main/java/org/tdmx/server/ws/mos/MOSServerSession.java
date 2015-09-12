@@ -57,8 +57,8 @@ public class MOSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MOSServerSession(AccountZone az, Zone zone, Domain domain, Address address) {
-		super();
+	public MOSServerSession(String sessionId, AccountZone az, Zone zone, Domain domain, Address address) {
+		super(sessionId);
 		setAccountZone(az);
 		setZone(zone);
 		setDomain(domain);

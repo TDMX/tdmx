@@ -38,8 +38,9 @@ public class MDSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MDSServerSession(AccountZone az, Zone zone, Domain domain, Address address, Service service) {
-		super();
+	public MDSServerSession(String sessionId, AccountZone az, Zone zone, Domain domain, Address address,
+			Service service) {
+		super(sessionId);
 		setAccountZone(az);
 		setZone(zone);
 		setDomain(domain);

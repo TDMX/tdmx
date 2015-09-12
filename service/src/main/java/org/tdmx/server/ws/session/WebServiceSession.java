@@ -31,14 +31,15 @@ public abstract class WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final String CREATED_TIMESTAMP = "CREATED_TIMESTAMP";
-	public static final String LAST_USED_TIMESTAMP = "LAST_USED_TIMESTAMP";
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	protected final Map<String, Object> attributeMap = new HashMap<>();
 
+	protected static final String CREATED_TIMESTAMP = "CREATED_TIMESTAMP";
+	protected static final String LAST_USED_TIMESTAMP = "LAST_USED_TIMESTAMP";
+
+	protected static final String SESSION_ID = "SESSION_ID";
 	protected static final String CONTROLLER_ID = "CONTROLLER_ID";
 
 	protected static final String ACCOUNT_ZONE = "ACCOUNT_ZONE";
@@ -53,8 +54,9 @@ public abstract class WebServiceSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public WebServiceSession() {
+	public WebServiceSession(String sessionId) {
 		setAttribute(CREATED_TIMESTAMP, new Date());
+		setAttribute(SESSION_ID, sessionId);
 	}
 
 	class ServerSessionCertificateHolder {
@@ -129,6 +131,10 @@ public abstract class WebServiceSession {
 
 	public Date getCreationTimestamp() {
 		return getAttribute(CREATED_TIMESTAMP);
+	}
+
+	public String getSessionId() {
+		return getAttribute(SESSION_ID);
 	}
 
 	public void setControllerId(String controllerId) {

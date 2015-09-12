@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws;
 
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+
 public interface ServerRuntimeContextService {
 
 	public String getServerLocalIPAddress();
@@ -34,4 +36,5 @@ public interface ServerRuntimeContextService {
 
 	public String getKeyStoreAlias();
 
+	public PKIXCertificate getPublicKey();
 }

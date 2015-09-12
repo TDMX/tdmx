@@ -14,6 +14,21 @@
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 	
 
+	<bean id="ws.Configuration" class="org.tdmx.server.ws.ServerRuntimeContextServiceImpl" init-method="init">
+		<property name="httpsPort" value="${ws.httpsPort}" />
+		<property name="serverAddress" value="${ws.serverAddress}" />
+		<property name="contextPath" value="${ws.contextPath}"/>
+		<property name="keyStoreFile" value="${ws.keyStoreFile}"/>
+		<property name="keyStorePassword" value="${ws.keyStorePassword}"/>
+		<property name="keyStoreAlias" value="${ws.keyStoreAlias}"/>
+		<property name="keyStoreType" value="${ws.keyStoreType}"/>
+		
+		<property name="certificateValidityDays" value="${ws.certificateValidityDays}"/>
+		<property name="keyAlgorithm" value="${ws.certificateKeyAlgorithm}"/>
+		<property name="signatureAlgorithm" value="${ws.certificateSignatureAlgorithm}"/>
+		
+ 	</bean>
+
 	<bean id="ws.ZAS.AuthorizedSessionService" class="org.tdmx.server.ws.security.service.AuthorizedSessionServiceImpl">
 	</bean>
 
@@ -30,6 +45,8 @@
 	<bean id="ws.ZAS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.ZAS.SessionFactory"/>
 		<property name="apiName" value="ZAS"/>
+		<property name="apiEndpointPath" value="${ws.endpointPath}/zas"/>
+		<property name="runtimeService" ref="ws.Configuration"/>
 	</bean>
 	
 	<bean id="ws.ZAS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -76,6 +93,8 @@
 	<bean id="ws.MOS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MOS.SessionFactory"/>
 		<property name="apiName" value="MOS"/>
+		<property name="apiEndpointPath" value="${ws.endpointPath}/mos"/>
+		<property name="runtimeService" ref="ws.Configuration"/>
 	</bean>
 	
 	<bean id="ws.MOS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -123,6 +142,8 @@
 	<bean id="ws.MDS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MDS.SessionFactory"/>
 		<property name="apiName" value="MDS"/>
+		<property name="apiEndpointPath" value="${ws.endpointPath}/mds"/>
+		<property name="runtimeService" ref="ws.Configuration"/>
 	</bean>
 	
 	<bean id="ws.MDS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -169,6 +190,8 @@
 	<bean id="ws.MRS.ServerSessionManager" class="org.tdmx.server.ws.session.WebServiceSessionManagerImpl">
 		<property name="sessionFactory" ref="ws.MRS.SessionFactory"/>
 		<property name="apiName" value="MRS"/>
+		<property name="apiEndpointPath" value="${ws.endpointPath}/mrs"/>
+		<property name="runtimeService" ref="ws.Configuration"/>
 	</bean>
 	
 	<bean id="ws.MRS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">

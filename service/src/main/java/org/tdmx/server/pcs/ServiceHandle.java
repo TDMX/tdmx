@@ -43,7 +43,6 @@ public class ServiceHandle {
 	private static final Logger log = LoggerFactory.getLogger(ServiceHandle.class);
 
 	private final String httpsUrl;
-
 	private final String segment;
 	private final WebServiceApiName api;
 	private final PKIXCertificate publicCertificate;

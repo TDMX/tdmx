@@ -38,8 +38,8 @@ public class MRSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public MRSServerSession(AccountZone az, Zone zone, Domain domain) {
-		super();
+	public MRSServerSession(String sessionId, AccountZone az, Zone zone, Domain domain) {
+		super(sessionId);
 		setAccountZone(az);
 		setZone(zone);
 		setDomain(domain);

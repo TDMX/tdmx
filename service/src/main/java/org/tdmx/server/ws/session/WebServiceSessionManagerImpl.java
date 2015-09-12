@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.ws.ServerRuntimeContextService;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public class WebServiceSessionManagerImpl<E extends WebServiceSession>
@@ -56,6 +57,9 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	private final Map<String, E> sessionMap = new ConcurrentHashMap<>();
 
 	private WebServiceApiName apiName;
+	private String apiEndpointPath;
+
+	private ServerRuntimeContextService runtimeService;
 
 	private WebServiceSessionFactory<E> sessionFactory;
 
@@ -79,7 +83,7 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	@Override
 	public int createSession(String sessionId, String controllerId, PKIXCertificate cert,
 			Map<SeedAttribute, Long> seedAttributes) {
-		E ss = sessionFactory.createServerSession(seedAttributes);
+		E ss = sessionFactory.createServerSession(sessionId, seedAttributes);
 		ss.setControllerId(controllerId);
 		ss.addAuthorizedCertificate(cert);
 
@@ -138,11 +142,6 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	}
 
 	@Override
-	public WebServiceApiName getApiName() {
-		return apiName;
-	}
-
-	@Override
 	public List<WebServiceSession> getIdleSessions(Date lastCutoffDate, Date creationCutoffDate) {
 		List<WebServiceSession> result = new ArrayList<>();
 		for (Entry<String, E> e : sessionMap.entrySet()) {
@@ -157,6 +156,21 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public String getHttpsUrl() {
+		StringBuilder url = new StringBuilder();
+		url.append("https://").append(runtimeService.getServerLocalIPAddress()).append(":")
+				.append(runtimeService.getHttpsPort());
+		url.append("/").append(runtimeService.getContextPath());
+		url.append("/").append(apiEndpointPath);
+		return url.toString();
+	}
+
+	@Override
+	public WebServiceApiName getApiName() {
+		return apiName;
 	}
 
 	// -------------------------------------------------------------------------
@@ -217,4 +231,11 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 		this.apiName = apiName;
 	}
 
+	public void setRuntimeService(ServerRuntimeContextService runtimeService) {
+		this.runtimeService = runtimeService;
+	}
+
+	public void setApiEndpointPath(String apiEndpointPath) {
+		this.apiEndpointPath = apiEndpointPath;
+	}
 }

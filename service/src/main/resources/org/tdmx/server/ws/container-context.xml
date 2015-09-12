@@ -16,21 +16,6 @@
 
 
 
-	<bean id="ws.Configuration" class="org.tdmx.server.ws.ServerRuntimeContextServiceImpl" init-method="init">
-		<property name="httpsPort" value="${ws.httpsPort}" />
-		<property name="serverAddress" value="${ws.serverAddress}" />
-		<property name="contextPath" value="${ws.contextPath}"/>
-		<property name="keyStoreFile" value="${ws.keyStoreFile}"/>
-		<property name="keyStorePassword" value="${ws.keyStorePassword}"/>
-		<property name="keyStoreAlias" value="${ws.keyStoreAlias}"/>
-		<property name="keyStoreType" value="${ws.keyStoreType}"/>
-		
-		<property name="certificateValidityDays" value="${ws.certificateValidityDays}"/>
-		<property name="keyAlgorithm" value="${ws.certificateKeyAlgorithm}"/>
-		<property name="signatureAlgorithm" value="${ws.certificateSignatureAlgorithm}"/>
-		
- 	</bean>
-
 	<bean id="ws.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 	
@@ -47,6 +32,15 @@
 		<property name="ioBufferSize" value="1048576"/>
 		<property name="tcpNoDelay" value="true"/>
 
+		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="webServiceSessionManagers">
+			<list value-type="org.tdmx.server.ws.session.WebServiceSessionManager">
+	            <ref bean="ws.ZAS.ServerSessionManager"/>
+	            <ref bean="ws.MOS.ServerSessionManager"/>
+	            <ref bean="ws.MDS.ServerSessionManager"/>
+	            <ref bean="ws.MRS.ServerSessionManager"/>
+	        </list>
+        </property>
 		<property name="timeoutCheckIntervalSec" value="${ws.sessionTimeoutCheckIntervalSec}"/>
 	</bean>
 

@@ -8,2886 +8,67 @@ public final class PCSClient {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface PingOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:Ping)
-      com.google.protobuf.GeneratedMessage.
-          ExtendableMessageOrBuilder<Ping> {
-
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo + payload data must be echoed back
-     * </pre>
-     */
-    boolean hasSequenceNo();
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo + payload data must be echoed back
-     * </pre>
-     */
-    int getSequenceNo();
-
-    /**
-     * <code>required bytes pingPayload = 2;</code>
-     */
-    boolean hasPingPayload();
-    /**
-     * <code>required bytes pingPayload = 2;</code>
-     */
-    com.google.protobuf.ByteString getPingPayload();
-
-    /**
-     * <code>optional int32 pingDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the ping call at server ( prior to pong )
-     * </pre>
-     */
-    boolean hasPingDurationMs();
-    /**
-     * <code>optional int32 pingDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the ping call at server ( prior to pong )
-     * </pre>
-     */
-    int getPingDurationMs();
-
-    /**
-     * <code>optional bool pingPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the server shall provide percent complete indication back to client during ping. 
-     * </pre>
-     */
-    boolean hasPingPercentComplete();
-    /**
-     * <code>optional bool pingPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the server shall provide percent complete indication back to client during ping. 
-     * </pre>
-     */
-    boolean getPingPercentComplete();
-
-    /**
-     * <code>optional bool pongRequired = 5;</code>
-     *
-     * <pre>
-     * whether the ping call shall reverse pong the pinging client
-     * </pre>
-     */
-    boolean hasPongRequired();
-    /**
-     * <code>optional bool pongRequired = 5;</code>
-     *
-     * <pre>
-     * whether the ping call shall reverse pong the pinging client
-     * </pre>
-     */
-    boolean getPongRequired();
-
-    /**
-     * <code>optional bool pongBlocking = 6;</code>
-     *
-     * <pre>
-     * whether to call a clients blocking pong service or nonblocking pong service.
-     * </pre>
-     */
-    boolean hasPongBlocking();
-    /**
-     * <code>optional bool pongBlocking = 6;</code>
-     *
-     * <pre>
-     * whether to call a clients blocking pong service or nonblocking pong service.
-     * </pre>
-     */
-    boolean getPongBlocking();
-
-    /**
-     * <code>optional int32 pongDurationMs = 7;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    boolean hasPongDurationMs();
-    /**
-     * <code>optional int32 pongDurationMs = 7;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    int getPongDurationMs();
-
-    /**
-     * <code>optional int32 pongTimeoutMs = 8;</code>
-     *
-     * <pre>
-     * the timeout of the pong call at the server
-     * </pre>
-     */
-    boolean hasPongTimeoutMs();
-    /**
-     * <code>optional int32 pongTimeoutMs = 8;</code>
-     *
-     * <pre>
-     * the timeout of the pong call at the server
-     * </pre>
-     */
-    int getPongTimeoutMs();
-
-    /**
-     * <code>optional bool pongPercentComplete = 9;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong.
-     * </pre>
-     */
-    boolean hasPongPercentComplete();
-    /**
-     * <code>optional bool pongPercentComplete = 9;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong.
-     * </pre>
-     */
-    boolean getPongPercentComplete();
-  }
-  /**
-   * Protobuf type {@code Ping}
-   *
-   * <pre>
-   * the Ping message provides the server with all the information it needs to perform the Pong
-   * so the pinging client controls the entire operation of the server remotely.
-   * </pre>
-   */
-  public static final class Ping extends
-      com.google.protobuf.GeneratedMessage.ExtendableMessage<
-        Ping> implements
-      // @@protoc_insertion_point(message_implements:Ping)
-      PingOrBuilder {
-    // Use Ping.newBuilder() to construct.
-    private Ping(com.google.protobuf.GeneratedMessage.ExtendableBuilder<org.tdmx.server.pcs.protobuf.PCSClient.Ping, ?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private Ping(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final Ping defaultInstance;
-    public static Ping getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public Ping getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private Ping(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              sequenceNo_ = input.readInt32();
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              pingPayload_ = input.readBytes();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              pingDurationMs_ = input.readInt32();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              pingPercentComplete_ = input.readBool();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              pongRequired_ = input.readBool();
-              break;
-            }
-            case 48: {
-              bitField0_ |= 0x00000020;
-              pongBlocking_ = input.readBool();
-              break;
-            }
-            case 56: {
-              bitField0_ |= 0x00000040;
-              pongDurationMs_ = input.readInt32();
-              break;
-            }
-            case 64: {
-              bitField0_ |= 0x00000080;
-              pongTimeoutMs_ = input.readInt32();
-              break;
-            }
-            case 72: {
-              bitField0_ |= 0x00000100;
-              pongPercentComplete_ = input.readBool();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Ping_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Ping_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.Ping.class, org.tdmx.server.pcs.protobuf.PCSClient.Ping.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<Ping> PARSER =
-        new com.google.protobuf.AbstractParser<Ping>() {
-      public Ping parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Ping(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<Ping> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    public static final int SEQUENCENO_FIELD_NUMBER = 1;
-    private int sequenceNo_;
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo + payload data must be echoed back
-     * </pre>
-     */
-    public boolean hasSequenceNo() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo + payload data must be echoed back
-     * </pre>
-     */
-    public int getSequenceNo() {
-      return sequenceNo_;
-    }
-
-    public static final int PINGPAYLOAD_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString pingPayload_;
-    /**
-     * <code>required bytes pingPayload = 2;</code>
-     */
-    public boolean hasPingPayload() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>required bytes pingPayload = 2;</code>
-     */
-    public com.google.protobuf.ByteString getPingPayload() {
-      return pingPayload_;
-    }
-
-    public static final int PINGDURATIONMS_FIELD_NUMBER = 3;
-    private int pingDurationMs_;
-    /**
-     * <code>optional int32 pingDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the ping call at server ( prior to pong )
-     * </pre>
-     */
-    public boolean hasPingDurationMs() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional int32 pingDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the ping call at server ( prior to pong )
-     * </pre>
-     */
-    public int getPingDurationMs() {
-      return pingDurationMs_;
-    }
-
-    public static final int PINGPERCENTCOMPLETE_FIELD_NUMBER = 4;
-    private boolean pingPercentComplete_;
-    /**
-     * <code>optional bool pingPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the server shall provide percent complete indication back to client during ping. 
-     * </pre>
-     */
-    public boolean hasPingPercentComplete() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional bool pingPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the server shall provide percent complete indication back to client during ping. 
-     * </pre>
-     */
-    public boolean getPingPercentComplete() {
-      return pingPercentComplete_;
-    }
-
-    public static final int PONGREQUIRED_FIELD_NUMBER = 5;
-    private boolean pongRequired_;
-    /**
-     * <code>optional bool pongRequired = 5;</code>
-     *
-     * <pre>
-     * whether the ping call shall reverse pong the pinging client
-     * </pre>
-     */
-    public boolean hasPongRequired() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>optional bool pongRequired = 5;</code>
-     *
-     * <pre>
-     * whether the ping call shall reverse pong the pinging client
-     * </pre>
-     */
-    public boolean getPongRequired() {
-      return pongRequired_;
-    }
-
-    public static final int PONGBLOCKING_FIELD_NUMBER = 6;
-    private boolean pongBlocking_;
-    /**
-     * <code>optional bool pongBlocking = 6;</code>
-     *
-     * <pre>
-     * whether to call a clients blocking pong service or nonblocking pong service.
-     * </pre>
-     */
-    public boolean hasPongBlocking() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
-    }
-    /**
-     * <code>optional bool pongBlocking = 6;</code>
-     *
-     * <pre>
-     * whether to call a clients blocking pong service or nonblocking pong service.
-     * </pre>
-     */
-    public boolean getPongBlocking() {
-      return pongBlocking_;
-    }
-
-    public static final int PONGDURATIONMS_FIELD_NUMBER = 7;
-    private int pongDurationMs_;
-    /**
-     * <code>optional int32 pongDurationMs = 7;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    public boolean hasPongDurationMs() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
-    }
-    /**
-     * <code>optional int32 pongDurationMs = 7;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    public int getPongDurationMs() {
-      return pongDurationMs_;
-    }
-
-    public static final int PONGTIMEOUTMS_FIELD_NUMBER = 8;
-    private int pongTimeoutMs_;
-    /**
-     * <code>optional int32 pongTimeoutMs = 8;</code>
-     *
-     * <pre>
-     * the timeout of the pong call at the server
-     * </pre>
-     */
-    public boolean hasPongTimeoutMs() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
-    }
-    /**
-     * <code>optional int32 pongTimeoutMs = 8;</code>
-     *
-     * <pre>
-     * the timeout of the pong call at the server
-     * </pre>
-     */
-    public int getPongTimeoutMs() {
-      return pongTimeoutMs_;
-    }
-
-    public static final int PONGPERCENTCOMPLETE_FIELD_NUMBER = 9;
-    private boolean pongPercentComplete_;
-    /**
-     * <code>optional bool pongPercentComplete = 9;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong.
-     * </pre>
-     */
-    public boolean hasPongPercentComplete() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
-    }
-    /**
-     * <code>optional bool pongPercentComplete = 9;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong.
-     * </pre>
-     */
-    public boolean getPongPercentComplete() {
-      return pongPercentComplete_;
-    }
-
-    private void initFields() {
-      sequenceNo_ = 0;
-      pingPayload_ = com.google.protobuf.ByteString.EMPTY;
-      pingDurationMs_ = 0;
-      pingPercentComplete_ = false;
-      pongRequired_ = false;
-      pongBlocking_ = false;
-      pongDurationMs_ = 0;
-      pongTimeoutMs_ = 0;
-      pongPercentComplete_ = false;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      if (!hasSequenceNo()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPingPayload()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!extensionsAreInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      com.google.protobuf.GeneratedMessage
-        .ExtendableMessage<org.tdmx.server.pcs.protobuf.PCSClient.Ping>.ExtensionWriter extensionWriter =
-          newExtensionWriter();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, pingPayload_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, pingDurationMs_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBool(4, pingPercentComplete_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBool(5, pongRequired_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBool(6, pongBlocking_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeInt32(7, pongDurationMs_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeInt32(8, pongTimeoutMs_);
-      }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeBool(9, pongPercentComplete_);
-      }
-      extensionWriter.writeUntil(1000, output);
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, pingPayload_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, pingDurationMs_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, pingPercentComplete_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(5, pongRequired_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, pongBlocking_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(7, pongDurationMs_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(8, pongTimeoutMs_);
-      }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(9, pongPercentComplete_);
-      }
-      size += extensionsSerializedSize();
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Ping parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.Ping prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code Ping}
-     *
-     * <pre>
-     * the Ping message provides the server with all the information it needs to perform the Pong
-     * so the pinging client controls the entire operation of the server remotely.
-     * </pre>
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.Ping, Builder> implements
-        // @@protoc_insertion_point(builder_implements:Ping)
-        org.tdmx.server.pcs.protobuf.PCSClient.PingOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Ping_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Ping_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.Ping.class, org.tdmx.server.pcs.protobuf.PCSClient.Ping.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.Ping.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        sequenceNo_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        pingPayload_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        pingDurationMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000004);
-        pingPercentComplete_ = false;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        pongRequired_ = false;
-        bitField0_ = (bitField0_ & ~0x00000010);
-        pongBlocking_ = false;
-        bitField0_ = (bitField0_ & ~0x00000020);
-        pongDurationMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        pongTimeoutMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000080);
-        pongPercentComplete_ = false;
-        bitField0_ = (bitField0_ & ~0x00000100);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Ping_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Ping getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.Ping.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Ping build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Ping result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Ping buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Ping result = new org.tdmx.server.pcs.protobuf.PCSClient.Ping(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.sequenceNo_ = sequenceNo_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.pingPayload_ = pingPayload_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.pingDurationMs_ = pingDurationMs_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.pingPercentComplete_ = pingPercentComplete_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.pongRequired_ = pongRequired_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.pongBlocking_ = pongBlocking_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000040;
-        }
-        result.pongDurationMs_ = pongDurationMs_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000080;
-        }
-        result.pongTimeoutMs_ = pongTimeoutMs_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-          to_bitField0_ |= 0x00000100;
-        }
-        result.pongPercentComplete_ = pongPercentComplete_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.Ping) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.Ping)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.Ping other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.Ping.getDefaultInstance()) return this;
-        if (other.hasSequenceNo()) {
-          setSequenceNo(other.getSequenceNo());
-        }
-        if (other.hasPingPayload()) {
-          setPingPayload(other.getPingPayload());
-        }
-        if (other.hasPingDurationMs()) {
-          setPingDurationMs(other.getPingDurationMs());
-        }
-        if (other.hasPingPercentComplete()) {
-          setPingPercentComplete(other.getPingPercentComplete());
-        }
-        if (other.hasPongRequired()) {
-          setPongRequired(other.getPongRequired());
-        }
-        if (other.hasPongBlocking()) {
-          setPongBlocking(other.getPongBlocking());
-        }
-        if (other.hasPongDurationMs()) {
-          setPongDurationMs(other.getPongDurationMs());
-        }
-        if (other.hasPongTimeoutMs()) {
-          setPongTimeoutMs(other.getPongTimeoutMs());
-        }
-        if (other.hasPongPercentComplete()) {
-          setPongPercentComplete(other.getPongPercentComplete());
-        }
-        this.mergeExtensionFields(other);
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        if (!hasSequenceNo()) {
-          
-          return false;
-        }
-        if (!hasPingPayload()) {
-          
-          return false;
-        }
-        if (!extensionsAreInitialized()) {
-          
-          return false;
-        }
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.Ping parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.Ping) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private int sequenceNo_ ;
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo + payload data must be echoed back
-       * </pre>
-       */
-      public boolean hasSequenceNo() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo + payload data must be echoed back
-       * </pre>
-       */
-      public int getSequenceNo() {
-        return sequenceNo_;
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo + payload data must be echoed back
-       * </pre>
-       */
-      public Builder setSequenceNo(int value) {
-        bitField0_ |= 0x00000001;
-        sequenceNo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo + payload data must be echoed back
-       * </pre>
-       */
-      public Builder clearSequenceNo() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        sequenceNo_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString pingPayload_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>required bytes pingPayload = 2;</code>
-       */
-      public boolean hasPingPayload() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required bytes pingPayload = 2;</code>
-       */
-      public com.google.protobuf.ByteString getPingPayload() {
-        return pingPayload_;
-      }
-      /**
-       * <code>required bytes pingPayload = 2;</code>
-       */
-      public Builder setPingPayload(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        pingPayload_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required bytes pingPayload = 2;</code>
-       */
-      public Builder clearPingPayload() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        pingPayload_ = getDefaultInstance().getPingPayload();
-        onChanged();
-        return this;
-      }
-
-      private int pingDurationMs_ ;
-      /**
-       * <code>optional int32 pingDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the ping call at server ( prior to pong )
-       * </pre>
-       */
-      public boolean hasPingDurationMs() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional int32 pingDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the ping call at server ( prior to pong )
-       * </pre>
-       */
-      public int getPingDurationMs() {
-        return pingDurationMs_;
-      }
-      /**
-       * <code>optional int32 pingDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the ping call at server ( prior to pong )
-       * </pre>
-       */
-      public Builder setPingDurationMs(int value) {
-        bitField0_ |= 0x00000004;
-        pingDurationMs_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 pingDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the ping call at server ( prior to pong )
-       * </pre>
-       */
-      public Builder clearPingDurationMs() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        pingDurationMs_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private boolean pingPercentComplete_ ;
-      /**
-       * <code>optional bool pingPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the server shall provide percent complete indication back to client during ping. 
-       * </pre>
-       */
-      public boolean hasPingPercentComplete() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional bool pingPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the server shall provide percent complete indication back to client during ping. 
-       * </pre>
-       */
-      public boolean getPingPercentComplete() {
-        return pingPercentComplete_;
-      }
-      /**
-       * <code>optional bool pingPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the server shall provide percent complete indication back to client during ping. 
-       * </pre>
-       */
-      public Builder setPingPercentComplete(boolean value) {
-        bitField0_ |= 0x00000008;
-        pingPercentComplete_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool pingPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the server shall provide percent complete indication back to client during ping. 
-       * </pre>
-       */
-      public Builder clearPingPercentComplete() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        pingPercentComplete_ = false;
-        onChanged();
-        return this;
-      }
-
-      private boolean pongRequired_ ;
-      /**
-       * <code>optional bool pongRequired = 5;</code>
-       *
-       * <pre>
-       * whether the ping call shall reverse pong the pinging client
-       * </pre>
-       */
-      public boolean hasPongRequired() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional bool pongRequired = 5;</code>
-       *
-       * <pre>
-       * whether the ping call shall reverse pong the pinging client
-       * </pre>
-       */
-      public boolean getPongRequired() {
-        return pongRequired_;
-      }
-      /**
-       * <code>optional bool pongRequired = 5;</code>
-       *
-       * <pre>
-       * whether the ping call shall reverse pong the pinging client
-       * </pre>
-       */
-      public Builder setPongRequired(boolean value) {
-        bitField0_ |= 0x00000010;
-        pongRequired_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool pongRequired = 5;</code>
-       *
-       * <pre>
-       * whether the ping call shall reverse pong the pinging client
-       * </pre>
-       */
-      public Builder clearPongRequired() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        pongRequired_ = false;
-        onChanged();
-        return this;
-      }
-
-      private boolean pongBlocking_ ;
-      /**
-       * <code>optional bool pongBlocking = 6;</code>
-       *
-       * <pre>
-       * whether to call a clients blocking pong service or nonblocking pong service.
-       * </pre>
-       */
-      public boolean hasPongBlocking() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
-      }
-      /**
-       * <code>optional bool pongBlocking = 6;</code>
-       *
-       * <pre>
-       * whether to call a clients blocking pong service or nonblocking pong service.
-       * </pre>
-       */
-      public boolean getPongBlocking() {
-        return pongBlocking_;
-      }
-      /**
-       * <code>optional bool pongBlocking = 6;</code>
-       *
-       * <pre>
-       * whether to call a clients blocking pong service or nonblocking pong service.
-       * </pre>
-       */
-      public Builder setPongBlocking(boolean value) {
-        bitField0_ |= 0x00000020;
-        pongBlocking_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool pongBlocking = 6;</code>
-       *
-       * <pre>
-       * whether to call a clients blocking pong service or nonblocking pong service.
-       * </pre>
-       */
-      public Builder clearPongBlocking() {
-        bitField0_ = (bitField0_ & ~0x00000020);
-        pongBlocking_ = false;
-        onChanged();
-        return this;
-      }
-
-      private int pongDurationMs_ ;
-      /**
-       * <code>optional int32 pongDurationMs = 7;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public boolean hasPongDurationMs() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 7;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public int getPongDurationMs() {
-        return pongDurationMs_;
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 7;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public Builder setPongDurationMs(int value) {
-        bitField0_ |= 0x00000040;
-        pongDurationMs_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 7;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public Builder clearPongDurationMs() {
-        bitField0_ = (bitField0_ & ~0x00000040);
-        pongDurationMs_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int pongTimeoutMs_ ;
-      /**
-       * <code>optional int32 pongTimeoutMs = 8;</code>
-       *
-       * <pre>
-       * the timeout of the pong call at the server
-       * </pre>
-       */
-      public boolean hasPongTimeoutMs() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
-      }
-      /**
-       * <code>optional int32 pongTimeoutMs = 8;</code>
-       *
-       * <pre>
-       * the timeout of the pong call at the server
-       * </pre>
-       */
-      public int getPongTimeoutMs() {
-        return pongTimeoutMs_;
-      }
-      /**
-       * <code>optional int32 pongTimeoutMs = 8;</code>
-       *
-       * <pre>
-       * the timeout of the pong call at the server
-       * </pre>
-       */
-      public Builder setPongTimeoutMs(int value) {
-        bitField0_ |= 0x00000080;
-        pongTimeoutMs_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 pongTimeoutMs = 8;</code>
-       *
-       * <pre>
-       * the timeout of the pong call at the server
-       * </pre>
-       */
-      public Builder clearPongTimeoutMs() {
-        bitField0_ = (bitField0_ & ~0x00000080);
-        pongTimeoutMs_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private boolean pongPercentComplete_ ;
-      /**
-       * <code>optional bool pongPercentComplete = 9;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong.
-       * </pre>
-       */
-      public boolean hasPongPercentComplete() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 9;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong.
-       * </pre>
-       */
-      public boolean getPongPercentComplete() {
-        return pongPercentComplete_;
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 9;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong.
-       * </pre>
-       */
-      public Builder setPongPercentComplete(boolean value) {
-        bitField0_ |= 0x00000100;
-        pongPercentComplete_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 9;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong.
-       * </pre>
-       */
-      public Builder clearPongPercentComplete() {
-        bitField0_ = (bitField0_ & ~0x00000100);
-        pongPercentComplete_ = false;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:Ping)
-    }
-
-    static {
-      defaultInstance = new Ping(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:Ping)
-  }
-
-  public interface PongOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:Pong)
-      com.google.protobuf.GeneratedMessage.
-          ExtendableMessageOrBuilder<Pong> {
-
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo of the ping which requests pong
-     * </pre>
-     */
-    boolean hasSequenceNo();
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo of the ping which requests pong
-     * </pre>
-     */
-    int getSequenceNo();
-
-    /**
-     * <code>required bytes pongData = 2;</code>
-     *
-     * <pre>
-     * the pingPayload copied in the pong
-     * </pre>
-     */
-    boolean hasPongData();
-    /**
-     * <code>required bytes pongData = 2;</code>
-     *
-     * <pre>
-     * the pingPayload copied in the pong
-     * </pre>
-     */
-    com.google.protobuf.ByteString getPongData();
-
-    /**
-     * <code>optional int32 pongDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    boolean hasPongDurationMs();
-    /**
-     * <code>optional int32 pongDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    int getPongDurationMs();
-
-    /**
-     * <code>optional bool pongPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong. 
-     * </pre>
-     */
-    boolean hasPongPercentComplete();
-    /**
-     * <code>optional bool pongPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong. 
-     * </pre>
-     */
-    boolean getPongPercentComplete();
-  }
-  /**
-   * Protobuf type {@code Pong}
-   */
-  public static final class Pong extends
-      com.google.protobuf.GeneratedMessage.ExtendableMessage<
-        Pong> implements
-      // @@protoc_insertion_point(message_implements:Pong)
-      PongOrBuilder {
-    // Use Pong.newBuilder() to construct.
-    private Pong(com.google.protobuf.GeneratedMessage.ExtendableBuilder<org.tdmx.server.pcs.protobuf.PCSClient.Pong, ?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private Pong(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final Pong defaultInstance;
-    public static Pong getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public Pong getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private Pong(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              sequenceNo_ = input.readInt32();
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              pongData_ = input.readBytes();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              pongDurationMs_ = input.readInt32();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              pongPercentComplete_ = input.readBool();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Pong_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Pong_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.Pong.class, org.tdmx.server.pcs.protobuf.PCSClient.Pong.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<Pong> PARSER =
-        new com.google.protobuf.AbstractParser<Pong>() {
-      public Pong parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Pong(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<Pong> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    public static final int SEQUENCENO_FIELD_NUMBER = 1;
-    private int sequenceNo_;
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo of the ping which requests pong
-     * </pre>
-     */
-    public boolean hasSequenceNo() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>required int32 sequenceNo = 1;</code>
-     *
-     * <pre>
-     * sequenceNo of the ping which requests pong
-     * </pre>
-     */
-    public int getSequenceNo() {
-      return sequenceNo_;
-    }
-
-    public static final int PONGDATA_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString pongData_;
-    /**
-     * <code>required bytes pongData = 2;</code>
-     *
-     * <pre>
-     * the pingPayload copied in the pong
-     * </pre>
-     */
-    public boolean hasPongData() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>required bytes pongData = 2;</code>
-     *
-     * <pre>
-     * the pingPayload copied in the pong
-     * </pre>
-     */
-    public com.google.protobuf.ByteString getPongData() {
-      return pongData_;
-    }
-
-    public static final int PONGDURATIONMS_FIELD_NUMBER = 3;
-    private int pongDurationMs_;
-    /**
-     * <code>optional int32 pongDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    public boolean hasPongDurationMs() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional int32 pongDurationMs = 3;</code>
-     *
-     * <pre>
-     * the duration of the pong call at the client
-     * </pre>
-     */
-    public int getPongDurationMs() {
-      return pongDurationMs_;
-    }
-
-    public static final int PONGPERCENTCOMPLETE_FIELD_NUMBER = 4;
-    private boolean pongPercentComplete_;
-    /**
-     * <code>optional bool pongPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong. 
-     * </pre>
-     */
-    public boolean hasPongPercentComplete() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional bool pongPercentComplete = 4;</code>
-     *
-     * <pre>
-     * whether the client shall provide percent complete indication back to server during pong. 
-     * </pre>
-     */
-    public boolean getPongPercentComplete() {
-      return pongPercentComplete_;
-    }
-
-    private void initFields() {
-      sequenceNo_ = 0;
-      pongData_ = com.google.protobuf.ByteString.EMPTY;
-      pongDurationMs_ = 0;
-      pongPercentComplete_ = false;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      if (!hasSequenceNo()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPongData()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!extensionsAreInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      com.google.protobuf.GeneratedMessage
-        .ExtendableMessage<org.tdmx.server.pcs.protobuf.PCSClient.Pong>.ExtensionWriter extensionWriter =
-          newExtensionWriter();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, pongData_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, pongDurationMs_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBool(4, pongPercentComplete_);
-      }
-      extensionWriter.writeUntil(1000, output);
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, pongData_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, pongDurationMs_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, pongPercentComplete_);
-      }
-      size += extensionsSerializedSize();
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Pong parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.Pong prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code Pong}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.Pong, Builder> implements
-        // @@protoc_insertion_point(builder_implements:Pong)
-        org.tdmx.server.pcs.protobuf.PCSClient.PongOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Pong_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Pong_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.Pong.class, org.tdmx.server.pcs.protobuf.PCSClient.Pong.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.Pong.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        sequenceNo_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        pongData_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        pongDurationMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000004);
-        pongPercentComplete_ = false;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Pong_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Pong getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Pong build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Pong result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.Pong buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Pong result = new org.tdmx.server.pcs.protobuf.PCSClient.Pong(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.sequenceNo_ = sequenceNo_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.pongData_ = pongData_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.pongDurationMs_ = pongDurationMs_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.pongPercentComplete_ = pongPercentComplete_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.Pong) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.Pong)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.Pong other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance()) return this;
-        if (other.hasSequenceNo()) {
-          setSequenceNo(other.getSequenceNo());
-        }
-        if (other.hasPongData()) {
-          setPongData(other.getPongData());
-        }
-        if (other.hasPongDurationMs()) {
-          setPongDurationMs(other.getPongDurationMs());
-        }
-        if (other.hasPongPercentComplete()) {
-          setPongPercentComplete(other.getPongPercentComplete());
-        }
-        this.mergeExtensionFields(other);
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        if (!hasSequenceNo()) {
-          
-          return false;
-        }
-        if (!hasPongData()) {
-          
-          return false;
-        }
-        if (!extensionsAreInitialized()) {
-          
-          return false;
-        }
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.Pong parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.Pong) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private int sequenceNo_ ;
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo of the ping which requests pong
-       * </pre>
-       */
-      public boolean hasSequenceNo() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo of the ping which requests pong
-       * </pre>
-       */
-      public int getSequenceNo() {
-        return sequenceNo_;
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo of the ping which requests pong
-       * </pre>
-       */
-      public Builder setSequenceNo(int value) {
-        bitField0_ |= 0x00000001;
-        sequenceNo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required int32 sequenceNo = 1;</code>
-       *
-       * <pre>
-       * sequenceNo of the ping which requests pong
-       * </pre>
-       */
-      public Builder clearSequenceNo() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        sequenceNo_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString pongData_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>required bytes pongData = 2;</code>
-       *
-       * <pre>
-       * the pingPayload copied in the pong
-       * </pre>
-       */
-      public boolean hasPongData() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required bytes pongData = 2;</code>
-       *
-       * <pre>
-       * the pingPayload copied in the pong
-       * </pre>
-       */
-      public com.google.protobuf.ByteString getPongData() {
-        return pongData_;
-      }
-      /**
-       * <code>required bytes pongData = 2;</code>
-       *
-       * <pre>
-       * the pingPayload copied in the pong
-       * </pre>
-       */
-      public Builder setPongData(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        pongData_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required bytes pongData = 2;</code>
-       *
-       * <pre>
-       * the pingPayload copied in the pong
-       * </pre>
-       */
-      public Builder clearPongData() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        pongData_ = getDefaultInstance().getPongData();
-        onChanged();
-        return this;
-      }
-
-      private int pongDurationMs_ ;
-      /**
-       * <code>optional int32 pongDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public boolean hasPongDurationMs() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public int getPongDurationMs() {
-        return pongDurationMs_;
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public Builder setPongDurationMs(int value) {
-        bitField0_ |= 0x00000004;
-        pongDurationMs_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 pongDurationMs = 3;</code>
-       *
-       * <pre>
-       * the duration of the pong call at the client
-       * </pre>
-       */
-      public Builder clearPongDurationMs() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        pongDurationMs_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private boolean pongPercentComplete_ ;
-      /**
-       * <code>optional bool pongPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong. 
-       * </pre>
-       */
-      public boolean hasPongPercentComplete() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong. 
-       * </pre>
-       */
-      public boolean getPongPercentComplete() {
-        return pongPercentComplete_;
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong. 
-       * </pre>
-       */
-      public Builder setPongPercentComplete(boolean value) {
-        bitField0_ |= 0x00000008;
-        pongPercentComplete_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool pongPercentComplete = 4;</code>
-       *
-       * <pre>
-       * whether the client shall provide percent complete indication back to server during pong. 
-       * </pre>
-       */
-      public Builder clearPongPercentComplete() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        pongPercentComplete_ = false;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:Pong)
-    }
-
-    static {
-      defaultInstance = new Pong(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:Pong)
-  }
-
-  public interface PercentCompleteOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:PercentComplete)
+  public interface ServiceStatisticOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ServiceStatistic)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required float percentageComplete = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
-    boolean hasPercentageComplete();
+    boolean hasHttpsUrl();
     /**
-     * <code>required float percentageComplete = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
-    float getPercentageComplete();
-
+    java.lang.String getHttpsUrl();
     /**
-     * <code>optional int32 sequenceNo = 2;</code>
-     *
-     * <pre>
-     * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-     * </pre>
-     */
-    boolean hasSequenceNo();
-    /**
-     * <code>optional int32 sequenceNo = 2;</code>
-     *
-     * <pre>
-     * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-     * </pre>
-     */
-    int getSequenceNo();
-
-    /**
-     * <code>optional .PercentComplete.OperationName op = 3;</code>
-     *
-     * <pre>
-     * to validate
-     * </pre>
-     */
-    boolean hasOp();
-    /**
-     * <code>optional .PercentComplete.OperationName op = 3;</code>
-     *
-     * <pre>
-     * to validate
-     * </pre>
-     */
-    org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName getOp();
-  }
-  /**
-   * Protobuf type {@code PercentComplete}
-   */
-  public static final class PercentComplete extends
-      com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:PercentComplete)
-      PercentCompleteOrBuilder {
-    // Use PercentComplete.newBuilder() to construct.
-    private PercentComplete(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private PercentComplete(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final PercentComplete defaultInstance;
-    public static PercentComplete getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public PercentComplete getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private PercentComplete(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 13: {
-              bitField0_ |= 0x00000001;
-              percentageComplete_ = input.readFloat();
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              sequenceNo_ = input.readInt32();
-              break;
-            }
-            case 24: {
-              int rawValue = input.readEnum();
-              org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName value = org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(3, rawValue);
-              } else {
-                bitField0_ |= 0x00000004;
-                op_ = value;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_PercentComplete_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_PercentComplete_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.class, org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<PercentComplete> PARSER =
-        new com.google.protobuf.AbstractParser<PercentComplete>() {
-      public PercentComplete parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PercentComplete(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<PercentComplete> getParserForType() {
-      return PARSER;
-    }
-
-    /**
-     * Protobuf enum {@code PercentComplete.OperationName}
-     */
-    public enum OperationName
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>PING = 0;</code>
-       *
-       * <pre>
-       * percent complete relates to a ping
-       * </pre>
-       */
-      PING(0, 0),
-      /**
-       * <code>PONG = 1;</code>
-       */
-      PONG(1, 1),
-      ;
-
-      /**
-       * <code>PING = 0;</code>
-       *
-       * <pre>
-       * percent complete relates to a ping
-       * </pre>
-       */
-      public static final int PING_VALUE = 0;
-      /**
-       * <code>PONG = 1;</code>
-       */
-      public static final int PONG_VALUE = 1;
-
-
-      public final int getNumber() { return value; }
-
-      public static OperationName valueOf(int value) {
-        switch (value) {
-          case 0: return PING;
-          case 1: return PONG;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<OperationName>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static com.google.protobuf.Internal.EnumLiteMap<OperationName>
-          internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<OperationName>() {
-              public OperationName findValueByNumber(int number) {
-                return OperationName.valueOf(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        return getDescriptor().getValues().get(index);
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final OperationName[] VALUES = values();
-
-      public static OperationName valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int index;
-      private final int value;
-
-      private OperationName(int index, int value) {
-        this.index = index;
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:PercentComplete.OperationName)
-    }
-
-    private int bitField0_;
-    public static final int PERCENTAGECOMPLETE_FIELD_NUMBER = 1;
-    private float percentageComplete_;
-    /**
-     * <code>required float percentageComplete = 1;</code>
-     */
-    public boolean hasPercentageComplete() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>required float percentageComplete = 1;</code>
-     */
-    public float getPercentageComplete() {
-      return percentageComplete_;
-    }
-
-    public static final int SEQUENCENO_FIELD_NUMBER = 2;
-    private int sequenceNo_;
-    /**
-     * <code>optional int32 sequenceNo = 2;</code>
-     *
-     * <pre>
-     * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-     * </pre>
-     */
-    public boolean hasSequenceNo() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int32 sequenceNo = 2;</code>
-     *
-     * <pre>
-     * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-     * </pre>
-     */
-    public int getSequenceNo() {
-      return sequenceNo_;
-    }
-
-    public static final int OP_FIELD_NUMBER = 3;
-    private org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName op_;
-    /**
-     * <code>optional .PercentComplete.OperationName op = 3;</code>
-     *
-     * <pre>
-     * to validate
-     * </pre>
-     */
-    public boolean hasOp() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional .PercentComplete.OperationName op = 3;</code>
-     *
-     * <pre>
-     * to validate
-     * </pre>
-     */
-    public org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName getOp() {
-      return op_;
-    }
-
-    private void initFields() {
-      percentageComplete_ = 0F;
-      sequenceNo_ = 0;
-      op_ = org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName.PING;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      if (!hasPercentageComplete()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeFloat(1, percentageComplete_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeEnum(3, op_.getNumber());
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeFloatSize(1, percentageComplete_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, sequenceNo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(3, op_.getNumber());
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code PercentComplete}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:PercentComplete)
-        org.tdmx.server.pcs.protobuf.PCSClient.PercentCompleteOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_PercentComplete_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_PercentComplete_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.class, org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        percentageComplete_ = 0F;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        sequenceNo_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        op_ = org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName.PING;
-        bitField0_ = (bitField0_ & ~0x00000004);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_PercentComplete_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete result = new org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.percentageComplete_ = percentageComplete_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.sequenceNo_ = sequenceNo_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.op_ = op_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.getDefaultInstance()) return this;
-        if (other.hasPercentageComplete()) {
-          setPercentageComplete(other.getPercentageComplete());
-        }
-        if (other.hasSequenceNo()) {
-          setSequenceNo(other.getSequenceNo());
-        }
-        if (other.hasOp()) {
-          setOp(other.getOp());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        if (!hasPercentageComplete()) {
-          
-          return false;
-        }
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private float percentageComplete_ ;
-      /**
-       * <code>required float percentageComplete = 1;</code>
-       */
-      public boolean hasPercentageComplete() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required float percentageComplete = 1;</code>
-       */
-      public float getPercentageComplete() {
-        return percentageComplete_;
-      }
-      /**
-       * <code>required float percentageComplete = 1;</code>
-       */
-      public Builder setPercentageComplete(float value) {
-        bitField0_ |= 0x00000001;
-        percentageComplete_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required float percentageComplete = 1;</code>
-       */
-      public Builder clearPercentageComplete() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        percentageComplete_ = 0F;
-        onChanged();
-        return this;
-      }
-
-      private int sequenceNo_ ;
-      /**
-       * <code>optional int32 sequenceNo = 2;</code>
-       *
-       * <pre>
-       * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-       * </pre>
-       */
-      public boolean hasSequenceNo() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int32 sequenceNo = 2;</code>
-       *
-       * <pre>
-       * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-       * </pre>
-       */
-      public int getSequenceNo() {
-        return sequenceNo_;
-      }
-      /**
-       * <code>optional int32 sequenceNo = 2;</code>
-       *
-       * <pre>
-       * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-       * </pre>
-       */
-      public Builder setSequenceNo(int value) {
-        bitField0_ |= 0x00000002;
-        sequenceNo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 sequenceNo = 2;</code>
-       *
-       * <pre>
-       * to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-       * </pre>
-       */
-      public Builder clearSequenceNo() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        sequenceNo_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName op_ = org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName.PING;
-      /**
-       * <code>optional .PercentComplete.OperationName op = 3;</code>
-       *
-       * <pre>
-       * to validate
-       * </pre>
-       */
-      public boolean hasOp() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional .PercentComplete.OperationName op = 3;</code>
-       *
-       * <pre>
-       * to validate
-       * </pre>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName getOp() {
-        return op_;
-      }
-      /**
-       * <code>optional .PercentComplete.OperationName op = 3;</code>
-       *
-       * <pre>
-       * to validate
-       * </pre>
-       */
-      public Builder setOp(org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        bitField0_ |= 0x00000004;
-        op_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional .PercentComplete.OperationName op = 3;</code>
-       *
-       * <pre>
-       * to validate
-       * </pre>
-       */
-      public Builder clearOp() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        op_ = org.tdmx.server.pcs.protobuf.PCSClient.PercentComplete.OperationName.PING;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:PercentComplete)
-    }
-
-    static {
-      defaultInstance = new PercentComplete(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:PercentComplete)
-  }
-
-  public interface StatusOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:Status)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>required string message = 1;</code>
-     */
-    boolean hasMessage();
-    /**
-     * <code>required string message = 1;</code>
-     */
-    java.lang.String getMessage();
-    /**
-     * <code>required string message = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
     com.google.protobuf.ByteString
-        getMessageBytes();
+        getHttpsUrlBytes();
+
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    boolean hasApiName();
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    java.lang.String getApiName();
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getApiNameBytes();
+
+    /**
+     * <code>optional int32 loadValue = 3;</code>
+     */
+    boolean hasLoadValue();
+    /**
+     * <code>optional int32 loadValue = 3;</code>
+     */
+    int getLoadValue();
   }
   /**
-   * Protobuf type {@code Status}
+   * Protobuf type {@code ServiceStatistic}
    */
-  public static final class Status extends
+  public static final class ServiceStatistic extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:Status)
-      StatusOrBuilder {
-    // Use Status.newBuilder() to construct.
-    private Status(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:ServiceStatistic)
+      ServiceStatisticOrBuilder {
+    // Use ServiceStatistic.newBuilder() to construct.
+    private ServiceStatistic(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private Status(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private ServiceStatistic(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final Status defaultInstance;
-    public static Status getDefaultInstance() {
+    private static final ServiceStatistic defaultInstance;
+    public static ServiceStatistic getDefaultInstance() {
       return defaultInstance;
     }
 
-    public Status getDefaultInstanceForType() {
+    public ServiceStatistic getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -2897,7 +78,7 @@ public final class PCSClient {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private Status(
+    private ServiceStatistic(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2923,7 +104,18 @@ public final class PCSClient {
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              message_ = bs;
+              httpsUrl_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              apiName_ = bs;
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              loadValue_ = input.readInt32();
               break;
             }
           }
@@ -2940,45 +132,45 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Status_descriptor;
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Status_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.Status.class, org.tdmx.server.pcs.protobuf.PCSClient.Status.Builder.class);
+              org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<Status> PARSER =
-        new com.google.protobuf.AbstractParser<Status>() {
-      public Status parsePartialFrom(
+    public static com.google.protobuf.Parser<ServiceStatistic> PARSER =
+        new com.google.protobuf.AbstractParser<ServiceStatistic>() {
+      public ServiceStatistic parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Status(input, extensionRegistry);
+        return new ServiceStatistic(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<Status> getParserForType() {
+    public com.google.protobuf.Parser<ServiceStatistic> getParserForType() {
       return PARSER;
     }
 
     private int bitField0_;
-    public static final int MESSAGE_FIELD_NUMBER = 1;
-    private java.lang.Object message_;
+    public static final int HTTPSURL_FIELD_NUMBER = 1;
+    private java.lang.Object httpsUrl_;
     /**
-     * <code>required string message = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
-    public boolean hasMessage() {
+    public boolean hasHttpsUrl() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string message = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
-    public java.lang.String getMessage() {
-      java.lang.Object ref = message_;
+    public java.lang.String getHttpsUrl() {
+      java.lang.Object ref = httpsUrl_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -2986,30 +178,89 @@ public final class PCSClient {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          message_ = s;
+          httpsUrl_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string message = 1;</code>
+     * <code>optional string httpsUrl = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getMessageBytes() {
-      java.lang.Object ref = message_;
+        getHttpsUrlBytes() {
+      java.lang.Object ref = httpsUrl_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        message_ = b;
+        httpsUrl_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
 
+    public static final int APINAME_FIELD_NUMBER = 2;
+    private java.lang.Object apiName_;
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    public boolean hasApiName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    public java.lang.String getApiName() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          apiName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string apiName = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getApiNameBytes() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        apiName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int LOADVALUE_FIELD_NUMBER = 3;
+    private int loadValue_;
+    /**
+     * <code>optional int32 loadValue = 3;</code>
+     */
+    public boolean hasLoadValue() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int32 loadValue = 3;</code>
+     */
+    public int getLoadValue() {
+      return loadValue_;
+    }
+
     private void initFields() {
-      message_ = "";
+      httpsUrl_ = "";
+      apiName_ = "";
+      loadValue_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3017,10 +268,6 @@ public final class PCSClient {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasMessage()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -3029,7 +276,13 @@ public final class PCSClient {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getMessageBytes());
+        output.writeBytes(1, getHttpsUrlBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, loadValue_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3042,7 +295,15 @@ public final class PCSClient {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getMessageBytes());
+          .computeBytesSize(1, getHttpsUrlBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, loadValue_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3056,53 +317,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.Status parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3111,7 +372,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.Status prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -3123,25 +384,25 @@ public final class PCSClient {
       return builder;
     }
     /**
-     * Protobuf type {@code Status}
+     * Protobuf type {@code ServiceStatistic}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:Status)
-        org.tdmx.server.pcs.protobuf.PCSClient.StatusOrBuilder {
+        // @@protoc_insertion_point(builder_implements:ServiceStatistic)
+        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Status_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Status_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.Status.class, org.tdmx.server.pcs.protobuf.PCSClient.Status.Builder.class);
+                org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.Status.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3161,8 +422,12 @@ public final class PCSClient {
 
       public Builder clear() {
         super.clear();
-        message_ = "";
+        httpsUrl_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        apiName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        loadValue_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -3172,59 +437,71 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_Status_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.Status getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.Status.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.Status build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Status result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.Status buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.Status result = new org.tdmx.server.pcs.protobuf.PCSClient.Status(this);
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic result = new org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.message_ = message_;
+        result.httpsUrl_ = httpsUrl_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.apiName_ = apiName_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.loadValue_ = loadValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.Status) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.Status)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.Status other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.Status.getDefaultInstance()) return this;
-        if (other.hasMessage()) {
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()) return this;
+        if (other.hasHttpsUrl()) {
           bitField0_ |= 0x00000001;
-          message_ = other.message_;
+          httpsUrl_ = other.httpsUrl_;
           onChanged();
+        }
+        if (other.hasApiName()) {
+          bitField0_ |= 0x00000002;
+          apiName_ = other.apiName_;
+          onChanged();
+        }
+        if (other.hasLoadValue()) {
+          setLoadValue(other.getLoadValue());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasMessage()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -3232,11 +509,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.Status parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.Status) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -3247,24 +524,24 @@ public final class PCSClient {
       }
       private int bitField0_;
 
-      private java.lang.Object message_ = "";
+      private java.lang.Object httpsUrl_ = "";
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
-      public boolean hasMessage() {
+      public boolean hasHttpsUrl() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
-      public java.lang.String getMessage() {
-        java.lang.Object ref = message_;
+      public java.lang.String getHttpsUrl() {
+        java.lang.Object ref = httpsUrl_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            message_ = s;
+            httpsUrl_ = s;
           }
           return s;
         } else {
@@ -3272,101 +549,4059 @@ public final class PCSClient {
         }
       }
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getMessageBytes() {
-        java.lang.Object ref = message_;
+          getHttpsUrlBytes() {
+        java.lang.Object ref = httpsUrl_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          message_ = b;
+          httpsUrl_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
-      public Builder setMessage(
+      public Builder setHttpsUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        message_ = value;
+        httpsUrl_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
-      public Builder clearMessage() {
+      public Builder clearHttpsUrl() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        message_ = getDefaultInstance().getMessage();
+        httpsUrl_ = getDefaultInstance().getHttpsUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>required string message = 1;</code>
+       * <code>optional string httpsUrl = 1;</code>
        */
-      public Builder setMessageBytes(
+      public Builder setHttpsUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        message_ = value;
+        httpsUrl_ = value;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:Status)
+      private java.lang.Object apiName_ = "";
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public boolean hasApiName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public java.lang.String getApiName() {
+        java.lang.Object ref = apiName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            apiName_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getApiNameBytes() {
+        java.lang.Object ref = apiName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          apiName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public Builder setApiName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public Builder clearApiName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        apiName_ = getDefaultInstance().getApiName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 2;</code>
+       */
+      public Builder setApiNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int loadValue_ ;
+      /**
+       * <code>optional int32 loadValue = 3;</code>
+       */
+      public boolean hasLoadValue() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int32 loadValue = 3;</code>
+       */
+      public int getLoadValue() {
+        return loadValue_;
+      }
+      /**
+       * <code>optional int32 loadValue = 3;</code>
+       */
+      public Builder setLoadValue(int value) {
+        bitField0_ |= 0x00000004;
+        loadValue_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 loadValue = 3;</code>
+       */
+      public Builder clearLoadValue() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        loadValue_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:ServiceStatistic)
     }
 
     static {
-      defaultInstance = new Status(true);
+      defaultInstance = new ServiceStatistic(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:Status)
+    // @@protoc_insertion_point(class_scope:ServiceStatistic)
+  }
+
+  public interface ServerServiceStatisticsOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ServerServiceStatistics)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> 
+        getStatisticsList();
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index);
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    int getStatisticsCount();
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+        getStatisticsOrBuilderList();
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code ServerServiceStatistics}
+   */
+  public static final class ServerServiceStatistics extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:ServerServiceStatistics)
+      ServerServiceStatisticsOrBuilder {
+    // Use ServerServiceStatistics.newBuilder() to construct.
+    private ServerServiceStatistics(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ServerServiceStatistics(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ServerServiceStatistics defaultInstance;
+    public static ServerServiceStatistics getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ServerServiceStatistics getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ServerServiceStatistics(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              statistics_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          statistics_ = java.util.Collections.unmodifiableList(statistics_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ServerServiceStatistics> PARSER =
+        new com.google.protobuf.AbstractParser<ServerServiceStatistics>() {
+      public ServerServiceStatistics parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ServerServiceStatistics(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ServerServiceStatistics> getParserForType() {
+      return PARSER;
+    }
+
+    public static final int STATISTICS_FIELD_NUMBER = 1;
+    private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> statistics_;
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> getStatisticsList() {
+      return statistics_;
+    }
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+        getStatisticsOrBuilderList() {
+      return statistics_;
+    }
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    public int getStatisticsCount() {
+      return statistics_.size();
+    }
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index) {
+      return statistics_.get(index);
+    }
+    /**
+     * <code>repeated .ServiceStatistic statistics = 1;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+        int index) {
+      return statistics_.get(index);
+    }
+
+    private void initFields() {
+      statistics_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < statistics_.size(); i++) {
+        output.writeMessage(1, statistics_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < statistics_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, statistics_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ServerServiceStatistics}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ServerServiceStatistics)
+        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatisticsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getStatisticsFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (statisticsBuilder_ == null) {
+          statistics_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          statisticsBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics result = new org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics(this);
+        int from_bitField0_ = bitField0_;
+        if (statisticsBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            statistics_ = java.util.Collections.unmodifiableList(statistics_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.statistics_ = statistics_;
+        } else {
+          result.statistics_ = statisticsBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()) return this;
+        if (statisticsBuilder_ == null) {
+          if (!other.statistics_.isEmpty()) {
+            if (statistics_.isEmpty()) {
+              statistics_ = other.statistics_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureStatisticsIsMutable();
+              statistics_.addAll(other.statistics_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.statistics_.isEmpty()) {
+            if (statisticsBuilder_.isEmpty()) {
+              statisticsBuilder_.dispose();
+              statisticsBuilder_ = null;
+              statistics_ = other.statistics_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              statisticsBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getStatisticsFieldBuilder() : null;
+            } else {
+              statisticsBuilder_.addAllMessages(other.statistics_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> statistics_ =
+        java.util.Collections.emptyList();
+      private void ensureStatisticsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>(statistics_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> statisticsBuilder_;
+
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> getStatisticsList() {
+        if (statisticsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(statistics_);
+        } else {
+          return statisticsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public int getStatisticsCount() {
+        if (statisticsBuilder_ == null) {
+          return statistics_.size();
+        } else {
+          return statisticsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index) {
+        if (statisticsBuilder_ == null) {
+          return statistics_.get(index);
+        } else {
+          return statisticsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder setStatistics(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+        if (statisticsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureStatisticsIsMutable();
+          statistics_.set(index, value);
+          onChanged();
+        } else {
+          statisticsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder setStatistics(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+        if (statisticsBuilder_ == null) {
+          ensureStatisticsIsMutable();
+          statistics_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          statisticsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder addStatistics(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+        if (statisticsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureStatisticsIsMutable();
+          statistics_.add(value);
+          onChanged();
+        } else {
+          statisticsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder addStatistics(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+        if (statisticsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureStatisticsIsMutable();
+          statistics_.add(index, value);
+          onChanged();
+        } else {
+          statisticsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder addStatistics(
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+        if (statisticsBuilder_ == null) {
+          ensureStatisticsIsMutable();
+          statistics_.add(builderForValue.build());
+          onChanged();
+        } else {
+          statisticsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder addStatistics(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+        if (statisticsBuilder_ == null) {
+          ensureStatisticsIsMutable();
+          statistics_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          statisticsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder addAllStatistics(
+          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> values) {
+        if (statisticsBuilder_ == null) {
+          ensureStatisticsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, statistics_);
+          onChanged();
+        } else {
+          statisticsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder clearStatistics() {
+        if (statisticsBuilder_ == null) {
+          statistics_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          statisticsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public Builder removeStatistics(int index) {
+        if (statisticsBuilder_ == null) {
+          ensureStatisticsIsMutable();
+          statistics_.remove(index);
+          onChanged();
+        } else {
+          statisticsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder getStatisticsBuilder(
+          int index) {
+        return getStatisticsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+          int index) {
+        if (statisticsBuilder_ == null) {
+          return statistics_.get(index);  } else {
+          return statisticsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+           getStatisticsOrBuilderList() {
+        if (statisticsBuilder_ != null) {
+          return statisticsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(statistics_);
+        }
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder addStatisticsBuilder() {
+        return getStatisticsFieldBuilder().addBuilder(
+            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder addStatisticsBuilder(
+          int index) {
+        return getStatisticsFieldBuilder().addBuilder(
+            index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ServiceStatistic statistics = 1;</code>
+       */
+      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder> 
+           getStatisticsBuilderList() {
+        return getStatisticsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+          getStatisticsFieldBuilder() {
+        if (statisticsBuilder_ == null) {
+          statisticsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder>(
+                  statistics_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          statistics_ = null;
+        }
+        return statisticsBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:ServerServiceStatistics)
+    }
+
+    static {
+      defaultInstance = new ServerServiceStatistics(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:ServerServiceStatistics)
+  }
+
+  public interface AttributeValueOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AttributeValue)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>required .AttributeValue.AttributeId name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>required .AttributeValue.AttributeId name = 1;</code>
+     */
+    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName();
+
+    /**
+     * <code>optional int64 value = 2;</code>
+     */
+    boolean hasValue();
+    /**
+     * <code>optional int64 value = 2;</code>
+     */
+    long getValue();
+  }
+  /**
+   * Protobuf type {@code AttributeValue}
+   */
+  public static final class AttributeValue extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:AttributeValue)
+      AttributeValueOrBuilder {
+    // Use AttributeValue.newBuilder() to construct.
+    private AttributeValue(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AttributeValue(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AttributeValue defaultInstance;
+    public static AttributeValue getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AttributeValue getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AttributeValue(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId value = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                name_ = value;
+              }
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              value_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.class, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AttributeValue> PARSER =
+        new com.google.protobuf.AbstractParser<AttributeValue>() {
+      public AttributeValue parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AttributeValue(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AttributeValue> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code AttributeValue.AttributeId}
+     */
+    public enum AttributeId
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>AccountZoneId = 0;</code>
+       */
+      AccountZoneId(0, 0),
+      /**
+       * <code>ZoneId = 1;</code>
+       */
+      ZoneId(1, 1),
+      /**
+       * <code>DomainId = 2;</code>
+       */
+      DomainId(2, 2),
+      /**
+       * <code>ChannelId = 3;</code>
+       */
+      ChannelId(3, 3),
+      /**
+       * <code>TemporaryChannelId = 4;</code>
+       */
+      TemporaryChannelId(4, 4),
+      /**
+       * <code>ServiceId = 5;</code>
+       */
+      ServiceId(5, 5),
+      /**
+       * <code>AddressId = 6;</code>
+       */
+      AddressId(6, 6),
+      ;
+
+      /**
+       * <code>AccountZoneId = 0;</code>
+       */
+      public static final int AccountZoneId_VALUE = 0;
+      /**
+       * <code>ZoneId = 1;</code>
+       */
+      public static final int ZoneId_VALUE = 1;
+      /**
+       * <code>DomainId = 2;</code>
+       */
+      public static final int DomainId_VALUE = 2;
+      /**
+       * <code>ChannelId = 3;</code>
+       */
+      public static final int ChannelId_VALUE = 3;
+      /**
+       * <code>TemporaryChannelId = 4;</code>
+       */
+      public static final int TemporaryChannelId_VALUE = 4;
+      /**
+       * <code>ServiceId = 5;</code>
+       */
+      public static final int ServiceId_VALUE = 5;
+      /**
+       * <code>AddressId = 6;</code>
+       */
+      public static final int AddressId_VALUE = 6;
+
+
+      public final int getNumber() { return value; }
+
+      public static AttributeId valueOf(int value) {
+        switch (value) {
+          case 0: return AccountZoneId;
+          case 1: return ZoneId;
+          case 2: return DomainId;
+          case 3: return ChannelId;
+          case 4: return TemporaryChannelId;
+          case 5: return ServiceId;
+          case 6: return AddressId;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<AttributeId>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<AttributeId>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<AttributeId>() {
+              public AttributeId findValueByNumber(int number) {
+                return AttributeId.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final AttributeId[] VALUES = values();
+
+      public static AttributeId valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private AttributeId(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:AttributeValue.AttributeId)
+    }
+
+    private int bitField0_;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId name_;
+    /**
+     * <code>required .AttributeValue.AttributeId name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required .AttributeValue.AttributeId name = 1;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName() {
+      return name_;
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 2;
+    private long value_;
+    /**
+     * <code>optional int64 value = 2;</code>
+     */
+    public boolean hasValue() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int64 value = 2;</code>
+     */
+    public long getValue() {
+      return value_;
+    }
+
+    private void initFields() {
+      name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
+      value_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, name_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(2, value_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, name_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, value_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code AttributeValue}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:AttributeValue)
+        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.class, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        value_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue result = new org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.value_ = value_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          setName(other.getName());
+        }
+        if (other.hasValue()) {
+          setValue(other.getValue());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasName()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
+      /**
+       * <code>required .AttributeValue.AttributeId name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .AttributeValue.AttributeId name = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName() {
+        return name_;
+      }
+      /**
+       * <code>required .AttributeValue.AttributeId name = 1;</code>
+       */
+      public Builder setName(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required .AttributeValue.AttributeId name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
+        onChanged();
+        return this;
+      }
+
+      private long value_ ;
+      /**
+       * <code>optional int64 value = 2;</code>
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int64 value = 2;</code>
+       */
+      public long getValue() {
+        return value_;
+      }
+      /**
+       * <code>optional int64 value = 2;</code>
+       */
+      public Builder setValue(long value) {
+        bitField0_ |= 0x00000002;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 value = 2;</code>
+       */
+      public Builder clearValue() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        value_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AttributeValue)
+    }
+
+    static {
+      defaultInstance = new AttributeValue(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:AttributeValue)
+  }
+
+  public interface CreateSessionRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:CreateSessionRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    boolean hasApiName();
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    java.lang.String getApiName();
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getApiNameBytes();
+
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    boolean hasSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    java.lang.String getSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSessionIdBytes();
+
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    boolean hasClientCert();
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    com.google.protobuf.ByteString getClientCert();
+
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> 
+        getAttributeList();
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index);
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    int getAttributeCount();
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+        getAttributeOrBuilderList();
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code CreateSessionRequest}
+   */
+  public static final class CreateSessionRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:CreateSessionRequest)
+      CreateSessionRequestOrBuilder {
+    // Use CreateSessionRequest.newBuilder() to construct.
+    private CreateSessionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CreateSessionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CreateSessionRequest defaultInstance;
+    public static CreateSessionRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CreateSessionRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CreateSessionRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              apiName_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              sessionId_ = bs;
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              clientCert_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          attribute_ = java.util.Collections.unmodifiableList(attribute_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CreateSessionRequest> PARSER =
+        new com.google.protobuf.AbstractParser<CreateSessionRequest>() {
+      public CreateSessionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CreateSessionRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateSessionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int APINAME_FIELD_NUMBER = 1;
+    private java.lang.Object apiName_;
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public boolean hasApiName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public java.lang.String getApiName() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          apiName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getApiNameBytes() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        apiName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SESSIONID_FIELD_NUMBER = 2;
+    private java.lang.Object sessionId_;
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public boolean hasSessionId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public java.lang.String getSessionId() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          sessionId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSessionIdBytes() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        sessionId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CLIENTCERT_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString clientCert_;
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    public boolean hasClientCert() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    public com.google.protobuf.ByteString getClientCert() {
+      return clientCert_;
+    }
+
+    public static final int ATTRIBUTE_FIELD_NUMBER = 4;
+    private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attribute_;
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> getAttributeList() {
+      return attribute_;
+    }
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+        getAttributeOrBuilderList() {
+      return attribute_;
+    }
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    public int getAttributeCount() {
+      return attribute_.size();
+    }
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index) {
+      return attribute_.get(index);
+    }
+    /**
+     * <code>repeated .AttributeValue attribute = 4;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+        int index) {
+      return attribute_.get(index);
+    }
+
+    private void initFields() {
+      apiName_ = "";
+      sessionId_ = "";
+      clientCert_ = com.google.protobuf.ByteString.EMPTY;
+      attribute_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getAttributeCount(); i++) {
+        if (!getAttribute(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getSessionIdBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, clientCert_);
+      }
+      for (int i = 0; i < attribute_.size(); i++) {
+        output.writeMessage(4, attribute_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getSessionIdBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, clientCert_);
+      }
+      for (int i = 0; i < attribute_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, attribute_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code CreateSessionRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:CreateSessionRequest)
+        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getAttributeFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        apiName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        sessionId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientCert_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        if (attributeBuilder_ == null) {
+          attribute_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          attributeBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.apiName_ = apiName_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.sessionId_ = sessionId_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.clientCert_ = clientCert_;
+        if (attributeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            attribute_ = java.util.Collections.unmodifiableList(attribute_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.attribute_ = attribute_;
+        } else {
+          result.attribute_ = attributeBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance()) return this;
+        if (other.hasApiName()) {
+          bitField0_ |= 0x00000001;
+          apiName_ = other.apiName_;
+          onChanged();
+        }
+        if (other.hasSessionId()) {
+          bitField0_ |= 0x00000002;
+          sessionId_ = other.sessionId_;
+          onChanged();
+        }
+        if (other.hasClientCert()) {
+          setClientCert(other.getClientCert());
+        }
+        if (attributeBuilder_ == null) {
+          if (!other.attribute_.isEmpty()) {
+            if (attribute_.isEmpty()) {
+              attribute_ = other.attribute_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureAttributeIsMutable();
+              attribute_.addAll(other.attribute_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.attribute_.isEmpty()) {
+            if (attributeBuilder_.isEmpty()) {
+              attributeBuilder_.dispose();
+              attributeBuilder_ = null;
+              attribute_ = other.attribute_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              attributeBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getAttributeFieldBuilder() : null;
+            } else {
+              attributeBuilder_.addAllMessages(other.attribute_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getAttributeCount(); i++) {
+          if (!getAttribute(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object apiName_ = "";
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public boolean hasApiName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public java.lang.String getApiName() {
+        java.lang.Object ref = apiName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            apiName_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getApiNameBytes() {
+        java.lang.Object ref = apiName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          apiName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder setApiName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder clearApiName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        apiName_ = getDefaultInstance().getApiName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder setApiNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object sessionId_ = "";
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public boolean hasSessionId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public java.lang.String getSessionId() {
+        java.lang.Object ref = sessionId_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            sessionId_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSessionIdBytes() {
+        java.lang.Object ref = sessionId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          sessionId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder clearSessionId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sessionId_ = getDefaultInstance().getSessionId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString clientCert_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public boolean hasClientCert() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public com.google.protobuf.ByteString getClientCert() {
+        return clientCert_;
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public Builder setClientCert(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        clientCert_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public Builder clearClientCert() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        clientCert_ = getDefaultInstance().getClientCert();
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attribute_ =
+        java.util.Collections.emptyList();
+      private void ensureAttributeIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue>(attribute_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> attributeBuilder_;
+
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> getAttributeList() {
+        if (attributeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(attribute_);
+        } else {
+          return attributeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public int getAttributeCount() {
+        if (attributeBuilder_ == null) {
+          return attribute_.size();
+        } else {
+          return attributeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index) {
+        if (attributeBuilder_ == null) {
+          return attribute_.get(index);
+        } else {
+          return attributeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder setAttribute(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+        if (attributeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributeIsMutable();
+          attribute_.set(index, value);
+          onChanged();
+        } else {
+          attributeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder setAttribute(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+        if (attributeBuilder_ == null) {
+          ensureAttributeIsMutable();
+          attribute_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          attributeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder addAttribute(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+        if (attributeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributeIsMutable();
+          attribute_.add(value);
+          onChanged();
+        } else {
+          attributeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder addAttribute(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+        if (attributeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributeIsMutable();
+          attribute_.add(index, value);
+          onChanged();
+        } else {
+          attributeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder addAttribute(
+          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+        if (attributeBuilder_ == null) {
+          ensureAttributeIsMutable();
+          attribute_.add(builderForValue.build());
+          onChanged();
+        } else {
+          attributeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder addAttribute(
+          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+        if (attributeBuilder_ == null) {
+          ensureAttributeIsMutable();
+          attribute_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          attributeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder addAllAttribute(
+          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> values) {
+        if (attributeBuilder_ == null) {
+          ensureAttributeIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, attribute_);
+          onChanged();
+        } else {
+          attributeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder clearAttribute() {
+        if (attributeBuilder_ == null) {
+          attribute_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          attributeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public Builder removeAttribute(int index) {
+        if (attributeBuilder_ == null) {
+          ensureAttributeIsMutable();
+          attribute_.remove(index);
+          onChanged();
+        } else {
+          attributeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder getAttributeBuilder(
+          int index) {
+        return getAttributeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+          int index) {
+        if (attributeBuilder_ == null) {
+          return attribute_.get(index);  } else {
+          return attributeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+           getAttributeOrBuilderList() {
+        if (attributeBuilder_ != null) {
+          return attributeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(attribute_);
+        }
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder addAttributeBuilder() {
+        return getAttributeFieldBuilder().addBuilder(
+            org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder addAttributeBuilder(
+          int index) {
+        return getAttributeFieldBuilder().addBuilder(
+            index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .AttributeValue attribute = 4;</code>
+       */
+      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder> 
+           getAttributeBuilderList() {
+        return getAttributeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+          getAttributeFieldBuilder() {
+        if (attributeBuilder_ == null) {
+          attributeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder>(
+                  attribute_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          attribute_ = null;
+        }
+        return attributeBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:CreateSessionRequest)
+    }
+
+    static {
+      defaultInstance = new CreateSessionRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:CreateSessionRequest)
+  }
+
+  public interface AddCertificateRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AddCertificateRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    boolean hasApiName();
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    java.lang.String getApiName();
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getApiNameBytes();
+
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    boolean hasSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    java.lang.String getSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSessionIdBytes();
+
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    boolean hasClientCert();
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    com.google.protobuf.ByteString getClientCert();
+  }
+  /**
+   * Protobuf type {@code AddCertificateRequest}
+   */
+  public static final class AddCertificateRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:AddCertificateRequest)
+      AddCertificateRequestOrBuilder {
+    // Use AddCertificateRequest.newBuilder() to construct.
+    private AddCertificateRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AddCertificateRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AddCertificateRequest defaultInstance;
+    public static AddCertificateRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AddCertificateRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AddCertificateRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              apiName_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              sessionId_ = bs;
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              clientCert_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AddCertificateRequest> PARSER =
+        new com.google.protobuf.AbstractParser<AddCertificateRequest>() {
+      public AddCertificateRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AddCertificateRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AddCertificateRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int APINAME_FIELD_NUMBER = 1;
+    private java.lang.Object apiName_;
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public boolean hasApiName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public java.lang.String getApiName() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          apiName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string apiName = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getApiNameBytes() {
+      java.lang.Object ref = apiName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        apiName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SESSIONID_FIELD_NUMBER = 2;
+    private java.lang.Object sessionId_;
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public boolean hasSessionId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public java.lang.String getSessionId() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          sessionId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSessionIdBytes() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        sessionId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CLIENTCERT_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString clientCert_;
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    public boolean hasClientCert() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bytes clientCert = 3;</code>
+     */
+    public com.google.protobuf.ByteString getClientCert() {
+      return clientCert_;
+    }
+
+    private void initFields() {
+      apiName_ = "";
+      sessionId_ = "";
+      clientCert_ = com.google.protobuf.ByteString.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getSessionIdBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, clientCert_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getApiNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getSessionIdBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, clientCert_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code AddCertificateRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:AddCertificateRequest)
+        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        apiName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        sessionId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientCert_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.apiName_ = apiName_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.sessionId_ = sessionId_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.clientCert_ = clientCert_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance()) return this;
+        if (other.hasApiName()) {
+          bitField0_ |= 0x00000001;
+          apiName_ = other.apiName_;
+          onChanged();
+        }
+        if (other.hasSessionId()) {
+          bitField0_ |= 0x00000002;
+          sessionId_ = other.sessionId_;
+          onChanged();
+        }
+        if (other.hasClientCert()) {
+          setClientCert(other.getClientCert());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object apiName_ = "";
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public boolean hasApiName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public java.lang.String getApiName() {
+        java.lang.Object ref = apiName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            apiName_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getApiNameBytes() {
+        java.lang.Object ref = apiName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          apiName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder setApiName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder clearApiName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        apiName_ = getDefaultInstance().getApiName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string apiName = 1;</code>
+       */
+      public Builder setApiNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        apiName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object sessionId_ = "";
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public boolean hasSessionId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public java.lang.String getSessionId() {
+        java.lang.Object ref = sessionId_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            sessionId_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSessionIdBytes() {
+        java.lang.Object ref = sessionId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          sessionId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder clearSessionId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sessionId_ = getDefaultInstance().getSessionId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString clientCert_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public boolean hasClientCert() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public com.google.protobuf.ByteString getClientCert() {
+        return clientCert_;
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public Builder setClientCert(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        clientCert_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes clientCert = 3;</code>
+       */
+      public Builder clearClientCert() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        clientCert_ = getDefaultInstance().getClientCert();
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AddCertificateRequest)
+    }
+
+    static {
+      defaultInstance = new AddCertificateRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:AddCertificateRequest)
+  }
+
+  public interface RemoveCertificateRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RemoveCertificateRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional bytes clientCert = 1;</code>
+     */
+    boolean hasClientCert();
+    /**
+     * <code>optional bytes clientCert = 1;</code>
+     */
+    com.google.protobuf.ByteString getClientCert();
+  }
+  /**
+   * Protobuf type {@code RemoveCertificateRequest}
+   */
+  public static final class RemoveCertificateRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:RemoveCertificateRequest)
+      RemoveCertificateRequestOrBuilder {
+    // Use RemoveCertificateRequest.newBuilder() to construct.
+    private RemoveCertificateRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RemoveCertificateRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RemoveCertificateRequest defaultInstance;
+    public static RemoveCertificateRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RemoveCertificateRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RemoveCertificateRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              clientCert_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RemoveCertificateRequest> PARSER =
+        new com.google.protobuf.AbstractParser<RemoveCertificateRequest>() {
+      public RemoveCertificateRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RemoveCertificateRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RemoveCertificateRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int CLIENTCERT_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString clientCert_;
+    /**
+     * <code>optional bytes clientCert = 1;</code>
+     */
+    public boolean hasClientCert() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bytes clientCert = 1;</code>
+     */
+    public com.google.protobuf.ByteString getClientCert() {
+      return clientCert_;
+    }
+
+    private void initFields() {
+      clientCert_ = com.google.protobuf.ByteString.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, clientCert_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, clientCert_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RemoveCertificateRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RemoveCertificateRequest)
+        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        clientCert_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.clientCert_ = clientCert_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance()) return this;
+        if (other.hasClientCert()) {
+          setClientCert(other.getClientCert());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.ByteString clientCert_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes clientCert = 1;</code>
+       */
+      public boolean hasClientCert() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bytes clientCert = 1;</code>
+       */
+      public com.google.protobuf.ByteString getClientCert() {
+        return clientCert_;
+      }
+      /**
+       * <code>optional bytes clientCert = 1;</code>
+       */
+      public Builder setClientCert(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        clientCert_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes clientCert = 1;</code>
+       */
+      public Builder clearClientCert() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        clientCert_ = getDefaultInstance().getClientCert();
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:RemoveCertificateRequest)
+    }
+
+    static {
+      defaultInstance = new RemoveCertificateRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:RemoveCertificateRequest)
+  }
+
+  public interface GetStatisticsRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:GetStatisticsRequest)
+      com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * Protobuf type {@code GetStatisticsRequest}
+   */
+  public static final class GetStatisticsRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:GetStatisticsRequest)
+      GetStatisticsRequestOrBuilder {
+    // Use GetStatisticsRequest.newBuilder() to construct.
+    private GetStatisticsRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GetStatisticsRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GetStatisticsRequest defaultInstance;
+    public static GetStatisticsRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GetStatisticsRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GetStatisticsRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GetStatisticsRequest> PARSER =
+        new com.google.protobuf.AbstractParser<GetStatisticsRequest>() {
+      public GetStatisticsRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GetStatisticsRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GetStatisticsRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private void initFields() {
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code GetStatisticsRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:GetStatisticsRequest)
+        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest build() {
+        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest(this);
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:GetStatisticsRequest)
+    }
+
+    static {
+      defaultInstance = new GetStatisticsRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:GetStatisticsRequest)
   }
 
   /**
-   * Protobuf service {@code BlockingPingService}
-   *
-   * <pre>
-   * in order to demonstrate simultaneously the serving of synchronous
-   * and asynchronous services, we need to give the "same" service different
-   * names.
-   * </pre>
+   * Protobuf service {@code SessionManagerProxy}
    */
-  public static abstract class BlockingPingService
+  public static abstract class SessionManagerProxy
       implements com.google.protobuf.Service {
-    protected BlockingPingService() {}
+    protected SessionManagerProxy() {}
 
     public interface Interface {
       /**
-       * <code>rpc ping(.Ping) returns (.Pong);</code>
+       * <code>rpc createSession(.CreateSessionRequest) returns (.ServiceStatistic);</code>
        */
-      public abstract void ping(
+      public abstract void createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.Ping request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.Pong> done);
+          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+
+      /**
+       * <code>rpc addSessionCertificate(.AddCertificateRequest) returns (.ServiceStatistic);</code>
+       */
+      public abstract void addSessionCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+
+      /**
+       * <code>rpc removeCertificate(.RemoveCertificateRequest) returns (.ServerServiceStatistics);</code>
+       */
+      public abstract void removeCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+
+      /**
+       * <code>rpc getStatistics(.GetStatisticsRequest) returns (.ServerServiceStatistics);</code>
+       */
+      public abstract void getStatistics(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
 
     }
 
     public static com.google.protobuf.Service newReflectiveService(
         final Interface impl) {
-      return new BlockingPingService() {
+      return new SessionManagerProxy() {
         @java.lang.Override
-        public  void ping(
+        public  void createSession(
             com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSClient.Ping request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.Pong> done) {
-          impl.ping(controller, request, done);
+            org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+          impl.createSession(controller, request, done);
+        }
+
+        @java.lang.Override
+        public  void addSessionCertificate(
+            com.google.protobuf.RpcController controller,
+            org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+          impl.addSessionCertificate(controller, request, done);
+        }
+
+        @java.lang.Override
+        public  void removeCertificate(
+            com.google.protobuf.RpcController controller,
+            org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+          impl.removeCertificate(controller, request, done);
+        }
+
+        @java.lang.Override
+        public  void getStatistics(
+            com.google.protobuf.RpcController controller,
+            org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+          impl.getStatistics(controller, request, done);
         }
 
       };
@@ -3392,7 +4627,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return impl.ping(controller, (org.tdmx.server.pcs.protobuf.PCSClient.Ping)request);
+              return impl.createSession(controller, (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)request);
+            case 1:
+              return impl.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)request);
+            case 2:
+              return impl.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)request);
+            case 3:
+              return impl.getStatistics(controller, (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -3408,7 +4649,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return org.tdmx.server.pcs.protobuf.PCSClient.Ping.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+            case 1:
+              return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+            case 2:
+              return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+            case 3:
+              return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -3424,7 +4671,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+            case 1:
+              return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+            case 2:
+              return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+            case 3:
+              return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -3434,12 +4687,36 @@ public final class PCSClient {
     }
 
     /**
-     * <code>rpc ping(.Ping) returns (.Pong);</code>
+     * <code>rpc createSession(.CreateSessionRequest) returns (.ServiceStatistic);</code>
      */
-    public abstract void ping(
+    public abstract void createSession(
         com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSClient.Ping request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.Pong> done);
+        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+
+    /**
+     * <code>rpc addSessionCertificate(.AddCertificateRequest) returns (.ServiceStatistic);</code>
+     */
+    public abstract void addSessionCertificate(
+        com.google.protobuf.RpcController controller,
+        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+
+    /**
+     * <code>rpc removeCertificate(.RemoveCertificateRequest) returns (.ServerServiceStatistics);</code>
+     */
+    public abstract void removeCertificate(
+        com.google.protobuf.RpcController controller,
+        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+
+    /**
+     * <code>rpc getStatistics(.GetStatisticsRequest) returns (.ServerServiceStatistics);</code>
+     */
+    public abstract void getStatistics(
+        com.google.protobuf.RpcController controller,
+        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
@@ -3464,8 +4741,23 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          this.ping(controller, (org.tdmx.server.pcs.protobuf.PCSClient.Ping)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.Pong>specializeCallback(
+          this.createSession(controller, (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>specializeCallback(
+              done));
+          return;
+        case 1:
+          this.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>specializeCallback(
+              done));
+          return;
+        case 2:
+          this.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics>specializeCallback(
+              done));
+          return;
+        case 3:
+          this.getStatistics(controller, (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics>specializeCallback(
               done));
           return;
         default:
@@ -3483,7 +4775,13 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          return org.tdmx.server.pcs.protobuf.PCSClient.Ping.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+        case 1:
+          return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+        case 2:
+          return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+        case 3:
+          return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -3499,7 +4797,13 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          return org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+        case 1:
+          return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+        case 2:
+          return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+        case 3:
+          return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -3510,7 +4814,7 @@ public final class PCSClient {
       return new Stub(channel);
     }
 
-    public static final class Stub extends org.tdmx.server.pcs.protobuf.PCSClient.BlockingPingService implements Interface {
+    public static final class Stub extends org.tdmx.server.pcs.protobuf.PCSClient.SessionManagerProxy implements Interface {
       private Stub(com.google.protobuf.RpcChannel channel) {
         this.channel = channel;
       }
@@ -3521,19 +4825,64 @@ public final class PCSClient {
         return channel;
       }
 
-      public  void ping(
+      public  void createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.Ping request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.Pong> done) {
+          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.PCSClient.Pong.class,
-            org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()));
+      }
+
+      public  void addSessionCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(1),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()));
+      }
+
+      public  void removeCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(2),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()));
+      }
+
+      public  void getStatistics(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(3),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class,
+            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()));
       }
     }
 
@@ -3543,9 +4892,24 @@ public final class PCSClient {
     }
 
     public interface BlockingInterface {
-      public org.tdmx.server.pcs.protobuf.PCSClient.Pong ping(
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.Ping request)
+          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -3556,42 +4920,93 @@ public final class PCSClient {
 
       private final com.google.protobuf.BlockingRpcChannel channel;
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.Pong ping(
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.Ping request)
+          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSClient.Pong) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) channel.callBlockingMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.Pong.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+      }
+
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request)
+          throws com.google.protobuf.ServiceException {
+        return (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(1),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+      }
+
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request)
+          throws com.google.protobuf.ServiceException {
+        return (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(2),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance());
+      }
+
+
+      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request)
+          throws com.google.protobuf.ServiceException {
+        return (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(3),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance());
       }
 
     }
 
-    // @@protoc_insertion_point(class_scope:BlockingPingService)
+    // @@protoc_insertion_point(class_scope:SessionManagerProxy)
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_Ping_descriptor;
+    internal_static_ServiceStatistic_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Ping_fieldAccessorTable;
+      internal_static_ServiceStatistic_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_Pong_descriptor;
+    internal_static_ServerServiceStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Pong_fieldAccessorTable;
+      internal_static_ServerServiceStatistics_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_PercentComplete_descriptor;
+    internal_static_AttributeValue_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_PercentComplete_fieldAccessorTable;
+      internal_static_AttributeValue_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_Status_descriptor;
+    internal_static_CreateSessionRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Status_fieldAccessorTable;
+      internal_static_CreateSessionRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_AddCertificateRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_AddCertificateRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RemoveCertificateRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_RemoveCertificateRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_GetStatisticsRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_GetStatisticsRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3601,22 +5016,31 @@ public final class PCSClient {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017ws-client.proto\"\343\001\n\004Ping\022\022\n\nsequenceNo" +
-      "\030\001 \002(\005\022\023\n\013pingPayload\030\002 \002(\014\022\026\n\016pingDurat" +
-      "ionMs\030\003 \001(\005\022\033\n\023pingPercentComplete\030\004 \001(\010" +
-      "\022\024\n\014pongRequired\030\005 \001(\010\022\024\n\014pongBlocking\030\006" +
-      " \001(\010\022\026\n\016pongDurationMs\030\007 \001(\005\022\025\n\rpongTime" +
-      "outMs\030\010 \001(\005\022\033\n\023pongPercentComplete\030\t \001(\010" +
-      "*\005\010d\020\350\007\"h\n\004Pong\022\022\n\nsequenceNo\030\001 \002(\005\022\020\n\010p" +
-      "ongData\030\002 \002(\014\022\026\n\016pongDurationMs\030\003 \001(\005\022\033\n" +
-      "\023pongPercentComplete\030\004 \001(\010*\005\010d\020\350\007\"\222\001\n\017Pe" +
-      "rcentComplete\022\032\n\022percentageComplete\030\001 \002(",
-      "\002\022\022\n\nsequenceNo\030\002 \001(\005\022*\n\002op\030\003 \001(\0162\036.Perc" +
-      "entComplete.OperationName\"#\n\rOperationNa" +
-      "me\022\010\n\004PING\020\000\022\010\n\004PONG\020\001\"\031\n\006Status\022\017\n\007mess" +
-      "age\030\001 \002(\t2+\n\023BlockingPingService\022\024\n\004ping" +
-      "\022\005.Ping\032\005.PongB,\n\034org.tdmx.server.pcs.pr" +
-      "otobufB\tPCSClient\210\001\001"
+      "\n\017ws-client.proto\"H\n\020ServiceStatistic\022\020\n" +
+      "\010httpsUrl\030\001 \001(\t\022\017\n\007apiName\030\002 \001(\t\022\021\n\tload" +
+      "Value\030\003 \001(\005\"@\n\027ServerServiceStatistics\022%" +
+      "\n\nstatistics\030\001 \003(\0132\021.ServiceStatistic\"\313\001" +
+      "\n\016AttributeValue\022)\n\004name\030\001 \002(\0162\033.Attribu" +
+      "teValue.AttributeId\022\r\n\005value\030\002 \001(\003\"\177\n\013At" +
+      "tributeId\022\021\n\rAccountZoneId\020\000\022\n\n\006ZoneId\020\001" +
+      "\022\014\n\010DomainId\020\002\022\r\n\tChannelId\020\003\022\026\n\022Tempora" +
+      "ryChannelId\020\004\022\r\n\tServiceId\020\005\022\r\n\tAddressI" +
+      "d\020\006\"r\n\024CreateSessionRequest\022\017\n\007apiName\030\001",
+      " \001(\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclientCert\030\003 " +
+      "\001(\014\022\"\n\tattribute\030\004 \003(\0132\017.AttributeValue\"" +
+      "O\n\025AddCertificateRequest\022\017\n\007apiName\030\001 \001(" +
+      "\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclientCert\030\003 \001(\014" +
+      "\".\n\030RemoveCertificateRequest\022\022\n\nclientCe" +
+      "rt\030\001 \001(\014\"\026\n\024GetStatisticsRequest2\240\002\n\023Ses" +
+      "sionManagerProxy\0229\n\rcreateSession\022\025.Crea" +
+      "teSessionRequest\032\021.ServiceStatistic\022B\n\025a" +
+      "ddSessionCertificate\022\026.AddCertificateReq" +
+      "uest\032\021.ServiceStatistic\022H\n\021removeCertifi",
+      "cate\022\031.RemoveCertificateRequest\032\030.Server" +
+      "ServiceStatistics\022@\n\rgetStatistics\022\025.Get" +
+      "StatisticsRequest\032\030.ServerServiceStatist" +
+      "icsB,\n\034org.tdmx.server.pcs.protobufB\tPCS" +
+      "Client\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3630,30 +5054,48 @@ public final class PCSClient {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_Ping_descriptor =
+    internal_static_ServiceStatistic_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_Ping_fieldAccessorTable = new
+    internal_static_ServiceStatistic_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_Ping_descriptor,
-        new java.lang.String[] { "SequenceNo", "PingPayload", "PingDurationMs", "PingPercentComplete", "PongRequired", "PongBlocking", "PongDurationMs", "PongTimeoutMs", "PongPercentComplete", });
-    internal_static_Pong_descriptor =
+        internal_static_ServiceStatistic_descriptor,
+        new java.lang.String[] { "HttpsUrl", "ApiName", "LoadValue", });
+    internal_static_ServerServiceStatistics_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_Pong_fieldAccessorTable = new
+    internal_static_ServerServiceStatistics_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_Pong_descriptor,
-        new java.lang.String[] { "SequenceNo", "PongData", "PongDurationMs", "PongPercentComplete", });
-    internal_static_PercentComplete_descriptor =
+        internal_static_ServerServiceStatistics_descriptor,
+        new java.lang.String[] { "Statistics", });
+    internal_static_AttributeValue_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_PercentComplete_fieldAccessorTable = new
+    internal_static_AttributeValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_PercentComplete_descriptor,
-        new java.lang.String[] { "PercentageComplete", "SequenceNo", "Op", });
-    internal_static_Status_descriptor =
+        internal_static_AttributeValue_descriptor,
+        new java.lang.String[] { "Name", "Value", });
+    internal_static_CreateSessionRequest_descriptor =
       getDescriptor().getMessageTypes().get(3);
-    internal_static_Status_fieldAccessorTable = new
+    internal_static_CreateSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_Status_descriptor,
-        new java.lang.String[] { "Message", });
+        internal_static_CreateSessionRequest_descriptor,
+        new java.lang.String[] { "ApiName", "SessionId", "ClientCert", "Attribute", });
+    internal_static_AddCertificateRequest_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_AddCertificateRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_AddCertificateRequest_descriptor,
+        new java.lang.String[] { "ApiName", "SessionId", "ClientCert", });
+    internal_static_RemoveCertificateRequest_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_RemoveCertificateRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_RemoveCertificateRequest_descriptor,
+        new java.lang.String[] { "ClientCert", });
+    internal_static_GetStatisticsRequest_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_GetStatisticsRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_GetStatisticsRequest_descriptor,
+        new java.lang.String[] { });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

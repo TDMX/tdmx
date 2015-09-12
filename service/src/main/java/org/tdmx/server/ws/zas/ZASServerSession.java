@@ -36,8 +36,8 @@ public class ZASServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public ZASServerSession(AccountZone az, Zone zone, Domain domain) {
-		super();
+	public ZASServerSession(String sessionId, AccountZone az, Zone zone, Domain domain) {
+		super(sessionId);
 		setAccountZone(az);
 		setZone(zone);
 		setDomain(domain);

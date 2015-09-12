@@ -28,7 +28,14 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 public interface WebServiceSessionManager {
 
 	/**
-	 * Return the name of the API that this ServerSessionManager is managing.
+	 * Return the HTTPS url that this WebServiceSessionManager is managing.
+	 * 
+	 * @return
+	 */
+	public String getHttpsUrl();
+
+	/**
+	 * The API name that this WebServiceSessionManager is managing.
 	 * 
 	 * @return
 	 */

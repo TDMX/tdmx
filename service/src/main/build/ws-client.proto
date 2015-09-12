@@ -4,52 +4,55 @@ option java_generic_services = true;
 option java_package = "org.tdmx.server.pcs.protobuf";
 option java_outer_classname = "PCSClient";
 
-// registerServer(List<ServiceHandle> services
-// notifySessionsRemoved(WebServiceApiName api, Set<String> sessionIds)
-// invalidateCertificate(PKIXCertificate cert
-
-// the Ping message provides the server with all the information it needs to perform the Pong
-// so the pinging client controls the entire operation of the server remotely.
-message Ping {
-	required int32 sequenceNo = 1; // sequenceNo + payload data must be echoed back
-    required bytes pingPayload = 2;
-    optional int32 pingDurationMs = 3; // the duration of the ping call at server ( prior to pong )
-    optional bool  pingPercentComplete = 4; // whether the server shall provide percent complete indication back to client during ping. 
-    optional bool  pongRequired = 5; // whether the ping call shall reverse pong the pinging client
-    optional bool  pongBlocking = 6; // whether to call a clients blocking pong service or nonblocking pong service.
-    optional int32 pongDurationMs = 7; // the duration of the pong call at the client
-    optional int32 pongTimeoutMs = 8; // the timeout of the pong call at the server
-    optional bool  pongPercentComplete = 9; // whether the client shall provide percent complete indication back to server during pong.
-    extensions 100 to 999; 
+message ServiceStatistic {
+	optional string httpsUrl = 1;
+	optional string apiName = 2;
+	optional int32 loadValue = 3;
 }
 
-message Pong {
-	required int32 sequenceNo = 1; // sequenceNo of the ping which requests pong
-    required bytes pongData = 2; // the pingPayload copied in the pong
-    optional int32 pongDurationMs = 3; // the duration of the pong call at the client
-    optional bool  pongPercentComplete = 4; // whether the client shall provide percent complete indication back to server during pong. 
-    extensions 100 to 999; 
+message ServerServiceStatistics {
+	repeated ServiceStatistic statistics = 1;
 }
 
-message PercentComplete {
-	enum OperationName {
-	  PING = 0; // percent complete relates to a ping
-	  PONG = 1;
+message AttributeValue {
+	enum AttributeId {
+	  AccountZoneId = 0;
+	  ZoneId = 1;
+	  DomainId = 2;
+	  ChannelId = 3;
+	  TemporaryChannelId = 4;
+	  ServiceId = 5;
+	  AddressId = 6;
 	}
-	required float percentageComplete = 1;
-	optional int32 sequenceNo = 2; // to which ping or pong sequenceNo does percent complete this apply. ( used for validation )
-	optional OperationName op = 3; // to validate
+	required AttributeId name = 1;
+	optional int64 value = 2;
 }
 
-message Status {
-	required string message = 1;
+message CreateSessionRequest {
+	optional string apiName = 1;
+	optional string sessionId = 2;
+	optional bytes clientCert = 3;
+	repeated AttributeValue attribute = 4;
+	
+}
+
+message AddCertificateRequest {
+	optional string apiName = 1;
+	optional string sessionId = 2;
+	optional bytes clientCert = 3;
+}
+
+message RemoveCertificateRequest {
+	optional bytes clientCert = 1;
+}
+
+message GetStatisticsRequest {
 }
 
 
-
-// in order to demonstrate simultaneously the serving of synchronous
-// and asynchronous services, we need to give the "same" service different
-// names.
-service BlockingPingService {
-    rpc ping(Ping) returns (Pong);
+service SessionManagerProxy {
+    rpc createSession(CreateSessionRequest) returns (ServiceStatistic);
+    rpc addSessionCertificate(AddCertificateRequest) returns (ServiceStatistic);
+    rpc removeCertificate(RemoveCertificateRequest) returns (ServerServiceStatistics);
+    rpc getStatistics(GetStatisticsRequest) returns (ServerServiceStatistics);
 }

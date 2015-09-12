@@ -191,8 +191,8 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
 		// we give the server a blocking and non blocking (pong capable) Ping Service
-		BlockingService bPingService = ControlServiceProxy.newReflectiveBlockingService(this);
-		serverFactory.getRpcServiceRegistry().registerService(bPingService);
+		BlockingService controlServiceProxy = ControlServiceProxy.newReflectiveBlockingService(this);
+		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 
 		// Configure the server.
 		ServerBootstrap bootstrap = new ServerBootstrap();

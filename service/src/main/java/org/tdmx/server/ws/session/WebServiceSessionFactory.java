@@ -35,10 +35,12 @@ public interface WebServiceSessionFactory<E extends WebServiceSession> {
 	/**
 	 * Initialize a WebServiceSession given the seedAttributes.
 	 * 
+	 * @param sessionId
+	 *            the sessionId
 	 * @param seedAttributes
 	 *            the initial session attribute values which can be resolved to objects.
 	 * @return a new WebServiceSession initialized with the seedAttributes
 	 */
-	public E createServerSession(Map<SeedAttribute, Long> seedAttributes);
+	public E createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes);
 
 }
