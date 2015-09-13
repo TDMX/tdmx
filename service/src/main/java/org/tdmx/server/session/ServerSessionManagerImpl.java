@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.session;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,6 +110,14 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 	 * Delay in seconds between session timeout checks.
 	 */
 	private int timeoutCheckIntervalSec = 60;
+	/**
+	 * Sessions created prior to sessionCreationTimeoutHours are considered too old and need renewing.
+	 */
+	private int sessionCreationTimeoutHours = 24;
+	/**
+	 * Sessions not used since sessionIdleTimeoutMinutes are considered orphaned and discarded.
+	 */
+	private int sessionIdleTimeoutMinutes = 30;
 
 	// - internal
 	private List<WebServiceApiName> apiList;
@@ -209,6 +218,12 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 	}
 
 	public void init() {
+		if (sessionIdleTimeoutMinutes <= 0) {
+			throw new IllegalArgumentException("sessionIdleTimeoutMinutes must be positive");
+		}
+		if (sessionCreationTimeoutHours <= 0) {
+			throw new IllegalArgumentException("sessionCreationTimeoutHours must be positive");
+		}
 		scheduledThreadPool = Executors
 				.newSingleThreadScheduledExecutor(new NamedThreadFactory("SessionTimeoutExecutionService"));
 
@@ -354,15 +369,25 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 	}
 
 	@Override
+	/**
+	 * Perform a check on the existing Sessions if they need discarding.
+	 */
 	public void run() {
 		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
-			log.info("Processing idle sessions for " + apis.getKey() + " in segment " + segment);
 			WebServiceSessionManagerHolder h = apis.getValue();
 
-			Date lastCutoffDate = new Date(); // TODO
-			Date creationCutoffDate = new Date(); // TODO
-			List<WebServiceSession> sessions = h.getSessionManager().getIdleSessions(lastCutoffDate,
-					creationCutoffDate);
+			Calendar idleCutoff = Calendar.getInstance();
+			idleCutoff.add(Calendar.MINUTE, 0 - sessionIdleTimeoutMinutes);
+			Date idleCutoffDate = idleCutoff.getTime();
+
+			Calendar creationCutoff = Calendar.getInstance();
+			creationCutoff.add(Calendar.HOUR, 0 - sessionCreationTimeoutHours);
+			Date creationCutoffDate = creationCutoff.getTime();
+
+			log.info("Processing idle sessions for " + apis.getKey() + " in segment " + segment + " created before "
+					+ creationCutoffDate + " or not used after " + idleCutoffDate);
+			List<WebServiceSession> sessions = h.getSessionManager().getIdleSessions(idleCutoff.getTime(),
+					creationCutoff.getTime());
 
 			for (Entry<RpcClientChannel, LocalControlServiceListenerClient> channel : channelMap.entrySet()) {
 				Set<String> sessionIds = new HashSet<>();
@@ -495,6 +520,22 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 
 	public void setTimeoutCheckIntervalSec(int timeoutCheckIntervalSec) {
 		this.timeoutCheckIntervalSec = timeoutCheckIntervalSec;
+	}
+
+	public int getSessionCreationTimeoutHours() {
+		return sessionCreationTimeoutHours;
+	}
+
+	public void setSessionCreationTimeoutHours(int sessionCreationTimeoutHours) {
+		this.sessionCreationTimeoutHours = sessionCreationTimeoutHours;
+	}
+
+	public int getSessionIdleTimeoutMinutes() {
+		return sessionIdleTimeoutMinutes;
+	}
+
+	public void setSessionIdleTimeoutMinutes(int sessionIdleTimeoutMinutes) {
+		this.sessionIdleTimeoutMinutes = sessionIdleTimeoutMinutes;
 	}
 
 	public int getConnectTimeoutMillis() {
