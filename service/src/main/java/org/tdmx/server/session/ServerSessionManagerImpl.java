@@ -239,6 +239,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 				TimeUnit.SECONDS);
 
 		// construct the service list of this server in the apiManagerMap
+		apiManagerMap = new HashMap<>();
 		for (WebServiceSessionManager mgr : webServiceSessionManagers) {
 			if (apiList.contains(mgr.getApiName())) {
 				ServiceHandle service = new ServiceHandle(segment, mgr.getApiName(), mgr.getHttpsUrl(),
@@ -269,45 +270,41 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 
 			final RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
+				private void processConnect(RpcClientChannel clientChannel) {
+					LocalControlServiceListenerClient client = new LocalControlServiceListenerClient(clientChannel);
+					channelMap.put(clientChannel, client);
+
+					client.registerServer(getManagedServiceList(), null);
+				}
+
 				@Override
 				public void connectionReestablished(RpcClientChannel clientChannel) {
 					log.info("connectionReestablished " + clientChannel);
-					LocalControlServiceListenerClient client = channelMap.get(clientChannel);
-					if (client != null) {
-						client.setRpcClient(clientChannel);
-					}
+					processConnect(clientChannel);
 				}
 
 				@Override
 				public void connectionOpened(RpcClientChannel clientChannel) {
 					log.info("connectionOpened " + clientChannel);
-					LocalControlServiceListenerClient client = channelMap.get(clientChannel);
-					if (client != null) {
-						client.setRpcClient(clientChannel);
-					}
-				}
-
-				@Override
-				public void connectionLost(RpcClientChannel clientChannel) {
-					log.info("connectionLost " + clientChannel);
-					LocalControlServiceListenerClient client = channelMap.get(clientChannel);
-					if (client != null) {
-						client.setRpcClient(null);
-
-						for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
-							String controllerId = getControllerId(clientChannel);
-							log.info("Disconnecting controller " + controllerId + " from " + apis.getKey());
-							apis.getValue().getSessionManager().disconnectController(controllerId);
-						}
-					}
+					processConnect(clientChannel);
 				}
 
 				@Override
 				public void connectionChanged(RpcClientChannel clientChannel) {
 					log.info("connectionChanged " + clientChannel);
-					LocalControlServiceListenerClient client = channelMap.get(clientChannel);
+					processConnect(clientChannel);
+				}
+
+				@Override
+				public void connectionLost(RpcClientChannel clientChannel) {
+					log.info("connectionLost " + clientChannel);
+					LocalControlServiceListenerClient client = channelMap.remove(clientChannel);
 					if (client != null) {
-						client.setRpcClient(clientChannel);
+						for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
+							String controllerId = getControllerId(clientChannel);
+							log.info("Disconnecting controller " + controllerId + " from " + apis.getKey());
+							apis.getValue().getSessionManager().disconnectController(controllerId);
+						}
 					}
 				}
 			};
@@ -343,13 +340,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 			// after connection the PCS remote cannot distinguish if we are a SCS or WS client
 			// until WS clients call registerServer
 
-			LocalControlServiceListenerClient local = new LocalControlServiceListenerClient();
-			local.setRpcClient(client);
-
-			channelMap.put(client, local);
-
-			// register ourself at all remote PCSs
-			registerServer();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to do initial connect to PCS", e);
 		}
@@ -470,17 +460,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 		return clientFactory.peerWith(server, bootstrap);
 	}
 
-	private void registerServer() {
-		// we inform each PCS server which services we are supporting.
-		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> entry : channelMap.entrySet()) {
-			List<ServiceHandle> serviceList = new ArrayList<>();
-			for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> services : apiManagerMap.entrySet()) {
-				serviceList.add(services.getValue().getHandle());
-			}
-			entry.getValue().registerServer(serviceList, null);
-		}
-	}
-
 	private String getControllerId(RpcClientChannel channel) {
 		return channel.getPeerInfo().toString();
 	}
@@ -505,6 +484,14 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 
 	private WebServiceApiName mapApi(String apiName) {
 		return apiName != null ? WebServiceApiName.valueOf(apiName) : null;
+	}
+
+	private List<ServiceHandle> getManagedServiceList() {
+		List<ServiceHandle> serviceList = new ArrayList<>();
+		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> services : apiManagerMap.entrySet()) {
+			serviceList.add(services.getValue().getHandle());
+		}
+		return serviceList;
 	}
 
 	// -------------------------------------------------------------------------

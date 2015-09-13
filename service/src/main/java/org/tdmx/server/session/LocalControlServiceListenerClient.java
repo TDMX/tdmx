@@ -49,11 +49,15 @@ public class LocalControlServiceListenerClient implements ControlServiceListener
 	/**
 	 * The RPC channel to the server.
 	 */
-	private RpcClientChannel rpcClient;
+	private final RpcClientChannel rpcClient;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public LocalControlServiceListenerClient(RpcClientChannel rpcClient) {
+		this.rpcClient = rpcClient;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -144,10 +148,6 @@ public class LocalControlServiceListenerClient implements ControlServiceListener
 
 	public RpcClientChannel getRpcClient() {
 		return rpcClient;
-	}
-
-	public void setRpcClient(RpcClientChannel rpcClient) {
-		this.rpcClient = rpcClient;
 	}
 
 }

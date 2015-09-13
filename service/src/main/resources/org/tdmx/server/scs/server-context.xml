@@ -14,12 +14,12 @@
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 	
 	<bean id="scs.LocalControlService" class="org.tdmx.server.pcs.LocalControlServiceImpl">
-		<property name="connectTimeoutMillis" value="5000"/>
-		<property name="connectResponseTimeoutMillis" value="10000"/>
-		<property name="coreRpcExecutorThreads" value="2"/>
-		<property name="maxRpcExecutorThreads" value="10"/>
-		<property name="ioThreads" value="16"/>
-		<property name="ioBufferSize" value="1048576"/>
+		<property name="connectTimeoutMillis" value="${scs.pcs.connectTimeoutMillis}"/>
+		<property name="connectResponseTimeoutMillis" value="${scs.pcs.connectResponseTimeoutMillis}"/>
+		<property name="coreRpcExecutorThreads" value="${scs.pcs.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${scs.pcs.maxRpcExecutorThreads}"/>
+		<property name="ioThreads" value="${scs.pcs.ioThreads}"/>
+		<property name="ioBufferSize" value="${scs.pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="true"/>
 		
 	</bean>

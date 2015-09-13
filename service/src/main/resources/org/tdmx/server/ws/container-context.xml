@@ -24,12 +24,12 @@
 	</bean>
 	
 	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl" init-method="init">
-		<property name="connectTimeoutMillis" value="5000"/>
-		<property name="connectResponseTimeoutMillis" value="10000"/>
-		<property name="coreRpcExecutorThreads" value="2"/>
-		<property name="maxRpcExecutorThreads" value="10"/>
-		<property name="ioThreads" value="16"/>
-		<property name="ioBufferSize" value="1048576"/>
+		<property name="connectTimeoutMillis" value="${ws.pcs.connectTimeoutMillis}"/>
+		<property name="connectResponseTimeoutMillis" value="${ws.pcs.connectResponseTimeoutMillis}"/>
+		<property name="coreRpcExecutorThreads" value="${ws.pcs.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${ws.pcs.maxRpcExecutorThreads}"/>
+		<property name="ioThreads" value="${ws.pcs.ioThreads}"/>
+		<property name="ioBufferSize" value="${ws.pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="true"/>
 
 		<property name="runtimeService" ref="ws.Configuration"/>

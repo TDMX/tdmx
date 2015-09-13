@@ -177,9 +177,14 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 				log.info("connectionLost " + clientChannel);
 				// we unregister the server's services from the control service
 				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) clientChannel
-						.getAttribute(ReverseRpcServerSessionController.SERVICES);
-				controlListener.unregisterServer(ssm.getServices());
-				// there should be no more references to the RpcClient which should be garbage collected.
+						.getAttribute(ReverseRpcServerSessionController.SSM);
+				if (ssm == null) {
+					log.info("Disconnect of SCS client (or WS before registerServer).");
+				} else {
+					log.info("Disconnect of WS client.");
+					controlListener.unregisterServer(ssm.getServices());
+					// there should be no more references to the RpcClient which should be garbage collected.
+				}
 			}
 
 			@Override
@@ -249,6 +254,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 
 		List<ServiceHandle> services = mapServices(request.getServiceList());
 
+		// links the ReverseRpcServerSessionController with the RpcClient
 		ReverseRpcServerSessionController ssm = new ReverseRpcServerSessionController(channel, services);
 
 		controlListener.registerServer(services, ssm);
