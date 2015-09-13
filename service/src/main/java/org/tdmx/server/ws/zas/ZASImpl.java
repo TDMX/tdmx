@@ -126,6 +126,7 @@ import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.session.SessionCertificateInvalidationService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -146,6 +147,7 @@ public class ZASImpl implements ZAS {
 
 	private AuthorizedSessionLookupService<ZASServerSession> authorizedSessionService;
 	private AuthenticatedClientLookupService authenticatedClientService;
+	private SessionCertificateInvalidationService sessionInvalidationService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -361,15 +363,15 @@ public class ZASImpl implements ZAS {
 		final Zone zone = session.getZone();
 
 		if (parameters.getFilter().getAdministratorIdentity() != null) {
-			final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(parameters.getFilter()
-					.getAdministratorIdentity(), response);
+			final AdministratorIdentity dacIdentity = validator
+					.checkAdministratorIdentity(parameters.getFilter().getAdministratorIdentity(), response);
 			if (dacIdentity == null) {
 				return response;
 			}
 
 			// if a DAC credential is provided then it't not so much a search as a lookup
-			final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
-					dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
+			final AgentCredentialDescriptor dac = credentialFactory
+					.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
@@ -447,6 +449,11 @@ public class ZASImpl implements ZAS {
 		// update the existing UC
 		credentialService.createOrUpdate(existingCred);
 
+		if (AgentCredentialStatus.ACTIVE != existingCred.getCredentialStatus()) {
+			// deactivate the suspended certificate from all sessions active in the PartitionControlService
+			sessionInvalidationService.invalidateCertificate(existingCred.getPublicCertificate());
+		}
+
 		response.setSuccess(true);
 		return response;
 	}
@@ -494,8 +501,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// create the address
-		final org.tdmx.lib.zone.domain.Address newAddress = new org.tdmx.lib.zone.domain.Address(domain, parameters
-				.getAddress().getLocalname());
+		final org.tdmx.lib.zone.domain.Address newAddress = new org.tdmx.lib.zone.domain.Address(domain,
+				parameters.getAddress().getLocalname());
 
 		getAddressService().createOrUpdate(newAddress);
 		response.setSuccess(true);
@@ -581,9 +588,9 @@ public class ZASImpl implements ZAS {
 		final String authorizedDomainName = session.getAuthorizedDomainName();
 
 		// try to construct the UC given the data provided
-		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
-				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
-				.getUserIdentity().getRootcertificate());
+		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(
+				parameters.getUserIdentity().getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(),
+				parameters.getUserIdentity().getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -601,6 +608,9 @@ public class ZASImpl implements ZAS {
 
 		// delete the UC
 		credentialService.delete(existingCred);
+
+		// deactivate the certificate from all sessions active in the PartitionControlService
+		sessionInvalidationService.invalidateCertificate(existingCred.getPublicCertificate());
 
 		response.setSuccess(true);
 		return response;
@@ -659,14 +669,14 @@ public class ZASImpl implements ZAS {
 		final Zone zone = session.getZone();
 
 		// try to construct new DAC given the data provided
-		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
-				parameters.getAdministratorIdentity(), response);
+		final AdministratorIdentity dacIdentity = validator
+				.checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
 
-		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
-				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory
+				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -887,14 +897,14 @@ public class ZASImpl implements ZAS {
 		final Zone zone = session.getZone();
 
 		// try to constuct the DAC given the data provided
-		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
-				parameters.getAdministratorIdentity(), response);
+		final AdministratorIdentity dacIdentity = validator
+				.checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
 
-		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
-				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory
+				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -914,6 +924,11 @@ public class ZASImpl implements ZAS {
 		}
 		// update the DAC
 		credentialService.createOrUpdate(existingCred);
+
+		if (AgentCredentialStatus.ACTIVE != existingCred.getCredentialStatus()) {
+			// deactivate the suspended certificate from all sessions active in the PartitionControlService
+			sessionInvalidationService.invalidateCertificate(existingCred.getPublicCertificate());
+		}
 
 		response.setSuccess(true);
 		return response;
@@ -942,8 +957,8 @@ public class ZASImpl implements ZAS {
 		}
 
 		// validate all channel and provided permission fields are specified.
-		final Currentchannelauthorization ca = validator.checkChannelauthorization(
-				parameters.getCurrentchannelauthorization(), response);
+		final Currentchannelauthorization ca = validator
+				.checkChannelauthorization(parameters.getCurrentchannelauthorization(), response);
 		if (ca == null) {
 			return response;
 		}
@@ -956,8 +971,8 @@ public class ZASImpl implements ZAS {
 		// TODO check that the signer (administrator)'s domain matches the domainName
 
 		// check that the channel origin or channel destination matches the ca's domain
-		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain()) || domainName.equals(ca.getChannel()
-				.getDestination().getDomain()))) {
+		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain())
+				|| domainName.equals(ca.getChannel().getDestination().getDomain()))) {
 			setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
 			return response;
 		}
@@ -1033,9 +1048,9 @@ public class ZASImpl implements ZAS {
 		final String authorizedDomainName = session.getAuthorizedDomainName();
 
 		// try to construct new UC given the data provided
-		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(parameters.getUserIdentity()
-				.getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(), parameters
-				.getUserIdentity().getRootcertificate());
+		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(
+				parameters.getUserIdentity().getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(),
+				parameters.getUserIdentity().getRootcertificate());
 		if (uc == null) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -1136,13 +1151,13 @@ public class ZASImpl implements ZAS {
 		final Zone zone = session.getZone();
 
 		// try to constuct the DAC given the data provided
-		final AdministratorIdentity dacIdentity = validator.checkAdministratorIdentity(
-				parameters.getAdministratorIdentity(), response);
+		final AdministratorIdentity dacIdentity = validator
+				.checkAdministratorIdentity(parameters.getAdministratorIdentity(), response);
 		if (dacIdentity == null) {
 			return response;
 		}
-		final AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(
-				dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
+		final AgentCredentialDescriptor dac = credentialFactory
+				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
@@ -1161,6 +1176,9 @@ public class ZASImpl implements ZAS {
 		// delete the existing DAC
 		credentialService.delete(existingCred);
 
+		// deactivate the certificate from all sessions active in the PartitionControlService
+		sessionInvalidationService.invalidateCertificate(existingCred.getPublicCertificate());
+
 		response.setSuccess(true);
 		return response;
 	}
@@ -1177,8 +1195,8 @@ public class ZASImpl implements ZAS {
 		final Zone zone = session.getZone();
 		final String authorizedDomainName = session.getAuthorizedDomainName();
 
-		final ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(a2d.mapPage(parameters
-				.getPage()));
+		final ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+				a2d.mapPage(parameters.getPage()));
 
 		if (!StringUtils.hasText(parameters.getFilter().getDomain()) && session.isDAC()) {
 			parameters.getFilter().setDomain(authorizedDomainName);
@@ -1400,6 +1418,14 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public SessionCertificateInvalidationService getSessionInvalidationService() {
+		return sessionInvalidationService;
+	}
+
+	public void setSessionInvalidationService(SessionCertificateInvalidationService sessionInvalidationService) {
+		this.sessionInvalidationService = sessionInvalidationService;
+	}
 
 	public AuthorizedSessionLookupService<ZASServerSession> getAuthorizedSessionService() {
 		return authorizedSessionService;

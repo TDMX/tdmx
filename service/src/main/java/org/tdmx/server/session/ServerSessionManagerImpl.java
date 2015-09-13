@@ -81,13 +81,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  * 
  */
-public class ServerSessionManagerImpl implements Manageable, Runnable, SessionManagerProxy.BlockingInterface {
+public class ServerSessionManagerImpl
+		implements Manageable, Runnable, SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-
-	// TODO configuration properties in file
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -404,6 +403,18 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 				}
 
 			}
+		}
+	}
+
+	@Override
+	public void invalidateCertificate(PKIXCertificate cert) {
+		// invalidate the certificate at all PCS instances.
+		// this will have the ServerSessionController.invalidateCertificate at the PCS which calls WS server which knows
+		// the certificate
+		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> pcsServer : channelMap.entrySet()) {
+			LocalControlServiceListenerClient client = pcsServer.getValue();
+
+			client.invalidateCertificate(cert);
 		}
 	}
 

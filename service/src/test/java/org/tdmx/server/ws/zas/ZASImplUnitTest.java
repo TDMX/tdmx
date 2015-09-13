@@ -24,6 +24,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -38,12 +40,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
@@ -134,6 +138,7 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.session.SessionCertificateInvalidationService;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -163,6 +168,8 @@ public class ZASImplUnitTest {
 	@Named("ws.ZAS.ServerSessionManager")
 	private WebServiceSessionManager serverSessionManager;
 
+	@Autowired
+	private SessionCertificateInvalidationService mockSessionInvalidationService;
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
@@ -237,6 +244,8 @@ public class ZASImplUnitTest {
 		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
 		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
 		serverSessionManager.createSession(DAC_SESSION_ID, "pcs-1", dac.getPublicCert(), seedAttributeMap);
+
+		reset(mockSessionInvalidationService);
 	}
 
 	@After
@@ -1088,6 +1097,10 @@ public class ZASImplUnitTest {
 		req.setUserIdentity(u);
 		DeleteUserResponse response = zas.deleteUser(req);
 		assertSuccess(response);
+
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(uc.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	@Test
@@ -1106,7 +1119,11 @@ public class ZASImplUnitTest {
 		req.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(req);
 		assertSuccess(response);
+
 		// TODO check susp.
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(uc.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	// TODO delete user which has is a target Channel.ChannelFlowTarget (+Flows)
@@ -1125,6 +1142,10 @@ public class ZASImplUnitTest {
 		req.setUserIdentity(u);
 		DeleteUserResponse response = zas.deleteUser(req);
 		assertSuccess(response);
+
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(uc.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	@Test
@@ -1143,6 +1164,10 @@ public class ZASImplUnitTest {
 		req.setStatus(CredentialStatus.SUSPENDED);
 		ModifyUserResponse response = zas.modifyUser(req);
 		assertSuccess(response);
+
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(uc.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	@Test
@@ -1645,6 +1670,10 @@ public class ZASImplUnitTest {
 		ModifyAdministratorResponse response = zas.modifyAdministrator(req);
 		assertSuccess(response);
 		// TODO check susp.
+
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(dac.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	@Test
@@ -1661,6 +1690,10 @@ public class ZASImplUnitTest {
 		req.setAdministratorIdentity(u);
 		DeleteAdministratorResponse response = zas.deleteAdministrator(req);
 		assertSuccess(response);
+
+		ArgumentCaptor<PKIXCertificate> capture = ArgumentCaptor.forClass(PKIXCertificate.class);
+		verify(mockSessionInvalidationService).invalidateCertificate(capture.capture());
+		assertTrue(dac.getPublicCert().isIdentical(capture.getValue()));
 	}
 
 	@Test

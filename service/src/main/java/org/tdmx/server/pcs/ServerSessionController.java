@@ -56,5 +56,10 @@ public interface ServerSessionController {
 	 */
 	public ServerServiceStatistics removeCertificate(PKIXCertificate cert);
 
+	/**
+	 * Return the server's load statistics over all services.
+	 * 
+	 * @return the server's load statistics over all services.
+	 */
 	public ServerServiceStatistics getStatistics();
 }

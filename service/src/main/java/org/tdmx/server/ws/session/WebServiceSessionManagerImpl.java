@@ -163,8 +163,8 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 		StringBuilder url = new StringBuilder();
 		url.append("https://").append(runtimeService.getServerLocalIPAddress()).append(":")
 				.append(runtimeService.getHttpsPort());
-		url.append("/").append(runtimeService.getContextPath());
-		url.append("/").append(apiEndpointPath);
+		url.append(runtimeService.getContextPath());
+		url.append(apiEndpointPath);
 		return url.toString();
 	}
 

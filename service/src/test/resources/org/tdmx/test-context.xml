@@ -11,6 +11,14 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
+	<!-- MOCKITO MOCKS -->
+	<bean id="ws.ServerSessionManager" class="org.mockito.Mockito" factory-method="mock"> 
+	    <constructor-arg value="org.tdmx.server.session.SessionCertificateInvalidationService" /> 
+	</bean>
+	<bean id="scs.LocalControlService" class="org.mockito.Mockito" factory-method="mock"> 
+	    <constructor-arg value="org.tdmx.server.pcs.ControlService" /> 
+	</bean>
+
 	<!-- CONFIGURATION -->
 	<import resource="classpath:/org/tdmx/core/system/env/test-config-context.xml"/>
 	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
