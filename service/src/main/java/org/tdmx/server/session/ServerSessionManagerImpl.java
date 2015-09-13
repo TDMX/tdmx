@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.session;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -104,8 +105,8 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;
 	private CleanShutdownHandler shutdownHandler;
-
 	private Map<RpcClientChannel, LocalControlServiceListenerClient> channelMap = new HashMap<>();
+
 	/**
 	 * Delay in seconds between session timeout checks.
 	 */
@@ -237,8 +238,17 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 		scheduledThreadPool.scheduleWithFixedDelay(this, getTimeoutCheckIntervalSec(), getTimeoutCheckIntervalSec(),
 				TimeUnit.SECONDS);
 
-		runtimeService.getPublicKey();
+		// construct the service list of this server in the apiManagerMap
+		for (WebServiceSessionManager mgr : webServiceSessionManagers) {
+			if (apiList.contains(mgr.getApiName())) {
+				ServiceHandle service = new ServiceHandle(segment, mgr.getApiName(), mgr.getHttpsUrl(),
+						runtimeService.getPublicKey());
+				WebServiceSessionManagerHolder serviceHolder = new WebServiceSessionManagerHolder(service, mgr);
+				apiManagerMap.put(mgr.getApiName(), serviceHolder);
+			}
+		}
 
+		// create the protobuf interface to ALL the PCS servers which are known for the segment
 		try {
 			clientFactory = new DuplexTcpClientPipelineFactory();
 
@@ -426,7 +436,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 
 		private int loadValue;
 
-		// TODO use this
 		public WebServiceSessionManagerHolder(ServiceHandle handle, WebServiceSessionManager sessionManager) {
 			if (handle == null) {
 				throw new IllegalArgumentException();
@@ -462,9 +471,13 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionMa
 	}
 
 	private void registerServer() {
-		// TODO server handles
+		// we inform each PCS server which services we are supporting.
 		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> entry : channelMap.entrySet()) {
-			entry.getValue().registerServer(null, null);
+			List<ServiceHandle> serviceList = new ArrayList<>();
+			for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> services : apiManagerMap.entrySet()) {
+				serviceList.add(services.getValue().getHandle());
+			}
+			entry.getValue().registerServer(serviceList, null);
 		}
 	}
 
