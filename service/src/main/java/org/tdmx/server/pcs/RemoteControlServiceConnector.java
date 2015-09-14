@@ -35,7 +35,6 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
-import org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
@@ -296,89 +295,6 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		}
 	}
 
-	private static class ReverseRpcServerSessionController implements ServerSessionController {
-		public static final String SSM = "SSM";
-		private static final String SERVICES = "SERVICES";
-
-		private final RpcClientChannel channel;
-
-		public ReverseRpcServerSessionController(RpcClientChannel channel, List<ServiceHandle> services) {
-			this.channel = channel;
-
-			this.channel.setAttribute(SSM, this);
-			this.channel.setAttribute(SERVICES, services);
-		}
-
-		@SuppressWarnings("unchecked")
-		public List<ServiceHandle> getServices() {
-			return (List<ServiceHandle>) this.channel.getAttribute(SERVICES);
-		}
-
-		@Override
-		public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
-				Map<SeedAttribute, Long> seedAttributes) {
-
-			// ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
-			// final ClientRpcController controller = rpcClient.newRpcController();
-			// controller.setTimeoutMs(0);
-			//
-			// org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle.Builder sh =
-			// org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle
-			// .newBuilder();
-			// sh.setApiName(sessionData.getApi().name());
-			// sh.setSegment(sessionData.getSegment());
-			// sh.setSessionKey(sessionData.getSessionKey());
-			// for (Entry<SeedAttribute, Long> entry : sessionData.getSeedAttributes().entrySet()) {
-			// AttributeValue.Builder attr = AttributeValue.newBuilder();
-			// attr.setName(AttributeId.valueOf(entry.getKey().name()));
-			// attr.setValue(entry.getValue());
-			// sh.addAttribute(attr);
-			// }
-			// AssociateApiSessionRequest.Builder reqBuilder = AssociateApiSessionRequest.newBuilder();
-			// reqBuilder.setHandle(sh);
-			// reqBuilder.setPkixCertificate(ByteString.copyFrom(clientCertificate.getX509Encoded()));
-			//
-			// AssociateApiSessionRequest request = reqBuilder.build();
-			// try {
-			// AssociateApiSessionResponse response = blockingService.associateApiSession(controller, request);
-			// if (response != null && response.getServerCert() != null) {
-			// WebServiceSessionEndpoint sep = new WebServiceSessionEndpoint(response.getSessionId(),
-			// response.getHttpsUrl(),
-			// CertificateIOUtils.safeDecodeX509(response.getServerCert().toByteArray()));
-			// return sep;
-			// } else {
-			// log.info("No WebServiceSessionEndpoint allocated.");
-			// }
-			// } catch (ServiceException e) {
-			// log.warn("Call failed.", e);
-			// }
-
-			return null;
-		}
-
-		@Override
-		public ServiceStatistic addCertificate(WebServiceApiName apiName, String sessionId, PKIXCertificate cert) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public ServerServiceStatistics removeCertificate(PKIXCertificate cert) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public ServerServiceStatistics getStatistics() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-	}
-	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
-
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
@@ -416,7 +332,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		return result;
 	}
 
-	private SeedAttribute map(AttributeId name) {
+	private SeedAttribute map(org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue.AttributeId name) {
 		if (name == null) {
 			return null;
 		}
