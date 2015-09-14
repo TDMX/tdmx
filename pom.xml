@@ -206,7 +206,7 @@
 		<cxf.version>2.7.7</cxf.version>
 		<hibernate.version>3.6.10.Final</hibernate.version>
 		<protobuf-java-version>2.6.1</protobuf-java-version>
-		<protobuf-pro-version>3.3.2</protobuf-pro-version>
+		<protobuf-pro-version>3.3.3</protobuf-pro-version>
 		<spring.version>4.0.5.RELEASE</spring.version>
 		<querydsl.version>3.6.2</querydsl.version>
 		<aws.version>1.6.12</aws.version>

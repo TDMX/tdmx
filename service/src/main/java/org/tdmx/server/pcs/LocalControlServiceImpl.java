@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,8 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// -------------------------------------------------------------------------
 	private static Logger log = LoggerFactory.getLogger(LocalControlServiceImpl.class);
 
+	private static final String PCS_ATTRIBUTE = "PCS";
+
 	private int connectTimeoutMillis = 5000;
 	private int connectResponseTimeoutMillis = 10000;
 	private int coreRpcExecutorThreads = 2;
@@ -69,6 +73,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	private int ioThreads = 16;
 	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
+	private long shutdownTimeoutMs = 10000; // TODO property
 
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;
@@ -148,31 +153,21 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 				}
 
 				private void disconnection(RpcClientChannel clientChannel) {
-					int serverNo = matchServer(clientChannel.getPeerInfo());
-					if (serverNo < 0) {
-						throw new IllegalStateException("Wrong " + clientChannel.getPeerInfo());
-					}
-					PartitionControlServer pcs = serverList.get(serverNo);
+					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					serverProxyMap.remove(pcs);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
-					int serverNo = matchServer(clientChannel.getPeerInfo());
-					if (serverNo < 0) {
-						throw new IllegalStateException("Wrong " + clientChannel.getPeerInfo());
-					}
-					PartitionControlServer pcs = serverList.get(serverNo);
+					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					serverProxyMap.put(pcs, new LocalControlServiceClient(clientChannel));
 				}
 
-				private int matchServer(PeerInfo server) {
-					for (int i = 0; i < serverList.size(); i++) {
-						PartitionControlServer s = serverList.get(i);
-						if (s.getIpAddress().equals(server.getHostName()) && s.getPort() == server.getPort()) {
-							return i;
-						}
+				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
+					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
+					if (pcs == null) {
+						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
 					}
-					return -1;
+					return pcs;
 				}
 			};
 			rpcEventNotifier.addEventListener(listener);
@@ -209,8 +204,24 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
-			shutdownHandler.shutdown();
+			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			try {
+				if (!shutdownResult.get()) {
+					log.warn("Unable to shut down within " + shutdownTimeoutMs + "ms");
+				} else {
+					log.info("Shutdown RPC client.");
+				}
+			} catch (InterruptedException e) {
+				log.warn("Interupted shutting down.", e);
+			} catch (ExecutionException e) {
+				log.warn("Error shutting down.", e);
+			}
+			shutdownHandler = null;
 		}
+		serverList = null;
+		bootstrap = null;
+		clientFactory = null;
+		segment = null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -229,7 +240,10 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 
 			PeerInfo server = new PeerInfo(pcs.getIpAddress(), pcs.getPort());
 
-			clientFactory.peerWith(server, bootstrap);
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put(PCS_ATTRIBUTE, pcs);
+
+			clientFactory.peerWith(server, bootstrap, attributes);
 			// the event listener hooks up the localproxy
 		}
 	}
@@ -303,6 +317,14 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 
 	public void setTcpNoDelay(boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
+	}
+
+	public long getShutdownTimeoutMs() {
+		return shutdownTimeoutMs;
+	}
+
+	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
+		this.shutdownTimeoutMs = shutdownTimeoutMs;
 	}
 
 	public PartitionControlServerService getPartitionServerService() {

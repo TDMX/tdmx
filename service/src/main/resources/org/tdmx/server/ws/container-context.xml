@@ -23,7 +23,7 @@
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService" />
 	</bean>
 	
-	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl" init-method="init">
+	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
 		<property name="connectTimeoutMillis" value="${ws.pcs.connectTimeoutMillis}"/>
 		<property name="connectResponseTimeoutMillis" value="${ws.pcs.connectResponseTimeoutMillis}"/>
 		<property name="coreRpcExecutorThreads" value="${ws.pcs.coreRpcExecutorThreads}"/>

@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -100,6 +102,7 @@ public class ServerSessionManagerImpl
 	private int ioThreads = 16;
 	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
+	private long shutdownTimeoutMs = 10000; // TODO property
 
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;
@@ -217,23 +220,20 @@ public class ServerSessionManagerImpl
 		return stats.build();
 	}
 
-	public void init() {
+	@Override
+	public void start(String segment, List<WebServiceApiName> apis) {
 		if (sessionIdleTimeoutMinutes <= 0) {
 			throw new IllegalArgumentException("sessionIdleTimeoutMinutes must be positive");
 		}
 		if (sessionCreationTimeoutHours <= 0) {
 			throw new IllegalArgumentException("sessionCreationTimeoutHours must be positive");
 		}
+		this.apiList = Collections.unmodifiableList(apis);
+		this.segment = segment;
 		scheduledThreadPool = Executors
 				.newSingleThreadScheduledExecutor(new NamedThreadFactory("SessionTimeoutExecutionService"));
 
 		sessionTimeoutExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("SessionTimeoutExecutor"));
-	}
-
-	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
-		this.apiList = Collections.unmodifiableList(apis);
-		this.segment = segment;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getTimeoutCheckIntervalSec(), getTimeoutCheckIntervalSec(),
 				TimeUnit.SECONDS);
 
@@ -355,16 +355,36 @@ public class ServerSessionManagerImpl
 		} catch (InterruptedException e) {
 			log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
 		}
+		scheduledThreadPool = null;
+
 		sessionTimeoutExecutor.shutdown();
 		try {
 			sessionTimeoutExecutor.awaitTermination(60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			log.warn("Interrupted whilst waiting for termination of jobRunners.", e);
 		}
+		sessionTimeoutExecutor = null;
 
 		if (shutdownHandler != null) {
-			shutdownHandler.shutdown();
+			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			try {
+				if (!shutdownResult.get()) {
+					log.warn("Unable to shut down within " + shutdownTimeoutMs + "ms");
+				} else {
+					log.info("Shutdown RPC client.");
+				}
+			} catch (InterruptedException e) {
+				log.warn("Interupted shutting down.", e);
+			} catch (ExecutionException e) {
+				log.warn("Error shutting down.", e);
+			}
+			shutdownHandler = null;
 		}
+		bootstrap = null;
+		clientFactory = null;
+		apiManagerMap = null;
+		segment = null;
+		apiList = null;
 	}
 
 	@Override
@@ -603,6 +623,14 @@ public class ServerSessionManagerImpl
 
 	public void setTcpNoDelay(boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
+	}
+
+	public long getShutdownTimeoutMs() {
+		return shutdownTimeoutMs;
+	}
+
+	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
+		this.shutdownTimeoutMs = shutdownTimeoutMs;
 	}
 
 }
