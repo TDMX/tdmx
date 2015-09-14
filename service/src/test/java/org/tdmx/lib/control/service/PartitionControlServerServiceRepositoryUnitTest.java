@@ -37,8 +37,6 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
 public class PartitionControlServerServiceRepositoryUnitTest {
 
 	@Autowired
@@ -57,7 +55,7 @@ public class PartitionControlServerServiceRepositoryUnitTest {
 		pcs.setIpAddress("0.0.0.0");
 		pcs.setPort(1);
 		pcs.setSegment("UNIT-TEST-SEG");
-
+		pcs.setServerModulo(0);
 		service.createOrUpdate(pcs);
 	}
 

@@ -84,7 +84,7 @@ public class DatabasePartition implements Serializable {
 
 	@Column(length = MAX_PASSWORD_LEN, nullable = false)
 	/**
-	 * use {@link #setPassword()} and {@link #getPassword()} 
+	 * use {@link #setPassword()} and {@link #getPassword()}
 	 */
 	private String obfuscatedPassword;
 	@Transient
@@ -110,6 +110,22 @@ public class DatabasePartition implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("DatabasePartition [id=");
+		builder.append(id);
+		builder.append(", partitionId=");
+		builder.append(partitionId);
+		builder.append(", dbType=");
+		builder.append(dbType);
+		builder.append(", segment=");
+		builder.append(segment);
+		builder.append(", url=");
+		builder.append(url);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

@@ -61,6 +61,16 @@ public class MaxValue implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("MaxValue [key=");
+		builder.append(key);
+		builder.append(", value=");
+		builder.append(value);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

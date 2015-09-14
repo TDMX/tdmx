@@ -77,6 +77,8 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 
 	// TODO LATER: use SSL context for protobuf communications
 
+	// TODO check that PCS server exists for this instance ( ipaddress and port match )
+
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------

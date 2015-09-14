@@ -79,6 +79,20 @@ public class ControlJob implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ControlJob [id=");
+		builder.append(id);
+		builder.append(", scheduledTime=");
+		builder.append(scheduledTime);
+		builder.append(", status=");
+		builder.append(status);
+		builder.append(", job=");
+		builder.append(job);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

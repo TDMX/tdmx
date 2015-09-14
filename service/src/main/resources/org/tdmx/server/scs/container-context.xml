@@ -29,6 +29,7 @@
 		<property name="ioThreads" value="${scs.pcs.ioThreads}"/>
 		<property name="ioBufferSize" value="${scs.pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="true"/>
+		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 		
 	</bean>
 

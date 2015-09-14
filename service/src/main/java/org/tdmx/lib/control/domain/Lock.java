@@ -76,6 +76,20 @@ public class Lock implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Lock [id=");
+		builder.append(id);
+		builder.append(", lockName=");
+		builder.append(lockName);
+		builder.append(", lockedUntilTime=");
+		builder.append(lockedUntilTime);
+		builder.append(", lockedBy=");
+		builder.append(lockedBy);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

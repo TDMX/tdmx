@@ -64,7 +64,11 @@ public class PartitionControlServer implements Serializable {
 	@Column(nullable = false)
 	private int port;
 
-	// TODO range specifier, primary / backup, modulo?
+	@Column(nullable = false)
+	/**
+	 * Used for load balanding to this server if Hash(key) % total#servers == serverModulo.
+	 */
+	private int serverModulo;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -73,6 +77,22 @@ public class PartitionControlServer implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("PartitionControlServer [id=");
+		builder.append(id);
+		builder.append(", segment=");
+		builder.append(segment);
+		builder.append(", ipAddress=");
+		builder.append(ipAddress);
+		builder.append(", port=");
+		builder.append(port);
+		builder.append(", serverModulo=");
+		builder.append(serverModulo);
+		builder.append("]");
+		return builder.toString();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -116,6 +136,14 @@ public class PartitionControlServer implements Serializable {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public int getServerModulo() {
+		return serverModulo;
+	}
+
+	public void setServerModulo(int serverModulo) {
+		this.serverModulo = serverModulo;
 	}
 
 }

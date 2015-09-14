@@ -97,10 +97,6 @@ public class AccountZone implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	// public ZoneReference getZoneReference() {
-	// return new ZoneReference(getId(), getZoneApex());
-	// }
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
