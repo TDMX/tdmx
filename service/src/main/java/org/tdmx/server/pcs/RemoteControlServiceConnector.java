@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.domain.PartitionControlServer;
+import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
@@ -77,8 +79,6 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 
 	// TODO LATER: use SSL context for protobuf communications
 
-	// TODO check that PCS server exists for this instance ( ipaddress and port match )
-
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
@@ -117,6 +117,11 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	private String segment;
 	private CleanShutdownHandler shutdownHandler;
 
+	/**
+	 * The PartitionControlService gives us the information about the PCS servers.
+	 */
+	private PartitionControlServerService partitionServerService;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -138,6 +143,8 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		}
 
 		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
+
+		assertPcsServerRegistered(segment, serverHostname, localPort);
 
 		PeerInfo serverInfo = new PeerInfo(serverHostname, localPort);
 
@@ -300,6 +307,18 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void assertPcsServerRegistered(String segment, String ipAddress, int port) {
+		PartitionControlServer pcs = partitionServerService.findByIpEndpoint(ipAddress, port);
+		if (pcs == null) {
+			throw new IllegalStateException("PCS server not registered in DB for " + ipAddress + ":" + port);
+		}
+		if (!segment.equals(pcs.getSegment())) {
+			throw new IllegalStateException(
+					"PCS server segment mismatch. [" + segment + "] registered is " + pcs.getSegment());
+		}
+	}
+
 	private SessionHandle mapSession(org.tdmx.server.pcs.protobuf.PCSServer.SessionHandle sh) {
 		if (sh == null) {
 			return null;
@@ -348,6 +367,14 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public PartitionControlServerService getPartitionServerService() {
+		return partitionServerService;
+	}
+
+	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
+		this.partitionServerService = partitionServerService;
+	}
 
 	public ControlServiceListener getControlListener() {
 		return controlListener;
