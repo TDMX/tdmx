@@ -73,7 +73,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	private int ioThreads = 16;
 	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
-	private long shutdownTimeoutMs = 10000; // TODO property
+	private long shutdownTimeoutMs = 10000;
 
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;

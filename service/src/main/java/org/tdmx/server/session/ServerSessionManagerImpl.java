@@ -39,7 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.job.NamedThreadFactory;
+import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
@@ -102,7 +104,7 @@ public class ServerSessionManagerImpl
 	private int ioThreads = 16;
 	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
-	private long shutdownTimeoutMs = 10000; // TODO property
+	private long shutdownTimeoutMs = 10000;
 
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;
@@ -129,12 +131,21 @@ public class ServerSessionManagerImpl
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService sessionTimeoutExecutor = null;
 
+	/**
+	 * The runtime context providing the server's IP and certificate.
+	 */
 	private ServerRuntimeContextService runtimeService;
+
 	/**
 	 * The WebServiceSessionManagers for MOS, MDS, MRS, ZAS. A subset of these are started at startup time and placed in
 	 * the apiManagerMap.
 	 */
 	private List<WebServiceSessionManager> webServiceSessionManagers;
+
+	/**
+	 * The PartitionControlService gives us the information about the PCS servers.
+	 */
+	private PartitionControlServerService partitionServerService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -334,8 +345,11 @@ public class ServerSessionManagerImpl
 			shutdownHandler.addResource(rpcExecutor);
 			shutdownHandler.addResource(watchdog);
 
-			// TODO FIXME connect to each PCS server
-			RpcClient client = connect("192.168.178.21", 8446);
+			// connect to each PCS server
+			List<PartitionControlServer> pcsList = partitionServerService.findBySegment(segment);
+			for (PartitionControlServer pcs : pcsList) {
+				connect(pcs.getIpAddress(), pcs.getPort());
+			}
 			// after connection the PCS remote cannot distinguish if we are a SCS or WS client
 			// until WS clients call registerServer
 
@@ -543,6 +557,14 @@ public class ServerSessionManagerImpl
 
 	public void setWebServiceSessionManagers(List<WebServiceSessionManager> webServiceSessionManagers) {
 		this.webServiceSessionManagers = webServiceSessionManagers;
+	}
+
+	public PartitionControlServerService getPartitionServerService() {
+		return partitionServerService;
+	}
+
+	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
+		this.partitionServerService = partitionServerService;
 	}
 
 	public int getTimeoutCheckIntervalSec() {
