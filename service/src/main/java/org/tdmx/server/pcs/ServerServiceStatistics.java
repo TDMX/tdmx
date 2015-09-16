@@ -34,4 +34,14 @@ public class ServerServiceStatistics {
 		return stats;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append("Statistics [");
+		for (ServiceStatistic stat : stats) {
+			b.append(stat).append(", ");
+		}
+		b.append("]");
+		return b.toString();
+	}
 }

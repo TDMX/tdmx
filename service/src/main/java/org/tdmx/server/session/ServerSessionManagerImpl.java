@@ -245,7 +245,7 @@ public class ServerSessionManagerImpl
 				.newSingleThreadScheduledExecutor(new NamedThreadFactory("SessionTimeoutExecutionService"));
 
 		sessionTimeoutExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("SessionTimeoutExecutor"));
-		scheduledThreadPool.scheduleWithFixedDelay(this, getTimeoutCheckIntervalSec(), getTimeoutCheckIntervalSec(),
+		scheduledThreadPool.scheduleWithFixedDelay(this, timeoutCheckIntervalSec, timeoutCheckIntervalSec,
 				TimeUnit.SECONDS);
 
 		// construct the service list of this server in the apiManagerMap
@@ -360,24 +360,25 @@ public class ServerSessionManagerImpl
 
 	@Override
 	public void stop() {
-		if (scheduledThreadPool == null) {
-			return; // never initialized
+		if (scheduledThreadPool != null) {
+			scheduledThreadPool.shutdown();
+			try {
+				scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
+			}
+			scheduledThreadPool = null;
 		}
-		scheduledThreadPool.shutdown();
-		try {
-			scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
-		}
-		scheduledThreadPool = null;
 
-		sessionTimeoutExecutor.shutdown();
-		try {
-			sessionTimeoutExecutor.awaitTermination(60, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			log.warn("Interrupted whilst waiting for termination of jobRunners.", e);
+		if (sessionTimeoutExecutor != null) {
+			sessionTimeoutExecutor.shutdown();
+			try {
+				sessionTimeoutExecutor.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of jobRunners.", e);
+			}
+			sessionTimeoutExecutor = null;
 		}
-		sessionTimeoutExecutor = null;
 
 		if (shutdownHandler != null) {
 			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);

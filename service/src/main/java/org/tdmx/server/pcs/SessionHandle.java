@@ -20,8 +20,6 @@ package org.tdmx.server.pcs;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
@@ -40,8 +38,6 @@ public class SessionHandle {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(SessionHandle.class);
-
 	private final String segment;
 	private final WebServiceApiName api;
 	private final String sessionKey;

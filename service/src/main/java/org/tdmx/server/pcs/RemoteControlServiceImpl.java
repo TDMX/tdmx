@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -35,16 +39,26 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
+ * The RemoteControlService keeps track of which Sessions are attached to which Service and the Session's certificates.
+ * 
+ * When creating new Sessions, it determines which Service shall service the Session. The algorithm is documented in
+ * {@link ServerApiHolder#getLoadBalancedServer()}.
+ * 
+ * Performs periodic checking of all attached ServerSessionManagers to update statistics of all Services. This is needed
+ * because the individual createSession or addCertificate calls only get the load statistics back of the Service
+ * affected so the PCS doesn't have a good idea of what the other Services load is. This is a performance compromise
+ * because returning all the services statistics on each individual call is expected to cause too much IO.
  * 
  * @author Peter
  *
  */
-public class RemoteControlServiceImpl implements ControlService, ControlServiceListener, Manageable {
+public class RemoteControlServiceImpl implements ControlService, ControlServiceListener, Manageable, Runnable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -88,6 +102,15 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	 * Map keyed by WebServiceApiName to ServerApiHolder.
 	 */
 	private final Map<WebServiceApiName, ServerApiHolder> serverMap = new HashMap<>();
+
+	/**
+	 * Delay in seconds between session statistic checks.
+	 */
+	private int sessionStatisticsCheckIntervalSec = 60;
+
+	// - internal
+	private ScheduledExecutorService scheduledThreadPool = null;
+	private ExecutorService statisticCheckExecutor = null;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -449,12 +472,64 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 		serverMap.put(WebServiceApiName.ZAS, new ServerApiHolder(getMaximumRoundRobinSize()));
 
 		clear();
+
+		scheduledThreadPool = Executors
+				.newSingleThreadScheduledExecutor(new NamedThreadFactory("PCS-StatisticCheckScheduler"));
+
+		statisticCheckExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("PCS-StatisticCheckExecutor"));
+		scheduledThreadPool.scheduleWithFixedDelay(this, sessionStatisticsCheckIntervalSec,
+				sessionStatisticsCheckIntervalSec, TimeUnit.SECONDS);
+
+	}
+
+	@Override
+	/**
+	 * Collect statistics from all WS.
+	 */
+	public void run() {
+		// we iterate through all ServerHolders and accumulate distinct ServerSessionControllers
+		// which we then get the statistic from ( for all apis )
+		log.info("Gathering statistics.");
+		Set<ServerSessionController> serverControllers = new HashSet<>();
+		for (WebServiceApiName api : WebServiceApiName.values()) {
+			ServerApiHolder servers = serverMap.get(api);
+			for (Entry<String, ServerHolder> serverHolderEntry : servers.getServerMap().entrySet()) {
+				serverControllers.add(serverHolderEntry.getValue().getSsm());
+			}
+		}
+
+		for (ServerSessionController serverController : serverControllers) {
+			ServerServiceStatistics stats = serverController.getStatistics();
+			updateServerStats(stats);
+			log.info("Gathered " + stats);
+		}
+
 	}
 
 	@Override
 	public void stop() {
 		this.segment = null;
 		clear();
+
+		if (scheduledThreadPool != null) {
+			scheduledThreadPool.shutdown();
+			try {
+				scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
+			}
+			scheduledThreadPool = null;
+		}
+
+		if (statisticCheckExecutor != null) {
+			statisticCheckExecutor.shutdown();
+			try {
+				statisticCheckExecutor.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of statisticCheckExecutor.", e);
+			}
+			statisticCheckExecutor = null;
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -613,4 +688,11 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 		this.maximumRoundRobinSize = maximumRoundRobinSize;
 	}
 
+	public int getSessionStatisticsCheckIntervalSec() {
+		return sessionStatisticsCheckIntervalSec;
+	}
+
+	public void setSessionStatisticsCheckIntervalSec(int sessionStatisticsCheckIntervalSec) {
+		this.sessionStatisticsCheckIntervalSec = sessionStatisticsCheckIntervalSec;
+	}
 }

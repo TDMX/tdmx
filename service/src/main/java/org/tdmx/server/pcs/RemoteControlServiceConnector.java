@@ -26,7 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 /**
+ * Handles inbound RPC calls from SCS and WS clients.
  * 
  * @author Peter
  *
@@ -300,8 +303,21 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
-			shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
+			try {
+				if (!shutdownResult.get()) {
+					log.warn("Unable to shut down within " + shutdownTimeoutMs + "ms");
+				} else {
+					log.info("Shutdown RPC client.");
+				}
+			} catch (InterruptedException e) {
+				log.warn("Interupted shutting down.", e);
+			} catch (ExecutionException e) {
+				log.warn("Error shutting down.", e);
+			}
+			shutdownHandler = null;
 		}
+		segment = null;
 	}
 
 	// -------------------------------------------------------------------------
