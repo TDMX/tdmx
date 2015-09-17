@@ -105,6 +105,12 @@ public class SCSImpl implements SCS {
 
 		// TODO SCS ssl trust - all TDMX usercerts and otherwise fallback to std. PKIX
 
+		// TODO #84 decide if sender or receiver is requesting relay session
+		// lookup domain
+		// lookup channel
+		// if exists, create session via PCS
+		// if not exists, create temporary channel and then session via PCS on temporary channel.
+
 		response.setSuccess(true);
 		return response;
 	}

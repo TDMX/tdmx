@@ -29,7 +29,6 @@ import javax.inject.Named;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
@@ -49,6 +49,7 @@ import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -356,8 +357,13 @@ public class SCSImplUnitTest {
 	}
 
 	@Test
-	@Ignore
-	public void test_getMRSSession() {
+	public void test_getMRSSession() throws Exception {
+		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
+
+		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
+				"kidsmathstrainer");
+		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
+
 		// channel
 		Channel channel = new Channel();
 		ChannelEndpoint origin = new ChannelEndpoint();

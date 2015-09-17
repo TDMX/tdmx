@@ -55,6 +55,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.runtime.ServerContainer;
@@ -289,22 +292,43 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 						public void checkClientTrusted(X509Certificate[] chain, String authType)
 								throws CertificateException {
 							try {
+								// check if this is a TDMX certificate - in which case it is authenticated immediately
+								// and authorization is checked later in the servlet filter
+								if (chain.length == 1) {
+									// self signed cert or TDMX
+									PKIXCertificate[] certs = CertificateIOUtils.convert(chain);
+									PKIXCertificate cert = certs[0];
+									if (cert.isTdmxUserCertificate()) {
+										log.debug("Auto authenticated TDMX user certificate " + cert.getTdmxUserName()
+												+ "@" + cert.getTdmxDomainName());
+										return;
+									} else if (cert.isTdmxDomainAdminCertificate()) {
+										log.debug("Auto authenticated TDMX domain admin certificate "
+												+ cert.getTdmxDomainName());
+										return;
+									} else if (cert.isTdmxZoneAdminCertificate()) {
+										log.debug("Auto authenticated TDMX zone admin certificate "
+												+ cert.getTdmxZoneInfo().getZoneRoot());
+										return;
+									}
+								}
+
+								// non TDMX client certs use PKIX validation ( public or private if included in the
+								// truststore )
 								xt.checkClientTrusted(chain, authType);
 							} catch (RuntimeException re) {
 								log.warn("checkClientTrusted failed.", re);
 								throw re;
+							} catch (CryptoCertificateException ce) {
+								log.warn("Certificate conversion failed.", ce);
+								throw new CertificateException(ce);
 							}
 						}
 
 						@Override
 						public void checkServerTrusted(X509Certificate[] chain, String authType)
 								throws CertificateException {
-							try {
-								xt.checkServerTrusted(chain, authType);
-							} catch (RuntimeException re) {
-								log.warn("checkServerTrusted failed.", re);
-								throw re;
-							}
+							throw new CertificateException("SCS only trusts client certificates.");
 						}
 
 						@Override

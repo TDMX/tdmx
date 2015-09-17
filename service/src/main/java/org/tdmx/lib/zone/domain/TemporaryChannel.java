@@ -70,15 +70,15 @@ public class TemporaryChannel implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)) })
+			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false) ),
+			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false) ) })
 	private ChannelOrigin origin;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false)),
-			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)) })
+			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false) ),
+			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false) ),
+			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false) ) })
 	private ChannelDestination destination;
 
 	// -------------------------------------------------------------------------
