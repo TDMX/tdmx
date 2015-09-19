@@ -12,12 +12,13 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>org.tdmx.lib.control.domain.MaxValue</class>
 		<class>org.tdmx.lib.control.domain.Lock</class>
+		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
+		<class>org.tdmx.lib.control.domain.PartitionControlServer</class>
 		<class>org.tdmx.lib.control.domain.ControlJob</class>
+		<class>org.tdmx.lib.control.domain.Segment</class>
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
 		<class>org.tdmx.lib.control.domain.AccountZoneAdministrationCredential</class>
-		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
-		<class>org.tdmx.lib.control.domain.PartitionControlServer</class>
 		
 	</persistence-unit>
 

@@ -114,6 +114,14 @@
 	</bean>
 	
 
+	<bean id="tdmx.lib.control.dao.SegmentDao" class="org.tdmx.lib.control.dao.SegmentDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.SegmentRepository" class="org.tdmx.lib.control.service.SegmentRepositoryImpl">
+		<property name="segmentDao"	ref="tdmx.lib.control.dao.SegmentDao" />
+	</bean>
+	
+
 	<bean id="tdmx.lib.control.dao.ControlJobDao" class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
 	</bean>
 	
