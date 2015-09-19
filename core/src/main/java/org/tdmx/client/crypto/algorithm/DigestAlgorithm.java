@@ -26,6 +26,7 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public enum DigestAlgorithm {
 
+	MD5("MD5"),
 	SHA_1("SHA-1"),
 	SHA_256("SHA-256"),
 	SHA_384("SHA-384"),

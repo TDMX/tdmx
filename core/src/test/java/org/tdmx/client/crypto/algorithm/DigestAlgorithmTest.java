@@ -18,6 +18,7 @@
  */
 package org.tdmx.client.crypto.algorithm;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -33,10 +34,41 @@ public class DigestAlgorithmTest {
 	}
 
 	@Test
+	public void testMD5() throws CryptoException {
+		byte[] hash = DigestAlgorithm.MD5.kdf(EntropySource.getRandomBytes(1000));
+		assertNotNull(hash);
+		assertEquals(16, hash.length);
+	}
+
+	@Test
+	public void testMD5Repeated() throws CryptoException {
+		byte[] bytes = EntropySource.getRandomBytes(1000);
+		byte[] expectedHash = DigestAlgorithm.MD5.kdf(bytes);
+		for (int i = 0; i < 10000; i++) {
+			byte[] hash = DigestAlgorithm.MD5.kdf(bytes);
+			assertNotNull(hash);
+			assertEquals(16, hash.length);
+			assertArrayEquals(expectedHash, hash);
+		}
+	}
+
+	@Test
 	public void testSHA1() throws CryptoException {
 		byte[] hash = DigestAlgorithm.SHA_1.kdf(EntropySource.getRandomBytes(1000));
 		assertNotNull(hash);
 		assertEquals(20, hash.length);
+	}
+
+	@Test
+	public void testSHA1Repeated() throws CryptoException {
+		byte[] bytes = EntropySource.getRandomBytes(1000);
+		byte[] expectedHash = DigestAlgorithm.SHA_1.kdf(bytes);
+		for (int i = 0; i < 10000; i++) {
+			byte[] hash = DigestAlgorithm.SHA_1.kdf(bytes);
+			assertNotNull(hash);
+			assertEquals(20, hash.length);
+			assertArrayEquals(expectedHash, hash);
+		}
 	}
 
 	@Test
