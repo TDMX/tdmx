@@ -1,65 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
-<xs:schema xmlns="urn:tdmx:api:v1.0:sp:scs" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:tdmx:api:v1.0:sp:scs" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:scs" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" xmlns:msg="urn:tdmx:api:v1.0:sp:msg" targetNamespace="urn:tdmx:api:v1.0:sp:scs" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="../common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="../tx.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:msg" schemaLocation="../msg.xsd"/>
 	<xs:annotation>
 		<xs:documentation>This schema defines the request entities.</xs:documentation>
 	</xs:annotation>
-	<xs:simpleType name="text">
-		<xs:annotation>
-			<xs:documentation>Free text limited to 256 characters.</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:string">
-			<xs:maxLength value="256"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="longtext">
-		<xs:annotation>
-			<xs:documentation>Free text limited to 2048 characters.</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:string">
-			<xs:maxLength value="2048"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="errorcode">
-		<xs:restriction base="xs:int"/>
-	</xs:simpleType>
-	<xs:simpleType name="certificate">
-		<xs:restriction base="xs:base64Binary">
-			<xs:maxLength value="2000"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:complexType name="Acknowledge">
-		<xs:sequence>
-			<xs:element ref="error" minOccurs="0"/>
-		</xs:sequence>
-		<xs:attribute name="success" type="xs:boolean" use="required">
-			<xs:annotation>
-				<xs:documentation>true if the operation succeeded, else false and an error element is provided below.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-	</xs:complexType>
-	<xs:complexType name="Error">
-		<xs:sequence>
-			<xs:element name="description" type="longtext"/>
-		</xs:sequence>
-		<xs:attribute name="code" type="errorcode" use="required"/>
-	</xs:complexType>
-	<xs:element name="error" type="Error">
-		<xs:annotation>
-			<xs:documentation>operations which have failed.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
 	<xs:complexType name="ServerEndpoint">
 		<xs:annotation>
 			<xs:documentation>the information regarding a session and it's server endpoint.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="url" type="text">
+			<xs:element name="url" type="common:text">
 				<xs:annotation>
 					<xs:documentation>the HTTPS url of the server.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="tlsCertificate" type="certificate">
+			<xs:element name="tlsCertificate" type="msg:x509certificate">
 				<xs:annotation>
 					<xs:documentation>the public certificate which the server supplies ( must be trusted by the client or TLS connection will not take place ).</xs:documentation>
 				</xs:annotation>
@@ -76,16 +34,16 @@
 			<xs:documentation>the parameters to which the session is bound.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="sessionId" type="text">
+			<xs:element name="sessionId" type="common:text">
 				<xs:annotation>
 					<xs:documentation>the sessionId that the calliing client must for each call to the server.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="address" type="text" minOccurs="0"/>
-			<xs:element name="domain" type="text" minOccurs="0"/>
-			<xs:element name="zone" type="text" minOccurs="0"/>
-			<xs:element name="service" type="text" minOccurs="0"/>
-			<xs:element name="provider" type="text" minOccurs="0"/>
+			<xs:element ref="msg:localname" minOccurs="0"/>
+			<xs:element ref="msg:domain" minOccurs="0"/>
+			<xs:element ref="msg:zoneapex" minOccurs="0"/>
+			<xs:element ref="msg:servicename" minOccurs="0"/>
+			<xs:element ref="msg:serviceprovider" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:element name="session" type="SessionBinding">
@@ -105,7 +63,7 @@
 	</xs:complexType>
 	<xs:complexType name="getMOSSessionResponseType">
 		<xs:complexContent>
-			<xs:extension base="Acknowledge">
+			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
 					<xs:element ref="endpoint" minOccurs="0"/>
 					<xs:element ref="session" minOccurs="0"/>
@@ -118,12 +76,12 @@
 			<xs:documentation>request a MDS session. The calling client TDMX certificate implicitly provides the destination address and domain of the session. The serviceName of the destination is a parameter.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="servicename" type="text"/>
+			<xs:element ref="msg:servicename"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="getMDSSessionResponseType">
 		<xs:complexContent>
-			<xs:extension base="Acknowledge">
+			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
 					<xs:element ref="endpoint" minOccurs="0"/>
 					<xs:element ref="session" minOccurs="0"/>
@@ -139,7 +97,7 @@
 	</xs:complexType>
 	<xs:complexType name="getZASSessionResponseType">
 		<xs:complexContent>
-			<xs:extension base="Acknowledge">
+			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
 					<xs:element ref="endpoint" minOccurs="0"/>
 					<xs:element ref="session" minOccurs="0"/>
@@ -151,11 +109,13 @@
 		<xs:annotation>
 			<xs:documentation>request a MRS session. The calling client must provide a PKIX public certificate which is defines the DNS hostname to which the service provider is bound for the duration of the sessin.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence/>
+		<xs:sequence>
+			<xs:element ref="msg:channel"/>
+		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="getMRSSessionResponseType">
 		<xs:complexContent>
-			<xs:extension base="Acknowledge">
+			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
 					<xs:element ref="endpoint" minOccurs="0"/>
 					<xs:element ref="session" minOccurs="0"/>

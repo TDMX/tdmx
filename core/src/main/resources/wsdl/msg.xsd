@@ -472,6 +472,7 @@
 	<xs:element name="origin" type="ChannelEndpoint"/>
 	<xs:element name="destination" type="ChannelDestination"/>
 	<xs:element name="serviceprovider" type="url"/>
+	<xs:element name="zoneapex" type="domainname"/>
 	<xs:element name="servicename" type="servicename"/>
 	<xs:element name="service" type="Service"/>
 	<xs:element name="ipaddress" type="ipaddress">

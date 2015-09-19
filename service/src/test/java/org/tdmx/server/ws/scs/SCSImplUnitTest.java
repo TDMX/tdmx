@@ -38,10 +38,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
-import org.tdmx.core.api.v01.scs.Acknowledge;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMOSSession;
@@ -208,11 +208,11 @@ public class SCSImplUnitTest {
 		assertArrayEquals(sse.getPublicCertificate().getX509Encoded(), response.getEndpoint().getTlsCertificate());
 		assertNotNull(response.getSession());
 		assertEquals(sse.getSessionId(), response.getSession().getSessionId());
-		assertEquals(zone.getZoneApex(), response.getSession().getZone());
-		assertEquals(address1.getLocalName(), response.getSession().getAddress());
+		assertEquals(zone.getZoneApex(), response.getSession().getZoneapex());
+		assertEquals(address1.getLocalName(), response.getSession().getLocalname());
 		assertEquals(address1.getDomain().getDomainName(), response.getSession().getDomain());
-		assertNull(response.getSession().getProvider()); // TODO maybe change future to set with own SP
-		assertNull(response.getSession().getService());
+		assertNull(response.getSession().getServiceprovider()); // TODO maybe change future to set with own SP
+		assertNull(response.getSession().getServicename());
 	}
 
 	@Test
@@ -275,11 +275,11 @@ public class SCSImplUnitTest {
 		assertArrayEquals(sse.getPublicCertificate().getX509Encoded(), response.getEndpoint().getTlsCertificate());
 		assertNotNull(response.getSession());
 		assertEquals(sse.getSessionId(), response.getSession().getSessionId());
-		assertEquals(zone.getZoneApex(), response.getSession().getZone());
-		assertEquals(address2.getLocalName(), response.getSession().getAddress());
+		assertEquals(zone.getZoneApex(), response.getSession().getZoneapex());
+		assertEquals(address2.getLocalName(), response.getSession().getLocalname());
 		assertEquals(address2.getDomain().getDomainName(), response.getSession().getDomain());
-		assertEquals(service2.getServiceName(), response.getSession().getService());
-		assertNull(response.getSession().getProvider()); // TODO maybe change future to set with own SP
+		assertEquals(service2.getServiceName(), response.getSession().getServicename());
+		assertNull(response.getSession().getServiceprovider()); // TODO maybe change future to set with own SP
 	}
 
 	@Test
@@ -357,6 +357,21 @@ public class SCSImplUnitTest {
 	}
 
 	@Test
+	public void test_getMRSSession_MissingChannel() throws Exception {
+		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
+
+		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
+				"kidsmathstrainer");
+		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
+
+		GetMRSSession req = new GetMRSSession();
+
+		GetMRSSessionResponse response = scs.getMRSSession(req);
+		assertError(ErrorCode.MissingChannel, response);
+
+	}
+
+	@Test
 	public void test_getMRSSession() throws Exception {
 		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
 
@@ -378,6 +393,7 @@ public class SCSImplUnitTest {
 		channel.setDestination(dest);
 
 		GetMRSSession req = new GetMRSSession();
+		req.setChannel(channel);
 
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);

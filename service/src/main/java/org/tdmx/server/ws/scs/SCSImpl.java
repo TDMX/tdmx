@@ -21,9 +21,9 @@ package org.tdmx.server.ws.scs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.core.api.v01.scs.Acknowledge;
+import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.scs.Endpoint;
-import org.tdmx.core.api.v01.scs.Error;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMOSSession;
@@ -52,6 +52,7 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.session.ServerSessionAllocationService;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 
@@ -83,6 +84,8 @@ public class SCSImpl implements SCS {
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
 
+	private final ApiValidator validator = new ApiValidator();
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -103,8 +106,9 @@ public class SCSImpl implements SCS {
 
 		// TODO check DNS trust that the channel's origin or destination domain points to the serviceProvider
 
-		// TODO SCS ssl trust - all TDMX usercerts and otherwise fallback to std. PKIX
-
+		if (validator.checkChannel(parameters.getChannel(), response) == null) {
+			return response;
+		}
 		// TODO #84 decide if sender or receiver is requesting relay session
 		// lookup domain
 		// lookup channel
@@ -154,10 +158,10 @@ public class SCSImpl implements SCS {
 
 		Session session = new Session();
 		session.setSessionId(ep.getSessionId());
-		session.setZone(existingCred.getZone().getZoneApex());
-		session.setAddress(existingCred.getAddress().getLocalName());
+		session.setZoneapex(existingCred.getZone().getZoneApex());
+		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setService(service.getServiceName());
+		session.setServicename(service.getServiceName());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -197,10 +201,10 @@ public class SCSImpl implements SCS {
 
 		Session session = new Session();
 		session.setSessionId(ep.getSessionId());
-		session.setZone(existingCred.getZone().getZoneApex());
-		session.setAddress(existingCred.getAddress().getLocalName());
+		session.setZoneapex(existingCred.getZone().getZoneApex());
+		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setService(null);
+		session.setServicename(null);
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -239,10 +243,10 @@ public class SCSImpl implements SCS {
 
 		Session session = new Session();
 		session.setSessionId(ep.getSessionId());
-		session.setZone(existingCred.getZone().getZoneApex());
+		session.setZoneapex(existingCred.getZone().getZoneApex());
 		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setAddress(null);
-		session.setService(null);
+		session.setLocalname(null);
+		session.setServicename(null);
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();

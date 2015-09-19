@@ -5,20 +5,6 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	>
 
-	<jxb:globalBindings generateElementProperty="false" underscoreBinding="asCharInWord" enableJavaNamingConventions="true">
-		<xjc:simple />
-		<xjc:serializable uid="-6026937020915831099"/>
-		<xjc:javaType name="java.util.Calendar" xmlType="xs:date" 
-			adapter="org.tdmx.core.api.DateAdapter"
-		/>
-		<xjc:javaType name="java.util.Calendar" xmlType="xs:dateTime" 
-			adapter="org.tdmx.core.api.DateTimeAdapter"
-		/>
-		<xjc:javaType name="java.util.Calendar" xmlType="xs:time" 
-			adapter="org.tdmx.core.api.TimeAdapter"
-		/>
-	</jxb:globalBindings>
-
 	<jxb:bindings schemaLocation="wsdl/scs/scs.xsd" node="/xs:schema">
 		<jxb:schemaBindings>
 			<jxb:package name="org.tdmx.core.api.v01.scs" />
