@@ -23,6 +23,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 public class DnsUtilTest {
@@ -37,5 +39,28 @@ public class DnsUtilTest {
 	public void testGetSubdomain() throws Exception {
 		assertEquals("plus", DnsUtils.getSubdomain("plus.google.com", "google.com"));
 		assertNull(DnsUtils.getSubdomain("plus.google.com", "plus.google.com"));
+	}
+
+	@Test
+	public void testGetDomainHierarchy() throws Exception {
+		List<String> result = DnsUtils.getDomainHierarchy("sucks.plus.google.com");
+		assertEquals(3, result.size());
+		assertEquals("sucks.plus.google.com", result.get(0));
+		assertEquals("plus.google.com", result.get(1));
+		assertEquals("google.com", result.get(2));
+	}
+
+	@Test
+	public void testGetDomainHierarchy_TLD() throws Exception {
+		List<String> result = DnsUtils.getDomainHierarchy("tdmx.com");
+		assertEquals(1, result.size());
+		assertEquals("tdmx.com", result.get(0));
+	}
+
+	@Test
+	public void testGetDomainHierarchy_Invalid() throws Exception {
+		List<String> result = DnsUtils.getDomainHierarchy("com");
+		assertEquals(1, result.size());
+		assertEquals("com", result.get(0));
 	}
 }

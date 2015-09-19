@@ -18,10 +18,27 @@
  */
 package org.tdmx.core.system.dns;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.tdmx.core.system.lang.StringUtils;
 
+/**
+ * Utility class for DNS operations.
+ * 
+ * @author Peter
+ *
+ */
 public class DnsUtils {
 
+	/**
+	 * Determine if the domainName is a subdomain of the zoneApex.
+	 * 
+	 * @param domainName
+	 * @param zoneApex
+	 * @return true if the domainName is a subdomain of the zoneApex.
+	 */
 	public static boolean isSubdomain(String domainName, String zoneApex) {
 		if (StringUtils.hasText(domainName) && StringUtils.hasText(zoneApex)) {
 			return domainName.endsWith("." + zoneApex);
@@ -29,10 +46,50 @@ public class DnsUtils {
 		return false;
 	}
 
+	/**
+	 * Determine the part of domainName which is the subdomain of zoneApex.
+	 * 
+	 * For example if domainName is "a.b.com" and the zoneApex is "b.com", the the subdomain part is "a".
+	 * 
+	 * @param domainName
+	 * @param zoneApex
+	 * @return
+	 */
 	public static String getSubdomain(String domainName, String zoneApex) {
 		if (isSubdomain(domainName, zoneApex)) {
 			return domainName.substring(0, domainName.length() - zoneApex.length() - 1);
 		}
 		return null;
+	}
+
+	/**
+	 * Get the domain hierarchy of a given domainName from most qualified to "highest" level domain.
+	 * 
+	 * For example. "a.b.c.com" returns the list {"a.b.c.com","b.c.com","c.com"}
+	 * 
+	 * @param domainName
+	 * @return
+	 */
+	public static List<String> getDomainHierarchy(String domainName) {
+		List<String> result = new ArrayList<>();
+
+		List<String> domainParts = new ArrayList<>();
+		StringTokenizer st = new StringTokenizer(domainName, ".");
+		while (st.hasMoreTokens()) {
+			String part = st.nextToken();
+			domainParts.add(part);
+		}
+		if (domainParts.size() <= 1) {
+			return domainParts;
+		}
+		for (int i = 0; i < domainParts.size() - 1; i++) {
+			StringBuffer b = new StringBuffer();
+			for (int j = i; j < domainParts.size() - 1; j++) {
+				b.append(domainParts.get(j)).append(".");
+			}
+			b.append(domainParts.get(domainParts.size() - 1));
+			result.add(b.toString());
+		}
+		return result;
 	}
 }
