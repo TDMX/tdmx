@@ -59,6 +59,7 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.runtime.ServerContainer;
 import org.tdmx.server.ws.security.HSTSHandler;
@@ -129,7 +130,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	}
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) throws Exception {
+	public void start(Segment segment, List<WebServiceApiName> apis) throws Exception {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();
@@ -259,7 +260,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
 
-	void startManageables(String segment, List<WebServiceApiName> apis) {
+	void startManageables(Segment segment, List<WebServiceApiName> apis) {
 		for (Manageable m : getManageables()) {
 			m.start(segment, apis);
 		}

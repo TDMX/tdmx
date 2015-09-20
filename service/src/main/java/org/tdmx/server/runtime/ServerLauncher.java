@@ -37,6 +37,8 @@ import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
@@ -86,7 +88,7 @@ public class ServerLauncher {
 	public static void main(String[] args) throws UnknownHostException {
 		List<ServiceName> services = new ArrayList<>();
 		List<WebServiceApiName> apis = new ArrayList<>();
-		String segment = DEFAULT_SEGMENT;
+		String segmentName = DEFAULT_SEGMENT;
 
 		String stopCmd = DEFAULT_STOP_CMD;
 		String stopIpAddress = InetAddress.getLocalHost().getHostAddress();
@@ -108,7 +110,7 @@ public class ServerLauncher {
 				}
 			}
 			if (StringUtils.hasText(arg) && arg.startsWith(SEGMENT_ARG_PREFIX)) {
-				segment = arg.substring(SEGMENT_ARG_PREFIX.length());
+				segmentName = arg.substring(SEGMENT_ARG_PREFIX.length());
 			}
 			if (StringUtils.hasText(arg) && arg.startsWith(STOP_PORT_ARG_PREFIX)) {
 				stopPort = Integer.parseInt(arg.substring(STOP_PORT_ARG_PREFIX.length()));
@@ -146,19 +148,26 @@ public class ServerLauncher {
 			System.exit(-1);
 		}
 
-		log.info("services " + StringUtils.arrayToCommaDelimitedString(services.toArray()));
-		log.info("segment: " + segment);
-		log.info("api " + StringUtils.arrayToCommaDelimitedString(apis.toArray()));
-
 		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
 		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
 		context = (ApplicationContext) beanFactoryReference.getFactory();
 
 		// dump out some information about SSL on the JVM
 		JvmSslContext si = (JvmSslContext) context.getBean("jvm.JvmSslContext");
-		log.info("JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
+		log.info(
+				"JVM supportedCipherSuites: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedCipherSuites()));
 		log.info("JVM supportedProtocols: " + StringUtils.arrayToCommaDelimitedString(si.getSupportedProtocols()));
 		log.info("default TrustManagerFactoryAlgorithm: " + si.getDefaultTrustManagerFactoryAlgorithm());
+
+		SegmentService segmentService = (SegmentService) context.getBean("tdmx.lib.control.SegmentRepository");
+		Segment segment = segmentService.findBySegment(segmentName);
+		if (segment == null) {
+			log.error("Segment " + segmentName + " is not known in the ControlDB");
+			System.exit(-1);
+		}
+		log.info("services " + StringUtils.arrayToCommaDelimitedString(services.toArray()));
+		log.info("segment: " + segment.getSegmentName() + ", scsHostname=" + segment.getScsHostname());
+		log.info("api " + StringUtils.arrayToCommaDelimitedString(apis.toArray()));
 
 		try {
 			MonitorThread monitor = new MonitorThread(services, stopPort, stopCmd, stopIpAddress);
@@ -193,7 +202,7 @@ public class ServerLauncher {
 		}
 	}
 
-	private static void startup(List<ServiceName> services, String segment, List<WebServiceApiName> apis)
+	private static void startup(List<ServiceName> services, Segment segment, List<WebServiceApiName> apis)
 			throws Exception {
 		// Start the Containers
 		for (ServiceName srvName : services) {
@@ -229,8 +238,8 @@ public class ServerLauncher {
 					log.info("accepting stop connections on " + socket.getLocalPort());
 					accept = socket.accept();
 					log.info("accepted a stop connection.");
-					BufferedReader reader = new BufferedReader(new InputStreamReader(accept.getInputStream(),
-							Charset.forName("UTF-8")));
+					BufferedReader reader = new BufferedReader(
+							new InputStreamReader(accept.getInputStream(), Charset.forName("UTF-8")));
 					// read just a single line
 					String line = reader.readLine();
 					// IMPROVEMENT: read only enough bytes to cover the content of the stopCommand + \n

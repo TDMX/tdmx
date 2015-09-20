@@ -25,6 +25,7 @@
 				
 		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		
 		<property name="sessionAllocationService" ref="scs.SessionAllocationService"/>
 
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>

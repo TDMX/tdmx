@@ -40,6 +40,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.runtime.ServerContainer;
 import org.tdmx.server.ws.security.HSTSHandler;
 import org.tdmx.server.ws.security.NotFoundHandler;
@@ -88,7 +89,7 @@ public class RsServerContainer implements ServerContainer {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) throws Exception {
+	public void start(Segment segment, List<WebServiceApiName> apis) throws Exception {
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();

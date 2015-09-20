@@ -23,12 +23,18 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.domain.SegmentFacade;
 import org.tdmx.lib.control.service.DatabasePartitionService;
+import org.tdmx.lib.control.service.SegmentService;
 
 public class MockZonePartitionIdInstaller {
 
-	public static final String S1 = "segment-1";
-	public static final String S2 = "segment-2";
+	public static final String S1 = "segment1";
+	public static final String S2 = "segment2";
+
+	public static String SCS_S1 = "segment1.scs.tdmx.org";
+	public static String SCS_S2 = "segment2.scs.tdmx.org";
 
 	public static String ZP1_S1 = "z-unittest-segment1-id1";
 	public static String ZP2_S1 = "z-unittest-segment1-id2";
@@ -38,10 +44,21 @@ public class MockZonePartitionIdInstaller {
 	public static String ZP2_S2 = "z-unittest-segment2-id2";
 	public static String ZP3_S2 = "z-unittest-segment2-id3";
 
+	private SegmentService segmentService;
+
 	private DatabasePartitionService databasePartitionService;
 
 	public void init() throws Exception {
 		{
+			Segment s1 = SegmentFacade.createSegment(S1, SCS_S1);
+			segmentService.createOrUpdate(s1);
+		}
+		{
+			Segment s2 = SegmentFacade.createSegment(S2, SCS_S2);
+			segmentService.createOrUpdate(s2);
+		}
+		{
+
 			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition(ZP1_S1, DatabaseType.ZONE, S1);
 			if (databasePartitionService.findByPartitionId(zp1.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(zp1);
@@ -95,6 +112,14 @@ public class MockZonePartitionIdInstaller {
 		builder.continueOnError(false);
 		builder.ignoreFailedDrops(true);
 		builder.build();
+	}
+
+	public SegmentService getSegmentService() {
+		return segmentService;
+	}
+
+	public void setSegmentService(SegmentService segmentService) {
+		this.segmentService = segmentService;
 	}
 
 	public DatabasePartitionService getDatabasePartitionService() {

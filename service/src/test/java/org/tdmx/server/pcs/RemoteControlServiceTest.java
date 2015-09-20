@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -19,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.domain.SegmentFacade;
 import org.tdmx.server.pcs.RemoteControlServiceImpl.ServerHolder;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -28,7 +31,7 @@ public class RemoteControlServiceTest {
 
 	RemoteControlServiceImpl sut;
 
-	private String segment = "segment";
+	private Segment segment = SegmentFacade.createSegment("segment", "scsHostname");
 	private Map<SeedAttribute, Long> seedAttributes;
 
 	@Before
@@ -56,7 +59,7 @@ public class RemoteControlServiceTest {
 	public void testRegisterService() {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
-		ServiceHandle sh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-1", serviceCert);
+		ServiceHandle sh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-1", serviceCert);
 
 		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm);
 
@@ -67,15 +70,18 @@ public class RemoteControlServiceTest {
 	public void testAssociateApiSession_OneServer() {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
-		ServiceHandle mossh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-mos", serviceCert);
-		ServiceHandle mdssh = new ServiceHandle(segment, WebServiceApiName.MDS, "url-mds", serviceCert);
+		ServiceHandle mossh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-mos",
+				serviceCert);
+		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
+				serviceCert);
 		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
 
 		PKIXCertificate clientCert = mock(PKIXCertificate.class);
 		when(clientCert.getFingerprint()).thenReturn("client-fingerprint-1");
-		SessionHandle sesh = new SessionHandle(segment, WebServiceApiName.MOS, "sessionKey-1", seedAttributes);
+		SessionHandle sesh = new SessionHandle(segment.getSegmentName(), WebServiceApiName.MOS, "sessionKey-1",
+				seedAttributes);
 
 		ServerServiceStatistics stats = new ServerServiceStatistics();
 		ServiceStatistic mos = new ServiceStatistic(WebServiceApiName.MOS, "url-mos", 100);
@@ -131,7 +137,7 @@ public class RemoteControlServiceTest {
 	public void testUnregisterService() {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
-		ServiceHandle sh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-1", serviceCert);
+		ServiceHandle sh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-1", serviceCert);
 		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm);
 
 		sut.unregisterServer(Arrays.<ServiceHandle> asList(sh));
@@ -142,8 +148,10 @@ public class RemoteControlServiceTest {
 	public void testNotifySessionsRemoved() {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
-		ServiceHandle mossh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-mos", serviceCert);
-		ServiceHandle mdssh = new ServiceHandle(segment, WebServiceApiName.MDS, "url-mds", serviceCert);
+		ServiceHandle mossh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-mos",
+				serviceCert);
+		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
+				serviceCert);
 		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
@@ -152,7 +160,8 @@ public class RemoteControlServiceTest {
 
 		PKIXCertificate clientCert = mock(PKIXCertificate.class);
 		when(clientCert.getFingerprint()).thenReturn("client-fingerprint-1");
-		SessionHandle sesh = new SessionHandle(segment, WebServiceApiName.MOS, "sessionKey-1", seedAttributes);
+		SessionHandle sesh = new SessionHandle(segment.getSegmentName(), WebServiceApiName.MOS, "sessionKey-1",
+				seedAttributes);
 
 		ServerServiceStatistics stats = new ServerServiceStatistics();
 		ServiceStatistic mos = new ServiceStatistic(WebServiceApiName.MOS, "url-mos", 100);
@@ -176,8 +185,10 @@ public class RemoteControlServiceTest {
 	public void testNotifyInvalidateCertificate() {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
-		ServiceHandle mossh = new ServiceHandle(segment, WebServiceApiName.MOS, "url-mos", serviceCert);
-		ServiceHandle mdssh = new ServiceHandle(segment, WebServiceApiName.MDS, "url-mds", serviceCert);
+		ServiceHandle mossh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-mos",
+				serviceCert);
+		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
+				serviceCert);
 		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
@@ -186,7 +197,8 @@ public class RemoteControlServiceTest {
 
 		PKIXCertificate clientCert = mock(PKIXCertificate.class);
 		when(clientCert.getFingerprint()).thenReturn("client-fingerprint-1");
-		SessionHandle sesh = new SessionHandle(segment, WebServiceApiName.MOS, "sessionKey-1", seedAttributes);
+		SessionHandle sesh = new SessionHandle(segment.getSegmentName(), WebServiceApiName.MOS, "sessionKey-1",
+				seedAttributes);
 
 		ServerServiceStatistics stats = new ServerServiceStatistics();
 		ServiceStatistic mos = new ServiceStatistic(WebServiceApiName.MOS, "url-mos", 100);
@@ -228,17 +240,19 @@ public class RemoteControlServiceTest {
 
 	@Test
 	public void testStart() {
+		Segment gugus = SegmentFacade.createSegment("gugus", "dada");
 		RemoteControlServiceImpl s = new RemoteControlServiceImpl();
-		s.start("gugus", Arrays.<WebServiceApiName> asList(WebServiceApiName.MOS, WebServiceApiName.MDS,
+		s.start(gugus, Arrays.<WebServiceApiName> asList(WebServiceApiName.MOS, WebServiceApiName.MDS,
 				WebServiceApiName.MRS, WebServiceApiName.ZAS));
-		assertEquals("gugus", s.getSegment());
+		assertSame(gugus, s.getSegment());
 	}
 
 	@Test
 	public void testStop() {
+		Segment gugus = SegmentFacade.createSegment("gugus", "dada");
 		RemoteControlServiceImpl s = new RemoteControlServiceImpl();
-		s.start("gugus", null);
-		assertEquals("gugus", s.getSegment());
+		s.start(gugus, null);
+		assertSame(gugus, s.getSegment());
 		s.stop();
 		assertNull(s.getSegment());
 	}

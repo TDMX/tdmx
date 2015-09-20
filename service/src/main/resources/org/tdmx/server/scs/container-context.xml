@@ -54,6 +54,7 @@
 		
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
+ 				<ref bean="ws.SCS"/>
  				<ref bean="scs.LocalControlService"/>
  	        </list>
         </property>

@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ws.scs;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -37,6 +39,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
@@ -50,13 +53,15 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.ServerSessionAllocationService;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
-public class SCSImpl implements SCS {
+public class SCSImpl implements SCS, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -86,6 +91,9 @@ public class SCSImpl implements SCS {
 
 	private final ApiValidator validator = new ApiValidator();
 
+	// internal
+	private Segment segment;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -93,6 +101,17 @@ public class SCSImpl implements SCS {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void start(Segment segment, List<WebServiceApiName> apis) {
+		// the SCS needs to know which is it's own segment for relay authorization.
+		this.segment = segment;
+	}
+
+	@Override
+	public void stop() {
+		this.segment = null;
+	}
 
 	@Override
 	public GetMRSSessionResponse getMRSSession(GetMRSSession parameters) {
@@ -109,6 +128,33 @@ public class SCSImpl implements SCS {
 		if (validator.checkChannel(parameters.getChannel(), response) == null) {
 			return response;
 		}
+
+		// Segment destinationSegment = segmentService
+		// .resolveDomainToSegment(parameters.getChannel().getDestination().getDomain());
+		// if (destinationSegment != null) {
+		// // the destination domain is managed by the segment, so we must be able to find the AccountZone once we have
+		// // determined the ZoneApex
+		// AccountZone az = getAccountZoneByDomain(parameters.getChannel().getDestination().getDomain());
+		// if (az == null) {
+		// setError(ErrorCode.ZoneNotFound, response);
+		// return response;
+		// }
+		// // TODO
+		//
+		// } else {
+		// String originDomain = parameters.getChannel().getOrigin().getDomain();
+		// Segment originating = segmentService.resolveDomainToSegment(originDomain);
+		// if (originating == null) {
+		// setError(ErrorCode.DomainNotFound, response);
+		// return response;
+		// }
+		// AccountZone az = getAccountZoneByDomain(originDomain);
+		// if (az == null) {
+		// setError(ErrorCode.ZoneNotFound, response);
+		// return response;
+		// }
+		//
+		// }
 		// TODO #84 decide if sender or receiver is requesting relay session
 		// lookup domain
 		// lookup channel
@@ -119,6 +165,17 @@ public class SCSImpl implements SCS {
 		return response;
 	}
 
+	// private AccountZone getAccountZoneByDomain(String domainName) {
+	// List<String> potentialApexes = DnsUtils.getDomainHierarchy(domainName);
+	// for (String zoneApex : potentialApexes) {
+	// AccountZone az = accountZoneService.findByZoneApex(zoneApex);
+	// if (az != null) {
+	// return az;
+	// }
+	// }
+	// return null;
+	// }
+	//
 	@Override
 	public GetMDSSessionResponse getMDSSession(GetMDSSession parameters) {
 		GetMDSSessionResponse response = new GetMDSSessionResponse();

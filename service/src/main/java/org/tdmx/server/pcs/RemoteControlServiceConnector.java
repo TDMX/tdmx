@@ -36,6 +36,7 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.PartitionControlServer;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
@@ -117,7 +118,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	/**
 	 * The segment handled by this PartitionControlService.
 	 */
-	private String segment;
+	private Segment segment;
 	private CleanShutdownHandler shutdownHandler;
 
 	/**
@@ -134,7 +135,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
+	public void start(Segment segment, List<WebServiceApiName> apis) {
 		this.segment = segment;
 		// the apis are ignored - since this is not a WS.
 
@@ -264,7 +265,14 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		log.info("registerServer call from " + channel.getPeerInfo());
 
 		List<ServiceHandle> services = mapServices(request.getServiceList());
-
+		for (ServiceHandle service : services) {
+			if (!segment.getSegmentName().equals(service.getSegment())) {
+				String warningText = "Incorrect segment " + service.getSegment() + " we only handle "
+						+ segment.getSegmentName();
+				log.warn(warningText);
+				throw new ServiceException(warningText);
+			}
+		}
 		// links the ReverseRpcServerSessionController with the RpcClient
 		ReverseRpcServerSessionController ssm = new ReverseRpcServerSessionController(channel, services);
 
@@ -324,14 +332,14 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void assertPcsServerRegistered(String segment, String ipAddress, int port) {
+	private void assertPcsServerRegistered(Segment segment, String ipAddress, int port) {
 		PartitionControlServer pcs = partitionServerService.findByIpEndpoint(ipAddress, port);
 		if (pcs == null) {
 			throw new IllegalStateException("PCS server not registered in DB for " + ipAddress + ":" + port);
 		}
-		if (!segment.equals(pcs.getSegment())) {
-			throw new IllegalStateException(
-					"PCS server segment mismatch. [" + segment + "] registered is " + pcs.getSegment());
+		if (!segment.getSegmentName().equals(pcs.getSegment())) {
+			throw new IllegalStateException("PCS server segment mismatch. [" + segment.getSegmentName()
+					+ "] registered is " + pcs.getSegment());
 		}
 	}
 
@@ -480,7 +488,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
 	}
 
-	public String getSegment() {
+	public Segment getSegment() {
 		return segment;
 	}
 

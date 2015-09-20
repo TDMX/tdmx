@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
@@ -72,7 +73,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	/**
 	 * The segment is determined at startup time.
 	 */
-	private String segment;
+	private Segment segment;
 
 	/**
 	 * The number of character length
@@ -340,7 +341,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	@Override
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
 		// first we check if we are allowed to handle the segment which is provided, or we are not "started"
-		if (segment == null || !segment.equals(sessionData.getSegment())) {
+		if (segment == null || !segment.getSegmentName().equals(sessionData.getSegment())) {
 			return null;
 		}
 
@@ -457,7 +458,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	}
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
+	public void start(Segment segment, List<WebServiceApiName> apis) {
 		// the partition control service always handles ALL apis for a segment
 		this.segment = segment;
 		// initialize sessionMap
@@ -640,7 +641,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getSegment() {
+	public Segment getSegment() {
 		return segment;
 	}
 

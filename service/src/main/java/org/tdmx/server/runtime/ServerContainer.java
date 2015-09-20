@@ -20,11 +20,12 @@ package org.tdmx.server.runtime;
 
 import java.util.List;
 
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 public interface ServerContainer {
 
-	public void start(String segment, List<WebServiceApiName> apis) throws Exception;
+	public void start(Segment segment, List<WebServiceApiName> apis) throws Exception;
 
 	public void stop();
 

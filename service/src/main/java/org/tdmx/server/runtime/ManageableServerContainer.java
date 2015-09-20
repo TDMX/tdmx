@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 public class ManageableServerContainer implements ServerContainer {
@@ -47,7 +48,7 @@ public class ManageableServerContainer implements ServerContainer {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) throws Exception {
+	public void start(Segment segment, List<WebServiceApiName> apis) throws Exception {
 		for (Manageable m : getManageables()) {
 			m.start(segment, apis);
 		}

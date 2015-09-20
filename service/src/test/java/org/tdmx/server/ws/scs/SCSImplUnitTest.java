@@ -372,7 +372,7 @@ public class SCSImplUnitTest {
 	}
 
 	@Test
-	public void test_getMRSSession() throws Exception {
+	public void test_getMRSSession_RequestToSend() throws Exception {
 		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
 
 		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
@@ -382,14 +382,43 @@ public class SCSImplUnitTest {
 		// channel
 		Channel channel = new Channel();
 		ChannelEndpoint origin = new ChannelEndpoint();
-		origin.setDomain(domain2.getDomainName());
-		origin.setLocalname(address2.getLocalName());
+		origin.setDomain("tdmx.kidsmathstrainer.com");
+		origin.setLocalname("user1");
 		channel.setOrigin(origin);
 
 		ChannelDestination dest = new ChannelDestination();
 		dest.setDomain(domain1.getDomainName());
 		dest.setLocalname(address1.getLocalName());
 		dest.setServicename(service1.getServiceName());
+		channel.setDestination(dest);
+
+		GetMRSSession req = new GetMRSSession();
+		req.setChannel(channel);
+
+		GetMRSSessionResponse response = scs.getMRSSession(req);
+		assertSuccess(response);
+
+	}
+
+	@Test
+	public void test_getMRSSession_RequestToReceive() throws Exception {
+		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
+
+		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
+				"kidsmathstrainer");
+		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
+
+		// channel
+		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain1.getDomainName());
+		origin.setLocalname(address1.getLocalName());
+		channel.setOrigin(origin);
+
+		ChannelDestination dest = new ChannelDestination();
+		dest.setDomain("tdmx.kidsmathstrainer.com");
+		dest.setLocalname("user1");
+		dest.setServicename("mathsservice");
 		channel.setDestination(dest);
 
 		GetMRSSession req = new GetMRSSession();

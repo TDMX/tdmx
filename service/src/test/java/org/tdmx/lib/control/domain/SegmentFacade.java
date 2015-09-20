@@ -20,7 +20,7 @@ package org.tdmx.lib.control.domain;
 
 public class SegmentFacade {
 
-	public static Segment createSegment(String segmentName, String scsHostname) throws Exception {
+	public static Segment createSegment(String segmentName, String scsHostname) {
 
 		Segment s = new Segment();
 		s.setSegmentName(segmentName);

@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.PartitionControlServer;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
@@ -82,7 +83,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	private List<PartitionControlServer> serverList;
 	private Map<PartitionControlServer, LocalControlServiceClient> serverProxyMap = new HashMap<>();
 
-	private String segment = null;
+	private Segment segment = null;
 
 	private PartitionControlServerService partitionServerService;
 
@@ -106,7 +107,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	}
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
+	public void start(Segment segment, List<WebServiceApiName> apis) {
 		this.segment = segment;
 		try {
 			clientFactory = new DuplexTcpClientPipelineFactory();
@@ -194,7 +195,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 			shutdownHandler.addResource(rpcExecutor);
 			shutdownHandler.addResource(watchdog);
 
-			serverList = partitionServerService.findBySegment(segment);
+			serverList = partitionServerService.findBySegment(this.segment.getSegmentName());
 			connectToPcsServers();
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to do initial connect to PCS", e);

@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.PartitionControlServer;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.ServiceHandle;
@@ -127,7 +128,7 @@ public class ServerSessionManagerImpl
 	// - internal
 	private List<WebServiceApiName> apiList;
 	private Map<WebServiceApiName, WebServiceSessionManagerHolder> apiManagerMap = null;
-	private String segment;
+	private Segment segment;
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService sessionTimeoutExecutor = null;
 
@@ -232,7 +233,7 @@ public class ServerSessionManagerImpl
 	}
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
+	public void start(Segment segment, List<WebServiceApiName> apis) {
 		if (sessionIdleTimeoutMinutes <= 0) {
 			throw new IllegalArgumentException("sessionIdleTimeoutMinutes must be positive");
 		}
@@ -252,7 +253,7 @@ public class ServerSessionManagerImpl
 		apiManagerMap = new HashMap<>();
 		for (WebServiceSessionManager mgr : webServiceSessionManagers) {
 			if (apiList.contains(mgr.getApiName())) {
-				ServiceHandle service = new ServiceHandle(segment, mgr.getApiName(), mgr.getHttpsUrl(),
+				ServiceHandle service = new ServiceHandle(segment.getSegmentName(), mgr.getApiName(), mgr.getHttpsUrl(),
 						runtimeService.getPublicKey());
 				WebServiceSessionManagerHolder serviceHolder = new WebServiceSessionManagerHolder(service, mgr);
 				apiManagerMap.put(mgr.getApiName(), serviceHolder);
@@ -281,6 +282,8 @@ public class ServerSessionManagerImpl
 			final RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
 				private void processConnect(RpcClientChannel clientChannel) {
+					log.info("initial connect " + clientChannel);
+
 					LocalControlServiceListenerClient client = new LocalControlServiceListenerClient(clientChannel);
 					channelMap.put(clientChannel, client);
 
@@ -346,7 +349,10 @@ public class ServerSessionManagerImpl
 			shutdownHandler.addResource(watchdog);
 
 			// connect to each PCS server
-			List<PartitionControlServer> pcsList = partitionServerService.findBySegment(segment);
+			List<PartitionControlServer> pcsList = partitionServerService.findBySegment(segment.getSegmentName());
+			if (pcsList.isEmpty()) {
+				throw new IllegalStateException("No PCS server defined for " + segment.getSegmentName());
+			}
 			for (PartitionControlServer pcs : pcsList) {
 				connect(pcs.getIpAddress(), pcs.getPort());
 			}
@@ -502,6 +508,7 @@ public class ServerSessionManagerImpl
 
 	private RpcClient connect(String serverHostname, int serverPort) throws Exception {
 		PeerInfo server = new PeerInfo(serverHostname, serverPort);
+		log.info("Connecting to PCS server " + server);
 
 		return clientFactory.peerWith(server, bootstrap);
 	}

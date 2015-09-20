@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.server.runtime.Manageable;
@@ -120,7 +121,7 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	}
 
 	@Override
-	public void start(String segment, List<WebServiceApiName> apis) {
+	public void start(Segment segment, List<WebServiceApiName> apis) {
 		started = true;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
 				TimeUnit.SECONDS);

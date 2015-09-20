@@ -85,7 +85,7 @@ public class LocalControlServiceListenerClient implements ControlServiceListener
 			try {
 				blockingService.registerServer(controller, rb.build());
 			} catch (ServiceException e) {
-				log.warn("invalidateCertificate call failed.", e);
+				log.warn("registerServer call failed.", e);
 			}
 		}
 	}
@@ -111,7 +111,7 @@ public class LocalControlServiceListenerClient implements ControlServiceListener
 			try {
 				blockingService.notifySessionsRemoved(controller, rb.build());
 			} catch (ServiceException e) {
-				log.warn("invalidateCertificate call failed.", e);
+				log.warn("notifySessionsRemoved call failed.", e);
 			}
 		}
 	}
