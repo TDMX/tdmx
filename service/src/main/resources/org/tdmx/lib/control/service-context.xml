@@ -152,6 +152,9 @@
 		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>
 
+	<bean id="tdmx.lib.control.DnsZoneResolutionService" class="org.tdmx.lib.control.service.DnsZoneResolutionServiceImpl">
+	</bean>
+
 
 
 </beans>

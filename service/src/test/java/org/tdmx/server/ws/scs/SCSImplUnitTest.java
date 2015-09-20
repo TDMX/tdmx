@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.reset;
 
 import javax.inject.Named;
 
@@ -31,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +54,11 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.DnsZoneInfo;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.control.service.DnsZoneResolutionService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Zone;
@@ -108,6 +112,8 @@ public class SCSImplUnitTest {
 
 	@Autowired
 	private MockServerSessionAllocationServiceImpl mockServerSesionAllocationService;
+	@Autowired
+	private DnsZoneResolutionService mockDnsZoneResolutionService;
 
 	@Autowired
 	@Named("ws.SCS")
@@ -168,6 +174,8 @@ public class SCSImplUnitTest {
 		sse = new WebServiceSessionEndpoint("SID" + System.currentTimeMillis(),
 				"https://" + System.currentTimeMillis() + "/scs", uc2.getPublicCert());
 		mockServerSesionAllocationService.setEndpoint(sse);
+
+		reset(mockDnsZoneResolutionService);
 	}
 
 	@After
@@ -379,6 +387,16 @@ public class SCSImplUnitTest {
 				"kidsmathstrainer");
 		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
 
+		DnsZoneInfo dzi1 = new DnsZoneInfo();
+		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
+		dzi1.setZoneApex("kidsmathstrainer.com");
+		Mockito.when(mockDnsZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
+
+		DnsZoneInfo dzi2 = new DnsZoneInfo();
+		dzi2.setDomainName(domain1.getDomainName());
+		dzi2.setZoneApex(zone.getZoneApex());
+		Mockito.when(mockDnsZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
+
 		// channel
 		Channel channel = new Channel();
 		ChannelEndpoint origin = new ChannelEndpoint();
@@ -398,6 +416,7 @@ public class SCSImplUnitTest {
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);
 
+		// TODO #84
 	}
 
 	@Test
@@ -426,6 +445,7 @@ public class SCSImplUnitTest {
 
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);
+		// TODO #84
 
 	}
 

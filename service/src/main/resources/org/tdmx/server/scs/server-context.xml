@@ -22,6 +22,7 @@
 
 	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >
 		<property name="authenticatedClientService" ref="scs.authenticatedClientService"/>
+		<property name="dnsZoneResolutionService" ref="tdmx.lib.control.DnsZoneResolutionService"/>
 				
 		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>

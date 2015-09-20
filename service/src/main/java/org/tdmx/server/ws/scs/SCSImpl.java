@@ -41,6 +41,7 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.DnsZoneResolutionService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
@@ -74,6 +75,7 @@ public class SCSImpl implements SCS, Manageable {
 
 	private AuthenticatedClientLookupService authenticatedClientService;
 
+	private DnsZoneResolutionService dnsZoneResolutionService;
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider partitionIdProvider;
 
@@ -139,7 +141,7 @@ public class SCSImpl implements SCS, Manageable {
 		// setError(ErrorCode.ZoneNotFound, response);
 		// return response;
 		// }
-		// // TODO
+		// // TODO #84
 		//
 		// } else {
 		// String originDomain = parameters.getChannel().getOrigin().getDomain();
@@ -440,6 +442,14 @@ public class SCSImpl implements SCS, Manageable {
 
 	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
 		this.authenticatedClientService = authenticatedClientService;
+	}
+
+	public DnsZoneResolutionService getDnsZoneResolutionService() {
+		return dnsZoneResolutionService;
+	}
+
+	public void setDnsZoneResolutionService(DnsZoneResolutionService dnsZoneResolutionService) {
+		this.dnsZoneResolutionService = dnsZoneResolutionService;
 	}
 
 	public ServerSessionAllocationService getSessionAllocationService() {

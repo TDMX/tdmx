@@ -43,12 +43,14 @@
 	</bean>
 	
 	<bean class="org.tdmx.lib.zone.service.MockZonePartitionIdInstaller" init-method="init">
+		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository"/>
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>
 
 
 	<bean id="test.data.generator"
 		class="org.tdmx.lib.control.job.TestDataGeneratorImpl">
+		
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService"/>
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository"/>
