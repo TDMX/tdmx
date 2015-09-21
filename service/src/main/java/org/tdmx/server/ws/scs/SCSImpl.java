@@ -45,8 +45,13 @@ import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DomainZoneResolutionService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -55,9 +60,11 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.ServerSessionAllocationService;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
@@ -82,6 +89,7 @@ public class SCSImpl implements SCS, Manageable {
 
 	private ServerSessionAllocationService sessionAllocationService;
 
+	private ZoneService zoneService;
 	private DomainService domainService;
 	private AddressService addressService;
 	private ServiceService serviceService;
@@ -93,6 +101,7 @@ public class SCSImpl implements SCS, Manageable {
 	private AgentCredentialValidator credentialValidator;
 
 	private final ApiValidator validator = new ApiValidator();
+	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 
 	// internal
 	private Segment segment;
@@ -137,25 +146,33 @@ public class SCSImpl implements SCS, Manageable {
 		if (validator.checkChannel(parameters.getChannel(), response) == null) {
 			return response;
 		}
+		ChannelOrigin co = a2d.mapChannelOrigin(parameters.getChannel().getOrigin());
+		ChannelDestination cd = a2d.mapChannelDestination(parameters.getChannel().getDestination());
 
-		DomainZoneApexInfo destZoneApexInfo = domainZoneResolutionService
-				.resolveDomain(parameters.getChannel().getDestination().getDomain());
+		DomainZoneApexInfo destZoneApexInfo = domainZoneResolutionService.resolveDomain(cd.getDomainName());
 		if (destZoneApexInfo == null) {
 			setError(ErrorCode.DnsZoneApexMissing, response);
 			return response;
 		}
-		DomainZoneApexInfo originZoneApexInfo = domainZoneResolutionService
-				.resolveDomain(parameters.getChannel().getOrigin().getDomain());
+		DomainZoneApexInfo originZoneApexInfo = domainZoneResolutionService.resolveDomain(co.getDomainName());
 		if (originZoneApexInfo == null) {
 			setError(ErrorCode.DnsZoneApexMissing, response);
 			return response;
 		}
 
 		String zoneApex = null;
+		String domainName = null;
+		String localName = null;
+		String serviceName = null;
 		if (segment.getScsHostname().equals(originZoneApexInfo.getScsHostname())) {
 			zoneApex = originZoneApexInfo.getZoneApex();
+			domainName = originZoneApexInfo.getDomainName();
+			localName = co.getLocalName();
 		} else if (segment.getScsHostname().equals(destZoneApexInfo.getScsHostname())) {
 			zoneApex = destZoneApexInfo.getZoneApex();
+			domainName = destZoneApexInfo.getDomainName();
+			localName = cd.getLocalName();
+			serviceName = cd.getServiceName();
 		} else {
 			setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 			return response;
@@ -166,50 +183,52 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
-		// Segment destinationSegment = segmentService
-		// .resolveDomainToSegment(parameters.getChannel().getDestination().getDomain());
-		// if (destinationSegment != null) {
-		// // the destination domain is managed by the segment, so we must be able to find the AccountZone once we have
-		// // determined the ZoneApex
-		//
-		// }
-		// // TODO #84
-		//
-		// } else {
-		// String originDomain = parameters.getChannel().getOrigin().getDomain();
-		// Segment originating = segmentService.resolveDomainToSegment(originDomain);
-		// if (originating == null) {
-		// setError(ErrorCode.DomainNotFound, response);
-		// return response;
-		// }
-		// AccountZone az = getAccountZoneByDomain(originDomain);
-		// if (az == null) {
-		// setError(ErrorCode.ZoneNotFound, response);
-		// return response;
-		// }
-		//
-		// }
-		// TODO #84 decide if sender or receiver is requesting relay session
-		// lookup domain
-		// lookup channel
-		// if exists, create session via PCS
-		// if not exists, create temporary channel and then session via PCS on temporary channel.
+		Zone zone = getZone(az, response);
+		if (zone == null) {
+			return response;
+		}
+
+		Domain domain = getDomain(az, zone, domainName, response);
+		if (domain == null) {
+			return response;
+		}
+
+		ChannelAuthorization existingChannelAuth = channelService.findByChannel(zone, domain, co, cd);
+
+		WebServiceSessionEndpoint ep = null;
+		if (existingChannelAuth != null) {
+			ep = sessionAllocationService.associateMRSSession(az, sp, existingChannelAuth.getChannel());
+		} else {
+			TemporaryChannel tempChannel = channelService.findByTemporaryChannel(zone, domain, co, cd);
+			if (tempChannel == null) {
+				tempChannel = createTemporaryChannel(az, domain, co, cd);
+			}
+			ep = sessionAllocationService.associateMRSSession(az, sp, tempChannel);
+		}
+
+		if (ep == null) {
+			setError(ErrorCode.NoSessionCapacity, response);
+			return response;
+		}
+
+		Session session = new Session();
+		session.setSessionId(ep.getSessionId());
+		session.setZoneapex(zone.getZoneApex());
+		session.setLocalname(localName);
+		session.setDomain(domainName);
+		session.setServicename(serviceName);
+		session.setServiceprovider(segment.getScsHostname());
+		response.setSession(session);
+
+		Endpoint endpoint = new Endpoint();
+		endpoint.setTlsCertificate(ep.getPublicCertificate().getX509Encoded());
+		endpoint.setUrl(ep.getHttpsUrl());
+		response.setEndpoint(endpoint);
 
 		response.setSuccess(true);
 		return response;
 	}
 
-	// private AccountZone getAccountZoneByDomain(String domainName) {
-	// List<String> potentialApexes = DnsUtils.getDomainHierarchy(domainName);
-	// for (String zoneApex : potentialApexes) {
-	// AccountZone az = accountZoneService.findByZoneApex(zoneApex);
-	// if (az != null) {
-	// return az;
-	// }
-	// }
-	// return null;
-	// }
-	//
 	@Override
 	public GetMDSSessionResponse getMDSSession(GetMDSSession parameters) {
 		GetMDSSessionResponse response = new GetMDSSessionResponse();
@@ -253,6 +272,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setServicename(service.getServiceName());
+		session.setServiceprovider(segment.getScsHostname());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -296,6 +316,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setServicename(null);
+		session.setServiceprovider(segment.getScsHostname());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -338,6 +359,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setLocalname(null);
 		session.setServicename(null);
+		session.setServiceprovider(segment.getScsHostname());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -464,6 +486,48 @@ public class SCSImpl implements SCS, Manageable {
 		}
 	}
 
+	private Zone getZone(AccountZone az, Acknowledge ack) {
+		partitionIdProvider.setPartitionId(az.getZonePartitionId());
+		try {
+			Zone zone = zoneService.findByZoneApex(az.getZoneApex());
+			if (zone == null) {
+				setError(ErrorCode.ZoneNotFound, ack);
+				return null;
+			}
+			return zone;
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
+	}
+
+	private Domain getDomain(AccountZone az, Zone zone, String domainName, Acknowledge ack) {
+		partitionIdProvider.setPartitionId(az.getZonePartitionId());
+		try {
+			Domain domain = domainService.findByName(zone, domainName);
+			if (domain == null) {
+				setError(ErrorCode.DomainNotFound, ack);
+				return null;
+			}
+			return domain;
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
+	}
+
+	private TemporaryChannel createTemporaryChannel(AccountZone az, Domain domain, ChannelOrigin co,
+			ChannelDestination cd) {
+		partitionIdProvider.setPartitionId(az.getZonePartitionId());
+		TemporaryChannel tc = new TemporaryChannel(domain, co, cd);
+		try {
+			// we create a TemporaryChannel
+			channelService.create(tc);
+
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
+		return tc;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -506,6 +570,22 @@ public class SCSImpl implements SCS, Manageable {
 
 	public void setAccountZoneService(AccountZoneService accountZoneService) {
 		this.accountZoneService = accountZoneService;
+	}
+
+	public DomainZoneResolutionService getDomainZoneResolutionService() {
+		return domainZoneResolutionService;
+	}
+
+	public void setDomainZoneResolutionService(DomainZoneResolutionService domainZoneResolutionService) {
+		this.domainZoneResolutionService = domainZoneResolutionService;
+	}
+
+	public ZoneService getZoneService() {
+		return zoneService;
+	}
+
+	public void setZoneService(ZoneService zoneService) {
+		this.zoneService = zoneService;
 	}
 
 	public DomainService getDomainService() {

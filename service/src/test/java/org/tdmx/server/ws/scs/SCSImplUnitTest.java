@@ -461,7 +461,15 @@ public class SCSImplUnitTest {
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);
 
-		// TODO #84
+		assertNotNull(response.getSession());
+		assertEquals(domain1.getDomainName(), response.getSession().getDomain());
+		assertEquals(address1.getLocalName(), response.getSession().getLocalname());
+		assertEquals(service1.getServiceName(), response.getSession().getServicename());
+		assertNotNull(response.getSession().getServiceprovider());
+		assertNotNull(response.getSession().getSessionId());
+
+		assertNotNull(response.getEndpoint());
+
 	}
 
 	@Test
@@ -502,8 +510,15 @@ public class SCSImplUnitTest {
 
 		GetMRSSessionResponse response = scs.getMRSSession(req);
 		assertSuccess(response);
-		// TODO #84
 
+		assertNotNull(response.getSession());
+		assertEquals(domain1.getDomainName(), response.getSession().getDomain());
+		assertEquals(address1.getLocalName(), response.getSession().getLocalname());
+		assertNull(response.getSession().getServicename());
+		assertNotNull(response.getSession().getServiceprovider());
+		assertNotNull(response.getSession().getSessionId());
+
+		assertNotNull(response.getEndpoint());
 	}
 
 	private void assertSuccess(Acknowledge ack) {
