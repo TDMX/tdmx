@@ -433,7 +433,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
 		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
 		dzi1.setZoneApex("kidsmathstrainer.com");
-		dzi1.setScsHostname("someotherserviceprovider.com");
+		dzi1.setScsHostname("default.scs.kidsmathstrainer.com");
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
 
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
@@ -483,7 +483,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
 		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
 		dzi1.setZoneApex("kidsmathstrainer.com");
-		dzi1.setScsHostname("someotherserviceprovider.com");
+		dzi1.setScsHostname("default.scs.kidsmathstrainer.com");
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
 
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();

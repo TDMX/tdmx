@@ -141,8 +141,6 @@ public class SCSImpl implements SCS, Manageable {
 
 		String serviceProviderName = sp.getCommonName();
 
-		// TODO check DNS trust that the channel's origin or destination domain points to the serviceProvider
-
 		if (validator.checkChannel(parameters.getChannel(), response) == null) {
 			return response;
 		}
@@ -165,10 +163,20 @@ public class SCSImpl implements SCS, Manageable {
 		String localName = null;
 		String serviceName = null;
 		if (segment.getScsHostname().equals(originZoneApexInfo.getScsHostname())) {
+			// if the origin's DNS information points to our own scsHostname, then the client certificate's name must
+			// match the destination domain's scsHostname
+			if (!serviceProviderName.equals(destZoneApexInfo.getScsHostname())) {
+				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+				return response;
+			}
 			zoneApex = originZoneApexInfo.getZoneApex();
 			domainName = originZoneApexInfo.getDomainName();
 			localName = co.getLocalName();
 		} else if (segment.getScsHostname().equals(destZoneApexInfo.getScsHostname())) {
+			if (!serviceProviderName.equals(originZoneApexInfo.getScsHostname())) {
+				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+				return response;
+			}
 			zoneApex = destZoneApexInfo.getZoneApex();
 			domainName = destZoneApexInfo.getDomainName();
 			localName = cd.getLocalName();
