@@ -18,16 +18,24 @@
  */
 package org.tdmx.lib.control.service;
 
-import org.tdmx.lib.control.domain.DnsZoneInfo;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 
 /**
- * Resolution services for TDMX domain information.
+ * Service for retrieval of TDMX information for all Domains.
  * 
  * @author Peter
  * 
  */
-public interface DnsZoneResolutionService {
+public interface DomainZoneResolutionService {
 
-	public DnsZoneInfo resolveDomain(String domainName);
+	/**
+	 * Determine the DomainZoneApexInfo about the domain by recursive lookup of the domain until the domain's top-level
+	 * domain (root). If the domain has no TDMX information anchored at any level at or above itself in DNS, then return
+	 * null.
+	 * 
+	 * @param domainName
+	 * @return null if no TDMX info found, else the domain's TDMX zone root info.
+	 */
+	public DomainZoneApexInfo resolveDomain(String domainName);
 
 }

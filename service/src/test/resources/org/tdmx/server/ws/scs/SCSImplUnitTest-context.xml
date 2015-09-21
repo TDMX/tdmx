@@ -17,7 +17,7 @@
 	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.allocation.MockServerSessionAllocationServiceImpl">
 	</bean>
 	<bean id="tdmx.lib.control.DnsZoneResolutionService" class="org.mockito.Mockito" factory-method="mock"> 
-	    <constructor-arg value="org.tdmx.lib.control.service.DnsZoneResolutionService" /> 
+	    <constructor-arg value="org.tdmx.lib.control.service.DomainZoneResolutionService" /> 
 	</bean>
 	
 	

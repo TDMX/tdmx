@@ -6,6 +6,7 @@ public enum ErrorCode {
 	NonAdministratorAccess(403, "Non Administrator access."),
 	NonUserAccess(403, "Non User access."),
 	NonPKIXAccess(403, "Non PKIX access."),
+	NonDnsAuthorizedPKIXAccess(403, "PKIX access of client not authorized by TDMX info in DNS."),
 	SuspendedAccess(403, "Suspended access."),
 	OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 	OutOfDomainAccess(403, "DAC only authorized on own domain."),
@@ -44,6 +45,7 @@ public enum ErrorCode {
 	MissingChannelAuthorization(500, "ChannelAuthorization missing."),
 	MissingFlowControlLimit(500, "FlowControlLimit missing."),
 	MissingDestinationSession(500, "DestinationSession missing."),
+	MissingSegment(500, "Segment missing."),
 	MissingService(500, "Service missing."),
 	MissingServiceName(500, "Servicename missing."),
 	MissingMessage(500, "Message missing."),
@@ -127,7 +129,7 @@ public enum ErrorCode {
 	SubmitChannelClosed(306, "No channel authorization - submit prohibited."),
 	ReceiveChannelClosed(306, "No channel authorization - relay and receive prohibited."),
 
-	;
+	DnsZoneApexMissing(306, "Unable to locate TDMX zone information in DNS."),;
 
 	private final int errorCode;
 	private final String errorDescription;

@@ -50,15 +50,16 @@ import org.tdmx.core.api.v01.scs.GetMOSSession;
 import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
-import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.DnsZoneInfo;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
-import org.tdmx.lib.control.service.DnsZoneResolutionService;
+import org.tdmx.lib.control.service.DomainZoneResolutionService;
+import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Zone;
@@ -96,6 +97,8 @@ public class SCSImplUnitTest {
 	private AuthenticatedClientService authenticatedClientService;
 
 	@Autowired
+	private SegmentService segmentService;
+	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -113,11 +116,11 @@ public class SCSImplUnitTest {
 	@Autowired
 	private MockServerSessionAllocationServiceImpl mockServerSesionAllocationService;
 	@Autowired
-	private DnsZoneResolutionService mockDnsZoneResolutionService;
+	private DomainZoneResolutionService mockDomainZoneResolutionService;
 
 	@Autowired
 	@Named("ws.SCS")
-	private SCS scs;
+	private SCSImpl scs;
 
 	private TestDataGeneratorInput input;
 	private TestDataGeneratorOutput data;
@@ -175,13 +178,17 @@ public class SCSImplUnitTest {
 				"https://" + System.currentTimeMillis() + "/scs", uc2.getPublicCert());
 		mockServerSesionAllocationService.setEndpoint(sse);
 
-		reset(mockDnsZoneResolutionService);
+		reset(mockDomainZoneResolutionService);
+
+		Segment s1 = segmentService.findBySegment(MockZonePartitionIdInstaller.S1);
+		scs.start(s1, null);
 	}
 
 	@After
 	public void doTeardown() {
 		authenticatedClientService.clearAuthenticatedClient();
 
+		scs.stop();
 		dataGenerator.tearDown(input, data);
 	}
 
@@ -380,6 +387,42 @@ public class SCSImplUnitTest {
 	}
 
 	@Test
+	public void test_getMRSSession_MissingOriginZoneInfo() throws Exception {
+		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
+
+		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
+				"kidsmathstrainer");
+		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
+
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(null);
+
+		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
+		dzi2.setDomainName(domain1.getDomainName());
+		dzi2.setZoneApex(zone.getZoneApex());
+		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
+
+		// channel
+		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain("tdmx.kidsmathstrainer.com");
+		origin.setLocalname("user1");
+		channel.setOrigin(origin);
+
+		ChannelDestination dest = new ChannelDestination();
+		dest.setDomain(domain1.getDomainName());
+		dest.setLocalname(address1.getLocalName());
+		dest.setServicename(service1.getServiceName());
+		channel.setDestination(dest);
+
+		GetMRSSession req = new GetMRSSession();
+		req.setChannel(channel);
+
+		GetMRSSessionResponse response = scs.getMRSSession(req);
+		assertError(ErrorCode.DnsZoneApexMissing, response);
+	}
+
+	@Test
 	public void test_getMRSSession_RequestToSend() throws Exception {
 		byte[] pkixKeystoreContents = FileUtils.getFileContents("src/test/resources/pkixtest.keystore");
 
@@ -387,15 +430,17 @@ public class SCSImplUnitTest {
 				"kidsmathstrainer");
 		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
 
-		DnsZoneInfo dzi1 = new DnsZoneInfo();
+		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
 		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
 		dzi1.setZoneApex("kidsmathstrainer.com");
-		Mockito.when(mockDnsZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
+		dzi1.setScsHostname("someotherserviceprovider.com");
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
 
-		DnsZoneInfo dzi2 = new DnsZoneInfo();
+		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		Mockito.when(mockDnsZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
+		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
 		Channel channel = new Channel();
@@ -426,6 +471,18 @@ public class SCSImplUnitTest {
 		PKIXCredential pkixCred = KeyStoreUtils.getPrivateCredential(pkixKeystoreContents, "jks", "changeme",
 				"kidsmathstrainer");
 		authenticatedClientService.setAuthenticatedClient(pkixCred.getPublicCert());
+
+		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
+		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
+		dzi1.setZoneApex("kidsmathstrainer.com");
+		dzi1.setScsHostname("someotherserviceprovider.com");
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
+
+		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
+		dzi2.setDomainName(domain1.getDomainName());
+		dzi2.setZoneApex(zone.getZoneApex());
+		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
 		Channel channel = new Channel();

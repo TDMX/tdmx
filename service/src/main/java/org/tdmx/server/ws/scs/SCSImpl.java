@@ -39,9 +39,10 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.AccountZoneService;
-import org.tdmx.lib.control.service.DnsZoneResolutionService;
+import org.tdmx.lib.control.service.DomainZoneResolutionService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.Domain;
@@ -75,7 +76,7 @@ public class SCSImpl implements SCS, Manageable {
 
 	private AuthenticatedClientLookupService authenticatedClientService;
 
-	private DnsZoneResolutionService dnsZoneResolutionService;
+	private DomainZoneResolutionService domainZoneResolutionService;
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider partitionIdProvider;
 
@@ -123,6 +124,12 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
+		// service not yet started :(
+		if (segment == null) {
+			setError(ErrorCode.MissingSegment, response);
+			return response;
+		}
+
 		String serviceProviderName = sp.getCommonName();
 
 		// TODO check DNS trust that the channel's origin or destination domain points to the serviceProvider
@@ -131,15 +138,40 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
+		DomainZoneApexInfo destZoneApexInfo = domainZoneResolutionService
+				.resolveDomain(parameters.getChannel().getDestination().getDomain());
+		if (destZoneApexInfo == null) {
+			setError(ErrorCode.DnsZoneApexMissing, response);
+			return response;
+		}
+		DomainZoneApexInfo originZoneApexInfo = domainZoneResolutionService
+				.resolveDomain(parameters.getChannel().getOrigin().getDomain());
+		if (originZoneApexInfo == null) {
+			setError(ErrorCode.DnsZoneApexMissing, response);
+			return response;
+		}
+
+		String zoneApex = null;
+		if (segment.getScsHostname().equals(originZoneApexInfo.getScsHostname())) {
+			zoneApex = originZoneApexInfo.getZoneApex();
+		} else if (segment.getScsHostname().equals(destZoneApexInfo.getScsHostname())) {
+			zoneApex = destZoneApexInfo.getZoneApex();
+		} else {
+			setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+			return response;
+		}
+		AccountZone az = accountZoneService.findByZoneApex(zoneApex);
+		if (az == null) {
+			setError(ErrorCode.ZoneNotFound, response);
+			return response;
+		}
+
 		// Segment destinationSegment = segmentService
 		// .resolveDomainToSegment(parameters.getChannel().getDestination().getDomain());
 		// if (destinationSegment != null) {
 		// // the destination domain is managed by the segment, so we must be able to find the AccountZone once we have
 		// // determined the ZoneApex
-		// AccountZone az = getAccountZoneByDomain(parameters.getChannel().getDestination().getDomain());
-		// if (az == null) {
-		// setError(ErrorCode.ZoneNotFound, response);
-		// return response;
+		//
 		// }
 		// // TODO #84
 		//
@@ -444,12 +476,12 @@ public class SCSImpl implements SCS, Manageable {
 		this.authenticatedClientService = authenticatedClientService;
 	}
 
-	public DnsZoneResolutionService getDnsZoneResolutionService() {
-		return dnsZoneResolutionService;
+	public DomainZoneResolutionService getDnsZoneResolutionService() {
+		return domainZoneResolutionService;
 	}
 
-	public void setDnsZoneResolutionService(DnsZoneResolutionService dnsZoneResolutionService) {
-		this.dnsZoneResolutionService = dnsZoneResolutionService;
+	public void setDnsZoneResolutionService(DomainZoneResolutionService domainZoneResolutionService) {
+		this.domainZoneResolutionService = domainZoneResolutionService;
 	}
 
 	public ServerSessionAllocationService getSessionAllocationService() {
