@@ -226,7 +226,7 @@ public class SCSImplUnitTest {
 		assertEquals(zone.getZoneApex(), response.getSession().getZoneapex());
 		assertEquals(address1.getLocalName(), response.getSession().getLocalname());
 		assertEquals(address1.getDomain().getDomainName(), response.getSession().getDomain());
-		assertNull(response.getSession().getServiceprovider()); // TODO maybe change future to set with own SP
+		assertNotNull(response.getSession().getServiceprovider());
 		assertNull(response.getSession().getServicename());
 	}
 
@@ -294,7 +294,7 @@ public class SCSImplUnitTest {
 		assertEquals(address2.getLocalName(), response.getSession().getLocalname());
 		assertEquals(address2.getDomain().getDomainName(), response.getSession().getDomain());
 		assertEquals(service2.getServiceName(), response.getSession().getServicename());
-		assertNull(response.getSession().getServiceprovider()); // TODO maybe change future to set with own SP
+		assertNotNull(response.getSession().getServiceprovider());
 	}
 
 	@Test

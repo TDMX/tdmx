@@ -50,12 +50,18 @@ public class MockZonePartitionIdInstaller {
 
 	public void init() throws Exception {
 		{
-			Segment s1 = SegmentFacade.createSegment(S1, SCS_S1);
-			segmentService.createOrUpdate(s1);
+			Segment s1 = segmentService.findBySegment(S1);
+			if (s1 == null) {
+				s1 = SegmentFacade.createSegment(S1, SCS_S1);
+				segmentService.createOrUpdate(s1);
+			}
 		}
 		{
-			Segment s2 = SegmentFacade.createSegment(S2, SCS_S2);
-			segmentService.createOrUpdate(s2);
+			Segment s2 = segmentService.findBySegment(S2);
+			if (s2 == null) {
+				s2 = SegmentFacade.createSegment(S2, SCS_S2);
+				segmentService.createOrUpdate(s2);
+			}
 		}
 		{
 
