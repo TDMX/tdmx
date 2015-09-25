@@ -1,0 +1,13 @@
+// Copyright (c) 2015 Peter Klauser
+
+option java_package = "org.tdmx.server.pcs.protobuf";
+option java_outer_classname = "Broadcast";
+
+message BroadcastMessage {
+	enum MessageType {
+	  CacheInvalidation = 0;
+	}
+	required string id = 1;
+	optional MessageType type = 2;
+	repeated string value = 3;
+}

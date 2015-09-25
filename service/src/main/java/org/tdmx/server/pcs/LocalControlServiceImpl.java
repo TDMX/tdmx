@@ -91,6 +91,8 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	// TODO broadcast listeer here dito serversessionmanagerimpl
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------

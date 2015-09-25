@@ -31,6 +31,9 @@
 	<!-- JOB SPRING CONFIG -->
 	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 
+	<!-- SERVER -->
+	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
+	
 	<!-- SERVICE CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>

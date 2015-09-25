@@ -43,7 +43,9 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.pcs.BroadcastEventListener;
 import org.tdmx.server.pcs.ServiceHandle;
+import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
@@ -58,6 +60,7 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 import com.google.protobuf.BlockingService;
+import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -147,6 +150,11 @@ public class ServerSessionManagerImpl
 	 * The PartitionControlService gives us the information about the PCS servers.
 	 */
 	private PartitionControlServerService partitionServerService;
+
+	/**
+	 * Delegate for handling Broadcast events.
+	 */
+	private BroadcastEventListener broadcastListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -269,6 +277,17 @@ public class ServerSessionManagerImpl
 					maxRpcExecutorThreads);
 			clientFactory.setRpcServerCallExecutor(rpcExecutor);
 
+			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
+
+				@Override
+				public void run(Broadcast.BroadcastMessage parameter) {
+					final BroadcastEventListener delegate = getBroadcastListener();
+					if (delegate != null) {
+						delegate.handleBroadcast(parameter);
+					}
+				}
+
+			};
 			// RPC payloads are uncompressed when logged - so reduce logging
 			CategoryPerServiceLogger logger = new CategoryPerServiceLogger();
 			logger.setLogRequestProto(false);
@@ -288,6 +307,10 @@ public class ServerSessionManagerImpl
 					channelMap.put(clientChannel, client);
 
 					client.registerServer(getManagedServiceList(), null);
+
+					// register ourselves to receive broadcast messages
+					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
+							serverBroadcastCallback);
 				}
 
 				@Override
@@ -466,6 +489,7 @@ public class ServerSessionManagerImpl
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
 	/**
 	 * A helper value type holding the ServerHandle.
 	 * 
@@ -661,6 +685,14 @@ public class ServerSessionManagerImpl
 
 	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
+	}
+
+	public BroadcastEventListener getBroadcastListener() {
+		return broadcastListener;
+	}
+
+	public void setBroadcastListener(BroadcastEventListener broadcastListener) {
+		this.broadcastListener = broadcastListener;
 	}
 
 }
