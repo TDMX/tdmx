@@ -114,6 +114,14 @@
 	</bean>
 	
 
+	<bean id="tdmx.lib.control.dao.DnsResolverGroupDao" class="org.tdmx.lib.control.dao.DnsResolverGroupDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.DnsResolverGroupRepository" class="org.tdmx.lib.control.service.DnsResolverGroupRepositoryImpl">
+		<property name="dnsResolverGroupDao"	ref="tdmx.lib.control.dao.DnsResolverGroupDao" />
+	</bean>
+	
+
 	<bean id="tdmx.lib.control.dao.SegmentDao" class="org.tdmx.lib.control.dao.SegmentDaoImpl">
 	</bean>
 

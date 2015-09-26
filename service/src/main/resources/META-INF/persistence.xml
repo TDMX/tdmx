@@ -15,6 +15,7 @@
 		<class>org.tdmx.lib.control.domain.DatabasePartition</class>
 		<class>org.tdmx.lib.control.domain.PartitionControlServer</class>
 		<class>org.tdmx.lib.control.domain.ControlJob</class>
+		<class>org.tdmx.lib.control.domain.DnsResolverGroup</class>
 		<class>org.tdmx.lib.control.domain.Segment</class>
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
