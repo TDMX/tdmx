@@ -342,6 +342,7 @@ public class ServerSessionManagerImpl
 							apis.getValue().getSessionManager().disconnectController(controllerId);
 						}
 					}
+					clientChannel.setOobMessageCallback(null, null);
 				}
 			};
 			rpcEventNotifier.addEventListener(listener);

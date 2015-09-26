@@ -38,6 +38,8 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
@@ -54,6 +56,7 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -79,7 +82,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  * @author Peter
  *
  */
-public class RemoteControlServiceConnector implements Manageable, ControlServiceProxy.BlockingInterface {
+public class RemoteControlServiceConnector
+		implements Manageable, BroadcastEventListener, ControlServiceProxy.BlockingInterface {
 
 	// TODO LATER: use SSL context for protobuf communications
 
@@ -120,6 +124,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 	 */
 	private Segment segment;
 	private CleanShutdownHandler shutdownHandler;
+	private DuplexTcpServerPipelineFactory serverFactory;
 
 	/**
 	 * The PartitionControlService gives us the information about the PCS servers.
@@ -154,7 +159,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 
 		RpcServerCallExecutor executor = new ThreadPoolCallExecutor(coreRpcExecutorThreads, maxRpcExecutorThreads);
 
-		DuplexTcpServerPipelineFactory serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
+		serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
 		serverFactory.setRpcServerCallExecutor(executor);
 		// if ( secure ) {
 		// RpcSSLContext sslCtx = new RpcSSLContext();
@@ -174,19 +179,40 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
 		RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
+			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
+
+				@Override
+				public void run(Broadcast.BroadcastMessage parameter) {
+					handleBroadcast(parameter);
+				}
+
+			};
+
+			private void registerOobCallback(RpcClientChannel clientChannel) {
+				clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
+						serverBroadcastCallback);
+			}
+
+			private void clearOobCallback(RpcClientChannel clientChannel) {
+				clientChannel.setOobMessageCallback(null, null);
+			}
+
 			@Override
 			public void connectionReestablished(RpcClientChannel clientChannel) {
 				log.info("connectionReestablished " + clientChannel);
+				registerOobCallback(clientChannel);
 			}
 
 			@Override
 			public void connectionOpened(RpcClientChannel clientChannel) {
 				log.info("connectionOpened " + clientChannel);
+				registerOobCallback(clientChannel);
 			}
 
 			@Override
 			public void connectionLost(RpcClientChannel clientChannel) {
 				log.info("connectionLost " + clientChannel);
+				clearOobCallback(clientChannel);
 				// we unregister the server's services from the control service
 				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) clientChannel
 						.getAttribute(ReverseRpcServerSessionController.SSM);
@@ -202,6 +228,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 			@Override
 			public void connectionChanged(RpcClientChannel clientChannel) {
 				log.info("connectionChanged " + clientChannel);
+				registerOobCallback(clientChannel);
 			}
 		};
 		rpcEventNotifier.setEventListener(listener);
@@ -236,6 +263,29 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 		bootstrap.bind();
 
 		log.info("Serving " + serverInfo);
+	}
+
+	@Override
+	public void handleBroadcast(BroadcastMessage message) {
+		if (message == null) {
+			return;
+		}
+		StringBuilder messageInfo = new StringBuilder();
+		messageInfo.append(message.getType()).append(":").append(message.getId());
+		if (message.getValueCount() > 0) {
+			messageInfo.append(message.getValue(0));
+		}
+
+		log.info("Received broadcast message " + messageInfo);
+		if (serverFactory != null) {
+			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Relaying message " + message.getId() + " to " + channel.getPeerInfo());
+				}
+				channel.sendOobMessage(message);
+			}
+		}
+
 	}
 
 	@Override
@@ -325,6 +375,7 @@ public class RemoteControlServiceConnector implements Manageable, ControlService
 			}
 			shutdownHandler = null;
 		}
+		serverFactory = null;
 		segment = null;
 	}
 

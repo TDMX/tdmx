@@ -32,10 +32,12 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
+import com.google.protobuf.RpcCallback;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
@@ -86,6 +88,10 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	private Segment segment = null;
 
 	private PartitionControlServerService partitionServerService;
+	/**
+	 * Delegate for handling Broadcast events.
+	 */
+	private BroadcastEventListener broadcastListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -125,6 +131,17 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 			logger.setLogResponseProto(false);
 			clientFactory.setRpcLogger(logger);
 
+			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
+
+				@Override
+				public void run(Broadcast.BroadcastMessage parameter) {
+					final BroadcastEventListener delegate = getBroadcastListener();
+					if (delegate != null) {
+						delegate.handleBroadcast(parameter);
+					}
+				}
+
+			};
 			// Set up the event pipeline factory.
 			// setup a RPC event listener - it just logs what happens
 			RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
@@ -158,11 +175,16 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 				private void disconnection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					serverProxyMap.remove(pcs);
+					clientChannel.setOobMessageCallback(null, null);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					serverProxyMap.put(pcs, new LocalControlServiceClient(clientChannel));
+
+					// register ourselves to receive broadcast messages
+					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
+							serverBroadcastCallback);
 				}
 
 				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
@@ -336,6 +358,14 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 
 	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
 		this.partitionServerService = partitionServerService;
+	}
+
+	public BroadcastEventListener getBroadcastListener() {
+		return broadcastListener;
+	}
+
+	public void setBroadcastListener(BroadcastEventListener broadcastListener) {
+		this.broadcastListener = broadcastListener;
 	}
 
 }
