@@ -33,6 +33,7 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -56,7 +57,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements ControlService, Manageable {
+public class LocalControlServiceImpl implements ControlService, BroadcastEventNotifier, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -96,8 +97,6 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	// TODO broadcast listeer here dito serversessionmanagerimpl
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -247,6 +246,28 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 		bootstrap = null;
 		clientFactory = null;
 		segment = null;
+		// the serverProxyMap should clear automatically when each PCS server connection closes, however we do this just
+		// in case.
+		if (!serverProxyMap.isEmpty()) {
+			log.warn("serverProxyMap should have been cleared on shutdown.");
+			serverProxyMap.clear();
+		}
+	}
+
+	@Override
+	public boolean broadcastEvent(BroadcastMessage message) {
+		if (serverProxyMap.size() > 0) {
+			// if we are connected to any PCS at all, then taking one is enough.
+			// we use a hash distribution of the unique ID but we could do round-robin instead.
+			LocalControlServiceClient pcsServer = consistentHashToServer(message.getId());
+			if (pcsServer != null) {
+				pcsServer.getRpcClient().sendOobMessage(message);
+				return true;
+			} else {
+				log.warn("PCS Server targetted for cache invalidation not connected.");
+			}
+		}
+		return false;
 	}
 
 	// -------------------------------------------------------------------------
@@ -257,6 +278,11 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Connect to each of the PCS servers.
+	 * 
+	 * @throws IOException
+	 */
 	private void connectToPcsServers() throws IOException {
 		for (PartitionControlServer pcs : serverList) {
 			if (pcs.getServerModulo() < 0 || pcs.getServerModulo() > serverList.size()) {
@@ -277,6 +303,12 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 		return key.hashCode() % serverList.size();
 	}
 
+	/**
+	 * Return the PCS server to which the key maps to with a consistent hash.
+	 * 
+	 * @param key
+	 * @return null if the PCS server is not connected to, otherwise the PCS server to which the key maps consistently.
+	 */
 	private LocalControlServiceClient consistentHashToServer(String key) {
 		int serverNo = consistentHashCode(key);
 		PartitionControlServer server = serverList.get(serverNo);

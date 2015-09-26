@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.session;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -44,8 +45,10 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.BroadcastEventListener;
+import org.tdmx.server.pcs.BroadcastEventNotifier;
 import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
@@ -65,7 +68,6 @@ import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
-import com.googlecode.protobuf.pro.duplex.RpcClient;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
 import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
@@ -89,8 +91,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  * 
  */
-public class ServerSessionManagerImpl
-		implements Manageable, Runnable, SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface {
+public class ServerSessionManagerImpl implements Manageable, Runnable, BroadcastEventNotifier,
+		SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -100,6 +102,8 @@ public class ServerSessionManagerImpl
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ServerSessionManagerImpl.class);
+
+	private static final String PCS_ATTRIBUTE = "PCS";
 
 	private int connectTimeoutMillis = 5000;
 	private int connectResponseTimeoutMillis = 10000;
@@ -113,7 +117,9 @@ public class ServerSessionManagerImpl
 	private DuplexTcpClientPipelineFactory clientFactory;
 	private Bootstrap bootstrap;
 	private CleanShutdownHandler shutdownHandler;
-	private Map<RpcClientChannel, LocalControlServiceListenerClient> channelMap = new HashMap<>();
+
+	private List<PartitionControlServer> serverList;
+	private Map<PartitionControlServer, LocalControlServiceListenerClient> serverProxyMap = new HashMap<>();
 
 	/**
 	 * Delay in seconds between session timeout checks.
@@ -300,11 +306,12 @@ public class ServerSessionManagerImpl
 
 			final RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
-				private void processConnect(RpcClientChannel clientChannel) {
+				private void connection(RpcClientChannel clientChannel) {
 					log.info("initial connect " + clientChannel);
 
+					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					LocalControlServiceListenerClient client = new LocalControlServiceListenerClient(clientChannel);
-					channelMap.put(clientChannel, client);
+					serverProxyMap.put(pcs, client);
 
 					client.registerServer(getManagedServiceList(), null);
 
@@ -313,28 +320,9 @@ public class ServerSessionManagerImpl
 							serverBroadcastCallback);
 				}
 
-				@Override
-				public void connectionReestablished(RpcClientChannel clientChannel) {
-					log.info("connectionReestablished " + clientChannel);
-					processConnect(clientChannel);
-				}
-
-				@Override
-				public void connectionOpened(RpcClientChannel clientChannel) {
-					log.info("connectionOpened " + clientChannel);
-					processConnect(clientChannel);
-				}
-
-				@Override
-				public void connectionChanged(RpcClientChannel clientChannel) {
-					log.info("connectionChanged " + clientChannel);
-					processConnect(clientChannel);
-				}
-
-				@Override
-				public void connectionLost(RpcClientChannel clientChannel) {
-					log.info("connectionLost " + clientChannel);
-					LocalControlServiceListenerClient client = channelMap.remove(clientChannel);
+				private void disconnection(RpcClientChannel clientChannel) {
+					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
+					LocalControlServiceListenerClient client = serverProxyMap.remove(pcs);
 					if (client != null) {
 						for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
 							String controllerId = getControllerId(clientChannel);
@@ -343,6 +331,38 @@ public class ServerSessionManagerImpl
 						}
 					}
 					clientChannel.setOobMessageCallback(null, null);
+				}
+
+				@Override
+				public void connectionReestablished(RpcClientChannel clientChannel) {
+					log.info("connectionReestablished " + clientChannel);
+					connection(clientChannel);
+				}
+
+				@Override
+				public void connectionOpened(RpcClientChannel clientChannel) {
+					log.info("connectionOpened " + clientChannel);
+					connection(clientChannel);
+				}
+
+				@Override
+				public void connectionChanged(RpcClientChannel clientChannel) {
+					log.info("connectionChanged " + clientChannel);
+					connection(clientChannel);
+				}
+
+				@Override
+				public void connectionLost(RpcClientChannel clientChannel) {
+					log.info("connectionLost " + clientChannel);
+					disconnection(clientChannel);
+				}
+
+				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
+					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
+					if (pcs == null) {
+						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
+					}
+					return pcs;
 				}
 			};
 			rpcEventNotifier.addEventListener(listener);
@@ -373,13 +393,8 @@ public class ServerSessionManagerImpl
 			shutdownHandler.addResource(watchdog);
 
 			// connect to each PCS server
-			List<PartitionControlServer> pcsList = partitionServerService.findBySegment(segment.getSegmentName());
-			if (pcsList.isEmpty()) {
-				throw new IllegalStateException("No PCS server defined for " + segment.getSegmentName());
-			}
-			for (PartitionControlServer pcs : pcsList) {
-				connect(pcs.getIpAddress(), pcs.getPort());
-			}
+			serverList = partitionServerService.findBySegment(this.segment.getSegmentName());
+			connectToPcsServers();
 			// after connection the PCS remote cannot distinguish if we are a SCS or WS client
 			// until WS clients call registerServer
 
@@ -430,6 +445,11 @@ public class ServerSessionManagerImpl
 		apiManagerMap = null;
 		segment = null;
 		apiList = null;
+		// although the channelMap should clear when each connection closes, we remove all entries forcibly.
+		if (!serverProxyMap.isEmpty()) {
+			log.warn("serverProxyMap should have been cleared on shutdown.");
+			serverProxyMap.clear();
+		}
 	}
 
 	@Override
@@ -453,9 +473,9 @@ public class ServerSessionManagerImpl
 			List<WebServiceSession> sessions = h.getSessionManager().getIdleSessions(idleCutoff.getTime(),
 					creationCutoff.getTime());
 
-			for (Entry<RpcClientChannel, LocalControlServiceListenerClient> channel : channelMap.entrySet()) {
+			for (Entry<PartitionControlServer, LocalControlServiceListenerClient> channel : serverProxyMap.entrySet()) {
 				Set<String> sessionIds = new HashSet<>();
-				String controllerId = getControllerId(channel.getKey());
+				String controllerId = getControllerId(channel.getValue().getRpcClient());
 
 				for (WebServiceSession session : sessions) {
 					if (controllerId.equals(session.getControllerId())) {
@@ -476,11 +496,27 @@ public class ServerSessionManagerImpl
 		// invalidate the certificate at all PCS instances.
 		// this will have the ServerSessionController.invalidateCertificate at the PCS which calls WS server which knows
 		// the certificate
-		for (Entry<RpcClientChannel, LocalControlServiceListenerClient> pcsServer : channelMap.entrySet()) {
+		for (Entry<PartitionControlServer, LocalControlServiceListenerClient> pcsServer : serverProxyMap.entrySet()) {
 			LocalControlServiceListenerClient client = pcsServer.getValue();
 
 			client.invalidateCertificate(cert);
 		}
+	}
+
+	@Override
+	public boolean broadcastEvent(BroadcastMessage message) {
+		if (serverProxyMap.size() > 0) {
+			// if we are connected to any PCS at all, then taking one is enough.
+			// we use a hash distribution of the unique ID but we could do round-robin instead.
+			LocalControlServiceListenerClient pcsServer = consistentHashToServer(message.getId());
+			if (pcsServer != null) {
+				pcsServer.getRpcClient().sendOobMessage(message);
+				return true;
+			} else {
+				log.warn("PCS Server targetted for cache invalidation not connected.");
+			}
+		}
+		return false;
 	}
 
 	// -------------------------------------------------------------------------
@@ -490,6 +526,45 @@ public class ServerSessionManagerImpl
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Connect to each of the PCS servers.
+	 * 
+	 * @throws IOException
+	 */
+	private void connectToPcsServers() throws IOException {
+		for (PartitionControlServer pcs : serverList) {
+			if (pcs.getServerModulo() < 0 || pcs.getServerModulo() > serverList.size()) {
+				throw new IllegalStateException("pcs modulo " + pcs.getServerModulo() + " inconsistent for " + pcs);
+			}
+
+			PeerInfo server = new PeerInfo(pcs.getIpAddress(), pcs.getPort());
+
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put(PCS_ATTRIBUTE, pcs);
+
+			clientFactory.peerWith(server, bootstrap, attributes);
+			// the event listener hooks up the localproxy
+		}
+	}
+
+	private int consistentHashCode(String key) {
+		return key.hashCode() % serverList.size();
+	}
+
+	/**
+	 * Return the PCS server proxy to which the key maps to with a consistent hash.
+	 * 
+	 * @param key
+	 * @return null if the PCS server proxy is not connected to, otherwise the PCS server to which the key maps
+	 *         consistently.
+	 */
+	private LocalControlServiceListenerClient consistentHashToServer(String key) {
+		int serverNo = consistentHashCode(key);
+		PartitionControlServer server = serverList.get(serverNo);
+		LocalControlServiceListenerClient localProxy = serverProxyMap.get(server);
+		return localProxy;
+	}
 
 	/**
 	 * A helper value type holding the ServerHandle.
@@ -529,13 +604,6 @@ public class ServerSessionManagerImpl
 		public void setLoadValue(int loadValue) {
 			this.loadValue = loadValue;
 		}
-	}
-
-	private RpcClient connect(String serverHostname, int serverPort) throws Exception {
-		PeerInfo server = new PeerInfo(serverHostname, serverPort);
-		log.info("Connecting to PCS server " + server);
-
-		return clientFactory.peerWith(server, bootstrap);
 	}
 
 	private String getControllerId(RpcClientChannel channel) {

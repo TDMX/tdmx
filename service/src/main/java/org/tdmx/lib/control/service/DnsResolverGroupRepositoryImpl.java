@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.control.dao.DnsResolverGroupDao;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
+import org.tdmx.server.pcs.CacheInvalidationNotifier;
 
 /**
  * A transactional service managing the DnsResolverGroup information.
@@ -45,6 +46,7 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 	private static final Logger log = LoggerFactory.getLogger(DnsResolverGroupRepositoryImpl.class);
 
 	private DnsResolverGroupDao dnsResolverGroupDao;
+	private CacheInvalidationNotifier cacheInvalidationNotifier;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -66,6 +68,7 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 		} else {
 			getDnsResolverGroupDao().persist(dnsResolverGroup);
 		}
+		notifyDnsResolverChanged();
 	}
 
 	@Override
@@ -77,6 +80,7 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 		} else {
 			log.warn("Unable to find DnsResolverGroup to delete with id " + dnsResolverGroup.getId());
 		}
+		notifyDnsResolverChanged();
 	}
 
 	@Override
@@ -99,6 +103,12 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void notifyDnsResolverChanged() {
+		if (cacheInvalidationNotifier != null) {
+			cacheInvalidationNotifier.cacheInvalidated(CACHE_KEY);
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -109,6 +119,14 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 
 	public void setDnsResolverGroupDao(DnsResolverGroupDao dnsResolverGroupDao) {
 		this.dnsResolverGroupDao = dnsResolverGroupDao;
+	}
+
+	public CacheInvalidationNotifier getCacheInvalidationNotifier() {
+		return cacheInvalidationNotifier;
+	}
+
+	public void setCacheInvalidationNotifier(CacheInvalidationNotifier cacheInvalidationNotifier) {
+		this.cacheInvalidationNotifier = cacheInvalidationNotifier;
 	}
 
 }

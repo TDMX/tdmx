@@ -16,28 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.server.runtime;
 
 import java.util.List;
 
 import org.tdmx.lib.control.domain.DnsResolverGroup;
 
 /**
- * The DnsResolverGroupService manages DnsResolverGroup entities.
+ * A Factory to get the current list of DnsResolverGroups.
  * 
  * @author Peter
- * 
+ *
  */
-public interface DnsResolverGroupService {
+public interface DnsResolverGroupFactory {
 
-	public static final String CACHE_KEY = "DnsResolverGroup";
-
-	public void createOrUpdate(DnsResolverGroup dnsResolverGroup);
-
-	public void delete(DnsResolverGroup dnsResolverGroup);
-
-	public DnsResolverGroup findByName(String groupName);
-
-	public List<DnsResolverGroup> findAll();
+	public List<DnsResolverGroup> getDnsResolverGroups();
 
 }

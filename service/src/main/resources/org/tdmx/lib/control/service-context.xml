@@ -119,6 +119,7 @@
 
 	<bean id="tdmx.lib.control.DnsResolverGroupRepository" class="org.tdmx.lib.control.service.DnsResolverGroupRepositoryImpl">
 		<property name="dnsResolverGroupDao"	ref="tdmx.lib.control.dao.DnsResolverGroupDao" />
+		<property name="cacheInvalidationNotifier" ref="tdmx.server.DelegatingCacheInvalidationNotifier"/>
 	</bean>
 	
 

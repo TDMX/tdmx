@@ -16,28 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.server.pcs;
 
-import java.util.List;
+public interface CacheInvalidationNotifier {
 
-import org.tdmx.lib.control.domain.DnsResolverGroup;
-
-/**
- * The DnsResolverGroupService manages DnsResolverGroup entities.
- * 
- * @author Peter
- * 
- */
-public interface DnsResolverGroupService {
-
-	public static final String CACHE_KEY = "DnsResolverGroup";
-
-	public void createOrUpdate(DnsResolverGroup dnsResolverGroup);
-
-	public void delete(DnsResolverGroup dnsResolverGroup);
-
-	public DnsResolverGroup findByName(String groupName);
-
-	public List<DnsResolverGroup> findAll();
+	/**
+	 * Notify that a cache entry is invalidated.
+	 * 
+	 * @param key
+	 */
+	public void cacheInvalidated(String key);
 
 }

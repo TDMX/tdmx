@@ -16,28 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.server.pcs;
 
-import java.util.List;
-
-import org.tdmx.lib.control.domain.DnsResolverGroup;
+import org.tdmx.server.pcs.protobuf.Broadcast;
 
 /**
- * The DnsResolverGroupService manages DnsResolverGroup entities.
+ * A Listener for distributed Broadcast messages.
  * 
  * @author Peter
- * 
+ *
  */
-public interface DnsResolverGroupService {
+public interface BroadcastEventNotifier {
 
-	public static final String CACHE_KEY = "DnsResolverGroup";
-
-	public void createOrUpdate(DnsResolverGroup dnsResolverGroup);
-
-	public void delete(DnsResolverGroup dnsResolverGroup);
-
-	public DnsResolverGroup findByName(String groupName);
-
-	public List<DnsResolverGroup> findAll();
+	/**
+	 * Broadcast the event.
+	 * 
+	 * Typically this passes the event to the PCS server.
+	 * 
+	 * @param message
+	 * @return true if the broadcast message has been processed, or false if it has been ignored.
+	 */
+	public boolean broadcastEvent(Broadcast.BroadcastMessage message);
 
 }
