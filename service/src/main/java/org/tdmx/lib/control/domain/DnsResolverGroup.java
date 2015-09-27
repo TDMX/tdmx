@@ -19,6 +19,7 @@
 package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,6 +28,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
  * A DnsResolverGroup is a sorted list of IP addresses of Dns servers given a name.
@@ -43,6 +46,7 @@ public class DnsResolverGroup implements Serializable {
 	// -------------------------------------------------------------------------
 
 	public static final int MAX_DNSRESOLVERGROUP_LEN = 255;
+	public static final int MAX_IPADDRESSLIST_LEN = 255;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -58,6 +62,12 @@ public class DnsResolverGroup implements Serializable {
 	@Column(length = MAX_DNSRESOLVERGROUP_LEN, nullable = false)
 	private String groupName;
 
+	@Column(length = MAX_IPADDRESSLIST_LEN, nullable = false)
+	/**
+	 * A CSV of up to 4 IP addresses (v4 or v6) which belong to the same resolver group.
+	 */
+	private String ipAddressList;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -72,8 +82,18 @@ public class DnsResolverGroup implements Serializable {
 		builder.append(id);
 		builder.append(", groupName=");
 		builder.append(groupName);
+		builder.append(", ipAddressList=");
+		builder.append(ipAddressList);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public List<String> getIpAddresses() {
+		return StringUtils.convertCsvToStringList(ipAddressList);
+	}
+
+	public void setIpAddresses(List<String> ipAddresses) {
+		ipAddressList = StringUtils.convertStringListToCsv(ipAddresses);
 	}
 
 	// -------------------------------------------------------------------------

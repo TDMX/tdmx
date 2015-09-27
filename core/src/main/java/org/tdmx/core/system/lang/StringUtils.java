@@ -23,6 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
 
 public class StringUtils {
 
@@ -124,4 +128,39 @@ public class StringUtils {
 		return arrayToDelimitedString(arr, ",");
 	}
 
+	/**
+	 * Convert a list of strings to a CSV format.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public static String convertStringListToCsv(List<String> list) {
+		if (list == null || list.isEmpty()) {
+			return "";
+		}
+		return arrayToCommaDelimitedString(list.toArray());
+	}
+
+	/**
+	 * Converts a CSV string to a list of strings.
+	 * 
+	 * NOTE the comma character may only be used as the separator, there is no comma escaping used.
+	 * 
+	 * @param csv
+	 * @return
+	 */
+	public static List<String> convertCsvToStringList(String csv) {
+		if (!StringUtils.hasText(csv)) {
+			return Collections.emptyList();
+		}
+		List<String> result = new ArrayList<>();
+		StringTokenizer st = new StringTokenizer(csv, ",");
+		while (st.hasMoreTokens()) {
+			String token = st.nextToken();
+			if (StringUtils.hasText(token)) {
+				result.add(token);
+			}
+		}
+		return result;
+	}
 }
