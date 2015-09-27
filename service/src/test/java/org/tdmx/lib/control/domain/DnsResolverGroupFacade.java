@@ -18,12 +18,15 @@
  */
 package org.tdmx.lib.control.domain;
 
+import java.util.Arrays;
+
 public class DnsResolverGroupFacade {
 
 	public static DnsResolverGroup createDnsResolverGroup(String groupName) {
 
 		DnsResolverGroup g = new DnsResolverGroup();
 		g.setGroupName(groupName);
+		g.setIpAddresses(Arrays.<String> asList("8.8.8.8", "4.4.4.4"));
 		return g;
 	}
 
