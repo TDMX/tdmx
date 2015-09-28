@@ -32,7 +32,21 @@ import org.slf4j.LoggerFactory;
  */
 public class CalendarUtils {
 
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
 	private static Logger log = LoggerFactory.getLogger(CalendarUtils.class);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	private CalendarUtils() {
+	}
 
 	/**
 	 * If the date is in the future.

@@ -18,11 +18,29 @@
  */
 package org.tdmx.core.system.dns;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
+import org.xbill.DNS.DClass;
+import org.xbill.DNS.ExtendedResolver;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.Message;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.Resolver;
+import org.xbill.DNS.ResolverConfig;
+import org.xbill.DNS.ReverseMap;
+import org.xbill.DNS.Section;
+import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.Type;
 
 /**
  * Utility class for DNS operations.
@@ -31,6 +49,26 @@ import org.tdmx.core.system.lang.StringUtils;
  *
  */
 public class DnsUtils {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	private DnsUtils() {
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Determine if the domainName is a subdomain of the zoneApex.
@@ -91,5 +129,105 @@ public class DnsUtils {
 			result.add(b.toString());
 		}
 		return result;
+	}
+
+	/**
+	 * Return the IPAddresses of the JVM's default DNS resolvers.
+	 * 
+	 * @return the IPAddresses of the JVM's default DNS resolvers.
+	 */
+	public static List<String> getSystemDnsResolverAddresses() {
+		List<String> hosts = new ArrayList<>();
+
+		String[] list = ResolverConfig.getCurrentConfig().servers();
+		if (list != null) {
+			for (String h : list) {
+				hosts.add(h);
+			}
+		}
+		return Collections.unmodifiableList(hosts);
+	}
+
+	/**
+	 * Return the authoritative name servers of the domain as resolved by the resolverAddresses.
+	 * 
+	 * @param domainName
+	 * @param resolverAddresses
+	 * @throws Exception
+	 */
+	public static void getAuthNameServers(String domainName, List<String> resolverAddresses) throws Exception {
+		Name n = Name.fromString(domainName);
+
+		int numLabels = n.labels();
+		// bottom to top lookup of SOA record.
+		for (int i = 0; i < numLabels; i++) {
+			StringBuffer b = new StringBuffer();
+			for (int max = i; max < numLabels; max++) {
+				String l = n.getLabelString(max);
+				b.append(l);
+				b.append(".");
+			}
+			String dn = b.toString();
+
+			Resolver r = createResolver(resolverAddresses);
+			Lookup l = new Lookup(dn, Type.SOA);
+			l.setResolver(r);
+			l.setCache(null);
+			l.setSearchPath((Name[]) null);
+			Record[] records = l.run();
+			if (records != null) {
+				log.info("Found authoritative server names " + records);
+			}
+		}
+
+	}
+
+	public static String reverseDns(String hostIp, List<String> resolverAddresses) {
+		Name name;
+		try {
+			name = ReverseMap.fromAddress(hostIp);
+		} catch (UnknownHostException e) {
+			return hostIp;
+		}
+		int type = Type.PTR;
+		int dclass = DClass.IN;
+		Record rec = Record.newRecord(name, type, dclass);
+		Message query = Message.newQuery(rec);
+		Message response;
+		try {
+			Resolver res = createResolver(resolverAddresses);
+
+			response = res.send(query);
+		} catch (IOException e) {
+			return hostIp;
+		}
+
+		Record[] answers = response.getSectionArray(Section.ANSWER);
+		if (answers.length == 0) {
+			return hostIp;
+		} else {
+			return answers[0].rdataToString();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	private static Resolver createResolver(List<String> resolverAddresses) throws UnknownHostException {
+		List<Resolver> simpleResolvers = new ArrayList<>();
+		for (String address : resolverAddresses) {
+			Resolver r = new SimpleResolver(address);
+			r.setTCP(true);
+			r.setTimeout(10);
+			simpleResolvers.add(r);
+		}
+
+		ExtendedResolver er = new ExtendedResolver(simpleResolvers.toArray(new Resolver[0]));
+		return er;
 	}
 }

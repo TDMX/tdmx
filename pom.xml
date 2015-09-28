@@ -210,7 +210,7 @@
 		<spring.version>4.0.5.RELEASE</spring.version>
 		<querydsl.version>3.6.2</querydsl.version>
 		<aws.version>1.6.12</aws.version>
-		<dnsjava.version>2.1.1</dnsjava.version>
+		<dnsjava.version>2.1.7</dnsjava.version>
 		<bc.version>1.50</bc.version>
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>

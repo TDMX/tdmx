@@ -63,4 +63,11 @@ public class DnsUtilTest {
 		assertEquals(1, result.size());
 		assertEquals("com", result.get(0));
 	}
+
+	@Test
+	public void testAuthoritativeNameServers() throws Exception {
+		// DnsUtils.getAuthNameServers("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
+		DnsUtils.getAuthNameServers("plus.google.com", DnsUtils.getSystemDnsResolverAddresses());
+	}
+
 }

@@ -18,11 +18,48 @@
  */
 package org.tdmx.core.system.dns;
 
-public interface DnsLookup {
+import java.util.List;
 
-	public String getAuthoratitativeNameServer();
+public class DnsLookup {
 
-	public String getIpAddress();
+	private List<String> resolverAddresses;
 
-	public String[] getTxtRecords();
+	private List<String> authoritativeNameServers;
+
+	private List<String> ipAddresses;
+
+	private List<String> textRecords;
+
+	public List<String> getResolverAddresses() {
+		return resolverAddresses;
+	}
+
+	public void setResolverAddresses(List<String> resolverAddresses) {
+		this.resolverAddresses = resolverAddresses;
+	}
+
+	public List<String> getAuthoritativeNameServers() {
+		return authoritativeNameServers;
+	}
+
+	public void setAuthoritativeNameServers(List<String> authoritativeNameServers) {
+		this.authoritativeNameServers = authoritativeNameServers;
+	}
+
+	public List<String> getIpAddresses() {
+		return ipAddresses;
+	}
+
+	public void setIpAddresses(List<String> ipAddresses) {
+		this.ipAddresses = ipAddresses;
+	}
+
+	public List<String> getTextRecords() {
+		return textRecords;
+	}
+
+	public void setTextRecords(List<String> textRecords) {
+		this.textRecords = textRecords;
+	}
+
 }

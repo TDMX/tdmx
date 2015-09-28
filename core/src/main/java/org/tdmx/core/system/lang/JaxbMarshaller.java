@@ -52,14 +52,6 @@ public class JaxbMarshaller<T> {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public boolean isPrettyPrint() {
-		return prettyPrint;
-	}
-
-	public void setPrettyPrint(boolean prettyPrint) {
-		this.prettyPrint = prettyPrint;
-	}
-
 	/**
 	 * Constructor sufficient for Unmarshalling.
 	 * 
@@ -172,6 +164,14 @@ public class JaxbMarshaller<T> {
 
 	public void setSuppressXMLDeclaration(boolean suppressXMLDeclaration) {
 		this.suppressXMLDeclaration = suppressXMLDeclaration;
+	}
+
+	public boolean isPrettyPrint() {
+		return prettyPrint;
+	}
+
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
 	}
 
 }
