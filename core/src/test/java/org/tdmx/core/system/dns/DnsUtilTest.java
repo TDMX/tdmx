@@ -18,13 +18,16 @@
  */
 package org.tdmx.core.system.dns;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class DnsUtilTest {
@@ -65,9 +68,28 @@ public class DnsUtilTest {
 	}
 
 	@Test
-	public void testAuthoritativeNameServers() throws Exception {
-		// DnsUtils.getAuthNameServers("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
-		DnsUtils.getAuthNameServers("plus.google.com", DnsUtils.getSystemDnsResolverAddresses());
+	public void testAuthoritativeNameServers_KMT() throws Exception {
+		List<String> kmt = Arrays.asList(new String[] { "ns-748.awsdns-29.net" });
+
+		List<String> ns = DnsUtils.getAuthNameServers("kidsmathstrainer.com",
+				Arrays.asList(new String[] { "8.8.8.8" }));
+		assertArrayEquals(kmt.toArray(new String[0]), ns.toArray(new String[0]));
+	}
+
+	@Test
+	@Ignore("roundrobin of SOA record")
+	public void testAuthoritativeNameServers_GP() throws Exception {
+		List<String> kmt = Arrays.asList(new String[] { "ns3.google.com" });
+		List<String> ns = DnsUtils.getAuthNameServers("plus.google.com", DnsUtils.getSystemDnsResolverAddresses());
+		assertArrayEquals(kmt.toArray(new String[0]), ns.toArray(new String[0]));
+	}
+
+	@Test
+	public void testTXT_KMT() throws Exception {
+		String[] txtRecords = new String[] { "ZAC=1234,scsHostname=myhostname.com",
+				"ZAC=123456,scsHostname=myhostname2.com" };
+		List<String> ns = DnsUtils.getTXTRecords("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
+		assertArrayEquals(txtRecords, ns.toArray(new String[0]));
 	}
 
 }

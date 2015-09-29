@@ -38,8 +38,10 @@ import org.xbill.DNS.Record;
 import org.xbill.DNS.Resolver;
 import org.xbill.DNS.ResolverConfig;
 import org.xbill.DNS.ReverseMap;
+import org.xbill.DNS.SOARecord;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.Type;
 
 /**
@@ -149,13 +151,17 @@ public class DnsUtils {
 	}
 
 	/**
-	 * Return the authoritative name servers of the domain as resolved by the resolverAddresses.
+	 * Return the domain names of authoritative name servers of the domain as resolved by the resolverAddresses.
+	 * 
+	 * DNSJava returns one SOA record, which can be one of a list of "vanity".
 	 * 
 	 * @param domainName
 	 * @param resolverAddresses
 	 * @throws Exception
 	 */
-	public static void getAuthNameServers(String domainName, List<String> resolverAddresses) throws Exception {
+	public static List<String> getAuthNameServers(String domainName, List<String> resolverAddresses) throws Exception {
+		List<String> result = new ArrayList<>();
+
 		Name n = Name.fromString(domainName);
 
 		int numLabels = n.labels();
@@ -177,9 +183,44 @@ public class DnsUtils {
 			Record[] records = l.run();
 			if (records != null) {
 				log.info("Found authoritative server names " + records);
+				for (Record ns : records) {
+					SOARecord sr = (SOARecord) ns;
+					result.add(sr.getHost().toString(true));
+				}
+				break;
 			}
 		}
+		Collections.sort(result);
+		return result;
+	}
 
+	/**
+	 * Return the DNS TXT records as resolved by the resolverAddresses.
+	 * 
+	 * @param domainName
+	 * @param resolverAddresses
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<String> getTXTRecords(String domainName, List<String> resolverAddresses) throws Exception {
+		List<String> result = new ArrayList<>();
+
+		Name dn = Name.fromString(domainName);
+
+		Resolver r = createResolver(resolverAddresses);
+		Lookup l = new Lookup(dn, Type.TXT);
+		l.setResolver(r);
+		l.setCache(null);
+		l.setSearchPath((Name[]) null);
+		Record[] records = l.run();
+		if (records != null) {
+			for (Record ns : records) {
+				TXTRecord tr = (TXTRecord) ns;
+				result.addAll(tr.getStrings());
+			}
+		}
+		Collections.sort(result);
+		return result;
 	}
 
 	public static String reverseDns(String hostIp, List<String> resolverAddresses) {
@@ -203,7 +244,7 @@ public class DnsUtils {
 		}
 
 		Record[] answers = response.getSectionArray(Section.ANSWER);
-		if (answers.length == 0) {
+		if (answers == null || answers.length == 0) {
 			return hostIp;
 		} else {
 			return answers[0].rdataToString();
