@@ -281,7 +281,7 @@ public class DnsUtils {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static DnsResultHolder getTXTRecords(String domainName, List<String> resolverAddresses) throws Exception {
+	public static DnsResultHolder getTdmxZoneRecord(String domainName, List<String> resolverAddresses) throws Exception {
 		List<String> result = new ArrayList<>();
 
 		Name dn = Name.fromString(domainName);
@@ -305,7 +305,11 @@ public class DnsUtils {
 			if (records != null && records.length > 0) {
 				for (Record ns : records) {
 					TXTRecord tr = (TXTRecord) ns;
-					result.addAll(tr.getStrings());
+					for (String s : (List<String>) tr.getStrings()) {
+						if (matchesTdmxZoneRecord(s)) {
+							result.add(s);
+						}
+					}
 				}
 			}
 			if (!result.isEmpty()) {

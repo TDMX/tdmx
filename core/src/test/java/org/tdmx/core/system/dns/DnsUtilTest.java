@@ -101,7 +101,7 @@ public class DnsUtilTest {
 	public void testTXT_KMT() throws Exception {
 		String[] txtRecords = new String[] {
 				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/" };
-		DnsResultHolder h = DnsUtils.getTXTRecords("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
+		DnsResultHolder h = DnsUtils.getTdmxZoneRecord("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
 		assertEquals("kidsmathstrainer.com", h.getApex());
 		assertArrayEquals(txtRecords, h.getRecords().toArray(new String[0]));
 	}
