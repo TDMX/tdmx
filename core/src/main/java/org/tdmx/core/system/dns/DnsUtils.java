@@ -24,21 +24,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.xbill.DNS.DClass;
 import org.xbill.DNS.ExtendedResolver;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Message;
+import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.Name;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.Resolver;
 import org.xbill.DNS.ResolverConfig;
 import org.xbill.DNS.ReverseMap;
-import org.xbill.DNS.SOARecord;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.TXTRecord;
@@ -56,10 +55,12 @@ public class DnsUtils {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	public static final Pattern TDMX_DNS_TXT_RECORD_PATTERN = Pattern
+			.compile("^tdmx version=(\\d) zac=(\\w+) scs=(https://.*)$");
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -68,9 +69,90 @@ public class DnsUtils {
 	private DnsUtils() {
 	}
 
+	public static class TdmxZoneRecord {
+		private final int version;
+		private final String zacFingerprint;
+		private final String scsUrl;
+
+		public TdmxZoneRecord(int version, String zacFingerprint, String scsUrl) {
+			this.version = version;
+			this.zacFingerprint = zacFingerprint;
+			this.scsUrl = scsUrl;
+		}
+
+		public int getVersion() {
+			return version;
+		}
+
+		public String getZacFingerprint() {
+			return zacFingerprint;
+		}
+
+		public String getScsUrl() {
+			return scsUrl;
+		}
+	}
+
+	/**
+	 * A container value class for DnsResults.
+	 * 
+	 * @author Peter
+	 *
+	 */
+	public static class DnsResultHolder {
+		private final String apex;
+		private final List<String> records;
+
+		public DnsResultHolder(String apex, List<String> records) {
+			this.apex = apex;
+			this.records = records;
+		}
+
+		public String getApex() {
+			return apex;
+		}
+
+		public List<String> getRecords() {
+			return records;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(apex).append(":");
+			sb.append(StringUtils.convertStringListToCsv(records));
+			return sb.toString();
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Check whether a TXT record value matches the TDMX zone information format.
+	 * 
+	 * @param textRecord
+	 * @return whether a TXT record value matches the TDMX zone information format.
+	 */
+	public static boolean matchesTdmxZoneRecord(String textRecord) {
+		Matcher m = TDMX_DNS_TXT_RECORD_PATTERN.matcher(textRecord);
+		return m.matches();
+	}
+
+	/**
+	 * Convert a TXT record to a structured TDMX information.
+	 * 
+	 * @param textRecord
+	 * @return null if the TXT record does not match the TDMX zone record else the parsed fields.
+	 */
+	public static TdmxZoneRecord parseTdmxZoneRecord(String textRecord) {
+		Matcher m = TDMX_DNS_TXT_RECORD_PATTERN.matcher(textRecord);
+		if (m.matches()) {
+			return new TdmxZoneRecord(Integer.valueOf(m.group(1)), m.group(2), m.group(3));
+		}
+		return null;
+	}
 
 	/**
 	 * Determine if the domainName is a subdomain of the zoneApex.
@@ -151,47 +233,44 @@ public class DnsUtils {
 	}
 
 	/**
-	 * Return the domain names of authoritative name servers of the domain as resolved by the resolverAddresses.
-	 * 
-	 * DNSJava returns one SOA record, which can be one of a list of "vanity".
+	 * Return the domain names of name servers of the domain as resolved by the resolverAddresses.
 	 * 
 	 * @param domainName
 	 * @param resolverAddresses
 	 * @throws Exception
 	 */
-	public static List<String> getAuthNameServers(String domainName, List<String> resolverAddresses) throws Exception {
+	public static DnsResultHolder getNameServers(String domainName, List<String> resolverAddresses) throws Exception {
 		List<String> result = new ArrayList<>();
 
 		Name n = Name.fromString(domainName);
 
 		int numLabels = n.labels();
-		// bottom to top lookup of SOA record.
-		for (int i = 0; i < numLabels; i++) {
+		// bottom to top lookup of NS records.
+		for (int i = 0; i < numLabels - 1; i++) {
 			StringBuffer b = new StringBuffer();
 			for (int max = i; max < numLabels; max++) {
 				String l = n.getLabelString(max);
 				b.append(l);
 				b.append(".");
 			}
-			String dn = b.toString();
+			Name searchName = Name.fromString(b.toString());
 
 			Resolver r = createResolver(resolverAddresses);
-			Lookup l = new Lookup(dn, Type.SOA);
+			Lookup l = new Lookup(searchName, Type.NS);
 			l.setResolver(r);
 			l.setCache(null);
 			l.setSearchPath((Name[]) null);
 			Record[] records = l.run();
-			if (records != null) {
-				log.info("Found authoritative server names " + records);
+			if (records != null && records.length > 0) {
 				for (Record ns : records) {
-					SOARecord sr = (SOARecord) ns;
-					result.add(sr.getHost().toString(true));
+					NSRecord sr = (NSRecord) ns;
+					result.add(sr.getTarget().toString(true));
 				}
-				break;
+				Collections.sort(result);
+				return new DnsResultHolder(searchName.toString(true), result);
 			}
 		}
-		Collections.sort(result);
-		return result;
+		return null;
 	}
 
 	/**
@@ -202,25 +281,41 @@ public class DnsUtils {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<String> getTXTRecords(String domainName, List<String> resolverAddresses) throws Exception {
+	public static DnsResultHolder getTXTRecords(String domainName, List<String> resolverAddresses) throws Exception {
 		List<String> result = new ArrayList<>();
 
 		Name dn = Name.fromString(domainName);
-
-		Resolver r = createResolver(resolverAddresses);
-		Lookup l = new Lookup(dn, Type.TXT);
-		l.setResolver(r);
-		l.setCache(null);
-		l.setSearchPath((Name[]) null);
-		Record[] records = l.run();
-		if (records != null) {
-			for (Record ns : records) {
-				TXTRecord tr = (TXTRecord) ns;
-				result.addAll(tr.getStrings());
+		int numLabels = dn.labels();
+		// bottom to top lookup of NS records.
+		for (int i = 0; i < numLabels - 1; i++) {
+			StringBuffer b = new StringBuffer();
+			for (int max = i; max < numLabels; max++) {
+				String l = dn.getLabelString(max);
+				b.append(l);
+				b.append(".");
 			}
+			Name searchName = Name.fromString(b.toString());
+
+			Resolver r = createResolver(resolverAddresses);
+			Lookup l = new Lookup(searchName, Type.TXT);
+			l.setResolver(r);
+			l.setCache(null);
+			l.setSearchPath((Name[]) null);
+			Record[] records = l.run();
+			if (records != null && records.length > 0) {
+				for (Record ns : records) {
+					TXTRecord tr = (TXTRecord) ns;
+					result.addAll(tr.getStrings());
+				}
+			}
+			if (!result.isEmpty()) {
+				Collections.sort(result);
+				return new DnsResultHolder(searchName.toString(true), result);
+			}
+
 		}
-		Collections.sort(result);
-		return result;
+
+		return null;
 	}
 
 	public static String reverseDns(String hostIp, List<String> resolverAddresses) {

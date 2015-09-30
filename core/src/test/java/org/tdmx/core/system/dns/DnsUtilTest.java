@@ -21,14 +21,16 @@ package org.tdmx.core.system.dns;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
+import org.tdmx.core.system.dns.DnsUtils.DnsResultHolder;
+import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
 public class DnsUtilTest {
 
@@ -69,27 +71,62 @@ public class DnsUtilTest {
 
 	@Test
 	public void testAuthoritativeNameServers_KMT() throws Exception {
-		List<String> kmt = Arrays.asList(new String[] { "ns-748.awsdns-29.net" });
+		String[] kmt = new String[] { "ns-1447.awsdns-52.org", "ns-1857.awsdns-40.co.uk", "ns-44.awsdns-05.com",
+				"ns-748.awsdns-29.net" };
 
-		List<String> ns = DnsUtils.getAuthNameServers("kidsmathstrainer.com",
-				Arrays.asList(new String[] { "8.8.8.8" }));
-		assertArrayEquals(kmt.toArray(new String[0]), ns.toArray(new String[0]));
+		DnsResultHolder h = DnsUtils.getNameServers("kidsmathstrainer.com", Arrays.asList(new String[] { "8.8.8.8" }));
+		assertEquals("kidsmathstrainer.com", h.getApex());
+		assertArrayEquals(kmt, h.getRecords().toArray(new String[0]));
 	}
 
 	@Test
-	@Ignore("roundrobin of SOA record")
-	public void testAuthoritativeNameServers_GP() throws Exception {
-		List<String> kmt = Arrays.asList(new String[] { "ns3.google.com" });
-		List<String> ns = DnsUtils.getAuthNameServers("plus.google.com", DnsUtils.getSystemDnsResolverAddresses());
-		assertArrayEquals(kmt.toArray(new String[0]), ns.toArray(new String[0]));
+	public void testNameServers_Google() throws Exception {
+		String[] kmt = new String[] { "ns1.google.com", "ns2.google.com", "ns3.google.com", "ns4.google.com" };
+
+		DnsResultHolder h = DnsUtils.getNameServers("google.com", Arrays.asList(new String[] { "8.8.8.8" }));
+		assertEquals("google.com", h.getApex());
+		assertArrayEquals(kmt, h.getRecords().toArray(new String[0]));
+	}
+
+	@Test
+	public void testNameServers_GP() throws Exception {
+		String[] kmt = new String[] { "ns1.google.com", "ns2.google.com", "ns3.google.com", "ns4.google.com" };
+
+		DnsResultHolder h = DnsUtils.getNameServers("plus.google.com", Arrays.asList(new String[] { "8.8.8.8" }));
+		assertEquals("google.com", h.getApex());
+		assertArrayEquals(kmt, h.getRecords().toArray(new String[0]));
 	}
 
 	@Test
 	public void testTXT_KMT() throws Exception {
-		String[] txtRecords = new String[] { "ZAC=1234,scsHostname=myhostname.com",
-				"ZAC=123456,scsHostname=myhostname2.com" };
-		List<String> ns = DnsUtils.getTXTRecords("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
-		assertArrayEquals(txtRecords, ns.toArray(new String[0]));
+		String[] txtRecords = new String[] {
+				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/" };
+		DnsResultHolder h = DnsUtils.getTXTRecords("kidsmathstrainer.com", DnsUtils.getSystemDnsResolverAddresses());
+		assertEquals("kidsmathstrainer.com", h.getApex());
+		assertArrayEquals(txtRecords, h.getRecords().toArray(new String[0]));
 	}
 
+	@Test
+	public void testMatchTxtRecord_OK() {
+		assertTrue(DnsUtils.matchesTdmxZoneRecord(
+				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/"));
+	}
+
+	@Test
+	public void testMatchTxtRecord_NOK() {
+		assertFalse(DnsUtils.matchesTdmxZoneRecord(
+				"tdmx version=nok zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/"));
+		assertFalse(DnsUtils.matchesTdmxZoneRecord(
+				"dmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/"));
+	}
+
+	@Test
+	public void testParseTxtRecord() {
+		TdmxZoneRecord zr = DnsUtils.parseTdmxZoneRecord(
+				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/");
+		assertNotNull(zr);
+		assertEquals(1, zr.getVersion());
+		assertEquals("a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310", zr.getZacFingerprint());
+		assertEquals("https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/", zr.getScsUrl());
+	}
 }
