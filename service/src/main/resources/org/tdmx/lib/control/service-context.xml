@@ -131,6 +131,13 @@
 	</bean>
 	
 
+	<bean id="tdmx.lib.control.dao.DnsDomainZoneDao" class="org.tdmx.lib.control.dao.DnsDomainZoneDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.DnsDomainZoneRepository" class="org.tdmx.lib.control.service.DnsDomainZoneRepositoryImpl">
+		<property name="dnsDomainZoneDao"	ref="tdmx.lib.control.dao.DnsDomainZoneDao" />
+	</bean>
+
 	<bean id="tdmx.lib.control.dao.ControlJobDao" class="org.tdmx.lib.control.dao.ControlJobDaoImpl">
 	</bean>
 	
@@ -159,9 +166,6 @@
 		<property name="batchSize" value="10"/>
 		<property name="initialLowValue" value="1000000"/>
 		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
-	</bean>
-
-	<bean id="tdmx.lib.control.DomainZoneResolutionService" class="org.tdmx.lib.control.service.DomainZoneResolutionServiceImpl">
 	</bean>
 
 

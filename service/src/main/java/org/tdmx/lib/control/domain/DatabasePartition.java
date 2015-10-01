@@ -73,7 +73,7 @@ public class DatabasePartition implements Serializable {
 	@Column(length = DatabaseType.MAX_DBTYPE_LEN, nullable = false)
 	private DatabaseType dbType;
 
-	@Column(length = AccountZone.MAX_SEGMENT_LEN, nullable = false)
+	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
 	@Column(length = MAX_URL_LEN, nullable = false)

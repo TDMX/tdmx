@@ -16,26 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.lib.control.domain;
 
-import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import java.util.Arrays;
+import java.util.Date;
 
-/**
- * Service for retrieval of TDMX information for all Domains.
- * 
- * @author Peter
- * 
- */
-public interface DomainZoneResolutionService {
+public class DnsDomainZoneFacade {
 
-	/**
-	 * Determine the DomainZoneApexInfo about the domain by recursive lookup of the domain until the domain's top-level
-	 * domain (root). If the domain has no TDMX information anchored at any level at or above itself in DNS, then return
-	 * null.
-	 * 
-	 * @param domainName
-	 * @return null if no TDMX info found, else the domain's TDMX zone root info.
-	 */
-	public DomainZoneApexInfo resolveDomain(String domainName);
+	public static DnsDomainZone createDnsDomainZone(String domainName, String zoneApex, String scsHostname, Date from,
+			Date to) {
+
+		DnsDomainZone s = new DnsDomainZone();
+		s.setDomainName(domainName);
+		s.setZoneApex(zoneApex);
+		s.setScsUrl("https://" + scsHostname + "/scs/v1.0/");
+		s.setZacFingerprint("abcdef1234567890");
+		s.setValidFromTime(from);
+		s.setValidUntilTime(to);
+		s.setNameServerAddresses(Arrays.asList("n1.ns.com", "n2.ns.com", "n3.ns.com"));
+		return s;
+	}
 
 }

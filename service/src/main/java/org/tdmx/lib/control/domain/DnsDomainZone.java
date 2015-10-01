@@ -35,19 +35,23 @@ import javax.persistence.TemporalType;
 import org.tdmx.core.system.lang.StringUtils;
 
 /**
- * A DnsZone provides information about the TDMX zone root in DNS.
+ * A DnsDomainZone provides information (past and present) about the TDMX zone root in DNS.
+ * 
+ * We keep a record of the TDMX zone information along the time axis. Only maximum one record should be valid at any one
+ * time.
  * 
  * @author Peter Klauser
  * 
  */
 @Entity
-@Table(name = "DnsZone")
-public class DnsZone implements Serializable {
+@Table(name = "DnsDomainZone")
+public class DnsDomainZone implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	public static final int MAX_DOMAINNAME_LEN = 255;
 	public static final int MAX_URL_LEN = 255;
 	public static final int MAX_NAMESERVERS_LEN = 1000;
 
@@ -58,11 +62,23 @@ public class DnsZone implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DnsZoneIdGen")
-	@TableGenerator(name = "DnsZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "dnsZoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DnsDomainZoneIdGen")
+	@TableGenerator(name = "DnsDomainZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "dnsDomainZoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
+	// TODO non unique index on domainName
+	@Column(length = MAX_DOMAINNAME_LEN, nullable = false)
+	private String domainName;
+
+	@Column(nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date validFromTime;
+
+	@Column(nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date validUntilTime;
+
+	@Column(length = MAX_DOMAINNAME_LEN, nullable = false)
 	private String zoneApex;
 
 	/**
@@ -83,10 +99,6 @@ public class DnsZone implements Serializable {
 	@Column(length = MAX_URL_LEN, nullable = false)
 	private String scsUrl;
 
-	@Column(nullable = false)
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date validUntilTime;
-
 	/**
 	 * The authoritative DNS NameServers of the zoneApex domain.
 	 */
@@ -103,16 +115,22 @@ public class DnsZone implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("DnsResolverGroup [id=");
+		builder.append("DnsDomainZone [id=");
 		builder.append(id);
+		builder.append(", domainName=");
+		builder.append(domainName);
+		builder.append(", validFromTime=");
+		builder.append(validFromTime);
+		builder.append(", validUntilTime=");
+		builder.append(validUntilTime);
+		builder.append(", zoneApex=");
+		builder.append(zoneApex);
 		builder.append(", version=");
 		builder.append(version);
 		builder.append(", zacFingerprint=");
 		builder.append(zacFingerprint);
 		builder.append(", scsUrl=");
 		builder.append(scsUrl);
-		builder.append(", validUntilTime=");
-		builder.append(validUntilTime);
 		builder.append(", nameServerList=");
 		builder.append(nameServerList);
 		builder.append("]");
@@ -145,6 +163,62 @@ public class DnsZone implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
+	}
+
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	public String getZacFingerprint() {
+		return zacFingerprint;
+	}
+
+	public void setZacFingerprint(String zacFingerprint) {
+		this.zacFingerprint = zacFingerprint;
+	}
+
+	public String getScsUrl() {
+		return scsUrl;
+	}
+
+	public void setScsUrl(String scsUrl) {
+		this.scsUrl = scsUrl;
+	}
+
+	public Date getValidFromTime() {
+		return validFromTime;
+	}
+
+	public void setValidFromTime(Date validFromTime) {
+		this.validFromTime = validFromTime;
+	}
+
+	public Date getValidUntilTime() {
+		return validUntilTime;
+	}
+
+	public void setValidUntilTime(Date validUntilTime) {
+		this.validUntilTime = validUntilTime;
 	}
 
 }

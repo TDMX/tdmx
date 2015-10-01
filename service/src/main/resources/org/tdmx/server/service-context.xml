@@ -27,6 +27,11 @@
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository"/>
 	</bean>
 	
+	<bean id="tdmx.server.DomainZoneResolutionService" class="org.tdmx.server.runtime.DomainZoneResolutionServiceImpl">
+		<property name="dnsResolverGroupFactory" ref="tdmx.server.DnsResolverGroupCache"/>
+		<property name="dnsDomainZoneService" ref="tdmx.lib.control.DnsDomainZoneRepository" />
+	</bean>
+
 	<bean id="tdmx.server.BroadcastEventDelegater" class="org.tdmx.server.pcs.BroadcastEventDelegater">
 		<property name="sizeLimit" value="10"/>
 		<property name="cacheInvalidationListeners">

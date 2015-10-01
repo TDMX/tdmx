@@ -16,17 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
 
-import java.net.URL;
+package org.tdmx.server.runtime;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import org.tdmx.lib.control.service.DnsDomainZoneService;
 
 /**
- * TDMX information known about a domain from DNS.
+ * The concrete implementation of {@link DomainZoneResolutionService}
  * 
  * @author Peter Klauser
  * 
  */
-public class DomainZoneApexInfo {
+public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,36 +39,26 @@ public class DomainZoneApexInfo {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(DomainZoneResolutionServiceImpl.class);
 
-	private String domainName;
-	private String zoneApex;
-	private String scsHostname;
-	private String zacFingerprint;
-	private URL scsUrl;
+	private DnsResolverGroupFactory dnsResolverGroupFactory;
+	private DnsDomainZoneService dnsDomainZoneService;
+
+	@Override
+	public DomainZoneApexInfo resolveDomain(String domainName) {
+
+		// TODO #80
+
+		return null;
+	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public DomainZoneApexInfo() {
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DomainZoneApexInfo [domain=");
-		builder.append(domainName);
-		builder.append(" zoneApex=").append(zoneApex);
-		builder.append(", scsHostname=").append(scsHostname);
-		builder.append(", zacFingerprint=").append(zacFingerprint);
-		builder.append(", scsUrl=").append(scsUrl);
-		builder.append("]");
-		return builder.toString();
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -78,44 +72,20 @@ public class DomainZoneApexInfo {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getDomainName() {
-		return domainName;
+	public DnsDomainZoneService getDnsDomainZoneService() {
+		return dnsDomainZoneService;
 	}
 
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public void setDnsDomainZoneService(DnsDomainZoneService dnsDomainZoneService) {
+		this.dnsDomainZoneService = dnsDomainZoneService;
 	}
 
-	public String getZoneApex() {
-		return zoneApex;
+	public DnsResolverGroupFactory getDnsResolverGroupFactory() {
+		return dnsResolverGroupFactory;
 	}
 
-	public void setZoneApex(String zoneApex) {
-		this.zoneApex = zoneApex;
-	}
-
-	public String getScsHostname() {
-		return scsHostname;
-	}
-
-	public void setScsHostname(String scsHostname) {
-		this.scsHostname = scsHostname;
-	}
-
-	public String getZacFingerprint() {
-		return zacFingerprint;
-	}
-
-	public void setZacFingerprint(String zacFingerprint) {
-		this.zacFingerprint = zacFingerprint;
-	}
-
-	public URL getScsUrl() {
-		return scsUrl;
-	}
-
-	public void setScsUrl(URL scsUrl) {
-		this.scsUrl = scsUrl;
+	public void setDnsResolverGroupFactory(DnsResolverGroupFactory dnsResolverGroupFactory) {
+		this.dnsResolverGroupFactory = dnsResolverGroupFactory;
 	}
 
 }

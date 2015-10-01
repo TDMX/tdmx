@@ -67,7 +67,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = Account.MAX_ACCOUNTID_LEN, nullable = false)
 	private String accountId;
 
-	@Column(length = AccountZone.MAX_ZONEAPEX_LEN, nullable = false)
+	@Column(length = DnsDomainZone.MAX_DOMAINNAME_LEN, nullable = false)
 	private String zoneApex;
 
 	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false, unique = true)

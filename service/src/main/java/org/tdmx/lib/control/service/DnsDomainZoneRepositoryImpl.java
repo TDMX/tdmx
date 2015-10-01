@@ -19,17 +19,21 @@
 
 package org.tdmx.lib.control.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.lib.control.dao.DnsDomainZoneDao;
+import org.tdmx.lib.control.domain.DnsDomainZone;
 
 /**
- * The concrete implementation of {@link DomainZoneResolutionService}
+ * A transactional service managing the DnsDomainZone information.
  * 
  * @author Peter Klauser
  * 
  */
-public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionService {
+public class DnsDomainZoneRepositoryImpl implements DnsDomainZoneService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,15 +42,9 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(DomainZoneResolutionServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DnsDomainZoneRepositoryImpl.class);
 
-	@Override
-	public DomainZoneApexInfo resolveDomain(String domainName) {
-
-		// TODO #80
-
-		return null;
-	}
+	private DnsDomainZoneDao dnsDomainZoneDao;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,6 +53,43 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+	@Override
+	@Transactional(value = "ControlDB")
+	public void createOrUpdate(DnsDomainZone dnsDomainZone) {
+		if (dnsDomainZone.getId() != null) {
+			DnsDomainZone storedDnsDomainZone = getDnsDomainZoneDao().loadById(dnsDomainZone.getId());
+			if (storedDnsDomainZone != null) {
+				getDnsDomainZoneDao().merge(dnsDomainZone);
+			} else {
+				log.warn("Unable to find DnsDomainZone with id " + dnsDomainZone.getId());
+			}
+		} else {
+			getDnsDomainZoneDao().persist(dnsDomainZone);
+		}
+	}
+
+	@Override
+	@Transactional(value = "ControlDB")
+	public void delete(DnsDomainZone dnsDomainZone) {
+		DnsDomainZone storedDnsDomainZone = getDnsDomainZoneDao().loadById(dnsDomainZone.getId());
+		if (storedDnsDomainZone != null) {
+			getDnsDomainZoneDao().delete(storedDnsDomainZone);
+		} else {
+			log.warn("Unable to find DnsDomainZone to delete with id " + dnsDomainZone.getId());
+		}
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public DnsDomainZone findCurrentByDomain(String domainName) {
+		return getDnsDomainZoneDao().loadByCurrentDomain(domainName);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public List<DnsDomainZone> findByDomain(String domainName) {
+		return getDnsDomainZoneDao().loadByDomain(domainName);
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -67,5 +102,13 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public DnsDomainZoneDao getDnsDomainZoneDao() {
+		return dnsDomainZoneDao;
+	}
+
+	public void setDnsDomainZoneDao(DnsDomainZoneDao dnsDomainZoneDao) {
+		this.dnsDomainZoneDao = dnsDomainZoneDao;
+	}
 
 }

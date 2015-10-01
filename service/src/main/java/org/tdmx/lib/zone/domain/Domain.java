@@ -30,6 +30,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.lib.control.domain.DnsDomainZone;
+
 /**
  * An Domain (within a Zone) managed by a ServiceProvider
  * 
@@ -43,7 +45,7 @@ public class Domain implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 255;
+	public static final int MAX_NAME_LEN = DnsDomainZone.MAX_DOMAINNAME_LEN;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

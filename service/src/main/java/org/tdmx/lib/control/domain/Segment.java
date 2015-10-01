@@ -42,7 +42,7 @@ public class Segment implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	public static final int MAX_HOSTNAME_LEN = 255;
+	public static final int MAX_SEGMENT_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -55,10 +55,10 @@ public class Segment implements Serializable {
 	@TableGenerator(name = "SegmentIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "segmentObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@Column(length = AccountZone.MAX_SEGMENT_LEN, nullable = false)
+	@Column(length = MAX_SEGMENT_LEN, nullable = false)
 	private String segmentName;
 
-	@Column(length = MAX_HOSTNAME_LEN)
+	@Column(length = DnsDomainZone.MAX_DOMAINNAME_LEN)
 	private String scsHostname;
 
 	// -------------------------------------------------------------------------

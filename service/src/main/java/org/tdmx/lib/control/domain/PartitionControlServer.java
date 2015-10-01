@@ -55,7 +55,7 @@ public class PartitionControlServer implements Serializable {
 	@TableGenerator(name = "PartitionControlServerIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "pcsObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@Column(length = AccountZone.MAX_SEGMENT_LEN, nullable = false)
+	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
 	@Column(length = MAX_IPADDRESS_LEN)
@@ -66,7 +66,7 @@ public class PartitionControlServer implements Serializable {
 
 	@Column(nullable = false)
 	/**
-	 * Used for load balanding to this server if Hash(key) % total#servers == serverModulo.
+	 * Used for load balancing to this server if Hash(key) % total#servers == serverModulo.
 	 */
 	private int serverModulo;
 

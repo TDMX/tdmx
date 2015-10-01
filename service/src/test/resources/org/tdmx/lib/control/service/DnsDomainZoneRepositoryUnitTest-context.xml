@@ -13,13 +13,5 @@
 
 	<import resource="classpath:/org/tdmx/test-context.xml"/>
 
-	<!-- overrides -->
-	<bean id="scs.SessionAllocationService" class="org.tdmx.server.session.allocation.MockServerSessionAllocationServiceImpl">
-	</bean>
-	<bean id="tdmx.server.DomainZoneResolutionService" class="org.mockito.Mockito" factory-method="mock"> 
-	    <constructor-arg value="org.tdmx.server.runtime.DomainZoneResolutionService" /> 
-	</bean>
-	
-	
 	
 </beans>

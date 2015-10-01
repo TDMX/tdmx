@@ -45,8 +45,6 @@ public class AccountZone implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ZONEAPEX_LEN = 255;
-	public static final int MAX_SEGMENT_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -59,10 +57,10 @@ public class AccountZone implements Serializable {
 	private Long id;
 
 	// TODO index zoneApex for agent authentication service
-	@Column(length = MAX_ZONEAPEX_LEN, nullable = false, unique = true)
+	@Column(length = DnsDomainZone.MAX_DOMAINNAME_LEN, nullable = false, unique = true)
 	private String zoneApex;
 
-	// TODO separate status into AccessStatus and ProvisioningStatus
+	// TODO separate status into AccessStatus and ProvisioningStatus?
 	@Enumerated(EnumType.STRING)
 	@Column(length = AccountZoneStatus.MAX_ACCOUNTZONESTATUS_LEN, nullable = false)
 	private AccountZoneStatus status;
@@ -73,7 +71,7 @@ public class AccountZone implements Serializable {
 	/**
 	 * The segment is a secondary partitioning criteria like "premium" or "free" tier.
 	 */
-	@Column(length = MAX_SEGMENT_LEN, nullable = false)
+	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
 	/**
