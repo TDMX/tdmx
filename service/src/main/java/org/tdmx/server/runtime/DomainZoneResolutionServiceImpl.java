@@ -61,7 +61,6 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	@Override
 	public DomainZoneApexInfo resolveDomain(String domainName) {
 
-		// TODO #80
 		DnsDomainZone storedZoneInfo = dnsDomainZoneService.findCurrentByDomain(domainName);
 		if (storedZoneInfo != null) {
 			return mapFrom(storedZoneInfo);
