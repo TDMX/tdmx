@@ -18,18 +18,20 @@
  */
 package org.tdmx.lib.control.domain;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 
 public class DnsDomainZoneFacade {
 
 	public static DnsDomainZone createDnsDomainZone(String domainName, String zoneApex, String scsHostname, Date from,
-			Date to) {
+			Date to) throws MalformedURLException {
 
 		DnsDomainZone s = new DnsDomainZone();
 		s.setDomainName(domainName);
 		s.setZoneApex(zoneApex);
-		s.setScsUrl("https://" + scsHostname + "/scs/v1.0/");
+		s.setScsUrl(new URL("https://" + scsHostname + "/scs/v1.0/"));
 		s.setZacFingerprint("abcdef1234567890");
 		s.setValidFromTime(from);
 		s.setValidUntilTime(to);

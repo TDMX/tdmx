@@ -27,9 +27,14 @@
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository"/>
 	</bean>
 	
-	<bean id="tdmx.server.DomainZoneResolutionService" class="org.tdmx.server.runtime.DomainZoneResolutionServiceImpl">
+	<bean id="tdmx.server.DnsZoneResolutionService" class="org.tdmx.server.runtime.DnsZoneResolutionServiceImpl">
 		<property name="dnsResolverGroupFactory" ref="tdmx.server.DnsResolverGroupCache"/>
+	</bean>
+	
+	<bean id="tdmx.server.DomainZoneResolutionService" class="org.tdmx.server.runtime.DomainZoneResolutionServiceImpl">
+		<property name="dnsZoneResolutionService" ref="tdmx.server.DnsZoneResolutionService"/>
 		<property name="dnsDomainZoneService" ref="tdmx.lib.control.DnsDomainZoneRepository" />
+		<property name="dnsCacheValiditySeconds" value="86400"/> <!-- 24hrs -->
 	</bean>
 
 	<bean id="tdmx.server.BroadcastEventDelegater" class="org.tdmx.server.pcs.BroadcastEventDelegater">

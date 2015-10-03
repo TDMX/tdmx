@@ -19,6 +19,8 @@
 package org.tdmx.core.system.dns;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import org.xbill.DNS.ReverseMap;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.TXTRecord;
+import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
 /**
@@ -72,9 +75,9 @@ public class DnsUtils {
 	public static class TdmxZoneRecord {
 		private final int version;
 		private final String zacFingerprint;
-		private final String scsUrl;
+		private final URL scsUrl;
 
-		public TdmxZoneRecord(int version, String zacFingerprint, String scsUrl) {
+		public TdmxZoneRecord(int version, String zacFingerprint, URL scsUrl) {
 			this.version = version;
 			this.zacFingerprint = zacFingerprint;
 			this.scsUrl = scsUrl;
@@ -88,7 +91,7 @@ public class DnsUtils {
 			return zacFingerprint;
 		}
 
-		public String getScsUrl() {
+		public URL getScsUrl() {
 			return scsUrl;
 		}
 	}
@@ -149,7 +152,11 @@ public class DnsUtils {
 	public static TdmxZoneRecord parseTdmxZoneRecord(String textRecord) {
 		Matcher m = TDMX_DNS_TXT_RECORD_PATTERN.matcher(textRecord);
 		if (m.matches()) {
-			return new TdmxZoneRecord(Integer.valueOf(m.group(1)), m.group(2), m.group(3));
+			try {
+				return new TdmxZoneRecord(Integer.valueOf(m.group(1)), m.group(2), new URL(m.group(3)));
+			} catch (NumberFormatException | MalformedURLException e) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -237,9 +244,12 @@ public class DnsUtils {
 	 * 
 	 * @param domainName
 	 * @param resolverAddresses
+	 * @throws TextParseException
+	 * @throws UnknownHostException
 	 * @throws Exception
 	 */
-	public static DnsResultHolder getNameServers(String domainName, List<String> resolverAddresses) throws Exception {
+	public static DnsResultHolder getNameServers(String domainName, List<String> resolverAddresses)
+			throws TextParseException, UnknownHostException {
 		List<String> result = new ArrayList<>();
 
 		Name n = Name.fromString(domainName);
@@ -278,10 +288,13 @@ public class DnsUtils {
 	 * 
 	 * @param domainName
 	 * @param resolverAddresses
+	 * @throws TextParseException
+	 * @throws UnknownHostException
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static DnsResultHolder getTdmxZoneRecord(String domainName, List<String> resolverAddresses) throws Exception {
+	public static DnsResultHolder getTdmxZoneRecord(String domainName, List<String> resolverAddresses)
+			throws TextParseException, UnknownHostException {
 		List<String> result = new ArrayList<>();
 
 		Name dn = Name.fromString(domainName);
@@ -316,9 +329,7 @@ public class DnsUtils {
 				Collections.sort(result);
 				return new DnsResultHolder(searchName.toString(true), result);
 			}
-
 		}
-
 		return null;
 	}
 

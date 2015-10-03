@@ -19,8 +19,13 @@
 
 package org.tdmx.server.runtime;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.DnsDomainZone;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.control.service.DnsDomainZoneService;
 
@@ -41,16 +46,9 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(DomainZoneResolutionServiceImpl.class);
 
-	private DnsResolverGroupFactory dnsResolverGroupFactory;
+	private DnsZoneResolutionService dnsZoneResolutionService;
 	private DnsDomainZoneService dnsDomainZoneService;
-
-	@Override
-	public DomainZoneApexInfo resolveDomain(String domainName) {
-
-		// TODO #80
-
-		return null;
-	}
+	private int dnsCacheValiditySeconds = 24 * 60 * 60;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,6 +58,40 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public DomainZoneApexInfo resolveDomain(String domainName) {
+
+		// TODO #80
+		DnsDomainZone storedZoneInfo = dnsDomainZoneService.findCurrentByDomain(domainName);
+		if (storedZoneInfo != null) {
+			return mapFrom(storedZoneInfo);
+		}
+		DnsDomainZone dnsInfo = dnsZoneResolutionService.resolveDomain(domainName);
+		if (dnsInfo != null) {
+			List<DnsDomainZone> allRecords = dnsDomainZoneService.findByDomain(domainName);
+			if (allRecords.isEmpty()) {
+				extendValidity(dnsInfo);
+				dnsDomainZoneService.createOrUpdate(dnsInfo);
+				return mapFrom(dnsInfo);
+			} else {
+				DnsDomainZone lastRecord = allRecords.get(0);
+
+				if (lastRecord.matches(dnsInfo)) {
+					// extend validity of existing record
+					extendValidity(lastRecord);
+					dnsDomainZoneService.createOrUpdate(lastRecord);
+					return mapFrom(lastRecord);
+				} else {
+					extendValidity(dnsInfo);
+					dnsDomainZoneService.createOrUpdate(dnsInfo);
+					return mapFrom(dnsInfo);
+				}
+			}
+		}
+
+		return null;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -68,6 +100,27 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void extendValidity(DnsDomainZone dnsInfo) {
+		if (dnsInfo.getValidFromTime() == null) {
+			dnsInfo.setValidFromTime(new Date());
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, dnsCacheValiditySeconds);
+		dnsInfo.setValidUntilTime(cal.getTime());
+	}
+
+	private DomainZoneApexInfo mapFrom(DnsDomainZone dnsInfo) {
+		if (dnsInfo == null) {
+			return null;
+		}
+		DomainZoneApexInfo zi = new DomainZoneApexInfo();
+		zi.setDomainName(dnsInfo.getDomainName());
+		zi.setZacFingerprint(dnsInfo.getZacFingerprint());
+		zi.setScsHostname(dnsInfo.getScsHostname());
+		zi.setScsUrl(dnsInfo.getScsUrl());
+
+		return zi;
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -80,12 +133,20 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 		this.dnsDomainZoneService = dnsDomainZoneService;
 	}
 
-	public DnsResolverGroupFactory getDnsResolverGroupFactory() {
-		return dnsResolverGroupFactory;
+	public DnsZoneResolutionService getDnsZoneResolutionService() {
+		return dnsZoneResolutionService;
 	}
 
-	public void setDnsResolverGroupFactory(DnsResolverGroupFactory dnsResolverGroupFactory) {
-		this.dnsResolverGroupFactory = dnsResolverGroupFactory;
+	public void setDnsZoneResolutionService(DnsZoneResolutionService dnsZoneResolutionService) {
+		this.dnsZoneResolutionService = dnsZoneResolutionService;
+	}
+
+	public int getDnsCacheValiditySeconds() {
+		return dnsCacheValiditySeconds;
+	}
+
+	public void setDnsCacheValiditySeconds(int dnsCacheValiditySeconds) {
+		this.dnsCacheValiditySeconds = dnsCacheValiditySeconds;
 	}
 
 }

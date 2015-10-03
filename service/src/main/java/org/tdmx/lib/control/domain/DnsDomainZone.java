@@ -19,6 +19,8 @@
 package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -145,6 +147,57 @@ public class DnsDomainZone implements Serializable {
 		nameServerList = StringUtils.convertStringListToCsv(nsAddresses);
 	}
 
+	public URL getScsUrl() {
+		try {
+			return new URL(scsUrl);
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+
+	public void setScsUrl(URL scsUrl) {
+		this.scsUrl = scsUrl.toString();
+	}
+
+	public String getScsHostname() {
+		URL u = getScsUrl();
+		if (u != null) {
+			return u.getHost();
+		}
+		return null;
+	}
+
+	public boolean matches(DnsDomainZone other) {
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (nameServerList == null) {
+			if (other.nameServerList != null)
+				return false;
+		} else if (!nameServerList.equals(other.nameServerList))
+			return false;
+		if (scsUrl == null) {
+			if (other.scsUrl != null)
+				return false;
+		} else if (!scsUrl.equals(other.scsUrl))
+			return false;
+		if (version != other.version)
+			return false;
+		if (zacFingerprint == null) {
+			if (other.zacFingerprint != null)
+				return false;
+		} else if (!zacFingerprint.equals(other.zacFingerprint))
+			return false;
+		if (zoneApex == null) {
+			if (other.zoneApex != null)
+				return false;
+		} else if (!zoneApex.equals(other.zoneApex))
+			return false;
+		return true;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -195,14 +248,6 @@ public class DnsDomainZone implements Serializable {
 
 	public void setZacFingerprint(String zacFingerprint) {
 		this.zacFingerprint = zacFingerprint;
-	}
-
-	public String getScsUrl() {
-		return scsUrl;
-	}
-
-	public void setScsUrl(String scsUrl) {
-		this.scsUrl = scsUrl;
 	}
 
 	public Date getValidFromTime() {

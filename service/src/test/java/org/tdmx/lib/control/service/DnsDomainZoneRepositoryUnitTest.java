@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -123,14 +124,15 @@ public class DnsDomainZoneRepositoryUnitTest {
 		assertEquals(d1_from, zp1.getValidFromTime());
 		assertEquals(d1_to, zp1.getValidUntilTime());
 
-		zp1.setScsUrl("a new url");
+		zp1.setScsUrl(new URL("https://scsHost/url"));
 		service.createOrUpdate(zp1);
 
 		zp1 = service.findCurrentByDomain("domain1.zone.com");
 		assertNotNull(zp1);
 		assertEquals(d1_from, zp1.getValidFromTime());
 		assertEquals(d1_to, zp1.getValidUntilTime());
-		assertEquals("a new url", zp1.getScsUrl());
+		assertEquals("https://scsHost/url", zp1.getScsUrl().toString());
+		assertEquals("scsHost", zp1.getScsHostname());
 
 	}
 
