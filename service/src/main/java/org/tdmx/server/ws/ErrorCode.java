@@ -85,6 +85,8 @@ public enum ErrorCode {
 	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
 	InvalidMsgId(500, "Message ID invalid."),
+	InvalidChannelOrigin(500, "Channel Origin invalid."),
+	InvalidChannelDestination(500, "Channel Origin invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 	MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
 	MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),

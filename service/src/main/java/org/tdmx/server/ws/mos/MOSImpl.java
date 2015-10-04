@@ -117,7 +117,8 @@ public class MOSImpl implements MOS {
 
 	private int batchSize = 100;
 
-	// TODO idea - keep an atomic integer of "msg"count being sent and make this a part of the factor for MOS load
+	// TODO LATER: idea - keep an atomic integer of "msg"count being sent and make this a part of the factor for MOS
+	// load
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -210,9 +211,10 @@ public class MOSImpl implements MOS {
 
 		ChannelMessage m = a2d.mapMessage(msg);
 
-		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getUsersignature()
-				.getUserIdentity().getUsercertificate(), header.getUsersignature().getUserIdentity()
-				.getDomaincertificate(), header.getUsersignature().getUserIdentity().getRootcertificate());
+		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(
+				header.getUsersignature().getUserIdentity().getUsercertificate(),
+				header.getUsersignature().getUserIdentity().getDomaincertificate(),
+				header.getUsersignature().getUserIdentity().getRootcertificate());
 		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
@@ -234,15 +236,25 @@ public class MOSImpl implements MOS {
 
 		// cache the last used Channel in the session to avoid this search if always sending to the same dest.
 		ChannelName cn = a2d.mapChannelName(header.getChannel());
+		if (!srcUc.getDomainName().equals(cn.getOrigin().getDomainName())
+				|| !srcUc.getAddressName().equals(cn.getOrigin().getLocalName())) {
+			// check sender cert matches origin of channel sending on.
+			setError(ErrorCode.InvalidChannelOrigin, response);
+			return response;
+		}
+		if (!dstUc.getDomainName().equals(cn.getDestination().getDomainName())
+				|| !dstUc.getAddressName().equals(cn.getDestination().getLocalName())) {
+			// header channel dest matches the "to" User
+			setError(ErrorCode.InvalidChannelDestination, response);
+			return response;
+		}
 
 		Channel channel = session.getLastChannelUsed();
 		if (channel == null || !cn.equals(channel.getChannelName())) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 			sc.setDomainName(authorizedUser.getTdmxDomainName());
-			// TODO header channel origin matches the srcUser
 			sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
 			sc.getOrigin().setLocalName(header.getChannel().getOrigin().getLocalname());
-			// TODO header channel dest matches the to User
 			sc.getDestination().setDomainName(header.getChannel().getDestination().getDomain());
 			sc.getDestination().setLocalName(header.getChannel().getDestination().getLocalname());
 			sc.getDestination().setServiceName(header.getChannel().getDestination().getServicename());

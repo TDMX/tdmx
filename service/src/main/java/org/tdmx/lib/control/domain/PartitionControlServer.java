@@ -58,7 +58,7 @@ public class PartitionControlServer implements Serializable {
 	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
-	@Column(length = MAX_IPADDRESS_LEN)
+	@Column(length = MAX_IPADDRESS_LEN, nullable = false)
 	private String ipAddress;
 
 	@Column(nullable = false)

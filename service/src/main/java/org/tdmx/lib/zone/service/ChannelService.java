@@ -26,8 +26,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
@@ -75,7 +75,7 @@ public interface ChannelService {
 	 * 
 	 * - No requested send/recv allowed in existing ca.
 	 * 
-	 * - if allowing send/recv, the destination service must exist. TODO
+	 * - if allowing send/recv, the destination service must exist.
 	 * 
 	 * or 2) sendAuth(+confirm requested recvAuth)
 	 * 
@@ -87,7 +87,7 @@ public interface ChannelService {
 	 * 
 	 * - no reqRecvAuth allowed in existing ca.
 	 * 
-	 * - if allowing the reception, the destination service must exist. TODO
+	 * - if allowing the reception, the destination service must exist.
 	 * 
 	 * - change of recvAuth vs existing recvAuth forces transfer(relay if different SP)
 	 * 

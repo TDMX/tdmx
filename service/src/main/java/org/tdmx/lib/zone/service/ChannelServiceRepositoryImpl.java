@@ -38,8 +38,8 @@ import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationStatus;
 import org.tdmx.lib.zone.domain.ChannelDestination;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSession;
@@ -274,7 +274,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
 		TemporaryChannel tempChannel = findByTempChannelId(tempChannelId);
 
-		Channel newChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(), tempChannel.getDestination());
+		Channel newChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(),
+				tempChannel.getDestination());
 		ChannelAuthorization newCA = new ChannelAuthorization(newChannel);
 		newCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 
@@ -373,8 +374,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
-		// TODO MOS submit messge - check sender cert matches origin of channel sending on.
-
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
@@ -389,7 +388,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(msg.getPayloadLength())));
-		if (quota.getUnsentBytes().subtract(quota.getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+		if (quota.getUnsentBytes().subtract(quota.getUnsentBuffer().getHighMarkBytes())
+				.compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
 			quota.setSenderStatus(FlowControlStatus.CLOSED);
 		}
