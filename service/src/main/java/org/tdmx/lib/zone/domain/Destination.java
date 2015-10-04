@@ -73,13 +73,13 @@ public class Destination implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "identifier", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN)),
-			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN)),
-			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN)),
-			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate")),
-			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
-			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
-			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+			@AttributeOverride(name = "encryptionContextId", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN) ),
+			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN) ),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN) ),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate") ),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN) ),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN) ),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN) ) })
 	private DestinationSession destinationSession;
 
 	// -------------------------------------------------------------------------

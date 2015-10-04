@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
+import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -35,6 +36,7 @@ import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 /**
  * Management Services for a Channels and it's ChannelAuthorization and ChannelFlowTargets.
@@ -129,8 +131,24 @@ public interface ChannelService {
 	 */
 	public Channel relayInitialAuthorization(Zone zone, Long tempChannelId, EndpointPermission otherPerm);
 
+	/**
+	 * Creates (persists) the Channel.
+	 * 
+	 * NOTE: this is only called by {@link ZoneTransferTask}, since Channel's are normally created by
+	 * {@link #setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}
+	 * 
+	 * @param channel
+	 */
 	public void create(Channel channel);
 
+	/**
+	 * Creates (persists) the TemporaryChannel.
+	 * 
+	 * NOTE: called by {@link SCS#getMRSSession(org.tdmx.core.api.v01.scs.GetMRSSession)} when the channel does not
+	 * exist and relaying wants to create a session on the Channel.
+	 * 
+	 * @param channel
+	 */
 	public void create(TemporaryChannel channel);
 
 	/**

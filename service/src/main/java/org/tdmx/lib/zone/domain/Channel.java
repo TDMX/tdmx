@@ -46,7 +46,8 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
  * ChannelFlowSessions.
  * 
  * The Channel is created on {@link ZAS#setChannelAuthorization(org.tdmx.core.api.v01.zas.SetChannelAuthorization)} by
- * own agents or relayed in via TODO
+ * own agents or relayed in via conversion of TemporaryChannel to Channel through
+ * {@link org.tdmx.lib.zone.service.ChannelService#relayInitialAuthorization(Zone, Long, EndpointPermission)}.
  * 
  * The Channel is deleted on
  * {@link ZAS#deleteChannelAuthorization(org.tdmx.core.api.v01.zas.DeleteChannelAuthorization)}.
@@ -77,35 +78,35 @@ public class Channel implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false)) })
+			@AttributeOverride(name = "localName", column = @Column(name = "originAddress", nullable = false) ),
+			@AttributeOverride(name = "domainName", column = @Column(name = "originDomain", nullable = false) ) })
 	private ChannelOrigin origin;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false)),
-			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false)),
-			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false)) })
+			@AttributeOverride(name = "localName", column = @Column(name = "destAddress", nullable = false) ),
+			@AttributeOverride(name = "domainName", column = @Column(name = "destDomain", nullable = false) ),
+			@AttributeOverride(name = "serviceName", column = @Column(name = "destService", nullable = false) ) })
 	private ChannelDestination destination;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "identifier", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN)),
-			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN)),
-			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN)),
-			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate")),
-			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)),
-			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN)),
-			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN)) })
+			@AttributeOverride(name = "encryptionContextId", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN) ),
+			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN) ),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN) ),
+			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate") ),
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN) ),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN) ),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN) ) })
 	private DestinationSession session;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false)),
-			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false)),
-			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false)),
-			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode")),
-			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN)) })
+			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false) ),
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState;
 
 	/**
@@ -164,10 +165,10 @@ public class Channel implements Serializable {
 	}
 
 	public boolean isOpen() {
-		return (authorization.getSendAuthorization() != null && EndpointPermissionGrant.ALLOW == authorization
-				.getSendAuthorization().getGrant())
-				|| (authorization.getRecvAuthorization() != null && EndpointPermissionGrant.ALLOW == authorization
-						.getRecvAuthorization().getGrant());
+		return (authorization.getSendAuthorization() != null
+				&& EndpointPermissionGrant.ALLOW == authorization.getSendAuthorization().getGrant())
+				|| (authorization.getRecvAuthorization() != null
+						&& EndpointPermissionGrant.ALLOW == authorization.getRecvAuthorization().getGrant());
 	}
 
 	@Override

@@ -79,7 +79,7 @@ public class ZoneFacade {
 
 	public static Destination createDestination(PKIXCredential userCred, Address address, Service service) {
 		DestinationSession ds = new DestinationSession();
-		ds.setIdentifier("1");
+		ds.setEncryptionContextId("1");
 		ds.setScheme("encryptionscheme");
 		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME
 

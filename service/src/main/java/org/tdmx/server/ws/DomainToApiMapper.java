@@ -87,8 +87,8 @@ public class DomainToApiMapper {
 		ci.setChannelauthorization(mapChannelAuthorization(c.getAuthorization()));
 		ci.setStatus(mapFlowStatus(c.getQuota()));
 		ci.setLevel(mapFlowControlLevel(c.getQuota()));
-		ci.setLimit(mapFlowControlLimit(c.getAuthorization().getUnsentBuffer(), c.getAuthorization()
-				.getUndeliveredBuffer()));
+		ci.setLimit(mapFlowControlLimit(c.getAuthorization().getUnsentBuffer(),
+				c.getAuthorization().getUndeliveredBuffer()));
 		ci.setSessioninfo(mapSessionInfo(c.getSession(), c.getProcessingState()));
 		return ci;
 	}
@@ -152,7 +152,7 @@ public class DomainToApiMapper {
 		Destinationsession f = new Destinationsession();
 
 		f.setUsersignature(mapUserSignature(ds.getSignature()));
-		f.setEncryptionContextId(ds.getIdentifier());
+		f.setEncryptionContextId(ds.getEncryptionContextId());
 		f.setScheme(ds.getScheme());
 		f.setSessionKey(ds.getSessionKey());
 

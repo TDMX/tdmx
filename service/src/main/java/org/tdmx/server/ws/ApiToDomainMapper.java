@@ -85,9 +85,9 @@ public class ApiToDomainMapper {
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
 		md.setPayloadSignature(msg.getHeader().getPayloadSignature());
 		md.setExternalReference(msg.getHeader().getExternalReference());
-		md.setReceiverCertificateChainPem(CertificateIOUtils.safeX509certsToPem(msg.getHeader().getTo()
-				.getUsercertificate(), msg.getHeader().getTo().getDomaincertificate(), msg.getHeader().getTo()
-				.getRootcertificate()));
+		md.setReceiverCertificateChainPem(
+				CertificateIOUtils.safeX509certsToPem(msg.getHeader().getTo().getUsercertificate(),
+						msg.getHeader().getTo().getDomaincertificate(), msg.getHeader().getTo().getRootcertificate()));
 		md.setSignature(mapUserSignature(msg.getHeader().getUsersignature()));
 
 		md.setChunkSize(msg.getPayload().getChunkSize());
@@ -122,7 +122,7 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		DestinationSession s = new DestinationSession();
-		s.setIdentifier(ds.getEncryptionContextId());
+		s.setEncryptionContextId(ds.getEncryptionContextId());
 		s.setScheme(ds.getScheme());
 		s.setSessionKey(ds.getSessionKey());
 
@@ -153,8 +153,9 @@ public class ApiToDomainMapper {
 		}
 		AgentSignature s = new AgentSignature();
 		if (signature.getAdministratorIdentity() != null) {
-			s.setCertificateChainPem(CertificateIOUtils.safeX509certsToPem(signature.getAdministratorIdentity()
-					.getDomaincertificate(), signature.getAdministratorIdentity().getRootcertificate()));
+			s.setCertificateChainPem(
+					CertificateIOUtils.safeX509certsToPem(signature.getAdministratorIdentity().getDomaincertificate(),
+							signature.getAdministratorIdentity().getRootcertificate()));
 		}
 		if (signature.getSignaturevalue() != null) {
 			s.setAlgorithm(mapSignatureAlgorithm(signature.getSignaturevalue().getSignatureAlgorithm()));
@@ -170,9 +171,10 @@ public class ApiToDomainMapper {
 		}
 		AgentSignature s = new AgentSignature();
 		if (signature.getUserIdentity() != null) {
-			s.setCertificateChainPem(CertificateIOUtils.safeX509certsToPem(signature.getUserIdentity()
-					.getUsercertificate(), signature.getUserIdentity().getDomaincertificate(), signature
-					.getUserIdentity().getRootcertificate()));
+			s.setCertificateChainPem(
+					CertificateIOUtils.safeX509certsToPem(signature.getUserIdentity().getUsercertificate(),
+							signature.getUserIdentity().getDomaincertificate(),
+							signature.getUserIdentity().getRootcertificate()));
 		}
 		if (signature.getSignaturevalue() != null) {
 			s.setAlgorithm(mapSignatureAlgorithm(signature.getSignaturevalue().getSignatureAlgorithm()));

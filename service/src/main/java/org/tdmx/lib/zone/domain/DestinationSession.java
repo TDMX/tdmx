@@ -43,8 +43,7 @@ public class DestinationSession implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
-	// TODO rename encryptionContextId
-	private String identifier;
+	private String encryptionContextId;
 
 	private String scheme;
 
@@ -68,7 +67,7 @@ public class DestinationSession implements Serializable {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("DestinationSession [");
-		builder.append("identifier=").append(identifier);
+		builder.append("encryptionContextId=").append(encryptionContextId);
 		builder.append("scheme=").append(scheme);
 		if (sessionKey != null) {
 			builder.append(", sessionKey.size=").append(sessionKey.length);
@@ -90,12 +89,12 @@ public class DestinationSession implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getIdentifier() {
-		return identifier;
+	public String getEncryptionContextId() {
+		return encryptionContextId;
 	}
 
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
+	public void setEncryptionContextId(String encryptionContextId) {
+		this.encryptionContextId = encryptionContextId;
 	}
 
 	public byte[] getSessionKey() {
