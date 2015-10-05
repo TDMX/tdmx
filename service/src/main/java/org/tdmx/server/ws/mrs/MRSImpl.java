@@ -106,7 +106,7 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getMsg() != null) {
 			processMessage(parameters.getMsg(), response);
 		} else if (parameters.getChunk() != null) {
-			// TODO relay in Chunk
+			// TODO #70: relay in Chunk
 		} else {
 
 			// TODO other relays
@@ -150,8 +150,8 @@ public class MRSImpl implements MRS {
 		// the signature of the Authorization needs checking.
 		EndpointPermission otherPerm = a2d.mapEndpointPermission(auth);
 
-		AgentCredentialDescriptor dac = credentialFactory.createAgentCredential(otherPerm.getSignature()
-				.getCertificateChain());
+		AgentCredentialDescriptor dac = credentialFactory
+				.createAgentCredential(otherPerm.getSignature().getCertificateChain());
 		if (dac == null || dac.getCredentialType() != AgentCredentialType.DAC) {
 			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return;
@@ -191,9 +191,10 @@ public class MRSImpl implements MRS {
 			return;
 		}
 
-		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(ds.getUsersignature().getUserIdentity()
-				.getUsercertificate(), ds.getUsersignature().getUserIdentity().getDomaincertificate(), ds
-				.getUsersignature().getUserIdentity().getRootcertificate());
+		AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(
+				ds.getUsersignature().getUserIdentity().getUsercertificate(),
+				ds.getUsersignature().getUserIdentity().getDomaincertificate(),
+				ds.getUsersignature().getUserIdentity().getRootcertificate());
 		if (uc == null || uc.getCredentialType() != AgentCredentialType.UC) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return;
@@ -237,9 +238,10 @@ public class MRSImpl implements MRS {
 		Chunk c = a2d.mapChunk(msg.getChunk());
 		ChannelMessage m = a2d.mapMessage(msg);
 
-		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(header.getUsersignature()
-				.getUserIdentity().getUsercertificate(), header.getUsersignature().getUserIdentity()
-				.getDomaincertificate(), header.getUsersignature().getUserIdentity().getRootcertificate());
+		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(
+				header.getUsersignature().getUserIdentity().getUsercertificate(),
+				header.getUsersignature().getUserIdentity().getDomaincertificate(),
+				header.getUsersignature().getUserIdentity().getRootcertificate());
 		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return;

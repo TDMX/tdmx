@@ -186,10 +186,10 @@ public class MOSImpl implements MOS {
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
 			return response;
 		}
-		// TODO validate Tx fields present if provided
+		// TODO LATER: validate Tx fields present if provided
 		Transaction tx = parameters.getTransaction();
 
-		// TODO check chunk's mac
+		// TODO #70: check chunk's mac
 
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
@@ -284,7 +284,7 @@ public class MOSImpl implements MOS {
 		// give the caller the continuationId for the next chunk
 		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null) {
-			// last chunk - what to do? TODO last chunk y/n? transaction y/n?
+			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
@@ -308,7 +308,7 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		// TODO check chunk's mac
+		// TODO #70: check chunk's mac
 
 		Chunk c = a2d.mapChunk(parameters.getChunk());
 
@@ -332,7 +332,7 @@ public class MOSImpl implements MOS {
 		// calculate the next continuationId
 		String nextContinuationId = mch.getContinuationId(c.getPos() + 1);
 		if (nextContinuationId == null) {
-			// this was the last chunk - what to do ? TODO transaction y/n?
+			// this was the last chunk - what to do ? TODO #70: transaction y/n?
 			// when to delete the msg from the
 
 		}
