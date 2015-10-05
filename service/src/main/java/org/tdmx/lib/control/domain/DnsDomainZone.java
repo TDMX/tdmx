@@ -68,7 +68,7 @@ public class DnsDomainZone implements Serializable {
 	@TableGenerator(name = "DnsDomainZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "dnsDomainZoneObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	// TODO non unique index on domainName
+	// TODO DB: non unique index on domainName
 	@Column(length = MAX_DOMAINNAME_LEN, nullable = false)
 	private String domainName;
 

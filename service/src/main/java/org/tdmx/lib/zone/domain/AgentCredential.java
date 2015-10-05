@@ -74,7 +74,7 @@ public class AgentCredential implements Serializable {
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	private Address address;
 
-	// TODO index fingerprint
+	// TODO DB: index fingerprint
 	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false)
 	private String fingerprint;
 

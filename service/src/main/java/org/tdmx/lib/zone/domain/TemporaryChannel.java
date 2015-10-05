@@ -34,12 +34,14 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
 import org.tdmx.core.api.v01.mrs.ws.MRS;
+import org.tdmx.core.api.v01.scs.ws.SCS;
 
 /**
  * An TemporaryChannel (within a Domain of a Zone) is used as a way of allowing a first time authorization of a channel
  * through the MRS.
  * 
- * The TemporaryChannel is created on by SCS createMRSSession ( TODO ) on a channel which doesn't exist.
+ * The TemporaryChannel is created on by {@link SCS#getMRSSession(org.tdmx.core.api.v01.scs.GetMRSSession) when relaying
+ * starts on a domain where the channel doesn't yet exist.
  * 
  * The Channel is deleted on the first time a channel authorization is relayed in with
  * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)}.

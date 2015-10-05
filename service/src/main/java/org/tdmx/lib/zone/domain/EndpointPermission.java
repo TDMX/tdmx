@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EnumType;
@@ -48,6 +49,7 @@ public class EndpointPermission implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Enumerated(EnumType.STRING)
+	@Column(length = EndpointPermissionGrant.MAX_PERMISSION_LEN)
 	private EndpointPermissionGrant grant;
 
 	private BigInteger maxPlaintextSizeBytes;

@@ -37,7 +37,7 @@ public interface DnsZoneResolutionService {
 
 	/**
 	 * Determine the DomainZoneApexInfo for the domain from DNS using multiple resolver groups supplied by
-	 * {@link DnsResolverGroupFactory} and a TODO trust policy.
+	 * {@link DnsResolverGroupFactory} and an trust policy to determine that the DNS information is trusted.
 	 * 
 	 * @param domainName
 	 * @return null if no TDMX info found and trusted, else the domain's TDMX zone root info.

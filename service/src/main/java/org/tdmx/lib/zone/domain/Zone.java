@@ -61,11 +61,9 @@ public class Zone implements Serializable {
 	@Column(nullable = false)
 	private Long accountZoneId;
 
-	// TODO unique index zoneApex
+	// TODO DB: unique index zoneApex
 	@Column(length = MAX_NAME_LEN, nullable = false, unique = true)
 	private String zoneApex;
-
-	// TODO zone serviceprovider
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

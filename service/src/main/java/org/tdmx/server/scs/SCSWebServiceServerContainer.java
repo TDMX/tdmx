@@ -97,7 +97,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	private String keyStoreType;
 	private String keyStorePassword;
 	private String keyStoreAlias;
-	private String trustStoreFile; // TODO eventually from DB!
+	private String trustStoreFile; // TODO LATER: eventually from DB!
 	private String trustStoreType;
 	private String trustStorePassword;
 
@@ -148,9 +148,6 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		sslCF.setTrustStorePath(trustStoreFile);
 		sslCF.setTrustStoreType(trustStoreType);
 		sslCF.setTrustStorePassword(trustStorePassword);
-
-		// TODO check if needed
-		// sslContextFactory.setKeyManagerPassword("changeme");
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an

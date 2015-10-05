@@ -84,7 +84,7 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 		// notify all cache invalidation listeners
 		if (cacheInvalidationListeners != null) {
 			for (CacheInvalidationListener cil : cacheInvalidationListeners) {
-				cil.invalidateCache(key); // TODO type differentiation FIXME payload
+				cil.invalidateCache(key); // TODO #86: type differentiation FIXME payload
 			}
 		}
 	}

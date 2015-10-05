@@ -40,7 +40,7 @@ public class DatabaseConnectionInfo {
 	private final String url;
 	private final String driverClassname;
 
-	// TODO extend to other properties of org.apache.commons.dbcp.BasicDataSource
+	// TODO LATER: extend to other properties of org.apache.commons.dbcp.BasicDataSource
 	// like maxSize etc.
 
 	// -------------------------------------------------------------------------

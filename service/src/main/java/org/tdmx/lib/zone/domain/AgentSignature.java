@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -58,9 +59,8 @@ public class AgentSignature implements Serializable {
 
 	/**
 	 * The public certificate of the Agent ( UC or DAC or ZAC ).
-	 * 
-	 * NOTE: Maximum length is defined by {@link AgentCredential#MAX_CERTIFICATECHAIN_LEN}
 	 */
+	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)
 	private String certificateChainPem;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -69,12 +69,14 @@ public class AgentSignature implements Serializable {
 	/**
 	 * The hex representation of the signature.
 	 */
+	@Column(length = AgentSignature.MAX_SIGNATURE_LEN)
 	private String value;
 
 	/**
 	 * The signature algorithm.
 	 */
 	@Enumerated(EnumType.STRING)
+	@Column(length = MAX_SIG_ALG_LEN)
 	private SignatureAlgorithm algorithm;
 
 	@Transient

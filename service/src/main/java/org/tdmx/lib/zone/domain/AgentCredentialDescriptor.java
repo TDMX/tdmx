@@ -37,19 +37,35 @@ public class AgentCredentialDescriptor {
 
 	private AgentCredentialType credentialType;
 
+	/**
+	 * The SHA256 Fingerprint of the public certificate.
+	 */
 	private String fingerprint;
 
-	private String zoneApex; // set when ZAC, DAC or UC
+	/**
+	 * The zoneApex is set when ZAC, DAC or UC.
+	 */
+	private String zoneApex;
 
-	private String domainName; // set when DAC or UC, null if ZAC
+	/**
+	 * The domainName set when DAC or UC, null if ZAC.
+	 */
+	private String domainName;
 
-	private String addressName; // set when UC, null if ZAC or DAC
+	/**
+	 * THe addressName set when UC, null if ZAC or DAC.
+	 */
+	private String addressName;
 
+	/**
+	 * The certificateChain (equivalent information to certificateChainPem).
+	 */
 	private PKIXCertificate[] certificateChain;
 
+	/**
+	 * The certificateChainPem (equivalent information to certificateChain).
+	 */
 	private String certificateChainPem;
-
-	// TODO serviceProviderURL - taken from cert's TDMXZoneInfo
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

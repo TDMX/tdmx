@@ -74,7 +74,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 	private int batchSize = 1000;
 
-	// TODO Destination transfer
+	// TODO #86: Destination transfer
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -120,8 +120,9 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 		log.info("Transferring " + oldZone + " from " + oldPartitionId + " to " + newPartitionId);
 
-		// 1) TODO disables access to the AccountZone
-		// 2) wait for some quarantine time / distribute cache clear instruction for the access revocation. TODO
+		// 1) TODO #86: disables access to the AccountZone
+		// 2) TODO #86: invalidate all sessions of the zone / distribute cache clear instruction for the access
+		// revocation.
 
 		// 3) transfer the Zone
 		transferZone(oldZone, oldPartitionId, newPartitionId);
@@ -129,7 +130,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		// update the AccountZone to state the new partition is active.
 		az.setZonePartitionId(newPartitionId);
 		az.setJobId(null);
-		// TODO updates the AccountZone status to allow access again
+		// TODO #86: updates the AccountZone status to allow access again
 		getAccountZoneService().createOrUpdate(az);
 
 		// delete the old data
@@ -174,8 +175,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 			more = true;
 			while (more) {
-				ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0,
-						getBatchSize()));
+				ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(
+						new PageSpecifier(0, getBatchSize()));
 				List<Channel> channels = channelService.search(zone, casc);
 				for (Channel c : channels) {
 					channelService.delete(c);
@@ -274,8 +275,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			Domain newDomain, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
-			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setDomain(oldDomain);
 
 			List<Channel> channels = null;
@@ -418,8 +419,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setType(AgentCredentialType.ZAC);
 			List<AgentCredential> credentials = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
@@ -451,8 +452,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			Domain newDomain, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setType(AgentCredentialType.DAC);
 			sc.setDomainName(newDomain.getDomainName());
 			List<AgentCredential> credentials = null;
@@ -483,8 +484,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 			Address newAddress, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
-			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
+			AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setType(AgentCredentialType.UC);
 			sc.setDomainName(newDomain.getDomainName());
 			sc.setAddressName(newAddress.getLocalName());

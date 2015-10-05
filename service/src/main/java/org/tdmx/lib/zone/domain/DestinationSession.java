@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
@@ -35,18 +36,21 @@ public class DestinationSession implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_IDENTIFIER_LEN = 256;
-	public static final int MAX_SCHEME_LEN = 16; // TODO check
-	public static final int MAX_SESSION_KEY_LEN = 8000; // TODO check
+	public static final int MAX_SCHEME_LEN = 256;// length defined in msg.xsd cryptoscheme
+	public static final int MAX_SESSION_KEY_LEN = 2048; // length defined in msg.xsd cryptosessionkey
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
+	@Column(length = MAX_IDENTIFIER_LEN)
 	private String encryptionContextId;
 
+	@Column(length = MAX_SCHEME_LEN)
 	private String scheme;
 
+	@Column(length = MAX_SESSION_KEY_LEN)
 	private byte[] sessionKey;
 
 	private AgentSignature signature;

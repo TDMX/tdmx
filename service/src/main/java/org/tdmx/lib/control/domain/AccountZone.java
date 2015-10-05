@@ -56,11 +56,10 @@ public class AccountZone implements Serializable {
 	@TableGenerator(name = "AccountZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	// TODO index zoneApex for agent authentication service
+	// TODO DB: index zoneApex for agent authentication service
 	@Column(length = DnsDomainZone.MAX_DOMAINNAME_LEN, nullable = false, unique = true)
 	private String zoneApex;
 
-	// TODO separate status into AccessStatus and ProvisioningStatus?
 	@Enumerated(EnumType.STRING)
 	@Column(length = AccountZoneStatus.MAX_ACCOUNTZONESTATUS_LEN, nullable = false)
 	private AccountZoneStatus status;

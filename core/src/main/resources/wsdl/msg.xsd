@@ -343,7 +343,7 @@
 		<xs:sequence>
 			<xs:element ref="encryptionContextId"/>
 			<xs:element name="scheme" type="cryptoscheme"/>
-			<xs:element name="sessionKey" type="xs:base64Binary"/>
+			<xs:element name="sessionKey" type="cryptosessionkey"/>
 			<xs:element ref="usersignature"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -419,7 +419,12 @@
 		<xs:restriction base="xs:short"/>
 	</xs:simpleType>
 	<xs:simpleType name="cryptoscheme">
-		<xs:restriction base="xs:string"/>
+		<xs:restriction base="common:text"/>
+	</xs:simpleType>
+	<xs:simpleType name="cryptosessionkey">
+		<xs:restriction base="xs:base64Binary">
+			<xs:maxLength value="2048"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="x509certificate">
 		<xs:restriction base="xs:base64Binary"/>

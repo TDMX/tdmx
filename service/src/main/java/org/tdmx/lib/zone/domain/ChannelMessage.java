@@ -69,7 +69,7 @@ public class ChannelMessage implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO "Relay" Processingstatus of msg relay
+	// TODO MSG#ProcessingState tracking status of msg relay and msg delivery report.
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelMessageIdGen")
@@ -105,10 +105,10 @@ public class ChannelMessage implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "signatureDate", column = @Column(name = "senderSignatureDate", nullable = false)),
-			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "senderPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)),
-			@AttributeOverride(name = "value", column = @Column(name = "senderSignature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)),
-			@AttributeOverride(name = "algorithm", column = @Column(name = "senderSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)) })
+			@AttributeOverride(name = "signatureDate", column = @Column(name = "senderSignatureDate", nullable = false) ),
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "senderPem", nullable = false) ),
+			@AttributeOverride(name = "value", column = @Column(name = "senderSignature", nullable = false) ),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "senderSignatureAlgorithm", nullable = false) ) })
 	private AgentSignature signature;
 
 	@Column(length = MAX_EXTREF_LEN)
@@ -118,20 +118,35 @@ public class ChannelMessage implements Serializable {
 	// PAYLOAD FIELDS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Chunk size in Bytes
+	 */
 	@Column(nullable = false)
-	private long chunkSize; // chunkSize in Bytes
+	private long chunkSize;
 
+	/**
+	 * Total encrypted length = SUM length chunks
+	 */
 	@Column(nullable = false)
-	private long payloadLength; // total encrypted length = SUM length chunks
+	private long payloadLength;
 
+	/**
+	 * Sender input to encryption scheme.
+	 */
 	@Basic(fetch = FetchType.EAGER)
 	@Column(nullable = false)
 	@Lob
-	private byte[] encryptionContext; // sender input to encryption scheme //TODO stipulate max len
+	private byte[] encryptionContext;
 
+	/**
+	 * Total length of plaintext ( unencrypted, unzipped )
+	 */
 	@Column(nullable = false)
-	private long plaintextLength; // total length of plaintext ( unencrypted, unzipped )
+	private long plaintextLength;
 
+	/**
+	 * The SHA256 MAC of all chunk MACs in order.
+	 */
 	@Column(length = MAX_SHA256_MAC_LEN, nullable = false)
 	private String macOfMacs;
 
@@ -145,22 +160,6 @@ public class ChannelMessage implements Serializable {
 
 	public ChannelMessage() {
 	}
-
-	// public ChannelMessage(Channel channel, ChannelMessage other) {
-	// setChannel(channel);
-	// // header fields
-	// setMsgId(other.getMsgId());
-	// setTtlTimestamp(other.getTtlTimestamp());
-	// setEncryptionContextId(other.getEncryptionContextId());
-	// setExternalReference(other.getExternalReference());
-	// setPayloadSignature(other.getPayloadSignature());
-	// // payload fields
-	// setChunkSize(other.getChunkSize());
-	// setPayloadLength(other.getPayloadLength());
-	// setEncryptionContext(other.getEncryptionContext());
-	// setPlaintextLength(other.getPlaintextLength());
-	// setMacOfMacs(other.getMacOfMacs());
-	// }
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS

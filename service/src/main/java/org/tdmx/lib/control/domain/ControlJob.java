@@ -60,7 +60,7 @@ public class ControlJob implements Serializable {
 	@TableGenerator(name = "ControlJobIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	// TODO index on status, scheduledTime
+	// TODO DB: index on status, scheduledTime
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date scheduledTime;
