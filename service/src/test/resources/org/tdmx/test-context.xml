@@ -33,6 +33,7 @@
 
 	<!-- SERVER -->
 	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
 	
 	<!-- SERVICE CONFIG -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>

@@ -28,6 +28,7 @@
 
 	<!-- SERVER -->
 	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
 	
 	<!-- WS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
