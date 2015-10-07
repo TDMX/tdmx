@@ -32,8 +32,6 @@ public abstract class AbstractCliCommand implements Runnable {
 
 	private SAS sas;
 
-	private Throwable error;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -63,14 +61,6 @@ public abstract class AbstractCliCommand implements Runnable {
 
 	public void setSas(SAS sas) {
 		this.sas = sas;
-	}
-
-	public Throwable getError() {
-		return error;
-	}
-
-	public void setError(Throwable error) {
-		this.error = error;
 	}
 
 }

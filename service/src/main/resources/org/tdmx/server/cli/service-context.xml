@@ -18,13 +18,16 @@
 		<property name="commandClassRefMap">
 			<map key-type="java.lang.Class" value-type="java.lang.String">
 	            
-	            <entry key="org.tdmx.server.cli.cmd.CreateAccountCommand" value="tdmx.server.cli.cmd.CreateAccount"/>
+	            <entry key="org.tdmx.server.cli.cmd.TestCommand" value="tdmx.server.cli.cmd.CreateAccount"/>
 	        </map>
 		</property>
 	</bean>
 
+	<bean id="tdmx.server.cli.cmd.AbstractCommand" class="org.tdmx.server.cli.cmd.AbstractCliCommand" abstract="true">
+		<property name="sas" ref="rs.SAS"/>
+	</bean>
 
-	<bean id="tdmx.server.cli.cmd.CreateAccount" class="org.tdmx.server.cli.cmd.CreateAccountCommand">
+	<bean id="tdmx.server.cli.cmd.CreateAccount" class="org.tdmx.server.cli.cmd.CreateAccountCommand" scope="prototype">
 
 	</bean>
 </beans>

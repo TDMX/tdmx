@@ -18,8 +18,6 @@
  */
 package org.tdmx.server.cli.cmd;
 
-import javax.ws.rs.WebApplicationException;
-
 import org.tdmx.server.cli.annotation.Cli;
 import org.tdmx.server.cli.annotation.Parameter;
 import org.tdmx.server.cli.annotation.Result;
@@ -62,12 +60,8 @@ public class CreateAccountCommand extends AbstractCliCommand {
 		ar.setFirstname(firstName);
 		ar.setLastname(lastName);
 
-		try {
-			AccountResource newAr = getSas().createAccount(ar);
-			accountId = newAr.getAccountId();
-		} catch (WebApplicationException e) {
-			setError(e);
-		}
+		AccountResource newAr = getSas().createAccount(ar);
+		accountId = newAr.getAccountId();
 	}
 
 	// -------------------------------------------------------------------------

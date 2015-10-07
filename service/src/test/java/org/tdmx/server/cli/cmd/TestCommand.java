@@ -16,16 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.server.cli.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.access.BeanFactoryLocator;
-import org.springframework.beans.factory.access.BeanFactoryReference;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
+import org.tdmx.server.cli.annotation.Cli;
+import org.tdmx.server.cli.annotation.Parameter;
+import org.tdmx.server.cli.annotation.Result;
 
-public class ServerAdminCLI {
+@Cli(name = "test:function", description = "test function description", note = "test function note")
+public class TestCommand extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,22 +32,12 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerAdminCLI.class);
 
-	private static ApplicationContext context;
+	@Parameter(name = "param1", required = true, description = "the stringParam1 description")
+	private String stringParam1;
 
-	private ServerAdminCLI() {
-	}
-
-	public static void main(String[] args) {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
-
-		// dump out some information about SSL on the JVM
-		CliRunner clirunner = (CliRunner) context.getBean("tdmx.server.cli.ServerAdminCLI");
-		// TODO
-	}
+	@Result(name = "result1", description = "the result1 description")
+	private String resultParam1;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -58,6 +46,11 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void run() {
+		resultParam1 = stringParam1;
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -70,5 +63,21 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public String getStringParam1() {
+		return stringParam1;
+	}
+
+	public void setStringParam1(String stringParam1) {
+		this.stringParam1 = stringParam1;
+	}
+
+	public String getResultParam1() {
+		return resultParam1;
+	}
+
+	public void setResultParam1(String resultParam1) {
+		this.resultParam1 = resultParam1;
+	}
 
 }
