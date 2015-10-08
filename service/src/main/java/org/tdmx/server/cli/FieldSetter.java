@@ -16,39 +16,38 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.annotation;
+package org.tdmx.server.cli;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 
-/**
- * Parameter of command
- *
- */
-@Documented
-@Target({ ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Parameter {
-	/**
-	 * @return Default value of option
-	 */
-	String defaultValue() default "";
+public interface FieldSetter {
 
 	/**
-	 * @return String description of option which is displayed in usage
+	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
+	 * 
+	 * @param instance
+	 * @param value
 	 */
-	String description() default "";
+	public void setValue(Object instance, String value);
 
-	/**
-	 * @return Parameter name.
-	 */
-	String name();
+	// -------------------------------------------------------------------------
+	// UTILITY IMPLEMENTATIONS
+	// -------------------------------------------------------------------------
 
-	/**
-	 * @return True if parameter has to be specified.
-	 */
-	boolean required() default false;
+	public static class StringFieldSetter implements FieldSetter {
+		private final Field field;
+
+		public StringFieldSetter(Field field) {
+			this.field = field;
+		}
+
+		@Override
+		public void setValue(Object instance, String value) {
+			try {
+				field.set(instance, value);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
 }

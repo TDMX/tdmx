@@ -21,7 +21,10 @@ package org.tdmx.server.cli;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -114,6 +117,74 @@ public class CliRunner implements ApplicationContextAware {
 
 	}
 
+	public void process(InputStreamTokenizer tokenizer, List<String> cmdNames) {
+		ParserState state = ParserState.INITIAL;
+
+		String token = null;
+		String parameterName = null;
+		CmdDescriptor cmd = null;
+		while ((token = tokenizer.getNextToken()) != null) {
+			switch (state) {
+			case INITIAL:
+				if (cmdNames.contains(token)) {
+					cmd = new CmdDescriptor(token);
+					state = ParserState.CMD;
+				}
+				break;
+			case CMD:
+				if (cmd == null) {
+					throw new IllegalStateException("No cmd.");
+				}
+				if (cmdNames.contains(token)) {
+					executeCmd(cmd);
+					// next command started
+					cmd = new CmdDescriptor(token);
+					state = ParserState.CMD;
+				} else if (cmd.supportsParameter(token)) {
+					parameterName = token;
+					state = ParserState.PARAMETER;
+				} else {
+					throw new IllegalStateException("Unknown parameter " + token + " for " + cmd.cmdToken);
+				}
+				break;
+			case PARAMETER:
+				if (cmd == null) {
+					throw new IllegalStateException("No cmd.");
+				}
+				if (parameterName == null) {
+					throw new IllegalStateException("No parameter.");
+				}
+				if (!"=".equals(token)) {
+					throw new IllegalStateException("Expecting =");
+				} else {
+					state = ParserState.VALUE;
+				}
+				break;
+			case VALUE:
+				if (cmd == null) {
+					throw new IllegalStateException("No cmd.");
+				}
+				if (parameterName == null) {
+					throw new IllegalStateException("No parameter.");
+				}
+				cmd.addParameter(new CmdParameter(parameterName, token));
+				parameterName = null;
+				state = ParserState.CMD;
+				break;
+			default:
+				throw new IllegalStateException("Unknown state " + state);
+			}
+
+		}
+		if (cmd != null) {
+			if (parameterName != null) {
+				throw new IllegalStateException("Incomplete parameter " + parameterName);
+			}
+			executeCmd(cmd);
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -121,6 +192,64 @@ public class CliRunner implements ApplicationContextAware {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void executeCmd(CmdDescriptor cmd) {
+		System.out.println("Executing  " + cmd.getCmdToken());
+		for (CmdParameter p : cmd.getParameters()) {
+			System.out.println("\tParam " + p.getName() + "=" + p.getValue());
+		}
+	}
+
+	private static class CmdParameter {
+		private final String name;
+		private final String value;
+
+		public CmdParameter(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
+
+	private static class CmdDescriptor {
+		private final String cmdToken;
+		private final List<CmdParameter> parameters = new ArrayList<>();
+
+		public CmdDescriptor(String cmdToken) {
+			this.cmdToken = cmdToken;
+		}
+
+		public String getCmdToken() {
+			return cmdToken;
+		}
+
+		public List<CmdParameter> getParameters() {
+			return Collections.unmodifiableList(parameters);
+		}
+
+		public void addParameter(CmdParameter param) {
+			parameters.add(param);
+		}
+
+		public boolean supportsParameter(String parameterName) {
+			// TODO
+			return true;
+		}
+	}
+
+	private static enum ParserState {
+		INITIAL,
+		CMD,
+		PARAMETER,
+		VALUE
+	}
 
 	private Cli getCli(Class<?> clazz) {
 		Cli[] clis = clazz.getAnnotationsByType(Cli.class);
@@ -149,19 +278,7 @@ public class CliRunner implements ApplicationContextAware {
 		}
 	}
 
-	public interface FieldSetter {
-		public void setValue(Field field, Object instance, String value)
-				throws IllegalArgumentException, IllegalAccessException;
-	}
-
-	public static class StringFieldSetter implements FieldSetter {
-		@Override
-		public void setValue(Field field, Object instance, String value)
-				throws IllegalArgumentException, IllegalAccessException {
-			field.set(instance, value);
-
-		}
-	}
+	
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
