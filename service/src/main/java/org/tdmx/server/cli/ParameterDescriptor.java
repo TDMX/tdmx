@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.cli;
 
+import java.lang.reflect.Field;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.cli.annotation.Parameter;
@@ -40,9 +42,9 @@ public class ParameterDescriptor {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ParameterDescriptor(Parameter parameter, FieldSetter fieldSetter) {
+	public ParameterDescriptor(Parameter parameter, Field field) {
 		this.parameter = parameter;
-		this.fieldSetter = fieldSetter;
+		this.fieldSetter = new FieldSetter(field);
 	}
 
 	// -------------------------------------------------------------------------

@@ -20,7 +20,6 @@ package org.tdmx.server.cli;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,8 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.tdmx.server.cli.annotation.Cli;
-import org.tdmx.server.cli.annotation.Parameter;
 
 public class CliRunner implements ApplicationContextAware {
 
@@ -51,8 +48,9 @@ public class CliRunner implements ApplicationContextAware {
 
 	private Map<Class<?>, String> commandClassRefMap;
 
+	// internal
 	private Map<String, String> commandNameRefMap;
-	private Map<String, Class<?>> commandNameClassMap;
+	private Map<String, CommandDescriptor> commandNameClassMap;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -79,10 +77,10 @@ public class CliRunner implements ApplicationContextAware {
 			String beanRef = e.getValue();
 			log.info("Class=" + e.getKey().getName() + " ref=" + beanRef);
 
-			Cli cli = getCli(e.getKey());
-			String cmdName = cli.name();
+			CommandDescriptor cd = new CommandDescriptor(e.getKey());
+			String cmdName = cd.getName();
 
-			commandNameClassMap.put(cmdName, e.getKey());
+			commandNameClassMap.put(cmdName, cd);
 			commandNameRefMap.put(cmdName, e.getValue());
 
 			Runnable cmd = (Runnable) context.getBean(beanRef);
@@ -92,13 +90,8 @@ public class CliRunner implements ApplicationContextAware {
 	}
 
 	public void printUsage(PrintStream ps) {
-		for (Entry<Class<?>, String> e : commandClassRefMap.entrySet()) {
-			Cli cli = getCli(e.getKey());
-
-			ps.println(cli.name());
-			ps.println("\t\t description=" + cli.description());
-			ps.println("\t\t note=" + cli.note());
-			ps.println();
+		for (Entry<String, CommandDescriptor> cmds : commandNameClassMap.entrySet()) {
+			cmds.getValue().printUsage(ps);
 		}
 	}
 
@@ -250,35 +243,6 @@ public class CliRunner implements ApplicationContextAware {
 		PARAMETER,
 		VALUE
 	}
-
-	private Cli getCli(Class<?> clazz) {
-		Cli[] clis = clazz.getAnnotationsByType(Cli.class);
-		if (clis == null) {
-			throw new IllegalStateException("No Cli annotation on " + clazz.getName());
-		}
-		if (clis.length > 1) {
-			throw new IllegalStateException("Too many Cli annotations on " + clazz.getName());
-		}
-		Cli cli = clis[0];
-
-		return cli;
-	}
-
-	private void getParameters(Class<?> clazz) {
-		Field[] fields = clazz.getDeclaredFields();
-		for (Field f : fields) {
-			Parameter[] parameters = f.getAnnotationsByType(Parameter.class);
-			if (parameters.length == 0) {
-				continue;
-			}
-			if (parameters.length > 1) {
-				throw new IllegalStateException(
-						"Too many Parameter annotations on " + clazz.getName() + "#" + f.getName());
-			}
-		}
-	}
-
-	
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

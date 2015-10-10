@@ -20,7 +20,28 @@ package org.tdmx.server.cli;
 
 import java.lang.reflect.Field;
 
-public interface FieldSetter {
+public class FieldSetter {
+
+	// -------------------------------------------------------------------------
+	// PUBLIC CONSTANTS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+	private Field field;
+
+	// -------------------------------------------------------------------------
+	// CONSTRUCTORS
+	// -------------------------------------------------------------------------
+
+	public FieldSetter(Field field) {
+		this.field = field;
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
@@ -28,26 +49,31 @@ public interface FieldSetter {
 	 * @param instance
 	 * @param value
 	 */
-	public void setValue(Object instance, String value);
-
-	// -------------------------------------------------------------------------
-	// UTILITY IMPLEMENTATIONS
-	// -------------------------------------------------------------------------
-
-	public static class StringFieldSetter implements FieldSetter {
-		private final Field field;
-
-		public StringFieldSetter(Field field) {
-			this.field = field;
-		}
-
-		@Override
-		public void setValue(Object instance, String value) {
-			try {
-				field.set(instance, value);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException(e);
+	public void setValue(Object instance, String value) {
+		try {
+			field.setAccessible(true);
+			if (Integer.TYPE.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value).intValue());
+			} else if (Integer.class.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value));
 			}
+			field.set(instance, value);
+		} catch (NumberFormatException | IllegalAccessException e) {
+			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
+			throw new RuntimeException(errorMsg, e);
 		}
 	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
+
 }
