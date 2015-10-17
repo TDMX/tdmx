@@ -110,17 +110,17 @@ public class CliRunner implements ApplicationContextAware {
 
 	}
 
-	public void process(InputStreamTokenizer tokenizer, List<String> cmdNames) {
+	public void process(InputStreamTokenizer tokenizer, Map<String, CommandDescriptor> cmds) {
 		ParserState state = ParserState.INITIAL;
 
 		String token = null;
-		String parameterName = null;
+		ParameterDescriptor parameter = null;
 		CmdDescriptor cmd = null;
 		while ((token = tokenizer.getNextToken()) != null) {
 			switch (state) {
 			case INITIAL:
-				if (cmdNames.contains(token)) {
-					cmd = new CmdDescriptor(token);
+				if (cmds.get(token) != null) {
+					cmd = new CmdDescriptor(cmds.get(token));
 					state = ParserState.CMD;
 				}
 				break;
@@ -128,23 +128,27 @@ public class CliRunner implements ApplicationContextAware {
 				if (cmd == null) {
 					throw new IllegalStateException("No cmd.");
 				}
-				if (cmdNames.contains(token)) {
+				if (cmds.get(token) != null) {
 					executeCmd(cmd);
 					// next command started
-					cmd = new CmdDescriptor(token);
+					cmd = new CmdDescriptor(cmds.get(token));
+					state = ParserState.CMD;
+				} else if (cmd.supportsOption(token)) {
+					cmd.addOption(new CmdOption(cmd.getDescriptor().getOption(token)));
 					state = ParserState.CMD;
 				} else if (cmd.supportsParameter(token)) {
-					parameterName = token;
+					parameter = cmd.getDescriptor().getParameter(token);
 					state = ParserState.PARAMETER;
 				} else {
-					throw new IllegalStateException("Unknown parameter " + token + " for " + cmd.cmdToken);
+					throw new IllegalStateException(
+							"Unknown parameter " + token + " for " + cmd.getDescriptor().getName());
 				}
 				break;
 			case PARAMETER:
 				if (cmd == null) {
 					throw new IllegalStateException("No cmd.");
 				}
-				if (parameterName == null) {
+				if (parameter == null) {
 					throw new IllegalStateException("No parameter.");
 				}
 				if (!"=".equals(token)) {
@@ -157,11 +161,11 @@ public class CliRunner implements ApplicationContextAware {
 				if (cmd == null) {
 					throw new IllegalStateException("No cmd.");
 				}
-				if (parameterName == null) {
+				if (parameter == null) {
 					throw new IllegalStateException("No parameter.");
 				}
-				cmd.addParameter(new CmdParameter(parameterName, token));
-				parameterName = null;
+				cmd.addParameter(new CmdParameter(parameter, token));
+				parameter = null;
 				state = ParserState.CMD;
 				break;
 			default:
@@ -170,8 +174,8 @@ public class CliRunner implements ApplicationContextAware {
 
 		}
 		if (cmd != null) {
-			if (parameterName != null) {
-				throw new IllegalStateException("Incomplete parameter " + parameterName);
+			if (parameter != null) {
+				throw new IllegalStateException("Incomplete parameter " + parameter);
 			}
 			executeCmd(cmd);
 		}
@@ -187,23 +191,26 @@ public class CliRunner implements ApplicationContextAware {
 	// -------------------------------------------------------------------------
 
 	private void executeCmd(CmdDescriptor cmd) {
-		System.out.println("Executing  " + cmd.getCmdToken());
+		System.out.println("Executing  " + cmd.getDescriptor().getName());
 		for (CmdParameter p : cmd.getParameters()) {
-			System.out.println("\tParam " + p.getName() + "=" + p.getValue());
+			System.out.println("\tParam " + p.getDescriptor().getName() + "=" + p.getValue());
+		}
+		for (CmdOption o : cmd.getOptions()) {
+			System.out.println("\tOption " + o.getDescriptor().getName());
 		}
 	}
 
 	private static class CmdParameter {
-		private final String name;
 		private final String value;
+		private final ParameterDescriptor descriptor;
 
-		public CmdParameter(String name, String value) {
-			this.name = name;
+		public CmdParameter(ParameterDescriptor descriptor, String value) {
+			this.descriptor = descriptor;
 			this.value = value;
 		}
 
-		public String getName() {
-			return name;
+		public ParameterDescriptor getDescriptor() {
+			return descriptor;
 		}
 
 		public String getValue() {
@@ -211,16 +218,29 @@ public class CliRunner implements ApplicationContextAware {
 		}
 	}
 
-	private static class CmdDescriptor {
-		private final String cmdToken;
-		private final List<CmdParameter> parameters = new ArrayList<>();
+	private static class CmdOption {
+		private final OptionDescriptor descriptor;
 
-		public CmdDescriptor(String cmdToken) {
-			this.cmdToken = cmdToken;
+		public CmdOption(OptionDescriptor descriptor) {
+			this.descriptor = descriptor;
 		}
 
-		public String getCmdToken() {
-			return cmdToken;
+		public OptionDescriptor getDescriptor() {
+			return descriptor;
+		}
+	}
+
+	private static class CmdDescriptor {
+		private final CommandDescriptor descriptor;
+		private final List<CmdParameter> parameters = new ArrayList<>();
+		private final List<CmdOption> options = new ArrayList<>();
+
+		public CmdDescriptor(CommandDescriptor descriptor) {
+			this.descriptor = descriptor;
+		}
+
+		public CommandDescriptor getDescriptor() {
+			return descriptor;
 		}
 
 		public List<CmdParameter> getParameters() {
@@ -231,9 +251,20 @@ public class CliRunner implements ApplicationContextAware {
 			parameters.add(param);
 		}
 
+		public List<CmdOption> getOptions() {
+			return Collections.unmodifiableList(options);
+		}
+
+		public void addOption(CmdOption option) {
+			options.add(option);
+		}
+
 		public boolean supportsParameter(String parameterName) {
-			// TODO
-			return true;
+			return descriptor.getParameter(parameterName) != null;
+		}
+
+		public boolean supportsOption(String parameterName) {
+			return descriptor.getOption(parameterName) != null;
 		}
 	}
 

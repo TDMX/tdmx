@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.cli.annotation.Cli;
+import org.tdmx.server.cli.annotation.Option;
 import org.tdmx.server.cli.annotation.Parameter;
 
 public class CommandDescriptor {
@@ -43,6 +44,7 @@ public class CommandDescriptor {
 
 	private Cli cli;
 	private List<ParameterDescriptor> parameters;
+	private List<OptionDescriptor> options;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -51,6 +53,7 @@ public class CommandDescriptor {
 	public CommandDescriptor(Class<?> clazz) {
 		this.cli = getCli(clazz);
 		this.parameters = getParameters(clazz);
+		this.options = getOtions(clazz);
 	}
 
 	// -------------------------------------------------------------------------
@@ -69,15 +72,40 @@ public class CommandDescriptor {
 		return cli.note();
 	}
 
-	public List<ParameterDescriptor> getParameters(String parameterName) {
+	public List<ParameterDescriptor> getParameters() {
 		return Collections.unmodifiableList(parameters);
+	}
+
+	public ParameterDescriptor getParameter(String parameterName) {
+		for (ParameterDescriptor param : parameters) {
+			if (param.getName().equals(parameterName)) {
+				return param;
+			}
+		}
+		return null;
+	}
+
+	public List<OptionDescriptor> getOptions() {
+		return Collections.unmodifiableList(options);
+	}
+
+	public OptionDescriptor getOption(String optionName) {
+		for (OptionDescriptor param : options) {
+			if (param.getName().equals(optionName)) {
+				return param;
+			}
+		}
+		return null;
 	}
 
 	public void printUsage(PrintStream ps) {
 		ps.println("cmd=" + cli.name());
 		ps.println("\t description=" + cli.description());
 		ps.println("\t note=" + cli.note());
-
+		for (OptionDescriptor option : options) {
+			ps.print("\t parameter=" + option.getName());
+			ps.println("\t\t description=" + option.getDescription());
+		}
 		for (ParameterDescriptor parameter : parameters) {
 			ps.print("\t parameter=" + parameter.getName());
 			if (parameter.isRequired()) {
@@ -129,6 +157,26 @@ public class CommandDescriptor {
 
 			ParameterDescriptor parameterDescriptor = new ParameterDescriptor(parameters[0], f);
 			result.add(parameterDescriptor);
+		}
+		return result;
+	}
+
+	private List<OptionDescriptor> getOtions(Class<?> clazz) {
+		List<OptionDescriptor> result = new ArrayList<>();
+
+		Field[] fields = clazz.getDeclaredFields();
+		for (Field f : fields) {
+			Option[] parameters = f.getAnnotationsByType(Option.class);
+			if (parameters.length == 0) {
+				continue;
+			}
+			if (parameters.length > 1) {
+				throw new IllegalStateException(
+						"Too many Option annotations on " + clazz.getName() + "#" + f.getName());
+			}
+
+			OptionDescriptor optionDescriptor = new OptionDescriptor(parameters[0], f);
+			result.add(optionDescriptor);
 		}
 		return result;
 	}
