@@ -16,32 +16,31 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.core.cli.annotation;
 
-import static org.junit.Assert.assertArrayEquals;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+/**
+ * Parameter of command
+ *
+ */
+@Documented
+@Target({ ElementType.METHOD, ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Result {
 
-import org.junit.Test;
+	/**
+	 * @return String description of the result which is displayed in usage
+	 */
+	String description() default "";
 
-public class InputStreamTokenizerTest {
-
-	private String[] getTokens(String text) {
-		InputStreamTokenizer tokenizer = new InputStreamTokenizer(new StringReader(text));
-		List<String> tokens = new ArrayList<>();
-		String token = null;
-		while ((token = tokenizer.getNextToken()) != null) {
-			tokens.add(token);
-		}
-		return tokens.toArray(new String[0]);
-	}
-
-	@Test
-	public void testMain() {
-		assertArrayEquals(new String[] { "hello", "there" }, getTokens("hello there"));
-		assertArrayEquals(new String[] { "cmd", "p1", "=", "v1", "p2", "=", "v2" }, getTokens("cmd p1=v1 p2=v2"));
-	}
+	/**
+	 * @return Result name.
+	 */
+	String name();
 
 }

@@ -16,39 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.annotation;
+package org.tdmx.core.cli;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.PrintStream;
+import java.util.List;
 
 /**
- * Parameter of command
+ * A factory providing the description of all CLI commands runnable by a {@link CliRunner}.
+ * 
+ * @author Peter
  *
  */
-@Documented
-@Target({ ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Parameter {
-	/**
-	 * @return Default value of option
-	 */
-	String defaultValue() default "";
+public interface CommandDescriptorFactory {
 
-	/**
-	 * @return String description of option which is displayed in usage
-	 */
-	String description() default "";
+	public List<String> getCommandNames();
 
-	/**
-	 * @return Parameter name.
-	 */
-	String name();
+	public CommandDescriptor getCommand(String cmdName);
 
-	/**
-	 * @return True if parameter has to be specified.
-	 */
-	boolean required() default false;
+	public void printUsage(PrintStream ps);
+
 }

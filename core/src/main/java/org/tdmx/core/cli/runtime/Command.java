@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.core.cli.runtime;
 
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.server.rs.sas.AccountResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.CommandDescriptor;
 
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+public class Command {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,36 +35,23 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(Command.class);
 
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
-	private String accountId;
+	private final CommandDescriptor descriptor;
+	private final List<CommandParameter> parameters = new ArrayList<>();
+	private final List<CommandOption> options = new ArrayList<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public Command(CommandDescriptor descriptor) {
+		this.descriptor = descriptor;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public void execute(PrintStream out, PrintStream err) {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
-
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -78,12 +65,32 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getAccountId() {
-		return accountId;
+	public CommandDescriptor getDescriptor() {
+		return descriptor;
 	}
 
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
+	public List<CommandParameter> getParameters() {
+		return Collections.unmodifiableList(parameters);
+	}
+
+	public void addParameter(CommandParameter param) {
+		parameters.add(param);
+	}
+
+	public List<CommandOption> getOptions() {
+		return Collections.unmodifiableList(options);
+	}
+
+	public void addOption(CommandOption option) {
+		options.add(option);
+	}
+
+	public boolean supportsParameter(String parameterName) {
+		return descriptor.getParameter(parameterName) != null;
+	}
+
+	public boolean supportsOption(String parameterName) {
+		return descriptor.getOption(parameterName) != null;
 	}
 
 }

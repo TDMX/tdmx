@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.annotation;
+package org.tdmx.core.cli.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,26 +25,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Type annotated with Cli is considered as a command where parameters are set.
- * 
+ * An option is a boolean parameter, which when stated is true. Options are by default false unless stated.
+ *
  */
 @Documented
-@Target(ElementType.TYPE)
+@Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Cli {
+public @interface Option {
+
 	/**
-	 * @return String description of command
+	 * @return String description of option which is displayed in usage
 	 */
 	String description() default "";
 
 	/**
-	 * @return Name of command
+	 * @return Parameter name.
 	 */
 	String name();
-
-	/**
-	 * @return Note displayed as footer
-	 */
-	String note() default "";
 
 }

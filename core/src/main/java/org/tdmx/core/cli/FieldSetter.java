@@ -16,17 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.core.cli;
 
-import java.io.PrintStream;
+import java.lang.reflect.Field;
 
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.server.rs.sas.AccountResource;
-
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+public class FieldSetter {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,35 +29,39 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
-	private String accountId;
+	private Field field;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public FieldSetter(Field field) {
+		this.field = field;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void execute(PrintStream out, PrintStream err) {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
-
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
+	/**
+	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
+	 * 
+	 * @param instance
+	 * @param value
+	 */
+	public void setValue(Object instance, String value) {
+		try {
+			field.setAccessible(true);
+			if (Integer.TYPE.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value).intValue());
+			} else if (Integer.class.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value));
+			}
+			field.set(instance, value);
+		} catch (NumberFormatException | IllegalAccessException e) {
+			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
+			throw new RuntimeException(errorMsg, e);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -77,13 +75,5 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
 
 }

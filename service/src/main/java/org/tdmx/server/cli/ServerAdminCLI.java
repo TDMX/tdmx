@@ -24,6 +24,7 @@ import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
+import org.tdmx.core.cli.CliRunner;
 
 public class ServerAdminCLI {
 

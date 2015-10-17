@@ -16,41 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.core.cli.runtime;
 
-import static org.junit.Assert.assertNotNull;
+import java.io.PrintStream;
 
-import javax.inject.Inject;
+public interface CommandExecutable {
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	public void execute(PrintStream out, PrintStream err);
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class CliRunnerTest {
-
-	private static final Logger log = LoggerFactory.getLogger(CliRunnerTest.class);
-
-	@Inject
-	private CliRunner cliRunner;
-
-	@Before
-	public void setUp() {
-	}
-
-	@Test
-	public void testAutowire() {
-		assertNotNull(cliRunner);
-	}
-
-	@Test
-	public void testPrintUsage() {
-
-		cliRunner.printUsage(System.out);
-	}
 }

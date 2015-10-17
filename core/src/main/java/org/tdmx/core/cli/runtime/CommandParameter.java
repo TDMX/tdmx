@@ -16,15 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
-
-import java.lang.reflect.Field;
+package org.tdmx.core.cli.runtime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.cli.annotation.Option;
+import org.tdmx.core.cli.ParameterDescriptor;
 
-public class OptionDescriptor {
+public class CommandParameter {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -33,35 +31,23 @@ public class OptionDescriptor {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(OptionDescriptor.class);
+	private static final Logger log = LoggerFactory.getLogger(CommandParameter.class);
 
-	private final Option option;
-	private final FieldSetter fieldSetter;
+	private final String value;
+	private final ParameterDescriptor descriptor;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public OptionDescriptor(Option parameter, Field field) {
-		this.option = parameter;
-		this.fieldSetter = new FieldSetter(field);
+	public CommandParameter(ParameterDescriptor descriptor, String value) {
+		this.descriptor = descriptor;
+		this.value = value;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	public String getDescription() {
-		return option.description();
-	}
-
-	public String getName() {
-		return option.name();
-	}
-
-	public void setValue(Object instance, String value) {
-		fieldSetter.setValue(instance, value);
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -74,5 +60,13 @@ public class OptionDescriptor {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ParameterDescriptor getDescriptor() {
+		return descriptor;
+	}
+
+	public String getValue() {
+		return value;
+	}
 
 }

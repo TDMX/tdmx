@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.core.cli;
 
-import java.io.PrintStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.runtime.Command;
+import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.cli.runtime.CommandExecutableFactory;
+import org.tdmx.core.cli.runtime.CommandOption;
+import org.tdmx.core.cli.runtime.CommandParameter;
 
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.server.rs.sas.AccountResource;
-
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+public class CliRunnerImpl implements CliRunner {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,17 +35,10 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(CliRunnerImpl.class);
 
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
-	private String accountId;
+	// internal
+	private CommandExecutableFactory commandExecutableFactory;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,15 +48,21 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void execute(PrintStream out, PrintStream err) {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
+	public void execute(Command cmd) {
+		System.out.println("Executing  " + cmd.getDescriptor().getName());
+		for (CommandParameter p : cmd.getParameters()) {
+			System.out.println("\tParam " + p.getDescriptor().getName() + "=" + p.getValue());
+		}
+		for (CommandOption o : cmd.getOptions()) {
+			System.out.println("\tOption " + o.getDescriptor().getName());
+		}
 
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
+		CommandExecutable exec = commandExecutableFactory.getCommandExecutable(cmd.getDescriptor().getName());
+		if (exec == null) {
+			log.warn("Unknown executor for " + cmd.getDescriptor().getName());
+		}
+		bind(cmd, exec);
+		run(exec);
 	}
 
 	// -------------------------------------------------------------------------
@@ -74,16 +73,24 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private void bind(Command cmd, CommandExecutable exec) {
+		// TODO #87 bind the parsed variables , setting them on the executable
+	}
+
+	private void run(CommandExecutable exec) {
+		exec.execute(System.out, System.err);
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getAccountId() {
-		return accountId;
+	public CommandExecutableFactory getCommandExecutableFactory() {
+		return commandExecutableFactory;
 	}
 
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
+	public void setCommandExecutableFactory(CommandExecutableFactory commandExecutableFactory) {
+		this.commandExecutableFactory = commandExecutableFactory;
 	}
 
 }

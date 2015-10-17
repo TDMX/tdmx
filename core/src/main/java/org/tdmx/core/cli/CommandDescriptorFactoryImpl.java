@@ -16,17 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.core.cli;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.server.rs.sas.AccountResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,35 +39,66 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(CommandDescriptorFactoryImpl.class);
 
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
-	private String accountId;
+	// internal
+	private final Map<String, CommandDescriptor> cmds = new HashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public CommandDescriptorFactoryImpl(Class<?>[] commandClasses) {
+		for (Class<?> clazz : commandClasses) {
+			CommandDescriptor desc = new CommandDescriptor(clazz);
+			cmds.put(desc.getName(), desc);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void execute(PrintStream out, PrintStream err) {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
+	public CommandDescriptor getCommand(String cmdName) {
+		return cmds.get(cmdName);
+	}
 
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
+	@Override
+	public void printUsage(PrintStream ps) {
+		List<String> cmdNames = new ArrayList<>();
+		for (CommandDescriptor desc : cmds.values()) {
+			cmdNames.add(desc.getName());
+		}
+		Collections.sort(cmdNames);
+
+		for (String cmdName : cmdNames) {
+			CommandDescriptor desc = cmds.get(cmdName);
+			ps.println("cmd=" + desc.getName());
+			ps.println("\t description=" + desc.getDescription());
+			ps.println("\t note=" + desc.getNote());
+			for (OptionDescriptor option : desc.getOptions()) {
+				ps.print("\t parameter=" + option.getName());
+				ps.println("\t\t description=" + option.getDescription());
+			}
+			for (ParameterDescriptor parameter : desc.getParameters()) {
+				ps.print("\t parameter=" + parameter.getName());
+				if (parameter.isRequired()) {
+					ps.print(" required=" + parameter.isRequired());
+				}
+				if (StringUtils.hasText(parameter.getDefaultValue())) {
+					ps.print(" defaultValue=" + parameter.getDefaultValue());
+				}
+				ps.println();
+				ps.println("\t\t description=" + parameter.getDescription());
+			}
+			ps.println();
+		}
+	}
+
+	@Override
+	public List<String> getCommandNames() {
+		return Arrays.asList(cmds.keySet().toArray(new String[0]));
 	}
 
 	// -------------------------------------------------------------------------
@@ -77,13 +112,5 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
 
 }

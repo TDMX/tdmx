@@ -16,17 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.core.cli;
 
-import java.io.PrintStream;
+import java.lang.reflect.Field;
 
-import org.tdmx.core.cli.annotation.Cli;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.server.rs.sas.AccountResource;
 
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+/**
+ * Immutable value type describing a Parameter of a Command.
+ * 
+ * @author Peter
+ *
+ */
+public class ParameterDescriptor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,35 +39,42 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(ParameterDescriptor.class);
 
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
-	private String accountId;
+	private final Parameter parameter;
+	private final FieldSetter fieldSetter;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public ParameterDescriptor(Parameter parameter, Field field) {
+		this.parameter = parameter;
+		this.fieldSetter = new FieldSetter(field);
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void execute(PrintStream out, PrintStream err) {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
+	public String getDescription() {
+		return parameter.description();
+	}
 
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
+	public String getName() {
+		return parameter.name();
+	}
+
+	public String getDefaultValue() {
+		return parameter.defaultValue();
+	}
+
+	public boolean isRequired() {
+		return parameter.required();
+	}
+
+	public void setValue(Object instance, String value) {
+		fieldSetter.setValue(instance, value);
 	}
 
 	// -------------------------------------------------------------------------
@@ -77,13 +88,5 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
 
 }

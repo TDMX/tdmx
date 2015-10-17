@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.core.cli;
 
 import java.io.PrintStream;
 import java.lang.reflect.Field;
@@ -26,11 +26,17 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Option;
+import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.server.cli.annotation.Cli;
-import org.tdmx.server.cli.annotation.Option;
-import org.tdmx.server.cli.annotation.Parameter;
 
+/**
+ * Immutable value type describing a Command.
+ * 
+ * @author Peter
+ *
+ */
 public class CommandDescriptor {
 
 	// -------------------------------------------------------------------------

@@ -18,13 +18,19 @@
  */
 package org.tdmx.server.cli;
 
-import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.cli.annotation.Parameter;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.tdmx.core.cli.CommandDescriptorFactory;
+import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.cli.runtime.CommandExecutableFactory;
 
-public class ParameterDescriptor {
+public class BeanLookupCommandExecutableFactoryImpl implements CommandExecutableFactory, ApplicationContextAware {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -33,42 +39,51 @@ public class ParameterDescriptor {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ParameterDescriptor.class);
+	private static final Logger log = LoggerFactory.getLogger(BeanLookupCommandExecutableFactoryImpl.class);
 
-	private final Parameter parameter;
-	private final FieldSetter fieldSetter;
+	private ApplicationContext context;
+
+	private CommandDescriptorFactory commandDescriptorFactory;
+
+	// internal
+	private Map<String, String> commandNameRefMap;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.context = applicationContext;
+	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ParameterDescriptor(Parameter parameter, Field field) {
-		this.parameter = parameter;
-		this.fieldSetter = new FieldSetter(field);
+	public BeanLookupCommandExecutableFactoryImpl() {
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public String getDescription() {
-		return parameter.description();
+	public void init() {
+		List<String> commandNames = commandDescriptorFactory.getCommandNames();
+
+		for (String commandName : commandNames) {
+			String beanRef = commandNameRefMap.get(commandName);
+			if (beanRef == null) {
+				throw new IllegalStateException("Executor beanRef undefined for " + commandName);
+			}
+
+			if (getCommandExecutable(beanRef) == null) {
+				throw new IllegalStateException(
+						"Executor beanRef for " + commandName + " beanRef " + beanRef + " not found.");
+			}
+		}
 	}
 
-	public String getName() {
-		return parameter.name();
-	}
-
-	public String getDefaultValue() {
-		return parameter.defaultValue();
-	}
-
-	public boolean isRequired() {
-		return parameter.required();
-	}
-
-	public void setValue(Object instance, String value) {
-		fieldSetter.setValue(instance, value);
+	@Override
+	public CommandExecutable getCommandExecutable(String beanRef) {
+		CommandExecutable exec = (CommandExecutable) context.getBean(beanRef);
+		return exec;
 	}
 
 	// -------------------------------------------------------------------------
@@ -82,5 +97,21 @@ public class ParameterDescriptor {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public CommandDescriptorFactory getCommandDescriptorFactory() {
+		return commandDescriptorFactory;
+	}
+
+	public void setCommandDescriptorFactory(CommandDescriptorFactory commandDescriptorFactory) {
+		this.commandDescriptorFactory = commandDescriptorFactory;
+	}
+
+	public Map<String, String> getCommandNameRefMap() {
+		return commandNameRefMap;
+	}
+
+	public void setCommandNameRefMap(Map<String, String> commandNameRefMap) {
+		this.commandNameRefMap = commandNameRefMap;
+	}
 
 }

@@ -11,7 +11,7 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.server.cli.CliRunner" init-method="init">
+	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliRunner" init-method="init">
 		<property name="commandClassRefMap">
 			<map key-type="java.lang.Class" value-type="java.lang.String">
 	            

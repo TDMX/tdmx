@@ -18,9 +18,10 @@
  */
 package org.tdmx.server.cli.cmd;
 
+import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.server.rs.sas.SAS;
 
-public abstract class AbstractCliCommand implements Runnable {
+public abstract class AbstractCliCommand implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,9 +40,6 @@ public abstract class AbstractCliCommand implements Runnable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public abstract void run();
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

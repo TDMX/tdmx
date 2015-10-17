@@ -16,11 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.core.cli;
 
 import java.lang.reflect.Field;
 
-public class FieldSetter {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.annotation.Option;
+
+/**
+ * Immutable value type describing an Option of a Command.
+ * 
+ * @author Peter
+ *
+ */
+public class OptionDescriptor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -29,39 +39,34 @@ public class FieldSetter {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private Field field;
+	private static final Logger log = LoggerFactory.getLogger(OptionDescriptor.class);
+
+	private final Option option;
+	private final FieldSetter fieldSetter;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public FieldSetter(Field field) {
-		this.field = field;
+	public OptionDescriptor(Option parameter, Field field) {
+		this.option = parameter;
+		this.fieldSetter = new FieldSetter(field);
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
-	 * 
-	 * @param instance
-	 * @param value
-	 */
+	public String getDescription() {
+		return option.description();
+	}
+
+	public String getName() {
+		return option.name();
+	}
+
 	public void setValue(Object instance, String value) {
-		try {
-			field.setAccessible(true);
-			if (Integer.TYPE.equals(field.getType())) {
-				field.set(instance, Integer.valueOf(value).intValue());
-			} else if (Integer.class.equals(field.getType())) {
-				field.set(instance, Integer.valueOf(value));
-			}
-			field.set(instance, value);
-		} catch (NumberFormatException | IllegalAccessException e) {
-			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
-			throw new RuntimeException(errorMsg, e);
-		}
+		fieldSetter.setValue(instance, value);
 	}
 
 	// -------------------------------------------------------------------------

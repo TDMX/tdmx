@@ -16,31 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.annotation;
+package org.tdmx.core.cli.runtime;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.tdmx.core.cli.CliRunner;
 
 /**
- * Parameter of command
+ * A factory providing the executor of all CLI commands runnable by a {@link CliRunner}.
+ * 
+ * @author Peter
  *
  */
-@Documented
-@Target({ ElementType.METHOD, ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Result {
+public interface CommandExecutableFactory {
 
-	/**
-	 * @return String description of the result which is displayed in usage
-	 */
-	String description() default "";
-
-	/**
-	 * @return Result name.
-	 */
-	String name();
+	public CommandExecutable getCommandExecutable(String cmdName);
 
 }

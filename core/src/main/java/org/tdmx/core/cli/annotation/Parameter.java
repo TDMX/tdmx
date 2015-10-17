@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.annotation;
+package org.tdmx.core.cli.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,13 +25,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An option is a boolean parameter, which when stated is true. Options are by default false unless stated.
+ * Parameter of command
  *
  */
 @Documented
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Option {
+public @interface Parameter {
+	/**
+	 * @return Default value of option
+	 */
+	String defaultValue() default "";
 
 	/**
 	 * @return String description of option which is displayed in usage
@@ -43,4 +47,8 @@ public @interface Option {
 	 */
 	String name();
 
+	/**
+	 * @return True if parameter has to be specified.
+	 */
+	boolean required() default false;
 }
