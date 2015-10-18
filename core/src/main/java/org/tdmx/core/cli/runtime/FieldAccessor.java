@@ -16,22 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
+package org.tdmx.core.cli.runtime;
 
 import java.lang.reflect.Field;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.cli.annotation.Option;
-import org.tdmx.core.cli.runtime.FieldAccessor;
-
-/**
- * Immutable value type describing an Option of a Command.
- * 
- * @author Peter
- *
- */
-public class OptionDescriptor {
+public class FieldAccessor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,34 +29,56 @@ public class OptionDescriptor {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(OptionDescriptor.class);
-
-	private final Option option;
-	private final FieldAccessor fieldAccessor;
+	private Field field;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public OptionDescriptor(Option parameter, Field field) {
-		this.option = parameter;
-		this.fieldAccessor = new FieldAccessor(field);
+	public FieldAccessor(Field field) {
+		this.field = field;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public String getDescription() {
-		return option.description();
-	}
-
-	public String getName() {
-		return option.name();
-	}
-
+	/**
+	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
+	 * 
+	 * @param instance
+	 * @param value
+	 */
 	public void setValue(Object instance, String value) {
-		fieldAccessor.setValue(instance, value);
+		try {
+			field.setAccessible(true);
+			if (Integer.TYPE.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value).intValue());
+			} else if (Integer.class.equals(field.getType())) {
+				field.set(instance, Integer.valueOf(value));
+			}
+			field.set(instance, value);
+		} catch (NumberFormatException | IllegalAccessException e) {
+			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
+			throw new RuntimeException(errorMsg, e);
+		}
+	}
+
+	/**
+	 * Gets the value of the instance's field in string format.
+	 * 
+	 * @param instance
+	 * @return the value of the instance's field in string format.
+	 */
+	public String getValue(Object instance) {
+		try {
+			field.setAccessible(true);
+			Object obj = field.get(instance);
+			return obj.toString();
+		} catch (IllegalAccessException e) {
+			final String errorMsg = "Unable to get field name " + field.getName();
+			throw new RuntimeException(errorMsg, e);
+		}
 	}
 
 	// -------------------------------------------------------------------------

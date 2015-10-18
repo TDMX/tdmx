@@ -18,13 +18,14 @@
  */
 package org.tdmx.server.cli;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.InputStreamReader;
+
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.tdmx.core.cli.CliRunner;
+import org.tdmx.core.cli.CliParser;
+import org.tdmx.core.cli.InputStreamTokenizer;
 
 public class ServerAdminCLI {
 
@@ -35,21 +36,30 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ServerAdminCLI.class);
-
 	private static ApplicationContext context;
 
 	private ServerAdminCLI() {
 	}
 
 	public static void main(String[] args) {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
+		try {
+			BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
+			BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
+			context = (ApplicationContext) beanFactoryReference.getFactory();
 
-		// dump out some information about SSL on the JVM
-		CliRunner clirunner = (CliRunner) context.getBean("tdmx.server.cli.ServerAdminCLI");
-		// TODO
+			CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
+
+			InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
+
+			clirunner.process(tokenizer, System.out);
+
+		} catch (Throwable t) {
+			System.err.println("error=" + t.getMessage());
+			if (t.getCause() != null) {
+				System.err.println("cause=" + t.getCause().getMessage());
+			}
+			t.printStackTrace(System.err);
+		}
 	}
 
 	// -------------------------------------------------------------------------

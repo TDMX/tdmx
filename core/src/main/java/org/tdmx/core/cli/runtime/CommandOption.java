@@ -47,6 +47,10 @@ public class CommandOption {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public void setValue(Object instance) {
+		descriptor.setValue(instance, "true");
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

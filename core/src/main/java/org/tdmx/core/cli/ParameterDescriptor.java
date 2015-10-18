@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.runtime.FieldAccessor;
 
 /**
  * Immutable value type describing a Parameter of a Command.
@@ -42,7 +43,7 @@ public class ParameterDescriptor {
 	private static final Logger log = LoggerFactory.getLogger(ParameterDescriptor.class);
 
 	private final Parameter parameter;
-	private final FieldSetter fieldSetter;
+	private final FieldAccessor fieldAccessor;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -50,7 +51,7 @@ public class ParameterDescriptor {
 
 	public ParameterDescriptor(Parameter parameter, Field field) {
 		this.parameter = parameter;
-		this.fieldSetter = new FieldSetter(field);
+		this.fieldAccessor = new FieldAccessor(field);
 	}
 
 	// -------------------------------------------------------------------------
@@ -74,7 +75,7 @@ public class ParameterDescriptor {
 	}
 
 	public void setValue(Object instance, String value) {
-		fieldSetter.setValue(instance, value);
+		fieldAccessor.setValue(instance, value);
 	}
 
 	// -------------------------------------------------------------------------

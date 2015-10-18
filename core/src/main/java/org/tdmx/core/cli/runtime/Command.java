@@ -73,12 +73,30 @@ public class Command {
 		return Collections.unmodifiableList(parameters);
 	}
 
+	public CommandParameter getParameter(String name) {
+		for (CommandParameter param : parameters) {
+			if (param.getDescriptor().getName().equals(name)) {
+				return param;
+			}
+		}
+		return null;
+	}
+
 	public void addParameter(CommandParameter param) {
 		parameters.add(param);
 	}
 
 	public List<CommandOption> getOptions() {
 		return Collections.unmodifiableList(options);
+	}
+
+	public CommandOption getOption(String name) {
+		for (CommandOption param : options) {
+			if (param.getDescriptor().getName().equals(name)) {
+				return param;
+			}
+		}
+		return null;
 	}
 
 	public void addOption(CommandOption option) {

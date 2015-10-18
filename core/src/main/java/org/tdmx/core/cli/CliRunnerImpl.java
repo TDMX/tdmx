@@ -18,6 +18,8 @@
  */
 package org.tdmx.core.cli;
 
+import java.io.PrintStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.runtime.Command;
@@ -48,21 +50,19 @@ public class CliRunnerImpl implements CliRunner {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void execute(Command cmd) {
-		System.out.println("Executing  " + cmd.getDescriptor().getName());
-		for (CommandParameter p : cmd.getParameters()) {
-			System.out.println("\tParam " + p.getDescriptor().getName() + "=" + p.getValue());
-		}
-		for (CommandOption o : cmd.getOptions()) {
-			System.out.println("\tOption " + o.getDescriptor().getName());
-		}
+	public void execute(Command cmd, PrintStream out) {
+		debugLog(cmd);
 
 		CommandExecutable exec = commandExecutableFactory.getCommandExecutable(cmd.getDescriptor().getName());
 		if (exec == null) {
-			log.warn("Unknown executor for " + cmd.getDescriptor().getName());
+			throw new IllegalArgumentException("Unknown executor for " + cmd.getDescriptor().getName());
 		}
+		check(cmd);
 		bind(cmd, exec);
-		run(exec);
+
+		exec.run();
+
+		output(cmd.getDescriptor(), exec, out);
 	}
 
 	// -------------------------------------------------------------------------
@@ -73,12 +73,51 @@ public class CliRunnerImpl implements CliRunner {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void bind(Command cmd, CommandExecutable exec) {
-		// TODO #87 bind the parsed variables , setting them on the executable
+	/**
+	 * Check that all required parameters are set.
+	 * 
+	 * @param cmd
+	 */
+	private void check(Command cmd) {
+		for (ParameterDescriptor param : cmd.getDescriptor().getParameters()) {
+			if (param.isRequired()) {
+				if (cmd.getParameter(param.getName()) == null) {
+					throw new IllegalArgumentException("Missing required parameter " + param.getName());
+				}
+			}
+		}
 	}
 
-	private void run(CommandExecutable exec) {
-		exec.execute(System.out, System.err);
+	/**
+	 * Bind the parsed parameters and options to the executable command.
+	 * 
+	 * @param cmd
+	 * @param exec
+	 */
+	private void bind(Command cmd, CommandExecutable exec) {
+		for (CommandOption option : cmd.getOptions()) {
+			option.setValue(exec);
+		}
+		for (CommandParameter param : cmd.getParameters()) {
+			param.setValue(exec);
+		}
+	}
+
+	private void output(CommandDescriptor cmd, CommandExecutable exec, PrintStream out) {
+		for (ResultDescriptor result : cmd.getResults()) {
+			String value = result.getValue(exec);
+			out.println(result.getName() + "=" + value);
+		}
+	}
+
+	private void debugLog(Command cmd) {
+		log.debug("Executing  " + cmd.getDescriptor().getName());
+		for (CommandParameter p : cmd.getParameters()) {
+			log.debug("\tParam " + p.getDescriptor().getName() + "=" + p.getValue());
+		}
+		for (CommandOption o : cmd.getOptions()) {
+			log.debug("\tOption " + o.getDescriptor().getName());
+		}
 	}
 
 	// -------------------------------------------------------------------------

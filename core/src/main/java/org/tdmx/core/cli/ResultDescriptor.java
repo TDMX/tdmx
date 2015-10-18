@@ -20,7 +20,18 @@ package org.tdmx.core.cli;
 
 import java.lang.reflect.Field;
 
-public class FieldSetter {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.annotation.Result;
+import org.tdmx.core.cli.runtime.FieldAccessor;
+
+/**
+ * Describes a result field of a command.
+ * 
+ * @author Peter
+ *
+ */
+public class ResultDescriptor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -29,39 +40,34 @@ public class FieldSetter {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private Field field;
+	private static final Logger log = LoggerFactory.getLogger(ResultDescriptor.class);
+
+	private final Result result;
+	private final FieldAccessor fieldAccessor;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public FieldSetter(Field field) {
-		this.field = field;
+	public ResultDescriptor(Result result, Field field) {
+		this.result = result;
+		this.fieldAccessor = new FieldAccessor(field);
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Sets the field of the instance with the value provided. Implementations need to perform type conversion.
-	 * 
-	 * @param instance
-	 * @param value
-	 */
-	public void setValue(Object instance, String value) {
-		try {
-			field.setAccessible(true);
-			if (Integer.TYPE.equals(field.getType())) {
-				field.set(instance, Integer.valueOf(value).intValue());
-			} else if (Integer.class.equals(field.getType())) {
-				field.set(instance, Integer.valueOf(value));
-			}
-			field.set(instance, value);
-		} catch (NumberFormatException | IllegalAccessException e) {
-			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
-			throw new RuntimeException(errorMsg, e);
-		}
+	public String getDescription() {
+		return result.description();
+	}
+
+	public String getName() {
+		return result.name();
+	}
+
+	public String getValue(Object instance) {
+		return fieldAccessor.getValue(instance);
 	}
 
 	// -------------------------------------------------------------------------

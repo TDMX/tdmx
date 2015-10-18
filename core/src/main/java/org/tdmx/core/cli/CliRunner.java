@@ -18,9 +18,11 @@
  */
 package org.tdmx.core.cli;
 
+import java.io.PrintStream;
+
 import org.tdmx.core.cli.runtime.Command;
 
 public interface CliRunner {
 
-	public void execute(Command cmd);
+	public void execute(Command cmd, PrintStream out);
 }

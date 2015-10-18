@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.annotation.Result;
 import org.tdmx.core.system.lang.StringUtils;
 
 /**
@@ -51,6 +52,7 @@ public class CommandDescriptor {
 	private Cli cli;
 	private List<ParameterDescriptor> parameters;
 	private List<OptionDescriptor> options;
+	private List<ResultDescriptor> results;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,6 +62,7 @@ public class CommandDescriptor {
 		this.cli = getCli(clazz);
 		this.parameters = getParameters(clazz);
 		this.options = getOtions(clazz);
+		this.results = getResults(clazz);
 	}
 
 	// -------------------------------------------------------------------------
@@ -104,6 +107,10 @@ public class CommandDescriptor {
 		return null;
 	}
 
+	public List<ResultDescriptor> getResults() {
+		return Collections.unmodifiableList(results);
+	}
+
 	public void printUsage(PrintStream ps) {
 		ps.println("cmd=" + cli.name());
 		ps.println("\t description=" + cli.description());
@@ -122,6 +129,10 @@ public class CommandDescriptor {
 			}
 			ps.println();
 			ps.println("\t\t description=" + parameter.getDescription());
+		}
+		for (ResultDescriptor result : results) {
+			ps.print("\t result=" + result.getName());
+			ps.println("\t\t description=" + result.getDescription());
 		}
 		ps.println();
 
@@ -183,6 +194,26 @@ public class CommandDescriptor {
 
 			OptionDescriptor optionDescriptor = new OptionDescriptor(parameters[0], f);
 			result.add(optionDescriptor);
+		}
+		return result;
+	}
+
+	private List<ResultDescriptor> getResults(Class<?> clazz) {
+		List<ResultDescriptor> result = new ArrayList<>();
+
+		Field[] fields = clazz.getDeclaredFields();
+		for (Field f : fields) {
+			Result[] parameters = f.getAnnotationsByType(Result.class);
+			if (parameters.length == 0) {
+				continue;
+			}
+			if (parameters.length > 1) {
+				throw new IllegalStateException(
+						"Too many Result annotations on " + clazz.getName() + "#" + f.getName());
+			}
+
+			ResultDescriptor resultDescriptor = new ResultDescriptor(parameters[0], f);
+			result.add(resultDescriptor);
 		}
 		return result;
 	}

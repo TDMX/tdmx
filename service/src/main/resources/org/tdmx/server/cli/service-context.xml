@@ -14,13 +14,30 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 
-	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliRunner" init-method="init">
-		<property name="commandClassRefMap">
-			<map key-type="java.lang.Class" value-type="java.lang.String">
-	            
-	            <entry key="org.tdmx.server.cli.cmd.TestCommand" value="tdmx.server.cli.cmd.CreateAccount"/>
-	        </map>
+	<bean id="tdmx.server.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
+		<constructor-arg>
+			<array>
+				<value>org.tdmx.server.cli.cmd.CreateAccountCommand</value>
+			</array>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="tdmx.server.cli.ServerCommandExecutableFactory" class="org.tdmx.server.cli.BeanLookupCommandExecutableFactoryImpl" init-method="init">
+		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
+		<property name="commandNameRefMap">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="account:create" value="tdmx.server.cli.cmd.CreateAccount"/>
+			</map>
 		</property>
+	</bean>
+	
+	<bean id="tdmx.server.cli.ServerCliRunner" class="org.tdmx.core.cli.CliRunnerImpl">
+		<property name="commandExecutableFactory" ref="tdmx.server.cli.ServerCommandExecutableFactory"/>
+	</bean>
+	
+	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliParser">
+		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
+		<property name="cliRunner" ref="tdmx.server.cli.ServerCliRunner"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.AbstractCommand" class="org.tdmx.server.cli.cmd.AbstractCliCommand" abstract="true">

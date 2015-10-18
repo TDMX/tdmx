@@ -49,6 +49,10 @@ public class CommandParameter {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public void setValue(Object instance) {
+		descriptor.setValue(instance, value);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

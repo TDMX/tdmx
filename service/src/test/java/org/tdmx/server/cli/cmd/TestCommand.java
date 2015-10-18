@@ -18,8 +18,6 @@
  */
 package org.tdmx.server.cli.cmd;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.annotation.Result;
@@ -50,7 +48,7 @@ public class TestCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void execute(PrintStream out, PrintStream err) {
+	public void run() {
 		resultParam1 = stringParam1;
 	}
 

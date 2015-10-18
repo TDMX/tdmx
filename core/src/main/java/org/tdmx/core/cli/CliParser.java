@@ -18,6 +18,8 @@
  */
 package org.tdmx.core.cli;
 
+import java.io.PrintStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.runtime.Command;
@@ -36,6 +38,7 @@ public class CliParser {
 	private static final Logger log = LoggerFactory.getLogger(CliParser.class);
 
 	private CommandDescriptorFactory commandDescriptorFactory;
+
 	private CliRunner cliRunner;
 
 	// -------------------------------------------------------------------------
@@ -46,7 +49,7 @@ public class CliParser {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void process(InputStreamTokenizer tokenizer) {
+	public void process(InputStreamTokenizer tokenizer, PrintStream out) {
 		ParserState state = ParserState.INITIAL;
 
 		String token = null;
@@ -65,7 +68,7 @@ public class CliParser {
 					throw new IllegalStateException("No cmd.");
 				}
 				if (commandDescriptorFactory.getCommand(token) != null) {
-					executeCmd(cmd);
+					executeCmd(cmd, out);
 					// next command started
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
 					state = ParserState.CMD;
@@ -113,7 +116,7 @@ public class CliParser {
 			if (parameter != null) {
 				throw new IllegalStateException("Incomplete parameter " + parameter);
 			}
-			executeCmd(cmd);
+			executeCmd(cmd, out);
 		}
 
 	}
@@ -126,9 +129,9 @@ public class CliParser {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void executeCmd(Command cmd) {
+	private void executeCmd(Command cmd, PrintStream out) {
 		if (cliRunner != null) {
-			cliRunner.execute(cmd);
+			cliRunner.execute(cmd, out);
 		}
 	}
 
@@ -143,11 +146,11 @@ public class CliParser {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public CommandDescriptorFactory getCommandFactory() {
+	public CommandDescriptorFactory getCommandDescriptorFactory() {
 		return commandDescriptorFactory;
 	}
 
-	public void setCommandFactory(CommandDescriptorFactory commandDescriptorFactory) {
+	public void setCommandDescriptorFactory(CommandDescriptorFactory commandDescriptorFactory) {
 		this.commandDescriptorFactory = commandDescriptorFactory;
 	}
 
