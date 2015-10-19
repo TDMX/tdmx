@@ -49,6 +49,13 @@ public class CliParser {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Parse the input stream into Commands and their Parameters and Options and execute them with the {@link CliRunner}
+	 * . Commands are only allowed to throw RuntimeExceptions to exit.
+	 * 
+	 * @param tokenizer
+	 * @param out
+	 */
 	public void process(InputStreamTokenizer tokenizer, PrintStream out) {
 		ParserState state = ParserState.INITIAL;
 

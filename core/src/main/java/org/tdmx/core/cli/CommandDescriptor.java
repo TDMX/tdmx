@@ -30,6 +30,7 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.annotation.Result;
+import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
 /**
@@ -49,6 +50,7 @@ public class CommandDescriptor {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(CommandDescriptor.class);
 
+	private Class<? extends CommandExecutable> clazz;
 	private Cli cli;
 	private List<ParameterDescriptor> parameters;
 	private List<OptionDescriptor> options;
@@ -58,7 +60,8 @@ public class CommandDescriptor {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public CommandDescriptor(Class<?> clazz) {
+	public CommandDescriptor(Class<? extends CommandExecutable> clazz) {
+		this.clazz = clazz;
 		this.cli = getCli(clazz);
 		this.parameters = getParameters(clazz);
 		this.options = getOtions(clazz);
@@ -221,5 +224,9 @@ public class CommandDescriptor {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public Class<? extends CommandExecutable> getClazz() {
+		return clazz;
+	}
 
 }

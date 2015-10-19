@@ -1,3 +1,4 @@
+package org.tdmx.client.cli;
 /*
  * TDMX - Trusted Domain Messaging eXchange
  * 
@@ -16,22 +17,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.InputStreamReader;
+
+import org.tdmx.client.cli.command.CreateZoneAdministratorCommand;
+import org.tdmx.core.cli.CliParser;
+import org.tdmx.core.cli.CliRunnerImpl;
+import org.tdmx.core.cli.CommandDescriptor;
+import org.tdmx.core.cli.CommandDescriptorFactory;
+import org.tdmx.core.cli.CommandDescriptorFactoryImpl;
+import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.core.cli.runtime.CommandExecutableFactory;
 
-public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
+public class ClientCLI {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,66 +40,59 @@ public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(CommandDescriptorFactoryImpl.class);
-
-	// internal
-	private final Map<String, CommandDescriptor> cmds = new HashMap<>();
-
+	@SuppressWarnings("unchecked")
+	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[]{
+			CreateZoneAdministratorCommand.class
+	};
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public CommandDescriptorFactoryImpl(Class<? extends CommandExecutable>[] commandClasses) {
-		for (Class<? extends CommandExecutable> clazz : commandClasses) {
-			CommandDescriptor desc = new CommandDescriptor(clazz);
-			cmds.put(desc.getName(), desc);
-		}
+	private ClientCLI() {
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public CommandDescriptor getCommand(String cmdName) {
-		return cmds.get(cmdName);
-	}
-
-	@Override
-	public void printUsage(PrintStream ps) {
-		List<String> cmdNames = new ArrayList<>();
-		for (CommandDescriptor desc : cmds.values()) {
-			cmdNames.add(desc.getName());
-		}
-		Collections.sort(cmdNames);
-
-		for (String cmdName : cmdNames) {
-			CommandDescriptor desc = cmds.get(cmdName);
-			ps.println("cmd=" + desc.getName());
-			ps.println("\t description=" + desc.getDescription());
-			ps.println("\t note=" + desc.getNote());
-			for (OptionDescriptor option : desc.getOptions()) {
-				ps.print("\t parameter=" + option.getName());
-				ps.println("\t\t description=" + option.getDescription());
-			}
-			for (ParameterDescriptor parameter : desc.getParameters()) {
-				ps.print("\t parameter=" + parameter.getName());
-				if (parameter.isRequired()) {
-					ps.print(" required=" + parameter.isRequired());
+	public static void main(String[] args) {
+		try {
+			final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
+			
+			final CommandExecutableFactory commandExecutableFactory = new CommandExecutableFactory() {
+				
+				@Override
+				public CommandExecutable getCommandExecutable(String cmdName) {
+					CommandDescriptor cmd = commandDescriptorFactory.getCommand(cmdName);
+					if ( cmd == null ) {
+						throw new IllegalArgumentException("No cmd " + cmdName);
+					}
+					Class<? extends CommandExecutable> cmdClazz = cmd.getClazz();
+					try {
+						return cmdClazz.newInstance();
+					} catch (ReflectiveOperationException e) {
+						throw new RuntimeException(e);
+					}
 				}
-				if (StringUtils.hasText(parameter.getDefaultValue())) {
-					ps.print(" defaultValue=" + parameter.getDefaultValue());
-				}
-				ps.println();
-				ps.println("\t\t description=" + parameter.getDescription());
-			}
-			ps.println();
-		}
-	}
+			};
+			CliRunnerImpl runner = new CliRunnerImpl();
+			runner.setCommandExecutableFactory(commandExecutableFactory);
+			
+			CliParser cliparser = new CliParser();
+			cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
+			cliparser.setCliRunner(runner);
+			
+			InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
 
-	@Override
-	public List<String> getCommandNames() {
-		return Arrays.asList(cmds.keySet().toArray(new String[0]));
+			cliparser.process(tokenizer, System.out);
+
+		} catch (Throwable t) {
+			System.err.println("error=" + t.getMessage());
+			if (t.getCause() != null) {
+				System.err.println("cause=" + t.getCause().getMessage());
+			}
+			t.printStackTrace(System.err);
+		}
 	}
 
 	// -------------------------------------------------------------------------

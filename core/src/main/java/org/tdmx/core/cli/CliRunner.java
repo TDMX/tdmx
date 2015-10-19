@@ -22,6 +22,12 @@ import java.io.PrintStream;
 
 import org.tdmx.core.cli.runtime.Command;
 
+/**
+ * Runs individual Commands, outputting Results to the output stream.
+ * 
+ * @author Peter
+ *
+ */
 public interface CliRunner {
 
 	public void execute(Command cmd, PrintStream out);
