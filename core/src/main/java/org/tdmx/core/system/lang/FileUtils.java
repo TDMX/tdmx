@@ -18,12 +18,18 @@
  */
 package org.tdmx.core.system.lang;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +55,28 @@ public class FileUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Return the files in the directory matching the regular expression.
+	 * 
+	 * @param directory
+	 * @param pattern
+	 * @return
+	 */
+	public static List<File> getFilesMatchingPattern(String directory, String pattern) {
+		File dir = new File(directory);
+		final Pattern p = Pattern.compile(pattern);
+
+		File[] files = dir.listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				Matcher m = p.matcher(name);
+				return m.matches();
+			}
+		});
+
+		return Arrays.asList(files);
+	}
+
 	/**
 	 * read the contents of the file at filePath.
 	 * 

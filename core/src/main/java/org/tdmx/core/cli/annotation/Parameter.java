@@ -33,9 +33,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Parameter {
 	/**
-	 * @return Default value of option
+	 * @return Default value which is set as the parameter value if no value is supplied.
 	 */
 	String defaultValue() default "";
+
+	/**
+	 * @return Default value of the parameter, which is null at runtime if no value is supplied.
+	 */
+	String defaultValueText() default "";
 
 	/**
 	 * @return String description of option which is displayed in usage

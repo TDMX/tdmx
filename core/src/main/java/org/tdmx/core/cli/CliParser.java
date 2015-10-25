@@ -19,12 +19,14 @@
 package org.tdmx.core.cli;
 
 import java.io.PrintStream;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.runtime.Command;
 import org.tdmx.core.cli.runtime.CommandOption;
 import org.tdmx.core.cli.runtime.CommandParameter;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class CliParser {
 
@@ -36,6 +38,12 @@ public class CliParser {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(CliParser.class);
+
+	public static final String PI_EXEC = "exec";
+	public static final String PI_LIST = "list";
+	public static final String PI_USAGE = "usage";
+	public static final String PI_HELP = "help";
+	public static final String PI_ABORT = "abort";
 
 	private CommandDescriptorFactory commandDescriptorFactory;
 
@@ -56,7 +64,7 @@ public class CliParser {
 	 * @param tokenizer
 	 * @param out
 	 */
-	public void process(InputStreamTokenizer tokenizer, PrintStream out) {
+	public void process(InputStreamTokenizer tokenizer, PrintStream out, PrintStream err) {
 		ParserState state = ParserState.INITIAL;
 
 		String token = null;
@@ -64,18 +72,48 @@ public class CliParser {
 		Command cmd = null;
 		while ((token = tokenizer.getNextToken()) != null) {
 			switch (state) {
+			case ERROR:
+				if (commandDescriptorFactory.getCommand(token) != null) {
+					cmd = new Command(commandDescriptorFactory.getCommand(token));
+					state = ParserState.CMD;
+				} else if (token.equalsIgnoreCase(PI_USAGE)) {
+					printUsage(out);
+				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
+					listCommands(out);
+				} else {
+					logInfo("Ignore " + token, out);
+				}
+				break;
 			case INITIAL:
 				if (commandDescriptorFactory.getCommand(token) != null) {
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
 					state = ParserState.CMD;
+				} else if (token.equalsIgnoreCase(PI_USAGE)) {
+					printUsage(out);
+				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
+					listCommands(out);
+				} else if (token.equalsIgnoreCase(PI_ABORT)) {
+					state = ParserState.INITIAL;
+				} else {
+					logInfo("Ignore " + token, out);
 				}
 				break;
 			case CMD:
 				if (cmd == null) {
-					throw new IllegalStateException("No cmd.");
-				}
-				if (commandDescriptorFactory.getCommand(token) != null) {
-					executeCmd(cmd, out);
+					logError("No cmd.", err);
+					state = ParserState.ERROR;
+				} else if (token.equalsIgnoreCase(PI_HELP)) {
+					printHelp(cmd, out);
+				} else if (token.equalsIgnoreCase(PI_LIST)) {
+					listParameters(cmd, out);
+				} else if (token.equalsIgnoreCase(PI_EXEC)) {
+					executeCmd(cmd, out, err);
+					cmd = null;
+					state = ParserState.INITIAL;
+				} else if (token.equalsIgnoreCase(PI_ABORT)) {
+					state = ParserState.INITIAL;
+				} else if (commandDescriptorFactory.getCommand(token) != null) {
+					executeCmd(cmd, out, err);
 					// next command started
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
 					state = ParserState.CMD;
@@ -86,44 +124,51 @@ public class CliParser {
 					parameter = cmd.getDescriptor().getParameter(token);
 					state = ParserState.PARAMETER;
 				} else {
-					throw new IllegalStateException(
-							"Unknown parameter " + token + " for " + cmd.getDescriptor().getName());
+					logError("Unknown parameter " + token + " for " + cmd.getDescriptor().getName(), err);
 				}
 				break;
 			case PARAMETER:
 				if (cmd == null) {
-					throw new IllegalStateException("No cmd.");
-				}
-				if (parameter == null) {
-					throw new IllegalStateException("No parameter.");
-				}
-				if (!"=".equals(token)) {
-					throw new IllegalStateException("Expecting =");
+					logError("No cmd.", err);
+					state = ParserState.ERROR;
+				} else if (parameter == null) {
+					logError("No parameter.", err);
+					state = ParserState.ERROR;
+				} else if (token.equalsIgnoreCase(PI_HELP)) {
+					printHelp(cmd, out);
+				} else if (token.equalsIgnoreCase(PI_LIST)) {
+					listParameters(cmd, out);
+				} else if (!"=".equals(token)) {
+					cmd.addParameter(new CommandParameter(parameter, token));
+					parameter = null;
+					state = ParserState.CMD;
 				} else {
 					state = ParserState.VALUE;
 				}
 				break;
 			case VALUE:
 				if (cmd == null) {
-					throw new IllegalStateException("No cmd.");
+					logError("No cmd.", err);
+					state = ParserState.ERROR;
+				} else if (parameter == null) {
+					logError("No parameter.", err);
+					state = ParserState.ERROR;
+				} else {
+					cmd.addParameter(new CommandParameter(parameter, token));
+					parameter = null;
+					state = ParserState.CMD;
 				}
-				if (parameter == null) {
-					throw new IllegalStateException("No parameter.");
-				}
-				cmd.addParameter(new CommandParameter(parameter, token));
-				parameter = null;
-				state = ParserState.CMD;
 				break;
 			default:
-				throw new IllegalStateException("Unknown state " + state);
+				logError("Unknown state " + state, err);
+				state = ParserState.ERROR;
 			}
-
 		}
 		if (cmd != null) {
 			if (parameter != null) {
-				throw new IllegalStateException("Incomplete parameter " + parameter);
+				logError("Incomplete parameter " + parameter, err);
 			}
-			executeCmd(cmd, out);
+			executeCmd(cmd, out, err);
 		}
 
 	}
@@ -136,9 +181,61 @@ public class CliParser {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void executeCmd(Command cmd, PrintStream out) {
+	private void printUsage(PrintStream out) {
+		commandDescriptorFactory.printUsage(out);
+	}
+
+	private void printHelp(Command cmd, PrintStream out) {
+		cmd.getDescriptor().printUsage(out);
+	}
+
+	private void listCommands(PrintStream out) {
+		List<String> cmdNames = commandDescriptorFactory.getCommandNames();
+		for (String cmd : cmdNames) {
+			logInfo(cmd, out);
+		}
+	}
+
+	private void listParameters(Command cmd, PrintStream out) {
+		List<ParameterDescriptor> parameters = cmd.getDescriptor().getParameters();
+		for (ParameterDescriptor param : parameters) {
+			String paramSet = cmd.getParameter(param.getName()) != null ? cmd.getParameter(param.getName()).getValue()
+					: param.getDefaultValue();
+			if (!StringUtils.hasText(paramSet) && param.isRequired()) {
+				paramSet = "MISSING!";
+			}
+			logInfo(param.getName() + "=" + paramSet, out);
+		}
+		List<OptionDescriptor> options = cmd.getDescriptor().getOptions();
+		for (OptionDescriptor option : options) {
+			String optionSet = cmd.getOption(option.getName()) != null ? "Y" : "N";
+			logInfo(option.getName() + "=" + optionSet, out);
+		}
+	}
+
+	private void logInfo(String msg, PrintStream out) {
+		out.println(msg);
+	}
+
+	private void logError(String msg, PrintStream err) {
+		err.println("error=" + msg);
+	}
+
+	private void logError(Throwable t, PrintStream err) {
+		err.println("error=" + t.getMessage());
+		if (t.getCause() != null) {
+			err.println("cause=" + t.getCause().getMessage());
+		}
+		t.printStackTrace(err);
+	}
+
+	private void executeCmd(Command cmd, PrintStream out, PrintStream err) {
 		if (cliRunner != null) {
-			cliRunner.execute(cmd, out);
+			try {
+				cliRunner.execute(cmd, out);
+			} catch (Throwable t) {
+				logError(t, err);
+			}
 		}
 	}
 
@@ -146,7 +243,8 @@ public class CliParser {
 		INITIAL,
 		CMD,
 		PARAMETER,
-		VALUE
+		VALUE,
+		ERROR,
 	}
 
 	// -------------------------------------------------------------------------

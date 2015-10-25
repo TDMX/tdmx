@@ -27,6 +27,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
 import org.tdmx.core.cli.runtime.CommandOption;
 import org.tdmx.core.cli.runtime.CommandParameter;
+import org.tdmx.core.system.lang.StringUtils;
 
 public class CliRunnerImpl implements CliRunner {
 
@@ -74,7 +75,8 @@ public class CliRunnerImpl implements CliRunner {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Check that all required parameters are set.
+	 * Check that all required parameters are set, and set any parameters which were not provided but we have a default
+	 * value.
 	 * 
 	 * @param cmd
 	 */
@@ -83,6 +85,12 @@ public class CliRunnerImpl implements CliRunner {
 			if (param.isRequired()) {
 				if (cmd.getParameter(param.getName()) == null) {
 					throw new IllegalArgumentException("Missing required parameter " + param.getName());
+				}
+			} else if (StringUtils.hasText(param.getDefaultValue())) {
+				// not required but we have a default value
+				if (cmd.getParameter(param.getName()) == null) {
+					CommandParameter p = new CommandParameter(param, param.getDefaultValue());
+					cmd.addParameter(p);
 				}
 			}
 		}

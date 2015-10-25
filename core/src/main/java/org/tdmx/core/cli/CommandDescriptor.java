@@ -115,27 +115,32 @@ public class CommandDescriptor {
 	}
 
 	public void printUsage(PrintStream ps) {
-		ps.println("cmd=" + cli.name());
-		ps.println("\t description=" + cli.description());
-		ps.println("\t note=" + cli.note());
+		ps.println(cli.name());
+		ps.println("\t" + cli.description());
+		ps.println("\tnote: " + cli.note());
+		ps.println("\toptions:");
 		for (OptionDescriptor option : options) {
-			ps.print("\t parameter=" + option.getName());
+			ps.print("\t" + option.getName());
 			ps.println("\t\t description=" + option.getDescription());
 		}
+		ps.println("\tparameters:");
 		for (ParameterDescriptor parameter : parameters) {
-			ps.print("\t parameter=" + parameter.getName());
+			ps.print("\t" + parameter.getName());
 			if (parameter.isRequired()) {
 				ps.print(" required=" + parameter.isRequired());
 			}
 			if (StringUtils.hasText(parameter.getDefaultValue())) {
-				ps.print(" defaultValue=" + parameter.getDefaultValue());
+				ps.print(" default=" + parameter.getDefaultValue());
+			} else if (StringUtils.hasText(parameter.getDefaultValueText())) {
+				ps.print(" default=" + parameter.getDefaultValueText());
 			}
 			ps.println();
-			ps.println("\t\t description=" + parameter.getDescription());
+			ps.println("\t\t" + parameter.getDescription());
 		}
+		ps.println("\tresults:");
 		for (ResultDescriptor result : results) {
-			ps.print("\t result=" + result.getName());
-			ps.println("\t\t description=" + result.getDescription());
+			ps.print("\t" + result.getName());
+			ps.println("\t\t" + result.getDescription());
 		}
 		ps.println();
 

@@ -20,6 +20,7 @@ package org.tdmx.core.cli;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * Parse a Character stream into a Token stream. {Token}*<-{char}*
@@ -52,6 +53,14 @@ public class InputStreamTokenizer {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public InputStreamTokenizer(String[] args) {
+		StringBuilder buf = new StringBuilder();
+		for (String arg : args) {
+			buf.append(requoteArg(arg)).append(" ");
+		}
+		this.r = new StringReader(buf.toString());
+	}
 
 	public InputStreamTokenizer(Reader r) {
 		this.r = r;
@@ -142,6 +151,13 @@ public class InputStreamTokenizer {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private String requoteArg(String arg) {
+		if (arg.contains(" ")) {
+			return "\"" + arg + "\"";
+		}
+		return arg;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

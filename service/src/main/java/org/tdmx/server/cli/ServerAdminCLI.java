@@ -42,24 +42,16 @@ public class ServerAdminCLI {
 	}
 
 	public static void main(String[] args) {
-		try {
-			BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-			BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
-			context = (ApplicationContext) beanFactoryReference.getFactory();
+		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
+		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
+		context = (ApplicationContext) beanFactoryReference.getFactory();
 
-			CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
+		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
 
-			InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
+		InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
 
-			clirunner.process(tokenizer, System.out);
+		clirunner.process(tokenizer, System.out, System.err);
 
-		} catch (Throwable t) {
-			System.err.println("error=" + t.getMessage());
-			if (t.getCause() != null) {
-				System.err.println("cause=" + t.getCause().getMessage());
-			}
-			t.printStackTrace(System.err);
-		}
 	}
 
 	// -------------------------------------------------------------------------

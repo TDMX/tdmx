@@ -56,8 +56,9 @@ public class FieldAccessor {
 				field.set(instance, Integer.valueOf(value).intValue());
 			} else if (Integer.class.equals(field.getType())) {
 				field.set(instance, Integer.valueOf(value));
+			} else {
+				field.set(instance, value);
 			}
-			field.set(instance, value);
 		} catch (NumberFormatException | IllegalAccessException e) {
 			final String errorMsg = "Unable to set field name " + field.getName() + " with value " + value;
 			throw new RuntimeException(errorMsg, e);

@@ -29,7 +29,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.StringUtils;
 
 public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
 
@@ -75,25 +74,7 @@ public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
 
 		for (String cmdName : cmdNames) {
 			CommandDescriptor desc = cmds.get(cmdName);
-			ps.println("cmd=" + desc.getName());
-			ps.println("\t description=" + desc.getDescription());
-			ps.println("\t note=" + desc.getNote());
-			for (OptionDescriptor option : desc.getOptions()) {
-				ps.print("\t parameter=" + option.getName());
-				ps.println("\t\t description=" + option.getDescription());
-			}
-			for (ParameterDescriptor parameter : desc.getParameters()) {
-				ps.print("\t parameter=" + parameter.getName());
-				if (parameter.isRequired()) {
-					ps.print(" required=" + parameter.isRequired());
-				}
-				if (StringUtils.hasText(parameter.getDefaultValue())) {
-					ps.print(" defaultValue=" + parameter.getDefaultValue());
-				}
-				ps.println();
-				ps.println("\t\t description=" + parameter.getDescription());
-			}
-			ps.println();
+			desc.printUsage(ps);
 		}
 	}
 

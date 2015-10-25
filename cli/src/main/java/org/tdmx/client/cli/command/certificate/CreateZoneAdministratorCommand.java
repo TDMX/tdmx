@@ -16,11 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.command;
+package org.tdmx.client.cli.command.certificate;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream.GetField;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
@@ -38,7 +41,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "zoneadmin:create", description = "creates credentials of a zone administrator", note = ".")
+@Cli(name = "certificate:zoneadmin:create", description = "creates credentials of a zone administrator", note = ".")
 public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -51,7 +54,7 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 	@Parameter(name = "zone", required = true, description = "the zone apex.")
 	private String zone;
-
+	
 	@Parameter(name = "name", required = true, description = "the zone administrator's full name.")
 	private String name;
 	@Parameter(name = "email", required = true, description = "the zone administrator's email address.")
@@ -69,6 +72,7 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 	
 	@Parameter(name = "validityInYears", defaultValue="10", description = "the validity of the zone administrator's credential in years.")
 	private int validityInYears;
+	
 	@Parameter(name = "password", required = true, description = "the zone administrator's keystore password.")
 	private String password;
 
@@ -87,6 +91,10 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 	@Override
 	public void run() {
+		if ( zoneZACexists(zone) ) {
+			throw new IllegalStateException("ZAC file exists. " + createKeystoreFilename(zone) );
+		}
+		
 		Calendar today = CalendarUtils.getDate(new Date());
 		Calendar future = CalendarUtils.getDate(new Date());
 		future.add(Calendar.YEAR, validityInYears);
@@ -112,11 +120,11 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 			// save the keystore protected with the password
 			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", password, "zac");
-			FileUtils.storeFileContents(createFilename(publicCertificate,".zac"), ks, ".tmp");
+			FileUtils.storeFileContents(createKeystoreFilename(zone), ks, ".tmp");
 			
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
-			FileUtils.storeFileContents(createFilename(publicCertificate,"crt"), pc, ".tmp");
+			FileUtils.storeFileContents(createPublicCertificateFilename(zone), pc, ".tmp");
 
 			// output the public key to the console
 			certificate = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[]{publicCertificate});
@@ -135,10 +143,17 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private String createFilename( PKIXCertificate certificate, String suffix ) {
-		String fingerprint = certificate.getFingerprint();
-		int serialNum = certificate.getSerialNumber();
-		return fingerprint+"-"+serialNum+suffix;
+	private boolean zoneZACexists(String zone) {
+		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", createKeystoreFilename(zone));
+		return !zacFiles.isEmpty();
+	}
+	
+	private String createKeystoreFilename( String zone ) {
+		return zone+".zac";
+	}
+	
+	private String createPublicCertificateFilename( String zone ) {
+		return zone+".zac.crt";
 	}
 	
 	// -------------------------------------------------------------------------

@@ -70,6 +70,10 @@ public class ParameterDescriptor {
 		return parameter.defaultValue();
 	}
 
+	public String getDefaultValueText() {
+		return parameter.defaultValueText();
+	}
+
 	public boolean isRequired() {
 		return parameter.required();
 	}

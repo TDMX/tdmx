@@ -21,7 +21,7 @@ package org.tdmx.client.cli;
 
 import java.io.InputStreamReader;
 
-import org.tdmx.client.cli.command.CreateZoneAdministratorCommand;
+import org.tdmx.client.cli.command.certificate.CreateZoneAdministratorCommand;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -56,7 +56,6 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 
 	public static void main(String[] args) {
-		try {
 			final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
 			
 			final CommandExecutableFactory commandExecutableFactory = new CommandExecutableFactory() {
@@ -82,17 +81,10 @@ public class ClientCLI {
 			cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
 			cliparser.setCliRunner(runner);
 			
-			InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
+			InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args): new InputStreamTokenizer(new InputStreamReader(System.in));
 
-			cliparser.process(tokenizer, System.out);
+			cliparser.process(tokenizer, System.out, System.err);
 
-		} catch (Throwable t) {
-			System.err.println("error=" + t.getMessage());
-			if (t.getCause() != null) {
-				System.err.println("cause=" + t.getCause().getMessage());
-			}
-			t.printStackTrace(System.err);
-		}
 	}
 
 	// -------------------------------------------------------------------------
