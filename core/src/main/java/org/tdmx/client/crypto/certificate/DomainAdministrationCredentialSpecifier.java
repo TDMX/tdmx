@@ -66,7 +66,7 @@ public class DomainAdministrationCredentialSpecifier {
 		}
 		PKIXCertificate issuer = zoneAdministratorCredential.getPublicCert();
 		String zoneApex = issuer.getTdmxZoneInfo().getZoneRoot();
-		this.domainName = subdomainName + "." + zoneApex;
+		this.domainName = subdomainName.endsWith(zoneApex) ? subdomainName : subdomainName + "." + zoneApex;
 		this.zoneAdministratorCredential = zoneAdministratorCredential;
 	}
 

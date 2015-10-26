@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.tdmx.core.cli.InputStreamTokenizer;
 
 public class InputStreamTokenizerTest {
 
@@ -43,6 +42,13 @@ public class InputStreamTokenizerTest {
 	public void testMain() {
 		assertArrayEquals(new String[] { "hello", "there" }, getTokens("hello there"));
 		assertArrayEquals(new String[] { "cmd", "p1", "=", "v1", "p2", "=", "v2" }, getTokens("cmd p1=v1 p2=v2"));
+	}
+
+	@Test
+	public void testQuotedCertificate() {
+		String quotedCertPem = "\"--START--\n" + "12345\n" + "--END--\n\"";
+		String unquotedCertPem = "--START--\n" + "12345\n" + "--END--\n";
+		assertArrayEquals(new String[] { unquotedCertPem }, getTokens(quotedCertPem));
 	}
 
 }

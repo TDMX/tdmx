@@ -41,7 +41,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "certificate:zoneadmin:create", description = "creates credentials of a zone administrator", note = ".")
+@Cli(name = "certificate:zoneadmin:create", description = "creates credentials of a zone administrator (ZAC) in a keystore. The keystore filename is <zone>.zac, with the public certificate in the file <zone>.zac.crt.", note = "There may only be one ZAC at any one time.")
 public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
