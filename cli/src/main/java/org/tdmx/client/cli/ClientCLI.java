@@ -21,8 +21,9 @@ package org.tdmx.client.cli;
 
 import java.io.InputStreamReader;
 
-import org.tdmx.client.cli.command.certificate.CreateDomainAdministratorCommand;
-import org.tdmx.client.cli.command.certificate.CreateZoneAdministratorCommand;
+import org.tdmx.client.cli.command.certificate.CreateDomainAdministratorCredentials;
+import org.tdmx.client.cli.command.certificate.CreateUserCredentials;
+import org.tdmx.client.cli.command.certificate.CreateZoneAdministratorCredentials;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -43,8 +44,9 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[]{
-			CreateZoneAdministratorCommand.class,
-			CreateDomainAdministratorCommand.class,
+			CreateZoneAdministratorCredentials.class,
+			CreateDomainAdministratorCredentials.class,
+			CreateUserCredentials.class,
 	};
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -42,7 +43,7 @@ import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
 @Cli(name = "certificate:zoneadmin:create", description = "creates credentials of a zone administrator (ZAC) in a keystore. The keystore filename is <zone>.zac, with the public certificate in the file <zone>.zac.crt.", note = "There may only be one ZAC at any one time.")
-public class CreateZoneAdministratorCommand implements CommandExecutable {
+public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -91,9 +92,7 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 	@Override
 	public void run() {
-		if ( zoneZACexists(zone) ) {
-			throw new IllegalStateException("ZAC file exists. " + createKeystoreFilename(zone) );
-		}
+		ClientCliUtils.checkZACNotExists(zone);
 		
 		Calendar today = CalendarUtils.getDate(new Date());
 		Calendar future = CalendarUtils.getDate(new Date());
@@ -120,11 +119,11 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 
 			// save the keystore protected with the password
 			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", password, "zac");
-			FileUtils.storeFileContents(createKeystoreFilename(zone), ks, ".tmp");
+			FileUtils.storeFileContents(ClientCliUtils.createZACKeystoreFilename(zone), ks, ".tmp");
 			
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
-			FileUtils.storeFileContents(createPublicCertificateFilename(zone), pc, ".tmp");
+			FileUtils.storeFileContents(ClientCliUtils.createZACPublicCertificateFilename(zone), pc, ".tmp");
 
 			// output the public key to the console
 			certificate = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[]{publicCertificate});
@@ -143,19 +142,6 @@ public class CreateZoneAdministratorCommand implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private boolean zoneZACexists(String zone) {
-		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", createKeystoreFilename(zone));
-		return !zacFiles.isEmpty();
-	}
-	
-	private String createKeystoreFilename( String zone ) {
-		return zone+".zac";
-	}
-	
-	private String createPublicCertificateFilename( String zone ) {
-		return zone+".zac.crt";
-	}
-	
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
