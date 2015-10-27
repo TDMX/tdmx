@@ -16,22 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
+package org.tdmx.server.cli.account;
 
-import java.lang.reflect.Field;
+import java.io.PrintStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.cli.annotation.Result;
-import org.tdmx.core.cli.runtime.FieldAccessor;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.server.cli.cmd.AbstractCliCommand;
+import org.tdmx.server.rs.sas.AccountResource;
 
-/**
- * Describes a result field of a command.
- * 
- * @author Peter
- *
- */
-public class ResultDescriptor {
+@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
+public class CreateAccount extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,34 +35,32 @@ public class ResultDescriptor {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ResultDescriptor.class);
 
-	private final Result result;
-	private final FieldAccessor fieldAccessor;
+	@Parameter(name = "email", required = true, description = "the account owner's email address.")
+	private String email;
+
+	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
+	private String firstName;
+	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
+	private String lastName;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ResultDescriptor(Result result, Field field) {
-		this.result = result;
-		this.fieldAccessor = new FieldAccessor(field);
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public String getDescription() {
-		return result.description();
-	}
+	@Override
+	public void run(PrintStream out) {
+		AccountResource ar = new AccountResource();
+		ar.setEmail(email);
+		ar.setFirstname(firstName);
+		ar.setLastname(lastName);
 
-	public String getName() {
-		return result.name();
-	}
-
-	public String getValue(Object instance) {
-		return fieldAccessor.getValue(instance);
+		AccountResource newAr = getSas().createAccount(ar);
+		output(out, newAr);
 	}
 
 	// -------------------------------------------------------------------------

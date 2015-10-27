@@ -68,20 +68,18 @@ public class BeanLookupCommandExecutableFactoryImpl implements CommandExecutable
 		List<String> commandNames = commandDescriptorFactory.getCommandNames();
 
 		for (String commandName : commandNames) {
-			String beanRef = commandNameRefMap.get(commandName);
-			if (beanRef == null) {
-				throw new IllegalStateException("Executor beanRef undefined for " + commandName);
-			}
-
-			if (getCommandExecutable(beanRef) == null) {
-				throw new IllegalStateException(
-						"Executor beanRef for " + commandName + " beanRef " + beanRef + " not found.");
+			if (getCommandExecutable(commandName) == null) {
+				throw new IllegalStateException("Executor for " + commandName + " not found.");
 			}
 		}
 	}
 
 	@Override
-	public CommandExecutable getCommandExecutable(String beanRef) {
+	public CommandExecutable getCommandExecutable(String commandName) {
+		String beanRef = commandNameRefMap.get(commandName);
+		if (beanRef == null) {
+			throw new IllegalStateException("Executor beanRef undefined for " + commandName);
+		}
 		CommandExecutable exec = (CommandExecutable) context.getBean(beanRef);
 		return exec;
 	}

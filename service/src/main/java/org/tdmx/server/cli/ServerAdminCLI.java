@@ -48,7 +48,8 @@ public class ServerAdminCLI {
 
 		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
 
-		InputStreamTokenizer tokenizer = new InputStreamTokenizer(new InputStreamReader(System.in));
+		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
+				: new InputStreamTokenizer(new InputStreamReader(System.in));
 
 		clirunner.process(tokenizer, System.out, System.err);
 

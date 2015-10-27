@@ -19,6 +19,7 @@
 package org.tdmx.client.cli.command.certificate;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -34,7 +35,6 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -54,7 +54,6 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 	private String domain;
 
 	@Parameter(name = "serial", defaultValueText = "<greatest existing DAC serial>+1", description = "the domain administrator's certificate serialNumber.")
-	@Result(name = "serial")
 	private Integer serialNumber;
 
 	@Parameter(name = "password", required = true, description = "the domain administrator's keystore password.")
@@ -66,9 +65,6 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
-	@Result(name = "certificate", description = "the domain administrator's X509 public certificate")
-	private String certificate;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -78,7 +74,7 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run() {
+	public void run(PrintStream out) {
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
 		Calendar today = CalendarUtils.getDate(new Date());
@@ -120,8 +116,9 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 					pc, ".tmp");
 
 			// output the public key to the console
-			certificate = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate });
-			serialNumber = serial;
+			out.println("certificate="
+					+ CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate }));
+			out.println("serialNumber=" + serial);
 		} catch (CryptoCertificateException | IOException e) {
 			throw new RuntimeException(e);
 		}

@@ -18,7 +18,6 @@ package org.tdmx.client.cli;
  * http://www.gnu.org/licenses/.
  */
 
-
 import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.command.certificate.CreateDomainAdministratorCredentials;
@@ -33,6 +32,12 @@ import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
 
+/**
+ * A CLI for local client administration.
+ * 
+ * @author Peter
+ *
+ */
 public class ClientCLI {
 
 	// -------------------------------------------------------------------------
@@ -43,11 +48,9 @@ public class ClientCLI {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	@SuppressWarnings("unchecked")
-	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[]{
-			CreateZoneAdministratorCredentials.class,
-			CreateDomainAdministratorCredentials.class,
-			CreateUserCredentials.class,
-	};
+	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] {
+			CreateZoneAdministratorCredentials.class, CreateDomainAdministratorCredentials.class,
+			CreateUserCredentials.class, };
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -60,34 +63,35 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 
 	public static void main(String[] args) {
-			final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
-			
-			final CommandExecutableFactory commandExecutableFactory = new CommandExecutableFactory() {
-				
-				@Override
-				public CommandExecutable getCommandExecutable(String cmdName) {
-					CommandDescriptor cmd = commandDescriptorFactory.getCommand(cmdName);
-					if ( cmd == null ) {
-						throw new IllegalArgumentException("No cmd " + cmdName);
-					}
-					Class<? extends CommandExecutable> cmdClazz = cmd.getClazz();
-					try {
-						return cmdClazz.newInstance();
-					} catch (ReflectiveOperationException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			};
-			CliRunnerImpl runner = new CliRunnerImpl();
-			runner.setCommandExecutableFactory(commandExecutableFactory);
-			
-			CliParser cliparser = new CliParser();
-			cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
-			cliparser.setCliRunner(runner);
-			
-			InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args): new InputStreamTokenizer(new InputStreamReader(System.in));
+		final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
 
-			cliparser.process(tokenizer, System.out, System.err);
+		final CommandExecutableFactory commandExecutableFactory = new CommandExecutableFactory() {
+
+			@Override
+			public CommandExecutable getCommandExecutable(String cmdName) {
+				CommandDescriptor cmd = commandDescriptorFactory.getCommand(cmdName);
+				if (cmd == null) {
+					throw new IllegalArgumentException("No cmd " + cmdName);
+				}
+				Class<? extends CommandExecutable> cmdClazz = cmd.getClazz();
+				try {
+					return cmdClazz.newInstance();
+				} catch (ReflectiveOperationException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		};
+		CliRunnerImpl runner = new CliRunnerImpl();
+		runner.setCommandExecutableFactory(commandExecutableFactory);
+
+		CliParser cliparser = new CliParser();
+		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
+		cliparser.setCliRunner(runner);
+
+		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
+				: new InputStreamTokenizer(new InputStreamReader(System.in));
+
+		cliparser.process(tokenizer, System.out, System.err);
 
 	}
 

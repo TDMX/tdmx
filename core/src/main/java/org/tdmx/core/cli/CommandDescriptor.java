@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -54,7 +53,6 @@ public class CommandDescriptor {
 	private Cli cli;
 	private List<ParameterDescriptor> parameters;
 	private List<OptionDescriptor> options;
-	private List<ResultDescriptor> results;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -65,7 +63,6 @@ public class CommandDescriptor {
 		this.cli = getCli(clazz);
 		this.parameters = getParameters(clazz);
 		this.options = getOtions(clazz);
-		this.results = getResults(clazz);
 	}
 
 	// -------------------------------------------------------------------------
@@ -110,41 +107,33 @@ public class CommandDescriptor {
 		return null;
 	}
 
-	public List<ResultDescriptor> getResults() {
-		return Collections.unmodifiableList(results);
-	}
-
 	public void printUsage(PrintStream ps) {
 		ps.println(cli.name());
-		ps.println("\t" + cli.description());
-		ps.println("\tnote: " + cli.note());
-		ps.println("\toptions:");
-		for (OptionDescriptor option : options) {
-			ps.print("\t" + option.getName());
-			ps.println("\t\t description=" + option.getDescription());
+		ps.println("\tdescription: " + cli.description());
+		if (StringUtils.hasText(cli.note())) {
+			ps.println("\tnote: " + cli.note());
 		}
-		ps.println("\tparameters:");
-		for (ParameterDescriptor parameter : parameters) {
-			ps.print("\t" + parameter.getName());
-			if (parameter.isRequired()) {
-				ps.print(" required=" + parameter.isRequired());
+		if (!options.isEmpty()) {
+			for (OptionDescriptor option : options) {
+				ps.print("\t" + option.getName() + " (option) " + option.getDescription());
 			}
-			if (StringUtils.hasText(parameter.getDefaultValue())) {
-				ps.print(" default=" + parameter.getDefaultValue());
-			} else if (StringUtils.hasText(parameter.getDefaultValueText())) {
-				ps.print(" default=" + parameter.getDefaultValueText());
+		}
+		if (!parameters.isEmpty()) {
+			for (ParameterDescriptor parameter : parameters) {
+				ps.print("\t" + parameter.getName() + " = " + parameter.getDescription());
+				if (parameter.isRequired()) {
+					ps.print(" (required)");
+				}
+				if (StringUtils.hasText(parameter.getDefaultValue())) {
+					ps.print(" (" + parameter.getDefaultValue() + ")");
+				} else if (StringUtils.hasText(parameter.getDefaultValueText())) {
+					ps.print(" (" + parameter.getDefaultValueText() + ")");
+				}
+				ps.println();
 			}
-			ps.println();
-			ps.println("\t\t" + parameter.getDescription());
 		}
-		ps.println("\tresults:");
-		for (ResultDescriptor result : results) {
-			ps.print("\t" + result.getName());
-			ps.println("\t\t" + result.getDescription());
-		}
-		ps.println();
-
 	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -202,26 +191,6 @@ public class CommandDescriptor {
 
 			OptionDescriptor optionDescriptor = new OptionDescriptor(parameters[0], f);
 			result.add(optionDescriptor);
-		}
-		return result;
-	}
-
-	private List<ResultDescriptor> getResults(Class<?> clazz) {
-		List<ResultDescriptor> result = new ArrayList<>();
-
-		Field[] fields = clazz.getDeclaredFields();
-		for (Field f : fields) {
-			Result[] parameters = f.getAnnotationsByType(Result.class);
-			if (parameters.length == 0) {
-				continue;
-			}
-			if (parameters.length > 1) {
-				throw new IllegalStateException(
-						"Too many Result annotations on " + clazz.getName() + "#" + f.getName());
-			}
-
-			ResultDescriptor resultDescriptor = new ResultDescriptor(parameters[0], f);
-			result.add(resultDescriptor);
 		}
 		return result;
 	}

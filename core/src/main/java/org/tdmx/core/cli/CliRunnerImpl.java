@@ -61,9 +61,7 @@ public class CliRunnerImpl implements CliRunner {
 		check(cmd);
 		bind(cmd, exec);
 
-		exec.run();
-
-		output(cmd.getDescriptor(), exec, out);
+		exec.run(out);
 	}
 
 	// -------------------------------------------------------------------------
@@ -108,13 +106,6 @@ public class CliRunnerImpl implements CliRunner {
 		}
 		for (CommandParameter param : cmd.getParameters()) {
 			param.setValue(exec);
-		}
-	}
-
-	private void output(CommandDescriptor cmd, CommandExecutable exec, PrintStream out) {
-		for (ResultDescriptor result : cmd.getResults()) {
-			String value = result.getValue(exec);
-			out.println(result.getName() + "=" + value);
 		}
 	}
 

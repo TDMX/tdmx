@@ -20,6 +20,7 @@ package org.tdmx.client.cli.command.certificate;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +39,6 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.UserCredentialSpecifier;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -70,9 +70,6 @@ public class CreateUserCredentials implements CommandExecutable {
 	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
 	private String dacPassword;
 
-	@Result(name = "certificate", description = "the user's X509 public certificate")
-	private String certificate;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -82,7 +79,7 @@ public class CreateUserCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run() {
+	public void run(PrintStream out) {
 		ClientCliUtils.checkValidUserName(username);
 		String domainName = ClientCliUtils.splitDomainName(username);
 		String localName = ClientCliUtils.splitLocalName(username);
@@ -133,8 +130,9 @@ public class CreateUserCredentials implements CommandExecutable {
 					publicCertificate.getTdmxDomainName(), publicCertificate.getCommonName(), serial), pc, ".tmp");
 
 			// output the public key to the console
-			certificate = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate });
-			serialNumber = serial;
+			out.println("certificate="
+					+ CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate }));
+			out.println("serialNumber=" + serial);
 		} catch (CryptoCertificateException | IOException e) {
 			throw new RuntimeException(e);
 		}

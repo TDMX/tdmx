@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.Random;
 
 import javax.ws.rs.ValidationException;
@@ -135,8 +136,22 @@ public class SASImplUnitTest {
 	}
 
 	@Test
-	public void testSearchAccount() {
-		// TODO
+	public void testSearchAccount_AccountId() {
+		List<AccountResource> accounts = sas.searchAccount(0, 10, null, accountResource.getAccountId());
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearchAccount_Email() {
+		List<AccountResource> accounts = sas.searchAccount(0, 10, accountResource.getEmail(), null);
+		assertEquals(1, accounts.size());
+	}
+
+	@Test
+	public void testSearchAccount_AccountIdAndEmail() {
+		List<AccountResource> accounts = sas.searchAccount(0, 10, accountResource.getEmail(),
+				accountResource.getAccountId());
+		assertEquals(1, accounts.size());
 	}
 
 	@Test

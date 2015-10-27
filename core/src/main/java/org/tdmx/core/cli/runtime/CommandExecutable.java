@@ -18,6 +18,9 @@
  */
 package org.tdmx.core.cli.runtime;
 
-public interface CommandExecutable extends Runnable {
+import java.io.PrintStream;
 
+public interface CommandExecutable {
+
+	public void run(PrintStream out);
 }

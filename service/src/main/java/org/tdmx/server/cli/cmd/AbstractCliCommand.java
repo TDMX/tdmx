@@ -18,7 +18,10 @@
  */
 package org.tdmx.server.cli.cmd;
 
+import java.io.PrintStream;
+
 import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.server.rs.sas.AccountResource;
 import org.tdmx.server.rs.sas.SAS;
 
 public abstract class AbstractCliCommand implements CommandExecutable {
@@ -30,6 +33,7 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	protected static final int PAGE_SIZE = 10;
 
 	private SAS sas;
 
@@ -44,6 +48,17 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
+
+	protected void output(PrintStream out, AccountResource account) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Account");
+		buf.append("; ").append(account.getId());
+		buf.append("; ").append(account.getAccountId());
+		buf.append("; ").append(account.getEmail());
+		buf.append("; ").append(account.getFirstname());
+		buf.append("; ").append(account.getLastname());
+		out.println(buf.toString());
+	}
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS

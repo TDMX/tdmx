@@ -55,7 +55,7 @@ public class SASImpl implements SAS {
 		AID("aId"),
 		ACCOUNT("account"),
 		ZID("zId"),
-		ZCID("zcId"), ;
+		ZCID("zcId"),;
 
 		private PARAM(String n) {
 			this.n = n;
@@ -111,9 +111,10 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountResource> searchAccount(Integer pageNo, Integer pageSize, String email) {
+	public List<AccountResource> searchAccount(Integer pageNo, Integer pageSize, String email, String accountId) {
 		AccountSearchCriteria sc = new AccountSearchCriteria(getPageSpecifier(pageNo, pageSize));
 		sc.setEmail(email);
+		sc.setAccountId(accountId);
 		List<Account> accounts = getAccountService().search(sc);
 
 		List<AccountResource> result = new ArrayList<>();

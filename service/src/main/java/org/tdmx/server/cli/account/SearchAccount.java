@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cmd;
+package org.tdmx.server.cli.account;
+
+import java.io.PrintStream;
+import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
+import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.AccountResource;
 
-@Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
-public class CreateAccountCommand extends AbstractCliCommand {
+@Cli(name = "account:search", description = "search for an account", note = "if no parameters are provided, all accounts are listed.")
+public class SearchAccount extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,15 +37,10 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "email", required = true, description = "the account owner's email address.")
+	@Parameter(name = "email", description = "the account owner's email address.")
 	private String email;
 
-	@Parameter(name = "firstName", required = true, description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", required = true, description = "the account owner's lastName.")
-	private String lastName;
-
-	@Result(name = "accountId", description = "the generated accountId")
+	@Parameter(name = "accountId", description = "the account's accountId.")
 	private String accountId;
 
 	// -------------------------------------------------------------------------
@@ -54,14 +52,16 @@ public class CreateAccountCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run() {
-		AccountResource ar = new AccountResource();
-		ar.setEmail(email);
-		ar.setFirstname(firstName);
-		ar.setLastname(lastName);
+	public void run(PrintStream out) {
+		int page = 0;
+		List<AccountResource> accounts = null;
+		do {
+			accounts = getSas().searchAccount(page++, PAGE_SIZE, email, accountId);
 
-		AccountResource newAr = getSas().createAccount(ar);
-		accountId = newAr.getAccountId();
+			for (AccountResource account : accounts) {
+				output(out, account);
+			}
+		} while (accounts.size() == PAGE_SIZE);
 	}
 
 	// -------------------------------------------------------------------------

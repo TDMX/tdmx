@@ -32,6 +32,12 @@ import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
 
+/**
+ * Utilities for all Client CLI commands.
+ * 
+ * @author Peter
+ *
+ */
 public class ClientCliUtils {
 
 	// -------------------------------------------------------------------------

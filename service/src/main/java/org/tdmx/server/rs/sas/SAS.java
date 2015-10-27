@@ -54,7 +54,8 @@ public interface SAS {
 	@GET
 	@Path("/accounts")
 	List<AccountResource> searchAccount(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("email") String email);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("email") String email,
+			@QueryParam("accountId") String accountId);
 
 	@GET
 	@Path("/accounts/{aid}")

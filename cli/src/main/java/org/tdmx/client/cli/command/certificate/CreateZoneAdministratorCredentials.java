@@ -18,12 +18,10 @@
  */
 package org.tdmx.client.cli.command.certificate;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream.GetField;
+import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
@@ -37,7 +35,6 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -55,7 +52,7 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 	@Parameter(name = "zone", required = true, description = "the zone apex.")
 	private String zone;
-	
+
 	@Parameter(name = "name", required = true, description = "the zone administrator's full name.")
 	private String name;
 	@Parameter(name = "email", required = true, description = "the zone administrator's email address.")
@@ -70,17 +67,12 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	private String department;
 	@Parameter(name = "organization", required = true, description = "the zone administrator's company.")
 	private String organization;
-	
-	@Parameter(name = "validityInYears", defaultValue="10", description = "the validity of the zone administrator's credential in years.")
+
+	@Parameter(name = "validityInYears", defaultValue = "10", description = "the validity of the zone administrator's credential in years.")
 	private int validityInYears;
-	
+
 	@Parameter(name = "password", required = true, description = "the zone administrator's keystore password.")
 	private String password;
-
-	@Result(name = "certificate", description = "the zone administrator's X509 public certificate" )
-	private String certificate;
-	@Result(name = "fingerprint", description = "the zone administrator's X509 public certificate SHA256 fingerprint value" )
-	private String fingerprint;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -91,13 +83,13 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run() {
+	public void run(PrintStream out) {
 		ClientCliUtils.checkZACNotExists(zone);
-		
+
 		Calendar today = CalendarUtils.getDate(new Date());
 		Calendar future = CalendarUtils.getDate(new Date());
 		future.add(Calendar.YEAR, validityInYears);
-		
+
 		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zone);
 
 		req.setCn(name);
@@ -111,27 +103,28 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 		req.setNotAfter(future);
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
-		
+
 		try {
 			PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(req);
-			
+
 			PKIXCertificate publicCertificate = zac.getPublicCert();
 
 			// save the keystore protected with the password
 			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", password, "zac");
 			FileUtils.storeFileContents(ClientCliUtils.createZACKeystoreFilename(zone), ks, ".tmp");
-			
+
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
 			FileUtils.storeFileContents(ClientCliUtils.createZACPublicCertificateFilename(zone), pc, ".tmp");
 
 			// output the public key to the console
-			certificate = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[]{publicCertificate});
-			fingerprint = publicCertificate.getFingerprint();
+			out.println("certificate="
+					+ CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate }));
+			out.println("fingerprint=" + publicCertificate.getFingerprint());
 		} catch (CryptoCertificateException | IOException e) {
 			throw new RuntimeException(e);
 		}
-		
+
 	}
 
 	// -------------------------------------------------------------------------

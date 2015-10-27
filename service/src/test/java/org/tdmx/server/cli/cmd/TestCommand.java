@@ -18,9 +18,10 @@
  */
 package org.tdmx.server.cli.cmd;
 
+import java.io.PrintStream;
+
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.annotation.Result;
 
 @Cli(name = "test:function", description = "test function description", note = "test function note")
 public class TestCommand extends AbstractCliCommand {
@@ -36,7 +37,6 @@ public class TestCommand extends AbstractCliCommand {
 	@Parameter(name = "param1", required = true, description = "the stringParam1 description")
 	private String stringParam1;
 
-	@Result(name = "result1", description = "the result1 description")
 	private String resultParam1;
 
 	// -------------------------------------------------------------------------
@@ -48,7 +48,7 @@ public class TestCommand extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run() {
+	public void run(PrintStream out) {
 		resultParam1 = stringParam1;
 	}
 
