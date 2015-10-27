@@ -18,6 +18,7 @@
 		<constructor-arg>
 			<array>
 				<value>org.tdmx.server.cli.account.CreateAccount</value>
+				<value>org.tdmx.server.cli.account.ModifyAccount</value>
 				<value>org.tdmx.server.cli.account.SearchAccount</value>
 			</array>
 		</constructor-arg>
@@ -28,6 +29,7 @@
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="account:create" value="tdmx.server.cli.cmd.CreateAccount"/>
+				<entry key="account:modify" value="tdmx.server.cli.cmd.ModifyAccount"/>
 				<entry key="account:search" value="tdmx.server.cli.cmd.SearchAccount"/>
 			</map>
 		</property>
@@ -47,6 +49,8 @@
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreateAccount" class="org.tdmx.server.cli.account.CreateAccount" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ModifyAccount" class="org.tdmx.server.cli.account.ModifyAccount" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.SearchAccount" class="org.tdmx.server.cli.account.SearchAccount" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
