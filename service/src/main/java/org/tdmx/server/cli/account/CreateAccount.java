@@ -60,7 +60,7 @@ public class CreateAccount extends AbstractCliCommand {
 		ar.setLastname(lastName);
 
 		AccountResource newAr = getSas().createAccount(ar);
-		output(out, newAr);
+		out.println(outputRepresentation(newAr));
 	}
 
 	// -------------------------------------------------------------------------

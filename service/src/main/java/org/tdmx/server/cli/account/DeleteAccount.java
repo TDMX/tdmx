@@ -21,13 +21,15 @@ package org.tdmx.server.cli.account;
 import java.io.PrintStream;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.AccountResource;
 
-@Cli(name = "account:modify", description = "modifies an account", note = "any parameter not defined will not be changed.")
-public class ModifyAccount extends AbstractCliCommand {
+@Cli(name = "account:delete", description = "deletes an account", note = "delete any accountzone and zone administrator credentials before.")
+public class DeleteAccount extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,13 +41,6 @@ public class ModifyAccount extends AbstractCliCommand {
 
 	@Parameter(name = "accountId", required = true, description = "the account's id.")
 	private String accountId;
-
-	@Parameter(name = "email", description = "the account owner's email address.")
-	private String email;
-	@Parameter(name = "firstName", description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", description = "the account owner's lastName.")
-	private String lastName;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -59,22 +54,17 @@ public class ModifyAccount extends AbstractCliCommand {
 	public void run(PrintStream out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.size() != 1) {
-			out.println("Account " + accountId + " not found");
+			out.println("Account " + accountId + " not found.");
 			return;
 		}
 		AccountResource ar = accounts.get(0);
-		if (email != null) {
-			ar.setEmail(email);
+		Response response = getSas().deleteAccount(ar.getId());
+		out.print(outputRepresentation(ar));
+		if (response.getStatus() == SUCCESS) {
+			out.println(" Deleted.");
+		} else {
+			out.println(" Not deleted. StatusCode=" + response.getStatus());
 		}
-		if (firstName != null) {
-			ar.setFirstname(firstName);
-		}
-		if (lastName != null) {
-			ar.setLastname(lastName);
-		}
-
-		AccountResource newAr = getSas().updateAccount(ar);
-		out.println(outputRepresentation(newAr));
 	}
 
 	// -------------------------------------------------------------------------
