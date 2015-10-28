@@ -46,10 +46,12 @@ public class SegmentRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		{
-			Segment s1 = SegmentFacade.createSegment("unittest-segment-1", "unittest-segment-1.scs.tdmx.org");
+			Segment s1 = SegmentFacade.createSegment("unittest-segment-1",
+					"https://unittest-segment-1.scs.tdmx.org/sp/v1.0/scs");
 			service.createOrUpdate(s1);
 
-			Segment s2 = SegmentFacade.createSegment("unittest-segment-2", "unittest-segment-2.scs.tdmx.org");
+			Segment s2 = SegmentFacade.createSegment("unittest-segment-2",
+					"https://unittest-segment-2.scs.tdmx.org/sp/v1.0/scs");
 			service.createOrUpdate(s2);
 		}
 	}
@@ -75,7 +77,7 @@ public class SegmentRepositoryUnitTest {
 	public void testLookup() throws Exception {
 		Segment zp1 = service.findBySegment("unittest-segment-1");
 		assertNotNull(zp1);
-		assertNotNull(zp1.getScsHostname());
+		assertNotNull(zp1.getScsUrl());
 	}
 
 	@Test
@@ -88,17 +90,17 @@ public class SegmentRepositoryUnitTest {
 	public void testModify() throws Exception {
 		Segment zp1 = service.findBySegment("unittest-segment-1");
 		assertNotNull(zp1);
-		assertNotNull(zp1.getScsHostname());
+		assertNotNull(zp1.getScsUrl());
 
-		zp1.setScsHostname("new hostname");
+		zp1.setScsUrl("new hostname");
 		service.createOrUpdate(zp1);
 
 		Segment zp2 = service.findBySegment("unittest-segment-1");
 		assertNotNull(zp2);
-		assertNotNull(zp2.getScsHostname());
+		assertNotNull(zp2.getScsUrl());
 
 		assertTrue(zp1 != zp2);
-		assertEquals("new hostname", zp2.getScsHostname());
+		assertEquals("new hostname", zp2.getScsUrl());
 	}
 
 	@Test

@@ -23,7 +23,7 @@ import java.io.PrintStream;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountResource;
 
 @Cli(name = "account:create", description = "creates an account", note = "the accountId is generated in the creation process.")
 public class CreateAccount extends AbstractCliCommand {

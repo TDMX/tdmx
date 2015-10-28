@@ -19,6 +19,7 @@
 package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
+import java.net.URL;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,6 +28,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+
+import org.tdmx.core.system.lang.NetUtils;
 
 /**
  * A descriptor for a Segment of a ServiceProvider.
@@ -59,7 +62,7 @@ public class Segment implements Serializable {
 	private String segmentName;
 
 	@Column(length = DnsDomainZone.MAX_DOMAINNAME_LEN)
-	private String scsHostname;
+	private String scsUrl;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -75,10 +78,15 @@ public class Segment implements Serializable {
 		builder.append(id);
 		builder.append(", segment=");
 		builder.append(segmentName);
-		builder.append(", scsHostname=");
-		builder.append(scsHostname);
+		builder.append(", scsUrl=");
+		builder.append(scsUrl);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public String getScsHostname() {
+		URL u = NetUtils.getURL(scsUrl);
+		return u != null ? u.getHost() : null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -109,12 +117,12 @@ public class Segment implements Serializable {
 		this.segmentName = segment;
 	}
 
-	public String getScsHostname() {
-		return scsHostname;
+	public String getScsUrl() {
+		return scsUrl;
 	}
 
-	public void setScsHostname(String scsHostname) {
-		this.scsHostname = scsHostname;
+	public void setScsUrl(String scsUrl) {
+		this.scsUrl = scsUrl;
 	}
 
 }

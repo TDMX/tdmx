@@ -115,7 +115,6 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 		DomainZoneApexInfo zi = new DomainZoneApexInfo();
 		zi.setDomainName(dnsInfo.getDomainName());
 		zi.setZacFingerprint(dnsInfo.getZacFingerprint());
-		zi.setScsHostname(dnsInfo.getScsHostname());
 		zi.setScsUrl(dnsInfo.getScsUrl());
 
 		return zi;

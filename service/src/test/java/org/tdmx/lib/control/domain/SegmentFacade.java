@@ -20,11 +20,11 @@ package org.tdmx.lib.control.domain;
 
 public class SegmentFacade {
 
-	public static Segment createSegment(String segmentName, String scsHostname) {
+	public static Segment createSegment(String segmentName, String scsUrl) {
 
 		Segment s = new Segment();
 		s.setSegmentName(segmentName);
-		s.setScsHostname(scsHostname);
+		s.setScsUrl(scsUrl);
 		return s;
 	}
 

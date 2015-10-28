@@ -19,8 +19,8 @@
 package org.tdmx.server.cli.cmd;
 
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.server.rs.sas.AccountResource;
 import org.tdmx.server.rs.sas.SAS;
+import org.tdmx.server.rs.sas.resource.AccountResource;
 
 public abstract class AbstractCliCommand implements CommandExecutable {
 

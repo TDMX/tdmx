@@ -24,7 +24,7 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountResource;
 
 @Cli(name = "account:search", description = "search for an account", note = "if no parameters are provided, all accounts are listed.")
 public class SearchAccount extends AbstractCliCommand {

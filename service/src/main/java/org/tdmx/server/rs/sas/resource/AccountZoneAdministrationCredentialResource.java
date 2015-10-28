@@ -16,28 +16,44 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.server.rs.sas.resource;
 
-import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-import org.tdmx.lib.control.domain.Segment;
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "accountzone")
+@XmlType(name = "AccountZone")
+public class AccountZoneAdministrationCredentialResource {
 
-/**
- * The SegmentService manages Segment entities.
- * 
- * @author Peter
- * 
- */
-public interface SegmentService {
+	protected Long id;
+	protected String accountId;
+	protected String zoneApex;
 
-	public void createOrUpdate(Segment segment);
+	public Long getId() {
+		return id;
+	}
 
-	public Segment findById(Long id);
+	public void setId(Long value) {
+		this.id = value;
+	}
 
-	public void delete(Segment segment);
+	public String getAccountId() {
+		return accountId;
+	}
 
-	public Segment findBySegment(String segment);
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
 
-	public List<Segment> findAll();
+	public String getZoneApex() {
+		return zoneApex;
+	}
+
+	public void setZoneApex(String zoneApex) {
+		this.zoneApex = zoneApex;
+	}
 
 }

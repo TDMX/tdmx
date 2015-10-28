@@ -30,11 +30,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.SegmentResource;
+
 @Path("/sas")
 @Produces({ "application/json" })
 public interface SAS {
-
-	// TODO configuration value (admin all, user - some)
 
 	// TODO maxvalue (admin only)
 
@@ -43,6 +46,30 @@ public interface SAS {
 	// TODO databasepartition (admin only)
 
 	// TODO lock (admin only)
+
+	/*
+	 * RESTFUL service for Segment
+	 */
+	@POST
+	@Path("/segments")
+	SegmentResource createSegment(SegmentResource segment);
+
+	@GET
+	@Path("/segments")
+	List<SegmentResource> searchSegment(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("segment") String segment);
+
+	@GET
+	@Path("/segments/{sid}")
+	SegmentResource getSegment(@PathParam("sid") Long sId);
+
+	@PUT
+	@Path("/segments/{sid}")
+	SegmentResource updateSegment(SegmentResource segment);
+
+	@DELETE
+	@Path("/segments/{sid}")
+	Response deleteSegment(@PathParam("sid") Long sId);
 
 	/*
 	 * RESTFUL service for Account

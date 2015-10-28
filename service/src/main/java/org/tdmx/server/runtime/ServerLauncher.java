@@ -166,7 +166,7 @@ public class ServerLauncher {
 			System.exit(-1);
 		}
 		log.info("services " + StringUtils.arrayToCommaDelimitedString(services.toArray()));
-		log.info("segment: " + segment.getSegmentName() + ", scsHostname=" + segment.getScsHostname());
+		log.info("segment: " + segment.getSegmentName() + ", scsUrl=" + segment.getScsUrl());
 		log.info("api " + StringUtils.arrayToCommaDelimitedString(apis.toArray()));
 
 		try {

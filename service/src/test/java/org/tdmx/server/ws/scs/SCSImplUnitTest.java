@@ -51,6 +51,7 @@ import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.NetUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
@@ -399,7 +400,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
@@ -433,13 +434,13 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
 		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
 		dzi1.setZoneApex("kidsmathstrainer.com");
-		dzi1.setScsHostname("default.scs.kidsmathstrainer.com");
+		dzi1.setScsUrl(NetUtils.getURL("https://default.scs.kidsmathstrainer.com"));
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
 
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
@@ -483,13 +484,13 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi1 = new DomainZoneApexInfo();
 		dzi1.setDomainName("tdmx.kidsmathstrainer.com");
 		dzi1.setZoneApex("kidsmathstrainer.com");
-		dzi1.setScsHostname("default.scs.kidsmathstrainer.com");
+		dzi1.setScsUrl(NetUtils.getURL("https://default.scs.kidsmathstrainer.com"));
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain("tdmx.kidsmathstrainer.com")).thenReturn(dzi1);
 
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsHostname(MockZonePartitionIdInstaller.SCS_S1);
+		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel

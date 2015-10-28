@@ -47,8 +47,12 @@ import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
+import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
+import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.server.ws.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -57,6 +61,8 @@ public class SASImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(SASImplUnitTest.class);
 
+	@Autowired
+	private SegmentService segmentService;
 	@Autowired
 	private AccountService accountService;
 	@Autowired
@@ -76,14 +82,28 @@ public class SASImplUnitTest {
 	@Autowired
 	private SAS sas;
 
+	private SegmentResource segmentResource;
 	private AccountResource accountResource;
 	private AccountZoneResource accountZoneResource;
+
+	private String accountEmail;
+	private String segmentName;
 
 	@Before
 	public void doSetup() throws Exception {
 
+		segmentName = "segment" + System.currentTimeMillis();
+
+		segmentResource = new SegmentResource();
+		segmentResource.setSegment(segmentName);
+		segmentResource.setScsUrl("https://" + segmentName + ".scs.tdmx.org/sp/v1.0/scs");
+		segmentResource = sas.createSegment(segmentResource);
+		assertNotNull(segmentResource.getId());
+
+		accountEmail = "email" + System.currentTimeMillis() + "@gmail.com";
+
 		accountResource = new AccountResource();
-		accountResource.setEmail("email@gmail.com");
+		accountResource.setEmail(accountEmail);
 		accountResource.setFirstname("firstName");
 		accountResource.setLastname("ln");
 		accountResource = sas.createAccount(accountResource);
@@ -102,6 +122,7 @@ public class SASImplUnitTest {
 		assertNotNull(accountZoneResource.getId());
 		assertNotNull(accountZoneResource.getJobId());
 		assertNotNull(jobScheduler.getLastImmediateScheduledJob());
+
 	}
 
 	@After
@@ -112,6 +133,7 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testAutowired() {
+		assertNotNull(segmentService);
 		assertNotNull(accountService);
 		assertNotNull(accountZoneService);
 		assertNotNull(accountZoneAdministrationCredentialService);
@@ -120,6 +142,12 @@ public class SASImplUnitTest {
 		assertNotNull(objectIdService);
 		// the service under test...
 		assertNotNull(sas);
+	}
+
+	@Test
+	public void testGetSegment() {
+		SegmentResource r = sas.getSegment(segmentResource.getId());
+		assertNotNull(r);
 	}
 
 	@Test
@@ -156,7 +184,8 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testGetAccount() {
-		// TODO
+		AccountResource r = sas.getAccount(accountResource.getId());
+		assertNotNull(r);
 	}
 
 	@Test

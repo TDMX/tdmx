@@ -31,7 +31,7 @@ public class RemoteControlServiceTest {
 
 	RemoteControlServiceImpl sut;
 
-	private Segment segment = SegmentFacade.createSegment("segment", "scsHostname");
+	private Segment segment = SegmentFacade.createSegment("segment", "https://scsHostname/scs");
 	private Map<SeedAttribute, Long> seedAttributes;
 
 	@Before

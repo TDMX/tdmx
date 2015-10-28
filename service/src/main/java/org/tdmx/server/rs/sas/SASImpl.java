@@ -35,15 +35,21 @@ import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
 import org.tdmx.server.rs.exception.ApplicationValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
+import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
 public class SASImpl implements SAS {
@@ -52,6 +58,8 @@ public class SASImpl implements SAS {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public enum PARAM {
+		SID("sId"),
+		SEGMENT("segment"),
 		AID("aId"),
 		ACCOUNT("account"),
 		ZID("zId"),
@@ -76,6 +84,8 @@ public class SASImpl implements SAS {
 	private static final Logger log = LoggerFactory.getLogger(SASImpl.class);
 
 	private UniqueIdService accountIdService;
+	private SegmentService segmentService;
+
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
@@ -91,16 +101,69 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 
 	@Override
+	public SegmentResource createSegment(SegmentResource segment) {
+		validatePresent(SegmentResource.FIELD.SEGMENT, segment);
+		Segment s = SegmentResource.mapTo(segment);
+		validateNotPresent(SegmentResource.FIELD.ID, s.getId());
+		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
+		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
+
+		// TODO segment must not exist
+
+		log.info("Creating segment " + s.getSegmentName());
+		getSegmentService().createOrUpdate(s);
+
+		// the ID is only created on commit of the createOrUpdate above
+		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		return SegmentResource.mapTo(storedSegment);
+	}
+
+	@Override
+	public List<SegmentResource> searchSegment(Integer pageNo, Integer pageSize, String segment) {
+		// TODO search criteria
+
+		List<Segment> segments = getSegmentService().findAll();
+
+		List<SegmentResource> result = new ArrayList<>();
+		for (Segment s : segments) {
+			result.add(SegmentResource.mapTo(s));
+		}
+		return result;
+	}
+
+	@Override
+	public SegmentResource getSegment(Long sId) {
+		validatePresent(PARAM.SID, sId);
+		return SegmentResource.mapTo(getSegmentService().findById(sId));
+	}
+
+	@Override
+	public SegmentResource updateSegment(SegmentResource segment) {
+		validatePresent(PARAM.SEGMENT, segment);
+		Segment s = SegmentResource.mapTo(segment);
+		validatePresent(SegmentResource.FIELD.ID, s.getId());
+		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
+		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
+		getSegmentService().createOrUpdate(s);
+		return SegmentResource.mapTo(s);
+	}
+
+	@Override
+	public Response deleteSegment(Long sId) {
+		validatePresent(PARAM.SID, sId);
+		Segment a = getSegmentService().findById(sId);
+		getSegmentService().delete(a);
+		return Response.ok().build();
+	}
+
+	@Override
 	public AccountResource createAccount(AccountResource account) {
-		validatePresent(AccountResource.FIELD.ACCOUNTID, account);
+		validatePresent(PARAM.ACCOUNT, account);
 		Account a = AccountResource.mapTo(account);
 		validateNotPresent(AccountResource.FIELD.ID, a.getId());
 		validateNotPresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 
 		a.setAccountId(getAccountIdService().getNextId());
-		a.setEmail(account.getEmail());
-		a.setFirstName(account.getFirstname());
-		a.setLastName(account.getLastname());
 
 		log.info("Creating accountId " + a.getAccountId() + " for " + a.getEmail());
 		getAccountService().createOrUpdate(a);
@@ -357,6 +420,14 @@ public class SASImpl implements SAS {
 
 	public void setAccountIdService(UniqueIdService accountIdService) {
 		this.accountIdService = accountIdService;
+	}
+
+	public SegmentService getSegmentService() {
+		return segmentService;
+	}
+
+	public void setSegmentService(SegmentService segmentService) {
+		this.segmentService = segmentService;
 	}
 
 	public AccountService getAccountService() {

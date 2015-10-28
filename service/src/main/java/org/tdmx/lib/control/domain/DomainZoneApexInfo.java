@@ -38,7 +38,6 @@ public class DomainZoneApexInfo {
 
 	private String domainName;
 	private String zoneApex;
-	private String scsHostname;
 	private String zacFingerprint;
 	private URL scsUrl;
 
@@ -59,7 +58,6 @@ public class DomainZoneApexInfo {
 		builder.append("DomainZoneApexInfo [domain=");
 		builder.append(domainName);
 		builder.append(" zoneApex=").append(zoneApex);
-		builder.append(", scsHostname=").append(scsHostname);
 		builder.append(", zacFingerprint=").append(zacFingerprint);
 		builder.append(", scsUrl=").append(scsUrl);
 		builder.append("]");
@@ -92,14 +90,6 @@ public class DomainZoneApexInfo {
 
 	public void setZoneApex(String zoneApex) {
 		this.zoneApex = zoneApex;
-	}
-
-	public String getScsHostname() {
-		return scsHostname;
-	}
-
-	public void setScsHostname(String scsHostname) {
-		this.scsHostname = scsHostname;
 	}
 
 	public String getZacFingerprint() {

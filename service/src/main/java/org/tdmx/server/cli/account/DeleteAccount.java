@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountResource;
 
 @Cli(name = "account:delete", description = "deletes an account", note = "delete any accountzone and zone administrator credentials before.")
 public class DeleteAccount extends AbstractCliCommand {

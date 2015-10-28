@@ -91,6 +91,12 @@ public class SegmentRepositoryImpl implements SegmentService {
 		return getSegmentDao().loadAll();
 	}
 
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public Segment findById(Long id) {
+		return getSegmentDao().loadById(id);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

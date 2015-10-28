@@ -162,18 +162,18 @@ public class SCSImpl implements SCS, Manageable {
 		String domainName = null;
 		String localName = null;
 		String serviceName = null;
-		if (segment.getScsHostname().equals(originZoneApexInfo.getScsHostname())) {
+		if (segment.getScsUrl().equals(originZoneApexInfo.getScsUrl().toExternalForm())) {
 			// if the origin's DNS information points to our own scsHostname, then the client certificate's name must
 			// match the destination domain's scsHostname
-			if (!serviceProviderName.equals(destZoneApexInfo.getScsHostname())) {
+			if (!serviceProviderName.equals(destZoneApexInfo.getScsUrl().getHost())) {
 				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 				return response;
 			}
 			zoneApex = originZoneApexInfo.getZoneApex();
 			domainName = originZoneApexInfo.getDomainName();
 			localName = co.getLocalName();
-		} else if (segment.getScsHostname().equals(destZoneApexInfo.getScsHostname())) {
-			if (!serviceProviderName.equals(originZoneApexInfo.getScsHostname())) {
+		} else if (segment.getScsUrl().equals(destZoneApexInfo.getScsUrl().toExternalForm())) {
+			if (!serviceProviderName.equals(originZoneApexInfo.getScsUrl().getHost())) {
 				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 				return response;
 			}
@@ -225,7 +225,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(localName);
 		session.setDomain(domainName);
 		session.setServicename(serviceName);
-		session.setServiceprovider(segment.getScsHostname());
+		session.setServiceprovider(segment.getScsUrl()); // FIXME sp url
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -280,7 +280,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setServicename(service.getServiceName());
-		session.setServiceprovider(segment.getScsHostname());
+		session.setServiceprovider(segment.getScsUrl()); // FIXME url
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -324,7 +324,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(existingCred.getAddress().getLocalName());
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setServicename(null);
-		session.setServiceprovider(segment.getScsHostname());
+		session.setServiceprovider(segment.getScsUrl());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -367,7 +367,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setDomain(existingCred.getDomain().getDomainName());
 		session.setLocalname(null);
 		session.setServicename(null);
-		session.setServiceprovider(segment.getScsHostname());
+		session.setServiceprovider(segment.getScsUrl()); // FIXME change to spUrl
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();

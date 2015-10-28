@@ -18,8 +18,11 @@
  */
 package org.tdmx.lib.zone.service;
 
+import java.net.URL;
+
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.tdmx.core.system.lang.NetUtils;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionFacade;
 import org.tdmx.lib.control.domain.DatabaseType;
@@ -34,7 +37,9 @@ public class MockZonePartitionIdInstaller {
 	public static final String S2 = "segment2";
 
 	public static String SCS_S1 = "segment1.scs.tdmx.org";
+	public static URL SCS_S1_URL = NetUtils.getURL("https://segment1.scs.tdmx.org/sp/v1.0/scs");
 	public static String SCS_S2 = "segment2.scs.tdmx.org";
+	public static URL SCS_S2_URL = NetUtils.getURL("https://segment2.scs.tdmx.org/sp/v1.0/scs");
 
 	public static String ZP1_S1 = "z-unittest-segment1-id1";
 	public static String ZP2_S1 = "z-unittest-segment1-id2";
@@ -52,14 +57,14 @@ public class MockZonePartitionIdInstaller {
 		{
 			Segment s1 = segmentService.findBySegment(S1);
 			if (s1 == null) {
-				s1 = SegmentFacade.createSegment(S1, SCS_S1);
+				s1 = SegmentFacade.createSegment(S1, SCS_S1_URL.toString());
 				segmentService.createOrUpdate(s1);
 			}
 		}
 		{
 			Segment s2 = segmentService.findBySegment(S2);
 			if (s2 == null) {
-				s2 = SegmentFacade.createSegment(S2, SCS_S2);
+				s2 = SegmentFacade.createSegment(S2, SCS_S2_URL.toString());
 				segmentService.createOrUpdate(s2);
 			}
 		}
