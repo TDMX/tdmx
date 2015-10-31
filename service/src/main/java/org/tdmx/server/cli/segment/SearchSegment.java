@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.account;
+package org.tdmx.server.cli.segment;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -24,10 +24,10 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.SegmentResource;
 
-@Cli(name = "account:modify", description = "modifies an account", note = "any parameter not defined will not be changed.")
-public class ModifyAccount extends AbstractCliCommand {
+@Cli(name = "segment:search", description = "search for a segment", note = "if no parameters are provided, all segments are listed.")
+public class SearchSegment extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,15 +37,8 @@ public class ModifyAccount extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account's id.")
-	private String accountId;
-
-	@Parameter(name = "email", description = "the account owner's email address.")
-	private String email;
-	@Parameter(name = "firstName", description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", description = "the account owner's lastName.")
-	private String lastName;
+	@Parameter(name = "segment", description = "the segment name.")
+	private String segment;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,24 +50,15 @@ public class ModifyAccount extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
-		if (accounts.size() != 1) {
-			out.println("Account " + accountId + " not found");
-			return;
-		}
-		AccountResource ar = accounts.get(0);
-		if (email != null) {
-			ar.setEmail(email);
-		}
-		if (firstName != null) {
-			ar.setFirstname(firstName);
-		}
-		if (lastName != null) {
-			ar.setLastname(lastName);
-		}
+		int page = 0;
+		List<SegmentResource> segments = null;
+		do {
+			segments = getSas().searchSegment(page++, PAGE_SIZE, segment);
 
-		AccountResource updatedAr = getSas().updateAccount(ar);
-		out.println(updatedAr.getCliRepresentation());
+			for (SegmentResource seg : segments) {
+				out.println(seg.getCliRepresentation());
+			}
+		} while (segments.size() == PAGE_SIZE);
 	}
 
 	// -------------------------------------------------------------------------

@@ -59,7 +59,7 @@ public class SearchAccount extends AbstractCliCommand {
 			accounts = getSas().searchAccount(page++, PAGE_SIZE, email, accountId);
 
 			for (AccountResource account : accounts) {
-				out.println(outputRepresentation(account));
+				out.println(account.getCliRepresentation());
 			}
 		} while (accounts.size() == PAGE_SIZE);
 	}
@@ -75,13 +75,5 @@ public class SearchAccount extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
 
 }

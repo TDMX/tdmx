@@ -16,18 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.account;
+package org.tdmx.server.cli.segment;
 
 import java.io.PrintStream;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.SegmentResource;
 
-@Cli(name = "account:modify", description = "modifies an account", note = "any parameter not defined will not be changed.")
-public class ModifyAccount extends AbstractCliCommand {
+@Cli(name = "segment:delete", description = "deletes a segment", note = "delete any accountzone and zone administrator credentials using the segment before.")
+public class DeleteSegment extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,15 +39,8 @@ public class ModifyAccount extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account's id.")
-	private String accountId;
-
-	@Parameter(name = "email", description = "the account owner's email address.")
-	private String email;
-	@Parameter(name = "firstName", description = "the account owner's firstName.")
-	private String firstName;
-	@Parameter(name = "lastName", description = "the account owner's lastName.")
-	private String lastName;
+	@Parameter(name = "segment", required = true, description = "the segment name.")
+	private String segment;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,24 +52,19 @@ public class ModifyAccount extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
-		if (accounts.size() != 1) {
-			out.println("Account " + accountId + " not found");
+		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
+		if (segments.size() != 1) {
+			out.println("Segment " + segment + " not found.");
 			return;
 		}
-		AccountResource ar = accounts.get(0);
-		if (email != null) {
-			ar.setEmail(email);
+		SegmentResource seg = segments.get(0);
+		Response response = getSas().deleteSegment(seg.getId());
+		out.print(seg.getCliRepresentation());
+		if (response.getStatus() == SUCCESS) {
+			out.println(" Deleted.");
+		} else {
+			out.println(" Not deleted. StatusCode=" + response.getStatus());
 		}
-		if (firstName != null) {
-			ar.setFirstname(firstName);
-		}
-		if (lastName != null) {
-			ar.setLastname(lastName);
-		}
-
-		AccountResource updatedAr = getSas().updateAccount(ar);
-		out.println(updatedAr.getCliRepresentation());
 	}
 
 	// -------------------------------------------------------------------------

@@ -26,8 +26,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.tdmx.lib.control.domain.Segment;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "account")
-@XmlType(name = "Account")
+@XmlRootElement(name = "segment")
+@XmlType(name = "Segment")
 public class SegmentResource {
 
 	public enum FIELD {
@@ -50,6 +50,15 @@ public class SegmentResource {
 	private Long id;
 	private String segment;
 	private String scsUrl;
+
+	public String getCliRepresentation() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Segment");
+		buf.append("; ").append(FIELD.ID.toString());
+		buf.append("; ").append(FIELD.SEGMENT.toString());
+		buf.append("; ").append(FIELD.SCS_URL.toString());
+		return buf.toString();
+	}
 
 	public static Segment mapTo(SegmentResource segment) {
 		if (segment == null) {

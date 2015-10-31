@@ -55,6 +55,17 @@ public class AccountResource {
 	private String lastname;
 	private String email;
 
+	public String getCliRepresentation() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Account");
+		buf.append("; ").append(FIELD.ID.toString());
+		buf.append("; ").append(FIELD.ACCOUNTID.toString());
+		buf.append("; ").append(FIELD.EMAIL.toString());
+		buf.append("; ").append(FIELD.FIRSTNAME.toString());
+		buf.append("; ").append(FIELD.LASTNAME.toString());
+		return buf.toString();
+	}
+
 	public static Account mapTo(AccountResource account) {
 		if (account == null) {
 			return null;

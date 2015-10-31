@@ -20,7 +20,6 @@ package org.tdmx.server.cli.cmd;
 
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.server.rs.sas.SAS;
-import org.tdmx.server.rs.sas.resource.AccountResource;
 
 public abstract class AbstractCliCommand implements CommandExecutable {
 
@@ -47,17 +46,6 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
-
-	protected String outputRepresentation(AccountResource account) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Account");
-		buf.append("; ").append(account.getId());
-		buf.append("; ").append(account.getAccountId());
-		buf.append("; ").append(account.getEmail());
-		buf.append("; ").append(account.getFirstname());
-		buf.append("; ").append(account.getLastname());
-		return buf.toString();
-	}
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
