@@ -44,6 +44,8 @@ public class CliParser {
 	public static final String PI_USAGE = "usage";
 	public static final String PI_HELP = "help";
 	public static final String PI_ABORT = "abort";
+	public static final String PI_EXIT = "exit";
+	public static final String PI_QUIT = "quit";
 
 	private CommandDescriptorFactory commandDescriptorFactory;
 
@@ -71,6 +73,13 @@ public class CliParser {
 		ParameterDescriptor parameter = null;
 		Command cmd = null;
 		while ((token = tokenizer.getNextToken()) != null) {
+			// we can exit at any time, irrespective of state
+			if (!(state == ParserState.PARAMETER || state == ParserState.VALUE)
+					&& (token.equalsIgnoreCase(PI_EXIT) || token.equalsIgnoreCase(PI_QUIT))) {
+				cmd = null;
+				parameter = null;
+				break;
+			}
 			switch (state) {
 			case ERROR:
 				if (commandDescriptorFactory.getCommand(token) != null) {
