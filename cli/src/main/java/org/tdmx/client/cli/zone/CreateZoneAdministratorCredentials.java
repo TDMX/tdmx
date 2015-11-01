@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -49,9 +50,6 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-
-	@Parameter(name = "zone", required = true, description = "the zone apex.")
-	private String zone;
 
 	@Parameter(name = "name", required = true, description = "the zone administrator's full name.")
 	private String name;
@@ -84,13 +82,15 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ClientCliUtils.checkZACNotExists(zone);
+		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
+
+		ClientCliUtils.checkZACNotExists(zd.getZoneApex());
 
 		Calendar today = CalendarUtils.getDate(new Date());
 		Calendar future = CalendarUtils.getDate(new Date());
 		future.add(Calendar.YEAR, validityInYears);
 
-		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zone);
+		ZoneAdministrationCredentialSpecifier req = new ZoneAdministrationCredentialSpecifier(1, zd.getZoneApex());
 
 		req.setCn(name);
 		req.setTelephoneNumber(telephone);
@@ -111,13 +111,15 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 			// save the keystore protected with the password
 			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", password, "zac");
-			FileUtils.storeFileContents(ClientCliUtils.createZACKeystoreFilename(zone), ks, ".tmp");
+			FileUtils.storeFileContents(ClientCliUtils.createZACKeystoreFilename(zd.getZoneApex()), ks, ".tmp");
 
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
-			FileUtils.storeFileContents(ClientCliUtils.createZACPublicCertificateFilename(zone), pc, ".tmp");
+			FileUtils.storeFileContents(ClientCliUtils.createZACPublicCertificateFilename(zd.getZoneApex()), pc,
+					".tmp");
 
 			// output the public key to the console
+			out.println("zone=" + zd.getZoneApex());
 			out.println("certificate="
 					+ CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate }));
 			out.println("fingerprint=" + publicCertificate.getFingerprint());

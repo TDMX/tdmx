@@ -97,6 +97,20 @@ public class FileUtils {
 	}
 
 	/**
+	 * deletes the file at filePath.
+	 * 
+	 * @param filePath
+	 * @throws IOException
+	 */
+	public static void deleteFile(String filePath) throws IOException {
+		log.debug("deleteFile " + filePath);
+		Path path = Paths.get(filePath);
+		if (Files.exists(path)) {
+			Files.delete(path);
+		}
+	}
+
+	/**
 	 * write the contents to a temporary file and then replace the existing file.
 	 * 
 	 * @param filePath

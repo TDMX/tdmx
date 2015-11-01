@@ -87,6 +87,15 @@ public class ClientCliUtils {
 		}
 	}
 
+	public static void deleteZoneDescriptor() {
+		checkZoneDescriptorExists();
+		try {
+			FileUtils.deleteFile(ZONE_DESCRIPTOR);
+		} catch (IOException e) {
+			throw new IllegalStateException("Zone descriptor file " + ZONE_DESCRIPTOR + " cannot be deleted.", e);
+		}
+	}
+
 	public static ZoneDescriptor loadZoneDescriptor() {
 		checkZoneDescriptorExists();
 		Properties p = new Properties();
@@ -109,7 +118,9 @@ public class ClientCliUtils {
 	public static void storeZoneDescriptor(ZoneDescriptor zd) {
 		Properties p = new Properties();
 		p.setProperty(ZoneDescriptor.ZONE_APEX_PROPERTY, zd.getZoneApex());
-		p.setProperty(ZoneDescriptor.SCS_URL_PROPERTY, zd.getScsUrl());
+		if (zd.getScsUrl() != null) {
+			p.setProperty(ZoneDescriptor.SCS_URL_PROPERTY, zd.getScsUrl());
+		}
 
 		try (FileWriter fw = new FileWriter(ZONE_DESCRIPTOR)) {
 			p.store(fw, "This is a ZoneDescriptor file produced by the zone:create CLI command. Do not edit.");
