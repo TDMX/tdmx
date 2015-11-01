@@ -19,8 +19,11 @@
 package org.tdmx.client.cli;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +34,7 @@ import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
  * Utilities for all Client CLI commands.
@@ -47,6 +51,8 @@ public class ClientCliUtils {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	public static final String ZONE_DESCRIPTOR = "zone.tdmx";
+
 	public static final String KEYSTORE_TYPE = "jks";
 
 	public static final String ALIAS_ZAC = "zac";
@@ -57,6 +63,84 @@ public class ClientCliUtils {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 	private ClientCliUtils() {
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - Zone Descriptor
+	// -------------------------------------------------------------------------
+
+	public static boolean zoneDescriptorExists() {
+		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", ZONE_DESCRIPTOR);
+		return !zacFiles.isEmpty();
+	}
+
+	public static void checkZoneDescriptorExists() {
+		if (!zoneDescriptorExists()) {
+			throw new IllegalStateException(
+					"Zone descriptor file " + ZONE_DESCRIPTOR + " not found. Use zone:create command to create one.");
+		}
+	}
+
+	public static void checkZoneDescriptorNotExists() {
+		if (zoneDescriptorExists()) {
+			throw new IllegalStateException("Zone descriptor file " + ZONE_DESCRIPTOR + " exists.");
+		}
+	}
+
+	public static ZoneDescriptor loadZoneDescriptor() {
+		checkZoneDescriptorExists();
+		Properties p = new Properties();
+		try (FileInputStream fis = new FileInputStream(ZONE_DESCRIPTOR)) {
+			p.load(fis);
+		} catch (IOException e) {
+			throw new IllegalStateException("Zone descriptor file " + ZONE_DESCRIPTOR + " cannot be loaded.", e);
+		}
+		String zoneApex = p.getProperty(ZoneDescriptor.ZONE_APEX_PROPERTY);
+		if (!StringUtils.hasText(zoneApex)) {
+			throw new IllegalStateException(
+					"Zone descriptor file missing property " + ZoneDescriptor.ZONE_APEX_PROPERTY);
+		}
+		ZoneDescriptor zd = new ZoneDescriptor(zoneApex);
+
+		zd.setScsUrl(p.getProperty(ZoneDescriptor.SCS_URL_PROPERTY));
+		return zd;
+	}
+
+	public static void storeZoneDescriptor(ZoneDescriptor zd) {
+		Properties p = new Properties();
+		p.setProperty(ZoneDescriptor.ZONE_APEX_PROPERTY, zd.getZoneApex());
+		p.setProperty(ZoneDescriptor.SCS_URL_PROPERTY, zd.getScsUrl());
+
+		try (FileWriter fw = new FileWriter(ZONE_DESCRIPTOR)) {
+			p.store(fw, "This is a ZoneDescriptor file produced by the zone:create CLI command. Do not edit.");
+
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to save Zone descriptor file " + ZONE_DESCRIPTOR, e);
+		}
+	}
+
+	public static class ZoneDescriptor {
+		public static String ZONE_APEX_PROPERTY = "zoneapex";
+		public static String SCS_URL_PROPERTY = "scsUrl";
+
+		private final String zoneApex;
+		private String scsUrl;
+
+		public ZoneDescriptor(String zoneApex) {
+			this.zoneApex = zoneApex;
+		}
+
+		public String getScsUrl() {
+			return scsUrl;
+		}
+
+		public void setScsUrl(String scsUrl) {
+			this.scsUrl = scsUrl;
+		}
+
+		public String getZoneApex() {
+			return zoneApex;
+		}
 	}
 
 	// -------------------------------------------------------------------------

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.command.certificate;
+package org.tdmx.client.cli.user;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "certificate:user:create", description = "creates credentials of a user (UC) in a keystore. The keystore filename is <domain>/<localname>-<serialNumber>.uc, with the public certificate in the file <domain>/<localname>-<serialNumber>.dac.crt.", note = "There may be many UCs for each user, differentiated by their increasing serialNumbers. The DAC keystore file needs to be present in the working directory.")
+@Cli(name = "user:create", description = "creates credentials of a user (UC) in a keystore. The keystore filename is <domain>/<localname>-<serialNumber>.uc, with the public certificate in the file <domain>/<localname>-<serialNumber>.dac.crt.", note = "There may be many UCs for each user, differentiated by their increasing serialNumbers. The DAC keystore file needs to be present in the working directory.")
 public class CreateUserCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.command.certificate;
+package org.tdmx.client.cli.zone;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,7 +39,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "certificate:zoneadmin:create", description = "creates credentials of a zone administrator (ZAC) in a keystore. The keystore filename is <zone>.zac, with the public certificate in the file <zone>.zac.crt.", note = "There may only be one ZAC at any one time.")
+@Cli(name = "zoneadmin:create", description = "creates credentials of a zone administrator (ZAC) in a keystore. The keystore filename is <zone>.zac, with the public certificate in the file <zone>.zac.crt.", note = "There may only be one ZAC at any one time.")
 public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------

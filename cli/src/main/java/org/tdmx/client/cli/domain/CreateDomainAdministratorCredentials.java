@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.command.certificate;
+package org.tdmx.client.cli.domain;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,7 +39,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "certificate:domainadmin:create", description = "creates credentials of a domain administrator (DAC) in a keystore. The keystore filename is <domain>-<serialNumber>.dac, with the public certificate in the file <domain>-<serialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
+@Cli(name = "domainadmin:create", description = "creates credentials of a domain administrator (DAC) in a keystore. The keystore filename is <domain>-<serialNumber>.dac, with the public certificate in the file <domain>-<serialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
 public class CreateDomainAdministratorCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------

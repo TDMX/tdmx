@@ -20,9 +20,11 @@ package org.tdmx.client.cli;
 
 import java.io.InputStreamReader;
 
-import org.tdmx.client.cli.command.certificate.CreateDomainAdministratorCredentials;
-import org.tdmx.client.cli.command.certificate.CreateUserCredentials;
-import org.tdmx.client.cli.command.certificate.CreateZoneAdministratorCredentials;
+import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
+import org.tdmx.client.cli.user.CreateUserCredentials;
+import org.tdmx.client.cli.zone.CreateZone;
+import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
+import org.tdmx.client.cli.zone.ModifyZone;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -47,10 +49,14 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	//@formatter:off
 	@SuppressWarnings("unchecked")
-	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] {
-			CreateZoneAdministratorCredentials.class, CreateDomainAdministratorCredentials.class,
+	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
+			CreateZone.class, ModifyZone.class, 
+			CreateZoneAdministratorCredentials.class, 
+			CreateDomainAdministratorCredentials.class,
 			CreateUserCredentials.class, };
+	//@formatter:on
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
