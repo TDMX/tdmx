@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 
@@ -88,9 +88,7 @@ public class AccountZoneResource {
 
 		a.setJobId(az.getJobId());
 
-		if (StringUtils.hasText(az.getAccessStatus())) {
-			a.setStatus(AccountZoneStatus.valueOf(az.getAccessStatus()));
-		}
+		a.setStatus(EnumUtils.mapTo(AccountZoneStatus.class, az.getAccessStatus()));
 		return a;
 	}
 
@@ -107,9 +105,7 @@ public class AccountZoneResource {
 		a.setZonePartitionId(az.getZonePartitionId());
 
 		a.setJobId(az.getJobId());
-		if (az.getStatus() != null) {
-			a.setAccessStatus(az.getStatus().toString());
-		}
+		a.setAccessStatus(EnumUtils.mapToString(az.getStatus()));
 		return a;
 	}
 

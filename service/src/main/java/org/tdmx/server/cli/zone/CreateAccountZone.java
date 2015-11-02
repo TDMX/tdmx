@@ -23,9 +23,6 @@ import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.system.lang.EnumUtils;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
@@ -74,12 +71,6 @@ public class CreateAccountZone extends AbstractCliCommand {
 		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
 		if (segments.isEmpty()) {
 			out.println("Segment " + segment + " not found.");
-			return;
-		}
-
-		if (EnumUtils.mapTo(AccountZoneStatus.class, status) == null) {
-			out.println("Status invalid " + status + ". Use one of "
-					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
 			return;
 		}
 

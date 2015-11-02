@@ -115,7 +115,7 @@ public interface SAS {
 	@PUT
 	@Path("/accounts/{aid}/zones/{zid}")
 	AccountZoneResource updateAccountZone(@PathParam("aid") Long aid, @PathParam("zid") Long zId,
-			AccountZoneResource account);
+			AccountZoneResource accountZone);
 
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}")

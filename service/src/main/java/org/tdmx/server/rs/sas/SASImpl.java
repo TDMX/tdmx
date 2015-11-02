@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -215,6 +216,8 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountZoneResource createAccountZone(Long aId, AccountZoneResource accountZone) {
 		validatePresent(PARAM.AID, aId);
+		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
+
 		AccountZone az = AccountZoneResource.mapTo(accountZone);
 
 		// check that the account exists and accountId same
@@ -305,9 +308,10 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource account) {
+	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource accountZone) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
+		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
 		// TODO Auto-generated method stub
 
 		// change partitionId - store jobId
@@ -430,6 +434,14 @@ public class SASImpl implements SAS {
 	private void validatePresent(Enum<?> fieldId, String fieldValue) {
 		if (!StringUtils.hasText(fieldValue)) {
 			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+	}
+
+	private <E extends Enum<E>> void validateEnum(Enum<?> fieldId, Class<E> enumClass, String fieldValue) {
+		if (!StringUtils.hasText(fieldValue)) {
+			if (EnumUtils.mapTo(enumClass, fieldValue) == null) {
+				throw createVE(FieldValidationErrorType.INVALID, fieldId.toString());
+			}
 		}
 	}
 

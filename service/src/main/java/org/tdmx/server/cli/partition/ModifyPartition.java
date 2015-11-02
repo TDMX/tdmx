@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.zone;
+package org.tdmx.server.cli.partition;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -24,33 +24,26 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.AccountResource;
-import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
-@Cli(name = "zone:modify", description = "modifies an account's zone.", note = ".")
-public class ModifyAccountZone extends AbstractCliCommand {
+@Cli(name = "partition:modify", description = "modifies a database partition")
+public class ModifyPartition extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	// FIXME
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account identifier.")
-	private String accountId;
-
-	@Parameter(name = "zone", required = true, description = "the zone apex.")
-	private String zone;
-
-	@Parameter(name = "segment", description = "the zone's segment.")
+	@Parameter(name = "segment", required = true, description = "the segment name.")
 	private String segment;
-	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
-	private String zonePartitionId;
-	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
-	private String status;
+
+	@Parameter(name = "scsUrl", required = true, description = "the URL of the SessionControlService (SCS).")
+	private String scsUrl;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -62,32 +55,18 @@ public class ModifyAccountZone extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
-		if (accounts.isEmpty()) {
-			out.println("Account " + accountId + " not found.");
-			return;
-		}
-		AccountResource account = accounts.get(0);
-
 		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
 		if (segments.isEmpty()) {
 			out.println("Segment " + segment + " not found.");
 			return;
 		}
-
-		List<AccountZoneResource> accountZones = getSas().searchAccountZone(account.getId(), 0, 1, zone);
-		if (accountZones.isEmpty()) {
-			out.println("Account zone " + zone + " not found.");
-			return;
+		SegmentResource seg = segments.get(0);
+		if (scsUrl != null) {
+			seg.setScsUrl(scsUrl);
 		}
-		AccountZoneResource azr = accountZones.get(0);
 
-		azr.setSegment(segment);
-		azr.setZonePartitionId(zonePartitionId);
-		azr.setAccessStatus(status);
-
-		AccountZoneResource newAzr = getSas().updateAccountZone(account.getId(), azr.getId(), azr);
-		out.println(newAzr.getCliRepresentation());
+		SegmentResource updatedSegment = getSas().updateSegment(seg);
+		out.println(updatedSegment.getCliRepresentation());
 	}
 
 	// -------------------------------------------------------------------------

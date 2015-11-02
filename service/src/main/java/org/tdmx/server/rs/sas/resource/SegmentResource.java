@@ -64,23 +64,23 @@ public class SegmentResource {
 		if (segment == null) {
 			return null;
 		}
-		Segment a = new Segment();
-		a.setId(segment.getId());
-		a.setSegmentName(segment.getSegment());
+		Segment s = new Segment();
+		s.setId(segment.getId());
+		s.setSegmentName(segment.getSegment());
 
-		a.setScsUrl(segment.getScsUrl());
-		return a;
+		s.setScsUrl(segment.getScsUrl());
+		return s;
 	}
 
-	public static SegmentResource mapTo(Segment account) {
-		if (account == null) {
+	public static SegmentResource mapTo(Segment segment) {
+		if (segment == null) {
 			return null;
 		}
 		SegmentResource a = new SegmentResource();
-		a.setId(account.getId());
-		a.setSegment(account.getSegmentName());
+		a.setId(segment.getId());
+		a.setSegment(segment.getSegmentName());
 
-		a.setScsUrl(account.getScsUrl());
+		a.setScsUrl(segment.getScsUrl());
 		return a;
 	}
 
