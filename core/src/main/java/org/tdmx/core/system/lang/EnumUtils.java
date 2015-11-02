@@ -16,18 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.segment;
+package org.tdmx.core.system.lang;
 
-import java.io.PrintStream;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.SegmentResource;
-
-@Cli(name = "segment:search", description = "search for a segment", note = "if no parameters are provided, all segments are listed.")
-public class SearchSegment extends AbstractCliCommand {
+/**
+ * Date is just a day YYYY-MM-DD DateTime is a timestamp with YYYY-MM-DDTHH:MI:SS, without milliseconds.
+ * 
+ * @author Peter
+ * 
+ */
+public class EnumUtils {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,44 +36,31 @@ public class SearchSegment extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-
-	@Parameter(name = "segment", description = "the segment name.")
-	private String segment;
+	private static Logger log = LoggerFactory.getLogger(EnumUtils.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	private EnumUtils() {
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void run(PrintStream out) {
-		int results = 0;
-		int page = 0;
-		List<SegmentResource> segments = null;
-		do {
-			segments = getSas().searchSegment(page++, PAGE_SIZE, segment);
+	public static <E extends Enum<E>> E mapTo(Class<E> enumType, String s) {
+		if (!StringUtils.hasText(s)) {
+			return null;
+		}
+		try {
+			E e = Enum.valueOf(enumType, s);
+			return e;
+		} catch (IllegalArgumentException e) {
+			log.debug("Invalid enum value " + s + " for " + enumType.getName());
+		}
 
-			for (SegmentResource seg : segments) {
-				out.println(seg.getCliRepresentation());
-				results++;
-			}
-		} while (segments.size() == PAGE_SIZE);
-		out.println("Found " + results + " segments.");
+		return null;
 	}
-
-	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------
-	// PRIVATE METHODS
-	// -------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------
-	// PUBLIC ACCESSORS (GETTERS / SETTERS)
-	// -------------------------------------------------------------------------
 
 }

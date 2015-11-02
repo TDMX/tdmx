@@ -39,7 +39,7 @@ public class AccountZoneResource {
 		SEGMENT("segment"),
 		ZONEPARTITIONID("zonePartitionId"),
 		ACCESSSTATUS("accessStatus"),
-		JOBID("jobId"), ;
+		JOBID("jobId"),;
 
 		private final String n;
 
@@ -60,6 +60,19 @@ public class AccountZoneResource {
 	private String zonePartitionId;
 	private String accessStatus;
 	private Long jobId;
+
+	public String getCliRepresentation() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("AccountZone");
+		buf.append("; ").append(id);
+		buf.append("; ").append(accountId);
+		buf.append("; ").append(zoneApex);
+		buf.append("; ").append(segment);
+		buf.append("; ").append(zonePartitionId);
+		buf.append("; ").append(accessStatus);
+		buf.append("; ").append(jobId);
+		return buf.toString();
+	}
 
 	public static AccountZone mapTo(AccountZoneResource az) {
 		if (az == null) {

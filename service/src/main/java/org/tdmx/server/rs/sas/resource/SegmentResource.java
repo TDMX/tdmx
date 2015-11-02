@@ -54,9 +54,9 @@ public class SegmentResource {
 	public String getCliRepresentation() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("Segment");
-		buf.append("; ").append(FIELD.ID.toString());
-		buf.append("; ").append(FIELD.SEGMENT.toString());
-		buf.append("; ").append(FIELD.SCS_URL.toString());
+		buf.append("; ").append(id);
+		buf.append("; ").append(segment);
+		buf.append("; ").append(scsUrl);
 		return buf.toString();
 	}
 

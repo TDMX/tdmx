@@ -54,7 +54,7 @@ public class ModifySegment extends AbstractCliCommand {
 	@Override
 	public void run(PrintStream out) {
 		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
-		if (segments.size() != 1) {
+		if (segments.isEmpty()) {
 			out.println("Segment " + segment + " not found.");
 			return;
 		}

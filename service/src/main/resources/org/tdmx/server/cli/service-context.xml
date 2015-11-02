@@ -26,6 +26,11 @@
 				<value>org.tdmx.server.cli.account.ModifyAccount</value>
 				<value>org.tdmx.server.cli.account.DeleteAccount</value>
 				<value>org.tdmx.server.cli.account.SearchAccount</value>
+				
+				<value>org.tdmx.server.cli.zone.CreateAccountZone</value>
+				<value>org.tdmx.server.cli.zone.ModifyAccountZone</value>
+				<value>org.tdmx.server.cli.zone.DeleteAccountZone</value>
+				<value>org.tdmx.server.cli.zone.SearchAccountZone</value>
 			</array>
 		</constructor-arg>
 	</bean>
@@ -38,10 +43,16 @@
 				<entry key="segment:modify" value="tdmx.server.cli.cmd.ModifySegment"/>
 				<entry key="segment:delete" value="tdmx.server.cli.cmd.DeleteSegment"/>
 				<entry key="segment:search" value="tdmx.server.cli.cmd.SearchSegment"/>
+				
 				<entry key="account:create" value="tdmx.server.cli.cmd.CreateAccount"/>
 				<entry key="account:modify" value="tdmx.server.cli.cmd.ModifyAccount"/>
 				<entry key="account:delete" value="tdmx.server.cli.cmd.DeleteAccount"/>
 				<entry key="account:search" value="tdmx.server.cli.cmd.SearchAccount"/>
+				
+				<entry key="zone:create" value="tdmx.server.cli.cmd.CreateAccountZone"/>
+				<entry key="zone:modify" value="tdmx.server.cli.cmd.ModifyAccountZone"/>
+				<entry key="zone:delete" value="tdmx.server.cli.cmd.DeleteAccountZone"/>
+				<entry key="zone:search" value="tdmx.server.cli.cmd.SearchAccountZone"/>
 			</map>
 		</property>
 	</bean>
@@ -75,5 +86,14 @@
 	<bean id="tdmx.server.cli.cmd.DeleteAccount" class="org.tdmx.server.cli.account.DeleteAccount" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.SearchAccount" class="org.tdmx.server.cli.account.SearchAccount" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+
+	<bean id="tdmx.server.cli.cmd.CreateAccountZone" class="org.tdmx.server.cli.zone.CreateAccountZone" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ModifyAccountZone" class="org.tdmx.server.cli.zone.ModifyAccountZone" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.DeleteAccountZone" class="org.tdmx.server.cli.zone.DeleteAccountZone" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.SearchAccountZone" class="org.tdmx.server.cli.zone.SearchAccountZone" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 </beans>

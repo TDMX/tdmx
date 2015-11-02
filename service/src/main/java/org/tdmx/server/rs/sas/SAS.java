@@ -106,7 +106,7 @@ public interface SAS {
 	@GET
 	@Path("/accounts/{aid}/zones")
 	List<AccountZoneResource> searchAccountZone(@PathParam("aid") Long aId, @QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize);
+			@QueryParam("pageSize") Integer pageSize, @PathParam("zone") String zoneApex);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}")
@@ -120,6 +120,13 @@ public interface SAS {
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}")
 	Response deleteAccountZone(@PathParam("aid") Long aId, @PathParam("zid") Long zId);
+
+	@GET
+	@Path("/accountzones")
+	List<AccountZoneResource> searchAccountZone(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @PathParam("zone") String zoneApex,
+			@PathParam("segment") String segment, @PathParam("zonePartitionId") String zonePartitionId,
+			@PathParam("status") String status);
 
 	/*
 	 * RESTFUL service for AccountZoneAdministrationCredential

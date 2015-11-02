@@ -58,11 +58,11 @@ public class AccountResource {
 	public String getCliRepresentation() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("Account");
-		buf.append("; ").append(FIELD.ID.toString());
-		buf.append("; ").append(FIELD.ACCOUNTID.toString());
-		buf.append("; ").append(FIELD.EMAIL.toString());
-		buf.append("; ").append(FIELD.FIRSTNAME.toString());
-		buf.append("; ").append(FIELD.LASTNAME.toString());
+		buf.append("; ").append(id);
+		buf.append("; ").append(accountId);
+		buf.append("; ").append(email);
+		buf.append("; ").append(firstname);
+		buf.append("; ").append(lastname);
 		return buf.toString();
 	}
 

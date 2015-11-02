@@ -48,6 +48,10 @@ public class CalendarUtils {
 	private CalendarUtils() {
 	}
 
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
 	/**
 	 * If the date is in the future.
 	 * 

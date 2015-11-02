@@ -16,18 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.account;
+package org.tdmx.server.cli.zone;
 
 import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.system.lang.EnumUtils;
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 
-@Cli(name = "account:search", description = "search for an account", note = "if no parameters are provided, all accounts are listed.")
-public class SearchAccount extends AbstractCliCommand {
+@Cli(name = "zone:search", description = "searches for account zones.", note = ".")
+public class SearchAccountZone extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,11 +40,14 @@ public class SearchAccount extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "email", description = "the account owner's email address.")
-	private String email;
-
-	@Parameter(name = "accountId", description = "the account's accountId.")
-	private String accountId;
+	@Parameter(name = "zone", description = "the zone apex.")
+	private String zone;
+	@Parameter(name = "segment", description = "the zone's segment.")
+	private String segment;
+	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
+	private String zonePartitionId;
+	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
+	private String status;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -53,18 +59,24 @@ public class SearchAccount extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
+		if (StringUtils.hasText(status) && EnumUtils.mapTo(AccountZoneStatus.class, status) == null) {
+			out.println("Status invalid " + status + ". Use one of "
+					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
+			return;
+		}
+
 		int results = 0;
 		int page = 0;
-		List<AccountResource> accounts = null;
+		List<AccountZoneResource> accountZones = null;
 		do {
-			accounts = getSas().searchAccount(page++, PAGE_SIZE, email, accountId);
+			accountZones = getSas().searchAccountZone(page++, PAGE_SIZE, zone, segment, zonePartitionId, status);
 
-			for (AccountResource account : accounts) {
-				out.println(account.getCliRepresentation());
+			for (AccountZoneResource az : accountZones) {
+				out.println(az.getCliRepresentation());
 				results++;
 			}
-		} while (accounts.size() == PAGE_SIZE);
-		out.println("Found " + results + " accounts.");
+		} while (accountZones.size() == PAGE_SIZE);
+		out.println("Found " + results + " account zones.");
 	}
 
 	// -------------------------------------------------------------------------

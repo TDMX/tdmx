@@ -231,11 +231,21 @@ public class CliParser {
 	}
 
 	private void logError(Throwable t, PrintStream err) {
-		err.println("error=" + t.getMessage());
+
+		// TODO CommandExceptionHandler to log
+
+		String msg = t.getMessage();
+		if (!StringUtils.hasText(msg) && t.getCause() != null) {
+			msg = t.getCause().getMessage();
+		}
+
+		err.println("error=" + msg);
 		if (t.getCause() != null) {
 			err.println("cause=" + t.getCause().getMessage());
+			t.getCause().printStackTrace(err);
+		} else {
+			t.printStackTrace(err);
 		}
-		t.printStackTrace(err);
 	}
 
 	private void executeCmd(Command cmd, PrintStream out, PrintStream err) {

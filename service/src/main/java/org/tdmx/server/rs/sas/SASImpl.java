@@ -34,6 +34,7 @@ import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
+import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
@@ -255,9 +256,30 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize) {
+	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize, String zoneApex) {
 		validatePresent(PARAM.AID, aId);
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
+		sc.setZoneApex(zoneApex);
+		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+
+		List<AccountZoneResource> result = new ArrayList<>();
+		for (AccountZone az : accountzones) {
+			result.add(AccountZoneResource.mapTo(az));
+		}
+		return result;
+	}
+
+	@Override
+	public List<AccountZoneResource> searchAccountZone(Integer pageNo, Integer pageSize, String zoneApex,
+			String segment, String zonePartitionId, String status) {
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
+		sc.setZoneApex(zoneApex);
+		sc.setSegment(segment);
+		sc.setZonePartitionId(zonePartitionId);
+		if (StringUtils.hasText(status)) {
+			sc.setStatus(AccountZoneStatus.valueOf(status));
+		}
+
 		List<AccountZone> accountzones = getAccountZoneService().search(sc);
 
 		List<AccountZoneResource> result = new ArrayList<>();
@@ -373,7 +395,8 @@ public class SASImpl implements SAS {
 	private ValidationException createVE(FieldValidationErrorType type, String fieldName) {
 		List<ApplicationValidationError> errors = new ArrayList<>();
 		errors.add(new FieldValidationError(type, fieldName));
-		return new javax.ws.rs.ValidationException(Status.BAD_REQUEST, errors);
+		ValidationException ve = new javax.ws.rs.ValidationException(Status.BAD_REQUEST, errors);
+		return ve;
 	}
 
 	private void validateEquals(Enum<?> fieldId, String expectedValue, String fieldValue) {
