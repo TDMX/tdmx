@@ -92,7 +92,7 @@ public class AccountZoneResource {
 		return a;
 	}
 
-	public static AccountZoneResource mapTo(AccountZone az) {
+	public static AccountZoneResource mapFrom(AccountZone az) {
 		if (az == null) {
 			return null;
 		}

@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
 @Path("/sas")
@@ -42,8 +43,6 @@ public interface SAS {
 	// TODO maxvalue (admin only)
 
 	// TODO control job (admin only)
-
-	// TODO databasepartition (admin only)
 
 	// TODO lock (admin only)
 
@@ -70,6 +69,31 @@ public interface SAS {
 	@DELETE
 	@Path("/segments/{sid}")
 	Response deleteSegment(@PathParam("sid") Long sId);
+
+	/*
+	 * RESTFUL service for DatabasePartition
+	 */
+	@POST
+	@Path("/partitions")
+	DatabasePartitionResource createDatabasePartition(DatabasePartitionResource partition);
+
+	@GET
+	@Path("/partitions")
+	List<DatabasePartitionResource> searchDatabasePartition(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("dbType") String dbType,
+			@QueryParam("segment") String segment);
+
+	@GET
+	@Path("/partitions/{pid}")
+	DatabasePartitionResource getDatabasePartition(@PathParam("pid") Long pId);
+
+	@PUT
+	@Path("/partitions/{pid}")
+	DatabasePartitionResource updateDatabasePartition(DatabasePartitionResource partition);
+
+	@DELETE
+	@Path("/segments/{pid}")
+	Response deleteDatabasePartition(@PathParam("pid") Long pId);
 
 	/*
 	 * RESTFUL service for Account

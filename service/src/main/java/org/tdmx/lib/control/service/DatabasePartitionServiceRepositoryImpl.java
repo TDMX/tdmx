@@ -112,6 +112,12 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
+	public DatabasePartition findById(Long id) {
+		return getDatabasePartitionDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
 	public DatabasePartition findByPartitionId(String partitionId) {
 		if (!StringUtils.hasText(partitionId)) {
 			throw new IllegalArgumentException("missing partitionId");

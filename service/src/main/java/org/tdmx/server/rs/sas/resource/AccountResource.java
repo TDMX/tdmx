@@ -80,7 +80,7 @@ public class AccountResource {
 		return a;
 	}
 
-	public static AccountResource mapTo(Account account) {
+	public static AccountResource mapFrom(Account account) {
 		if (account == null) {
 			return null;
 		}

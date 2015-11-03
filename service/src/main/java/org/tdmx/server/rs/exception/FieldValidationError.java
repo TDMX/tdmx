@@ -25,7 +25,9 @@ public class FieldValidationError implements ApplicationValidationError {
 		MISSING,
 		TOO_LONG,
 		INVALID,
-		CONSTRAINT_VIOLATED, ;
+		EXISTS,
+		NOT_EXISTS,
+		IMMUTABLE,;
 	}
 
 	private final String fieldName;

@@ -37,11 +37,14 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
@@ -51,6 +54,7 @@ import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorTyp
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
@@ -59,9 +63,12 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public enum PARAM {
+	public static enum PARAM {
 		SID("sId"),
 		SEGMENT("segment"),
+		PARTITION("partition"),
+		DBTYPE("dbType"),
+		PID("pId"),
 		AID("aId"),
 		ACCOUNT("account"),
 		ZID("zId"),
@@ -87,6 +94,7 @@ public class SASImpl implements SAS {
 
 	private UniqueIdService accountIdService;
 	private SegmentService segmentService;
+	private DatabasePartitionService partitionService;
 
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
@@ -104,26 +112,26 @@ public class SASImpl implements SAS {
 
 	@Override
 	public SegmentResource createSegment(SegmentResource segment) {
-		validatePresent(SegmentResource.FIELD.SEGMENT, segment);
+		validatePresent(PARAM.SEGMENT, segment);
 		Segment s = SegmentResource.mapTo(segment);
 		validateNotPresent(SegmentResource.FIELD.ID, s.getId());
 		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
 
-		// TODO segment must not exist
+		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		validateNotExists(storedSegment, SegmentResource.FIELD.SEGMENT, s.getSegmentName());
 
 		log.info("Creating segment " + s.getSegmentName());
 		getSegmentService().createOrUpdate(s);
 
 		// the ID is only created on commit of the createOrUpdate above
-		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		storedSegment = getSegmentService().findBySegment(s.getSegmentName());
 		return SegmentResource.mapTo(storedSegment);
 	}
 
 	@Override
 	public List<SegmentResource> searchSegment(Integer pageNo, Integer pageSize, String segment) {
 		// TODO search criteria
-
 		List<Segment> segments = getSegmentService().findAll();
 
 		List<SegmentResource> result = new ArrayList<>();
@@ -146,6 +154,10 @@ public class SASImpl implements SAS {
 		validatePresent(SegmentResource.FIELD.ID, s.getId());
 		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
+
+		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		validateExists(storedSegment, SegmentResource.FIELD.SEGMENT, s.getSegmentName());
+
 		getSegmentService().createOrUpdate(s);
 		return SegmentResource.mapTo(s);
 	}
@@ -153,8 +165,103 @@ public class SASImpl implements SAS {
 	@Override
 	public Response deleteSegment(Long sId) {
 		validatePresent(PARAM.SID, sId);
-		Segment a = getSegmentService().findById(sId);
-		getSegmentService().delete(a);
+
+		Segment segment = getSegmentService().findById(sId);
+		validateNotExists(segment, SegmentResource.FIELD.ID, sId);
+
+		getSegmentService().delete(segment);
+		return Response.ok().build();
+	}
+
+	@Override
+	public DatabasePartitionResource createDatabasePartition(DatabasePartitionResource partition) {
+		validatePresent(PARAM.PARTITION, partition);
+		DatabasePartition p = DatabasePartitionResource.mapTo(partition);
+		validateNotPresent(DatabasePartitionResource.FIELD.ID, p.getId());
+		validatePresent(DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
+		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
+
+		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		validateNotExists(storedPartition, DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+
+		log.info("Creating database partition " + p.getPartitionId());
+		getPartitionService().createOrUpdate(p);
+
+		// the ID is only created on commit of the createOrUpdate above
+		storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		return DatabasePartitionResource.mapFrom(storedPartition);
+	}
+
+	@Override
+	public List<DatabasePartitionResource> searchDatabasePartition(Integer pageNo, Integer pageSize, String dbType,
+			String segment) {
+		// TODO search criteria
+		validateEnum(PARAM.DBTYPE, DatabaseType.class, dbType);
+		DatabaseType databaseType = EnumUtils.mapTo(DatabaseType.class, dbType);
+		validatePresent(PARAM.DBTYPE, databaseType);
+
+		List<DatabasePartition> partitions = null;
+		if (StringUtils.hasText(segment)) {
+			partitions = getPartitionService().findByTypeAndSegment(databaseType, segment);
+		} else {
+			partitions = getPartitionService().findByType(databaseType);
+		}
+
+		List<DatabasePartitionResource> result = new ArrayList<>();
+		for (DatabasePartition p : partitions) {
+			result.add(DatabasePartitionResource.mapFrom(p));
+		}
+		return result;
+	}
+
+	@Override
+	public DatabasePartitionResource getDatabasePartition(Long pId) {
+		validatePresent(PARAM.PID, pId);
+
+		DatabasePartition storedPartition = getPartitionService().findById(pId);
+		return DatabasePartitionResource.mapFrom(storedPartition);
+	}
+
+	@Override
+	public DatabasePartitionResource updateDatabasePartition(DatabasePartitionResource partition) {
+		validatePresent(PARAM.PARTITION, partition);
+
+		DatabasePartition p = DatabasePartitionResource.mapTo(partition);
+		validateNotPresent(DatabasePartitionResource.FIELD.ID, p.getId());
+		validatePresent(DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
+		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
+
+		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		validateExists(storedPartition, DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+
+		// immutable SEGMENT, DB_TYPE
+		validateEquals(DatabasePartitionResource.FIELD.SEGMENT, storedPartition.getSegment(), p.getSegment());
+		validateEquals(DatabasePartitionResource.FIELD.DB_TYPE, storedPartition.getDbType(), p.getDbType());
+
+		// immutable after active + ActiveTS
+		if (storedPartition.getActivationTimestamp() != null) {
+			validateEquals(DatabasePartitionResource.FIELD.ACTIVATION_TS, storedPartition.getActivationTimestamp(),
+					p.getActivationTimestamp());
+			validateEquals(DatabasePartitionResource.FIELD.SIZEFACTOR, storedPartition.getSizeFactor(),
+					p.getSizeFactor());
+			validateEquals(DatabasePartitionResource.FIELD.URL, storedPartition.getUrl(), p.getUrl());
+			validateEquals(DatabasePartitionResource.FIELD.USERNAME, storedPartition.getUsername(), p.getUsername());
+		}
+
+		getPartitionService().createOrUpdate(p);
+		return DatabasePartitionResource.mapFrom(p);
+	}
+
+	@Override
+	public Response deleteDatabasePartition(Long pId) {
+		validatePresent(PARAM.PID, pId);
+
+		DatabasePartition storedPartition = getPartitionService().findById(pId);
+		validateExists(storedPartition, DatabasePartitionResource.FIELD.ID, pId);
+
+		getPartitionService().delete(storedPartition);
 		return Response.ok().build();
 	}
 
@@ -172,7 +279,7 @@ public class SASImpl implements SAS {
 
 		// the ID is only created on commit of the createOrUpdate above
 		Account storedAccount = getAccountService().findByAccountId(a.getAccountId());
-		return AccountResource.mapTo(storedAccount);
+		return AccountResource.mapFrom(storedAccount);
 	}
 
 	@Override
@@ -184,7 +291,7 @@ public class SASImpl implements SAS {
 
 		List<AccountResource> result = new ArrayList<>();
 		for (Account a : accounts) {
-			result.add(AccountResource.mapTo(a));
+			result.add(AccountResource.mapFrom(a));
 		}
 		return result;
 	}
@@ -192,7 +299,7 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountResource getAccount(Long aId) {
 		validatePresent(PARAM.AID, aId);
-		return AccountResource.mapTo(getAccountService().findById(aId));
+		return AccountResource.mapFrom(getAccountService().findById(aId));
 	}
 
 	@Override
@@ -202,7 +309,7 @@ public class SASImpl implements SAS {
 		validatePresent(AccountResource.FIELD.ID, a.getId());
 		validatePresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 		getAccountService().createOrUpdate(a);
-		return AccountResource.mapTo(a);
+		return AccountResource.mapFrom(a);
 	}
 
 	@Override
@@ -229,8 +336,10 @@ public class SASImpl implements SAS {
 		validatePresent(AccountZoneResource.FIELD.ACCESSSTATUS, az.getStatus());
 		validateNotPresent(AccountZoneResource.FIELD.ID, az.getId());
 
-		// TODO segment value valid.
 		validatePresent(AccountZoneResource.FIELD.SEGMENT, az.getSegment());
+		Segment storedSegment = getSegmentService().findBySegment(az.getSegment());
+		validateExists(storedSegment, AccountZoneResource.FIELD.SEGMENT, az.getSegment());
+
 		validateNotPresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
 		String partitionId = getZonePartitionService().getZonePartitionId(a.getAccountId(), az.getZoneApex(),
@@ -255,7 +364,7 @@ public class SASImpl implements SAS {
 		storedAccountZone.setJobId(j.getId());
 
 		getAccountZoneService().createOrUpdate(storedAccountZone);
-		return AccountZoneResource.mapTo(storedAccountZone);
+		return AccountZoneResource.mapFrom(storedAccountZone);
 	}
 
 	@Override
@@ -267,7 +376,7 @@ public class SASImpl implements SAS {
 
 		List<AccountZoneResource> result = new ArrayList<>();
 		for (AccountZone az : accountzones) {
-			result.add(AccountZoneResource.mapTo(az));
+			result.add(AccountZoneResource.mapFrom(az));
 		}
 		return result;
 	}
@@ -287,7 +396,7 @@ public class SASImpl implements SAS {
 
 		List<AccountZoneResource> result = new ArrayList<>();
 		for (AccountZone az : accountzones) {
-			result.add(AccountZoneResource.mapTo(az));
+			result.add(AccountZoneResource.mapFrom(az));
 		}
 		return result;
 	}
@@ -301,7 +410,7 @@ public class SASImpl implements SAS {
 		if (a != null) {
 			AccountZone az = getAccountZoneService().findById(zId);
 			if (az != null && a.getAccountId().equals(az.getAccountId())) {
-				return AccountZoneResource.mapTo(az);
+				return AccountZoneResource.mapFrom(az);
 			}
 		}
 		return null;
@@ -312,9 +421,22 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
-		// TODO Auto-generated method stub
 
-		// change partitionId - store jobId
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		// the accountzone must belong to the account
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+
+		AccountZone updatedAz = AccountZoneResource.mapTo(accountZone);
+
+		// some things cannot change
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, az.getAccountId(), updatedAz.getAccountId());
+		validateEquals(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex(), updatedAz.getZoneApex());
+
+		// TODO change segment - job
+		// TODO change partitionId - store jobId
 
 		return null;
 	}
@@ -324,12 +446,15 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		Account a = getAccountService().findById(aId);
-		if (a != null) {
-			AccountZone az = getAccountZoneService().findById(zId);
-			if (az != null && a.getAccountId().equals(az.getAccountId())) {
-				getAccountZoneService().delete(az);
-			}
-		}
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+
+		// the accountZone must actually relate to the account!
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+
+		getAccountZoneService().delete(az);
+
 		return Response.ok().build();
 	}
 
@@ -406,9 +531,19 @@ public class SASImpl implements SAS {
 	private void validateEquals(Enum<?> fieldId, String expectedValue, String fieldValue) {
 		if (StringUtils.hasText(expectedValue) && StringUtils.hasText(fieldValue)) {
 			if (!expectedValue.equals(fieldValue)) {
-				throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
+				throw createVE(FieldValidationErrorType.IMMUTABLE, fieldId.toString());
 			}
 		} else if (StringUtils.hasText(expectedValue)) {
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+	}
+
+	private void validateEquals(Enum<?> fieldId, Object expectedValue, Object fieldValue) {
+		if (expectedValue != null && fieldValue != null) {
+			if (!expectedValue.equals(fieldValue)) {
+				throw createVE(FieldValidationErrorType.IMMUTABLE, fieldId.toString());
+			}
+		} else if (expectedValue != null) {
 			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
 		}
 	}
@@ -422,6 +557,18 @@ public class SASImpl implements SAS {
 	private void validateNotPresent(Enum<?> fieldId, Object fieldValue) {
 		if (fieldValue != null) {
 			throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
+		}
+	}
+
+	private void validateNotExists(Object object, Enum<?> fieldId, Object fieldValue) {
+		if (object != null) {
+			throw createVE(FieldValidationErrorType.EXISTS, fieldId.toString());
+		}
+	}
+
+	private void validateExists(Object object, Enum<?> fieldId, Object fieldValue) {
+		if (object == null) {
+			throw createVE(FieldValidationErrorType.NOT_EXISTS, fieldId.toString());
 		}
 	}
 
@@ -463,6 +610,14 @@ public class SASImpl implements SAS {
 
 	public void setSegmentService(SegmentService segmentService) {
 		this.segmentService = segmentService;
+	}
+
+	public DatabasePartitionService getPartitionService() {
+		return partitionService;
+	}
+
+	public void setPartitionService(DatabasePartitionService partitionService) {
+		this.partitionService = partitionService;
 	}
 
 	public AccountService getAccountService() {

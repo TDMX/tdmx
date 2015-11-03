@@ -65,9 +65,9 @@ public class DatabasePartitionResource {
 	private String url;
 	private String username;
 	private String password;
-	private int sizeFactor; // immutable
-	private Date activationTimestamp; // immutable
-	private Date deactivationTimestamp; // immutable
+	private int sizeFactor;
+	private Date activationTimestamp;
+	private Date deactivationTimestamp;
 
 	public String getCliRepresentation() {
 		StringBuilder buf = new StringBuilder();
@@ -105,7 +105,7 @@ public class DatabasePartitionResource {
 		return p;
 	}
 
-	public static DatabasePartitionResource mapTo(DatabasePartition partition) {
+	public static DatabasePartitionResource mapFrom(DatabasePartition partition) {
 		if (partition == null) {
 			return null;
 		}

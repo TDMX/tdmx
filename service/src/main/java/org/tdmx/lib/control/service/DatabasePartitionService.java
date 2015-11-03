@@ -38,6 +38,8 @@ public interface DatabasePartitionService {
 	// a partition can only be deleted if it is not yet activated.
 	public void delete(DatabasePartition partition);
 
+	public DatabasePartition findById(Long id);
+
 	/**
 	 * Find the DatabasePartition by partitionId.
 	 * 

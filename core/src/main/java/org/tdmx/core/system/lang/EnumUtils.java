@@ -63,4 +63,7 @@ public class EnumUtils {
 		return null;
 	}
 
+	public static String mapToString(Enum<?> e) {
+		return (e != null) ? e.toString() : null;
+	}
 }
