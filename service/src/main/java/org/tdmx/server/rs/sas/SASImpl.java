@@ -148,8 +148,10 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public SegmentResource updateSegment(SegmentResource segment) {
+	public SegmentResource updateSegment(Long sId, SegmentResource segment) {
 		validatePresent(PARAM.SEGMENT, segment);
+		validateEquals(PARAM.SID, sId, segment.getId());
+
 		Segment s = SegmentResource.mapTo(segment);
 		validatePresent(SegmentResource.FIELD.ID, s.getId());
 		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
@@ -224,8 +226,9 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public DatabasePartitionResource updateDatabasePartition(DatabasePartitionResource partition) {
+	public DatabasePartitionResource updateDatabasePartition(Long pId, DatabasePartitionResource partition) {
 		validatePresent(PARAM.PARTITION, partition);
+		validateEquals(PARAM.PID, pId, partition.getId());
 
 		DatabasePartition p = DatabasePartitionResource.mapTo(partition);
 		validateNotPresent(DatabasePartitionResource.FIELD.ID, p.getId());
@@ -303,8 +306,10 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public AccountResource updateAccount(AccountResource account) {
+	public AccountResource updateAccount(Long aId, AccountResource account) {
 		validatePresent(PARAM.ACCOUNT, account);
+		validateEquals(PARAM.AID, aId, account.getId());
+
 		Account a = AccountResource.mapTo(account);
 		validatePresent(AccountResource.FIELD.ID, a.getId());
 		validatePresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
@@ -420,6 +425,7 @@ public class SASImpl implements SAS {
 	public AccountZoneResource updateAccountZone(Long aId, Long zId, AccountZoneResource accountZone) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
+		validateEquals(PARAM.ZID, zId, accountZone.getId());
 		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
 
 		Account a = getAccountService().findById(aId);
@@ -432,6 +438,7 @@ public class SASImpl implements SAS {
 		AccountZone updatedAz = AccountZoneResource.mapTo(accountZone);
 
 		// some things cannot change
+		validateEquals(AccountZoneResource.FIELD.ID, az.getId(), updatedAz.getId());
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, az.getAccountId(), updatedAz.getAccountId());
 		validateEquals(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex(), updatedAz.getZoneApex());
 

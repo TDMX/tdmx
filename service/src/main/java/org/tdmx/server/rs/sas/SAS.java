@@ -64,7 +64,7 @@ public interface SAS {
 
 	@PUT
 	@Path("/segments/{sid}")
-	SegmentResource updateSegment(SegmentResource segment);
+	SegmentResource updateSegment(@PathParam("sid") Long sId, SegmentResource segment);
 
 	@DELETE
 	@Path("/segments/{sid}")
@@ -89,7 +89,7 @@ public interface SAS {
 
 	@PUT
 	@Path("/partitions/{pid}")
-	DatabasePartitionResource updateDatabasePartition(DatabasePartitionResource partition);
+	DatabasePartitionResource updateDatabasePartition(@PathParam("pid") Long pId, DatabasePartitionResource partition);
 
 	@DELETE
 	@Path("/segments/{pid}")
@@ -114,7 +114,7 @@ public interface SAS {
 
 	@PUT
 	@Path("/accounts/{aid}")
-	AccountResource updateAccount(AccountResource account);
+	AccountResource updateAccount(@PathParam("aid") Long aId, AccountResource account);
 
 	@DELETE
 	@Path("/accounts/{aid}")

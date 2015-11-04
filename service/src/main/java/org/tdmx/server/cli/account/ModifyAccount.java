@@ -73,7 +73,7 @@ public class ModifyAccount extends AbstractCliCommand {
 			ar.setLastname(lastName);
 		}
 
-		AccountResource updatedAr = getSas().updateAccount(ar);
+		AccountResource updatedAr = getSas().updateAccount(ar.getId(), ar);
 		out.println(updatedAr.getCliRepresentation());
 	}
 
