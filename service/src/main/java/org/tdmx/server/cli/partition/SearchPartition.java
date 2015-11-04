@@ -24,21 +24,21 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.SegmentResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
-@Cli(name = "partition:search", description = "search for a database partitions", note = "if no parameters are provided, all partitions are listed.")
+@Cli(name = "partition:search", description = "search for a database partitions")
 public class SearchPartition extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
+	private String dbType;
 	@Parameter(name = "segment", description = "the segment name.")
 	private String segment;
 
@@ -54,16 +54,16 @@ public class SearchPartition extends AbstractCliCommand {
 	public void run(PrintStream out) {
 		int results = 0;
 		int page = 0;
-		List<SegmentResource> segments = null;
+		List<DatabasePartitionResource> partitions = null;
 		do {
-			segments = getSas().searchSegment(page++, PAGE_SIZE, segment);
+			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, null, dbType, segment);
 
-			for (SegmentResource seg : segments) {
-				out.println(seg.getCliRepresentation());
+			for (DatabasePartitionResource partition : partitions) {
+				out.println(partition.getCliRepresentation());
 				results++;
 			}
-		} while (segments.size() == PAGE_SIZE);
-		out.println("Found " + results + " segments.");
+		} while (partitions.size() == PAGE_SIZE);
+		out.println("Found " + results + " partitions.");
 	}
 
 	// -------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 
 	<bean id="rs.SAS" class="org.tdmx.server.rs.sas.SASImpl" >
 		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository" />
+		<property name="partitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository" />
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService" />

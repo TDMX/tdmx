@@ -80,8 +80,8 @@ public interface SAS {
 	@GET
 	@Path("/partitions")
 	List<DatabasePartitionResource> searchDatabasePartition(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("dbType") String dbType,
-			@QueryParam("segment") String segment);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("partitionId") String partitionId,
+			@QueryParam("dbType") String dbType, @QueryParam("segment") String segment);
 
 	@GET
 	@Path("/partitions/{pid}")

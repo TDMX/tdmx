@@ -19,14 +19,16 @@
 package org.tdmx.server.cli.partition;
 
 import java.io.PrintStream;
+import java.util.Date;
+import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
-@Cli(name = "partition:create", description = "creates a database partition", note = "once active, a partition's size factor cannot change.")
-public class CreatePartition extends AbstractCliCommand {
+@Cli(name = "partition:deactivate", description = "deactivates a database partition")
+public class ActivatePartition extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,20 +40,6 @@ public class CreatePartition extends AbstractCliCommand {
 
 	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
 	private String partitionId;
-	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
-	private String dbType;
-	@Parameter(name = "segment", required = true, description = "the segment name.")
-	private String segment;
-
-	@Parameter(name = "sizeFactor", required = true, description = "the partition's size factor - used to load-balance. The value relates this partition's capacity to other partition's capacity for databases of the same type and segment.")
-	private int sizeFactor;
-
-	@Parameter(name = "url", description = "the RDBMS connection URL.")
-	private String url;
-	@Parameter(name = "username", description = "the RDBMS connection username.")
-	private String username;
-	@Parameter(name = "password", description = "the RDBMS connection password.")
-	private String password;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,17 +51,24 @@ public class CreatePartition extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		DatabasePartitionResource dbPartition = new DatabasePartitionResource();
-		dbPartition.setPartitionId(partitionId);
-		dbPartition.setDbType(dbType);
-		dbPartition.setSegment(segment);
-		dbPartition.setSizeFactor(sizeFactor);
+		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
+		if (dbPartitions.isEmpty()) {
+			out.println("No DatabasePartition found with partitionId " + partitionId);
+			return;
+		}
 
-		dbPartition.setUrl(url);
-		dbPartition.setUsername(username);
-		dbPartition.setPassword(password);
+		DatabasePartitionResource dbPartition = dbPartitions.get(0);
+		if (dbPartition.getActivationTimestamp() == null) {
+			out.println("DatabasePartition partition " + partitionId + " has not yet been activated.");
+			return;
+		}
+		if (dbPartition.getDeactivationTimestamp() != null) {
+			out.println("DatabasePartition partition " + partitionId + " is already deactivated.");
+			return;
+		}
+		dbPartition.setDeactivationTimestamp(new Date());
 
-		DatabasePartitionResource newDbPartition = getSas().createDatabasePartition(dbPartition);
+		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
 		out.println(newDbPartition.getCliRepresentation());
 	}
 

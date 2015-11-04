@@ -76,13 +76,13 @@ public class DatabasePartition implements Serializable {
 	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
 	private String segment;
 
-	@Column(length = MAX_URL_LEN, nullable = false)
+	@Column(length = MAX_URL_LEN)
 	private String url;
 
-	@Column(length = MAX_USERNAME_LEN, nullable = false)
+	@Column(length = MAX_USERNAME_LEN)
 	private String username;
 
-	@Column(length = MAX_PASSWORD_LEN, nullable = false)
+	@Column(length = MAX_PASSWORD_LEN)
 	/**
 	 * use {@link #setPassword()} and {@link #getPassword()}
 	 */

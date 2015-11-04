@@ -24,7 +24,7 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.SegmentResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
 @Cli(name = "partition:modify", description = "modifies a database partition")
 public class ModifyPartition extends AbstractCliCommand {
@@ -33,17 +33,22 @@ public class ModifyPartition extends AbstractCliCommand {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "segment", required = true, description = "the segment name.")
-	private String segment;
+	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
+	private String partitionId;
 
-	@Parameter(name = "scsUrl", required = true, description = "the URL of the SessionControlService (SCS).")
-	private String scsUrl;
+	@Parameter(name = "sizeFactor", description = "the partition's size factor - used to load-balance. The value relates this partition's capacity to other partition's capacity for databases of the same type and segment.")
+	private Integer sizeFactor;
+
+	@Parameter(name = "url", description = "the RDBMS connection URL.")
+	private String url;
+	@Parameter(name = "username", description = "the RDBMS connection username.")
+	private String username;
+	@Parameter(name = "password", description = "the RDBMS connection password.")
+	private String password;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,18 +60,28 @@ public class ModifyPartition extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
-		if (segments.isEmpty()) {
-			out.println("Segment " + segment + " not found.");
+		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
+		if (dbPartitions.isEmpty()) {
+			out.println("No DatabasePartition found with partitionId " + partitionId);
 			return;
 		}
-		SegmentResource seg = segments.get(0);
-		if (scsUrl != null) {
-			seg.setScsUrl(scsUrl);
+
+		DatabasePartitionResource dbPartition = dbPartitions.get(0);
+		if (sizeFactor != null) {
+			dbPartition.setSizeFactor(sizeFactor);
+		}
+		if (url != null) {
+			dbPartition.setUrl(url);
+		}
+		if (username != null) {
+			dbPartition.setUsername(username);
+		}
+		if (password != null) {
+			dbPartition.setPassword(password);
 		}
 
-		SegmentResource updatedSegment = getSas().updateSegment(seg.getId(), seg);
-		out.println(updatedSegment.getCliRepresentation());
+		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
+		out.println(newDbPartition.getCliRepresentation());
 	}
 
 	// -------------------------------------------------------------------------

@@ -41,10 +41,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
 import org.tdmx.lib.control.service.SegmentService;
@@ -52,6 +54,7 @@ import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.server.ws.ErrorCode;
 
@@ -63,6 +66,8 @@ public class SASImplUnitTest {
 
 	@Autowired
 	private SegmentService segmentService;
+	@Autowired
+	private DatabasePartitionService databasePartitionService;
 	@Autowired
 	private AccountService accountService;
 	@Autowired
@@ -83,6 +88,7 @@ public class SASImplUnitTest {
 	private SAS sas;
 
 	private SegmentResource segmentResource;
+	private DatabasePartitionResource partitionResource;
 	private AccountResource accountResource;
 	private AccountZoneResource accountZoneResource;
 
@@ -99,6 +105,13 @@ public class SASImplUnitTest {
 		segmentResource.setScsUrl("https://" + segmentName + ".scs.tdmx.org/sp/v1.0/scs");
 		segmentResource = sas.createSegment(segmentResource);
 		assertNotNull(segmentResource.getId());
+
+		partitionResource = new DatabasePartitionResource();
+		partitionResource.setPartitionId("partitionId" + System.currentTimeMillis());
+		partitionResource.setSegment(segmentName);
+		partitionResource.setDbType(DatabaseType.ZONE.toString());
+		partitionResource = sas.createDatabasePartition(partitionResource);
+		assertNotNull(partitionResource.getId());
 
 		accountEmail = "email" + System.currentTimeMillis() + "@gmail.com";
 
@@ -134,6 +147,7 @@ public class SASImplUnitTest {
 	@Test
 	public void testAutowired() {
 		assertNotNull(segmentService);
+		assertNotNull(databasePartitionService);
 		assertNotNull(accountService);
 		assertNotNull(accountZoneService);
 		assertNotNull(accountZoneAdministrationCredentialService);
@@ -147,6 +161,18 @@ public class SASImplUnitTest {
 	@Test
 	public void testGetSegment() {
 		SegmentResource r = sas.getSegment(segmentResource.getId());
+		assertNotNull(r);
+	}
+
+	@Test
+	public void testGetDatabasePartition() {
+		DatabasePartitionResource r = sas.getDatabasePartition(partitionResource.getId());
+		assertNotNull(r);
+	}
+
+	@Test
+	public void testGetAccount() {
+		AccountResource r = sas.getAccount(accountResource.getId());
 		assertNotNull(r);
 	}
 
@@ -180,12 +206,6 @@ public class SASImplUnitTest {
 		List<AccountResource> accounts = sas.searchAccount(0, 10, accountResource.getEmail(),
 				accountResource.getAccountId());
 		assertEquals(1, accounts.size());
-	}
-
-	@Test
-	public void testGetAccount() {
-		AccountResource r = sas.getAccount(accountResource.getId());
-		assertNotNull(r);
 	}
 
 	@Test

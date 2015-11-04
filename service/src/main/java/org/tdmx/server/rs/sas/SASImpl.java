@@ -196,15 +196,21 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<DatabasePartitionResource> searchDatabasePartition(Integer pageNo, Integer pageSize, String dbType,
-			String segment) {
+	public List<DatabasePartitionResource> searchDatabasePartition(Integer pageNo, Integer pageSize, String partitionId,
+			String dbType, String segment) {
 		// TODO search criteria
 		validateEnum(PARAM.DBTYPE, DatabaseType.class, dbType);
 		DatabaseType databaseType = EnumUtils.mapTo(DatabaseType.class, dbType);
-		validatePresent(PARAM.DBTYPE, databaseType);
+		if (!StringUtils.hasText(partitionId)) {
+			validatePresent(PARAM.DBTYPE, databaseType);
+		}
 
 		List<DatabasePartition> partitions = null;
-		if (StringUtils.hasText(segment)) {
+		if (StringUtils.hasText(partitionId)) {
+			partitions = new ArrayList<>();
+			DatabasePartition p = getPartitionService().findByPartitionId(partitionId);
+			partitions.add(p);
+		} else if (StringUtils.hasText(segment)) {
 			partitions = getPartitionService().findByTypeAndSegment(databaseType, segment);
 		} else {
 			partitions = getPartitionService().findByType(databaseType);
