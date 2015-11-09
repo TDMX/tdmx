@@ -25,12 +25,13 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 
-@Cli(name = "zone:search", description = "searches for account zones.", note = ".")
-public class SearchAccountZone extends AbstractCliCommand {
+@Cli(name = "zoneadmin:search", description = "searches for account zone administration credentials.", note = ".")
+public class SearchAccountZoneAdministrationCredential extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -44,11 +45,9 @@ public class SearchAccountZone extends AbstractCliCommand {
 	private String accountId;
 	@Parameter(name = "zone", description = "the zone apex.")
 	private String zone;
-	@Parameter(name = "segment", description = "the zone's segment.")
-	private String segment;
-	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
-	private String zonePartitionId;
-	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
+	@Parameter(name = "fingerprint", description = "the fingerprint of the ZAC.")
+	private String fingerprint;
+	@Parameter(name = "status", description = "the installation status - PENDING_INSTALLATION, PENDING_DEINSTALLATION, INVALID_PEM, INVALID_TDMX, INVALID_ZAC, NON_ZAC, NO_DNS_TRUST, INSTALLED, DEINSTALLED.")
 	private String status;
 
 	// -------------------------------------------------------------------------
@@ -61,7 +60,8 @@ public class SearchAccountZone extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		if (StringUtils.hasText(status) && EnumUtils.mapTo(AccountZoneStatus.class, status) == null) {
+		if (StringUtils.hasText(status)
+				&& EnumUtils.mapTo(AccountZoneAdministrationCredentialStatus.class, status) == null) {
 			out.println("Status invalid " + status + ". Use one of "
 					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
 			return;
@@ -69,17 +69,17 @@ public class SearchAccountZone extends AbstractCliCommand {
 
 		int results = 0;
 		int page = 0;
-		List<AccountZoneResource> accountZones = null;
+		List<AccountZoneAdministrationCredentialResource> accountZACs = null;
 		do {
-			accountZones = getSas().searchAccountZone(page++, PAGE_SIZE, accountId, zone, segment, zonePartitionId,
-					status);
+			accountZACs = getSas().searchAccountZoneAdministrationCredential(page++, PAGE_SIZE, zone, accountId,
+					fingerprint, status);
 
-			for (AccountZoneResource az : accountZones) {
-				out.println(az.getCliRepresentation());
+			for (AccountZoneAdministrationCredentialResource azac : accountZACs) {
+				out.println(azac.getCliRepresentation());
 				results++;
 			}
-		} while (accountZones.size() == PAGE_SIZE);
-		out.println("Found " + results + " account zones.");
+		} while (accountZACs.size() == PAGE_SIZE);
+		out.println("Found " + results + " zone administration credentials.");
 	}
 
 	// -------------------------------------------------------------------------

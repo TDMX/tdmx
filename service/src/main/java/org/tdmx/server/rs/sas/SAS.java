@@ -148,9 +148,9 @@ public interface SAS {
 	@GET
 	@Path("/accountzones")
 	List<AccountZoneResource> searchAccountZone(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("zone") String zoneApex,
-			@QueryParam("segment") String segment, @QueryParam("zonePartitionId") String zonePartitionId,
-			@QueryParam("status") String status);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("accountId") String accountId,
+			@QueryParam("zone") String zoneApex, @QueryParam("segment") String segment,
+			@QueryParam("zonePartitionId") String zonePartitionId, @QueryParam("status") String status);
 
 	/*
 	 * RESTFUL service for AccountZoneAdministrationCredential
@@ -163,8 +163,8 @@ public interface SAS {
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}/zacs")
 	List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(
-			@PathParam("aid") Long aId, @PathParam("zid") Long zId, @QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize);
+			@QueryParam("pageNumber") Integer pageNo, @QueryParam("pageSize") Integer pageSize,
+			@PathParam("aid") Long aId, @PathParam("zid") Long zId);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
@@ -184,7 +184,8 @@ public interface SAS {
 	@GET
 	@Path("/accountzoneadministrationcredentials/")
 	List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(
+			@QueryParam("pageNumber") Integer pageNo, @QueryParam("pageSize") Integer pageSize,
 			@QueryParam("zone") String zoneApex, @QueryParam("accountId") String accountId,
-			@QueryParam("pageNumber") Integer pageNo, @QueryParam("pageSize") Integer pageSize);
+			@QueryParam("fingerprint") String fingerprint, @QueryParam("status") String status);
 
 }

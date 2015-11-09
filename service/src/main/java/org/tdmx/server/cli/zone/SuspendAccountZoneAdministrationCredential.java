@@ -23,14 +23,14 @@ import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.system.lang.EnumUtils;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.domain.AccountZoneStatus;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
+import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 
-@Cli(name = "zone:search", description = "searches for account zones.", note = ".")
-public class SearchAccountZone extends AbstractCliCommand {
+@Cli(name = "zoneadmin:suspend", description = "suspends an account's zone administration credential.", note = "The ZAC is deinstalled and can later be deleted.")
+public class SuspendAccountZoneAdministrationCredential extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,16 +40,14 @@ public class SearchAccountZone extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", description = "the account identifier.")
+	@Parameter(name = "accountId", required = true, description = "the account identifier.")
 	private String accountId;
-	@Parameter(name = "zone", description = "the zone apex.")
+
+	@Parameter(name = "zone", required = true, description = "the zone apex.")
 	private String zone;
-	@Parameter(name = "segment", description = "the zone's segment.")
-	private String segment;
-	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
-	private String zonePartitionId;
-	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
-	private String status;
+
+	@Parameter(name = "fingerprint", required = true, description = "the fingerprint of the ZAC.")
+	private String fingerprint;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,25 +59,32 @@ public class SearchAccountZone extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		if (StringUtils.hasText(status) && EnumUtils.mapTo(AccountZoneStatus.class, status) == null) {
-			out.println("Status invalid " + status + ". Use one of "
-					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
+		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
+		if (accounts.isEmpty()) {
+			out.println("Account " + accountId + " not found.");
 			return;
 		}
+		AccountResource account = accounts.get(0);
 
-		int results = 0;
-		int page = 0;
-		List<AccountZoneResource> accountZones = null;
-		do {
-			accountZones = getSas().searchAccountZone(page++, PAGE_SIZE, accountId, zone, segment, zonePartitionId,
-					status);
+		List<AccountZoneResource> accountZones = getSas().searchAccountZone(account.getId(), 0, 1, zone);
+		if (accountZones.isEmpty()) {
+			out.println("Account zone " + zone + " not found.");
+			return;
+		}
+		AccountZoneResource azr = accountZones.get(0);
 
-			for (AccountZoneResource az : accountZones) {
-				out.println(az.getCliRepresentation());
-				results++;
-			}
-		} while (accountZones.size() == PAGE_SIZE);
-		out.println("Found " + results + " account zones.");
+		List<AccountZoneAdministrationCredentialResource> accountZACs = getSas()
+				.searchAccountZoneAdministrationCredential(0, 1, zone, accountId, fingerprint, null);
+		if (accountZACs.isEmpty()) {
+			out.println("ZAC " + fingerprint + " not found.");
+			return;
+		}
+		AccountZoneAdministrationCredentialResource azac = accountZACs.get(0);
+		azac.setStatus(AccountZoneAdministrationCredentialStatus.PENDING_DEINSTALLATION.toString());
+
+		AccountZoneAdministrationCredentialResource updatedZAC = getSas()
+				.updateAccountZoneAdministrationCredential(account.getId(), azr.getId(), azac.getId(), azac);
+		out.println(updatedZAC.getCliRepresentation());
 	}
 
 	// -------------------------------------------------------------------------

@@ -125,7 +125,7 @@ public class SASImpl implements SAS {
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
 
 		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
-		validateNotExists(storedSegment, SegmentResource.FIELD.SEGMENT, s.getSegmentName());
+		validateNotExists(SegmentResource.FIELD.SEGMENT, storedSegment);
 
 		log.info("Creating segment " + s.getSegmentName());
 		getSegmentService().createOrUpdate(s);
@@ -164,7 +164,7 @@ public class SASImpl implements SAS {
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
 
 		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
-		validateExists(storedSegment, SegmentResource.FIELD.SEGMENT, s.getSegmentName());
+		validateExists(SegmentResource.FIELD.SEGMENT, storedSegment);
 
 		getSegmentService().createOrUpdate(s);
 		return SegmentResource.mapTo(s);
@@ -175,7 +175,7 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.SID, sId);
 
 		Segment segment = getSegmentService().findById(sId);
-		validateNotExists(segment, SegmentResource.FIELD.ID, sId);
+		validateNotExists(SegmentResource.FIELD.ID, segment);
 
 		getSegmentService().delete(segment);
 		return Response.ok().build();
@@ -191,7 +191,7 @@ public class SASImpl implements SAS {
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
 
 		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
-		validateNotExists(storedPartition, DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+		validateNotExists(DatabasePartitionResource.FIELD.PARTITION_ID, storedPartition);
 
 		log.info("Creating database partition " + p.getPartitionId());
 		getPartitionService().createOrUpdate(p);
@@ -249,7 +249,7 @@ public class SASImpl implements SAS {
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
 
 		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
-		validateExists(storedPartition, DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
+		validateExists(DatabasePartitionResource.FIELD.PARTITION_ID, storedPartition);
 
 		// immutable SEGMENT, DB_TYPE
 		validateEquals(DatabasePartitionResource.FIELD.SEGMENT, storedPartition.getSegment(), p.getSegment());
@@ -274,7 +274,7 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.PID, pId);
 
 		DatabasePartition storedPartition = getPartitionService().findById(pId);
-		validateExists(storedPartition, DatabasePartitionResource.FIELD.ID, pId);
+		validateExists(DatabasePartitionResource.FIELD.ID, storedPartition);
 
 		getPartitionService().delete(storedPartition);
 		return Response.ok().build();
@@ -355,7 +355,7 @@ public class SASImpl implements SAS {
 
 		validatePresent(AccountZoneResource.FIELD.SEGMENT, az.getSegment());
 		Segment storedSegment = getSegmentService().findBySegment(az.getSegment());
-		validateExists(storedSegment, AccountZoneResource.FIELD.SEGMENT, az.getSegment());
+		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 
 		validateNotPresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
@@ -395,9 +395,10 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountZoneResource> searchAccountZone(Integer pageNo, Integer pageSize, String zoneApex,
-			String segment, String zonePartitionId, String status) {
+	public List<AccountZoneResource> searchAccountZone(Integer pageNo, Integer pageSize, String accountId,
+			String zoneApex, String segment, String zonePartitionId, String status) {
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
+		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);
 		sc.setSegment(segment);
 		sc.setZonePartitionId(zonePartitionId);
@@ -437,9 +438,9 @@ public class SASImpl implements SAS {
 		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		// the accountzone must belong to the account
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
@@ -449,6 +450,8 @@ public class SASImpl implements SAS {
 		validateEquals(AccountZoneResource.FIELD.ID, az.getId(), updatedAz.getId());
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, az.getAccountId(), updatedAz.getAccountId());
 		validateEquals(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex(), updatedAz.getZoneApex());
+		validateEquals(AccountZoneResource.FIELD.JOBID, az.getJobId(), updatedAz.getJobId());
+		validateNotPresent(AccountZoneResource.FIELD.JOBID, updatedAz.getJobId());
 
 		// TODO change segment - job
 		// TODO change partitionId - store jobId
@@ -461,9 +464,9 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 
 		// the accountZone must actually relate to the account!
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
@@ -480,9 +483,9 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZID, zId);
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
@@ -525,15 +528,15 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Long aId,
-			Long zId, Integer pageNo, Integer pageSize) {
+	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Integer pageNo,
+			Integer pageSize, Long aId, Long zId) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
 		// we list all ZACs of the account zone.
@@ -551,14 +554,18 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(String zoneApex,
-			String accountId, Integer pageNo, Integer pageSize) {
+	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Integer pageNo,
+			Integer pageSize, String zoneApex, String accountId, String fingerprint, String status) {
 		// we list all ZACs, or restrict to those of an account if the accountId is set, or zone if the zone parameter
 		// is provided
 		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
 				getPageSpecifier(pageNo, pageSize));
 		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);
+		sc.setFingerprint(fingerprint);
+		if (StringUtils.hasText(status)) {
+			sc.setStatus(AccountZoneAdministrationCredentialStatus.valueOf(status));
+		}
 		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
 
 		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
@@ -576,12 +583,12 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZCID, zcId);
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
-		validateExists(azc, PARAM.ZCID, zcId);
+		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
 
@@ -598,12 +605,12 @@ public class SASImpl implements SAS {
 				AccountZoneAdministrationCredentialStatus.class, zac.getStatus());
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
-		validateExists(azc, PARAM.ZCID, zcId);
+		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
 
@@ -616,8 +623,7 @@ public class SASImpl implements SAS {
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, azc.getFingerprint(),
 				updatedAzc.getFingerprint());
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.JOBID, azc.getJobId(), updatedAzc.getJobId());
-		validateNotExists(updatedAzc.getJobId(), AccountZoneAdministrationCredentialResource.FIELD.JOBID,
-				updatedAzc.getJobId());
+		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.JOBID, updatedAzc.getJobId());
 
 		if (AccountZoneAdministrationCredentialStatus.DEINSTALLED == updatedAzc.getCredentialStatus()) {
 			if (AccountZoneAdministrationCredentialStatus.INSTALLED == azc.getCredentialStatus()) {
@@ -654,12 +660,12 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZCID, zcId);
 
 		Account a = getAccountService().findById(aId);
-		validateExists(a, PARAM.AID, aId);
+		validateExists(PARAM.AID, a);
 		AccountZone az = getAccountZoneService().findById(zId);
-		validateExists(az, PARAM.ZID, zId);
+		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
-		validateExists(azc, PARAM.ZCID, zcId);
+		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
@@ -735,13 +741,13 @@ public class SASImpl implements SAS {
 		}
 	}
 
-	private void validateNotExists(Object object, Enum<?> fieldId, Object fieldValue) {
+	private void validateNotExists(Enum<?> fieldId, Object object) {
 		if (object != null) {
 			throw createVE(FieldValidationErrorType.EXISTS, fieldId.toString());
 		}
 	}
 
-	private void validateExists(Object object, Enum<?> fieldId, Object fieldValue) {
+	private void validateExists(Enum<?> fieldId, Object object) {
 		if (object == null) {
 			throw createVE(FieldValidationErrorType.NOT_EXISTS, fieldId.toString());
 		}

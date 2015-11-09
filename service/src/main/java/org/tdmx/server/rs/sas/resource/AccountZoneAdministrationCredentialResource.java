@@ -68,9 +68,9 @@ public class AccountZoneAdministrationCredentialResource {
 		buf.append("; ").append(accountId);
 		buf.append("; ").append(zoneApex);
 		buf.append("; ").append(fingerprint);
-		buf.append("; ").append(certificatePem);
 		buf.append("; ").append(status);
 		buf.append("; ").append(jobId);
+		buf.append("; ").append(certificatePem);
 		return buf.toString();
 	}
 

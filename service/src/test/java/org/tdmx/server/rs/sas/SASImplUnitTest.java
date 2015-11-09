@@ -268,7 +268,7 @@ public class SASImplUnitTest {
 	@Test
 	public void testSearchAccountZone() {
 		List<AccountZoneResource> aczs = sas.searchAccountZone(0, 100, accountZoneResource.getZoneApex(), null, null,
-				null);
+				null, null);
 		assertFalse(aczs.isEmpty());
 	}
 
@@ -322,8 +322,8 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testSearchAccountZoneAdministrationCredential() {
-		List<AccountZoneAdministrationCredentialResource> azcrs = sas.searchAccountZoneAdministrationCredential(
-				accountResource.getId(), accountZoneResource.getId(), 0, 100);
+		List<AccountZoneAdministrationCredentialResource> azcrs = sas.searchAccountZoneAdministrationCredential(0, 100,
+				accountResource.getId(), accountZoneResource.getId());
 		assertFalse(azcrs.isEmpty());
 		assertEquals(1, azcrs.size());
 		assertEquals(zacResource.getFingerprint(), azcrs.get(0).getFingerprint());
