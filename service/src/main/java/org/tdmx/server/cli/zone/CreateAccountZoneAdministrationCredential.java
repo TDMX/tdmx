@@ -73,9 +73,17 @@ public class CreateAccountZoneAdministrationCredential extends AbstractCliComman
 			if (StringUtils.hasText(x509File)) {
 				byte[] x509Contents;
 				x509Contents = FileUtils.getFileContents(x509File);
+				if (x509Contents == null) {
+					out.println("No x509File found " + x509File);
+					return;
+				}
 				certificatePem = CertificateIOUtils.safeX509certsToPem(x509Contents);
 			} else if (StringUtils.hasText(pemFile)) {
 				byte[] pemContents = FileUtils.getFileContents(pemFile);
+				if (pemContents == null) {
+					out.println("No pemFile found " + pemFile);
+					return;
+				}
 				certificatePem = new String(pemContents);
 			}
 		} catch (IOException e) {
