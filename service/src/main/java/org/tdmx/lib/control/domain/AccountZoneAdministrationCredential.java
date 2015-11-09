@@ -97,7 +97,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public AccountZoneAdministrationCredential() {
 	}
 
-	public AccountZoneAdministrationCredential(String accountId, String pem) throws CryptoCertificateException {
+	public AccountZoneAdministrationCredential(String accountId, String pem) {
 		setCertificateChainPem(pem);
 		setAccountId(accountId);
 
@@ -110,7 +110,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 			// an invalid cert might be missing the ZI
 			if (publicKey.getTdmxZoneInfo() != null) {
 				setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
-				setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING);
+				setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION);
 			} else {
 				setZoneApex(null);
 				setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_TDMX);
@@ -190,7 +190,7 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setCertificateChain(PKIXCertificate[] certificateChain) throws CryptoCertificateException {
+	private void setCertificateChain(PKIXCertificate[] certificateChain) {
 		this.certificateChain = certificateChain;
 	}
 

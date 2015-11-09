@@ -34,6 +34,9 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.ControlJob;
@@ -43,6 +46,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
+import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.SegmentService;
@@ -56,6 +60,7 @@ import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResour
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
+import org.tdmx.service.control.task.dao.ZACInstallTask;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
 public class SASImpl implements SAS {
@@ -98,6 +103,7 @@ public class SASImpl implements SAS {
 
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
+	private AccountZoneAdministrationCredentialService accountZoneCredentialService;
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
 	private JobFactory jobFactory;
 	private JobScheduler jobScheduler;
@@ -358,24 +364,20 @@ public class SASImpl implements SAS {
 		az.setZonePartitionId(partitionId);
 		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
+		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
+		getAccountZoneService().createOrUpdate(az);
+
+		// schedule the job to install the Zone in the ZoneDB partition.
 		ZoneInstallTask installTask = new ZoneInstallTask();
 		installTask.setAccountId(az.getAccountId());
 		installTask.setZoneApex(az.getZoneApex());
 		Job installJob = getJobFactory().createJob(installTask);
-
-		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
-		getAccountZoneService().createOrUpdate(az);
-
-		// the ID is only created on commit of the createOrUpdate above
-		AccountZone storedAccountZone = getAccountZoneService().findByZoneApex(az.getZoneApex());
-
-		// schedule the job to install the Zone in the ZoneDB partition.
 		ControlJob j = getJobScheduler().scheduleImmediate(installJob);
 
-		storedAccountZone.setJobId(j.getId());
+		az.setJobId(j.getId());
 
-		getAccountZoneService().createOrUpdate(storedAccountZone);
-		return AccountZoneResource.mapFrom(storedAccountZone);
+		getAccountZoneService().createOrUpdate(az);
+		return AccountZoneResource.mapFrom(az);
 	}
 
 	@Override
@@ -476,8 +478,50 @@ public class SASImpl implements SAS {
 			AccountZoneAdministrationCredentialResource zac) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
-		// TODO Auto-generated method stub
-		return null;
+
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
+				zac.getAccountId());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, az.getZoneApex(), zac.getZoneApex());
+
+		// field validation
+		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.ID, zac.getId());
+		validatePresent(AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM, zac.getZoneApex());
+		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, zac.getFingerprint());
+		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.STATUS, zac.getStatus());
+
+		// we cannot trust what is sent is correct, so we double check the fingerprint
+		AccountZoneAdministrationCredential controlCredential = new AccountZoneAdministrationCredential(
+				a.getAccountId(), zac.getCertificatePem());
+		AccountZoneAdministrationCredential azc = AccountZoneAdministrationCredentialResource.mapTo(zac);
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, controlCredential.getZoneApex(),
+				azc.getZoneApex());
+		azc.setFingerprint(controlCredential.getFingerprint());
+		azc.setCredentialStatus(controlCredential.getCredentialStatus());
+
+		log.info("Creating AccountZoneAdministrationCredential " + zac);
+		getAccountZoneCredentialService().createOrUpdate(azc);
+
+		if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == azc.getCredentialStatus()) {
+
+			// schedule the job to check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
+			ZACInstallTask installTask = new ZACInstallTask();
+			installTask.setAccountId(az.getAccountId());
+			installTask.setZoneApex(az.getZoneApex());
+			installTask.setFingerprint(azc.getFingerprint());
+			Job installJob = getJobFactory().createJob(installTask);
+			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+
+			azc.setJobId(j.getId());
+			getAccountZoneCredentialService().createOrUpdate(azc);
+
+		}
+		return AccountZoneAdministrationCredentialResource.mapFrom(azc);
 	}
 
 	@Override
@@ -485,8 +529,43 @@ public class SASImpl implements SAS {
 			Long zId, Integer pageNo, Integer pageSize) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
-		// TODO Auto-generated method stub
-		return null;
+
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+
+		// we list all ZACs of the account zone.
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				getPageSpecifier(pageNo, pageSize));
+		sc.setAccountId(az.getAccountId());
+		sc.setZoneApex(az.getZoneApex());
+		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+
+		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
+		for (AccountZoneAdministrationCredential azc : accountzones) {
+			result.add(AccountZoneAdministrationCredentialResource.mapFrom(azc));
+		}
+		return result;
+	}
+
+	@Override
+	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(String zoneApex,
+			String accountId, Integer pageNo, Integer pageSize) {
+		// we list all ZACs, or restrict to those of an account if the accountId is set, or zone if the zone parameter
+		// is provided
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				getPageSpecifier(pageNo, pageSize));
+		sc.setAccountId(accountId);
+		sc.setZoneApex(zoneApex);
+		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+
+		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
+		for (AccountZoneAdministrationCredential azc : accountzones) {
+			result.add(AccountZoneAdministrationCredentialResource.mapFrom(azc));
+		}
+		return result;
 	}
 
 	@Override
@@ -495,8 +574,18 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		validatePresent(PARAM.ZCID, zcId);
-		// TODO Auto-generated method stub
-		return null;
+
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		validateExists(azc, PARAM.ZCID, zcId);
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
+				azc.getAccountId());
+
+		return AccountZoneAdministrationCredentialResource.mapFrom(azc);
 	}
 
 	@Override
@@ -505,8 +594,57 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		validatePresent(PARAM.ZCID, zcId);
-		// TODO Auto-generated method stub
-		return null;
+		validateEnum(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
+				AccountZoneAdministrationCredentialStatus.class, zac.getStatus());
+
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		validateExists(azc, PARAM.ZCID, zcId);
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
+				azc.getAccountId());
+
+		// we don't support changing the certificate, but we support deinstallation or re-installation (maybe DNS fixed)
+		AccountZoneAdministrationCredential updatedAzc = AccountZoneAdministrationCredentialResource.mapTo(zac);
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, azc.getZoneApex(),
+				updatedAzc.getZoneApex());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM, azc.getCertificateChainPem(),
+				updatedAzc.getCertificateChainPem());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, azc.getFingerprint(),
+				updatedAzc.getFingerprint());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.JOBID, azc.getJobId(), updatedAzc.getJobId());
+		validateNotExists(updatedAzc.getJobId(), AccountZoneAdministrationCredentialResource.FIELD.JOBID,
+				updatedAzc.getJobId());
+
+		if (AccountZoneAdministrationCredentialStatus.DEINSTALLED == updatedAzc.getCredentialStatus()) {
+			if (AccountZoneAdministrationCredentialStatus.INSTALLED == azc.getCredentialStatus()) {
+				// TODO #89 ZACRemoveTask and schedule job.
+				updatedAzc.setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING_DEINSTALLATION);
+
+			} else {
+				// if not already installed, then we can immediately remove.
+				updatedAzc.setCredentialStatus(AccountZoneAdministrationCredentialStatus.DEINSTALLED);
+			}
+			getAccountZoneCredentialService().createOrUpdate(updatedAzc);
+		} else if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == updatedAzc.getCredentialStatus()) {
+			validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
+					AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST, updatedAzc.getCredentialStatus());
+			// schedule the job to re-check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
+			ZACInstallTask installTask = new ZACInstallTask();
+			installTask.setAccountId(az.getAccountId());
+			installTask.setZoneApex(az.getZoneApex());
+			installTask.setFingerprint(azc.getFingerprint());
+			Job installJob = getJobFactory().createJob(installTask);
+			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+
+			updatedAzc.setJobId(j.getId());
+			getAccountZoneCredentialService().createOrUpdate(updatedAzc);
+
+		}
+		return AccountZoneAdministrationCredentialResource.mapFrom(updatedAzc);
 	}
 
 	@Override
@@ -515,8 +653,20 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZID, zId);
 		validatePresent(PARAM.ZCID, zcId);
 
-		// TODO Auto-generated method stub
-		return null;
+		Account a = getAccountService().findById(aId);
+		validateExists(a, PARAM.AID, aId);
+		AccountZone az = getAccountZoneService().findById(zId);
+		validateExists(az, PARAM.ZID, zId);
+		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		validateExists(azc, PARAM.ZCID, zcId);
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
+				azc.getAccountId());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
+				AccountZoneAdministrationCredentialStatus.DEINSTALLED, azc.getCredentialStatus());
+
+		getAccountZoneCredentialService().delete(azc);
+		return Response.ok().build();
 	}
 
 	// -------------------------------------------------------------------------
@@ -549,6 +699,18 @@ public class SASImpl implements SAS {
 		} else if (StringUtils.hasText(expectedValue)) {
 			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
 		}
+	}
+
+	private void validateInSet(Enum<?> fieldId, Object[] expectedValues, Object fieldValue) {
+		if (fieldValue == null) {
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+		for (Object expectedValue : expectedValues) {
+			if (expectedValue.equals(fieldValue)) {
+				return;
+			}
+		}
+		throw createVE(FieldValidationErrorType.INVALID, fieldId.toString());
 	}
 
 	private void validateEquals(Enum<?> fieldId, Object expectedValue, Object fieldValue) {
@@ -598,7 +760,7 @@ public class SASImpl implements SAS {
 	}
 
 	private <E extends Enum<E>> void validateEnum(Enum<?> fieldId, Class<E> enumClass, String fieldValue) {
-		if (!StringUtils.hasText(fieldValue)) {
+		if (StringUtils.hasText(fieldValue)) {
 			if (EnumUtils.mapTo(enumClass, fieldValue) == null) {
 				throw createVE(FieldValidationErrorType.INVALID, fieldId.toString());
 			}
@@ -641,6 +803,14 @@ public class SASImpl implements SAS {
 		this.accountService = accountService;
 	}
 
+	public ZoneDatabasePartitionAllocationService getZonePartitionService() {
+		return zonePartitionService;
+	}
+
+	public void setZonePartitionService(ZoneDatabasePartitionAllocationService zonePartitionService) {
+		this.zonePartitionService = zonePartitionService;
+	}
+
 	public AccountZoneService getAccountZoneService() {
 		return accountZoneService;
 	}
@@ -649,12 +819,13 @@ public class SASImpl implements SAS {
 		this.accountZoneService = accountZoneService;
 	}
 
-	public ZoneDatabasePartitionAllocationService getZonePartitionService() {
-		return zonePartitionService;
+	public AccountZoneAdministrationCredentialService getAccountZoneCredentialService() {
+		return accountZoneCredentialService;
 	}
 
-	public void setZonePartitionService(ZoneDatabasePartitionAllocationService zonePartitionService) {
-		this.zonePartitionService = zonePartitionService;
+	public void setAccountZoneCredentialService(
+			AccountZoneAdministrationCredentialService accountZoneCredentialService) {
+		this.accountZoneCredentialService = accountZoneCredentialService;
 	}
 
 	public JobFactory getJobFactory() {

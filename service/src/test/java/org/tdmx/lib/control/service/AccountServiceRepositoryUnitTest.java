@@ -62,6 +62,8 @@ public class AccountServiceRepositoryUnitTest {
 		a.setEmail("pjklauser@gmail.com");
 
 		service.createOrUpdate(a);
+		// id is created on commit of service
+		assertNotNull(a.getId());
 	}
 
 	@After

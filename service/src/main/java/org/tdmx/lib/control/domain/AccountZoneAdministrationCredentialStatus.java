@@ -20,13 +20,15 @@ package org.tdmx.lib.control.domain;
 
 public enum AccountZoneAdministrationCredentialStatus {
 
-	PENDING,
+	PENDING_INSTALLATION,
+	PENDING_DEINSTALLATION,
 	INVALID_PEM,
 	INVALID_TDMX,
 	INVALID_ZAC,
 	NON_ZAC,
 	NO_DNS_TRUST,
-	INSTALLED, ;
+	INSTALLED,
+	DEINSTALLED,;
 
-	public static final int MAX_CREDENTIALSTATUS_LEN = 16;
+	public static final int MAX_CREDENTIALSTATUS_LEN = 32;
 }

@@ -23,7 +23,7 @@ import org.tdmx.lib.common.domain.Job;
 public interface JobFactory {
 
 	/**
-	 * Creates a Job with a jobId and then marshals the task object to XML bytes and stores in the job data.
+	 * Creates a Job with a jobId and then marshals the task object to XML bytes and sets the job data.
 	 * {@link Job#setData(byte[])}
 	 * 
 	 * @param job

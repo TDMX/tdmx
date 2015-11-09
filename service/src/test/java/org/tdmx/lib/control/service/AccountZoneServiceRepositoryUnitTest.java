@@ -55,6 +55,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 		az = AccountZoneFacade.createAccountZone("1234", za.getPublicCert().getTdmxZoneInfo().getZoneRoot(), "test",
 				"partitionId");
 		service.createOrUpdate(az);
+		assertNotNull(az.getId());
 	}
 
 	@After

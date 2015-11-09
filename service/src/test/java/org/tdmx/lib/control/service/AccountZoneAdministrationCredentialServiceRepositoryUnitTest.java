@@ -69,8 +69,10 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 		assertEquals(accountId, zoneAC.getAccountId());
 		assertEquals(zac.getPublicCert().getFingerprint(), zoneAC.getFingerprint());
 		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zoneAC.getZoneApex());
-		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING, zoneAC.getCredentialStatus());
+		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION, zoneAC.getCredentialStatus());
 		service.createOrUpdate(zoneAC);
+		// id is created and visible after store.
+		assertNotNull(zoneAC.getId());
 	}
 
 	@After

@@ -87,7 +87,6 @@ public class AccountZoneResource {
 		a.setZonePartitionId(az.getZonePartitionId());
 
 		a.setJobId(az.getJobId());
-
 		a.setStatus(EnumUtils.mapTo(AccountZoneStatus.class, az.getAccessStatus()));
 		return a;
 	}

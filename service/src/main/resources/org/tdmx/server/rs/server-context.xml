@@ -20,6 +20,7 @@
 		<property name="partitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository" />
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
+		<property name="accountZoneCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository" />
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService" />
 		<property name="zonePartitionService" ref="tdmx.lib.control.ZonePartitionAllocationService" />
 		<property name="jobFactory" ref="tdmx.lib.control.job.JobExecutor" />

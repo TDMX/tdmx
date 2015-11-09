@@ -20,6 +20,7 @@ package org.tdmx.core.system.env;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
  * Creates a value obfuscation utility.
@@ -55,21 +56,18 @@ public class ObfuscationSupport {
 	// -------------------------------------------------------------------------
 
 	public static boolean isObfuscated(String text) {
-		if (text != null) {
-			return text.startsWith(ENCRYPTED_TAG);
-		}
-		return false;
+		return StringUtils.hasText(text) && text.startsWith(ENCRYPTED_TAG);
 	}
 
 	public static String deobfuscate(String text) {
-		if (isObfuscated(text)) {
+		if (StringUtils.hasText(text) && isObfuscated(text)) {
 			return getInstance().getEncrypter().decrypt(text.substring(ENCRYPTED_TAG.length()));
 		}
 		return text;
 	}
 
 	public static String obfuscate(String text) {
-		if (!isObfuscated(text)) {
+		if (StringUtils.hasText(text) && !isObfuscated(text)) {
 			return ENCRYPTED_TAG + getInstance().getEncrypter().encrypt(text);
 		}
 		return text;

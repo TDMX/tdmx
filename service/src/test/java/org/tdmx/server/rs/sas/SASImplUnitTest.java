@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -40,7 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
@@ -53,6 +61,7 @@ import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
@@ -91,6 +100,7 @@ public class SASImplUnitTest {
 	private DatabasePartitionResource partitionResource;
 	private AccountResource accountResource;
 	private AccountZoneResource accountZoneResource;
+	private AccountZoneAdministrationCredentialResource zacResource;
 
 	private String accountEmail;
 	private String segmentName;
@@ -135,7 +145,39 @@ public class SASImplUnitTest {
 		assertNotNull(accountZoneResource.getId());
 		assertNotNull(accountZoneResource.getJobId());
 		assertNotNull(jobScheduler.getLastImmediateScheduledJob());
+		jobScheduler.clearLastImmediateScheduledJob();
 
+		Calendar validFrom = Calendar.getInstance();
+		Calendar validTo = Calendar.getInstance();
+		validTo.add(Calendar.YEAR, 10);
+
+		ZoneAdministrationCredentialSpecifier adminSpec = new ZoneAdministrationCredentialSpecifier(1,
+				accountZoneResource.getZoneApex());
+		adminSpec.setEmailAddress("name@email.com");
+		adminSpec.setCountry("CH");
+		adminSpec.setLocation("Zug");
+		adminSpec.setOrg("Organization");
+		adminSpec.setOrgUnit("OrgUnit");
+		adminSpec.setSerialNumber(1);
+		adminSpec.setTelephoneNumber("041...");
+		adminSpec.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
+		adminSpec.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
+		adminSpec.setNotBefore(validFrom);
+		adminSpec.setNotAfter(validTo);
+		PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(adminSpec);
+
+		zacResource = new AccountZoneAdministrationCredentialResource();
+		zacResource.setAccountId(accountResource.getAccountId());
+		zacResource.setZoneApex(accountZoneResource.getZoneApex());
+		zacResource.setCertificatePem(CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
+
+		zacResource = sas.createAccountZoneAdministrationCredential(accountResource.getId(),
+				accountZoneResource.getId(), zacResource);
+		assertNotNull(zacResource.getId());
+		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION.toString(),
+				zacResource.getStatus());
+		assertNotNull(zacResource.getJobId());
+		jobScheduler.clearLastImmediateScheduledJob();
 	}
 
 	@After
@@ -225,7 +267,9 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testSearchAccountZone() {
-		// TODO
+		List<AccountZoneResource> aczs = sas.searchAccountZone(0, 100, accountZoneResource.getZoneApex(), null, null,
+				null);
+		assertFalse(aczs.isEmpty());
 	}
 
 	@Test
@@ -244,18 +288,52 @@ public class SASImplUnitTest {
 	}
 
 	@Test
-	public void testCreateAccountZoneAdministrationCredential() {
-		// TODO
+	public void testCreateAccountZoneAdministrationCredential_WrongZoneInCert() throws Exception {
+		Calendar validFrom = Calendar.getInstance();
+		Calendar validTo = Calendar.getInstance();
+		validTo.add(Calendar.YEAR, 10);
+
+		ZoneAdministrationCredentialSpecifier adminSpec = new ZoneAdministrationCredentialSpecifier(1, "gugus.com");
+		adminSpec.setEmailAddress("name@email.com");
+		adminSpec.setCountry("CH");
+		adminSpec.setLocation("Zug");
+		adminSpec.setOrg("Organization");
+		adminSpec.setOrgUnit("OrgUnit");
+		adminSpec.setSerialNumber(1);
+		adminSpec.setTelephoneNumber("041...");
+		adminSpec.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
+		adminSpec.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
+		adminSpec.setNotBefore(validFrom);
+		adminSpec.setNotAfter(validTo);
+		PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(adminSpec);
+
+		AccountZoneAdministrationCredentialResource zacRes = new AccountZoneAdministrationCredentialResource();
+		zacRes.setAccountId(accountResource.getAccountId());
+		zacRes.setZoneApex(accountZoneResource.getZoneApex()); // fake! - real is gugus.com in cert.
+		zacRes.setCertificatePem(CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
+
+		try {
+			sas.createAccountZoneAdministrationCredential(accountResource.getId(), accountZoneResource.getId(), zacRes);
+			fail();
+		} catch (ValidationException ve) {
+
+		}
 	}
 
 	@Test
 	public void testSearchAccountZoneAdministrationCredential() {
-		// TODO
+		List<AccountZoneAdministrationCredentialResource> azcrs = sas.searchAccountZoneAdministrationCredential(
+				accountResource.getId(), accountZoneResource.getId(), 0, 100);
+		assertFalse(azcrs.isEmpty());
+		assertEquals(1, azcrs.size());
+		assertEquals(zacResource.getFingerprint(), azcrs.get(0).getFingerprint());
 	}
 
 	@Test
 	public void testGetAccountZoneAdministrationCredential() {
-		// TODO
+		AccountZoneAdministrationCredentialResource res = sas.getAccountZoneAdministrationCredential(
+				accountResource.getId(), accountZoneResource.getId(), zacResource.getId());
+		assertNotNull(res);
 	}
 
 	@Test
@@ -265,7 +343,7 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testDeleteAccountZoneAdministrationCredential() {
-		// TODO
+		// TODO delete after update to deinstall
 	}
 
 	private void assertSuccess(Acknowledge ack) {
