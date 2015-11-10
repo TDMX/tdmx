@@ -259,13 +259,18 @@ public class SASImpl implements SAS {
 		if (storedPartition.getActivationTimestamp() != null) {
 			validateEquals(DatabasePartitionResource.FIELD.ACTIVATION_TS, storedPartition.getActivationTimestamp(),
 					p.getActivationTimestamp());
+			validatePresent(DatabasePartitionResource.FIELD.SIZEFACTOR, storedPartition.getDbType());
 			validateEquals(DatabasePartitionResource.FIELD.SIZEFACTOR, storedPartition.getSizeFactor(),
 					p.getSizeFactor());
-			validateEquals(DatabasePartitionResource.FIELD.URL, storedPartition.getUrl(), p.getUrl());
-			validateEquals(DatabasePartitionResource.FIELD.USERNAME, storedPartition.getUsername(), p.getUsername());
+			validatePresent(DatabasePartitionResource.FIELD.URL, storedPartition.getUrl());
+			validatePresent(DatabasePartitionResource.FIELD.USERNAME, storedPartition.getUsername());
+			validatePresent(DatabasePartitionResource.FIELD.PASSWORD, storedPartition.getPassword());
 		}
 
 		getPartitionService().createOrUpdate(p);
+
+		// TODO #88 cache invalidation partitions
+
 		return DatabasePartitionResource.mapFrom(p);
 	}
 

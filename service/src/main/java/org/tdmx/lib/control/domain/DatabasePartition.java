@@ -123,8 +123,24 @@ public class DatabasePartition implements Serializable {
 		builder.append(segment);
 		builder.append(", url=");
 		builder.append(url);
+		builder.append(", username=");
+		builder.append(username);
+		builder.append(", activationTimestamp=");
+		builder.append(activationTimestamp);
+		builder.append(", deactivationTimestamp=");
+		builder.append(deactivationTimestamp);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * The database partition is active.
+	 * 
+	 * @return whether the database partition is active.
+	 */
+	public boolean isActive() {
+		return activationTimestamp != null && activationTimestamp.getTime() < System.currentTimeMillis()
+				&& deactivationTimestamp == null;
 	}
 
 	// -------------------------------------------------------------------------

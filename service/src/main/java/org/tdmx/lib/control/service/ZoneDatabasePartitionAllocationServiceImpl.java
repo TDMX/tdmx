@@ -68,17 +68,25 @@ public class ZoneDatabasePartitionAllocationServiceImpl implements ZoneDatabaseP
 			return null;
 		}
 		for (DatabasePartition p : partitions) {
-			totalSizeFactor += p.getSizeFactor();
+			if (p.isActive()) {
+				totalSizeFactor += p.getSizeFactor();
+			}
+		}
+		if (totalSizeFactor <= 0) {
+			log.warn("No active ZoneDB partition found for segment " + segment);
+			return null;
 		}
 		// we get a random number >= 0 and < totalSizeFactor
 		int rndValue = rnd.nextInt(totalSizeFactor);
 		for (DatabasePartition p : partitions) {
 			// we take off each partitions sizeFactor and if we traverse 0 then we've found our partition.
-			rndValue -= p.getSizeFactor();
-			if (rndValue <= 0) {
-				log.info("Chosen ZonePartitionID=" + p.getPartitionId() + " using " + p.getSizeFactor() + "/"
-						+ totalSizeFactor + " chance.");
-				return p.getPartitionId();
+			if (p.isActive()) {
+				rndValue -= p.getSizeFactor();
+				if (rndValue <= 0) {
+					log.info("Chosen ZonePartitionID=" + p.getPartitionId() + " using " + p.getSizeFactor() + "/"
+							+ totalSizeFactor + " chance.");
+					return p.getPartitionId();
+				}
 			}
 		}
 		throw new IllegalStateException("Rnd value smaller than total sizeFactor " + totalSizeFactor);

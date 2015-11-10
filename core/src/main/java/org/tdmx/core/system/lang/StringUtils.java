@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +52,26 @@ public class StringUtils {
 			}
 		}
 		return input;
+	}
+
+	public static String asString(byte[] bytes, String encoding) {
+		String s;
+		try {
+			s = new String(bytes, encoding);
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+		return s;
+	}
+
+	public static byte[] asBytes(String string, String encoding) {
+		byte[] result;
+		try {
+			result = string.getBytes(encoding);
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+		return result;
 	}
 
 	public static String inputStreamAsString(InputStream stream, Charset cs) throws IOException {

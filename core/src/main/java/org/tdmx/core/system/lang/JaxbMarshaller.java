@@ -39,7 +39,7 @@ public class JaxbMarshaller<T> {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final String DEFAULT_ENCODING = "UTF-8";
+	public static final String DEFAULT_ENCODING = "UTF-8";
 	private String encoding = DEFAULT_ENCODING;
 	private String noNamespaceSchemaLocation;
 	private JAXBContext jaxbContext;
