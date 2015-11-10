@@ -211,12 +211,13 @@
 		<querydsl.version>3.6.2</querydsl.version>
 		<aws.version>1.6.12</aws.version>
 		<dnsjava.version>2.1.7</dnsjava.version>
-		<bc.version>1.50</bc.version>
+		<bc.version>1.53</bc.version>
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
 		<slf4j.version>1.6.4</slf4j.version>
 		<logback.version>1.0.13</logback.version>
 		<junit.version>4.8.2</junit.version>
+		<hsqldb.version>2.3.3</hsqldb.version>
 		<sonar.host.url>http://localhost:9000</sonar.host.url>
 	</properties>
 	
