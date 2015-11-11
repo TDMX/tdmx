@@ -21,7 +21,7 @@ package org.tdmx.lib.zone.domain;
 public enum EndpointPermissionGrant {
 
 	ALLOW,
-	DENY, ;
+	DENY,;
 
-	public static final int MAX_PERMISSION_LEN = 4;
+	public static final int MAX_PERMISSION_LEN = 16;
 }

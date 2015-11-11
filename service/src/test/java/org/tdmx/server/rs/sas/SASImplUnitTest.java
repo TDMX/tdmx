@@ -55,6 +55,7 @@ import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
+import org.tdmx.lib.control.service.DnsResolverGroupService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
 import org.tdmx.lib.control.service.SegmentService;
@@ -64,6 +65,7 @@ import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.server.ws.ErrorCode;
 
@@ -73,6 +75,8 @@ public class SASImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(SASImplUnitTest.class);
 
+	@Autowired
+	private DnsResolverGroupService dnsResolverGroupService;
 	@Autowired
 	private SegmentService segmentService;
 	@Autowired
@@ -96,6 +100,7 @@ public class SASImplUnitTest {
 	@Autowired
 	private SAS sas;
 
+	private DnsResolverGroupResource dnsResolverGroupResource;
 	private SegmentResource segmentResource;
 	private DatabasePartitionResource partitionResource;
 	private AccountResource accountResource;
@@ -104,9 +109,18 @@ public class SASImplUnitTest {
 
 	private String accountEmail;
 	private String segmentName;
+	private String dnsResolverGroupName;
 
 	@Before
 	public void doSetup() throws Exception {
+
+		dnsResolverGroupName = "drg" + System.currentTimeMillis();
+
+		dnsResolverGroupResource = new DnsResolverGroupResource();
+		dnsResolverGroupResource.setGroupName(dnsResolverGroupName);
+		dnsResolverGroupResource.setIpAddressList("8.8.8.8,4.4.4.4");
+		dnsResolverGroupResource = sas.createDnsResolverGroup(dnsResolverGroupResource);
+		assertNotNull(dnsResolverGroupResource.getId());
 
 		segmentName = "segment" + System.currentTimeMillis();
 
@@ -188,6 +202,7 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testAutowired() {
+		assertNotNull(dnsResolverGroupService);
 		assertNotNull(segmentService);
 		assertNotNull(databasePartitionService);
 		assertNotNull(accountService);
@@ -201,6 +216,12 @@ public class SASImplUnitTest {
 	}
 
 	@Test
+	public void testGetDnsResolverGroup() {
+		DnsResolverGroupResource r = sas.getDnsResolverGroup(dnsResolverGroupResource.getId());
+		assertNotNull(r);
+	}
+
+	@Test
 	public void testGetSegment() {
 		SegmentResource r = sas.getSegment(segmentResource.getId());
 		assertNotNull(r);
@@ -210,6 +231,19 @@ public class SASImplUnitTest {
 	public void testGetDatabasePartition() {
 		DatabasePartitionResource r = sas.getDatabasePartition(partitionResource.getId());
 		assertNotNull(r);
+	}
+
+	@Test
+	public void testSearchDnsResolverGroup_GroupName() {
+		List<DnsResolverGroupResource> dnsResolverGroups = sas.searchDnsResolverGroup(0, 10,
+				dnsResolverGroupResource.getGroupName());
+		assertEquals(1, dnsResolverGroups.size());
+	}
+
+	@Test
+	public void testSearchDnsResolverGroup_All() {
+		List<DnsResolverGroupResource> dnsResolverGroups = sas.searchDnsResolverGroup(0, 10, null);
+		assertFalse(dnsResolverGroups.isEmpty());
 	}
 
 	@Test
@@ -267,7 +301,7 @@ public class SASImplUnitTest {
 
 	@Test
 	public void testSearchAccountZone() {
-		List<AccountZoneResource> aczs = sas.searchAccountZone(0, 100, accountZoneResource.getZoneApex(), null, null,
+		List<AccountZoneResource> aczs = sas.searchAccountZone(0, 100, null, accountZoneResource.getZoneApex(), null,
 				null, null);
 		assertFalse(aczs.isEmpty());
 	}

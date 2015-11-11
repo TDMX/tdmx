@@ -44,7 +44,7 @@ public class Lock implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_NAME_LEN = 32;
+	public static final int MAX_NAME_LEN = 64;
 	public static final int MAX_LOCKEDBY_LEN = 32;
 
 	// -------------------------------------------------------------------------
@@ -57,14 +57,14 @@ public class Lock implements Serializable {
 	@TableGenerator(name = "LockIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@Column(length = MAX_NAME_LEN, unique = true)
+	@Column(length = Lock.MAX_NAME_LEN, unique = true)
 	private String lockName;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column
 	private Date lockedUntilTime;
 
-	@Column(length = MAX_LOCKEDBY_LEN)
+	@Column(length = Lock.MAX_LOCKEDBY_LEN)
 	private String lockedBy;
 
 	// -------------------------------------------------------------------------

@@ -19,6 +19,7 @@
 package org.tdmx.server.rs.sas;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.ValidationException;
@@ -42,6 +43,7 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
@@ -49,6 +51,7 @@ import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
+import org.tdmx.lib.control.service.DnsResolverGroupService;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
@@ -59,6 +62,7 @@ import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
@@ -72,12 +76,14 @@ public class SASImpl implements SAS {
 		SID("sId"),
 		SEGMENT("segment"),
 		PARTITION("partition"),
+		DNSRESOLVERGROUP("dnsResolverGroup"),
 		DBTYPE("dbType"),
 		PID("pId"),
 		AID("aId"),
 		ACCOUNT("account"),
 		ZID("zId"),
-		ZCID("zcId"),;
+		ZCID("zcId"),
+		DRGID("drgId"),;
 
 		private PARAM(String n) {
 			this.n = n;
@@ -100,6 +106,7 @@ public class SASImpl implements SAS {
 	private UniqueIdService accountIdService;
 	private SegmentService segmentService;
 	private DatabasePartitionService partitionService;
+	private DnsResolverGroupService dnsResolverGroupService;
 
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
@@ -115,6 +122,74 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public DnsResolverGroupResource createDnsResolverGroup(DnsResolverGroupResource dnsResolverGroup) {
+		validatePresent(PARAM.DNSRESOLVERGROUP, dnsResolverGroup);
+		DnsResolverGroup g = DnsResolverGroupResource.mapTo(dnsResolverGroup);
+		validateNotPresent(DnsResolverGroupResource.FIELD.ID, g.getId());
+		validatePresent(DnsResolverGroupResource.FIELD.GROUPNAME, g.getGroupName());
+		validateNotEmpty(DnsResolverGroupResource.FIELD.IPADDRESSLIST, g.getIpAddresses());
+
+		DnsResolverGroup storedGroup = getDnsResolverGroupService().findByName(g.getGroupName());
+		validateNotExists(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup);
+
+		log.info("Creating DnsResolverGroup " + g.getGroupName());
+		getDnsResolverGroupService().createOrUpdate(g);
+
+		// the ID is only created on commit of the createOrUpdate above
+		storedGroup = getDnsResolverGroupService().findByName(g.getGroupName());
+		return DnsResolverGroupResource.mapTo(storedGroup);
+	}
+
+	@Override
+	public List<DnsResolverGroupResource> searchDnsResolverGroup(Integer pageNo, Integer pageSize, String groupName) {
+		// TODO search criteria
+		List<DnsResolverGroup> groups = getDnsResolverGroupService().findAll();
+
+		List<DnsResolverGroupResource> result = new ArrayList<>();
+		for (DnsResolverGroup g : groups) {
+			if (!StringUtils.hasText(groupName) || groupName.equals(g.getGroupName())) {
+				result.add(DnsResolverGroupResource.mapTo(g));
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public DnsResolverGroupResource getDnsResolverGroup(Long drgId) {
+		validatePresent(PARAM.DRGID, drgId);
+		return DnsResolverGroupResource.mapTo(getDnsResolverGroupService().findById(drgId));
+	}
+
+	@Override
+	public DnsResolverGroupResource updateDnsResolverGroup(Long drgId, DnsResolverGroupResource dnsResolverGroup) {
+		validatePresent(PARAM.DRGID, drgId);
+		validateEquals(DnsResolverGroupResource.FIELD.ID, drgId, dnsResolverGroup.getId());
+
+		DnsResolverGroup updatedGroup = DnsResolverGroupResource.mapTo(dnsResolverGroup);
+		validatePresent(DnsResolverGroupResource.FIELD.ID, updatedGroup.getId());
+		validatePresent(DnsResolverGroupResource.FIELD.GROUPNAME, updatedGroup.getGroupName());
+		validateNotEmpty(DnsResolverGroupResource.FIELD.IPADDRESSLIST, updatedGroup.getIpAddresses());
+
+		DnsResolverGroup storedGroup = getDnsResolverGroupService().findById(drgId);
+		validateExists(DnsResolverGroupResource.FIELD.ID, storedGroup);
+		validateEquals(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup.getGroupName(), dnsResolverGroup.getGroupName());
+
+		getDnsResolverGroupService().createOrUpdate(updatedGroup);
+		return DnsResolverGroupResource.mapTo(updatedGroup);
+	}
+
+	@Override
+	public Response deleteDnsResolverGroup(Long drgId) {
+		validatePresent(PARAM.DRGID, drgId);
+
+		DnsResolverGroup group = getDnsResolverGroupService().findById(drgId);
+		validateExists(DnsResolverGroupResource.FIELD.ID, group);
+
+		getDnsResolverGroupService().delete(group);
+		return Response.ok().build();
+	}
 
 	@Override
 	public SegmentResource createSegment(SegmentResource segment) {
@@ -175,7 +250,7 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.SID, sId);
 
 		Segment segment = getSegmentService().findById(sId);
-		validateNotExists(SegmentResource.FIELD.ID, segment);
+		validateExists(SegmentResource.FIELD.ID, segment);
 
 		getSegmentService().delete(segment);
 		return Response.ok().build();
@@ -758,6 +833,12 @@ public class SASImpl implements SAS {
 		}
 	}
 
+	private void validateNotEmpty(Enum<?> fieldId, Collection<?> fieldValue) {
+		if (fieldValue == null || fieldValue.isEmpty()) {
+			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+	}
+
 	private void validatePresent(Enum<?> fieldId, Object fieldValue) {
 		if (fieldValue == null) {
 			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
@@ -788,6 +869,14 @@ public class SASImpl implements SAS {
 
 	public void setAccountIdService(UniqueIdService accountIdService) {
 		this.accountIdService = accountIdService;
+	}
+
+	public DnsResolverGroupService getDnsResolverGroupService() {
+		return dnsResolverGroupService;
+	}
+
+	public void setDnsResolverGroupService(DnsResolverGroupService dnsResolverGroupService) {
+		this.dnsResolverGroupService = dnsResolverGroupService;
 	}
 
 	public SegmentService getSegmentService() {

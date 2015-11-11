@@ -50,7 +50,7 @@ public class DatabasePartition implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	public static final int MAX_PARTITIONID_LEN = 16;
+	public static final int MAX_PARTITIONID_LEN = 255;
 	public static final int MAX_URL_LEN = 255;
 	public static final int MAX_USERNAME_LEN = 255;
 	public static final int MAX_PASSWORD_LEN = 255;
@@ -66,7 +66,7 @@ public class DatabasePartition implements Serializable {
 	@TableGenerator(name = "DatabasePartitionIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	@Column(length = MAX_PARTITIONID_LEN, unique = true)
+	@Column(length = MAX_PARTITIONID_LEN, unique = true, nullable = false)
 	private String partitionId;
 
 	@Enumerated(EnumType.STRING)

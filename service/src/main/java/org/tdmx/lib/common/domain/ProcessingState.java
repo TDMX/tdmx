@@ -43,7 +43,7 @@ public class ProcessingState implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_TASKID_LEN = 32;
+	public static final int MAX_TASKID_LEN = 36;
 	public static final int MAX_ERRORMESSAGE_LEN = 2048;
 
 	// -------------------------------------------------------------------------
@@ -51,21 +51,21 @@ public class ProcessingState implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(length = MAX_TASKID_LEN, unique = true, nullable = false)
+	@Column
 	private String taskId; // the link to the relay
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false)
+	@Column
 	private ProcessingStatus status;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(nullable = false)
+	@Column
 	private Date timestamp; // the time since we've been in this status
 
 	@Column
 	private Integer errorCode;
 
-	@Column(length = MAX_ERRORMESSAGE_LEN)
+	@Column
 	private String errorMessage;
 
 	// -------------------------------------------------------------------------

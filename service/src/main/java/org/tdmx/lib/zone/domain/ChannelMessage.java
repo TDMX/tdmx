@@ -106,9 +106,9 @@ public class ChannelMessage implements Serializable {
 	@Embedded
 	@AttributeOverrides({
 			@AttributeOverride(name = "signatureDate", column = @Column(name = "senderSignatureDate", nullable = false) ),
-			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "senderPem", nullable = false) ),
-			@AttributeOverride(name = "value", column = @Column(name = "senderSignature", nullable = false) ),
-			@AttributeOverride(name = "algorithm", column = @Column(name = "senderSignatureAlgorithm", nullable = false) ) })
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "senderPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false) ),
+			@AttributeOverride(name = "value", column = @Column(name = "senderSignature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false) ),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "senderSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false) ) })
 	private AgentSignature signature;
 
 	@Column(length = MAX_EXTREF_LEN)

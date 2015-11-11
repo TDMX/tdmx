@@ -38,6 +38,8 @@ public interface DnsResolverGroupService {
 
 	public DnsResolverGroup findByName(String groupName);
 
+	public DnsResolverGroup findById(Long id);
+
 	public List<DnsResolverGroup> findAll();
 
 }

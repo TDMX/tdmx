@@ -45,7 +45,7 @@ public class Segment implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	public static final int MAX_SEGMENT_LEN = 16;
+	public static final int MAX_SEGMENT_LEN = 64;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

@@ -24,6 +24,10 @@
 
     drop table Destination if exists;
 
+    drop table DnsDomainZone if exists;
+
+    drop table DnsResolverGroup if exists;
+
     drop table Domain if exists;
 
     drop table FlowQuota if exists;
@@ -32,9 +36,13 @@
 
     drop table MaxValueEntry if exists;
 
-    drop table TemporaryChannel if exists;
+    drop table PartitionControlServer if exists;
+
+    drop table Segment if exists;
 
     drop table Service if exists;
+
+    drop table TemporaryChannel if exists;
 
     drop table Zone if exists;
 
@@ -57,7 +65,7 @@
         segment varchar(16) not null,
         status varchar(16) not null,
         zoneApex varchar(255) not null,
-        zonePartitionId varchar(16) not null,
+        zonePartitionId varchar(255) not null,
         primary key (id),
         unique (zoneApex)
     );
@@ -66,7 +74,7 @@
         id bigint not null,
         accountId varchar(16) not null,
         certificateChainPem varchar(12000) not null,
-        credentialStatus varchar(16) not null,
+        credentialStatus varchar(32) not null,
         fingerprint varchar(64) not null,
         jobId bigint,
         zoneApex varchar(255) not null,
@@ -103,21 +111,22 @@
         processingErrorCode integer,
         processingErrorMessage varchar(2048),
         processingStatus varchar(12) not null,
-        processingId varchar(32) not null,
+        processingId varchar(36) not null,
         processingTimestamp timestamp not null,
         dsIdentifier varchar(256),
-        dsScheme varchar(16),
-        dsSession varbinary(8000),
+        dsScheme varchar(256),
+        dsSession varbinary(2048),
         dsSignatureAlgorithm varchar(16),
         dsTargetPem varchar(12000),
         dsSignatureDate timestamp,
-        dsSignature varchar(128),
+        dsSignature varchar(1024),
         authorization_id bigint not null,
         domain_id bigint not null,
         quota_id bigint not null,
         primary key (id),
-        unique (quota_id),
-        unique (authorization_id)
+        unique (processingId),
+        unique (authorization_id),
+        unique (quota_id)
     );
 
     create table ChannelAuthorization (
@@ -125,45 +134,46 @@
         processingErrorCode integer,
         processingErrorMessage varchar(2048),
         processingStatus varchar(12) not null,
-        processingId varchar(32) not null,
+        processingId varchar(36) not null,
         processingTimestamp timestamp not null,
-        recvGrant varchar(4),
+        recvGrant varchar(16),
         recvMaxPlaintextBytes numeric,
         recvSignAlg varchar(16),
         recvSignerPem varchar(12000),
         recvSignDate timestamp,
-        recvSignature varchar(128),
+        recvSignature varchar(1024),
         recvValidUntil timestamp,
-        reqRecvGrant varchar(4),
+        reqRecvGrant varchar(16),
         reqRecvMaxPlaintextBytes numeric,
         reqRecvSignAlg varchar(16),
         reqRecvSignerPem varchar(12000),
         reqRecvSignDate timestamp,
-        reqRecvSignature varchar(128),
+        reqRecvSignature varchar(1024),
         reqRecvValidUntil timestamp,
-        reqSendGrant varchar(4),
+        reqSendGrant varchar(16),
         reqSendMaxPlaintextBytes numeric,
         reqSendSignAlg varchar(16),
         reqSendSignerPem varchar(12000),
         reqSendSignDate timestamp,
-        reqSendSignature varchar(128),
+        reqSendSignature varchar(1024),
         reqSendValidUntil timestamp,
-        sendGrant varchar(4),
+        sendGrant varchar(16),
         sendMaxPlaintextBytes numeric,
         sendSignAlg varchar(16),
         sendSignerPem varchar(12000),
         sendSignDate timestamp,
-        sendSignature varchar(128),
+        sendSignature varchar(1024),
         sendValidUntil timestamp,
         signatureAlg varchar(16),
         signerPem varchar(12000),
         signatureDate timestamp,
-        signature varchar(128),
+        signature varchar(1024),
         undeliveredHigh numeric,
         undeliveredLow numeric,
         unsentHigh numeric,
         unsentLow numeric,
-        primary key (id)
+        primary key (id),
+        unique (processingId)
     );
 
     create table ChannelMessage (
@@ -175,18 +185,17 @@
         macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
         payloadLength bigint not null,
-        payloadSignature varchar(128) not null,
+        payloadSignature varchar(1024) not null,
         plaintextLength bigint not null,
         receiverPem varchar(12000) not null,
         senderSignatureAlgorithm varchar(16) not null,
         senderPem varchar(12000) not null,
         senderSignatureDate timestamp not null,
-        senderSignature varchar(128) not null,
+        senderSignature varchar(1024) not null,
         ttlTimestamp timestamp not null,
         channel_id bigint not null,
         primary key (id)
     );
-
 
     create table Chunk (
         id bigint not null,
@@ -229,12 +238,12 @@
         activationTimestamp timestamp,
         dbType varchar(12) not null,
         deactivationTimestamp timestamp,
-        obfuscatedPassword varchar(255) not null,
-        partitionId varchar(16),
+        obfuscatedPassword varchar(255),
+        partitionId varchar(255) not null,
         segment varchar(16) not null,
         sizeFactor integer not null,
-        url varchar(255) not null,
-        username varchar(255) not null,
+        url varchar(255),
+        username varchar(255),
         primary key (id),
         unique (partitionId)
     );
@@ -242,14 +251,34 @@
     create table Destination (
         id bigint not null,
         dsIdentifier varchar(256),
-        dsScheme varchar(16),
-        dsSession varbinary(8000),
+        dsScheme varchar(256),
+        dsSession varbinary(2048),
         dsSignatureAlgorithm varchar(16),
         dsTargetPem varchar(12000),
         dsSignatureDate timestamp,
-        dsSignature varchar(128),
+        dsSignature varchar(1024),
         service_id bigint not null,
         target_id bigint not null,
+        primary key (id)
+    );
+
+    create table DnsDomainZone (
+        id bigint not null,
+        domainName varchar(255) not null,
+        nameServerList varchar(1000) not null,
+        scsUrl varchar(255) not null,
+        validFromTime timestamp not null,
+        validUntilTime timestamp not null,
+        version integer not null,
+        zacFingerprint varchar(64) not null,
+        zoneApex varchar(255) not null,
+        primary key (id)
+    );
+
+    create table DnsResolverGroup (
+        id bigint not null,
+        groupName varchar(255) not null,
+        ipAddressList varchar(255) not null,
         primary key (id)
     );
 
@@ -289,6 +318,29 @@
         primary key (name)
     );
 
+    create table PartitionControlServer (
+        id bigint not null,
+        ipAddress varchar(16) not null,
+        port integer not null,
+        segment varchar(16) not null,
+        serverModulo integer not null,
+        primary key (id)
+    );
+
+    create table Segment (
+        id bigint not null,
+        scsUrl varchar(255),
+        segmentName varchar(16) not null,
+        primary key (id)
+    );
+
+    create table Service (
+        id bigint not null,
+        serviceName varchar(255) not null,
+        domain_id bigint not null,
+        primary key (id)
+    );
+
     create table TemporaryChannel (
         id bigint not null,
         destDomain varchar(255) not null,
@@ -296,13 +348,6 @@
         destService varchar(255) not null,
         originDomain varchar(255) not null,
         originAddress varchar(255) not null,
-        domain_id bigint not null,
-        primary key (id)
-    );
-
-    create table Service (
-        id bigint not null,
-        serviceName varchar(255) not null,
         domain_id bigint not null,
         primary key (id)
     );
@@ -321,24 +366,19 @@
         references Domain;
 
     alter table AgentCredential 
-        add constraint FKDEAF7D1C981D3FB4 
-        foreign key (zone_id) 
-        references Zone;
-
-    alter table AgentCredential 
         add constraint FKDEAF7D1CE7351234 
         foreign key (domain_id) 
         references Domain;
 
     alter table AgentCredential 
+        add constraint FKDEAF7D1C981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table AgentCredential 
         add constraint FKDEAF7D1CE78C5580 
         foreign key (address_id) 
         references Address;
-
-    alter table Channel 
-        add constraint FK8F4414E3635CB8F2 
-        foreign key (quota_id) 
-        references FlowQuota;
 
     alter table Channel 
         add constraint FK8F4414E3E7351234 
@@ -350,20 +390,25 @@
         foreign key (authorization_id) 
         references ChannelAuthorization;
 
+    alter table Channel 
+        add constraint FK8F4414E3635CB8F2 
+        foreign key (quota_id) 
+        references FlowQuota;
+
     alter table ChannelMessage 
         add constraint FKCC8BCDA494FB8720 
         foreign key (channel_id) 
         references Channel;
 
     alter table Destination 
-        add constraint FKE2FEBEE6700BEC3 
-        foreign key (target_id) 
-        references Address;
-
-    alter table Destination 
         add constraint FKE2FEBEEEB7BD1E0 
         foreign key (service_id) 
         references Service;
+
+    alter table Destination 
+        add constraint FKE2FEBEE6700BEC3 
+        foreign key (target_id) 
+        references Address;
 
     alter table Domain 
         add constraint FK7A58C0E4981D3FB4 

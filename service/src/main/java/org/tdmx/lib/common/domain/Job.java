@@ -39,7 +39,7 @@ public class Job implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final int MAX_TYPE_LEN = 128;
-	public static final int MAX_JOBID_LEN = 32;
+	public static final int MAX_JOBID_LEN = 64;
 	public static final int MAX_DATA_LEN = 16000;
 
 	// -------------------------------------------------------------------------
@@ -47,10 +47,10 @@ public class Job implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column(length = MAX_JOBID_LEN, nullable = false, unique = true)
+	@Column(length = Job.MAX_JOBID_LEN, nullable = false, unique = true)
 	private String jobId;
 
-	@Column(length = MAX_TYPE_LEN, nullable = false)
+	@Column(length = Job.MAX_TYPE_LEN, nullable = false)
 	private String type;
 
 	@Column
@@ -61,10 +61,10 @@ public class Job implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date endTimestamp;
 
-	@Column(length = MAX_DATA_LEN, nullable = false)
+	@Column(length = Job.MAX_DATA_LEN, nullable = false)
 	private byte[] data;
 
-	@Column(length = MAX_DATA_LEN)
+	@Column(length = Job.MAX_DATA_LEN)
 	private byte[] exception;
 
 	// -------------------------------------------------------------------------

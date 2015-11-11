@@ -90,22 +90,23 @@ public class Channel implements Serializable {
 	private ChannelDestination destination;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "encryptionContextId", column = @Column(name = "dsIdentifier") ),
-			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme") ),
-			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession") ),
+	@AttributeOverrides({
+			@AttributeOverride(name = "encryptionContextId", column = @Column(name = "dsIdentifier", length = DestinationSession.MAX_IDENTIFIER_LEN) ),
+			@AttributeOverride(name = "scheme", column = @Column(name = "dsScheme", length = DestinationSession.MAX_SCHEME_LEN) ),
+			@AttributeOverride(name = "sessionKey", column = @Column(name = "dsSession", length = DestinationSession.MAX_SESSION_KEY_LEN) ),
 			@AttributeOverride(name = "signature.signatureDate", column = @Column(name = "dsSignatureDate") ),
-			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem") ),
-			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature") ),
-			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm") ) })
+			@AttributeOverride(name = "signature.certificateChainPem", column = @Column(name = "dsTargetPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN) ),
+			@AttributeOverride(name = "signature.value", column = @Column(name = "dsSignature", length = AgentSignature.MAX_SIGNATURE_LEN) ),
+			@AttributeOverride(name = "signature.algorithm", column = @Column(name = "dsSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN) ) })
 	private DestinationSession session;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", nullable = false) ),
-			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", nullable = false) ),
+			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false, unique = true) ),
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
-			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage") ) })
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState;
 
 	/**

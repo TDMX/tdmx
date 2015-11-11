@@ -91,6 +91,12 @@ public class DnsResolverGroupRepositoryImpl implements DnsResolverGroupService {
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
+	public DnsResolverGroup findById(Long id) {
+		return getDnsResolverGroupDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
 	public List<DnsResolverGroup> findAll() {
 		return getDnsResolverGroupDao().loadAll();
 	}

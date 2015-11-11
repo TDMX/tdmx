@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 
 /**
  * A DestinationSession is an encryption public key information related to an Address'es Service.
@@ -44,15 +45,16 @@ public class DestinationSession implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
-	@Column(length = MAX_IDENTIFIER_LEN)
+	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN)
 	private String encryptionContextId;
 
-	@Column(length = MAX_SCHEME_LEN)
+	@Column(length = DestinationSession.MAX_SCHEME_LEN)
 	private String scheme;
 
-	@Column(length = MAX_SESSION_KEY_LEN)
+	@Column(length = DestinationSession.MAX_SESSION_KEY_LEN)
 	private byte[] sessionKey;
 
+	@Embedded
 	private AgentSignature signature;
 
 	// -------------------------------------------------------------------------

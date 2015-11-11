@@ -49,7 +49,7 @@ public class AgentSignature implements Serializable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	// large enough for SHA512 as hex
-	public static final int MAX_SIGNATURE_LEN = 128;
+	public static final int MAX_SIGNATURE_LEN = 1024; // RSE4096 signature is 1024 bytes long
 	public static final int MAX_SIG_ALG_LEN = 16;
 
 	// -------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public class AgentSignature implements Serializable {
 	 * The signature algorithm.
 	 */
 	@Enumerated(EnumType.STRING)
-	@Column(length = MAX_SIG_ALG_LEN)
+	@Column(length = AgentSignature.MAX_SIG_ALG_LEN)
 	private SignatureAlgorithm algorithm;
 
 	@Transient

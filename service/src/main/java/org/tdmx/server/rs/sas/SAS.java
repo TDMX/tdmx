@@ -34,6 +34,7 @@ import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
 @Path("/sas")
@@ -45,6 +46,31 @@ public interface SAS {
 	// TODO control job (admin only)
 
 	// TODO lock (admin only)
+
+	/*
+	 * RESTFUL service for DnsResolverGroup
+	 */
+	@POST
+	@Path("/dnsresolvergroups")
+	DnsResolverGroupResource createDnsResolverGroup(DnsResolverGroupResource dnsResolverGroup);
+
+	@GET
+	@Path("/dnsresolvergroups")
+	List<DnsResolverGroupResource> searchDnsResolverGroup(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("groupName") String groupName);
+
+	@GET
+	@Path("/dnsresolvergroups/{drgid}")
+	DnsResolverGroupResource getDnsResolverGroup(@PathParam("drgid") Long drgId);
+
+	@PUT
+	@Path("/dnsresolvergroups/{drgid}")
+	DnsResolverGroupResource updateDnsResolverGroup(@PathParam("drgid") Long drgId,
+			DnsResolverGroupResource dnsResolverGroup);
+
+	@DELETE
+	@Path("/dnsresolvergroups/{drgid}")
+	Response deleteDnsResolverGroup(@PathParam("drgid") Long drgId);
 
 	/*
 	 * RESTFUL service for Segment
