@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Lock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -104,11 +105,11 @@ public class LockServiceRepositoryUnitTest {
 
 	@Test
 	public void testAquireLock() throws Exception {
-		String holderIdentitifier = UUID.randomUUID().toString();
+		String holderIdentitifier = StringUtils.truncateToMaxLen(UUID.randomUUID().toString(), Lock.MAX_LOCKEDBY_LEN);
 
 		assertTrue(service.acquireLock(lockName, holderIdentitifier));
 
-		String holderIdentitifier2 = UUID.randomUUID().toString();
+		String holderIdentitifier2 = StringUtils.truncateToMaxLen(UUID.randomUUID().toString(), Lock.MAX_LOCKEDBY_LEN);
 
 		assertFalse(service.acquireLock(lockName, holderIdentitifier2));
 

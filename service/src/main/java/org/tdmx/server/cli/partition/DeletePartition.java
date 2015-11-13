@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.SegmentResource;
+import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
 @Cli(name = "partition:delete", description = "deletes a database partition")
 public class DeletePartition extends AbstractCliCommand {
@@ -35,14 +35,12 @@ public class DeletePartition extends AbstractCliCommand {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "segment", required = true, description = "the segment name.")
-	private String segment;
+	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
+	private String partitionId;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -54,14 +52,15 @@ public class DeletePartition extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
-		if (segments.size() != 1) {
-			out.println("Segment " + segment + " not found.");
+		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
+		if (dbPartitions.isEmpty()) {
+			out.println("No DatabasePartition found with partitionId " + partitionId);
 			return;
 		}
-		SegmentResource seg = segments.get(0);
-		Response response = getSas().deleteSegment(seg.getId());
-		out.print(seg.getCliRepresentation());
+
+		DatabasePartitionResource dbPartition = dbPartitions.get(0);
+		Response response = getSas().deleteDatabasePartition(dbPartition.getId());
+		out.print(dbPartition.getCliRepresentation());
 		if (response.getStatus() == SUCCESS) {
 			out.println(" Deleted.");
 		} else {

@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
@@ -56,7 +57,7 @@ public class AccountServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		a = new Account();
-		a.setAccountId(UUID.randomUUID().toString());
+		a.setAccountId(StringUtils.truncateToMaxLen(UUID.randomUUID().toString(), Account.MAX_ACCOUNTID_LEN));
 		a.setFirstName("peter");
 		a.setLastName("Klauser");
 		a.setEmail("pjklauser@gmail.com");

@@ -39,7 +39,9 @@ import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
@@ -56,7 +58,7 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	@Before
 	public void doSetup() throws Exception {
-		String accountId = UUID.randomUUID().toString();
+		String accountId = StringUtils.truncateToMaxLen(UUID.randomUUID().toString(), Account.MAX_ACCOUNTID_LEN);
 		byte[] zacFile = FileUtils.getFileContents("src/test/resources/zac.keystore");
 		assertNotNull(zacFile);
 		zac = KeyStoreUtils.getPrivateCredential(zacFile, "jks", "changeme", "client");
