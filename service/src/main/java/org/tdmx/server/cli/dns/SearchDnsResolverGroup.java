@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
+package org.tdmx.server.cli.dns;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.server.cli.cmd.AbstractCliCommand;
+import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 
-public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
+@Cli(name = "dnsresolvergroup:search", description = "search for a dns resolver group")
+public class SearchDnsResolverGroup extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,51 +36,32 @@ public class CommandDescriptorFactoryImpl implements CommandDescriptorFactory {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(CommandDescriptorFactoryImpl.class);
 
-	// internal
-	private final Map<String, CommandDescriptor> cmds = new HashMap<>();
+	@Parameter(name = "name", description = "the group name.")
+	private String name;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public CommandDescriptorFactoryImpl(Class<? extends CommandExecutable>[] commandClasses) {
-		for (Class<? extends CommandExecutable> clazz : commandClasses) {
-			CommandDescriptor desc = new CommandDescriptor(clazz);
-			cmds.put(desc.getName(), desc);
-		}
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public CommandDescriptor getCommand(String cmdName) {
-		return cmds.get(cmdName);
-	}
+	public void run(PrintStream out) {
+		int results = 0;
+		int page = 0;
+		List<DnsResolverGroupResource> groups = null;
+		do {
+			groups = getSas().searchDnsResolverGroup(page++, PAGE_SIZE, name);
 
-	@Override
-	public void printUsage(PrintStream ps) {
-		List<String> cmdNames = new ArrayList<>();
-		for (CommandDescriptor desc : cmds.values()) {
-			cmdNames.add(desc.getName());
-		}
-		Collections.sort(cmdNames);
-
-		for (String cmdName : cmdNames) {
-			CommandDescriptor desc = cmds.get(cmdName);
-			desc.printUsage(ps);
-		}
-	}
-
-	@Override
-	public List<String> getCommandNames() {
-		List<String> cmdList = new ArrayList<>();
-		cmdList.addAll(cmds.keySet());
-		Collections.sort(cmdList);
-		return Collections.unmodifiableList(cmdList);
+			for (DnsResolverGroupResource group : groups) {
+				out.println(group.getCliRepresentation());
+				results++;
+			}
+		} while (groups.size() == PAGE_SIZE);
+		out.println("Found " + results + " dns resolver groups.");
 	}
 
 	// -------------------------------------------------------------------------

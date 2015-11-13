@@ -22,6 +22,11 @@
 				<value>org.tdmx.server.cli.segment.DeleteSegment</value>
 				<value>org.tdmx.server.cli.segment.SearchSegment</value>
 
+				<value>org.tdmx.server.cli.dns.CreateDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.ModifyDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.DeleteDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.SearchDnsResolverGroup</value>
+
 				<value>org.tdmx.server.cli.partition.CreatePartition</value>
 				<value>org.tdmx.server.cli.partition.ModifyPartition</value>
 				<value>org.tdmx.server.cli.partition.DeletePartition</value>
@@ -56,6 +61,11 @@
 				<entry key="segment:modify" value="tdmx.server.cli.cmd.ModifySegment"/>
 				<entry key="segment:delete" value="tdmx.server.cli.cmd.DeleteSegment"/>
 				<entry key="segment:search" value="tdmx.server.cli.cmd.SearchSegment"/>
+				
+				<entry key="dnsresolvergroup:create" value="tdmx.server.cli.cmd.CreateDnsResolverGroup"/>
+				<entry key="dnsresolvergroup:modify" value="tdmx.server.cli.cmd.ModifyDnsResolverGroup"/>
+				<entry key="dnsresolvergroup:delete" value="tdmx.server.cli.cmd.DeleteDnsResolverGroup"/>
+				<entry key="dnsresolvergroup:search" value="tdmx.server.cli.cmd.SearchDnsResolverGroup"/>
 				
 				<entry key="partition:create" value="tdmx.server.cli.cmd.CreatePartition"/>
 				<entry key="partition:modify" value="tdmx.server.cli.cmd.ModifyPartition"/>
@@ -103,6 +113,15 @@
 	<bean id="tdmx.server.cli.cmd.DeleteSegment" class="org.tdmx.server.cli.segment.DeleteSegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.SearchSegment" class="org.tdmx.server.cli.segment.SearchSegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+
+	<bean id="tdmx.server.cli.cmd.CreateDnsResolverGroup" class="org.tdmx.server.cli.dns.CreateDnsResolverGroup" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ModifyDnsResolverGroup" class="org.tdmx.server.cli.dns.ModifyDnsResolverGroup" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.DeleteDnsResolverGroup" class="org.tdmx.server.cli.dns.DeleteDnsResolverGroup" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.SearchDnsResolverGroup" class="org.tdmx.server.cli.dns.SearchDnsResolverGroup" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreatePartition" class="org.tdmx.server.cli.partition.CreatePartition" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
