@@ -35,6 +35,7 @@ import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResour
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
+import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
 @Path("/sas")
@@ -97,6 +98,33 @@ public interface SAS {
 	Response deleteSegment(@PathParam("sid") Long sId);
 
 	/*
+	 * RESTFUL service for PartitionControlServers
+	 */
+	@POST
+	@Path("/pcs")
+	PartitionControlServerResource createPartitionControlServer(PartitionControlServerResource pcs);
+
+	@GET
+	@Path("/pcs")
+	List<PartitionControlServerResource> searchPartitionControlServer(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("ipaddress") String ipaddress,
+			@QueryParam("port") Integer port, @QueryParam("segment") String segment,
+			@QueryParam("modulo") Integer modulo);
+
+	@GET
+	@Path("/pcs/{pcsid}")
+	PartitionControlServerResource getPartitionControlServer(@PathParam("pcsid") Long pcsId);
+
+	@PUT
+	@Path("/pcs/{pcsid}")
+	PartitionControlServerResource updatePartitionControlServer(@PathParam("pcsid") Long pcsId,
+			PartitionControlServerResource pcs);
+
+	@DELETE
+	@Path("/pcs/{pcsid}")
+	Response deletePartitionControlServer(@PathParam("pcsid") Long pcsId);
+
+	/*
 	 * RESTFUL service for DatabasePartition
 	 */
 	@POST
@@ -118,7 +146,7 @@ public interface SAS {
 	DatabasePartitionResource updateDatabasePartition(@PathParam("pid") Long pId, DatabasePartitionResource partition);
 
 	@DELETE
-	@Path("/segments/{pid}")
+	@Path("/partitions/{pid}")
 	Response deleteDatabasePartition(@PathParam("pid") Long pId);
 
 	/*

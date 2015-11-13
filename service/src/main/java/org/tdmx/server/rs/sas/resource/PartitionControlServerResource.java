@@ -23,17 +23,19 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.domain.PartitionControlServer;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "segment")
-@XmlType(name = "Segment")
-public class SegmentResource {
+@XmlRootElement(name = "partitionControlServer")
+@XmlType(name = "PartitionControlServer")
+public class PartitionControlServerResource {
 
 	public enum FIELD {
 		ID("id"),
 		SEGMENT("segment"),
-		SCS_URL("scsUrl"),;
+		IPADDRESS("ipaddress"),
+		PORT("port"),
+		MODULO("modulo");
 
 		private final String n;
 
@@ -49,39 +51,48 @@ public class SegmentResource {
 
 	private Long id;
 	private String segment;
-	private String scsUrl;
+	private String ipaddress;
+	private int port;
+	private int modulo;
 
 	public String getCliRepresentation() {
 		StringBuilder buf = new StringBuilder();
-		buf.append("Segment");
+		buf.append("PartitionControlServer");
 		buf.append("; ").append(id);
 		buf.append("; ").append(segment);
-		buf.append("; ").append(scsUrl);
+		buf.append("; ").append(ipaddress);
+		buf.append("; ").append(port);
+		buf.append("; ").append(modulo);
 		return buf.toString();
 	}
 
-	public static Segment mapTo(SegmentResource segment) {
-		if (segment == null) {
+	public static PartitionControlServer mapTo(PartitionControlServerResource pcs) {
+		if (pcs == null) {
 			return null;
 		}
-		Segment s = new Segment();
-		s.setId(segment.getId());
-		s.setSegmentName(segment.getSegment());
 
-		s.setScsUrl(segment.getScsUrl());
-		return s;
+		PartitionControlServer p = new PartitionControlServer();
+		p.setId(pcs.getId());
+
+		p.setSegment(pcs.getSegment());
+		p.setIpAddress(pcs.getIpaddress());
+		p.setPort(pcs.getPort());
+		p.setServerModulo(pcs.getModulo());
+		return p;
 	}
 
-	public static SegmentResource mapFrom(Segment segment) {
-		if (segment == null) {
+	public static PartitionControlServerResource mapFrom(PartitionControlServer pcs) {
+		if (pcs == null) {
 			return null;
 		}
-		SegmentResource a = new SegmentResource();
-		a.setId(segment.getId());
-		a.setSegment(segment.getSegmentName());
+		PartitionControlServerResource p = new PartitionControlServerResource();
+		p.setId(pcs.getId());
 
-		a.setScsUrl(segment.getScsUrl());
-		return a;
+		p.setSegment(pcs.getSegment());
+		p.setIpaddress(pcs.getIpAddress());
+		p.setPort(pcs.getPort());
+		p.setModulo(pcs.getServerModulo());
+		return p;
 	}
 
 	public Long getId() {
@@ -100,12 +111,28 @@ public class SegmentResource {
 		this.segment = segment;
 	}
 
-	public String getScsUrl() {
-		return scsUrl;
+	public String getIpaddress() {
+		return ipaddress;
 	}
 
-	public void setScsUrl(String scsUrl) {
-		this.scsUrl = scsUrl;
+	public void setIpaddress(String ipaddress) {
+		this.ipaddress = ipaddress;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getModulo() {
+		return modulo;
+	}
+
+	public void setModulo(int modulo) {
+		this.modulo = modulo;
 	}
 
 }

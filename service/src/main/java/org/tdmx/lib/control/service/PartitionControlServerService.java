@@ -34,6 +34,8 @@ public interface PartitionControlServerService {
 
 	public void delete(PartitionControlServer pcsServer);
 
+	public PartitionControlServer findById(Long id);
+
 	public PartitionControlServer findByIpEndpoint(String ipAddress, int port);
 
 	public List<PartitionControlServer> findBySegment(String segment);

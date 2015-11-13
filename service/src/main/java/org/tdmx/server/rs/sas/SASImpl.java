@@ -44,6 +44,7 @@ import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
+import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
@@ -52,6 +53,7 @@ import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.DnsResolverGroupService;
+import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
@@ -63,6 +65,7 @@ import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResour
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
+import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
@@ -76,6 +79,7 @@ public class SASImpl implements SAS {
 		SID("sId"),
 		SEGMENT("segment"),
 		PARTITION("partition"),
+		PARTITIONCONTROLSERVER("pcs"),
 		DNSRESOLVERGROUP("dnsResolverGroup"),
 		DBTYPE("dbType"),
 		PID("pId"),
@@ -83,7 +87,8 @@ public class SASImpl implements SAS {
 		ACCOUNT("account"),
 		ZID("zId"),
 		ZCID("zcId"),
-		DRGID("drgId"),;
+		DRGID("drgId"),
+		PCSID("pcsId"),;
 
 		private PARAM(String n) {
 			this.n = n;
@@ -107,6 +112,7 @@ public class SASImpl implements SAS {
 	private SegmentService segmentService;
 	private DatabasePartitionService partitionService;
 	private DnsResolverGroupService dnsResolverGroupService;
+	private PartitionControlServerService partitionControlService;
 
 	private AccountService accountService;
 	private AccountZoneService accountZoneService;
@@ -174,7 +180,8 @@ public class SASImpl implements SAS {
 
 		DnsResolverGroup storedGroup = getDnsResolverGroupService().findById(drgId);
 		validateExists(DnsResolverGroupResource.FIELD.ID, storedGroup);
-		validateEquals(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup.getGroupName(), dnsResolverGroup.getGroupName());
+		validateEquals(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup.getGroupName(),
+				dnsResolverGroup.getGroupName());
 
 		getDnsResolverGroupService().createOrUpdate(updatedGroup);
 		return DnsResolverGroupResource.mapTo(updatedGroup);
@@ -207,7 +214,7 @@ public class SASImpl implements SAS {
 
 		// the ID is only created on commit of the createOrUpdate above
 		storedSegment = getSegmentService().findBySegment(s.getSegmentName());
-		return SegmentResource.mapTo(storedSegment);
+		return SegmentResource.mapFrom(storedSegment);
 	}
 
 	@Override
@@ -217,7 +224,7 @@ public class SASImpl implements SAS {
 
 		List<SegmentResource> result = new ArrayList<>();
 		for (Segment s : segments) {
-			result.add(SegmentResource.mapTo(s));
+			result.add(SegmentResource.mapFrom(s));
 		}
 		return result;
 	}
@@ -225,7 +232,7 @@ public class SASImpl implements SAS {
 	@Override
 	public SegmentResource getSegment(Long sId) {
 		validatePresent(PARAM.SID, sId);
-		return SegmentResource.mapTo(getSegmentService().findById(sId));
+		return SegmentResource.mapFrom(getSegmentService().findById(sId));
 	}
 
 	@Override
@@ -242,7 +249,7 @@ public class SASImpl implements SAS {
 		validateExists(SegmentResource.FIELD.SEGMENT, storedSegment);
 
 		getSegmentService().createOrUpdate(s);
-		return SegmentResource.mapTo(s);
+		return SegmentResource.mapFrom(s);
 	}
 
 	@Override
@@ -254,6 +261,53 @@ public class SASImpl implements SAS {
 
 		getSegmentService().delete(segment);
 		return Response.ok().build();
+	}
+
+	@Override
+	public PartitionControlServerResource createPartitionControlServer(PartitionControlServerResource pcs) {
+		validatePresent(PARAM.PARTITIONCONTROLSERVER, pcs);
+		PartitionControlServer p = PartitionControlServerResource.mapTo(pcs);
+		validateNotPresent(PartitionControlServerResource.FIELD.ID, p.getId());
+		validatePresent(PartitionControlServerResource.FIELD.SEGMENT, p.getSegment());
+		validatePresent(PartitionControlServerResource.FIELD.IPADDRESS, p.getIpAddress());
+		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
+		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
+
+		PartitionControlServer storedServer = getPartitionControlService().findByIpEndpoint(p.getIpAddress(),
+				p.getPort());
+		validateNotExists(PartitionControlServerResource.FIELD.IPADDRESS, storedServer);
+
+		log.info("Creating partition control server " + p.getIpAddress() + ":" + p.getPort());
+		getPartitionControlService().createOrUpdate(p);
+
+		// the ID is only created on commit of the createOrUpdate above
+		storedServer = getPartitionControlService().findById(p.getId());
+		return PartitionControlServerResource.mapFrom(storedServer);
+	}
+
+	@Override
+	public PartitionControlServerResource getPartitionControlServer(Long pcsId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PartitionControlServerResource updatePartitionControlServer(Long pcsId, PartitionControlServerResource pcs) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<PartitionControlServerResource> searchPartitionControlServer(Integer pageNo, Integer pageSize,
+			String ipaddress, Integer port, String segment, Integer modulo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Response deletePartitionControlServer(Long pcsId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -885,6 +939,14 @@ public class SASImpl implements SAS {
 
 	public void setSegmentService(SegmentService segmentService) {
 		this.segmentService = segmentService;
+	}
+
+	public PartitionControlServerService getPartitionControlService() {
+		return partitionControlService;
+	}
+
+	public void setPartitionControlService(PartitionControlServerService partitionControlService) {
+		this.partitionControlService = partitionControlService;
 	}
 
 	public DatabasePartitionService getPartitionService() {

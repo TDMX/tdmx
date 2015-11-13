@@ -81,6 +81,12 @@ public class PartitionControlServerServiceRepositoryImpl implements PartitionCon
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
+	public PartitionControlServer findById(Long id) {
+		return getPartitionControlServerDao().loadById(id);
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
 	public PartitionControlServer findByIpEndpoint(String ipAddress, int port) {
 		return getPartitionControlServerDao().loadByIpEndpoint(ipAddress, port);
 	}
