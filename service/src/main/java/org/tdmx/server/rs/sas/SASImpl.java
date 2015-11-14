@@ -286,28 +286,58 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
+	public List<PartitionControlServerResource> searchPartitionControlServer(Integer pageNo, Integer pageSize,
+			String segment) {
+		validatePresent(PARAM.SEGMENT, segment);
+
+		List<PartitionControlServer> pcss = getPartitionControlService().findBySegment(segment);
+
+		List<PartitionControlServerResource> result = new ArrayList<>();
+		for (PartitionControlServer p : pcss) {
+			result.add(PartitionControlServerResource.mapFrom(p));
+		}
+		return result;
+	}
+
+	@Override
 	public PartitionControlServerResource getPartitionControlServer(Long pcsId) {
-		// TODO Auto-generated method stub
-		return null;
+		validatePresent(PARAM.PCSID, pcsId);
+
+		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		return PartitionControlServerResource.mapFrom(storedServer);
 	}
 
 	@Override
 	public PartitionControlServerResource updatePartitionControlServer(Long pcsId, PartitionControlServerResource pcs) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		validatePresent(PARAM.PCSID, pcsId);
+		validatePresent(PARAM.PARTITIONCONTROLSERVER, pcs);
+		validateEquals(PARAM.PCSID, pcsId, pcs.getId());
 
-	@Override
-	public List<PartitionControlServerResource> searchPartitionControlServer(Integer pageNo, Integer pageSize,
-			String ipaddress, Integer port, String segment, Integer modulo) {
-		// TODO Auto-generated method stub
-		return null;
+		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		validateExists(PartitionControlServerResource.FIELD.ID, storedServer);
+
+		PartitionControlServer p = PartitionControlServerResource.mapTo(pcs);
+		validateNotPresent(PartitionControlServerResource.FIELD.ID, p.getId());
+		validatePresent(PartitionControlServerResource.FIELD.SEGMENT, p.getSegment());
+		validatePresent(PartitionControlServerResource.FIELD.IPADDRESS, p.getIpAddress());
+		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
+		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
+
+		log.info("Updating partition control server " + p.getIpAddress() + ":" + p.getPort());
+		getPartitionControlService().createOrUpdate(p);
+
+		return PartitionControlServerResource.mapFrom(p);
 	}
 
 	@Override
 	public Response deletePartitionControlServer(Long pcsId) {
-		// TODO Auto-generated method stub
-		return null;
+		validatePresent(PARAM.PCSID, pcsId);
+
+		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		validateExists(PartitionControlServerResource.FIELD.ID, storedServer);
+
+		getPartitionControlService().delete(storedServer);
+		return Response.ok().build();
 	}
 
 	@Override
