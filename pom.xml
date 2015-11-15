@@ -203,7 +203,8 @@
 		<java.source.version>1.8</java.source.version>
 		<jetty.server.version>9.0.5.v20130815</jetty.server.version>
 		<jetty.javax.serverlet.version>3.0.0.v201112011016</jetty.javax.serverlet.version>
-		<cxf.version>2.7.7</cxf.version>
+		<cxf.version>3.1.4</cxf.version>
+		<mail-api.version>1.5.4</mail-api.version>
 		<hibernate.version>3.6.10.Final</hibernate.version>
 		<protobuf-java-version>2.6.1</protobuf-java-version>
 		<protobuf-pro-version>3.3.3</protobuf-pro-version>

@@ -22,9 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ws.rs.ValidationException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,6 @@ import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
-import org.tdmx.server.rs.exception.ApplicationValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
 import org.tdmx.server.rs.sas.resource.AccountResource;
@@ -887,10 +885,9 @@ public class SASImpl implements SAS {
 
 	}
 
-	private ValidationException createVE(FieldValidationErrorType type, String fieldName) {
-		List<ApplicationValidationError> errors = new ArrayList<>();
-		errors.add(new FieldValidationError(type, fieldName));
-		ValidationException ve = new javax.ws.rs.ValidationException(Status.BAD_REQUEST, errors);
+	private BadRequestException createVE(FieldValidationErrorType type, String fieldName) {
+		final FieldValidationError fve = new FieldValidationError(type, fieldName);
+		BadRequestException ve = new BadRequestException(fve.getMessage());
 		return ve;
 	}
 

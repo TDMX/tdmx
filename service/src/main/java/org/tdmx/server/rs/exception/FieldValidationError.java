@@ -18,7 +18,7 @@
  */
 package org.tdmx.server.rs.exception;
 
-public class FieldValidationError implements ApplicationValidationError {
+public class FieldValidationError {
 
 	public enum FieldValidationErrorType {
 		PRESENT,
@@ -38,14 +38,8 @@ public class FieldValidationError implements ApplicationValidationError {
 		this.fieldName = fieldName;
 	}
 
-	@Override
-	public Object getInvalidValue() {
-		return null; // never tell - security!
-	}
-
-	@Override
 	public String getMessage() {
-		return type + "=" + fieldName;
+		return type + " " + fieldName;
 	}
 
 }

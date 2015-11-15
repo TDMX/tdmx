@@ -28,8 +28,8 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "accountzone")
-@XmlType(name = "AccountZone")
+@XmlRootElement(name = "accountzonecredential")
+@XmlType(name = "AccountZoneCredential")
 public class AccountZoneAdministrationCredentialResource {
 
 	public enum FIELD {

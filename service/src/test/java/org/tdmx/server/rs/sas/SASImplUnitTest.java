@@ -29,7 +29,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
-import javax.ws.rs.ValidationException;
+import javax.ws.rs.BadRequestException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -260,8 +260,8 @@ public class SASImplUnitTest {
 		try {
 			sas.createAccount(ar);
 			fail();
-		} catch (ValidationException e) {
-			log.info("VE :" + e.getViolations().get(0).getMessage());
+		} catch (BadRequestException e) {
+			log.info("VE :" + e.getMessage());
 		}
 	}
 
@@ -349,7 +349,7 @@ public class SASImplUnitTest {
 		try {
 			sas.createAccountZoneAdministrationCredential(accountResource.getId(), accountZoneResource.getId(), zacRes);
 			fail();
-		} catch (ValidationException ve) {
+		} catch (BadRequestException ve) {
 
 		}
 	}
