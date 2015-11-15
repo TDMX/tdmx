@@ -384,6 +384,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
 
 			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
+			watchdog.setThreadName("SSM-PCS RPCClient Watchdog");
 			rpcEventNotifier.addEventListener(watchdog);
 			watchdog.start();
 

@@ -210,6 +210,7 @@ public class LocalControlServiceImpl implements ControlService, BroadcastEventNo
 			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
 
 			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
+			watchdog.setThreadName("SCS-PCS RpcClient Watchdog");
 			rpcEventNotifier.addEventListener(watchdog);
 			watchdog.start();
 

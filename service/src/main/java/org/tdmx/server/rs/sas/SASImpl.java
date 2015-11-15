@@ -334,7 +334,7 @@ public class SASImpl implements SAS {
 		validateExists(PartitionControlServerResource.FIELD.ID, storedServer);
 
 		PartitionControlServer p = PartitionControlServerResource.mapTo(pcs);
-		validateNotPresent(PartitionControlServerResource.FIELD.ID, p.getId());
+		validatePresent(PartitionControlServerResource.FIELD.ID, p.getId());
 		validatePresent(PartitionControlServerResource.FIELD.SEGMENT, p.getSegment());
 		validatePresent(PartitionControlServerResource.FIELD.IPADDRESS, p.getIpAddress());
 		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
@@ -429,7 +429,7 @@ public class SASImpl implements SAS {
 		validateEquals(PARAM.PID, pId, partition.getId());
 
 		DatabasePartition p = DatabasePartitionResource.mapTo(partition);
-		validateNotPresent(DatabasePartitionResource.FIELD.ID, p.getId());
+		validatePresent(DatabasePartitionResource.FIELD.ID, p.getId());
 		validatePresent(DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
 		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());

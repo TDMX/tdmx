@@ -83,6 +83,11 @@ public class Command {
 	}
 
 	public void addParameter(CommandParameter param) {
+		CommandParameter existingParameter = getParameter(param.getDescriptor().getName());
+		if (existingParameter != null) {
+			log.info("Parameter " + existingParameter.getDescriptor().getName() + " is overwritten.");
+			parameters.remove(existingParameter);
+		}
 		parameters.add(param);
 	}
 
