@@ -24,25 +24,27 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
-@Cli(name = "pcs:search", description = "search for partition control servers")
+@Cli(name = "pcs:search", description = "search for partition control servers.")
 public class SearchPartitionControlServer extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
-	private String dbType;
 	@Parameter(name = "segment", description = "the segment name.")
 	private String segment;
+	@Parameter(name = "modulo", description = "the server's load distribution modulo.")
+	private Integer modulo;
+	@Parameter(name = "ipaddress", description = "the TCP/IP address of the PCS-API.")
+	private String ipaddress;
+	@Parameter(name = "port", description = "the TCP/IP port of the PCS-API.")
+	private Integer port;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -56,16 +58,16 @@ public class SearchPartitionControlServer extends AbstractCliCommand {
 	public void run(PrintStream out) {
 		int results = 0;
 		int page = 0;
-		List<DatabasePartitionResource> partitions = null;
+		List<PartitionControlServerResource> pcss = null;
 		do {
-			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, null, dbType, segment);
+			pcss = getSas().searchPartitionControlServer(page++, PAGE_SIZE, segment, modulo, ipaddress, port);
 
-			for (DatabasePartitionResource partition : partitions) {
-				out.println(partition.getCliRepresentation());
+			for (PartitionControlServerResource pcs : pcss) {
+				out.println(pcs.getCliRepresentation());
 				results++;
 			}
-		} while (partitions.size() == PAGE_SIZE);
-		out.println("Found " + results + " partitions.");
+		} while (pcss.size() == PAGE_SIZE);
+		out.println("Found " + results + " partition control servers.");
 	}
 
 	// -------------------------------------------------------------------------

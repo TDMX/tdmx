@@ -107,7 +107,9 @@ public interface SAS {
 	@GET
 	@Path("/pcs")
 	List<PartitionControlServerResource> searchPartitionControlServer(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("segment") String segment);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("segment") String segment,
+			@QueryParam("modulo") Integer modulo, @QueryParam("ipaddress") String ipaddress,
+			@QueryParam("port") Integer port);
 
 	@GET
 	@Path("/pcs/{pcsid}")

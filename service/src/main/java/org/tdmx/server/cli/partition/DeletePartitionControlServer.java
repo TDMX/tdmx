@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
 @Cli(name = "pcs:delete", description = "deletes a partition control server")
 public class DeletePartitionControlServer extends AbstractCliCommand {
@@ -35,14 +35,14 @@ public class DeletePartitionControlServer extends AbstractCliCommand {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
-	private String partitionId;
+	@Parameter(name = "segment", required = true, description = "the segment name.")
+	private String segment;
+	@Parameter(name = "modulo", required = true, description = "the server's load distribution modulo.")
+	private int modulo;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -54,15 +54,16 @@ public class DeletePartitionControlServer extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
-		if (dbPartitions.isEmpty()) {
-			out.println("No DatabasePartition found with partitionId " + partitionId);
+		List<PartitionControlServerResource> pcss = getSas().searchPartitionControlServer(0, 1, segment, modulo, null,
+				null);
+		if (pcss.isEmpty()) {
+			out.println("No PartitionControlServer found with IP endpoint " + segment + " modulo " + modulo);
 			return;
 		}
 
-		DatabasePartitionResource dbPartition = dbPartitions.get(0);
-		Response response = getSas().deleteDatabasePartition(dbPartition.getId());
-		out.print(dbPartition.getCliRepresentation());
+		PartitionControlServerResource pcs = pcss.get(0);
+		Response response = getSas().deletePartitionControlServer(pcs.getId());
+		out.print(pcs.getCliRepresentation());
 		if (response.getStatus() == SUCCESS) {
 			out.println(" Deleted.");
 		} else {

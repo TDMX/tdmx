@@ -60,9 +60,9 @@ public class PartitionControlServerResource {
 		buf.append("PartitionControlServer");
 		buf.append("; ").append(id);
 		buf.append("; ").append(segment);
+		buf.append("; ").append(modulo);
 		buf.append("; ").append(ipaddress);
 		buf.append("; ").append(port);
-		buf.append("; ").append(modulo);
 		return buf.toString();
 	}
 

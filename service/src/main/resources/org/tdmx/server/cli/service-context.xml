@@ -17,15 +17,21 @@
 	<bean id="tdmx.server.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
 		<constructor-arg>
 			<array>
+				<value>org.tdmx.server.cli.dns.CreateDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.ModifyDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.DeleteDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.dns.SearchDnsResolverGroup</value>
+
 				<value>org.tdmx.server.cli.segment.CreateSegment</value>
 				<value>org.tdmx.server.cli.segment.ModifySegment</value>
 				<value>org.tdmx.server.cli.segment.DeleteSegment</value>
 				<value>org.tdmx.server.cli.segment.SearchSegment</value>
 
-				<value>org.tdmx.server.cli.dns.CreateDnsResolverGroup</value>
-				<value>org.tdmx.server.cli.dns.ModifyDnsResolverGroup</value>
-				<value>org.tdmx.server.cli.dns.DeleteDnsResolverGroup</value>
-				<value>org.tdmx.server.cli.dns.SearchDnsResolverGroup</value>
+				<value>org.tdmx.server.cli.partition.CreatePartitionControlServer</value>
+				<value>org.tdmx.server.cli.partition.ModifyPartitionControlServer</value>
+				<value>org.tdmx.server.cli.partition.DeletePartitionControlServer</value>
+				<value>org.tdmx.server.cli.partition.SearchPartitionControlServer</value>
+				<value>org.tdmx.server.cli.partition.CheckPartitionControlServer</value>
 
 				<value>org.tdmx.server.cli.partition.CreatePartition</value>
 				<value>org.tdmx.server.cli.partition.ModifyPartition</value>
@@ -61,6 +67,12 @@
 				<entry key="segment:modify" value="tdmx.server.cli.cmd.ModifySegment"/>
 				<entry key="segment:delete" value="tdmx.server.cli.cmd.DeleteSegment"/>
 				<entry key="segment:search" value="tdmx.server.cli.cmd.SearchSegment"/>
+				
+				<entry key="pcs:create" value="tdmx.server.cli.cmd.CreatePartitionControlServer"/>
+				<entry key="pcs:modify" value="tdmx.server.cli.cmd.ModifyPartitionControlServer"/>
+				<entry key="pcs:delete" value="tdmx.server.cli.cmd.DeletePartitionControlServer"/>
+				<entry key="pcs:search" value="tdmx.server.cli.cmd.SearchPartitionControlServer"/>
+				<entry key="pcs:check" value="tdmx.server.cli.cmd.CheckPartitionControlServer"/>
 				
 				<entry key="dnsresolvergroup:create" value="tdmx.server.cli.cmd.CreateDnsResolverGroup"/>
 				<entry key="dnsresolvergroup:modify" value="tdmx.server.cli.cmd.ModifyDnsResolverGroup"/>
@@ -113,6 +125,17 @@
 	<bean id="tdmx.server.cli.cmd.DeleteSegment" class="org.tdmx.server.cli.segment.DeleteSegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.SearchSegment" class="org.tdmx.server.cli.segment.SearchSegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+
+	<bean id="tdmx.server.cli.cmd.CreatePartitionControlServer" class="org.tdmx.server.cli.partition.CreatePartitionControlServer" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ModifyPartitionControlServer" class="org.tdmx.server.cli.partition.ModifyPartitionControlServer" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.DeletePartitionControlServer" class="org.tdmx.server.cli.partition.DeletePartitionControlServer" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.SearchPartitionControlServer" class="org.tdmx.server.cli.partition.SearchPartitionControlServer" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.CheckPartitionControlServer" class="org.tdmx.server.cli.partition.CheckPartitionControlServer" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreateDnsResolverGroup" class="org.tdmx.server.cli.dns.CreateDnsResolverGroup" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

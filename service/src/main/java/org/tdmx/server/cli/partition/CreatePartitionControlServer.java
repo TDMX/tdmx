@@ -23,37 +23,28 @@ import java.io.PrintStream;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
-import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
+import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
-@Cli(name = "pcs:create", description = "creates a partition control server", note = "")
+@Cli(name = "pcs:create", description = "creates a partition control server", note = "PCS servers are configured before the segment servers are started.")
 public class CreatePartitionControlServer extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME
-
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
-	private String partitionId;
-	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
-	private String dbType;
 	@Parameter(name = "segment", required = true, description = "the segment name.")
 	private String segment;
+	@Parameter(name = "modulo", required = true, description = "the server's load distribution modulo.")
+	private int modulo;
 
-	@Parameter(name = "sizeFactor", required = true, description = "the partition's size factor - used to load-balance. The value relates this partition's capacity to other partition's capacity for databases of the same type and segment.")
-	private int sizeFactor;
-
-	@Parameter(name = "url", description = "the RDBMS connection URL.")
-	private String url;
-	@Parameter(name = "username", description = "the RDBMS connection username.")
-	private String username;
-	@Parameter(name = "password", description = "the RDBMS connection password.")
-	private String password;
+	@Parameter(name = "ipaddress", required = true, description = "the TCP/IP address of the PCS-API.")
+	private String ipaddress;
+	@Parameter(name = "port", required = true, description = "the TCP/IP port of the PCS-API.")
+	private int port;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -65,18 +56,14 @@ public class CreatePartitionControlServer extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		DatabasePartitionResource dbPartition = new DatabasePartitionResource();
-		dbPartition.setPartitionId(partitionId);
-		dbPartition.setDbType(dbType);
-		dbPartition.setSegment(segment);
-		dbPartition.setSizeFactor(sizeFactor);
+		PartitionControlServerResource pcs = new PartitionControlServerResource();
+		pcs.setSegment(segment);
+		pcs.setIpaddress(ipaddress);
+		pcs.setPort(port);
+		pcs.setModulo(modulo);
 
-		dbPartition.setUrl(url);
-		dbPartition.setUsername(username);
-		dbPartition.setPassword(password);
-
-		DatabasePartitionResource newDbPartition = getSas().createDatabasePartition(dbPartition);
-		out.println(newDbPartition.getCliRepresentation());
+		PartitionControlServerResource newPCS = getSas().createPartitionControlServer(pcs);
+		out.println(newPCS.getCliRepresentation());
 	}
 
 	// -------------------------------------------------------------------------

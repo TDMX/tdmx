@@ -273,6 +273,9 @@ public class SASImpl implements SAS {
 		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
 		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
 
+		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
+
 		PartitionControlServer storedServer = getPartitionControlService().findByIpEndpoint(p.getIpAddress(),
 				p.getPort());
 		validateNotExists(PartitionControlServerResource.FIELD.IPADDRESS, storedServer);
@@ -287,14 +290,28 @@ public class SASImpl implements SAS {
 
 	@Override
 	public List<PartitionControlServerResource> searchPartitionControlServer(Integer pageNo, Integer pageSize,
-			String segment) {
-		validatePresent(PARAM.SEGMENT, segment);
-
-		List<PartitionControlServer> pcss = getPartitionControlService().findBySegment(segment);
+			String segment, Integer modulo, String ipaddress, Integer port) {
+		List<PartitionControlServer> pcss = getPartitionControlService().findAll();
 
 		List<PartitionControlServerResource> result = new ArrayList<>();
 		for (PartitionControlServer p : pcss) {
-			result.add(PartitionControlServerResource.mapFrom(p));
+			boolean match = true;
+			if (StringUtils.hasText(segment) && !segment.equals(p.getSegment())) {
+				match = false;
+			}
+			if (modulo != null && !modulo.equals(p.getServerModulo())) {
+				match = false;
+			}
+			if (StringUtils.hasText(ipaddress) && !ipaddress.equals(p.getIpAddress())) {
+				match = false;
+			}
+			if (port != null && !port.equals(p.getPort())) {
+				match = false;
+			}
+
+			if (match) {
+				result.add(PartitionControlServerResource.mapFrom(p));
+			}
 		}
 		return result;
 	}
@@ -323,6 +340,13 @@ public class SASImpl implements SAS {
 		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
 		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
 
+		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
+		if (!storedServer.getIpAddress().equals(p.getIpAddress()) || storedServer.getPort() != p.getPort()) {
+			// change of IP endpoint still needs to be unique
+			PartitionControlServer other = getPartitionControlService().findByIpEndpoint(p.getIpAddress(), p.getPort());
+			validateNotExists(PartitionControlServerResource.FIELD.IPADDRESS, other);
+		}
 		log.info("Updating partition control server " + p.getIpAddress() + ":" + p.getPort());
 		getPartitionControlService().createOrUpdate(p);
 
@@ -348,6 +372,9 @@ public class SASImpl implements SAS {
 		validatePresent(DatabasePartitionResource.FIELD.PARTITION_ID, p.getPartitionId());
 		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
+
+		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 
 		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
 		validateNotExists(DatabasePartitionResource.FIELD.PARTITION_ID, storedPartition);

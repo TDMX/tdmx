@@ -19,6 +19,7 @@
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository" />
 		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository" />
 		<property name="partitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
+		<property name="partitionControlService" ref="tdmx.lib.control.PartitionControlServerRepository" />
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository" />
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository" />
 		<property name="accountZoneCredentialService" ref="tdmx.lib.control.AccountZoneAdministrationCredentialRepository" />

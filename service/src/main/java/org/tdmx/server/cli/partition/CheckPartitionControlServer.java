@@ -26,8 +26,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
-@Cli(name = "pcs:modify", description = "modifies a partition control server.")
-public class ModifyPartitionControlServer extends AbstractCliCommand {
+@Cli(name = "pcs:check", description = "checks the partition control servers of a segment.")
+public class CheckPartitionControlServer extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -37,15 +37,8 @@ public class ModifyPartitionControlServer extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "segment", required = true, description = "the segment name.")
+	@Parameter(name = "segment", description = "the segment name.")
 	private String segment;
-	@Parameter(name = "modulo", required = true, description = "the server's load distribution modulo.")
-	private int modulo;
-
-	@Parameter(name = "ipaddress", description = "the TCP/IP address of the PCS-API.")
-	private String ipaddress;
-	@Parameter(name = "port", description = "the TCP/IP port of the PCS-API.")
-	private Integer port;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,23 +50,20 @@ public class ModifyPartitionControlServer extends AbstractCliCommand {
 
 	@Override
 	public void run(PrintStream out) {
-		List<PartitionControlServerResource> pcss = getSas().searchPartitionControlServer(0, 1, segment, modulo, null,
-				null);
-		if (pcss.isEmpty()) {
-			out.println("No PartitionControlServer found with IP endpoint " + ipaddress + ":" + port);
-			return;
-		}
+		int results = 0;
+		int page = 0;
+		List<PartitionControlServerResource> pcss = null;
+		do {
+			pcss = getSas().searchPartitionControlServer(page++, PAGE_SIZE, segment, null, null, null);
 
-		PartitionControlServerResource pcs = pcss.get(0);
-		if (port != null) {
-			pcs.setPort(port);
-		}
-		if (ipaddress != null) {
-			pcs.setIpaddress(ipaddress);
-		}
+			for (PartitionControlServerResource pcs : pcss) {
+				out.println(pcs.getCliRepresentation());
+				results++;
+			}
+		} while (pcss.size() == PAGE_SIZE);
+		out.println("Found " + results + " partition control servers.");
 
-		PartitionControlServerResource newPCS = getSas().updatePartitionControlServer(pcs.getId(), pcs);
-		out.println(newPCS.getCliRepresentation());
+		// TODO loop from modulo 0 to size and expect to find the PCS and do a connection check.
 	}
 
 	// -------------------------------------------------------------------------
