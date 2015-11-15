@@ -224,7 +224,13 @@ public class SASImpl implements SAS {
 
 		List<SegmentResource> result = new ArrayList<>();
 		for (Segment s : segments) {
-			result.add(SegmentResource.mapFrom(s));
+			boolean match = true;
+			if (StringUtils.hasText(segment) && !segment.equals(s.getSegmentName())) {
+				match = false;
+			}
+			if (match) {
+				result.add(SegmentResource.mapFrom(s));
+			}
 		}
 		return result;
 	}
