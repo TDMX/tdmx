@@ -61,6 +61,8 @@ public class DnsUtils {
 	public static final Pattern TDMX_DNS_TXT_RECORD_PATTERN = Pattern
 			.compile("^tdmx version=(\\d) zac=(\\w+) scs=(https://.*)$");
 
+	private static final String TDMX_DNS_TXT_RECORD_STRING = "tdmx version=%d zac=%s scs=%s";
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -141,6 +143,17 @@ public class DnsUtils {
 	public static boolean matchesTdmxZoneRecord(String textRecord) {
 		Matcher m = TDMX_DNS_TXT_RECORD_PATTERN.matcher(textRecord);
 		return m.matches();
+	}
+
+	/**
+	 * Formats the DNX TXT record contents.
+	 * 
+	 * @param zoneRecord
+	 * @return the DNX TXT record contents for the zoneRecord.
+	 */
+	public static String formatDnsTxtRecord(TdmxZoneRecord zoneRecord) {
+		return String.format(TDMX_DNS_TXT_RECORD_STRING, zoneRecord.getVersion(), zoneRecord.getZacFingerprint(),
+				zoneRecord.getScsUrl());
 	}
 
 	/**

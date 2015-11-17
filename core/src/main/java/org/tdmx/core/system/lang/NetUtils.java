@@ -50,18 +50,40 @@ public class NetUtils {
 	 * Return the url as a URL.
 	 * 
 	 * @param url
-	 * @return null if the url is not a URL.
+	 * @return the URL representation.
+	 * @throws IllegalArgumentException
+	 *             if the URL is malformed.
 	 */
 	public static URL getURL(String url) {
+		if (!StringUtils.hasText(url)) {
+			return null;
+		}
 		URL u;
 		try {
 			u = new URL(url);
 		} catch (MalformedURLException e) {
-			return null;
+			throw new IllegalArgumentException(e);
 		}
 		return u;
 	}
 
+	/**
+	 * Whether the url is a valid URL.
+	 * 
+	 * @param url
+	 * @return true if the url is a valid URL.
+	 */
+	public static boolean isValidUrl(String url) {
+		if (!StringUtils.hasText(url)) {
+			return false;
+		}
+		try {
+			new URL(url);
+		} catch (MalformedURLException e) {
+			return false;
+		}
+		return true;
+	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

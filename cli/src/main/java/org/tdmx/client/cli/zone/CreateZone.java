@@ -25,8 +25,9 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.system.lang.NetUtils;
 
-@Cli(name = "zone:create", description = "creates a zone descriptor file, zone.tdmx in the working directory")
+@Cli(name = "zone:create", description = "creates a zone descriptor file, zone.tdmx in the working directory", note = "The zone and TDMX version are immutable.")
 public class CreateZone implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -43,6 +44,9 @@ public class CreateZone implements CommandExecutable {
 	@Parameter(name = "scsUrl", description = "the SessionControlService API of the zone's service provider.")
 	private String scsUrl;
 
+	@Parameter(name = "version", defaultValue = "1", description = "the TDMX version of the zone.")
+	private int version;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -55,12 +59,15 @@ public class CreateZone implements CommandExecutable {
 	public void run(PrintStream out) {
 		ClientCliUtils.checkZoneDescriptorNotExists();
 
-		ZoneDescriptor zd = new ZoneDescriptor(zone);
-		zd.setScsUrl(scsUrl);
+		ZoneDescriptor zd = new ZoneDescriptor(zone, version);
+		if (NetUtils.isValidUrl(scsUrl)) {
+			zd.setScsUrl(NetUtils.getURL(scsUrl));
+		}
 
 		ClientCliUtils.storeZoneDescriptor(zd);
 
 		out.println("zone=" + zone);
+		out.println("version=" + version);
 		out.println("scsUrl=" + scsUrl);
 
 	}

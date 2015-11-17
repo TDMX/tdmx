@@ -22,13 +22,15 @@ import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.NetUtils;
+import org.tdmx.core.system.dns.DnsUtils;
+import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "zone:modify", description = "modifies the zone descriptor file.")
-public class ModifyZone implements CommandExecutable {
+@Cli(name = "dns:describe", description = "Describes the TXT record for the zone.", note = "Helps to copy-paste the DNS TXT record contents into a DNS server configuration tool.")
+public class DescribeDns implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,8 +40,8 @@ public class ModifyZone implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "scsUrl", description = "the SessionControlService API of the zone's service provider.")
-	private String scsUrl;
+	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	private String zacPassword;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -52,14 +54,20 @@ public class ModifyZone implements CommandExecutable {
 	@Override
 	public void run(PrintStream out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
-		if (NetUtils.isValidUrl(scsUrl)) {
-			zd.setScsUrl(NetUtils.getURL(scsUrl));
+
+		if (zd.getScsUrl() == null) {
+			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
+			return;
 		}
 
-		ClientCliUtils.storeZoneDescriptor(zd);
+		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
+		String zacFingerprint = zac.getPublicCert().getFingerprint();
 
-		out.println("zone=" + zd.getZoneApex());
-		out.println("scsUrl=" + scsUrl);
+		out.println(
+				"The following line contains the expected DNS TXT record contents for the zone " + zd.getZoneApex());
+
+		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
+		out.println(DnsUtils.formatDnsTxtRecord(zr));
 	}
 
 	// -------------------------------------------------------------------------

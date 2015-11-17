@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -34,6 +35,7 @@ import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.NetUtils;
 import org.tdmx.core.system.lang.StringUtils;
 
 /**
@@ -109,17 +111,32 @@ public class ClientCliUtils {
 			throw new IllegalStateException(
 					"Zone descriptor file missing property " + ZoneDescriptor.ZONE_APEX_PROPERTY);
 		}
-		ZoneDescriptor zd = new ZoneDescriptor(zoneApex);
+		String version = p.getProperty(ZoneDescriptor.TDMX_VERSION_PROPERTY);
+		if (!StringUtils.hasText(version)) {
+			throw new IllegalStateException(
+					"Zone descriptor file missing property " + ZoneDescriptor.TDMX_VERSION_PROPERTY);
+		}
 
-		zd.setScsUrl(p.getProperty(ZoneDescriptor.SCS_URL_PROPERTY));
+		int v = 0;
+		try {
+			v = Integer.parseInt(version);
+		} catch (NumberFormatException nfe) {
+			throw new IllegalStateException("Invalid TDMX version property " + ZoneDescriptor.ZONE_APEX_PROPERTY, nfe);
+		}
+
+		ZoneDescriptor zd = new ZoneDescriptor(zoneApex, v);
+
+		String scsUrl = p.getProperty(ZoneDescriptor.SCS_URL_PROPERTY);
+		zd.setScsUrl(NetUtils.getURL(scsUrl));
 		return zd;
 	}
 
 	public static void storeZoneDescriptor(ZoneDescriptor zd) {
 		Properties p = new Properties();
 		p.setProperty(ZoneDescriptor.ZONE_APEX_PROPERTY, zd.getZoneApex());
+		p.setProperty(ZoneDescriptor.TDMX_VERSION_PROPERTY, String.format("%d", zd.getVersion()));
 		if (zd.getScsUrl() != null) {
-			p.setProperty(ZoneDescriptor.SCS_URL_PROPERTY, zd.getScsUrl());
+			p.setProperty(ZoneDescriptor.SCS_URL_PROPERTY, zd.getScsUrl().toString());
 		}
 
 		try (FileWriter fw = new FileWriter(ZONE_DESCRIPTOR)) {
@@ -132,26 +149,34 @@ public class ClientCliUtils {
 
 	public static class ZoneDescriptor {
 		public static String ZONE_APEX_PROPERTY = "zoneapex";
+		public static String TDMX_VERSION_PROPERTY = "version";
 		public static String SCS_URL_PROPERTY = "scsUrl";
 
 		private final String zoneApex;
-		private String scsUrl;
+		private final int version;
+		private URL scsUrl;
 
-		public ZoneDescriptor(String zoneApex) {
+		public ZoneDescriptor(String zoneApex, int version) {
 			this.zoneApex = zoneApex;
+			this.version = version;
 		}
 
-		public String getScsUrl() {
+		public URL getScsUrl() {
 			return scsUrl;
 		}
 
-		public void setScsUrl(String scsUrl) {
+		public void setScsUrl(URL scsUrl) {
 			this.scsUrl = scsUrl;
 		}
 
 		public String getZoneApex() {
 			return zoneApex;
 		}
+
+		public int getVersion() {
+			return version;
+		}
+
 	}
 
 	// -------------------------------------------------------------------------
