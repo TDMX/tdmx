@@ -27,6 +27,7 @@ import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DeleteZone;
 import org.tdmx.client.cli.zone.DescribeDns;
 import org.tdmx.client.cli.zone.ModifyZone;
+import org.tdmx.client.cli.zone.Route53Dns;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -55,7 +56,7 @@ public class ClientCLI {
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
 			CreateZone.class, ModifyZone.class, DeleteZone.class,
-			DescribeDns.class,
+			DescribeDns.class, Route53Dns.class,
 			CreateZoneAdministratorCredentials.class, 
 			CreateDomainAdministratorCredentials.class,
 			CreateUserCredentials.class, };
