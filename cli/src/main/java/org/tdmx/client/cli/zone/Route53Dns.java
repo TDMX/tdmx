@@ -19,6 +19,8 @@
 package org.tdmx.client.cli.zone;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
@@ -37,9 +39,20 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.route53.AmazonRoute53;
 import com.amazonaws.services.route53.AmazonRoute53Client;
+import com.amazonaws.services.route53.model.Change;
+import com.amazonaws.services.route53.model.ChangeAction;
+import com.amazonaws.services.route53.model.ChangeBatch;
+import com.amazonaws.services.route53.model.ChangeInfo;
+import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
+import com.amazonaws.services.route53.model.ChangeResourceRecordSetsResult;
+import com.amazonaws.services.route53.model.GetChangeRequest;
+import com.amazonaws.services.route53.model.GetChangeResult;
 import com.amazonaws.services.route53.model.HostedZone;
 import com.amazonaws.services.route53.model.ListHostedZonesByNameRequest;
 import com.amazonaws.services.route53.model.ListHostedZonesByNameResult;
+import com.amazonaws.services.route53.model.RRType;
+import com.amazonaws.services.route53.model.ResourceRecord;
+import com.amazonaws.services.route53.model.ResourceRecordSet;
 
 @Cli(name = "dns:route53", description = "Describes the TXT record for the zone.", note = "Helps to copy-paste the DNS TXT record contents into a DNS server configuration tool.")
 public class Route53Dns implements CommandExecutable {
@@ -58,8 +71,11 @@ public class Route53Dns implements CommandExecutable {
 	@Parameter(name = "awsRegion", required = true, description = "the Amazon AWS region name.")
 	private String awsRegion;
 
-	@Parameter(name = "awsHostedZoneName", defaultValueText = "<the TDMX zone name>", description = "the Amazon AWS region name.")
+	@Parameter(name = "awsHostedZoneName", defaultValueText = "<the TDMX zone name>", description = "the Amazon AWS HostedZone name - equal or super domain of the zone name.")
 	private String awsHostedZoneName;
+
+	@Parameter(name = "ttl", defaultValue = "86400", description = "the DNS TXT record's TTL in seconds.")
+	private int ttl;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -85,7 +101,11 @@ public class Route53Dns implements CommandExecutable {
 		}
 
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
-
+		if (StringUtils.hasText(awsHostedZoneName) && !awsHostedZoneName.equals(zd.getZoneApex())
+				&& !DnsUtils.isSubdomain(zd.getZoneApex(), awsHostedZoneName)) {
+			out.println("The zone must be equal to the awsHostedZoneName or a subdomain of awsHostedZoneName.");
+			return;
+		}
 		if (zd.getScsUrl() == null) {
 			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
 			return;
@@ -95,7 +115,8 @@ public class Route53Dns implements CommandExecutable {
 		String zacFingerprint = zac.getPublicCert().getFingerprint();
 
 		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
-		out.println(DnsUtils.formatDnsTxtRecord(zr));
+		String txtRecordValue = DnsUtils.formatDnsTxtRecord(zr);
+		out.println(txtRecordValue);
 
 		AWSCredentials credentials = null;
 		try {
@@ -124,7 +145,19 @@ public class Route53Dns implements CommandExecutable {
 		}
 		HostedZone hz = res.getHostedZones().get(0);
 		out.println(hz);
+		String hzId = hz.getId().substring(hz.getId().lastIndexOf("/"));
 
+		ChangeResourceRecordSetsRequest rsreq = createRRSet(hzId, awsHostedZoneName, zd.getZoneApex(), txtRecordValue,
+				ttl);
+		ChangeResourceRecordSetsResult rsres = s3.changeResourceRecordSets(rsreq);
+		ChangeInfo ci = rsres.getChangeInfo();
+
+		out.println("1st status :" + ci);
+
+		GetChangeRequest gcr = new GetChangeRequest(ci.getId());
+		GetChangeResult gcrres = s3.getChange(gcr);
+
+		out.println("2nd status :" + gcrres.getChangeInfo());
 	}
 
 	// -------------------------------------------------------------------------
@@ -134,6 +167,38 @@ public class Route53Dns implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private ChangeResourceRecordSetsRequest createRRSet(String hzId, String hostedZoneName, String zoneApex,
+			String txtRecordValue, int ttl) {
+		// http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-values-basic.html
+		ResourceRecordSet rrset = new ResourceRecordSet();
+		rrset.setType(RRType.TXT);
+		if (!hostedZoneName.equals(zoneApex)) {
+			rrset.setName(zoneApex + ".");
+		}
+		rrset.setTTL(Long.valueOf(ttl));
+		ResourceRecord rr = new ResourceRecord("\"" + txtRecordValue + "\"");
+
+		List<ResourceRecord> rrs = new ArrayList<>();
+		rrs.add(rr);
+		rrset.setResourceRecords(rrs);
+
+		Change c = new Change();
+		c.setAction(ChangeAction.UPSERT);
+		c.setResourceRecordSet(rrset);
+
+		List<Change> changes = new ArrayList<>();
+		changes.add(c);
+
+		ChangeBatch cb = new ChangeBatch();
+		cb.setChanges(changes);
+
+		ChangeResourceRecordSetsRequest rsreq = new ChangeResourceRecordSetsRequest();
+		rsreq.setHostedZoneId(hzId);
+		rsreq.setChangeBatch(cb);
+
+		return rsreq;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

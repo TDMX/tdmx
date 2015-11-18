@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.user.CreateUserCredentials;
+import org.tdmx.client.cli.zone.CheckDns;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DeleteZone;
@@ -56,7 +57,7 @@ public class ClientCLI {
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
 			CreateZone.class, ModifyZone.class, DeleteZone.class,
-			DescribeDns.class, Route53Dns.class,
+			DescribeDns.class, Route53Dns.class, CheckDns.class,
 			CreateZoneAdministratorCredentials.class, 
 			CreateDomainAdministratorCredentials.class,
 			CreateUserCredentials.class, };
