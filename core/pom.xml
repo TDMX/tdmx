@@ -23,6 +23,10 @@
 						<id>generate-sources</id>
 						<phase>generate-sources</phase>
 						<configuration>
+							<fork>always</fork>
+							<additionalJvmArgs>
+								-Djavax.xml.accessExternalSchema=all
+							</additionalJvmArgs>
 							<sourceRoot>
 								${basedir}/target/generated-sources
 							</sourceRoot>
