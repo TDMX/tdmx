@@ -193,6 +193,7 @@
 
 	<modules>
 		<module>core</module>
+		<module>cli</module>
 		<module>service</module>
 		<module>jetty-war-launcher</module>
 		<module>admin-console</module>
