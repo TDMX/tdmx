@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -31,12 +32,26 @@ import java.util.regex.Pattern;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.tdmx.client.adapter.ClientCredentialProvider;
+import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
+import org.tdmx.client.adapter.ServerTrustManagerFactoryImpl;
+import org.tdmx.client.adapter.SingleTrustedCertificateProvider;
+import org.tdmx.client.adapter.SoapClientFactory;
+import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
+import org.tdmx.core.system.dns.DnsUtils;
+import org.tdmx.core.system.dns.DnsUtils.DnsResultHolder;
+import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.NetUtils;
 import org.tdmx.core.system.lang.StringUtils;
+import org.xbill.DNS.TextParseException;
 
 /**
  * Utilities for all Client CLI commands.
@@ -49,10 +64,6 @@ public class ClientCliUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------
-	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
-	// -------------------------------------------------------------------------
 	public static final String ZONE_DESCRIPTOR = "zone.tdmx";
 
 	public static final String KEYSTORE_TYPE = "jks";
@@ -61,6 +72,24 @@ public class ClientCliUtils {
 	public static final String ALIAS_DAC = "dac";
 	public static final String ALIAS_UC = "uc";
 
+	// -------------------------------------------------------------------------
+	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
+	// -------------------------------------------------------------------------
+
+	//@formatter:off
+	private static final String[] STRONG_CIPHERS = new String[] {
+			"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+			"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+			"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+			"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+			"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
+			"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
+	};
+	//@formatter:on
+	private static final String TLS_VERSION = "TLSv1.2";
+	private static final int CONNECTION_TIMEOUT_MS = 10000;
+	private static final int READ_TIMEOUT_MS = 60000;
+	
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -350,4 +379,120 @@ public class ClientCliUtils {
 		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
 	}
 
+	public static TdmxZoneRecord getSystemDnsInfo( String domain ) {
+		List<String> systemDnsResolver = DnsUtils.getSystemDnsResolverAddresses();
+		try {
+			DnsResultHolder rh= DnsUtils.getTdmxZoneRecord(domain,systemDnsResolver );
+			
+			return DnsUtils.parseTdmxZoneRecord(rh.getRecords().get(0));
+		} catch (TextParseException e) {
+			throw new RuntimeException(e);
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - API-s
+	// -------------------------------------------------------------------------
+
+	public static SCS createSCSClient(PKIXCredential credential, URL scsUrl) {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return credential;
+			}
+
+		};
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
+
+		SystemDefaultTrustedCertificateProvider tcp = new SystemDefaultTrustedCertificateProvider();
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(tcp);
+
+		SoapClientFactory<SCS> factory = new SoapClientFactory<>();
+		factory.setUrl(scsUrl.toString());
+		factory.setConnectionTimeoutMillis(CONNECTION_TIMEOUT_MS);
+		factory.setKeepAlive(true);
+		factory.setClazz(SCS.class);
+		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
+		factory.setDisableCNCheck(false);
+		factory.setKeyManagerFactory(kmf);
+		factory.setTrustManagerFactory(stfm);
+		factory.setTlsProtocolVersion(TLS_VERSION);
+
+		factory.setEnabledCipherSuites(STRONG_CIPHERS);
+
+		SCS client = factory.createClient();
+		return client;
+	}
+	
+	public static ZAS createZASClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert ) {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return uc;
+			}
+
+		};
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
+
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mosServerCert);
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(tcp);
+
+		SoapClientFactory<ZAS> factory = new SoapClientFactory<>();
+		factory.setUrl(mosUrl.toString());
+		factory.setConnectionTimeoutMillis(10000);
+		factory.setKeepAlive(true);
+		factory.setClazz(ZAS.class);
+		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
+		factory.setDisableCNCheck(false);
+		factory.setKeyManagerFactory(kmf);
+		factory.setTrustManagerFactory(stfm);
+		factory.setTlsProtocolVersion(TLS_VERSION);
+
+
+		factory.setEnabledCipherSuites(STRONG_CIPHERS);
+
+		ZAS client = factory.createClient();
+		return client;
+	}
+	
+	public static MOS createMOSClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert ) {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return uc;
+			}
+
+		};
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
+
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mosServerCert);
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(tcp);
+
+		SoapClientFactory<MOS> factory = new SoapClientFactory<>();
+		factory.setUrl(mosUrl.toString());
+		factory.setConnectionTimeoutMillis(10000);
+		factory.setKeepAlive(true);
+		factory.setClazz(MOS.class);
+		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
+		factory.setDisableCNCheck(false);
+		factory.setKeyManagerFactory(kmf);
+		factory.setTrustManagerFactory(stfm);
+		factory.setTlsProtocolVersion(TLS_VERSION);
+
+		factory.setEnabledCipherSuites(STRONG_CIPHERS);
+
+		MOS client = factory.createClient();
+		return client;
+	}
 }

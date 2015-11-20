@@ -20,6 +20,7 @@ package org.tdmx.client.cli;
 
 import java.io.InputStreamReader;
 
+import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.user.CreateUserCredentials;
 import org.tdmx.client.cli.zone.CheckDns;
@@ -58,7 +59,7 @@ public class ClientCLI {
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
 			CreateZone.class, ModifyZone.class, DeleteZone.class,
 			DescribeDns.class, Route53Dns.class, CheckDns.class,
-			CreateZoneAdministratorCredentials.class, 
+			CreateZoneAdministratorCredentials.class, CreateDomain.class,
 			CreateDomainAdministratorCredentials.class,
 			CreateUserCredentials.class, };
 	//@formatter:on

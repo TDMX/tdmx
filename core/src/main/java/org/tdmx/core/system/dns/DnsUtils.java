@@ -312,7 +312,7 @@ public class DnsUtils {
 
 		Name dn = Name.fromString(domainName);
 		int numLabels = dn.labels();
-		// bottom to top lookup of NS records.
+		// bottom to top lookup of TXT records.
 		for (int i = 0; i < numLabels - 1; i++) {
 			StringBuffer b = new StringBuffer();
 			for (int max = i; max < numLabels; max++) {
