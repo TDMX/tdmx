@@ -202,8 +202,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.source.version>1.8</java.source.version>
-		<jetty.server.version>9.0.5.v20130815</jetty.server.version>
-		<jetty.javax.serverlet.version>3.0.0.v201112011016</jetty.javax.serverlet.version>
+		<jetty.server.version>9.3.6.v20151106</jetty.server.version>
 		<cxf.version>3.1.4</cxf.version>
 		<mail-api.version>1.5.4</mail-api.version>
 		<hibernate.version>3.6.10.Final</hibernate.version>
