@@ -598,10 +598,15 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public List<AccountZoneResource> searchAccountZone(Long aId, Integer pageNo, Integer pageSize, String zoneApex) {
+	public List<AccountZoneResource> searchAccountZone(Integer pageNo, Integer pageSize, Long aId, String zoneApex) {
 		validatePresent(PARAM.AID, aId);
+
+		Account a = getAccountService().findById(aId);
+		validatePresent(PARAM.ACCOUNT, a);
+
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
 		sc.setZoneApex(zoneApex);
+		sc.setAccountId(a.getAccountId());
 		List<AccountZone> accountzones = getAccountZoneService().search(sc);
 
 		List<AccountZoneResource> result = new ArrayList<>();

@@ -63,7 +63,8 @@ public class DeleteAccountZone extends AbstractCliCommand {
 		}
 		AccountResource account = accounts.get(0);
 
-		List<AccountZoneResource> accountZones = getSas().searchAccountZone(account.getId(), 0, 1, zone);
+		List<AccountZoneResource> accountZones = getSas().searchAccountZone(0, 1, account.getAccountId(), zone, null,
+				null, null);
 		if (accountZones.isEmpty()) {
 			out.println("Account zone " + zone + " not found.");
 			return;

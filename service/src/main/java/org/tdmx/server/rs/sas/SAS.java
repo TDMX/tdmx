@@ -183,8 +183,8 @@ public interface SAS {
 
 	@GET
 	@Path("/accounts/{aid}/zones")
-	List<AccountZoneResource> searchAccountZone(@PathParam("aid") Long aId, @QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("zone") String zoneApex);
+	List<AccountZoneResource> searchAccountZone(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @PathParam("aid") Long aId, @QueryParam("zone") String zoneApex);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}")
