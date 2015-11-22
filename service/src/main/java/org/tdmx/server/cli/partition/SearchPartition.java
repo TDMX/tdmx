@@ -37,7 +37,9 @@ public class SearchPartition extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
+	@Parameter(name = "partition", description = "the partition identifier.")
+	private String partitionId;
+	@Parameter(name = "dbType", description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
 	private String dbType;
 	@Parameter(name = "segment", description = "the segment name.")
 	private String segment;
@@ -56,7 +58,7 @@ public class SearchPartition extends AbstractCliCommand {
 		int page = 0;
 		List<DatabasePartitionResource> partitions = null;
 		do {
-			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, null, dbType, segment);
+			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, partitionId, dbType, segment);
 
 			for (DatabasePartitionResource partition : partitions) {
 				out.println(partition.getCliRepresentation());

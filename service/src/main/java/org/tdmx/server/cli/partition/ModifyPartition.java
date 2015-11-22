@@ -37,7 +37,7 @@ public class ModifyPartition extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
+	@Parameter(name = "partition", required = true, description = "the partition identifier.")
 	private String partitionId;
 
 	@Parameter(name = "sizeFactor", description = "the partition's size factor - used to load-balance. The value relates this partition's capacity to other partition's capacity for databases of the same type and segment.")

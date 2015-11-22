@@ -148,7 +148,6 @@ public class SASImpl implements SAS {
 
 	@Override
 	public List<DnsResolverGroupResource> searchDnsResolverGroup(Integer pageNo, Integer pageSize, String groupName) {
-		// TODO search criteria
 		List<DnsResolverGroup> groups = getDnsResolverGroupService().findAll();
 
 		List<DnsResolverGroupResource> result = new ArrayList<>();
@@ -217,7 +216,6 @@ public class SASImpl implements SAS {
 
 	@Override
 	public List<SegmentResource> searchSegment(Integer pageNo, Integer pageSize, String segment) {
-		// TODO search criteria
 		List<Segment> segments = getSegmentService().findAll();
 
 		List<SegmentResource> result = new ArrayList<>();
@@ -262,6 +260,18 @@ public class SASImpl implements SAS {
 
 		Segment segment = getSegmentService().findById(sId);
 		validateExists(SegmentResource.FIELD.ID, segment);
+
+		// cannot delete segment if there are PCSs defined in it.
+		List<PartitionControlServer> pcss = getPartitionControlService().findBySegment(segment.getSegmentName());
+		validateEmpty(PARAM.PARTITIONCONTROLSERVER, pcss);
+
+		// cannot delete segment if there are DatabasePartitions defined in it.
+		List<DatabasePartition> dbs = getPartitionService().findAll();
+		for (DatabasePartition d : dbs) {
+			if (segment.getSegmentName().equals(d.getSegment())) {
+				validateEmpty(PARAM.PARTITION, dbs);
+			}
+		}
 
 		getSegmentService().delete(segment);
 		return Response.ok().build();
@@ -394,28 +404,26 @@ public class SASImpl implements SAS {
 	@Override
 	public List<DatabasePartitionResource> searchDatabasePartition(Integer pageNo, Integer pageSize, String partitionId,
 			String dbType, String segment) {
-		// TODO search criteria
 		validateEnum(PARAM.DBTYPE, DatabaseType.class, dbType);
 		DatabaseType databaseType = EnumUtils.mapTo(DatabaseType.class, dbType);
-		if (!StringUtils.hasText(partitionId)) {
-			validatePresent(PARAM.DBTYPE, databaseType);
-		}
-
-		List<DatabasePartition> partitions = null;
-		if (StringUtils.hasText(partitionId)) {
-			partitions = new ArrayList<>();
-			DatabasePartition p = getPartitionService().findByPartitionId(partitionId);
-			partitions.add(p);
-		} else if (StringUtils.hasText(segment)) {
-			partitions = getPartitionService().findByTypeAndSegment(databaseType, segment);
-		} else {
-			partitions = getPartitionService().findByType(databaseType);
-		}
 
 		List<DatabasePartitionResource> result = new ArrayList<>();
-		for (DatabasePartition p : partitions) {
-			result.add(DatabasePartitionResource.mapFrom(p));
+		for (DatabasePartition p : getPartitionService().findAll()) {
+			boolean match = true;
+			if (StringUtils.hasText(partitionId) && !partitionId.equals(p.getPartitionId())) {
+				match = false;
+			}
+			if (StringUtils.hasText(segment) && !segment.equals(p.getSegment())) {
+				match = false;
+			}
+			if (databaseType != null && databaseType != p.getDbType()) {
+				match = false;
+			}
+			if (match) {
+				result.add(DatabasePartitionResource.mapFrom(p));
+			}
 		}
+
 		return result;
 	}
 
@@ -950,6 +958,12 @@ public class SASImpl implements SAS {
 	private void validateNotEmpty(Enum<?> fieldId, Collection<?> fieldValue) {
 		if (fieldValue == null || fieldValue.isEmpty()) {
 			throw createVE(FieldValidationErrorType.MISSING, fieldId.toString());
+		}
+	}
+
+	private void validateEmpty(Enum<?> fieldId, Collection<?> fieldValue) {
+		if (fieldValue != null && !fieldValue.isEmpty()) {
+			throw createVE(FieldValidationErrorType.PRESENT, fieldId.toString());
 		}
 	}
 

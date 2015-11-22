@@ -52,4 +52,5 @@ public interface DatabasePartitionService {
 
 	public List<DatabasePartition> findByType(DatabaseType type);
 
+	public List<DatabasePartition> findAll();
 }

@@ -112,6 +112,12 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
+	public List<DatabasePartition> findAll() {
+		return getDatabasePartitionDao().loadAll();
+	}
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
 	public DatabasePartition findById(Long id) {
 		return getDatabasePartitionDao().loadById(id);
 	}

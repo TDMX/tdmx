@@ -38,7 +38,7 @@ public class ActivatePartition extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "partitionId", required = true, description = "the partitionId.")
+	@Parameter(name = "partition", required = true, description = "the partition identifier.")
 	private String partitionId;
 
 	// -------------------------------------------------------------------------
