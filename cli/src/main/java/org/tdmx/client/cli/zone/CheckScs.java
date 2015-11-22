@@ -16,23 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.domain;
+package org.tdmx.client.cli.zone;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.scs.GetZASSession;
-import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
-import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "domain:create", description = "creates a domain at the service provider.")
-public class CreateDomain implements CommandExecutable {
+@Cli(name = "scs:check", description = "Checks the access to the zone's SCS url.")
+public class CheckScs implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,11 +40,10 @@ public class CreateDomain implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "domain", required = true, description = "the domain name.")
-	private String domain;
-
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
+	@Parameter(name = "verbose", defaultValue = "false", description = "the zone administrator's keystore password.")
+	private boolean verbose;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -58,25 +55,35 @@ public class CreateDomain implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
-		if (domainInfo == null) {
-			out.println("No TDMX DNS TXT record found for " + domain);
+		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
+
+		if (zd.getScsUrl() == null) {
+			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
 			return;
 		}
-		out.println("Domain info: " + domainInfo);
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
-		PKIXCertificate scsPublicCertificate = null; // TODO
-		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);
-
-		GetZASSession sessionRequest = new GetZASSession();
-		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
-
-		out.println("session: " + sessionResponse);
-		// out.println("zone=" + zone);
-		// out.println("version=" + version);
-		// out.println("scsUrl=" + scsUrl);
+		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl());
+		out.println("Step: " + ctr.getTestStep());
+		out.println("Remote IPAddress: " + ctr.getRemoteIpAddress());
+		if (ctr.getServerCertChain() != null) {
+			out.println("Certificate chain length: " + ctr.getServerCertChain().length);
+			int idx = 0;
+			for (PKIXCertificate cert : ctr.getServerCertChain()) {
+				if (verbose) {
+					out.println("cert[" + idx + "] " + cert);
+				} else {
+					out.println("cert[" + idx + "] " + cert.getSubject());
+				}
+				idx++;
+			}
+		}
+		if (ctr.getException() != null) {
+			out.println("Connection exception: " + ctr.getException());
+		} else {
+			out.println("Connection established successfully.");
+		}
 
 	}
 

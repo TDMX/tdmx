@@ -68,6 +68,14 @@ public class CheckDns implements CommandExecutable {
 
 		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
 		out.println(DnsUtils.formatDnsTxtRecord(zr));
+
+		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(zd.getZoneApex());
+		if (domainInfo == null) {
+			out.println("DNS TXT record not found for zone " + zd.getZoneApex());
+			return;
+		}
+		out.println("The following line contains the found DNS TXT record contents for the zone " + domainInfo);
+		out.println(DnsUtils.formatDnsTxtRecord(domainInfo));
 	}
 
 	// -------------------------------------------------------------------------

@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -34,10 +35,14 @@ import javax.mail.internet.InternetAddress;
 
 import org.tdmx.client.adapter.ClientCredentialProvider;
 import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
+import org.tdmx.client.adapter.DelegatingTrustedCertificateProvider;
 import org.tdmx.client.adapter.ServerTrustManagerFactoryImpl;
 import org.tdmx.client.adapter.SingleTrustedCertificateProvider;
 import org.tdmx.client.adapter.SoapClientFactory;
+import org.tdmx.client.adapter.SslProbeService;
+import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
+import org.tdmx.client.adapter.TrustedServerCertificateProvider;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -89,7 +94,7 @@ public class ClientCliUtils {
 	private static final String TLS_VERSION = "TLSv1.2";
 	private static final int CONNECTION_TIMEOUT_MS = 10000;
 	private static final int READ_TIMEOUT_MS = 60000;
-	
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -379,11 +384,19 @@ public class ClientCliUtils {
 		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
 	}
 
-	public static TdmxZoneRecord getSystemDnsInfo( String domain ) {
+	/**
+	 * Returns the DNS zone info for the domain.
+	 * 
+	 * @param domain
+	 * @return the DNS zone info for the domain or null if none found.
+	 */
+	public static TdmxZoneRecord getSystemDnsInfo(String domain) {
 		List<String> systemDnsResolver = DnsUtils.getSystemDnsResolverAddresses();
 		try {
-			DnsResultHolder rh= DnsUtils.getTdmxZoneRecord(domain,systemDnsResolver );
-			
+			DnsResultHolder rh = DnsUtils.getTdmxZoneRecord(domain, systemDnsResolver);
+			if (rh == null) {
+				return null;
+			}
 			return DnsUtils.parseTdmxZoneRecord(rh.getRecords().get(0));
 		} catch (TextParseException e) {
 			throw new RuntimeException(e);
@@ -391,12 +404,42 @@ public class ClientCliUtils {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS - API-s
 	// -------------------------------------------------------------------------
 
-	public static SCS createSCSClient(PKIXCredential credential, URL scsUrl) {
+	public static ConnectionTestResult sslTest(PKIXCredential credential, URL url) {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return credential;
+			}
+
+		};
+
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
+
+		SystemDefaultTrustedCertificateProvider stcp = new SystemDefaultTrustedCertificateProvider();
+
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(stcp);
+
+		SslProbeService sslprobe = new SslProbeService();
+		sslprobe.setConnectionTimeoutMillis(CONNECTION_TIMEOUT_MS);
+		sslprobe.setReadTimeoutMillis(READ_TIMEOUT_MS);
+		sslprobe.setKeyManagerFactory(kmf);
+		sslprobe.setTrustManagerFactory(stfm);
+		sslprobe.setSslProtocol(TLS_VERSION);
+		sslprobe.setEnabledCiphers(STRONG_CIPHERS);
+
+		return sslprobe.testConnection(url.getHost(), url.getPort());
+
+	}
+
+	public static SCS createSCSClient(PKIXCredential credential, URL scsUrl, PKIXCertificate scsPublicCertificate) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -408,9 +451,14 @@ public class ClientCliUtils {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SystemDefaultTrustedCertificateProvider tcp = new SystemDefaultTrustedCertificateProvider();
+		SystemDefaultTrustedCertificateProvider sdtcp = new SystemDefaultTrustedCertificateProvider();
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(scsPublicCertificate);
+
+		DelegatingTrustedCertificateProvider dtcp = new DelegatingTrustedCertificateProvider();
+		dtcp.setDelegateProviders(Arrays.asList(new TrustedServerCertificateProvider[] { tcp, sdtcp }));
+
 		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
-		stfm.setCertificateProvider(tcp);
+		stfm.setCertificateProvider(dtcp);
 
 		SoapClientFactory<SCS> factory = new SoapClientFactory<>();
 		factory.setUrl(scsUrl.toString());
@@ -428,8 +476,8 @@ public class ClientCliUtils {
 		SCS client = factory.createClient();
 		return client;
 	}
-	
-	public static ZAS createZASClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert ) {
+
+	public static ZAS createZASClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -456,14 +504,13 @@ public class ClientCliUtils {
 		factory.setTrustManagerFactory(stfm);
 		factory.setTlsProtocolVersion(TLS_VERSION);
 
-
 		factory.setEnabledCipherSuites(STRONG_CIPHERS);
 
 		ZAS client = factory.createClient();
 		return client;
 	}
-	
-	public static MOS createMOSClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert ) {
+
+	public static MOS createMOSClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override

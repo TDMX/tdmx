@@ -56,6 +56,14 @@ public class FieldAccessor {
 				field.set(instance, Integer.valueOf(value).intValue());
 			} else if (Integer.class.equals(field.getType())) {
 				field.set(instance, Integer.valueOf(value));
+			} else if (Long.TYPE.equals(field.getType())) {
+				field.set(instance, Long.valueOf(value).longValue());
+			} else if (Long.class.equals(field.getType())) {
+				field.set(instance, Long.valueOf(value));
+			} else if (Boolean.TYPE.equals(field.getType())) {
+				field.set(instance, Boolean.valueOf(value).booleanValue());
+			} else if (Boolean.class.equals(field.getType())) {
+				field.set(instance, Boolean.valueOf(value));
 			} else {
 				field.set(instance, value);
 			}
