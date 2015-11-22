@@ -41,7 +41,7 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", description = "the account identifier.")
+	@Parameter(name = "account", description = "the account identifier.")
 	private String accountId;
 	@Parameter(name = "zone", description = "the zone apex.")
 	private String zone;

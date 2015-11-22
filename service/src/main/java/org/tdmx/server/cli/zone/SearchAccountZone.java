@@ -40,13 +40,13 @@ public class SearchAccountZone extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", description = "the account identifier.")
+	@Parameter(name = "account", description = "the account identifier.")
 	private String accountId;
 	@Parameter(name = "zone", description = "the zone apex.")
 	private String zone;
 	@Parameter(name = "segment", description = "the zone's segment.")
 	private String segment;
-	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
+	@Parameter(name = "zonePartition", description = "the zone database partition.")
 	private String zonePartitionId;
 	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
 	private String status;

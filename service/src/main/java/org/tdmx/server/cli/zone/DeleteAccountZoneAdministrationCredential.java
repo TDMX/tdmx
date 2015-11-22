@@ -30,7 +30,7 @@ import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 
-@Cli(name = "zone:delete", description = "deletes an account's zone.", note = ".")
+@Cli(name = "zoneadmin:delete", description = "deletes an account's zone administration credential.", note = ".")
 public class DeleteAccountZoneAdministrationCredential extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
@@ -41,7 +41,7 @@ public class DeleteAccountZoneAdministrationCredential extends AbstractCliComman
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account identifier.")
+	@Parameter(name = "account", required = true, description = "the account identifier.")
 	private String accountId;
 
 	@Parameter(name = "zone", required = true, description = "the zone apex.")

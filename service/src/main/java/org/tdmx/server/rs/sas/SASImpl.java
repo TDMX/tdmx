@@ -83,6 +83,7 @@ public class SASImpl implements SAS {
 		PID("pId"),
 		AID("aId"),
 		ACCOUNT("account"),
+		ACCOUNTZONE("accountZone"),
 		ZID("zId"),
 		ZCID("zcId"),
 		DRGID("drgId"),
@@ -479,6 +480,12 @@ public class SASImpl implements SAS {
 		DatabasePartition storedPartition = getPartitionService().findById(pId);
 		validateExists(DatabasePartitionResource.FIELD.ID, storedPartition);
 
+		// check if there are any accountzones on this partition
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(0, 1));
+		sc.setZonePartitionId(storedPartition.getPartitionId());
+		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
+
 		getPartitionService().delete(storedPartition);
 		return Response.ok().build();
 	}
@@ -536,6 +543,13 @@ public class SASImpl implements SAS {
 	public Response deleteAccount(Long aId) {
 		validatePresent(PARAM.AID, aId);
 		Account a = getAccountService().findById(aId);
+
+		// check that no accountzones exist for the account
+		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(0, 1));
+		sc.setAccountId(a.getAccountId());
+		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
+
 		getAccountService().delete(a);
 		return Response.ok().build();
 	}
@@ -673,6 +687,14 @@ public class SASImpl implements SAS {
 
 		// the accountZone must actually relate to the account!
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+
+		// check that no ZACs exist currently.
+		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
+				getPageSpecifier(0, 1));
+		sc.setAccountId(az.getAccountId());
+		sc.setZoneApex(az.getZoneApex());
+		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
 
 		getAccountZoneService().delete(az);
 

@@ -39,7 +39,7 @@ public class ModifyAccountZone extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account identifier.")
+	@Parameter(name = "accound", required = true, description = "the account identifier.")
 	private String accountId;
 
 	@Parameter(name = "zone", required = true, description = "the zone apex.")
@@ -47,7 +47,7 @@ public class ModifyAccountZone extends AbstractCliCommand {
 
 	@Parameter(name = "segment", description = "the zone's segment.")
 	private String segment;
-	@Parameter(name = "zonePartitionId", description = "the zone database partition.")
+	@Parameter(name = "zonePartition", description = "the zone database partition.")
 	private String zonePartitionId;
 	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
 	private String status;

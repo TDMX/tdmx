@@ -39,7 +39,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "accountId", required = true, description = "the account identifier.")
+	@Parameter(name = "account", required = true, description = "the account identifier.")
 	private String accountId;
 
 	@Parameter(name = "zone", required = true, description = "the zone apex.")
