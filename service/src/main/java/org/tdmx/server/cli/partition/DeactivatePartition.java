@@ -27,7 +27,7 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
-@Cli(name = "partition:activate", description = "activates a database partition", note = "once active, a partition's size factor cannot change.")
+@Cli(name = "partition:deactivate", description = "activates a database partition", note = "once active, a partition's size factor cannot change.")
 public class DeactivatePartition extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
@@ -58,11 +58,11 @@ public class DeactivatePartition extends AbstractCliCommand {
 		}
 
 		DatabasePartitionResource dbPartition = dbPartitions.get(0);
-		if (dbPartition.getActivationTimestamp() != null) {
-			out.println("DatabasePartition partition " + partitionId + " has already been made active.");
+		if (dbPartition.getActivationTimestamp() == null) {
+			out.println("DatabasePartition partition " + partitionId + " has not yet been made active.");
 			return;
 		}
-		dbPartition.setActivationTimestamp(new Date());
+		dbPartition.setDeactivationTimestamp(new Date());
 
 		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
 		out.println(newDbPartition.getCliRepresentation());

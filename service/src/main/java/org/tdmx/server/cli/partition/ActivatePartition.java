@@ -27,7 +27,7 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
-@Cli(name = "partition:deactivate", description = "deactivates a database partition.")
+@Cli(name = "partition:activate", description = "deactivates a database partition.")
 public class ActivatePartition extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
@@ -58,8 +58,8 @@ public class ActivatePartition extends AbstractCliCommand {
 		}
 
 		DatabasePartitionResource dbPartition = dbPartitions.get(0);
-		if (dbPartition.getActivationTimestamp() == null) {
-			out.println("DatabasePartition partition " + partitionId + " has not yet been activated.");
+		if (dbPartition.getActivationTimestamp() != null) {
+			out.println("DatabasePartition partition " + partitionId + " has been activated already.");
 			return;
 		}
 		if (dbPartition.getDeactivationTimestamp() != null) {
@@ -70,7 +70,7 @@ public class ActivatePartition extends AbstractCliCommand {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.MINUTE, 5);
 
-		dbPartition.setDeactivationTimestamp(cal.getTime());
+		dbPartition.setActivationTimestamp(cal.getTime());
 
 		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
 		out.println(newDbPartition.getCliRepresentation());
