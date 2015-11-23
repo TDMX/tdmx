@@ -28,9 +28,10 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "scs:check", description = "Checks the access to the zone's SCS url and shows SCS server's public certificate information.")
-public class CheckScs implements CommandExecutable {
+@Cli(name = "scs:download", description = "Download and save SCS server's public certificate - in the scs.crt file.")
+public class DownloadScs implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,8 +43,10 @@ public class CheckScs implements CommandExecutable {
 
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
-	@Parameter(name = "verbose", defaultValue = "false", description = "provide more detailed certificate information.")
-	private boolean verbose;
+	@Parameter(name = "fingerprint", defaultValueText = "the root certificate's fingerprint", description = "the fingerprint of the certificate in the servers public certificate chain.")
+	private String fingerprint;
+	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
+	private String scsTrustedCertFile;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -69,21 +72,29 @@ public class CheckScs implements CommandExecutable {
 		out.println("Remote IPAddress: " + ctr.getRemoteIpAddress());
 		if (ctr.getServerCertChain() != null) {
 			out.println("Certificate chain length: " + ctr.getServerCertChain().length);
-			int idx = 0;
-			for (PKIXCertificate cert : ctr.getServerCertChain()) {
-				if (verbose) {
-					out.println("cert[" + idx + "] " + cert);
-				} else {
-					out.println("cert[" + idx + "] subject=" + cert.getSubject());
-					out.println("cert[" + idx + "] fingerprint=" + cert.getFingerprint());
+			PKIXCertificate trustedCert = null;
+			if (StringUtils.hasText(fingerprint)) {
+				for (PKIXCertificate cert : ctr.getServerCertChain()) {
+					if (fingerprint.equals(cert.getFingerprint())) {
+						trustedCert = cert;
+					}
 				}
-				idx++;
+			} else {
+				trustedCert = ctr.getServerCertChain()[ctr.getServerCertChain().length - 1]; // the root cert
 			}
-		}
-		if (ctr.getException() != null) {
-			out.println("Connection exception: " + ctr.getException());
+			if (trustedCert != null) {
+				ClientCliUtils.storeSCSTrustedCertificate(scsTrustedCertFile, trustedCert);
+				out.println("Trusted certificate stored in file " + scsTrustedCertFile);
+			} else {
+				out.println("Trusted certificate not found.");
+			}
 		} else {
-			out.println("Connection established successfully.");
+			out.println("No certificates fetched from the SCS url.");
+			if (ctr.getException() != null) {
+				out.println("Connection exception: " + ctr.getException());
+			} else {
+				out.println("Connection established successfully.");
+			}
 		}
 
 	}

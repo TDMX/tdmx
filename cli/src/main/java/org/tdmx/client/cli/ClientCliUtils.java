@@ -43,6 +43,7 @@ import org.tdmx.client.adapter.SslProbeService;
 import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.adapter.TrustedServerCertificateProvider;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -70,6 +71,7 @@ public class ClientCliUtils {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final String ZONE_DESCRIPTOR = "zone.tdmx";
+	public static final String TRUSTED_SCS_CERT = "scs.crt";
 
 	public static final String KEYSTORE_TYPE = "jks";
 
@@ -211,6 +213,28 @@ public class ClientCliUtils {
 			return version;
 		}
 
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - SCS
+	// -------------------------------------------------------------------------
+
+	public static void storeSCSTrustedCertificate(String filename, PKIXCertificate trustedCert) {
+		try {
+			FileUtils.storeFileContents(filename, trustedCert.getX509Encoded(), ".tmp");
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to store SCS trusted certificate.", e);
+		}
+	}
+
+	public static PKIXCertificate loadSCSTrustedCertificate(String filename) {
+		byte[] bytes;
+		try {
+			bytes = FileUtils.getFileContents(filename);
+			return CertificateIOUtils.decodeX509(bytes);
+		} catch (CryptoCertificateException | IOException e) {
+			throw new IllegalStateException("Unable to load trusted SCS certificate file " + filename, e);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -384,6 +408,10 @@ public class ClientCliUtils {
 		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
 	}
 
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - DNS
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns the DNS zone info for the domain.
 	 * 
@@ -466,7 +494,7 @@ public class ClientCliUtils {
 		factory.setKeepAlive(true);
 		factory.setClazz(SCS.class);
 		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
-		factory.setDisableCNCheck(false);
+		factory.setDisableCNCheck(true); // FIXME
 		factory.setKeyManagerFactory(kmf);
 		factory.setTrustManagerFactory(stfm);
 		factory.setTlsProtocolVersion(TLS_VERSION);
