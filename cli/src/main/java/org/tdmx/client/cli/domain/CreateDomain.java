@@ -26,6 +26,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.scs.GetZASSession;
 import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
@@ -75,9 +76,26 @@ public class CreateDomain implements CommandExecutable {
 
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
+		if (!sessionResponse.isSuccess()) {
+			out.println("Unable to get ZAS session.");
+			ClientCliUtils.logError(out, sessionResponse.getError());
+			return;
+		}
+		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
 
-		out.println("session: " + sessionResponse);
+		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
+		org.tdmx.core.api.v01.zas.CreateDomain createDomainRequest = new org.tdmx.core.api.v01.zas.CreateDomain();
+		createDomainRequest.setDomain(domain);
+		createDomainRequest.setSessionId(sessionResponse.getSession().getSessionId());
+
+		org.tdmx.core.api.v01.zas.CreateDomainResponse createDomainResponse = zas.createDomain(createDomainRequest);
+		if (createDomainResponse.isSuccess()) {
+			out.println("Domain " + domain + " successfully created.");
+		} else {
+			out.println("Unable to create domain " + domain);
+			ClientCliUtils.logError(out, createDomainResponse.getError());
+		}
 	}
 
 	// -------------------------------------------------------------------------

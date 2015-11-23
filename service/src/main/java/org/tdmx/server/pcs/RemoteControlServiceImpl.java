@@ -374,12 +374,16 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 					// we need to allocate the new session for the client on a backend server with the least load
 					ServiceStatistic stat = api.getSsm().createSession(sessionData.getApi(), sessionId,
 							clientCertificate, sessionData.getSeedAttributes());
-					updateServerStat(stat);
+					if (stat != null) {
+						updateServerStat(stat);
 
-					WebServiceSessionEndpoint wsse = new WebServiceSessionEndpoint(sessionId,
-							api.getHandle().getHttpsUrl(), api.getHandle().getPublicCertificate());
-					existingSession.setSessionEndpoint(wsse);
-					return wsse;
+						WebServiceSessionEndpoint wsse = new WebServiceSessionEndpoint(sessionId,
+								api.getHandle().getHttpsUrl(), api.getHandle().getPublicCertificate());
+						existingSession.setSessionEndpoint(wsse);
+						return wsse;
+					} else {
+						log.warn("Unable to create session on remote server.");
+					}
 				} else {
 					log.warn("No " + sessionData.getApi() + " services availible.");
 				}
@@ -393,9 +397,13 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 							.get(existingSession.getSessionEndpoint().getHttpsUrl());
 					ServiceStatistic stat = existingServer.getSsm().addCertificate(sessionData.getApi(),
 							existingSession.getHandle().getSessionId(), clientCertificate);
-					updateServerStat(stat);
+					if (stat != null) {
+						updateServerStat(stat);
+						return existingSession.getSessionEndpoint();
+					} else {
+						log.warn("Unable to add client certificate to remote server session.");
+					}
 				}
-				return existingSession.getSessionEndpoint();
 			}
 		}
 		return null;

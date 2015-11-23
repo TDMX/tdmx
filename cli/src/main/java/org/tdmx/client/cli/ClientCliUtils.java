@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.dns.DnsUtils;
@@ -505,7 +507,7 @@ public class ClientCliUtils {
 		return client;
 	}
 
-	public static ZAS createZASClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert) {
+	public static ZAS createZASClient(PKIXCredential uc, Endpoint endpoint) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -517,12 +519,13 @@ public class ClientCliUtils {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mosServerCert);
+		PKIXCertificate serverCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(serverCert);
 		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
 		stfm.setCertificateProvider(tcp);
 
 		SoapClientFactory<ZAS> factory = new SoapClientFactory<>();
-		factory.setUrl(mosUrl.toString());
+		factory.setUrl(endpoint.getUrl());
 		factory.setConnectionTimeoutMillis(10000);
 		factory.setKeepAlive(true);
 		factory.setClazz(ZAS.class);
@@ -569,5 +572,9 @@ public class ClientCliUtils {
 
 		MOS client = factory.createClient();
 		return client;
+	}
+
+	public static void logError(PrintStream out, org.tdmx.core.api.v01.common.Error error) {
+		out.println("Error [" + error.getCode() + "] " + error.getDescription());
 	}
 }
