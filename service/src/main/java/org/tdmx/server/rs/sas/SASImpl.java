@@ -41,6 +41,7 @@ import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.domain.PartitionControlServer;
@@ -408,21 +409,14 @@ public class SASImpl implements SAS {
 		validateEnum(PARAM.DBTYPE, DatabaseType.class, dbType);
 		DatabaseType databaseType = EnumUtils.mapTo(DatabaseType.class, dbType);
 
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(getPageSpecifier(pageNo, pageSize));
+		sc.setPartitionId(partitionId);
+		sc.setSegment(segment);
+		sc.setDbType(databaseType);
+		
 		List<DatabasePartitionResource> result = new ArrayList<>();
-		for (DatabasePartition p : getPartitionService().findAll()) {
-			boolean match = true;
-			if (StringUtils.hasText(partitionId) && !partitionId.equals(p.getPartitionId())) {
-				match = false;
-			}
-			if (StringUtils.hasText(segment) && !segment.equals(p.getSegment())) {
-				match = false;
-			}
-			if (databaseType != null && databaseType != p.getDbType()) {
-				match = false;
-			}
-			if (match) {
-				result.add(DatabasePartitionResource.mapFrom(p));
-			}
+		for (DatabasePartition p : getPartitionService().search(sc)) {
+			result.add(DatabasePartitionResource.mapFrom(p));
 		}
 
 		return result;

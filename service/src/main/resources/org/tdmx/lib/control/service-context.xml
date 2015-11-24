@@ -111,6 +111,7 @@
 
 	<bean id="tdmx.lib.control.PartitionControlServerRepository" class="org.tdmx.lib.control.service.PartitionControlServerServiceRepositoryImpl">
 		<property name="partitionControlServerDao"	ref="tdmx.lib.control.dao.PartitionControlServerDao" />
+		<property name="cacheInvalidationNotifier" ref="tdmx.server.DelegatingCacheInvalidationNotifier"/>
 	</bean>
 	
 
@@ -168,6 +169,8 @@
 		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>
 
-
+	<bean id="tdmx.lib.control.DatabasePartitionCache"	class="org.tdmx.lib.control.service.DatabasePartitionCacheImpl">
+		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
+	</bean>
 
 </beans>

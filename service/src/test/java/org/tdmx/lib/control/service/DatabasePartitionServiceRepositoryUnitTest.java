@@ -34,8 +34,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionFacade;
+import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 import org.tdmx.lib.control.domain.DatabaseType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -219,29 +221,39 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeOnly() throws Exception {
-		List<DatabasePartition> zonelist = service.findByType(DatabaseType.ZONE);
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		sc.setDbType(DatabaseType.ZONE);
+		List<DatabasePartition> zonelist = service.search(sc);
 		assertNotNull(zonelist);
 		assertTrue(zonelist.size() > 6);
 
-		List<DatabasePartition> messagelist = service.findByType(DatabaseType.MESSAGE);
+		sc.setDbType(DatabaseType.MESSAGE);
+		List<DatabasePartition> messagelist = service.search(sc);
 		assertNotNull(messagelist);
 		assertEquals(3, messagelist.size());
 	}
 
 	@Test
 	public void testLookupCache_ByTypeNotFound() throws Exception {
-		List<DatabasePartition> l = service.findByType(DatabaseType.CONSOLE);
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		sc.setDbType(DatabaseType.CONSOLE);
+		List<DatabasePartition> l = service.search(sc);
 		assertNotNull(l);
 		assertEquals(0, l.size());
 	}
 
 	@Test
 	public void testLookupCache_ByTypeAndSegment() throws Exception {
-		List<DatabasePartition> zonelist = service.findByTypeAndSegment(DatabaseType.ZONE, "unittest-segment-1");
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		sc.setDbType(DatabaseType.ZONE);
+		sc.setSegment("unittest-segment-1");
+		List<DatabasePartition> zonelist = service.search(sc);
 		assertNotNull(zonelist);
 		assertEquals(3, zonelist.size());
 
-		List<DatabasePartition> zonelist2 = service.findByTypeAndSegment(DatabaseType.ZONE, "unittest-segment-1");
+		sc.setDbType(DatabaseType.ZONE);
+		sc.setSegment("segment2");
+		List<DatabasePartition> zonelist2 = service.search(sc);
 		assertNotNull(zonelist2);
 		assertEquals(3, zonelist2.size());
 
@@ -250,11 +262,16 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeAndSegmentNotFound() throws Exception {
-		List<DatabasePartition> l = service.findByTypeAndSegment(DatabaseType.CONSOLE, "gugus");
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		sc.setDbType(DatabaseType.CONSOLE);
+		sc.setSegment("gugus");
+		List<DatabasePartition> l = service.search(sc);
 		assertNotNull(l);
 		assertEquals(0, l.size());
 
-		l = service.findByTypeAndSegment(DatabaseType.ZONE, "gugus");
+		sc.setDbType(DatabaseType.ZONE);
+		sc.setSegment("gugus");
+		l = service.search(sc);
 		assertNotNull(l);
 		assertEquals(0, l.size());
 	}

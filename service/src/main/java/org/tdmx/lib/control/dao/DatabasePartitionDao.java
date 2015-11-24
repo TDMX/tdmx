@@ -21,6 +21,7 @@ package org.tdmx.lib.control.dao;
 import java.util.List;
 
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 
 public interface DatabasePartitionDao {
 
@@ -36,4 +37,5 @@ public interface DatabasePartitionDao {
 
 	public List<DatabasePartition> loadAll();
 
+	public List<DatabasePartition> search(DatabasePartitionSearchCriteria criteria);
 }

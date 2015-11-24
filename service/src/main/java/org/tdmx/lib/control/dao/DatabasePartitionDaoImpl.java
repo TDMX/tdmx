@@ -18,6 +18,7 @@
  */
 package org.tdmx.lib.control.dao;
 
+import static org.tdmx.lib.control.domain.QAccount.account;
 import static org.tdmx.lib.control.domain.QDatabasePartition.databasePartition;
 
 import java.util.List;
@@ -25,9 +26,13 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 
+import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.expr.BooleanExpression;
 
 public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 
@@ -64,6 +69,30 @@ public class DatabasePartitionDaoImpl implements DatabasePartitionDao {
 	@Override
 	public List<DatabasePartition> loadAll() {
 		return new JPAQuery(em).from(databasePartition).list(databasePartition);
+	}
+
+	@Override
+	public List<DatabasePartition> search(DatabasePartitionSearchCriteria criteria) {
+		JPAQuery query = new JPAQuery(em).from(databasePartition);
+
+		BooleanExpression where = null;
+		if (StringUtils.hasText(criteria.getPartitionId())) {
+			BooleanExpression e = databasePartition.partitionId.eq(criteria.getPartitionId());
+			where = where != null ? where.and(e) : e;
+		}
+		if (StringUtils.hasText(criteria.getSegment())) {
+			BooleanExpression e = databasePartition.segment.eq(criteria.getSegment());
+			where = where != null ? where.and(e) : e;
+		}
+		if (criteria.getDbType() != null) {
+			BooleanExpression e = databasePartition.dbType.eq(criteria.getDbType());
+			where = where != null ? where.and(e) : e;
+		}
+
+		query.where(where);
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
+				.getPageSpecifier().getFirstResult()));
+		return query.list(databasePartition);
 	}
 
 }

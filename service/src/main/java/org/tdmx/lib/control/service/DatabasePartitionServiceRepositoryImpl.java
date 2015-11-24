@@ -19,20 +19,15 @@
 
 package org.tdmx.lib.control.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.dao.DatabasePartitionDao;
 import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
+import org.tdmx.server.pcs.CacheInvalidationNotifier;
 
 /**
  * A transactional service managing the DatabasePartition information.
@@ -52,12 +47,7 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionServiceRepositoryImpl.class);
 
 	private DatabasePartitionDao databasePartitionDao;
-
-	private long cacheTimeoutMillis = 900000;
-
-	private Map<DatabaseType, Map<String, List<DatabasePartition>>> dptsMap = null;
-	private Map<String, DatabasePartition> dpidMap = null;
-	private long cacheLoadTimestamp = 0;
+	private CacheInvalidationNotifier cacheInvalidationNotifier;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -95,7 +85,7 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		} else {
 			getDatabasePartitionDao().persist(partition);
 		}
-		clearCache();
+		notifyPartitionsChanged();
 	}
 
 	@Override
@@ -107,7 +97,7 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		} else {
 			log.warn("Unable to find DatabasePartition to delete with id " + partition.getId());
 		}
-		clearCache();
+		notifyPartitionsChanged();
 	}
 
 	@Override
@@ -125,52 +115,13 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
 	public DatabasePartition findByPartitionId(String partitionId) {
-		if (!StringUtils.hasText(partitionId)) {
-			throw new IllegalArgumentException("missing partitionId");
-		}
-		conditionalRefreshCache();
-
-		return dpidMap != null ? dpidMap.get(partitionId) : null;
+		return getDatabasePartitionDao().loadByPartitionId(partitionId);
 	}
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public List<DatabasePartition> findByTypeAndSegment(DatabaseType type, String segment) {
-		if (!StringUtils.hasText(segment)) {
-			throw new IllegalArgumentException("missing segment");
-		}
-		if (type == null) {
-			throw new IllegalArgumentException("missing type");
-		}
-		conditionalRefreshCache();
-
-		if (dptsMap != null) {
-			Map<String, List<DatabasePartition>> segmentMap = dptsMap.get(type);
-			if (segmentMap != null) {
-				List<DatabasePartition> segmentList = segmentMap.get(segment);
-				if (segmentList != null) {
-					return segmentList;
-				}
-			}
-		}
-		return Collections.emptyList();
-	}
-
-	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public List<DatabasePartition> findByType(DatabaseType type) {
-		conditionalRefreshCache();
-		List<DatabasePartition> result = new ArrayList<>();
-		if (dptsMap != null) {
-			Map<String, List<DatabasePartition>> segmentMap = dptsMap.get(type);
-			if (segmentMap != null) {
-				Collection<List<DatabasePartition>> segmentList = segmentMap.values();
-				for (List<DatabasePartition> list : segmentList) {
-					result.addAll(list);
-				}
-			}
-		}
-		return Collections.unmodifiableList(result);
+	public List<DatabasePartition> search(DatabasePartitionSearchCriteria criteria) {
+		return getDatabasePartitionDao().search(criteria);
 	}
 
 	// -------------------------------------------------------------------------
@@ -180,44 +131,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private synchronized void clearCache() {
-		cacheLoadTimestamp = 0;
-	}
-
-	private void conditionalRefreshCache() {
-		if (System.currentTimeMillis() - cacheLoadTimestamp > getCacheTimeoutMillis()) {
-			loadCache();
-		}
-	}
-
-	private synchronized void loadCache() {
-		cacheLoadTimestamp = System.currentTimeMillis();
-
-		List<DatabasePartition> list = getDatabasePartitionDao().loadAll();
-
-		Map<String, DatabasePartition> localIdMap = new HashMap<>();
-		Map<DatabaseType, Map<String, List<DatabasePartition>>> localTypeSegmentMap = new HashMap<>();
-
-		for (DatabasePartition partition : list) {
-			localIdMap.put(partition.getPartitionId(), partition);
-
-			Map<String, List<DatabasePartition>> typeMap = localTypeSegmentMap.get(partition.getDbType());
-			if (typeMap == null) {
-				typeMap = new HashMap<>();
-				localTypeSegmentMap.put(partition.getDbType(), typeMap);
-			}
-			List<DatabasePartition> segmentPartitions = typeMap.get(partition.getSegment());
-			if (segmentPartitions == null) {
-				segmentPartitions = new ArrayList<>();
-				typeMap.put(partition.getSegment(), segmentPartitions);
-			}
-			segmentPartitions.add(partition);
-		}
-
-		dpidMap = Collections.unmodifiableMap(localIdMap);
-		dptsMap = Collections.unmodifiableMap(localTypeSegmentMap);
-	}
 
 	/**
 	 * @throws IllegalStateException
@@ -243,6 +156,12 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		}
 	}
 
+	private void notifyPartitionsChanged() {
+		if (cacheInvalidationNotifier != null) {
+			cacheInvalidationNotifier.cacheInvalidated(CACHE_KEY);
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -255,12 +174,12 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		this.databasePartitionDao = databasePartitionDao;
 	}
 
-	public long getCacheTimeoutMillis() {
-		return cacheTimeoutMillis;
+	public CacheInvalidationNotifier getCacheInvalidationNotifier() {
+		return cacheInvalidationNotifier;
 	}
 
-	public void setCacheTimeoutMillis(long cacheTimeoutMillis) {
-		this.cacheTimeoutMillis = cacheTimeoutMillis;
+	public void setCacheInvalidationNotifier(CacheInvalidationNotifier cacheInvalidationNotifier) {
+		this.cacheInvalidationNotifier = cacheInvalidationNotifier;
 	}
 
 }

@@ -21,6 +21,7 @@ package org.tdmx.lib.control.datasource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.service.DatabasePartitionCache;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 
 public class DatabasePartitionConfigurationProvider implements DataSourceConfigurationProvider {
@@ -34,7 +35,7 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionConfigurationProvider.class);
 
-	private DatabasePartitionService partitionService;
+	private DatabasePartitionCache cache;
 
 	// default properties
 	private String driverClassname;
@@ -51,7 +52,7 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 	// -------------------------------------------------------------------------
 	@Override
 	public DatabaseConnectionInfo getPartitionInfo(String partitionId) {
-		DatabasePartition partitionInfo = getPartitionService().findByPartitionId(partitionId);
+		DatabasePartition partitionInfo = cache.findByPartitionId(partitionId);
 		if (partitionInfo == null) {
 			if (DynamicDataSource.UNITTEST_PARTITION_ID.equals(partitionId)
 					|| DynamicDataSource.VALIDATION_PARTITION_ID.equals(partitionId)) {
@@ -78,12 +79,12 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public DatabasePartitionService getPartitionService() {
-		return partitionService;
+	public DatabasePartitionCache getCache() {
+		return cache;
 	}
 
-	public void setPartitionService(DatabasePartitionService partitionService) {
-		this.partitionService = partitionService;
+	public void setCache(DatabasePartitionCache cache) {
+		this.cache = cache;
 	}
 
 	public String getDriverClassname() {

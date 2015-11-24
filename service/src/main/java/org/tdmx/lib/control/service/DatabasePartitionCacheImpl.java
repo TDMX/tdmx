@@ -16,28 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-
 package org.tdmx.lib.control.service;
 
-import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.entropy.EntropySource;
-import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
-import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.server.pcs.CacheInvalidationListener;
 
-/**
- * The implementation of {@link ZoneDatabasePartitionAllocationService} which randomly finds a partition with the
- * likelihood of it's {@link DatabasePartition#getSizeFactor()}.
- * 
- * @author Peter Klauser
- * 
- */
-public class ZoneDatabasePartitionAllocationServiceImpl implements ZoneDatabasePartitionAllocationService {
+public class DatabasePartitionCacheImpl implements DatabasePartitionCache, CacheInvalidationListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -46,11 +37,12 @@ public class ZoneDatabasePartitionAllocationServiceImpl implements ZoneDatabaseP
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ZoneDatabasePartitionAllocationServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionCacheImpl.class);
 
 	private DatabasePartitionService databasePartitionService;
 
-	private final SecureRandom rnd = EntropySource.getSecureRandom();
+	// internal
+	private Map<String,DatabasePartition> idMap;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,40 +53,19 @@ public class ZoneDatabasePartitionAllocationServiceImpl implements ZoneDatabaseP
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getZonePartitionId(String accountId, String zoneApex, String segment) {
-		int totalSizeFactor = 0;
-		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 1000));
-		sc.setDbType(DatabaseType.ZONE);
-		sc.setSegment(segment);
-		List<DatabasePartition> partitions = getDatabasePartitionService().search(sc
-				);
-		if (partitions.isEmpty()) {
-			log.warn("No ZoneDB partition found for segment " + segment);
-			return null;
+	public void invalidateCache(String key) {
+		if (DatabasePartitionService.CACHE_KEY.equals(key)) {
+			log.debug("Invalidating cache " + key);
+			idMap = null;
 		}
-		for (DatabasePartition p : partitions) {
-			if (p.isActive()) {
-				totalSizeFactor += p.getSizeFactor();
-			}
+	}
+
+	@Override
+	public DatabasePartition findByPartitionId(String partitionId) {
+		if (idMap == null) {
+			fetchDatabasePartitions();
 		}
-		if (totalSizeFactor <= 0) {
-			log.warn("No active ZoneDB partition found for segment " + segment);
-			return null;
-		}
-		// we get a random number >= 0 and < totalSizeFactor
-		int rndValue = rnd.nextInt(totalSizeFactor);
-		for (DatabasePartition p : partitions) {
-			// we take off each partitions sizeFactor and if we traverse 0 then we've found our partition.
-			if (p.isActive()) {
-				rndValue -= p.getSizeFactor();
-				if (rndValue <= 0) {
-					log.info("Chosen ZonePartitionID=" + p.getPartitionId() + " using " + p.getSizeFactor() + "/"
-							+ totalSizeFactor + " chance.");
-					return p.getPartitionId();
-				}
-			}
-		}
-		throw new IllegalStateException("Rnd value smaller than total sizeFactor " + totalSizeFactor);
+		return idMap.get(partitionId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -104,6 +75,20 @@ public class ZoneDatabasePartitionAllocationServiceImpl implements ZoneDatabaseP
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private synchronized void fetchDatabasePartitions() {
+		if (idMap == null) {
+			List<DatabasePartition> list = getDatabasePartitionService().findAll();
+
+			Map<String, DatabasePartition> localIdMap = new HashMap<>();
+
+			for (DatabasePartition partition : list) {
+				localIdMap.put(partition.getPartitionId(), partition);
+			}
+
+			idMap = Collections.unmodifiableMap(localIdMap);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

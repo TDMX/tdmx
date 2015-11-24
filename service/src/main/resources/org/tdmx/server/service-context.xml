@@ -42,6 +42,7 @@
 		<property name="cacheInvalidationListeners">
 			<list value-type="org.tdmx.server.pcs.CacheInvalidationListener">
 	            <ref bean="tdmx.server.DnsResolverGroupCache"/>
+	            <ref bean="tdmx.lib.control.DatabasePartitionCache"/>
 	        </list>
 		</property>
 	</bean>

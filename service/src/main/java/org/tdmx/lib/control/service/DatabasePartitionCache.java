@@ -18,29 +18,15 @@
  */
 package org.tdmx.lib.control.service;
 
-import java.util.List;
-
 import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 
 /**
- * The DatabasePartitionService provides a cache of slowly changing DatabasePartition records.
- * 
- * Cache is a simple time based cache, refreshing all entities ( of which a small finite number are expected ).
+ * The DatabasePartitionCache provides a cache of DatabasePartition records.
  * 
  * @author Peter
  * 
  */
-public interface DatabasePartitionService {
-
-	public static final String CACHE_KEY = "DatabasePartition";
-
-	public void createOrUpdate(DatabasePartition partition);
-
-	// a partition can only be deleted if it is not yet activated.
-	public void delete(DatabasePartition partition);
-
-	public DatabasePartition findById(Long id);
+public interface DatabasePartitionCache {
 
 	/**
 	 * Find the DatabasePartition by partitionId.
@@ -49,8 +35,4 @@ public interface DatabasePartitionService {
 	 * @return the DatabasePartition or null if not found.
 	 */
 	public DatabasePartition findByPartitionId(String partitionId);
-
-	public List<DatabasePartition> findAll();
-	
-	public List<DatabasePartition> search( DatabasePartitionSearchCriteria criteria );
 }
