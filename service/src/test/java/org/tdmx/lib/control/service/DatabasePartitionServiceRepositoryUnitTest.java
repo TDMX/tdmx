@@ -51,29 +51,29 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1",
-					DatabaseType.ZONE, "unittest-segment-1");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1", DatabaseType.ZONE,
+					"unittest-segment-1");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2",
-					DatabaseType.ZONE, "unittest-segment-1");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2", DatabaseType.ZONE,
+					"unittest-segment-1");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3",
-					DatabaseType.ZONE, "unittest-segment-1");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3", DatabaseType.ZONE,
+					"unittest-segment-1");
 			service.createOrUpdate(zp3);
 		}
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id1",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id1", DatabaseType.ZONE,
+					"unittest-segment-2");
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id2",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id2", DatabaseType.ZONE,
+					"unittest-segment-2");
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id3",
-					DatabaseType.ZONE, "segment2");
+			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id3", DatabaseType.ZONE,
+					"unittest-segment-2");
 			service.createOrUpdate(zp3);
 		}
 
@@ -221,7 +221,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeOnly() throws Exception {
-		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
 		sc.setDbType(DatabaseType.ZONE);
 		List<DatabasePartition> zonelist = service.search(sc);
 		assertNotNull(zonelist);
@@ -235,7 +235,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeNotFound() throws Exception {
-		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
 		sc.setDbType(DatabaseType.CONSOLE);
 		List<DatabasePartition> l = service.search(sc);
 		assertNotNull(l);
@@ -244,7 +244,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookupCache_ByTypeAndSegment() throws Exception {
-		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
 		sc.setDbType(DatabaseType.ZONE);
 		sc.setSegment("unittest-segment-1");
 		List<DatabasePartition> zonelist = service.search(sc);
@@ -252,17 +252,15 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		assertEquals(3, zonelist.size());
 
 		sc.setDbType(DatabaseType.ZONE);
-		sc.setSegment("segment2");
+		sc.setSegment("unittest-segment-2");
 		List<DatabasePartition> zonelist2 = service.search(sc);
 		assertNotNull(zonelist2);
 		assertEquals(3, zonelist2.size());
-
-		assertTrue(zonelist == zonelist2); // cached result
 	}
 
 	@Test
 	public void testLookupCache_ByTypeAndSegmentNotFound() throws Exception {
-		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0,100));
+		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
 		sc.setDbType(DatabaseType.CONSOLE);
 		sc.setSegment("gugus");
 		List<DatabasePartition> l = service.search(sc);
