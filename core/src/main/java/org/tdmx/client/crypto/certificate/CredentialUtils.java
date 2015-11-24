@@ -32,9 +32,11 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.NameConstraints;
+import org.bouncycastle.asn1.x509.SubjectDirectoryAttributes;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -205,6 +207,10 @@ public class CredentialUtils {
 			KeyUsage ku = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation);
 			certBuilder.addExtension(Extension.keyUsage, false, ku);
 
+			GeneralName altName = new GeneralName(GeneralName.iPAddress, req.getIpAddress());
+			GeneralNames subjectAltName = new GeneralNames(altName);
+			certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
+			
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 
