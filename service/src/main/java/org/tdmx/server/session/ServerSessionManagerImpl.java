@@ -73,6 +73,7 @@ import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
 import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
 import com.googlecode.protobuf.pro.duplex.client.RpcClientConnectionWatchdog;
 import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
+import com.googlecode.protobuf.pro.duplex.execute.ServerRpcController;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.CategoryPerServiceLogger;
@@ -176,7 +177,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 		WebServiceApiName api = mapApi(request.getApiName());
 		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
 		if (h != null) {
-			String controllerId = getControllerId((RpcClientChannel) controller);
+			String controllerId = getControllerId(ServerRpcController.getRpcChannel(controller));
 			PKIXCertificate cert = CertificateIOUtils.safeDecodeX509(request.getClientCert().toByteArray());
 			int loadValue = h.getSessionManager().createSession(request.getSessionId(), controllerId, cert,
 					mapAttributes(request.getAttributeList()));

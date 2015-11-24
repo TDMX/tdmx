@@ -16,24 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.domain;
+package org.tdmx.client.cli.zone;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.v01.scs.GetZASSession;
-import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
-import org.tdmx.core.api.v01.scs.ws.SCS;
-import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
+import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "domain:create", description = "creates a domain at the service provider.")
-public class CreateDomain implements CommandExecutable {
+@Cli(name = "scs:download", description = "Download and save SCS server's public certificate - in the scs.crt file.")
+public class DownloadScs implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -43,12 +41,10 @@ public class CreateDomain implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "domain", required = true, description = "the domain name.")
-	private String domain;
-
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
-
+	@Parameter(name = "fingerprint", defaultValueText = "the root certificate's fingerprint", description = "the fingerprint of the certificate in the servers public certificate chain.")
+	private String fingerprint;
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
 
@@ -62,40 +58,45 @@ public class CreateDomain implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
-		if (domainInfo == null) {
-			out.println("No TDMX DNS TXT record found for " + domain);
+		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
+
+		if (zd.getScsUrl() == null) {
+			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
 			return;
 		}
-		out.println("Domain info: " + domainInfo);
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
-		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
-		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);
-
-		GetZASSession sessionRequest = new GetZASSession();
-		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
-		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
-			return;
-		}
-		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
-
-		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
-
-		org.tdmx.core.api.v01.zas.CreateDomain createDomainRequest = new org.tdmx.core.api.v01.zas.CreateDomain();
-		createDomainRequest.setDomain(domain);
-		createDomainRequest.setSessionId(sessionResponse.getSession().getSessionId());
-
-		org.tdmx.core.api.v01.zas.CreateDomainResponse createDomainResponse = zas.createDomain(createDomainRequest);
-		if (createDomainResponse.isSuccess()) {
-			out.println("Domain " + domain + " successfully created.");
+		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl());
+		out.println("Step: " + ctr.getTestStep());
+		out.println("Remote IPAddress: " + ctr.getRemoteIpAddress());
+		if (ctr.getServerCertChain() != null) {
+			out.println("Certificate chain length: " + ctr.getServerCertChain().length);
+			PKIXCertificate trustedCert = null;
+			if (StringUtils.hasText(fingerprint)) {
+				for (PKIXCertificate cert : ctr.getServerCertChain()) {
+					if (fingerprint.equals(cert.getFingerprint())) {
+						trustedCert = cert;
+					}
+				}
+			} else {
+				trustedCert = ctr.getServerCertChain()[ctr.getServerCertChain().length - 1]; // the root cert
+			}
+			if (trustedCert != null) {
+				ClientCliUtils.storeSCSTrustedCertificate(scsTrustedCertFile, trustedCert);
+				out.println("Trusted certificate stored in file " + scsTrustedCertFile);
+			} else {
+				out.println("Trusted certificate not found.");
+			}
 		} else {
-			out.println("Unable to create domain " + domain);
-			ClientCliUtils.logError(out, createDomainResponse.getError());
+			out.println("No certificates fetched from the SCS url.");
+			if (ctr.getException() != null) {
+				out.println("Connection exception: " + ctr.getException());
+			} else {
+				out.println("Connection established successfully.");
+			}
 		}
+
 	}
 
 	// -------------------------------------------------------------------------

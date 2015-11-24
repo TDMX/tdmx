@@ -29,7 +29,7 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
-@Cli(name = "scs:check", description = "Checks the access to the zone's SCS url.")
+@Cli(name = "scs:check", description = "Checks the access to the zone's SCS url and shows SCS server's public certificate information.")
 public class CheckScs implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -42,7 +42,7 @@ public class CheckScs implements CommandExecutable {
 
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
-	@Parameter(name = "verbose", defaultValue = "false", description = "the zone administrator's keystore password.")
+	@Parameter(name = "verbose", defaultValue = "false", description = "provide more detailed certificate information.")
 	private boolean verbose;
 
 	// -------------------------------------------------------------------------
@@ -74,7 +74,8 @@ public class CheckScs implements CommandExecutable {
 				if (verbose) {
 					out.println("cert[" + idx + "] " + cert);
 				} else {
-					out.println("cert[" + idx + "] " + cert.getSubject());
+					out.println("cert[" + idx + "] subject=" + cert.getSubject());
+					out.println("cert[" + idx + "] fingerprint=" + cert.getFingerprint());
 				}
 				idx++;
 			}

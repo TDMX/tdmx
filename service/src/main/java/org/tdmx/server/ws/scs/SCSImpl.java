@@ -274,13 +274,7 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
-		Session session = new Session();
-		session.setSessionId(ep.getSessionId());
-		session.setZoneapex(existingCred.getZone().getZoneApex());
-		session.setLocalname(existingCred.getAddress().getLocalName());
-		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setServicename(service.getServiceName());
-		session.setServiceprovider(segment.getScsUrl()); // FIXME url
+		Session session = mapSession(existingCred, ep.getSessionId(), service.getServiceName(), segment.getScsUrl());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -318,13 +312,7 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
-		Session session = new Session();
-		session.setSessionId(ep.getSessionId());
-		session.setZoneapex(existingCred.getZone().getZoneApex());
-		session.setLocalname(existingCred.getAddress().getLocalName());
-		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setServicename(null);
-		session.setServiceprovider(segment.getScsUrl());
+		Session session = mapSession(existingCred, ep.getSessionId(), null, segment.getScsUrl());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -361,13 +349,7 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
-		Session session = new Session();
-		session.setSessionId(ep.getSessionId());
-		session.setZoneapex(existingCred.getZone().getZoneApex());
-		session.setDomain(existingCred.getDomain().getDomainName());
-		session.setLocalname(null);
-		session.setServicename(null);
-		session.setServiceprovider(segment.getScsUrl()); // FIXME change to spUrl
+		Session session = mapSession(existingCred, ep.getSessionId(), null, segment.getScsUrl());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -386,6 +368,22 @@ public class SCSImpl implements SCS, Manageable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private Session mapSession(AgentCredential agent, String sessionId, String service, String serviceProviderUrl) {
+		Session session = new Session();
+		session.setSessionId(sessionId);
+		session.setZoneapex(agent.getZone().getZoneApex());
+		if (agent.getDomain() != null) {
+			session.setDomain(agent.getDomain().getDomainName());
+		}
+		if (agent.getAddress() != null) {
+			session.setLocalname(agent.getAddress().getLocalName());
+		}
+
+		session.setServicename(service);
+		session.setServiceprovider(serviceProviderUrl); // FIXME change to spUrl
+		return session;
+	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {
 		Error error = new Error();

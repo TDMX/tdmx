@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -43,11 +44,13 @@ import org.tdmx.client.adapter.SslProbeService;
 import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.adapter.TrustedServerCertificateProvider;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.dns.DnsUtils;
@@ -70,6 +73,7 @@ public class ClientCliUtils {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 	public static final String ZONE_DESCRIPTOR = "zone.tdmx";
+	public static final String TRUSTED_SCS_CERT = "scs.crt";
 
 	public static final String KEYSTORE_TYPE = "jks";
 
@@ -211,6 +215,28 @@ public class ClientCliUtils {
 			return version;
 		}
 
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - SCS
+	// -------------------------------------------------------------------------
+
+	public static void storeSCSTrustedCertificate(String filename, PKIXCertificate trustedCert) {
+		try {
+			FileUtils.storeFileContents(filename, trustedCert.getX509Encoded(), ".tmp");
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to store SCS trusted certificate.", e);
+		}
+	}
+
+	public static PKIXCertificate loadSCSTrustedCertificate(String filename) {
+		byte[] bytes;
+		try {
+			bytes = FileUtils.getFileContents(filename);
+			return CertificateIOUtils.decodeX509(bytes);
+		} catch (CryptoCertificateException | IOException e) {
+			throw new IllegalStateException("Unable to load trusted SCS certificate file " + filename, e);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -384,6 +410,10 @@ public class ClientCliUtils {
 		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
 	}
 
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - DNS
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns the DNS zone info for the domain.
 	 * 
@@ -466,7 +496,7 @@ public class ClientCliUtils {
 		factory.setKeepAlive(true);
 		factory.setClazz(SCS.class);
 		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
-		factory.setDisableCNCheck(false);
+		factory.setDisableCNCheck(true); // FIXME
 		factory.setKeyManagerFactory(kmf);
 		factory.setTrustManagerFactory(stfm);
 		factory.setTlsProtocolVersion(TLS_VERSION);
@@ -477,7 +507,7 @@ public class ClientCliUtils {
 		return client;
 	}
 
-	public static ZAS createZASClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert) {
+	public static ZAS createZASClient(PKIXCredential uc, Endpoint endpoint) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -489,12 +519,13 @@ public class ClientCliUtils {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mosServerCert);
+		PKIXCertificate serverCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(serverCert);
 		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
 		stfm.setCertificateProvider(tcp);
 
 		SoapClientFactory<ZAS> factory = new SoapClientFactory<>();
-		factory.setUrl(mosUrl.toString());
+		factory.setUrl(endpoint.getUrl());
 		factory.setConnectionTimeoutMillis(10000);
 		factory.setKeepAlive(true);
 		factory.setClazz(ZAS.class);
@@ -541,5 +572,9 @@ public class ClientCliUtils {
 
 		MOS client = factory.createClient();
 		return client;
+	}
+
+	public static void logError(PrintStream out, org.tdmx.core.api.v01.common.Error error) {
+		out.println("Error [" + error.getCode() + "] " + error.getDescription());
 	}
 }
