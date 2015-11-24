@@ -103,6 +103,7 @@
 	
 	<bean id="tdmx.lib.control.DatabasePartitionRepository"	class="org.tdmx.lib.control.service.DatabasePartitionServiceRepositoryImpl">
 		<property name="databasePartitionDao" ref="tdmx.lib.control.dao.DatabasePartitionDao" />
+		<property name="cacheInvalidationNotifier" ref="tdmx.server.DelegatingCacheInvalidationNotifier"/>
 	</bean>
 
 
@@ -111,7 +112,6 @@
 
 	<bean id="tdmx.lib.control.PartitionControlServerRepository" class="org.tdmx.lib.control.service.PartitionControlServerServiceRepositoryImpl">
 		<property name="partitionControlServerDao"	ref="tdmx.lib.control.dao.PartitionControlServerDao" />
-		<property name="cacheInvalidationNotifier" ref="tdmx.server.DelegatingCacheInvalidationNotifier"/>
 	</bean>
 	
 
