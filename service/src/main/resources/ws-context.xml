@@ -13,6 +13,8 @@
 		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 		
+	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
 		
 
 	<jaxws:endpoint id="mdsEndpoint_V01" implementor="#ws.MDS" address="${ws.endpointPath}/mds">

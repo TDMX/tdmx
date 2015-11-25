@@ -18,7 +18,7 @@
 
 
 	<bean id="jdbc.zonedb.DatabaseConfigurationProvider" class="org.tdmx.lib.control.datasource.DatabasePartitionConfigurationProvider">
-		<property name="cache" ref="tdmx.lib.control.DatabasePartitionCache"/>
+		<property name="cache" ref="tdmx.server.control.DatabasePartitionCache"/>
 		<!-- default properties -->
 		<property name="driverClassname" value="${jdbc.zonedb.driverClassName}" />
 		<property name="url" value="${jdbc.zonedb.url}" />

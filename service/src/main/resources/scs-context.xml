@@ -13,6 +13,8 @@
 		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 		
+	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
 
 	<jaxws:endpoint id="scsEndpoint_V01" implementor="#ws.SCS" address="/v1.0/scs">
 	</jaxws:endpoint>

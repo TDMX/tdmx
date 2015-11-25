@@ -14,13 +14,15 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 
-	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier">
+	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier" init-method="init">
+	<!-- replaced with spring lookup in init()
 		<property name="broadcastEventNotifiers">
 			<list value-type="org.tdmx.server.pcs.BroadcastEventNotifier">
 	            <ref bean="ws.ServerSessionManager"/>
 	            <ref bean="scs.LocalControlService"/>
 	        </list>
 		</property>
+	 -->
 	</bean>
 
 	<bean id="tdmx.server.DnsResolverGroupCache" class="org.tdmx.server.runtime.DnsResolverGroupFactoryImpl">
@@ -31,6 +33,10 @@
 		<property name="dnsResolverGroupFactory" ref="tdmx.server.DnsResolverGroupCache"/>
 	</bean>
 	
+	<bean id="tdmx.server.control.DatabasePartitionCache" class="org.tdmx.lib.control.service.DatabasePartitionCacheImpl">
+		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
+	</bean>
+
 	<bean id="tdmx.server.DomainZoneResolutionService" class="org.tdmx.server.runtime.DomainZoneResolutionServiceImpl">
 		<property name="dnsZoneResolutionService" ref="tdmx.server.DnsZoneResolutionService"/>
 		<property name="dnsDomainZoneService" ref="tdmx.lib.control.DnsDomainZoneRepository" />
@@ -42,7 +48,7 @@
 		<property name="cacheInvalidationListeners">
 			<list value-type="org.tdmx.server.pcs.CacheInvalidationListener">
 	            <ref bean="tdmx.server.DnsResolverGroupCache"/>
-	            <ref bean="tdmx.lib.control.DatabasePartitionCache"/>
+	            <ref bean="tdmx.server.control.DatabasePartitionCache"/>
 	        </list>
 		</property>
 	</bean>

@@ -18,11 +18,14 @@
  */
 package org.tdmx.server.pcs;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage.MessageType;
 
@@ -37,7 +40,7 @@ import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage.MessageType;
  * @author Peter
  *
  */
-public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNotifier {
+public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNotifier, ApplicationContextAware {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -48,7 +51,9 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(DelegatingCacheInvalidationNotifier.class);
 
-	private List<BroadcastEventNotifier> broadcastEventNotifiers;
+	// internal
+	private Collection<BroadcastEventNotifier> broadcastEventNotifiers;
+	private ApplicationContext ctx;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -59,6 +64,18 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public void init() {
+		if (ctx == null) {
+			throw new IllegalStateException("No beanFactory.");
+		}
+		broadcastEventNotifiers = ctx.getBeansOfType(BroadcastEventNotifier.class).values();
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.ctx = applicationContext;
+	}
 
 	@Override
 	public void cacheInvalidated(String key) {
@@ -91,13 +108,5 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public List<BroadcastEventNotifier> getBroadcastEventNotifiers() {
-		return broadcastEventNotifiers;
-	}
-
-	public void setBroadcastEventNotifiers(List<BroadcastEventNotifier> broadcastEventNotifiers) {
-		this.broadcastEventNotifiers = broadcastEventNotifiers;
-	}
 
 }

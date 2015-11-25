@@ -13,6 +13,8 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
+	<import resource="classpath:/org/tdmx/core/system/env/config-context.xml"/>
+	<import resource="classpath:/org/tdmx/core/system/env/configurer-context.xml"/>
 
 	<util:map id="propertiesMap">
 		<entry key="jaxb.formatted.output">
