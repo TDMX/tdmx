@@ -24,6 +24,8 @@ import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.common.Page;
+import org.tdmx.core.api.v01.msg.DomainFilter;
 import org.tdmx.core.api.v01.scs.GetZASSession;
 import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -31,10 +33,9 @@ import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "domain:create", description = "creates a domain at the service provider.")
-public class CreateDomain implements CommandExecutable {
+@Cli(name = "domain:search", description = "searches for domains at the service provider.")
+public class SearchDomain implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -44,15 +45,20 @@ public class CreateDomain implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "domain", required = true, description = "the domain name.")
-	private String domain;
-
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
 
+	@Parameter(name = "domain", description = "the domain name to s.")
+	private String domain;
+
+	@Parameter(name = "pageNumber", defaultValue = "0", description = "the result page number.")
+	private int pageNumber;
+
+	@Parameter(name = "pageSize", defaultValue = "10", description = "the result page size.")
+	private int pageSize;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -70,21 +76,10 @@ public class CreateDomain implements CommandExecutable {
 			return;
 		}
 
-		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
-		if (domainInfo == null) {
-			out.println("No TDMX DNS TXT record found for " + domain);
-			return;
-		}
-		out.println("Domain info: " + domainInfo);
-		if (zd.getScsUrl().equals(domainInfo.getScsUrl())) {
-			out.println("SCS url mismatch DNS=" + domainInfo.getScsUrl() + " local zone descriptor " + zd.getScsUrl());
-			return;
-		}
-
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
-		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);
+		SCS scs = ClientCliUtils.createSCSClient(zac, zd.getScsUrl(), scsPublicCertificate);
 
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
@@ -97,16 +92,25 @@ public class CreateDomain implements CommandExecutable {
 
 		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
-		org.tdmx.core.api.v01.zas.CreateDomain createDomainRequest = new org.tdmx.core.api.v01.zas.CreateDomain();
-		createDomainRequest.setDomain(domain);
-		createDomainRequest.setSessionId(sessionResponse.getSession().getSessionId());
+		org.tdmx.core.api.v01.zas.SearchDomain searchDomainRequest = new org.tdmx.core.api.v01.zas.SearchDomain();
+		Page p = new Page();
+		p.setNumber(pageNumber);
+		p.setSize(pageSize);
+		searchDomainRequest.setPage(p);
+		DomainFilter df = new DomainFilter();
+		df.setDomain(domain);
+		searchDomainRequest.setFilter(df);
+		searchDomainRequest.setSessionId(sessionResponse.getSession().getSessionId());
 
-		org.tdmx.core.api.v01.zas.CreateDomainResponse createDomainResponse = zas.createDomain(createDomainRequest);
-		if (createDomainResponse.isSuccess()) {
-			out.println("Domain " + domain + " successfully created.");
+		org.tdmx.core.api.v01.zas.SearchDomainResponse searchDomainResponse = zas.searchDomain(searchDomainRequest);
+		if (searchDomainResponse.isSuccess()) {
+			out.println("Found " + searchDomainResponse.getDomains().size() + " domains.");
+			for (String domain : searchDomainResponse.getDomains()) {
+				out.println(domain);
+			}
+
 		} else {
-			out.println("Unable to create domain " + domain);
-			ClientCliUtils.logError(out, createDomainResponse.getError());
+			ClientCliUtils.logError(out, searchDomainResponse.getError());
 		}
 	}
 
