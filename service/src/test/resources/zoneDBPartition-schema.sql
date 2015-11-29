@@ -62,7 +62,7 @@
         id bigint not null,
         accountId varchar(16) not null,
         jobId bigint,
-        segment varchar(16) not null,
+        segment varchar(64) not null,
         status varchar(16) not null,
         zoneApex varchar(255) not null,
         zonePartitionId varchar(255) not null,
@@ -185,7 +185,7 @@
         macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
         payloadLength bigint not null,
-        payloadSignature varchar(1024) not null,
+        payloadSignature varchar(128) not null,
         plaintextLength bigint not null,
         receiverPem varchar(12000) not null,
         senderSignatureAlgorithm varchar(16) not null,
@@ -224,7 +224,7 @@
         data varbinary(16000) not null,
         endTimestamp timestamp,
         exception varbinary(16000),
-        jobId varchar(32) not null,
+        jobId varchar(64) not null,
         startTimestamp timestamp,
         type varchar(128) not null,
         scheduledTime timestamp not null,
@@ -240,7 +240,7 @@
         deactivationTimestamp timestamp,
         obfuscatedPassword varchar(255),
         partitionId varchar(255) not null,
-        segment varchar(16) not null,
+        segment varchar(64) not null,
         sizeFactor integer not null,
         url varchar(255),
         username varchar(255),
@@ -305,7 +305,7 @@
 
     create table LockEntry (
         id bigint not null,
-        lockName varchar(32),
+        lockName varchar(64),
         lockedBy varchar(32),
         lockedUntilTime timestamp,
         primary key (id),
@@ -322,7 +322,7 @@
         id bigint not null,
         ipAddress varchar(16) not null,
         port integer not null,
-        segment varchar(16) not null,
+        segment varchar(64) not null,
         serverModulo integer not null,
         primary key (id)
     );
@@ -330,7 +330,7 @@
     create table Segment (
         id bigint not null,
         scsUrl varchar(255),
-        segmentName varchar(16) not null,
+        segmentName varchar(64) not null,
         primary key (id)
     );
 
