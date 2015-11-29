@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.service.DatabasePartitionCache;
-import org.tdmx.lib.control.service.DatabasePartitionService;
 
 public class DatabasePartitionConfigurationProvider implements DataSourceConfigurationProvider {
 
@@ -52,12 +51,12 @@ public class DatabasePartitionConfigurationProvider implements DataSourceConfigu
 	// -------------------------------------------------------------------------
 	@Override
 	public DatabaseConnectionInfo getPartitionInfo(String partitionId) {
+		if (DynamicDataSource.UNITTEST_PARTITION_ID.equals(partitionId)
+				|| DynamicDataSource.VALIDATION_PARTITION_ID.equals(partitionId)) {
+			return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
+		}
 		DatabasePartition partitionInfo = cache.findByPartitionId(partitionId);
 		if (partitionInfo == null) {
-			if (DynamicDataSource.UNITTEST_PARTITION_ID.equals(partitionId)
-					|| DynamicDataSource.VALIDATION_PARTITION_ID.equals(partitionId)) {
-				return new DatabaseConnectionInfo(getUsername(), getPassword(), getUrl(), getDriverClassname());
-			}
 			log.warn("Unable to find DatabasePartition with partitionId " + partitionId);
 			return null;
 		}

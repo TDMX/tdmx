@@ -61,7 +61,6 @@ public class ChannelMessage implements Serializable {
 	public static final int MAX_MSGID_LEN = 64;
 	public static final int MAX_SHA256_MAC_LEN = 80;
 	public static final int MAX_EXTREF_LEN = 256;
-	public static final int MAX_SIGNATURE_LEN = 128;
 	public static final int MAX_CRCMANIFEST_LEN = 8000;
 
 	// -------------------------------------------------------------------------
@@ -100,7 +99,7 @@ public class ChannelMessage implements Serializable {
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String encryptionContextId;
 
-	@Column(length = MAX_SIGNATURE_LEN, nullable = false)
+	@Column(length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)
 	private String payloadSignature;
 
 	@Embedded

@@ -185,7 +185,7 @@
         macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
         payloadLength bigint not null,
-        payloadSignature varchar(128) not null,
+        payloadSignature varchar(1024) not null,
         plaintextLength bigint not null,
         receiverPem varchar(12000) not null,
         senderSignatureAlgorithm varchar(16) not null,
