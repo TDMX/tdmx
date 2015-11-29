@@ -64,6 +64,21 @@ public class SessionHandle {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("SessionHandle [sessionKey=");
+		builder.append(sessionKey);
+		builder.append(", api=");
+		builder.append(api);
+		builder.append(", segment=");
+		builder.append(segment);
+		builder.append(", seedAttributes=");
+		builder.append(seedAttributes);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

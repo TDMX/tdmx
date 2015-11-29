@@ -403,6 +403,9 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 					} else {
 						log.warn("Unable to add client certificate to remote server session.");
 					}
+				} else {
+					log.debug("Found exising session.");
+					return existingSession.getSessionEndpoint();
 				}
 			}
 		}

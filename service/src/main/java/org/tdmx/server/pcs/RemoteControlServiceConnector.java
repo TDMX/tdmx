@@ -304,6 +304,8 @@ public class RemoteControlServiceConnector
 			responseBuilder.setHttpsUrl(wsse.getHttpsUrl());
 			responseBuilder.setSessionId(wsse.getSessionId());
 			responseBuilder.setServerCert(ByteString.copyFrom(wsse.getPublicCertificate().getX509Encoded()));
+		} else {
+			log.info("No endpoint associated for " + sh);
 		}
 		return responseBuilder.build();
 	}
@@ -335,7 +337,8 @@ public class RemoteControlServiceConnector
 	public NotifySessionRemovedResponse notifySessionsRemoved(RpcController controller,
 			NotifySessionRemovedRequest request) throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
-		log.info("notifySessionsRemoved call from " + channel.getPeerInfo());
+		log.info("notifySessionsRemoved call from " + channel.getPeerInfo() + " for removing "
+				+ request.getSessionIdCount());
 
 		Set<String> sessionIds = new HashSet<>();
 		sessionIds.addAll(request.getSessionIdList());
