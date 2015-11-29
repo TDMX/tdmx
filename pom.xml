@@ -253,11 +253,16 @@
 		<aws.version>1.6.12</aws.version>
 		<dnsjava.version>2.1.7</dnsjava.version>
 		<bc.version>1.53</bc.version>
+		<aws-java-sdk.version>1.10.34</aws-java-sdk.version>
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
 		<slf4j.version>1.6.4</slf4j.version>
+		<commons-codec.version>1.4</commons-codec.version>
+		<commons-dbcp.version>1.4</commons-dbcp.version>
 		<logback.version>1.0.13</logback.version>
 		<junit.version>4.8.2</junit.version>
+		<mockito.version>1.10.19</mockito.version>
+		<mysql.version>5.1.18</mysql.version>
 		<hsqldb.version>2.3.3</hsqldb.version>
 		<sonar.host.url>http://localhost:9000</sonar.host.url>
 	</properties>
