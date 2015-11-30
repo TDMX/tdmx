@@ -34,8 +34,8 @@ import javax.persistence.PersistenceContext;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -158,18 +158,18 @@ public class ChannelDaoImpl implements ChannelDao {
 		}
 		if (criteria.getUnconfirmed() != null) {
 			if (criteria.getUnconfirmed()) {
-				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNotNull().or(
-						channelAuthorization.reqSendAuthorization.grant.isNotNull());
+				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNotNull()
+						.or(channelAuthorization.reqSendAuthorization.grant.isNotNull());
 				where = where.and(orCondition);
 			} else {
-				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNull().or(
-						channelAuthorization.reqSendAuthorization.grant.isNull());
+				BooleanExpression orCondition = channelAuthorization.reqRecvAuthorization.grant.isNull()
+						.or(channelAuthorization.reqSendAuthorization.grant.isNull());
 				where = where.and(orCondition);
 			}
 		}
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(channel);
 	}
 
@@ -204,8 +204,8 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(channel);
 	}
 
@@ -240,8 +240,8 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(temporaryChannel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(temporaryChannel);
 	}
 
@@ -259,12 +259,12 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelMessage).innerJoin(channel).fetch()
+		JPAQuery query = new JPAQuery(em).from(channelMessage).innerJoin(channelMessage.channel, channel).fetch()
 				.innerJoin(channel.domain, domain).fetch();
 
 		BooleanExpression where = domain.zone.eq(zone);
-		
-		if ( criteria.getChannel() != null ) {
+
+		if (criteria.getChannel() != null) {
 			where = where.and(channel.eq(criteria.getChannel()));
 		}
 		if (StringUtils.hasText(criteria.getMsgId())) {
@@ -292,8 +292,8 @@ public class ChannelDaoImpl implements ChannelDao {
 			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(channelMessage);
 	}
 
