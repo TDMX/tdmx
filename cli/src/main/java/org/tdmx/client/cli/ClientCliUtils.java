@@ -335,6 +335,20 @@ public class ClientCliUtils {
 		return maxSerial;
 	}
 
+	public static PKIXCertificate getDACPublicKey(String domainName, int serialNumber) {
+		List<File> dacFiles = FileUtils.getFilesMatchingPattern(".",
+				"^" + domainName + "-" + serialNumber + ".dac.crt$");
+		if (!dacFiles.isEmpty()) {
+			try {
+				byte[] pkixCert = FileUtils.getFileContents(dacFiles.get(0).getPath());
+				return CertificateIOUtils.safeDecodeX509(pkixCert);
+			} catch (IOException e) {
+				throw new IllegalStateException("Unable to read DAC public credential. " + e.getMessage(), e);
+			}
+		}
+		return null;
+	}
+
 	public static String createDACKeystoreFilename(String domain, int serialNumber) {
 		return domain + "-" + serialNumber + ".dac";
 	}

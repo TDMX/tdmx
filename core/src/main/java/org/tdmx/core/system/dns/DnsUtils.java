@@ -96,6 +96,11 @@ public class DnsUtils {
 		public URL getScsUrl() {
 			return scsUrl;
 		}
+
+		@Override
+		public String toString() {
+			return formatDnsTxtRecord(this);
+		}
 	}
 
 	/**
