@@ -76,7 +76,7 @@ public class CreateDomain implements CommandExecutable {
 			return;
 		}
 		out.println("Domain info: " + domainInfo);
-		if (zd.getScsUrl().equals(domainInfo.getScsUrl())) {
+		if (!zd.getScsUrl().equals(domainInfo.getScsUrl())) {
 			out.println("SCS url mismatch DNS=" + domainInfo.getScsUrl() + " local zone descriptor " + zd.getScsUrl());
 			return;
 		}
