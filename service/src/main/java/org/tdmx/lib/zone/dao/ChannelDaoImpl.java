@@ -246,14 +246,11 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
-	public ChannelMessage loadChannelMessageByMessageId(Zone zone, String messageId) {
-		if (zone == null) {
-			throw new IllegalArgumentException("missing zone");
+	public ChannelMessage loadChannelMessageByMessageId(Long msgId) {
+		if (msgId == null) {
+			throw new IllegalArgumentException("missing msgId");
 		}
-		if (messageId == null) {
-			throw new IllegalArgumentException("missing messageId");
-		}
-		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.msgId.eq(messageId));
+		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.id.eq(msgId));
 		return query.uniqueResult(channelMessage);
 	}
 
@@ -266,7 +263,10 @@ public class ChannelDaoImpl implements ChannelDao {
 				.innerJoin(channel.domain, domain).fetch();
 
 		BooleanExpression where = domain.zone.eq(zone);
-
+		
+		if ( criteria.getChannel() != null ) {
+			where = where.and(channel.eq(criteria.getChannel()));
+		}
 		if (StringUtils.hasText(criteria.getMsgId())) {
 			where = where.and(channelMessage.msgId.eq(criteria.getMsgId()));
 		}

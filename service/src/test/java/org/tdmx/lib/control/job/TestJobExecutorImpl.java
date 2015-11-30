@@ -59,9 +59,9 @@ public class TestJobExecutorImpl implements JobExecutor<TestTask> {
 
 	@Override
 	public void execute(Long id, TestTask task) {
-		if (StringUtils.hasText(task.getExceptionMessage())) {
+		if (StringUtils.hasText(task.getProcessMessage())) {
 			log.info("FAILURE task " + id + " with " + task.getProcessTimeMs() + "ms delay - "
-					+ task.getExceptionMessage());
+					+ task.getProcessMessage());
 		} else {
 			log.info("SUCCESS task " + id + " with " + task.getProcessTimeMs() + "ms delay");
 		}
@@ -73,9 +73,9 @@ public class TestJobExecutorImpl implements JobExecutor<TestTask> {
 			}
 		}
 		task.setProcessMessage("" + id);
-		if (StringUtils.hasText(task.getExceptionMessage())) {
+		if (StringUtils.hasText(task.getProcessMessage())) {
 			// usually the problem comes from deeper in the service layer.
-			Exception causingException = new Exception(task.getExceptionMessage());
+			Exception causingException = new Exception(task.getProcessMessage());
 			causingException.fillInStackTrace();
 			throw new RuntimeException("Some Problem Occured.", causingException);
 		}

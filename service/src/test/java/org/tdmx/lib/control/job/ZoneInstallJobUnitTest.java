@@ -70,7 +70,7 @@ public class ZoneInstallJobUnitTest {
 
 	@After
 	public void doTeardown() {
-		AccountZone storedAZ = accountZoneService.findByZoneApex(az.getZoneApex());
+		AccountZone storedAZ = accountZoneService.findById(az.getId());
 		if (storedAZ != null) {
 			accountZoneService.delete(storedAZ);
 		}
@@ -88,12 +88,12 @@ public class ZoneInstallJobUnitTest {
 	@Test
 	public void test_Success() throws Exception {
 		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId(az.getAccountId());
-		task.setZoneApex(az.getZoneApex());
+		task.setAccountId(1L); //NOT used
+		task.setAccountZoneId(az.getId());
 
 		executor.execute(jobId, task);
 
-		AccountZone storedAZ = accountZoneService.findByZoneApex(az.getZoneApex());
+		AccountZone storedAZ = accountZoneService.findById(az.getId());
 		assertNotNull(storedAZ);
 		assertNull(storedAZ.getJobId());
 
@@ -105,8 +105,8 @@ public class ZoneInstallJobUnitTest {
 	@Test
 	public void test_Failure_JobIdMismatch() throws Exception {
 		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId(az.getAccountId());
-		task.setZoneApex(az.getZoneApex());
+		task.setAccountId(1L);
+		task.setAccountZoneId(az.getId());
 
 		try {
 			executor.execute(new Random().nextLong(), task);

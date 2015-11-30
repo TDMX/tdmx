@@ -128,8 +128,8 @@ public class ZACInstallJobUnitTest {
 	@Test
 	public void test_Success() throws Exception {
 		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
+		task.setAccountId(data.getAccount().getId());
+		task.setAccountZoneId(zone.getAccountZoneId());
 		task.setFingerprint(fingerprint);
 
 		executor.execute(jobId, task);
@@ -159,8 +159,8 @@ public class ZACInstallJobUnitTest {
 		accountZoneAdministrationCredentialService.createOrUpdate(storedZAC);
 
 		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
+		task.setAccountId(data.getAccount().getId());
+		task.setAccountZoneId(zone.getAccountZoneId());
 		task.setFingerprint(fingerprint);
 
 		executor.execute(jobId, task);
@@ -174,8 +174,8 @@ public class ZACInstallJobUnitTest {
 	@Test
 	public void test_Failure_FingerprintMissing() throws Exception {
 		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
+		task.setAccountId(data.getAccount().getId());
+		task.setAccountZoneId(zone.getAccountZoneId());
 		task.setFingerprint(null);
 
 		try {
@@ -189,8 +189,8 @@ public class ZACInstallJobUnitTest {
 	@Test
 	public void test_Failure_FingerprintNotFound() throws Exception {
 		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
+		task.setAccountId(data.getAccount().getId());
+		task.setAccountZoneId(zone.getAccountZoneId());
 		task.setFingerprint("gugus");
 
 		try {
@@ -204,8 +204,8 @@ public class ZACInstallJobUnitTest {
 	@Test
 	public void test_Failure_JobIdMismatch() throws Exception {
 		ZACInstallTask task = new ZACInstallTask();
-		task.setAccountId(data.getAccount().getAccountId());
-		task.setZoneApex(zone.getZoneApex());
+		task.setAccountId(data.getAccount().getId());
+		task.setAccountZoneId(zone.getAccountZoneId());
 		task.setFingerprint(fingerprint);
 
 		try {

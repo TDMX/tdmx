@@ -65,7 +65,7 @@ public interface ChannelDao {
 	 * @param messageId
 	 * @return the ChannelMessage or null if not found.
 	 */
-	public ChannelMessage loadChannelMessageByMessageId(Zone zone, String messageId);
+	public ChannelMessage loadChannelMessageByMessageId(Long msgId);
 
 	/**
 	 * Search for Channels. FetchPlan includes ChannelAuthorizations, FlowQuota and Domain.

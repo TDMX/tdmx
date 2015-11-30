@@ -152,6 +152,15 @@ public interface ChannelService {
 	public void create(TemporaryChannel channel);
 
 	/**
+	 * Creates (persists) a ChannelMessage.
+	 * 
+	 * NOTE: this is only called by {@link ZoneTransferTask}, otherwise use the {@link ChannelService#relayMessage(Zone, ChannelMessage)} or {@link ChannelService#submitMessage(Zone, ChannelMessage)} are the usual creation mechanisms.
+	 * 
+	 * @param channel
+	 */
+	public void create(ChannelMessage message);
+
+	/**
 	 * Lookup a TemporaryChannel in the Domain.
 	 * 
 	 * @param zone
@@ -177,10 +186,31 @@ public interface ChannelService {
 	 */
 	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth);
 
+	/**
+	 * Search for Channels.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria);
 
+	/**
+	 * Search for TemporaryChannels.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
+	/**
+	 * Search for Messages.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 	/**
@@ -190,7 +220,7 @@ public interface ChannelService {
 	 * @param msgId
 	 * @return
 	 */
-	public ChannelMessage findByMessageId(Zone zone, String msgId);
+	public ChannelMessage findByMessageId(Long msgId);
 
 	/**
 	 * Fetch the TemporaryChannel which has the id provided.
@@ -242,6 +272,14 @@ public interface ChannelService {
 	 *            the temporary channel
 	 */
 	public void delete(TemporaryChannel tempChannel);
+
+	/**
+	 * Delete a ChannelMessage.
+	 * 
+	 * @param message
+	 *            the message
+	 */
+	public void delete(ChannelMessage message);
 
 	public enum SubmitMessageOperationStatus {
 		FLOW_CONTROL_CLOSED,

@@ -352,6 +352,27 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
+	public void create(ChannelMessage message) {
+		if (message.getId() != null) {
+			log.warn("Unable to persist ChannelMessage with id " + message.getId());
+		} else {
+			getChannelDao().persist(message);
+		}
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void delete(ChannelMessage message) {
+		ChannelMessage storedMessage = getChannelDao().loadChannelMessageByMessageId(message.getId());
+		if (storedMessage != null) {
+			getChannelDao().delete(storedMessage);
+		} else {
+			log.warn("Unable to find ChannelMessage to delete with id " + message.getId());
+		}
+	}
+
+	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		return getChannelDao().search(zone, criteria);
@@ -523,8 +544,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelMessage findByMessageId(Zone zone, String msgId) {
-		return getChannelDao().loadChannelMessageByMessageId(zone, msgId);
+	public ChannelMessage findByMessageId(Long msgId) {
+		return getChannelDao().loadChannelMessageByMessageId(msgId);
 	}
 
 	// -------------------------------------------------------------------------

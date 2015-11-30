@@ -62,8 +62,8 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Before
 	public void doSetup() throws Exception {
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId("1");
-		task.setZoneApex("z");
+		task.setAccountId(1L);
+		task.setAccountId(2L);
 		task.setZoneDbPartitionId("pid");
 
 		Job j = new Job();

@@ -41,6 +41,11 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 	 */
 	private String msgId;
 
+	/**
+	 * Find by owning Channel
+	 */
+	private Channel channel;
+	
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -70,6 +75,14 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 
 	public void setMsgId(String msgId) {
 		this.msgId = msgId;
+	}
+
+	public Channel getChannel() {
+		return channel;
+	}
+
+	public void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 }

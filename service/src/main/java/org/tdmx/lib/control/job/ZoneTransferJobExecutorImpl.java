@@ -35,12 +35,16 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialService;
@@ -74,8 +78,6 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 	private int batchSize = 1000;
 
-	// TODO #86: Destination transfer
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -94,7 +96,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 	@Override
 	public void execute(Long id, ZoneTransferTask task) {
-		AccountZone az = getAccountZoneService().findByZoneApex(task.getZoneApex());
+		AccountZone az = getAccountZoneService().findById(task.getAccountZoneId());
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}
@@ -161,6 +163,33 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		zonePartitionIdProvider.setPartitionId(oldPartitionId);
 		boolean more = true;
 		try {
+			more = true;
+			while (more) {
+				TemporaryChannelSearchCriteria casc = new TemporaryChannelSearchCriteria(
+						new PageSpecifier(0, getBatchSize()));
+				List<TemporaryChannel> tempChannels = channelService.search(zone, casc);
+				for (TemporaryChannel tempChannel : tempChannels) {
+					channelService.delete(tempChannel);
+				}
+				if (tempChannels.isEmpty()) {
+					more = false;
+				}
+			}
+			
+			
+			more = true;
+			while (more) {
+				ChannelMessageSearchCriteria casc = new ChannelMessageSearchCriteria(
+						new PageSpecifier(0, getBatchSize()));
+				List<ChannelMessage> messages = channelService.search(zone, casc);
+				for (ChannelMessage m : messages) {
+					channelService.delete(m);
+				}
+				if (messages.isEmpty()) {
+					more = false;
+				}
+			}
+			
 			more = true;
 			while (more) {
 				DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
@@ -271,42 +300,6 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		return newZone;
 	}
 
-	private void transferChannelAuthorizations(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
-			Domain newDomain, String newPartitionId) {
-		boolean more = true;
-		for (int pageNo = 0; more; pageNo++) {
-			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
-					new PageSpecifier(pageNo, getBatchSize()));
-			sc.setDomain(oldDomain);
-
-			List<Channel> channels = null;
-			zonePartitionIdProvider.setPartitionId(oldPartitionId);
-			try {
-				channels = channelService.search(oldZone, sc);
-			} finally {
-				zonePartitionIdProvider.clearPartitionId();
-			}
-			for (Channel oldChannel : channels) {
-				Channel newChannel = new Channel(newDomain, oldChannel);
-
-				ChannelAuthorization newCa = new ChannelAuthorization(newChannel, oldChannel.getAuthorization());
-				newChannel.setAuthorization(newCa);
-
-				zonePartitionIdProvider.setPartitionId(newPartitionId);
-				try {
-
-					// add the zone to the new partition.
-					channelService.create(newChannel);
-				} finally {
-					zonePartitionIdProvider.clearPartitionId();
-				}
-			}
-			if (channels.isEmpty()) {
-				more = false;
-			}
-		}
-	}
-
 	private void transferDomains(Zone oldZone, String oldPartitionId, Zone newZone, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
@@ -338,7 +331,10 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				// addresses, nested UCs, destinations
 				transferAddresses(oldZone, oldPartitionId, newZone, newDomain, newPartitionId);
 
+				// channel, channel authorizations and messages
 				transferChannelAuthorizations(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
+				
+				transferTemporaryChannels(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
 			}
 			if (domains.isEmpty()) {
 				more = false;
@@ -543,6 +539,112 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			if (destinations.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void transferChannelAuthorizations(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
+			Domain newDomain, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomain(oldDomain);
+
+			List<Channel> channels = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				channels = channelService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
+			for (Channel oldChannel : channels) {
+				Channel newChannel = new Channel(newDomain, oldChannel);
+
+				ChannelAuthorization newCa = new ChannelAuthorization(newChannel, oldChannel.getAuthorization());
+				newChannel.setAuthorization(newCa);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+
+					// add the channel to the new partition.
+					channelService.create(newChannel);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+				
+				transferChannelMessages(oldZone, oldDomain, oldChannel, oldPartitionId, newZone, newDomain, newChannel, newPartitionId);
+			}
+			if (channels.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void transferChannelMessages(Zone oldZone, Domain oldDomain, Channel oldChannel, String oldPartitionId, Zone newZone,
+			Domain newDomain, Channel newChannel, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			ChannelMessageSearchCriteria sc = new ChannelMessageSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomain(oldDomain);
+			sc.setChannel(oldChannel);
+			
+			List<ChannelMessage> channels = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				channels = channelService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
+			for (ChannelMessage oldMessage : channels) {
+				ChannelMessage newMessage = new ChannelMessage(newChannel, oldMessage);
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+
+					// add the message to the new partition.
+					channelService.create(newMessage);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+				
+			}
+			if (channels.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+	
+	private void transferTemporaryChannels(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
+			Domain newDomain, String newPartitionId) {
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			TemporaryChannelSearchCriteria sc = new TemporaryChannelSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomain(oldDomain);
+
+			List<TemporaryChannel> channels = null;
+			zonePartitionIdProvider.setPartitionId(oldPartitionId);
+			try {
+				channels = channelService.search(oldZone, sc);
+			} finally {
+				zonePartitionIdProvider.clearPartitionId();
+			}
+			for (TemporaryChannel oldChannel : channels) {
+				TemporaryChannel newChannel = new TemporaryChannel(newDomain, oldChannel.getOrigin(), oldChannel.getDestination());
+
+				zonePartitionIdProvider.setPartitionId(newPartitionId);
+				try {
+
+					// add the temporary channel to the new partition.
+					channelService.create(newChannel);
+				} finally {
+					zonePartitionIdProvider.clearPartitionId();
+				}
+			}
+			if (channels.isEmpty()) {
 				more = false;
 			}
 		}

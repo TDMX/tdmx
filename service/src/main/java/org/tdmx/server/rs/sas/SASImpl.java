@@ -580,8 +580,8 @@ public class SASImpl implements SAS {
 
 		// schedule the job to install the Zone in the ZoneDB partition.
 		ZoneInstallTask installTask = new ZoneInstallTask();
-		installTask.setAccountId(az.getAccountId());
-		installTask.setZoneApex(az.getZoneApex());
+		installTask.setAccountId(a.getId());
+		installTask.setAccountZoneId(az.getId());
 		Job installJob = getJobFactory().createJob(installTask);
 		ControlJob j = getJobScheduler().scheduleImmediate(installJob);
 
@@ -738,8 +738,8 @@ public class SASImpl implements SAS {
 
 			// schedule the job to check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
 			ZACInstallTask installTask = new ZACInstallTask();
-			installTask.setAccountId(az.getAccountId());
-			installTask.setZoneApex(az.getZoneApex());
+			installTask.setAccountId(a.getId());
+			installTask.setAccountZoneId(az.getId());
 			installTask.setFingerprint(azc.getFingerprint());
 			Job installJob = getJobFactory().createJob(installTask);
 			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
@@ -864,8 +864,8 @@ public class SASImpl implements SAS {
 					AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST, updatedAzc.getCredentialStatus());
 			// schedule the job to re-check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
 			ZACInstallTask installTask = new ZACInstallTask();
-			installTask.setAccountId(az.getAccountId());
-			installTask.setZoneApex(az.getZoneApex());
+			installTask.setAccountId(a.getId());
+			installTask.setAccountZoneId(az.getId());
 			installTask.setFingerprint(azc.getFingerprint());
 			Job installJob = getJobFactory().createJob(installTask);
 			ControlJob j = getJobScheduler().scheduleImmediate(installJob);

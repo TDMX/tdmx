@@ -4,13 +4,18 @@
 	<xs:annotation>
 		<xs:documentation>TDMX storage schema for control tasks</xs:documentation>
 	</xs:annotation>
+	<!-- ********************************************* -->
+	<!--           COMMON TYPES                        -->
+	<!-- ********************************************* -->
 	<xs:simpleType name="caseinsensitivetext">
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
 	<xs:simpleType name="text">
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
-	<xs:element name="exception" type="ZoneTransferTask"/>
+	<xs:simpleType name="identifier">
+		<xs:restriction base="xs:unsignedInt"/>
+	</xs:simpleType>
 	<xs:complexType name="ExceptionType">
 		<xs:annotation>
 			<xs:documentation>Represents an Exception with a stack trace.</xs:documentation>
@@ -21,10 +26,21 @@
 			<xs:element name="stack" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:element name="exception" type="ExceptionType"/>
+	<xs:complexType name="PropertyType">
+		<xs:annotation>
+			<xs:documentation>Represents an Property name value pair</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="value" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="property" type="PropertyType"/>
 	<!-- ********************************************* -->
-	<!--           ZONE INSTALLATION  JOB -->
+	<!--           TEST  JOB                           -->
 	<!-- ********************************************* -->
-	<xs:element name="test" type="ZoneInstallTask"/>
+	<xs:element name="test" type="TestTask"/>
 	<xs:complexType name="TestTask">
 		<xs:annotation>
 			<xs:documentation>Task to test the JobExecutionService.</xs:documentation>
@@ -32,24 +48,69 @@
 		<xs:sequence>
 			<xs:element name="processTimeMs" type="xs:int"/>
 			<xs:element name="processMessage" type="text" minOccurs="0"/>
-			<xs:element name="exceptionMessage" type="text" minOccurs="0"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- ********************************************* -->
-	<!--           ZONE INSTALLATION  JOB -->
+	<!--           ZONE INSTALLATION  JOB              -->
 	<!-- ********************************************* -->
-	<xs:element name="zoneinstall" type="ZoneInstallTask"/>
 	<xs:complexType name="ZoneInstallTask">
 		<xs:annotation>
 			<xs:documentation>Task to install a Zone in a ZoneDB partition corresponding to an AccountZone in the ControlDB.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="accountId" type="text"/>
-			<xs:element name="zoneApex" type="text"/>
+			<xs:element name="accountId" type="identifier"/>
+			<xs:element name="accountZoneId" type="identifier"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:element name="zoneinstall" type="ZoneInstallTask"/>
 	<!-- ********************************************* -->
-	<!--           ZONE TRANSFER  JOB -->
+	<!--           ZONE REMOVAL  JOB              -->
+	<!-- ********************************************* -->
+	<xs:complexType name="ZoneRemoveTask">
+		<xs:annotation>
+			<xs:documentation>Task to remove an AccountZone and all its related data objects in the corresponding ZoneDB.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountId" type="identifier"/>
+			<xs:element name="accountZoneId" type="identifier"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="zoneremove" type="ZoneRemoveTask"/>
+	<!-- ********************************************* -->
+	<!--           ZAC INSTALLATION  JOB               -->
+	<!-- ********************************************* -->
+	<xs:complexType name="ZACInstallTask">
+		<xs:annotation>
+			<xs:documentation>ZAC installation checks the DNS trust of the certificate and if this is ok, the it allows the ZAC to be installed in the correct Zone-DB partition.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountId" type="identifier"/>
+			<xs:element name="accountZoneId" type="identifier"/>
+			<xs:element name="fingerprint" type="text"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="zacinstall" type="ZACInstallTask"/>
+	<!-- ********************************************* -->
+	<!--           ZAC REMOVE JOB                      -->
+	<!-- ********************************************* -->
+	<xs:complexType name="ZACRemoveTask">
+		<xs:annotation>
+			<xs:documentation>ZAC removal from the ZoneDB and the ControlDB.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountId" type="identifier"/>
+			<xs:element name="accountZoneId" type="identifier"/>
+			<xs:element name="fingerprint" type="text"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="zacremove" type="ZACRemoveTask"/>
+	<!-- ********************************************* -->
+	<!--           ZONE TRANSFER  JOB                  -->
 	<!-- ********************************************* -->
 	<xs:element name="zonetransfer" type="ZoneTransferTask"/>
 	<xs:complexType name="ZoneTransferTask">
@@ -57,48 +118,14 @@
 			<xs:documentation>Task Container</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="accountId" type="text"/>
-			<xs:element name="zoneApex" type="text"/>
+			<xs:element name="accountId" type="identifier"/>
+			<xs:element name="accountZoneId" type="identifier"/>
 			<xs:element name="zoneDbPartitionId" type="text">
 				<xs:annotation>
 					<xs:documentation>the partitionId to transfer the  zone data TO. the FROM partition is the one which is current in the AccountZone at the time the job runs. At the end of a successful job transfer, the zoneDbPartitionId of the AccountZone will be updated to this value.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="numDomains" type="xs:int" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>then number of Domains transferred.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="numServices" type="xs:int" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>then number of Services transferred.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="numAddresses" type="xs:int" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>then number of Addresses transferred.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="numAgentCredentials" type="xs:int" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the total number of AgentCredentials transferred.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<!-- ********************************************* -->
-	<!--           ZAC INSTALLATION  JOB -->
-	<!-- ********************************************* -->
-	<xs:element name="zacinstall" type="ZACInstallTask"/>
-	<xs:complexType name="ZACInstallTask">
-		<xs:annotation>
-			<xs:documentation>ZAC installation checks the DNS trust of the certificate and if this is ok, the it allows the ZAC to be installed in the correct Zone-DB partition.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="accountId" type="text"/>
-			<xs:element name="zoneApex" type="text"/>
-			<xs:element name="fingerprint" type="text"/>
-			<xs:element name="status" type="text" minOccurs="0"/>
+			<xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 </xs:schema>

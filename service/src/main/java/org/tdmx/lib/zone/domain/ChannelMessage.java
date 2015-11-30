@@ -160,6 +160,23 @@ public class ChannelMessage implements Serializable {
 	public ChannelMessage() {
 	}
 
+	public ChannelMessage(Channel channel,ChannelMessage other) {
+		this.channel = channel;
+		// header fields
+		this.msgId = other.getMsgId();
+		this.ttlTimestamp = other.getTtlTimestamp();
+		this.receiverCertificateChainPem = other.getReceiverCertificateChainPem();
+		this.encryptionContextId = other.getEncryptionContextId();
+		this.payloadSignature = other.getPayloadSignature();
+		this.signature = other.getSignature();
+		this.externalReference = other.getExternalReference();
+		// payload fields
+		this.chunkSize = other.getChunkSize();
+		this.payloadLength = other.getPayloadLength();
+		this.encryptionContext = other.getEncryptionContext();
+		this.plaintextLength = other.getPlaintextLength();
+		this.macOfMacs = other.getMacOfMacs();
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------

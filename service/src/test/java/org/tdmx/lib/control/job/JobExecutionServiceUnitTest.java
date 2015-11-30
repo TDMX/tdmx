@@ -134,7 +134,7 @@ public class JobExecutionServiceUnitTest {
 	public void testExecute_SingleJob_Exception() throws Exception {
 		TestTask t = new TestTask();
 		t.setProcessTimeMs(0);
-		t.setExceptionMessage("EXCEPTION THROWN!!!");
+		t.setProcessMessage("EXCEPTION THROWN!!!");
 
 		Job j = service.createJob(t);
 		jobScheduler.scheduleImmediate(j);
@@ -152,9 +152,6 @@ public class JobExecutionServiceUnitTest {
 		assertNotNull(cj.getJob().getException());
 		ExceptionType et = exceptionConverter.getException(cj.getJob());
 		assertNotNull(et);
-		// check that the job data is NOT marshalled after exception
-		TestTask tt = testJobConverter.getData(cj.getJob());
-		assertNull(tt.getProcessMessage());
 
 		assertEquals("EXCEPTION THROWN!!!", et.getMessage());
 	}

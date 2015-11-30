@@ -76,8 +76,8 @@ public class JobSchedulerUnitTest {
 	@Test
 	public void testSchedule_Immediate_ZoneInstallTask() throws Exception {
 		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId("1");
-		task.setZoneApex("z");
+		task.setAccountId(1L);
+		task.setAccountZoneId(2L);
 		Job j = jobFactory.createJob(task);
 		je = jobScheduler.scheduleImmediate(j);
 
@@ -87,8 +87,8 @@ public class JobSchedulerUnitTest {
 	@Test
 	public void testSchedule_Immediate_ZoneTransferTask() throws Exception {
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId("1");
-		task.setZoneApex("z");
+		task.setAccountId(1L);
+		task.setAccountZoneId(2L);
 		task.setZoneDbPartitionId("az-pid-1");
 		Job j = jobFactory.createJob(task);
 		je = jobScheduler.scheduleImmediate(j);

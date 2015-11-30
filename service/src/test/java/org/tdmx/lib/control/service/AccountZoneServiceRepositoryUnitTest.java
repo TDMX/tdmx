@@ -60,7 +60,7 @@ public class AccountZoneServiceRepositoryUnitTest {
 
 	@After
 	public void doTeardown() {
-		AccountZone a = service.findByZoneApex(az.getZoneApex());
+		AccountZone a = service.findById(az.getId());
 		if (a != null) {
 			service.delete(a);
 		}

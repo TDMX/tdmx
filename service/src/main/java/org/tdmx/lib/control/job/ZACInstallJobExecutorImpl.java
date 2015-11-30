@@ -35,6 +35,7 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.service.control.task.dao.PropertyType;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 
 public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
@@ -74,7 +75,7 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 
 	@Override
 	public void execute(Long id, ZACInstallTask task) {
-		AccountZone az = getAccountZoneService().findByZoneApex(task.getZoneApex());
+		AccountZone az = getAccountZoneService().findById(task.getAccountZoneId());
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
 		}
@@ -136,7 +137,11 @@ public class ZACInstallJobExecutorImpl implements JobExecutor<ZACInstallTask> {
 		azac.setJobId(null);
 		getAccountZoneAdministrationCredentialService().createOrUpdate(azac);
 
-		task.setStatus(azac.getCredentialStatus().toString());
+		//result property
+		PropertyType status = new PropertyType();
+		status.setName(JobPropertyName.ZAC_CERTIFICATE_STATUS );
+		status.setValue(azac.getCredentialStatus().toString());
+		task.getProperty().add(status);
 	}
 
 	// -------------------------------------------------------------------------

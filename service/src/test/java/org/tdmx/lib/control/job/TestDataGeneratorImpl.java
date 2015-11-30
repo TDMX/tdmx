@@ -355,14 +355,14 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 	private void deleteAccount(Account account) {
-		Account a = accountService.findByAccountId(account.getAccountId());
+		Account a = accountService.findById(account.getId());
 		if (a != null) {
 			accountService.delete(a);
 		}
 	}
 
 	private void deleteAccountZone(AccountZone accountZone) {
-		AccountZone az = accountZoneService.findByZoneApex(accountZone.getZoneApex());
+		AccountZone az = accountZoneService.findById(accountZone.getId());
 		if (az != null) {
 			accountZoneService.delete(az);
 		}
@@ -552,8 +552,6 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		az.setZonePartitionId(partition.getPartitionId());
 
 		accountZoneService.createOrUpdate(az);
-
-		az = accountZoneService.findByZoneApex(zoneApex);
 
 		result.setAccountZone(az);
 	}

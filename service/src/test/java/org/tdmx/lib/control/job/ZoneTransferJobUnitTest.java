@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
@@ -62,7 +63,8 @@ public class ZoneTransferJobUnitTest {
 	private TestDataGeneratorInput input;
 	private TestDataGeneratorOutput data;
 	private Long jobId;
-
+	private Account account;
+	
 	@Before
 	public void doSetup() throws Exception {
 		jobId = new Random().nextLong();
@@ -77,6 +79,8 @@ public class ZoneTransferJobUnitTest {
 
 		data = dataGenerator.setUp(input);
 
+		account = data.getAccount();
+		
 		AccountZone az = data.getAccountZone();
 		az.setJobId(jobId);
 		accountZoneService.createOrUpdate(az);
@@ -101,13 +105,13 @@ public class ZoneTransferJobUnitTest {
 	public void test_Success() throws Exception {
 		String newPartitionId = MockZonePartitionIdInstaller.ZP1_S2;
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId(data.getAccountZone().getAccountId());
-		task.setZoneApex(data.getAccountZone().getZoneApex());
+		task.setAccountId(account.getId());
+		task.setAccountZoneId(data.getAccountZone().getId());
 		task.setZoneDbPartitionId(newPartitionId);
 
 		executor.execute(jobId, task);
 
-		AccountZone storedAZ = accountZoneService.findByZoneApex(data.getAccountZone().getZoneApex());
+		AccountZone storedAZ = accountZoneService.findById(data.getAccountZone().getId());
 		assertNotNull(storedAZ);
 		assertNull(storedAZ.getJobId());
 		assertEquals(newPartitionId, storedAZ.getZonePartitionId());
@@ -123,8 +127,8 @@ public class ZoneTransferJobUnitTest {
 	@Test
 	public void test_Failure_JobIdMismatch() throws Exception {
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId(data.getAccountZone().getAccountId());
-		task.setZoneApex(data.getAccountZone().getZoneApex());
+		task.setAccountId(account.getId());
+		task.setAccountZoneId(data.getAccountZone().getId());
 		task.setZoneDbPartitionId(MockZonePartitionIdInstaller.ZP1_S2);
 
 		try {
@@ -138,8 +142,8 @@ public class ZoneTransferJobUnitTest {
 	@Test
 	public void test_Failure_SameZone() throws Exception {
 		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId(data.getAccountZone().getAccountId());
-		task.setZoneApex(data.getAccountZone().getZoneApex());
+		task.setAccountId(account.getId());
+		task.setAccountZoneId(data.getAccountZone().getId());
 		task.setZoneDbPartitionId(data.getAccountZone().getZonePartitionId());
 
 		try {
