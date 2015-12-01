@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.CreateService;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.SearchDomain;
@@ -71,6 +72,7 @@ public class ClientCLI {
 			CreateZoneAdministratorCredentials.class, CreateDomain.class, SearchDomain.class, DeleteDomain.class,
 			CreateDomainAdministratorCredentials.class, SearchDomainAdministratorCredentials.class,
 			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
+			CreateService.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------

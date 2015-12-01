@@ -56,14 +56,19 @@ public class ClientCliLoggingUtils {
 		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(admin.getAdministratorIdentity().getDomaincertificate());
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("Administrator [");
-		sb.append(" domain=").append(pk.getTdmxDomainName());
+		sb.append("Administrator[ ").append(pk.getTdmxDomainName());
+		sb.append(" serialNumber=" + pk.getSerialNumber());
+		sb.append(" fingerprint=").append(pk.getFingerprint());
 		sb.append(" status=").append(admin.getStatus());
 		sb.append(" identity=")
 				.append(CertificateIOUtils.safeX509certsToPem(admin.getAdministratorIdentity().getDomaincertificate(),
 						admin.getAdministratorIdentity().getRootcertificate()));
 		sb.append("]");
 		return sb.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Service service) {
+		return "Service [" + service.getDomain() + "#" + service.getServicename() + "]";
 	}
 
 	public static String truncatedMessage() {
