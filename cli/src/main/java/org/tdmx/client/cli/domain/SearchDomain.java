@@ -93,6 +93,10 @@ public class SearchDomain implements CommandExecutable {
 
 		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		org.tdmx.core.api.v01.zas.SearchDomain searchDomainRequest = new org.tdmx.core.api.v01.zas.SearchDomain();
 		Page p = new Page();
 		p.setNumber(pageNumber);

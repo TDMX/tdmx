@@ -85,6 +85,10 @@ public class DeleteDomain implements CommandExecutable {
 
 		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		org.tdmx.core.api.v01.zas.DeleteDomain deleteDomainRequest = new org.tdmx.core.api.v01.zas.DeleteDomain();
 		deleteDomainRequest.setDomain(domain);
 		deleteDomainRequest.setSessionId(sessionResponse.getSession().getSessionId());

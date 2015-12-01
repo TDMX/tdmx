@@ -97,6 +97,10 @@ public class CreateService implements CommandExecutable {
 
 		ZAS zas = ClientCliUtils.createZASClient(dac, sessionResponse.getEndpoint());
 
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		org.tdmx.core.api.v01.zas.CreateService createServiceRequest = new org.tdmx.core.api.v01.zas.CreateService();
 		Service s = new Service();
 		s.setServicename(service);

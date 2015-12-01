@@ -45,7 +45,7 @@ public class ClientCliLoggingUtils {
 	}
 
 	// -------------------------------------------------------------------------
-	// PUBLIC METHODS - Zone Descriptor
+	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	public static String toString(org.tdmx.core.api.v01.common.Error error) {

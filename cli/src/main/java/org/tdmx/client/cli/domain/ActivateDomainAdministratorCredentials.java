@@ -118,6 +118,10 @@ public class ActivateDomainAdministratorCredentials implements CommandExecutable
 
 		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		AdministratorIdentity id = new AdministratorIdentity();
 		id.setDomaincertificate(dac.getX509Encoded());
 		id.setRootcertificate(zac.getZoneRootPublicCert().getX509Encoded());

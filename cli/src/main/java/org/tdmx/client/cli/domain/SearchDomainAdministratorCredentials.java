@@ -95,6 +95,10 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 
 		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
 
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		org.tdmx.core.api.v01.zas.SearchAdministrator searchAdminRequest = new org.tdmx.core.api.v01.zas.SearchAdministrator();
 		Page p = new Page();
 		p.setNumber(pageNumber);

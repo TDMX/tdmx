@@ -28,6 +28,7 @@ import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.SearchService;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
 import org.tdmx.client.cli.user.CreateUserCredentials;
 import org.tdmx.client.cli.zone.CheckDns;
@@ -72,7 +73,7 @@ public class ClientCLI {
 			CreateZoneAdministratorCredentials.class, CreateDomain.class, SearchDomain.class, DeleteDomain.class,
 			CreateDomainAdministratorCredentials.class, SearchDomainAdministratorCredentials.class,
 			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
-			CreateService.class,
+			CreateService.class, SearchService.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------
