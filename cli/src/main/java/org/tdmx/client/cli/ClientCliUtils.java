@@ -589,6 +589,6 @@ public class ClientCliUtils {
 	}
 
 	public static void logError(PrintStream out, org.tdmx.core.api.v01.common.Error error) {
-		out.println("Error [" + error.getCode() + "] " + error.getDescription());
+		out.println(ClientCliLoggingUtils.toString(error));
 	}
 }

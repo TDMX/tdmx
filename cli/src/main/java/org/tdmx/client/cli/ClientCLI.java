@@ -23,8 +23,11 @@ import java.io.InputStreamReader;
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.SearchDomain;
+import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
 import org.tdmx.client.cli.user.CreateUserCredentials;
 import org.tdmx.client.cli.zone.CheckDns;
 import org.tdmx.client.cli.zone.CheckScs;
@@ -66,7 +69,8 @@ public class ClientCLI {
 			DescribeDns.class, Route53Dns.class, CheckDns.class,
 			CheckScs.class, DownloadScs.class,
 			CreateZoneAdministratorCredentials.class, CreateDomain.class, SearchDomain.class, DeleteDomain.class,
-			CreateDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class,
+			CreateDomainAdministratorCredentials.class, SearchDomainAdministratorCredentials.class,
+			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------

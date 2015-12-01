@@ -37,8 +37,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "domainadmin:activate", description = "activates the domain administrator credential at the service provider. The keystore filename is <domain>-<serialNumber>.dac, with the public certificate in the file <domain>-<serialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
-public class ActivateDomainAdministratorCredentials implements CommandExecutable {
+@Cli(name = "domainadmin:suspend", description = "suspends the domain administrator credential at the service provider. The keystore filename is <domain>-<serialNumber>.dac, with the public certificate in the file <domain>-<serialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
+public class SuspendDomainAdministratorCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -138,32 +138,21 @@ public class ActivateDomainAdministratorCredentials implements CommandExecutable
 
 			org.tdmx.core.api.v01.zas.ModifyAdministrator modifyAdminRequest = new org.tdmx.core.api.v01.zas.ModifyAdministrator();
 			modifyAdminRequest.setAdministratorIdentity(id);
-			modifyAdminRequest.setStatus(CredentialStatus.ACTIVE);
+			modifyAdminRequest.setStatus(CredentialStatus.SUSPENDED);
 			modifyAdminRequest.setSessionId(sessionResponse.getSession().getSessionId());
 
 			org.tdmx.core.api.v01.zas.ModifyAdministratorResponse modifyAdminResponse = zas
 					.modifyAdministrator(modifyAdminRequest);
 			if (modifyAdminResponse.isSuccess()) {
 				out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
-						+ " reactivated.");
+						+ " suspended.");
 			} else {
 				ClientCliUtils.logError(out, modifyAdminResponse.getError());
 			}
 
 		} else {
-			org.tdmx.core.api.v01.zas.CreateAdministrator activateAdminRequest = new org.tdmx.core.api.v01.zas.CreateAdministrator();
-			activateAdminRequest.setAdministratorIdentity(id);
-			activateAdminRequest.setStatus(CredentialStatus.ACTIVE);
-			activateAdminRequest.setSessionId(sessionResponse.getSession().getSessionId());
-
-			org.tdmx.core.api.v01.zas.CreateAdministratorResponse activateAdminResponse = zas
-					.createAdministrator(activateAdminRequest);
-			if (activateAdminResponse.isSuccess()) {
-				out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
-						+ " activated.");
-			} else {
-				ClientCliUtils.logError(out, activateAdminResponse.getError());
-			}
+			out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
+					+ " was not found.");
 		}
 	}
 

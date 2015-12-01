@@ -20,6 +20,7 @@ package org.tdmx.client.cli.domain;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -107,6 +108,9 @@ public class SearchDomain implements CommandExecutable {
 			out.println("Found " + searchDomainResponse.getDomains().size() + " domains.");
 			for (String domain : searchDomainResponse.getDomains()) {
 				out.println(domain);
+			}
+			if (searchDomainResponse.getDomains().size() == pageSize) {
+				out.println(ClientCliLoggingUtils.truncatedMessage());
 			}
 
 		} else {
