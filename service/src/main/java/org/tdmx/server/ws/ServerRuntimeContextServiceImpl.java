@@ -92,6 +92,8 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 
 			publicKey = serverCert.getPublicCert();
 
+			log.info("Server dynamic public certificate fingerprint " + publicKey.getFingerprint());
+			log.info("Public certificate " + publicKey);
 		} catch (CryptoCertificateException e) {
 			String errorMsg = "Unable to create servers private credential [" + serverLocalIPAddress + "]";
 			log.warn(errorMsg, e);

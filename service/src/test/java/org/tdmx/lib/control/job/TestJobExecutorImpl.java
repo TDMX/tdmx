@@ -72,13 +72,13 @@ public class TestJobExecutorImpl implements JobExecutor<TestTask> {
 				// ignore ie.
 			}
 		}
-		task.setProcessMessage("" + id);
 		if (StringUtils.hasText(task.getProcessMessage())) {
 			// usually the problem comes from deeper in the service layer.
 			Exception causingException = new Exception(task.getProcessMessage());
 			causingException.fillInStackTrace();
 			throw new RuntimeException("Some Problem Occured.", causingException);
 		}
+		task.setProcessMessage("" + id);
 	}
 
 	// -------------------------------------------------------------------------
