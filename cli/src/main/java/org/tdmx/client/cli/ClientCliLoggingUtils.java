@@ -71,6 +71,10 @@ public class ClientCliLoggingUtils {
 		return "Service [" + service.getDomain() + "#" + service.getServicename() + "]";
 	}
 
+	public static String toString(org.tdmx.core.api.v01.msg.Address address) {
+		return "Address [" + address.getLocalname() + "@" + address.getDomain() + "]";
+	}
+
 	public static String truncatedMessage() {
 		return "More results may exist. Use the pageNumber and pageSize parameters to get the next page of results.";
 	}

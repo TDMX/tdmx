@@ -21,12 +21,15 @@ package org.tdmx.client.cli;
 import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateService;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.DeleteAddress;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.DeleteService;
+import org.tdmx.client.cli.domain.SearchAddress;
 import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SearchService;
@@ -75,6 +78,7 @@ public class ClientCLI {
 			CreateDomainAdministratorCredentials.class, SearchDomainAdministratorCredentials.class,
 			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
+			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------
