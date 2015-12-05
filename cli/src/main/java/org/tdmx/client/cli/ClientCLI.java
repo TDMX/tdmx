@@ -31,6 +31,7 @@ import org.tdmx.client.cli.domain.DeleteAddress;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.DeleteService;
 import org.tdmx.client.cli.domain.SearchAddress;
+import org.tdmx.client.cli.domain.SearchChannel;
 import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SearchService;
@@ -80,7 +81,7 @@ public class ClientCLI {
 			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
-			AuthorizeChannel.class,
+			AuthorizeChannel.class, SearchChannel.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------

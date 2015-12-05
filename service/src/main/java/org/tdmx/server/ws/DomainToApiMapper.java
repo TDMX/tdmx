@@ -275,8 +275,8 @@ public class DomainToApiMapper {
 		c.setCurrent(current);
 		if (ca.getReqRecvAuthorization() != null || ca.getSendAuthorization() != null) {
 			RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
-			unconfirmed.setOrigin(mapPermission(ca.getReqSendAuthorization()));
-			unconfirmed.setDestination(mapPermission(ca.getReqRecvAuthorization()));
+			unconfirmed.setOriginPermission(mapPermission(ca.getReqSendAuthorization()));
+			unconfirmed.setDestinationPermission(mapPermission(ca.getReqRecvAuthorization()));
 			c.setUnconfirmed(unconfirmed);
 		}
 		c.setPs(mapProcessingStatus(ca.getProcessingState()));

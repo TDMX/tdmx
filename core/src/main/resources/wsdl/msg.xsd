@@ -197,12 +197,12 @@
 	</xs:complexType>
 	<xs:complexType name="RequestedChannelAuthorization">
 		<xs:sequence>
-			<xs:element name="origin" type="EndpointPermission" minOccurs="0">
+			<xs:element name="originPermission" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="destination" type="EndpointPermission" minOccurs="0">
+			<xs:element name="destinationPermission" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the destination. </xs:documentation>
 				</xs:annotation>

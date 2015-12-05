@@ -36,6 +36,7 @@ public class ClientCliLoggingUtils {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final String LINEFEED = System.getProperty("line.separator", "\n");
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -79,6 +80,141 @@ public class ClientCliLoggingUtils {
 		return "Channel [" + channel.getOrigin().getLocalname() + "@" + channel.getOrigin().getDomain() + "->"
 				+ channel.getDestination().getLocalname() + "@" + channel.getDestination().getDomain() + "#"
 				+ channel.getDestination().getServicename() + "]";
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Channelinfo ci) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Channel Authorization [").append(toString(ci.getChannelauthorization())).append(LINEFEED);
+		if (ci.getSessioninfo() != null) {
+			buf.append(" Session [").append(toString(ci.getSessioninfo())).append("]").append(LINEFEED);
+		} else {
+			buf.append(" No Session");
+		}
+		buf.append("FlowStatus [").append(toString(ci.getStatus())).append("]").append(LINEFEED);
+		if (ci.getLimit() != null) {
+			buf.append(", Limit [").append(toString(ci.getLimit())).append("]").append(LINEFEED);
+		} else {
+			buf.append(", No FlowControlLimit");
+		}
+		if (ci.getLevel() != null) {
+			buf.append(", Level [").append(toString(ci.getLevel())).append("]").append(LINEFEED);
+		} else {
+			buf.append(", No FlowControlLevel");
+		}
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Domain [").append(ca.getDomain()).append("]").append(LINEFEED);
+		buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
+		buf.append("Requested Authorization [").append(toString(ca.getUnconfirmed())).append("]").append(LINEFEED);
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Currentchannelauthorization cca) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(toString(cca.getChannel())).append(LINEFEED);
+		if (cca.getOriginPermission() != null) {
+			buf.append("Origin [").append(toString(cca.getOriginPermission())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Origin Permission");
+		}
+		if (cca.getDestinationPermission() != null) {
+			buf.append("Destination [").append(toString(cca.getDestinationPermission())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Destination Permission");
+		}
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.RequestedChannelAuthorization rca) {
+		StringBuilder buf = new StringBuilder();
+		if (rca.getOriginPermission() != null) {
+			buf.append("Origin [").append(toString(rca.getOriginPermission())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Origin Permission");
+		}
+		if (rca.getDestinationPermission() != null) {
+			buf.append("Destination [").append(toString(rca.getDestinationPermission())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Destination Permission");
+		}
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Permission p) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(p.getPermission());
+		buf.append(" Size=").append(p.getMaxPlaintextSizeBytes());
+		buf.append(" Signature [").append(toString(p.getAdministratorsignature())).append("]");
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Administratorsignature sig) {
+		return "TODO"; // TODO
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Sessioninfo si) {
+		StringBuilder buf = new StringBuilder();
+		if (si.getDestinationsession() != null) {
+			buf.append("Destination Session [").append(toString(si.getDestinationsession())).append("]");
+		} else {
+			buf.append("No Destination Session");
+		}
+		if (si.getPs() != null) {
+			buf.append("Processing Status [").append(toString(si.getPs())).append("]");
+		} else {
+			buf.append("No Processing Status");
+		}
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.FlowStatus fs) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("receive=").append(fs.getReceiverStatus());
+		buf.append(" send=").append(fs.getSenderStatus());
+
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.FlowControlLevel fl) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Level [");
+		buf.append(" Undelivered=").append(fl.getUndeliveredBuffer());
+		buf.append(", Unsent=").append(fl.getUnsentBuffer());
+		buf.append("]");
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.FlowControlLimit li) {
+		StringBuilder buf = new StringBuilder();
+		if (li.getUnsentBuffer() != null) {
+			buf.append("Unsent [").append(toString(li.getUnsentBuffer())).append("]");
+		} else {
+			buf.append("No Unsent Limit");
+		}
+		if (li.getUndeliveredBuffer() != null) {
+			buf.append(", Undelivered [").append(toString(li.getUndeliveredBuffer())).append("]");
+		} else {
+			buf.append(", No Undelivered Limit");
+		}
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Limit li) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("High=").append(li.getHighBytes());
+		buf.append(" Low=").append(li.getLowBytes());
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Destinationsession ds) {
+		return "TODO";// TODO
+	}
+
+	public static String toString(org.tdmx.core.api.v01.common.Ps ps) {
+		return "TODO";// TODO
 	}
 
 	public static String truncatedMessage() {

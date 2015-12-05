@@ -118,9 +118,9 @@ public class ClientCliUtils {
 	 */
 	public static String getAddressLocalName(String fullyQualifiedAddress) {
 		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
-			return fullyQualifiedAddress.substring(0, fullyQualifiedAddress.lastIndexOf("@"));
+			return nullIfEmpty(fullyQualifiedAddress.substring(0, fullyQualifiedAddress.lastIndexOf("@")));
 		}
-		return fullyQualifiedAddress;
+		return nullIfEmpty(fullyQualifiedAddress);
 	}
 
 	/**
@@ -134,9 +134,9 @@ public class ClientCliUtils {
 		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
 			String domainName = fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("@") + 1);
 			if (domainName.indexOf("#") != -1) {
-				return domainName.substring(0, domainName.lastIndexOf("#"));
+				return nullIfEmpty(domainName.substring(0, domainName.lastIndexOf("#")));
 			}
-			return domainName;
+			return nullIfEmpty(domainName);
 		}
 		return null;
 	}
@@ -150,7 +150,14 @@ public class ClientCliUtils {
 	 */
 	public static String getAddressServiceName(String fullyQualifiedAddress) {
 		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("#") != -1) {
-			return fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("#") + 1);
+			return nullIfEmpty(fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("#") + 1));
+		}
+		return null;
+	}
+
+	public static String nullIfEmpty(String str) {
+		if (StringUtils.hasText(str)) {
+			return str;
 		}
 		return null;
 	}
