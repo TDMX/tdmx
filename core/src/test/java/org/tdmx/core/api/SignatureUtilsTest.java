@@ -18,7 +18,6 @@
  */
 package org.tdmx.core.api;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -73,28 +72,15 @@ public class SignatureUtilsTest {
 		Permission perm = new Permission();
 		perm.setMaxPlaintextSizeBytes(BigInteger.ONE);
 		perm.setPermission(Grant.ALLOW);
-		perm.setValidUntil(CalendarUtils.getDate(futureDate));
 
-		SignatureUtils
-				.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel, perm);
+		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				perm);
 
 		assertNotNull(perm.getAdministratorsignature().getSignaturevalue().getSignature());
 
 		// test future date succeeds
-		boolean signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm, true);
+		boolean signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm);
 		assertTrue(signatureOk);
-
-		// test past date fails
-		Date pastDate = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, -1);
-		perm.setValidUntil(CalendarUtils.getDate(pastDate));
-
-		SignatureUtils
-				.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel, perm);
-
-		assertNotNull(perm.getAdministratorsignature().getSignaturevalue().getSignature());
-
-		signatureOk = SignatureUtils.checkEndpointPermissionSignature(channel, perm, true);
-		assertFalse(signatureOk);
 	}
 
 	// TODO CA signature check

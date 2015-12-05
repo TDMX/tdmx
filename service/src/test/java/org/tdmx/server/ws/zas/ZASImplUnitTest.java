@@ -1419,16 +1419,14 @@ public class ZASImplUnitTest {
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Grant.ALLOW);
-		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
-		auth.setDestination(recvPermission);
+		auth.setDestinationPermission(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
 
 		Permission sendPermission = new Permission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		sendPermission.setPermission(Grant.ALLOW);
-		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
-		auth.setOrigin(sendPermission);
+		auth.setOriginPermission(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
 
@@ -1483,16 +1481,14 @@ public class ZASImplUnitTest {
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Grant.ALLOW);
-		recvPermission.setValidUntil(CalendarUtils.cast(oneMonth));
-		auth.setDestination(recvPermission);
+		auth.setDestinationPermission(recvPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				recvPermission);
 
 		Permission sendPermission = new Permission();
 		sendPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		sendPermission.setPermission(Grant.ALLOW);
-		sendPermission.setValidUntil(CalendarUtils.cast(oneMonth));
-		auth.setOrigin(sendPermission);
+		auth.setOriginPermission(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
 

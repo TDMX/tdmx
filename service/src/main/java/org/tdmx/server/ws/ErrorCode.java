@@ -89,7 +89,6 @@ public enum ErrorCode {
 	InvalidChannelDestination(500, "Channel Origin invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
 	MissingPlaintextSizeEndpointPermission(500, "Channel EndpointPermission signature missing."),
-	MissingValidUntilEndpointPermission(500, "Channel EndpointPermission validUntil missing."),
 
 	MissingAdministratorSignature(500, "AdministratorSignature missing."),
 	MissingAdministratorIdentity(500, "AdministratorIdentity missing."),

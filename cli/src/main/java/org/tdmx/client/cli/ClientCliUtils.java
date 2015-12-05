@@ -106,6 +106,56 @@ public class ClientCliUtils {
 	}
 
 	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - Representations
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Return the localName part of an address.
+	 * 
+	 * @param fullyQualifiedAddress
+	 *            localname@domainName#serviceName
+	 * @return the localName part of an address.
+	 */
+	public static String getAddressLocalName(String fullyQualifiedAddress) {
+		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
+			return fullyQualifiedAddress.substring(0, fullyQualifiedAddress.lastIndexOf("@"));
+		}
+		return fullyQualifiedAddress;
+	}
+
+	/**
+	 * Return the domainName part of an address.
+	 * 
+	 * @param fullyQualifiedAddress
+	 *            localname@domainName#serviceName
+	 * @return the domainName part of an address, or null if there is none.
+	 */
+	public static String getAddressDomainName(String fullyQualifiedAddress) {
+		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
+			String domainName = fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("@") + 1);
+			if (domainName.indexOf("#") != -1) {
+				return domainName.substring(0, domainName.lastIndexOf("#"));
+			}
+			return domainName;
+		}
+		return null;
+	}
+
+	/**
+	 * Return the domainName part of an address.
+	 * 
+	 * @param fullyQualifiedAddress
+	 *            localname@domainName#serviceName
+	 * @return the serviceName part of an address, or null if there is none.
+	 */
+	public static String getAddressServiceName(String fullyQualifiedAddress) {
+		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("#") != -1) {
+			return fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("#") + 1);
+		}
+		return null;
+	}
+
+	// -------------------------------------------------------------------------
 	// PUBLIC METHODS - Zone Descriptor
 	// -------------------------------------------------------------------------
 

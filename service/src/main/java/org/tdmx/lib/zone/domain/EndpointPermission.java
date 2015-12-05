@@ -20,15 +20,12 @@ package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 /**
  * An EndpointPermission specifies the send/recv/requestedSend/requestedRecv Authorization of a Channel.
@@ -54,9 +51,6 @@ public class EndpointPermission implements Serializable {
 
 	private BigInteger maxPlaintextSizeBytes;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date validUntil;
-
 	@Embedded
 	private AgentSignature signature;
 
@@ -75,7 +69,6 @@ public class EndpointPermission implements Serializable {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ChannelAuthorization [grant=").append(grant);
-		builder.append(", validUntil=").append(validUntil);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -106,14 +99,6 @@ public class EndpointPermission implements Serializable {
 
 	public void setGrant(EndpointPermissionGrant grant) {
 		this.grant = grant;
-	}
-
-	public Date getValidUntil() {
-		return validUntil;
-	}
-
-	public void setValidUntil(Date validUntil) {
-		this.validUntil = validUntil;
 	}
 
 	public BigInteger getMaxPlaintextSizeBytes() {

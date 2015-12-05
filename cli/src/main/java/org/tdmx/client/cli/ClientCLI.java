@@ -21,6 +21,7 @@ package org.tdmx.client.cli;
 import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.AuthorizeChannel;
 import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
@@ -79,6 +80,7 @@ public class ClientCLI {
 			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
+			AuthorizeChannel.class,
 			CreateUserCredentials.class, };
 	//@formatter:on
 	// -------------------------------------------------------------------------

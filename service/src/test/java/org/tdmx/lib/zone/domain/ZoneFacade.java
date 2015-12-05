@@ -102,7 +102,6 @@ public class ZoneFacade {
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
 		sendPermission.setMaxPlaintextSizeBytes(ONE_MB);
-		sendPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature sendPermSignature = new AgentSignature();
 		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
@@ -114,7 +113,6 @@ public class ZoneFacade {
 		EndpointPermission recvPermission = new EndpointPermission();
 		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);
 		recvPermission.setMaxPlaintextSizeBytes(ONE_MB);
-		recvPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature recvPermSignature = new AgentSignature();
 		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
@@ -158,7 +156,6 @@ public class ZoneFacade {
 		EndpointPermission sendPermission = new EndpointPermission();
 		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
 		sendPermission.setMaxPlaintextSizeBytes(ONE_MB);
-		sendPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature sendPermSignature = new AgentSignature();
 		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
@@ -199,7 +196,6 @@ public class ZoneFacade {
 		EndpointPermission recvPermission = new EndpointPermission();
 		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);
 		recvPermission.setMaxPlaintextSizeBytes(ONE_MB);
-		recvPermission.setValidUntil(getDateYearsFromNow(1));
 		AgentSignature recvPermSignature = new AgentSignature();
 		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
 		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());

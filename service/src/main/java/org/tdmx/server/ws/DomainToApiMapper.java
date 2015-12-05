@@ -261,8 +261,8 @@ public class DomainToApiMapper {
 
 		Currentchannelauthorization current = new Currentchannelauthorization();
 		current.setChannel(mapChannel(ca.getChannel()));
-		current.setOrigin(mapPermission(ca.getSendAuthorization()));
-		current.setDestination(mapPermission(ca.getRecvAuthorization()));
+		current.setOriginPermission(mapPermission(ca.getSendAuthorization()));
+		current.setDestinationPermission(mapPermission(ca.getRecvAuthorization()));
 
 		FlowControlLimit limit = new FlowControlLimit();
 		limit.setUnsentBuffer(mapLimit(ca.getUnsentBuffer()));
@@ -374,7 +374,6 @@ public class DomainToApiMapper {
 		p.setAdministratorsignature(mapAdministratorSignature(ep.getSignature()));
 		p.setMaxPlaintextSizeBytes(ep.getMaxPlaintextSizeBytes());
 		p.setPermission(Grant.valueOf(ep.getGrant().toString()));
-		p.setValidUntil(CalendarUtils.cast(ep.getValidUntil()));
 		return p;
 	}
 

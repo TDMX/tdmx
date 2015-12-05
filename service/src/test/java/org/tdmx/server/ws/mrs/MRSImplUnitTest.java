@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +54,6 @@ import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -252,10 +250,8 @@ public class MRSImplUnitTest {
 
 		Permission auth = new Permission();
 
-		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		auth.setPermission(Grant.ALLOW);
-		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is origin, so reqSend at destination
@@ -329,10 +325,8 @@ public class MRSImplUnitTest {
 
 		Permission auth = new Permission();
 
-		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		auth.setPermission(Grant.ALLOW);
-		auth.setValidUntil(CalendarUtils.cast(oneMonth));
 		SignatureUtils.createEndpointPermissionSignature(dac1, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				auth);
 		// signer is destination, so reqRecv at origin

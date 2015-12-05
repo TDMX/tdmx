@@ -135,8 +135,8 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		ChannelAuthorization a = new ChannelAuthorization();
-		a.setSendAuthorization(mapEndpointPermission(ca.getOrigin()));
-		a.setRecvAuthorization(mapEndpointPermission(ca.getDestination()));
+		a.setSendAuthorization(mapEndpointPermission(ca.getOriginPermission()));
+		a.setRecvAuthorization(mapEndpointPermission(ca.getDestinationPermission()));
 		a.setReqSendAuthorization(null);
 		a.setReqSendAuthorization(null);
 		if (ca.getLimit() != null) {
@@ -201,7 +201,6 @@ public class ApiToDomainMapper {
 		EndpointPermission p = new EndpointPermission();
 		p.setGrant(mapEndpointPermissionGrant(perm.getPermission()));
 		p.setMaxPlaintextSizeBytes(perm.getMaxPlaintextSizeBytes());
-		p.setValidUntil(CalendarUtils.cast(perm.getValidUntil()));
 		p.setSignature(mapAdministratorSignature(perm.getAdministratorsignature()));
 		return p;
 	}

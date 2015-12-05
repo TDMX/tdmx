@@ -982,11 +982,11 @@ public class ZASImpl implements ZAS {
 			// if the origin domain matches the domain - check that we have a send permission and that the signature is
 			// ok
 
-			if (ca.getOrigin() == null) {
+			if (ca.getOriginPermission() == null) {
 				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getOrigin(), true)) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getOriginPermission())) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
@@ -997,11 +997,11 @@ public class ZASImpl implements ZAS {
 			// if the destination domain matches the ca's domain - check that we have a recv permission and that the
 			// signature is ok
 
-			if (ca.getDestination() == null) {
+			if (ca.getDestinationPermission() == null) {
 				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getDestination(), true)) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getDestinationPermission())) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}

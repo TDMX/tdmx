@@ -192,11 +192,6 @@
 		<xs:sequence>
 			<xs:element name="permission" type="grant"/>
 			<xs:element name="maxPlaintextSizeBytes" type="xs:unsignedLong"/>
-			<xs:element name="validUntil" type="xs:date">
-				<xs:annotation>
-					<xs:documentation>the time at which the authorization is revoked. An authorization is valid for at most 1 year duration, which is required to handle DNS ownership changes (and whois expiration info not authoritative), whilst having long validity durations of clients.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element ref="administratorsignature"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -217,12 +212,12 @@
 	<xs:complexType name="CurrentChannelAuthorization">
 		<xs:sequence>
 			<xs:element ref="channel"/>
-			<xs:element name="origin" type="EndpointPermission" minOccurs="0">
+			<xs:element name="originPermission" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="destination" type="EndpointPermission" minOccurs="0">
+			<xs:element name="destinationPermission" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the destination. </xs:documentation>
 				</xs:annotation>

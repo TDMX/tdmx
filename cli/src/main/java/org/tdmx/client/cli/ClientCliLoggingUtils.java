@@ -75,6 +75,12 @@ public class ClientCliLoggingUtils {
 		return "Address [" + address.getLocalname() + "@" + address.getDomain() + "]";
 	}
 
+	public static String toString(org.tdmx.core.api.v01.msg.Channel channel) {
+		return "Channel [" + channel.getOrigin().getLocalname() + "@" + channel.getOrigin().getDomain() + "->"
+				+ channel.getDestination().getLocalname() + "@" + channel.getDestination().getDomain() + "#"
+				+ channel.getDestination().getServicename() + "]";
+	}
+
 	public static String truncatedMessage() {
 		return "More results may exist. Use the pageNumber and pageSize parameters to get the next page of results.";
 	}

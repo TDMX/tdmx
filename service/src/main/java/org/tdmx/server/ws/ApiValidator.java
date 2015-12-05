@@ -92,10 +92,11 @@ public class ApiValidator {
 		if (checkChannel(ca.getChannel(), ack) == null) {
 			return null;
 		}
-		if (ca.getOrigin() != null && checkEndpointPermission(ca.getOrigin(), ack) == null) {
+		if (ca.getOriginPermission() != null && checkEndpointPermission(ca.getOriginPermission(), ack) == null) {
 			return null;
 		}
-		if (ca.getDestination() != null && checkEndpointPermission(ca.getDestination(), ack) == null) {
+		if (ca.getDestinationPermission() != null
+				&& checkEndpointPermission(ca.getDestinationPermission(), ack) == null) {
 			return null;
 		}
 		if (ca.getLimit() == null) {
@@ -118,10 +119,6 @@ public class ApiValidator {
 		}
 		if (perm.getMaxPlaintextSizeBytes() == null) {
 			setError(ErrorCode.MissingPlaintextSizeEndpointPermission, ack);
-			return null;
-		}
-		if (perm.getValidUntil() == null) {
-			setError(ErrorCode.MissingValidUntilEndpointPermission, ack);
 			return null;
 		}
 		if (perm.getPermission() == null) {

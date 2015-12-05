@@ -143,7 +143,7 @@ public class MRSImpl implements MRS {
 			channel = d2a.mapChannel(tempChannel);
 		}
 
-		if (!SignatureUtils.checkEndpointPermissionSignature(channel, auth, true)) {
+		if (!SignatureUtils.checkEndpointPermissionSignature(channel, auth)) {
 			setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 			return;
 		}

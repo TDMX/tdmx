@@ -77,10 +77,10 @@ public class SignatureUtils {
 	}
 
 	public static boolean checkPayloadSignature(Payload payload, Header header) {
-		PKIXCertificate signingPublicCert = CertificateIOUtils.safeDecodeX509(header.getUsersignature()
-				.getUserIdentity().getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(header.getUsersignature().getSignaturevalue()
-				.getSignatureAlgorithm().value());
+		PKIXCertificate signingPublicCert = CertificateIOUtils
+				.safeDecodeX509(header.getUsersignature().getUserIdentity().getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm
+				.getByAlgorithmName(header.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		String valueToSignPayload = getValueToSign(payload);
 		String signatureHex = header.getPayloadSignature();
@@ -93,21 +93,21 @@ public class SignatureUtils {
 			Header header) {
 
 		String valueToSignPayload = getValueToSign(payload);
-		header.setPayloadSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg,
-				valueToSignPayload));
+		header.setPayloadSignature(
+				StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignPayload));
 	}
 
 	public static boolean checkHeaderSignature(Header header) {
-		PKIXCertificate signingPublicCert = CertificateIOUtils.safeDecodeX509(header.getUsersignature()
-				.getUserIdentity().getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(header.getUsersignature().getSignaturevalue()
-				.getSignatureAlgorithm().value());
+		PKIXCertificate signingPublicCert = CertificateIOUtils
+				.safeDecodeX509(header.getUsersignature().getUserIdentity().getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm
+				.getByAlgorithmName(header.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		String valueToSign = getValueToSign(header);
 		String signatureHex = header.getUsersignature().getSignaturevalue().getSignature();
 
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
-				valueToSign, signatureHex);
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
+				signatureHex);
 	}
 
 	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
@@ -132,15 +132,14 @@ public class SignatureUtils {
 		// sig is in the header
 	}
 
-	public static boolean checkEndpointPermissionSignature(Channel channel, Permission perm, boolean checkValidUntil) {
-		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(perm.getAdministratorsignature()
-				.getAdministratorIdentity().getDomaincertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(perm.getAdministratorsignature()
-				.getSignaturevalue().getSignatureAlgorithm().value());
+	public static boolean checkEndpointPermissionSignature(Channel channel, Permission perm) {
+		PKIXCertificate publicCert = CertificateIOUtils
+				.safeDecodeX509(perm.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(
+				perm.getAdministratorsignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(perm.getAdministratorsignature().getSignaturevalue().getTimestamp())
-				&& checkEndpointPermissionSignature(publicCert, alg, channel, perm)
-				&& (!checkValidUntil || CalendarUtils.isInFuture(perm.getValidUntil()));
+				&& checkEndpointPermissionSignature(publicCert, alg, channel, perm);
 	}
 
 	public static void createEndpointPermissionSignature(PKIXCredential credential, SignatureAlgorithm alg,
@@ -163,10 +162,10 @@ public class SignatureUtils {
 	}
 
 	public static boolean checkChannelAuthorizationSignature(Currentchannelauthorization ca) {
-		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(ca.getAdministratorsignature()
-				.getAdministratorIdentity().getDomaincertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(ca.getAdministratorsignature()
-				.getSignaturevalue().getSignatureAlgorithm().value());
+		PKIXCertificate publicCert = CertificateIOUtils
+				.safeDecodeX509(ca.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm
+				.getByAlgorithmName(ca.getAdministratorsignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(ca.getAdministratorsignature().getSignaturevalue().getTimestamp())
 				&& checkEndpointPermissionSignature(publicCert, alg, ca);
@@ -213,10 +212,10 @@ public class SignatureUtils {
 	}
 
 	public static boolean checkDestinationSessionSignature(String serviceName, Destinationsession fts) {
-		PKIXCertificate publicCert = CertificateIOUtils.safeDecodeX509(fts.getUsersignature().getUserIdentity()
-				.getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm.getByAlgorithmName(fts.getUsersignature().getSignaturevalue()
-				.getSignatureAlgorithm().value());
+		PKIXCertificate publicCert = CertificateIOUtils
+				.safeDecodeX509(fts.getUsersignature().getUserIdentity().getUsercertificate());
+		SignatureAlgorithm alg = SignatureAlgorithm
+				.getByAlgorithmName(fts.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(fts.getUsersignature().getSignaturevalue().getTimestamp())
 				&& checkDestinationSessionSignature(publicCert, alg, serviceName, fts);
@@ -323,7 +322,6 @@ public class SignatureUtils {
 		appendValueToSign(value, channel);
 		// permission data
 		value.append(toValue(perm.getPermission()));
-		value.append(toValue(perm.getValidUntil()));
 		value.append(toValue(perm.getMaxPlaintextSizeBytes()));
 		// signer
 		appendValueToSign(value, perm.getAdministratorsignature().getAdministratorIdentity());
@@ -339,8 +337,8 @@ public class SignatureUtils {
 		String valueToSign = getValueToSign(serviceName, fts);
 		String signatureHex = fts.getUsersignature().getSignaturevalue().getSignature();
 
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
-				valueToSign, signatureHex);
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
+				signatureHex);
 	}
 
 	private static String getValueToSign(String serviceName, Destinationsession ds) {
@@ -371,13 +369,13 @@ public class SignatureUtils {
 		value.append(toValue(ca.getChannel().getDestination().getDomain()));
 		value.append(toValue(ca.getChannel().getDestination().getServicename()));
 		// send and receive permissions
-		if (ca.getOrigin() != null) {
-			appendValueToSign(value, ca.getOrigin());
+		if (ca.getOriginPermission() != null) {
+			appendValueToSign(value, ca.getOriginPermission());
 		} else {
 			value.append(MISSING);
 		}
-		if (ca.getDestination() != null) {
-			appendValueToSign(value, ca.getDestination());
+		if (ca.getDestinationPermission() != null) {
+			appendValueToSign(value, ca.getDestinationPermission());
 		} else {
 			value.append(MISSING);
 		}
@@ -409,7 +407,6 @@ public class SignatureUtils {
 
 	private static void appendValueToSign(StringBuilder value, Permission perm) {
 		value.append(toValue(perm.getPermission()));
-		value.append(toValue(perm.getValidUntil()));
 		value.append(toValue(perm.getMaxPlaintextSizeBytes()));
 		// signer
 		value.append(toValue(perm.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate()));
@@ -425,8 +422,8 @@ public class SignatureUtils {
 		String valueToSign = getValueToSign(ca);
 		String signatureHex = ca.getAdministratorsignature().getSignaturevalue().getSignature();
 
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
-				valueToSign, signatureHex);
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
+				signatureHex);
 	}
 
 	private static boolean checkEndpointPermissionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
@@ -434,8 +431,8 @@ public class SignatureUtils {
 		String valueToSign = getValueToSign(channel, perm);
 		String signatureHex = perm.getAdministratorsignature().getSignaturevalue().getSignature();
 
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
-				valueToSign, signatureHex);
+		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
+				signatureHex);
 	}
 
 	private static String toValue(byte[] b) {
