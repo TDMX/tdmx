@@ -57,14 +57,36 @@ public class ClientCliLoggingUtils {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
 	}
 
+	public static String toString(PKIXCertificate pk) {
+		StringBuilder sb = new StringBuilder();
+		if (pk.isTdmxZoneAdminCertificate()) {
+			sb.append("Zone Administrator[ ").append(pk.getTdmxZoneInfo().getZoneRoot());
+			sb.append(" Subject=" + pk.getSubject());
+			// TODO split
+		} else if (pk.isTdmxDomainAdminCertificate()) {
+			sb.append("Domain Administrator[ ").append(pk.getTdmxDomainName());
+
+		} else if (pk.isTdmxUserCertificate()) {
+			sb.append("User[ ").append(pk.getTdmxUserName());
+
+		} else {
+			sb.append("Non TDMX cert [");
+		}
+		sb.append(" SerialNumber=" + pk.getSerialNumber());
+		sb.append(" Fingerprint=").append(pk.getFingerprint());
+		sb.append(" PEM=").append(CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { pk }));
+		sb.append("]");
+		return sb.toString();
+	}
+
 	public static String toString(org.tdmx.core.api.v01.msg.Administrator admin) {
 		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(admin.getAdministratorIdentity().getDomaincertificate());
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("Administrator[ ").append(pk.getTdmxDomainName());
-		sb.append(" serialNumber=" + pk.getSerialNumber());
-		sb.append(" fingerprint=").append(pk.getFingerprint());
-		sb.append(" status=").append(admin.getStatus());
+		sb.append(" SerialNumber=" + pk.getSerialNumber());
+		sb.append(" Fingerprint=").append(pk.getFingerprint());
+		sb.append(" Status=").append(admin.getStatus());
 		sb.append(toString(admin.getAdministratorIdentity()));
 		sb.append("]");
 		return sb.toString();
@@ -75,9 +97,9 @@ public class ClientCliLoggingUtils {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("User[ ").append(pk.getCommonName());
-		sb.append(" serialNumber=" + pk.getSerialNumber());
-		sb.append(" fingerprint=").append(pk.getFingerprint());
-		sb.append(" status=").append(u.getStatus());
+		sb.append(" SerialNumber=" + pk.getSerialNumber());
+		sb.append(" Fingerprint=").append(pk.getFingerprint());
+		sb.append(" Status=").append(u.getStatus());
 		sb.append(toString(u.getUserIdentity()));
 		sb.append("]");
 		return sb.toString();
