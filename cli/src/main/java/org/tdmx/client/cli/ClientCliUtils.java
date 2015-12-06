@@ -81,6 +81,8 @@ public class ClientCliUtils {
 	public static final String ALIAS_DAC = "dac";
 	public static final String ALIAS_UC = "uc";
 
+	public static final long MEGA = 1024 * 1024;
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------

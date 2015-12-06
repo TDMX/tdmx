@@ -18,6 +18,9 @@
  */
 package org.tdmx.client.cli;
 
+import java.text.DateFormat;
+import java.util.Calendar;
+
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
@@ -37,6 +40,7 @@ public class ClientCliLoggingUtils {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final String LINEFEED = System.getProperty("line.separator", "\n");
+	private static final String TAB = "\t";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,9 +65,20 @@ public class ClientCliLoggingUtils {
 		sb.append(" serialNumber=" + pk.getSerialNumber());
 		sb.append(" fingerprint=").append(pk.getFingerprint());
 		sb.append(" status=").append(admin.getStatus());
-		sb.append(" identity=")
-				.append(CertificateIOUtils.safeX509certsToPem(admin.getAdministratorIdentity().getDomaincertificate(),
-						admin.getAdministratorIdentity().getRootcertificate()));
+		sb.append(toString(admin.getAdministratorIdentity()));
+		sb.append("]");
+		return sb.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.User u) {
+		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(u.getUserIdentity().getUsercertificate());
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("User[ ").append(pk.getCommonName());
+		sb.append(" serialNumber=" + pk.getSerialNumber());
+		sb.append(" fingerprint=").append(pk.getFingerprint());
+		sb.append(" status=").append(u.getStatus());
+		sb.append(toString(u.getUserIdentity()));
 		sb.append("]");
 		return sb.toString();
 	}
@@ -84,23 +99,24 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.msg.Channelinfo ci) {
 		StringBuilder buf = new StringBuilder();
-		buf.append("Channel Authorization [").append(toString(ci.getChannelauthorization())).append(LINEFEED);
+		buf.append("Channel Info [").append(toString(ci.getChannelauthorization())).append(LINEFEED);
 		if (ci.getSessioninfo() != null) {
-			buf.append(" Session [").append(toString(ci.getSessioninfo())).append("]").append(LINEFEED);
+			buf.append("Session [").append(toString(ci.getSessioninfo())).append("]").append(LINEFEED);
 		} else {
-			buf.append(" No Session");
+			buf.append("No Session").append(LINEFEED);
 		}
 		buf.append("FlowStatus [").append(toString(ci.getStatus())).append("]").append(LINEFEED);
 		if (ci.getLimit() != null) {
-			buf.append(", Limit [").append(toString(ci.getLimit())).append("]").append(LINEFEED);
+			buf.append("Limit [").append(toString(ci.getLimit())).append("]").append(LINEFEED);
 		} else {
-			buf.append(", No FlowControlLimit");
+			buf.append("No FlowControl Limit").append(LINEFEED);
 		}
 		if (ci.getLevel() != null) {
-			buf.append(", Level [").append(toString(ci.getLevel())).append("]").append(LINEFEED);
+			buf.append(toString(ci.getLevel())).append(LINEFEED);
 		} else {
-			buf.append(", No FlowControlLevel");
+			buf.append("No FlowControl Level").append(LINEFEED);
 		}
+		buf.append("]");
 		return buf.toString();
 	}
 
@@ -109,6 +125,7 @@ public class ClientCliLoggingUtils {
 		buf.append("Domain [").append(ca.getDomain()).append("]").append(LINEFEED);
 		buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
 		buf.append("Requested Authorization [").append(toString(ca.getUnconfirmed())).append("]").append(LINEFEED);
+		buf.append(toString(ca.getPs()));
 		return buf.toString();
 	}
 
@@ -116,14 +133,15 @@ public class ClientCliLoggingUtils {
 		StringBuilder buf = new StringBuilder();
 		buf.append(toString(cca.getChannel())).append(LINEFEED);
 		if (cca.getOriginPermission() != null) {
-			buf.append("Origin [").append(toString(cca.getOriginPermission())).append("]").append(LINEFEED);
+			buf.append("Origin Permission [").append(toString(cca.getOriginPermission())).append("]").append(LINEFEED);
 		} else {
-			buf.append("No Origin Permission");
+			buf.append("No Origin Permission").append(LINEFEED);
 		}
 		if (cca.getDestinationPermission() != null) {
-			buf.append("Destination [").append(toString(cca.getDestinationPermission())).append("]").append(LINEFEED);
+			buf.append("Destination Permission [").append(toString(cca.getDestinationPermission())).append("]")
+					.append(LINEFEED);
 		} else {
-			buf.append("No Destination Permission");
+			buf.append("No Destination Permission").append(LINEFEED);
 		}
 		return buf.toString();
 	}
@@ -131,14 +149,15 @@ public class ClientCliLoggingUtils {
 	public static String toString(org.tdmx.core.api.v01.msg.RequestedChannelAuthorization rca) {
 		StringBuilder buf = new StringBuilder();
 		if (rca.getOriginPermission() != null) {
-			buf.append("Origin [").append(toString(rca.getOriginPermission())).append("]").append(LINEFEED);
+			buf.append("Origin Permission [").append(toString(rca.getOriginPermission())).append("]").append(LINEFEED);
 		} else {
-			buf.append("No Origin Permission");
+			buf.append("No Origin Permission").append(LINEFEED);
 		}
 		if (rca.getDestinationPermission() != null) {
-			buf.append("Destination [").append(toString(rca.getDestinationPermission())).append("]").append(LINEFEED);
+			buf.append("Destination Permission[").append(toString(rca.getDestinationPermission())).append("]")
+					.append(LINEFEED);
 		} else {
-			buf.append("No Destination Permission");
+			buf.append("No Destination Permission").append(LINEFEED);
 		}
 		return buf.toString();
 	}
@@ -151,8 +170,52 @@ public class ClientCliLoggingUtils {
 		return buf.toString();
 	}
 
+	public static String toString(org.tdmx.core.api.v01.msg.UserIdentity u) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(" User Public Key=").append(CertificateIOUtils.safeX509certsToPem(u.getUsercertificate()))
+				.append(LINEFEED);
+		// buf.append(" Administrator Public
+		// Key=").append(CertificateIOUtils.safeX509certsToPem(u.getDomaincertificate())).append(LINEFEED);
+		// buf.append(" Zone Root Public
+		// Key=").append(CertificateIOUtils.safeX509certsToPem(u.getRootcertificate())).append(LINEFEED);
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.AdministratorIdentity a) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(" Administrator Public Key=").append(CertificateIOUtils.safeX509certsToPem(a.getDomaincertificate()))
+				.append(LINEFEED);
+		// buf.append(" Zone Root Public
+		// Key=").append(CertificateIOUtils.safeX509certsToPem(a.getRootcertificate())).append(LINEFEED);
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.SignatureValue sv) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(" SignatureValue [");
+		buf.append(" Timestamp=").append(toString(sv.getTimestamp()));
+		buf.append(" Algorithm=").append(sv.getSignatureAlgorithm());
+		buf.append(" Signature=").append(sv.getSignature());
+		buf.append("]");
+		return buf.toString();
+	}
+
 	public static String toString(org.tdmx.core.api.v01.msg.Administratorsignature sig) {
-		return "TODO"; // TODO
+		StringBuilder buf = new StringBuilder();
+		buf.append("Administrator Signature [");
+		buf.append(toString(sig.getAdministratorIdentity()));
+		buf.append(toString(sig.getSignaturevalue()));
+		buf.append("]");
+		return buf.toString();
+	}
+
+	public static String toString(org.tdmx.core.api.v01.msg.Usersignature sig) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("User Signature [");
+		buf.append(toString(sig.getUserIdentity()));
+		buf.append(toString(sig.getSignaturevalue()));
+		buf.append("]");
+		return buf.toString();
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Sessioninfo si) {
@@ -172,9 +235,8 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.msg.FlowStatus fs) {
 		StringBuilder buf = new StringBuilder();
-		buf.append("receive=").append(fs.getReceiverStatus());
-		buf.append(" send=").append(fs.getSenderStatus());
-
+		buf.append(" Receive=").append(fs.getReceiverStatus());
+		buf.append(" Send=").append(fs.getSenderStatus());
 		return buf.toString();
 	}
 
@@ -203,18 +265,42 @@ public class ClientCliLoggingUtils {
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Limit li) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("High=").append(li.getHighBytes());
-		buf.append(" Low=").append(li.getLowBytes());
-		return buf.toString();
+		return "High=" + li.getHighBytes() + " Low=" + li.getLowBytes();
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Destinationsession ds) {
-		return "TODO";// TODO
+		StringBuilder buf = new StringBuilder();
+		buf.append("Destination Session [");
+		buf.append(" ContextId=").append(ds.getEncryptionContextId());
+		buf.append(" Scheme=").append(ds.getScheme());
+		buf.append(" SessionKey=").append(ds.getSessionKey());
+		buf.append(toString(ds.getUsersignature()));
+		buf.append("]");
+		return buf.toString();
 	}
 
 	public static String toString(org.tdmx.core.api.v01.common.Ps ps) {
-		return "TODO";// TODO
+		StringBuilder buf = new StringBuilder();
+		buf.append("Processing State [");
+		if (ps.getError() != null) {
+			buf.append(toString(ps.getError()));
+		}
+		if (ps.getStatus() != null) {
+			buf.append(" Status=").append(ps.getStatus());
+		}
+		if (ps.getTimestamp() != null) {
+			buf.append(" Timestamp=").append(toString(ps.getTimestamp()));
+		}
+		buf.append("]");
+		return buf.toString();
+	}
+
+	public static String toString(Calendar cal) {
+		if (cal == null) {
+			return null;
+		}
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+		return df.format(cal.getTime());
 	}
 
 	public static String truncatedMessage() {

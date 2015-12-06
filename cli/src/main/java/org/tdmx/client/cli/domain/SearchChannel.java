@@ -34,6 +34,7 @@ import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
@@ -54,6 +55,9 @@ public class SearchChannel implements CommandExecutable {
 
 	@Parameter(name = "to", description = "the address at the source endpoint of the channel.")
 	private String to;
+
+	@Option(name = "unconfirmed", description = "fetch only channels with pending authorizations.")
+	private Boolean unconfirmed;
 
 	@Parameter(name = "domain", required = true, description = "the domain name.")
 	private String domain;
@@ -141,6 +145,7 @@ public class SearchChannel implements CommandExecutable {
 		caf.setDomain(domain);
 		caf.setDestination(cdf);
 		caf.setOrigin(cef);
+		caf.setUnconfirmedFlag(unconfirmed);
 		searchChannelRequest.setFilter(caf);
 
 		searchChannelRequest.setSessionId(sessionResponse.getSession().getSessionId());

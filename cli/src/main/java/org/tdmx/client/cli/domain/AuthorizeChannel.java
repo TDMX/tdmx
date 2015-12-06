@@ -62,11 +62,11 @@ public class AuthorizeChannel implements CommandExecutable {
 	@Parameter(name = "to", required = true, description = "the address at the source endpoint of the channel.")
 	private String to;
 
-	@Parameter(name = "highLimitMb", defaultValue = "1024", description = "the flow control high limit im MB.")
-	private int highLimitMb;
-
 	@Parameter(name = "maxSizeMb", defaultValue = "512", description = "the maximum message size sent (plaintext) in MB.")
 	private int maxSizeMb;
+
+	@Parameter(name = "highLimitMb", defaultValue = "1024", description = "the flow control high limit im MB.")
+	private int highLimitMb;
 
 	@Parameter(name = "lowLimitMb", defaultValue = "512", description = "the flow control low limit im MB.")
 	private int lowLimitMb;
@@ -157,7 +157,7 @@ public class AuthorizeChannel implements CommandExecutable {
 
 		if (isOrigin) {
 			Permission originPermission = new Permission();
-			originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb));
+			originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
 			originPermission.setPermission(Grant.ALLOW);
 			// sign the origination permission
 			SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
@@ -166,7 +166,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		}
 		if (isDestination) {
 			Permission destinationPermission = new Permission();
-			destinationPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb));
+			destinationPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
 			destinationPermission.setPermission(Grant.ALLOW);
 			// sign the destination permission
 			SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
@@ -176,8 +176,8 @@ public class AuthorizeChannel implements CommandExecutable {
 
 		FlowControlLimit fcl = new FlowControlLimit();
 		Limit l = new Limit();
-		l.setHighBytes(BigInteger.valueOf(highLimitMb));
-		l.setLowBytes(BigInteger.valueOf(lowLimitMb));
+		l.setHighBytes(BigInteger.valueOf(highLimitMb * ClientCliUtils.MEGA));
+		l.setLowBytes(BigInteger.valueOf(lowLimitMb * ClientCliUtils.MEGA));
 		if (isOrigin) {
 			fcl.setUnsentBuffer(l);
 		}
