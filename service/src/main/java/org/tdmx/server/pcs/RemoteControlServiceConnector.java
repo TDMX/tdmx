@@ -45,8 +45,12 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerResponse;
 import org.tdmx.server.runtime.Manageable;
@@ -362,6 +366,20 @@ public class RemoteControlServiceConnector
 	}
 
 	@Override
+	public RegisterRelayServerResponse registerRelayServer(RpcController controller, RegisterRelayServerRequest request)
+			throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public NotifyIdleSessionRelayResponse notifyIdleRelaySession(RpcController controller,
+			NotifyIdleRelaySessionRequest request) throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
 			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
@@ -406,12 +424,12 @@ public class RemoteControlServiceConnector
 		return handle;
 	}
 
-	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue> attrs) {
+	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> attrs) {
 		if (attrs == null) {
 			return null;
 		}
 		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		for (org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue attr : attrs) {
+		for (org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue attr : attrs) {
 			attributes.put(map(attr.getName()), attr.getValue());
 		}
 		return attributes;
@@ -431,7 +449,7 @@ public class RemoteControlServiceConnector
 		return result;
 	}
 
-	private SeedAttribute map(org.tdmx.server.pcs.protobuf.PCSServer.AttributeValue.AttributeId name) {
+	private SeedAttribute map(org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.AttributeId name) {
 		if (name == null) {
 			return null;
 		}

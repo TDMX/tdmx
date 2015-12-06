@@ -4,6 +4,8 @@ option java_generic_services = true;
 option java_package = "org.tdmx.server.pcs.protobuf";
 option java_outer_classname = "PCSClient";
 
+import "common.proto";
+
 message ServiceStatistic {
 	optional string httpsUrl = 1;
 	optional string apiName = 2;
@@ -12,20 +14,6 @@ message ServiceStatistic {
 
 message ServerServiceStatistics {
 	repeated ServiceStatistic statistics = 1;
-}
-
-message AttributeValue {
-	enum AttributeId {
-	  AccountZoneId = 0;
-	  ZoneId = 1;
-	  DomainId = 2;
-	  ChannelId = 3;
-	  TemporaryChannelId = 4;
-	  ServiceId = 5;
-	  AddressId = 6;
-	}
-	required AttributeId name = 1;
-	optional int64 value = 2;
 }
 
 message CreateSessionRequest {
@@ -49,6 +37,10 @@ message RemoveCertificateRequest {
 message GetStatisticsRequest {
 }
 
+
+//
+// PCS -> WS. The PCS manages sessions at the WS based on the load statistics returned in the responses.
+//
 
 service SessionManagerProxy {
     rpc createSession(CreateSessionRequest) returns (ServiceStatistic);

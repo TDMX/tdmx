@@ -4,6 +4,12 @@ option java_generic_services = true;
 option java_package = "org.tdmx.server.pcs.protobuf";
 option java_outer_classname = "PCSServer";
 
+import "broadcast.proto";
+
+//
+// SCS -> PCS to allocate WS-API sessions to clients
+//
+
 message AssociateApiSessionRequest {
 	required SessionHandle handle = 1;
     required bytes pkixCertificate = 2;
@@ -15,20 +21,6 @@ message AssociateApiSessionResponse {
     optional bytes serverCert = 3;
 }
 
-message AttributeValue {
-	enum AttributeId {
-	  AccountZoneId = 0;
-	  ZoneId = 1;
-	  DomainId = 2;
-	  ChannelId = 3;
-	  TemporaryChannelId = 4;
-	  ServiceId = 5;
-	  AddressId = 6;
-	}
-	required AttributeId name = 1;
-	optional int64 value = 2;
-}
-
 message SessionHandle {
 	optional string segment = 1;
 	optional string apiName = 2;
@@ -36,6 +28,10 @@ message SessionHandle {
 	repeated AttributeValue attribute = 4;
 }
 
+
+//
+// WS -> PCS webservices register themselves at the PCS
+//
 
 message RegisterServerRequest {
 	repeated ServiceHandle service = 1;
@@ -53,6 +49,10 @@ message ServiceHandle {
 }
 
 
+//
+// WS -> PCS webservice notify after idle timeout of client sessions.
+//
+
 message NotifySessionRemovedRequest {
 	optional string apiName = 1;
 	repeated string sessionId = 2;
@@ -62,11 +62,38 @@ message NotifySessionRemovedResponse {
 }
 
 
+//
+// WS -> PCS webservice can invalidate the client certificate removal throughout the segment.
+//
+
 message InvalidateCertificateRequest {
     optional bytes clientCert = 1;
 }
 
 message InvalidateCertificateResponse {
+}
+
+
+//
+// ROS -> PCS relay outbound servers register themselves at the PCS
+//
+
+message RegisterRelayServerRequest {
+}
+
+message RegisterRelayServerResponse {
+}
+
+//
+// ROS -> PCS notify that a relay session is idle and stash the MRS sessionId for the channel.
+//
+
+message NotifyIdleRelaySessionRequest {
+	optional Channel channel = 1;
+	optional string mrsSessionId = 2;
+}
+
+message NotifyIdleSessionRelayResponse {
 }
 
 
@@ -76,5 +103,10 @@ service ControlServiceProxy {
     rpc registerServer(RegisterServerRequest) returns (RegisterServerResponse);
     rpc notifySessionsRemoved(NotifySessionRemovedRequest) returns (NotifySessionRemovedResponse);
     rpc invalidateCertificate(InvalidateCertificateRequest) returns (InvalidateCertificateResponse);
+//
+// WS -> PCS relay message ( Out-Of-Band / Non RPC == Async )
+//
+    rpc registerRelayServer(RegisterRelayServerRequest) returns (RegisterRelayServerResponse);
+    rpc notifyIdleRelaySession(NotifyIdleRelaySessionRequest) returns (NotifyIdleSessionRelayResponse);
 }
 
