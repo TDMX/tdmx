@@ -37,19 +37,6 @@ public final class Broadcast {
      * <code>optional .RelayMessage relay = 2;</code>
      */
     org.tdmx.server.pcs.protobuf.Broadcast.RelayMessageOrBuilder getRelayOrBuilder();
-
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    boolean hasLoadStatistic();
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic getLoadStatistic();
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder getLoadStatisticOrBuilder();
   }
   /**
    * Protobuf type {@code BroadcastMessage}
@@ -127,19 +114,6 @@ public final class Broadcast {
                 relay_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
-              break;
-            }
-            case 26: {
-              org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                subBuilder = loadStatistic_.toBuilder();
-              }
-              loadStatistic_ = input.readMessage(org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(loadStatistic_);
-                loadStatistic_ = subBuilder.buildPartial();
-              }
-              bitField0_ |= 0x00000004;
               break;
             }
           }
@@ -224,31 +198,9 @@ public final class Broadcast {
       return relay_;
     }
 
-    public static final int LOADSTATISTIC_FIELD_NUMBER = 3;
-    private org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic loadStatistic_;
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    public boolean hasLoadStatistic() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic getLoadStatistic() {
-      return loadStatistic_;
-    }
-    /**
-     * <code>optional .LoadStatistic loadStatistic = 3;</code>
-     */
-    public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder getLoadStatisticOrBuilder() {
-      return loadStatistic_;
-    }
-
     private void initFields() {
       cacheInvalidation_ = org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage.getDefaultInstance();
       relay_ = org.tdmx.server.pcs.protobuf.Broadcast.RelayMessage.getDefaultInstance();
-      loadStatistic_ = org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -275,9 +227,6 @@ public final class Broadcast {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeMessage(2, relay_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, loadStatistic_);
-      }
       getUnknownFields().writeTo(output);
     }
 
@@ -294,10 +243,6 @@ public final class Broadcast {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, relay_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, loadStatistic_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -410,7 +355,6 @@ public final class Broadcast {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getCacheInvalidationFieldBuilder();
           getRelayFieldBuilder();
-          getLoadStatisticFieldBuilder();
         }
       }
       private static Builder create() {
@@ -431,12 +375,6 @@ public final class Broadcast {
           relayBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
-        if (loadStatisticBuilder_ == null) {
-          loadStatistic_ = org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance();
-        } else {
-          loadStatisticBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -481,14 +419,6 @@ public final class Broadcast {
         } else {
           result.relay_ = relayBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        if (loadStatisticBuilder_ == null) {
-          result.loadStatistic_ = loadStatistic_;
-        } else {
-          result.loadStatistic_ = loadStatisticBuilder_.build();
-        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -510,9 +440,6 @@ public final class Broadcast {
         }
         if (other.hasRelay()) {
           mergeRelay(other.getRelay());
-        }
-        if (other.hasLoadStatistic()) {
-          mergeLoadStatistic(other.getLoadStatistic());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -777,122 +704,6 @@ public final class Broadcast {
           relay_ = null;
         }
         return relayBuilder_;
-      }
-
-      private org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic loadStatistic_ = org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder> loadStatisticBuilder_;
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public boolean hasLoadStatistic() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic getLoadStatistic() {
-        if (loadStatisticBuilder_ == null) {
-          return loadStatistic_;
-        } else {
-          return loadStatisticBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public Builder setLoadStatistic(org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic value) {
-        if (loadStatisticBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          loadStatistic_ = value;
-          onChanged();
-        } else {
-          loadStatisticBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public Builder setLoadStatistic(
-          org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder builderForValue) {
-        if (loadStatisticBuilder_ == null) {
-          loadStatistic_ = builderForValue.build();
-          onChanged();
-        } else {
-          loadStatisticBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public Builder mergeLoadStatistic(org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic value) {
-        if (loadStatisticBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              loadStatistic_ != org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance()) {
-            loadStatistic_ =
-              org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.newBuilder(loadStatistic_).mergeFrom(value).buildPartial();
-          } else {
-            loadStatistic_ = value;
-          }
-          onChanged();
-        } else {
-          loadStatisticBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public Builder clearLoadStatistic() {
-        if (loadStatisticBuilder_ == null) {
-          loadStatistic_ = org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance();
-          onChanged();
-        } else {
-          loadStatisticBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000004);
-        return this;
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder getLoadStatisticBuilder() {
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return getLoadStatisticFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder getLoadStatisticOrBuilder() {
-        if (loadStatisticBuilder_ != null) {
-          return loadStatisticBuilder_.getMessageOrBuilder();
-        } else {
-          return loadStatistic_;
-        }
-      }
-      /**
-       * <code>optional .LoadStatistic loadStatistic = 3;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder> 
-          getLoadStatisticFieldBuilder() {
-        if (loadStatisticBuilder_ == null) {
-          loadStatisticBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder>(
-                  getLoadStatistic(),
-                  getParentForChildren(),
-                  isClean());
-          loadStatistic_ = null;
-        }
-        return loadStatisticBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:BroadcastMessage)
@@ -4329,403 +4140,6 @@ public final class Broadcast {
     // @@protoc_insertion_point(class_scope:RelayMessage)
   }
 
-  public interface LoadStatisticOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:LoadStatistic)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>optional int32 loadValue = 1;</code>
-     */
-    boolean hasLoadValue();
-    /**
-     * <code>optional int32 loadValue = 1;</code>
-     */
-    int getLoadValue();
-  }
-  /**
-   * Protobuf type {@code LoadStatistic}
-   */
-  public static final class LoadStatistic extends
-      com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:LoadStatistic)
-      LoadStatisticOrBuilder {
-    // Use LoadStatistic.newBuilder() to construct.
-    private LoadStatistic(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private LoadStatistic(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final LoadStatistic defaultInstance;
-    public static LoadStatistic getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public LoadStatistic getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private LoadStatistic(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              loadValue_ = input.readInt32();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.Broadcast.internal_static_LoadStatistic_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.Broadcast.internal_static_LoadStatistic_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.class, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<LoadStatistic> PARSER =
-        new com.google.protobuf.AbstractParser<LoadStatistic>() {
-      public LoadStatistic parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new LoadStatistic(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<LoadStatistic> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    public static final int LOADVALUE_FIELD_NUMBER = 1;
-    private int loadValue_;
-    /**
-     * <code>optional int32 loadValue = 1;</code>
-     */
-    public boolean hasLoadValue() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional int32 loadValue = 1;</code>
-     */
-    public int getLoadValue() {
-      return loadValue_;
-    }
-
-    private void initFields() {
-      loadValue_ = 0;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, loadValue_);
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, loadValue_);
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code LoadStatistic}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:LoadStatistic)
-        org.tdmx.server.pcs.protobuf.Broadcast.LoadStatisticOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.Broadcast.internal_static_LoadStatistic_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.Broadcast.internal_static_LoadStatistic_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.class, org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        loadValue_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.Broadcast.internal_static_LoadStatistic_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic build() {
-        org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic buildPartial() {
-        org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic result = new org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.loadValue_ = loadValue_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic other) {
-        if (other == org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic.getDefaultInstance()) return this;
-        if (other.hasLoadValue()) {
-          setLoadValue(other.getLoadValue());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.Broadcast.LoadStatistic) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private int loadValue_ ;
-      /**
-       * <code>optional int32 loadValue = 1;</code>
-       */
-      public boolean hasLoadValue() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional int32 loadValue = 1;</code>
-       */
-      public int getLoadValue() {
-        return loadValue_;
-      }
-      /**
-       * <code>optional int32 loadValue = 1;</code>
-       */
-      public Builder setLoadValue(int value) {
-        bitField0_ |= 0x00000001;
-        loadValue_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 loadValue = 1;</code>
-       */
-      public Builder clearLoadValue() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        loadValue_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:LoadStatistic)
-    }
-
-    static {
-      defaultInstance = new LoadStatistic(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:LoadStatistic)
-  }
-
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_BroadcastMessage_descriptor;
   private static
@@ -4751,11 +4165,6 @@ public final class Broadcast {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_RelayMessage_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_LoadStatistic_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_LoadStatistic_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4765,17 +4174,16 @@ public final class Broadcast {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017broadcast.proto\"\215\001\n\020BroadcastMessage\0224" +
-      "\n\021cacheInvalidation\030\001 \001(\0132\031.CacheInvalid" +
-      "ationMessage\022\034\n\005relay\030\002 \001(\0132\r.RelayMessa" +
-      "ge\022%\n\rloadStatistic\030\003 \001(\0132\016.LoadStatisti" +
-      "c\"8\n\030CacheInvalidationMessage\022\n\n\002id\030\001 \001(" +
+      "\n\017broadcast.proto\"f\n\020BroadcastMessage\0224\n" +
+      "\021cacheInvalidation\030\001 \001(\0132\031.CacheInvalida" +
+      "tionMessage\022\034\n\005relay\030\002 \001(\0132\r.RelayMessag" +
+      "e\"8\n\030CacheInvalidationMessage\022\n\n\002id\030\001 \001(" +
       "\t\022\020\n\010cacheKey\030\002 \001(\t\"\313\001\n\016AttributeValue\022)" +
       "\n\004name\030\001 \002(\0162\033.AttributeValue.AttributeI" +
       "d\022\r\n\005value\030\002 \001(\003\"\177\n\013AttributeId\022\021\n\rAccou" +
       "ntZoneId\020\000\022\n\n\006ZoneId\020\001\022\014\n\010DomainId\020\002\022\r\n\t" +
-      "ChannelId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tS",
-      "erviceId\020\005\022\r\n\tAddressId\020\006\"\215\001\n\007Channel\022\027\n" +
+      "ChannelId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tS" +
+      "erviceId\020\005\022\r\n\tAddressId\020\006\"\215\001\n\007Channel\022\027\n",
       "\017originLocalName\030\001 \001(\t\022\024\n\014originDomain\030\002" +
       " \001(\t\022\034\n\024destinationLocalName\030\003 \001(\t\022\031\n\021de" +
       "stinationDomain\030\004 \001(\t\022\032\n\022destinationServ" +
@@ -4784,9 +4192,8 @@ public final class Broadcast {
       "l\030\002 \001(\0132\010.Channel\022\"\n\tattribute\030\003 \003(\0132\017.A" +
       "ttributeValue\"]\n\tRelayType\022\013\n\007Message\020\000\022" +
       "\030\n\024ChannelAuthorization\020\001\022\026\n\022Destination" +
-      "Session\020\002\022\021\n\rDeliveryReply\020\003\"\"\n\rLoadStat",
-      "istic\022\021\n\tloadValue\030\001 \001(\005B)\n\034org.tdmx.ser" +
-      "ver.pcs.protobufB\tBroadcast"
+      "Session\020\002\022\021\n\rDeliveryReply\020\003B)\n\034org.tdmx" +
+      ".server.pcs.protobufB\tBroadcast"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4805,7 +4212,7 @@ public final class Broadcast {
     internal_static_BroadcastMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_BroadcastMessage_descriptor,
-        new java.lang.String[] { "CacheInvalidation", "Relay", "LoadStatistic", });
+        new java.lang.String[] { "CacheInvalidation", "Relay", });
     internal_static_CacheInvalidationMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_CacheInvalidationMessage_fieldAccessorTable = new
@@ -4830,12 +4237,6 @@ public final class Broadcast {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RelayMessage_descriptor,
         new java.lang.String[] { "RelayType", "Channel", "Attribute", });
-    internal_static_LoadStatistic_descriptor =
-      getDescriptor().getMessageTypes().get(5);
-    internal_static_LoadStatistic_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_LoadStatistic_descriptor,
-        new java.lang.String[] { "LoadValue", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

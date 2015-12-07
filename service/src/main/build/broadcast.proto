@@ -6,7 +6,6 @@ option java_outer_classname = "Broadcast";
 message BroadcastMessage {
 	optional CacheInvalidationMessage cacheInvalidation = 1;
 	optional RelayMessage relay = 2;
-	optional LoadStatistic loadStatistic = 3;
 }
 
 message CacheInvalidationMessage {

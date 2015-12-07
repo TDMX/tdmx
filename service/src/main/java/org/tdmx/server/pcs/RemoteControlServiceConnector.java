@@ -48,6 +48,8 @@ import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
@@ -110,6 +112,11 @@ public class RemoteControlServiceConnector
 	 * The ControlService delegate.
 	 */
 	private ControlService controlService;
+
+	/**
+	 * The RelayControlService delegate.
+	 */
+	private RelayControlServiceListener relayService;
 
 	/**
 	 * The interface address for multi-homed hosts. Leave empty if not multi-homed.
@@ -363,15 +370,37 @@ public class RemoteControlServiceConnector
 	@Override
 	public RegisterRelayServerResponse registerRelayServer(RpcController controller, RegisterRelayServerRequest request)
 			throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("registerRelayServer call from " + channel.getPeerInfo());
+
+		relayService.registerRelayServer(channel);
+
+		RegisterRelayServerResponse.Builder responseBuilder = RegisterRelayServerResponse.newBuilder();
+		return responseBuilder.build();
 	}
 
 	@Override
 	public NotifyIdleSessionRelayResponse notifyIdleRelaySession(RpcController controller,
 			NotifyIdleRelaySessionRequest request) throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("notifyIdleRelaySession call from " + channel.getPeerInfo());
+
+		relayService.notifyIdleSession(channel, request.getChannel(), request.getMrsSessionId());
+
+		NotifyIdleSessionRelayResponse.Builder responseBuilder = NotifyIdleSessionRelayResponse.newBuilder();
+		return responseBuilder.build();
+	}
+
+	@Override
+	public NotifyLoadStatisticResponse notifyRelayLoadStatistic(RpcController controller,
+			NotifyLoadStatisticRequest request) throws ServiceException {
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("notifyRelayLoadStatistic call from " + channel.getPeerInfo());
+
+		relayService.notifyLoad(channel, request.getLoadValue());
+
+		NotifyLoadStatisticResponse.Builder responseBuilder = NotifyLoadStatisticResponse.newBuilder();
+		return responseBuilder.build();
 	}
 
 	@Override
@@ -403,7 +432,7 @@ public class RemoteControlServiceConnector
 		if (message.getCacheInvalidation() != null) {
 			handleBroadcast(message.getCacheInvalidation());
 		} else if (message.getRelay() != null) {
-			// TODO
+			relayService.relayMessage(message.getRelay());
 		} else {
 			log.warn("Unknown broadcast message " + message);
 		}
@@ -468,6 +497,14 @@ public class RemoteControlServiceConnector
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public RelayControlServiceListener getRelayService() {
+		return relayService;
+	}
+
+	public void setRelayService(RelayControlServiceListener relayService) {
+		this.relayService = relayService;
+	}
 
 	public PartitionControlServerService getPartitionServerService() {
 		return partitionServerService;
