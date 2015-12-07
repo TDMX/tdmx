@@ -42,6 +42,8 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayControlServiceImpl.class);
 
+	// internal
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
