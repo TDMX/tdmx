@@ -26,7 +26,7 @@ import org.tdmx.server.pcs.protobuf.Broadcast;
  * @author Peter
  *
  */
-public interface BroadcastEventNotifier {
+public interface CacheInvalidationEventNotifier {
 
 	/**
 	 * Broadcast the event.
@@ -36,6 +36,6 @@ public interface BroadcastEventNotifier {
 	 * @param message
 	 * @return true if the broadcast message has been processed, or false if it has been ignored.
 	 */
-	public boolean broadcastEvent(Broadcast.BroadcastMessage message);
+	public boolean broadcastEvent(Broadcast.CacheInvalidationMessage message);
 
 }

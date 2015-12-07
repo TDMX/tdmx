@@ -24,20 +24,18 @@ import java.util.List;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage.MessageType;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 
 /**
  * @author peter.klauser
  * 
  */
-public class BroadcastEventDelegaterTest {
+public class CacheInvalidationEventDelegaterTest {
 
-	private BroadcastMessage createCacheInvalidationMessage(String id, String payload) {
-		BroadcastMessage.Builder b = BroadcastMessage.newBuilder();
+	private CacheInvalidationMessage createCacheInvalidationMessage(String id, String payload) {
+		CacheInvalidationMessage.Builder b = CacheInvalidationMessage.newBuilder();
 		b.setId(id);
-		b.setType(MessageType.CacheInvalidation);
-		b.addValue(payload);
+		b.setCacheKey(payload);
 		return b.build();
 	}
 
@@ -47,7 +45,7 @@ public class BroadcastEventDelegaterTest {
 		List<CacheInvalidationListener> listeners = new ArrayList<>();
 		listeners.add(mockListener);
 
-		BroadcastEventDelegater sut = new BroadcastEventDelegater();
+		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 
 		sut.handleBroadcast(createCacheInvalidationMessage("1", "payload-1"));
@@ -62,7 +60,7 @@ public class BroadcastEventDelegaterTest {
 		List<CacheInvalidationListener> listeners = new ArrayList<>();
 		listeners.add(mockListener);
 
-		BroadcastEventDelegater sut = new BroadcastEventDelegater();
+		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 		for (int i = 0; i < 10; i++) {
 			sut.handleBroadcast(createCacheInvalidationMessage("1", "payload-1"));
@@ -78,7 +76,7 @@ public class BroadcastEventDelegaterTest {
 		List<CacheInvalidationListener> listeners = new ArrayList<>();
 		listeners.add(mockListener);
 
-		BroadcastEventDelegater sut = new BroadcastEventDelegater();
+		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 		for (int i = 0; i <= 10; i++) {
 			sut.handleBroadcast(createCacheInvalidationMessage("" + i, "" + i + "-payload"));
@@ -95,7 +93,7 @@ public class BroadcastEventDelegaterTest {
 		List<CacheInvalidationListener> listeners = new ArrayList<>();
 		listeners.add(mockListener);
 
-		BroadcastEventDelegater sut = new BroadcastEventDelegater();
+		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 		for (int i = 0; i < 100; i++) {
 			sut.handleBroadcast(createCacheInvalidationMessage("" + i, "payload-" + i));

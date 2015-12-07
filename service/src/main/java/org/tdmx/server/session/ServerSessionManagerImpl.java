@@ -44,11 +44,11 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.BroadcastEventListener;
-import org.tdmx.server.pcs.BroadcastEventNotifier;
+import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
+import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
@@ -92,7 +92,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  * 
  */
-public class ServerSessionManagerImpl implements Manageable, Runnable, BroadcastEventNotifier,
+public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInvalidationEventNotifier,
 		SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
@@ -159,9 +159,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 	private PartitionControlServerService partitionServerService;
 
 	/**
-	 * Delegate for handling Broadcast events.
+	 * Delegate for handling CacheInvalidationMessage events.
 	 */
-	private BroadcastEventListener broadcastListener;
+	private CacheInvalidationMessageListener cacheInvalidationListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -288,9 +288,13 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 
 				@Override
 				public void run(Broadcast.BroadcastMessage parameter) {
-					final BroadcastEventListener delegate = getBroadcastListener();
-					if (delegate != null) {
-						delegate.handleBroadcast(parameter);
+					if (parameter.getCacheInvalidation() != null) {
+						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
+						if (delegate != null) {
+							delegate.handleBroadcast(parameter.getCacheInvalidation());
+						}
+					} else {
+						log.warn("Unhandled broadcast event." + parameter);
 					}
 				}
 
@@ -506,13 +510,18 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 	}
 
 	@Override
-	public boolean broadcastEvent(BroadcastMessage message) {
+	public boolean broadcastEvent(CacheInvalidationMessage cacheInvalidationMsg) {
 		if (serverProxyMap.size() > 0) {
 			// if we are connected to any PCS at all, then taking one is enough.
 			// we use a hash distribution of the unique ID but we could do round-robin instead.
-			LocalControlServiceListenerClient pcsServer = consistentHashToServer(message.getId());
+			LocalControlServiceListenerClient pcsServer = consistentHashToServer(cacheInvalidationMsg.getId());
 			if (pcsServer != null) {
-				pcsServer.getRpcClient().sendOobMessage(message);
+				Broadcast.BroadcastMessage.Builder eventBuilder = Broadcast.BroadcastMessage.newBuilder();
+				eventBuilder.setCacheInvalidation(cacheInvalidationMsg);
+
+				Broadcast.BroadcastMessage msg = eventBuilder.build();
+
+				pcsServer.getRpcClient().sendOobMessage(msg);
 				return true;
 			} else {
 				log.warn("PCS Server targetted for cache invalidation not connected.");
@@ -758,12 +767,12 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, Broadcast
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
 	}
 
-	public BroadcastEventListener getBroadcastListener() {
-		return broadcastListener;
+	public CacheInvalidationMessageListener getCacheInvalidationListener() {
+		return cacheInvalidationListener;
 	}
 
-	public void setBroadcastListener(BroadcastEventListener broadcastListener) {
-		this.broadcastListener = broadcastListener;
+	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
+		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 }

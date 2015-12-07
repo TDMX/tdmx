@@ -96,6 +96,16 @@ message NotifyIdleRelaySessionRequest {
 message NotifyIdleSessionRelayResponse {
 }
 
+//
+// ROS -> PCS periodic notification of load so that the PCS can do load balancing of relay sessions.
+//
+
+message NotifyLoadStatisticRequest {
+	optional int32 loadValue = 1;
+}
+
+message NotifyLoadStatisticResponse {
+}
 
 
 service ControlServiceProxy {
@@ -108,5 +118,6 @@ service ControlServiceProxy {
 //
     rpc registerRelayServer(RegisterRelayServerRequest) returns (RegisterRelayServerResponse);
     rpc notifyIdleRelaySession(NotifyIdleRelaySessionRequest) returns (NotifyIdleSessionRelayResponse);
+    rpc notifyRelayLoadStatistic(NotifyLoadStatisticRequest) returns (NotifyLoadStatisticResponse);
 }
 

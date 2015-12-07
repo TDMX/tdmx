@@ -33,7 +33,6 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -57,7 +56,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements ControlService, BroadcastEventNotifier, Manageable {
+public class LocalControlServiceImpl implements ControlService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -92,7 +91,7 @@ public class LocalControlServiceImpl implements ControlService, BroadcastEventNo
 	/**
 	 * Delegate for handling Broadcast events.
 	 */
-	private BroadcastEventListener broadcastListener;
+	private CacheInvalidationMessageListener cacheInvalidationListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -134,9 +133,11 @@ public class LocalControlServiceImpl implements ControlService, BroadcastEventNo
 
 				@Override
 				public void run(Broadcast.BroadcastMessage parameter) {
-					final BroadcastEventListener delegate = getBroadcastListener();
-					if (delegate != null) {
-						delegate.handleBroadcast(parameter);
+					if (parameter.getCacheInvalidation() != null) {
+						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
+						if (delegate != null) {
+							delegate.handleBroadcast(parameter.getCacheInvalidation());
+						}
 					}
 				}
 
@@ -253,22 +254,6 @@ public class LocalControlServiceImpl implements ControlService, BroadcastEventNo
 			log.warn("serverProxyMap should have been cleared on shutdown.");
 			serverProxyMap.clear();
 		}
-	}
-
-	@Override
-	public boolean broadcastEvent(BroadcastMessage message) {
-		if (serverProxyMap.size() > 0) {
-			// if we are connected to any PCS at all, then taking one is enough.
-			// we use a hash distribution of the unique ID but we could do round-robin instead.
-			LocalControlServiceClient pcsServer = consistentHashToServer(message.getId());
-			if (pcsServer != null) {
-				pcsServer.getRpcClient().sendOobMessage(message);
-				return true;
-			} else {
-				log.warn("PCS Server targetted for cache invalidation not connected.");
-			}
-		}
-		return false;
 	}
 
 	// -------------------------------------------------------------------------
@@ -393,12 +378,12 @@ public class LocalControlServiceImpl implements ControlService, BroadcastEventNo
 		this.partitionServerService = partitionServerService;
 	}
 
-	public BroadcastEventListener getBroadcastListener() {
-		return broadcastListener;
+	public CacheInvalidationMessageListener getCacheInvalidationListener() {
+		return cacheInvalidationListener;
 	}
 
-	public void setBroadcastListener(BroadcastEventListener broadcastListener) {
-		this.broadcastListener = broadcastListener;
+	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
+		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 }

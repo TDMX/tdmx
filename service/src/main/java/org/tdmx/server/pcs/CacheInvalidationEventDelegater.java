@@ -25,14 +25,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 
 /**
  * 
  * @author Peter
  *
  */
-public class BroadcastEventDelegater implements BroadcastEventListener {
+public class CacheInvalidationEventDelegater implements CacheInvalidationMessageListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,10 +41,10 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(BroadcastEventDelegater.class);
+	private static final Logger log = LoggerFactory.getLogger(CacheInvalidationEventDelegater.class);
 
-	private Map<String, BroadcastMessage> eventMap = new HashMap<>();
-	private LinkedList<BroadcastMessage> lruList = new LinkedList<>();
+	private Map<String, CacheInvalidationMessage> eventMap = new HashMap<>();
+	private LinkedList<CacheInvalidationMessage> lruList = new LinkedList<>();
 
 	private int sizeLimit = 10;
 
@@ -53,7 +53,7 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public BroadcastEventDelegater() {
+	public CacheInvalidationEventDelegater() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -61,7 +61,7 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void handleBroadcast(BroadcastMessage event) {
+	public void handleBroadcast(CacheInvalidationMessage event) {
 		String key = event.getId();
 
 		synchronized (eventMap) {
@@ -73,7 +73,7 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 			}
 			if (lruList.size() >= getSizeLimit()) {
 				// remove the last added entry from the linked list ( front )
-				BroadcastMessage oldestEvent = lruList.removeFirst();
+				CacheInvalidationMessage oldestEvent = lruList.removeFirst();
 				String oldestKey = oldestEvent.getId();
 				eventMap.remove(oldestKey);
 			}
@@ -84,7 +84,7 @@ public class BroadcastEventDelegater implements BroadcastEventListener {
 		// notify all cache invalidation listeners
 		if (cacheInvalidationListeners != null) {
 			for (CacheInvalidationListener cil : cacheInvalidationListeners) {
-				cil.invalidateCache(key); // TODO #86: type differentiation FIXME payload
+				cil.invalidateCache(key);
 			}
 		}
 	}

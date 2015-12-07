@@ -21,18 +21,18 @@ package org.tdmx.server.pcs;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 
 /**
- * A Listener for distributed Broadcast messages.
+ * A Listener for distributed CacheInvalidationMessage messages.
  * 
  * @author Peter
  *
  */
-public interface BroadcastEventListener {
+public interface CacheInvalidationMessageListener {
 
 	/**
-	 * handle Broadcast event and passes on to CacheInvalidationListeners. Filter duplicate events.
+	 * handle CacheInvalidationMessage event and passes on to CacheInvalidationListeners. Filter duplicate events.
 	 * 
 	 * @param message
 	 */
-	public void handleBroadcast(Broadcast.BroadcastMessage message);
+	public void handleBroadcast(Broadcast.CacheInvalidationMessage message);
 
 }

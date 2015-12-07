@@ -4,16 +4,14 @@ option java_package = "org.tdmx.server.pcs.protobuf";
 option java_outer_classname = "Broadcast";
 
 message BroadcastMessage {
-	enum MessageType {
-	  CacheInvalidation = 0;
-	}
-	required string id = 1;
-	optional MessageType type = 2;
-	repeated string value = 3;
+	optional CacheInvalidationMessage cacheInvalidation = 1;
+	optional RelayMessage relay = 2;
+	optional LoadStatistic loadStatistic = 3;
 }
 
-message LoadStatistic {
-	optional int32 loadValue = 1;
+message CacheInvalidationMessage {
+	optional string id = 1;
+	optional string cacheKey = 2;
 }
 
 message AttributeValue {
@@ -47,6 +45,6 @@ message RelayMessage {
 	}
 	optional RelayType relayType = 1;
 	optional Channel channel = 2;
-	repeated AttributeValue attribute = 7;
+	repeated AttributeValue attribute = 3;
 }
 

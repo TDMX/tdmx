@@ -17,9 +17,8 @@
 	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier" init-method="init">
 	<!-- replaced with spring lookup in init()
 		<property name="broadcastEventNotifiers">
-			<list value-type="org.tdmx.server.pcs.BroadcastEventNotifier">
+			<list value-type="org.tdmx.server.pcs.CacheInvalidationEventNotifier">
 	            <ref bean="ws.ServerSessionManager"/>
-	            <ref bean="scs.LocalControlService"/>
 	        </list>
 		</property>
 	 -->
@@ -43,7 +42,7 @@
 		<property name="dnsCacheValiditySeconds" value="86400"/> <!-- 24hrs -->
 	</bean>
 
-	<bean id="tdmx.server.BroadcastEventDelegater" class="org.tdmx.server.pcs.BroadcastEventDelegater">
+	<bean id="tdmx.server.CacheInvalidationEventDelegater" class="org.tdmx.server.pcs.CacheInvalidationEventDelegater">
 		<property name="sizeLimit" value="10"/>
 		<property name="cacheInvalidationListeners">
 			<list value-type="org.tdmx.server.pcs.CacheInvalidationListener">

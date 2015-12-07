@@ -40,6 +40,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
@@ -81,13 +82,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 /**
- * Handles inbound RPC calls from SCS and WS clients.
+ * Handles inbound RPC calls from SCS, ROS and WS clients.
  * 
  * @author Peter
  *
  */
 public class RemoteControlServiceConnector
-		implements Manageable, BroadcastEventListener, ControlServiceProxy.BlockingInterface {
+		implements Manageable, CacheInvalidationMessageListener, ControlServiceProxy.BlockingInterface {
 
 	// TODO LATER: use SSL context for protobuf communications
 
@@ -270,17 +271,12 @@ public class RemoteControlServiceConnector
 	}
 
 	@Override
-	public void handleBroadcast(BroadcastMessage message) {
+	public void handleBroadcast(CacheInvalidationMessage message) {
 		if (message == null) {
 			return;
 		}
-		StringBuilder messageInfo = new StringBuilder();
-		messageInfo.append(message.getType()).append(":").append(message.getId());
-		if (message.getValueCount() > 0) {
-			messageInfo.append(message.getValue(0));
-		}
 
-		log.info("Received broadcast message " + messageInfo);
+		log.info("Received cache invalidation[" + message.getId() + ":" + message.getCacheKey() + "]");
 		if (serverFactory != null) {
 			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
 				if (log.isDebugEnabled()) {
@@ -289,7 +285,6 @@ public class RemoteControlServiceConnector
 				channel.sendOobMessage(message);
 			}
 		}
-
 	}
 
 	@Override
@@ -403,6 +398,16 @@ public class RemoteControlServiceConnector
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void handleBroadcast(BroadcastMessage message) {
+		if (message.getCacheInvalidation() != null) {
+			handleBroadcast(message.getCacheInvalidation());
+		} else if (message.getRelay() != null) {
+			// TODO
+		} else {
+			log.warn("Unknown broadcast message " + message);
+		}
+	}
 
 	private void assertPcsServerRegistered(Segment segment, String ipAddress, int port) {
 		PartitionControlServer pcs = partitionServerService.findByIpEndpoint(ipAddress, port);

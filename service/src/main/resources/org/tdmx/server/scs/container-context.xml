@@ -30,7 +30,7 @@
 		<property name="ioBufferSize" value="${scs.pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="true"/>
 		<property name="shutdownTimeoutMs" value="${scs.pcs.shutdownTimeoutMs}"/>
-		<property name="broadcastListener" ref="tdmx.server.BroadcastEventDelegater"/>
+		<property name="cacheInvalidationListener" ref="tdmx.server.CacheInvalidationEventDelegater"/>
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 	</bean>
 

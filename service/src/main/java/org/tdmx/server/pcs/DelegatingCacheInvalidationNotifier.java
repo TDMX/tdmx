@@ -27,7 +27,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage.MessageType;
 
 /**
  * The DelegatingCacheInvalidationNotifier attempts to use one of the registered BroadcastEventNotifers it knows to
@@ -52,7 +51,7 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	private static final Logger log = LoggerFactory.getLogger(DelegatingCacheInvalidationNotifier.class);
 
 	// internal
-	private Collection<BroadcastEventNotifier> broadcastEventNotifiers;
+	private Collection<CacheInvalidationEventNotifier> cacheInvalidationEventNotifiers;
 	private ApplicationContext ctx;
 
 	// -------------------------------------------------------------------------
@@ -69,7 +68,7 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 		if (ctx == null) {
 			throw new IllegalStateException("No beanFactory.");
 		}
-		broadcastEventNotifiers = ctx.getBeansOfType(BroadcastEventNotifier.class).values();
+		cacheInvalidationEventNotifiers = ctx.getBeansOfType(CacheInvalidationEventNotifier.class).values();
 	}
 
 	@Override
@@ -79,18 +78,17 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 
 	@Override
 	public void cacheInvalidated(String key) {
-		if (broadcastEventNotifiers == null || broadcastEventNotifiers.isEmpty()) {
-			log.warn("No broadcastEventNotifiers.");
+		if (cacheInvalidationEventNotifiers == null || cacheInvalidationEventNotifiers.isEmpty()) {
+			log.warn("No cacheInvalidationEventNotifiers.");
 			return;
 		}
-		Broadcast.BroadcastMessage.Builder eventBuilder = Broadcast.BroadcastMessage.newBuilder();
-		eventBuilder.setId(UUID.randomUUID().toString());
-		eventBuilder.setType(MessageType.CacheInvalidation);
-		eventBuilder.addValue(key);
+		Broadcast.CacheInvalidationMessage.Builder cim = Broadcast.CacheInvalidationMessage.newBuilder();
+		cim.setCacheKey(key);
+		cim.setId(UUID.randomUUID().toString());
 
-		Broadcast.BroadcastMessage msg = eventBuilder.build();
+		Broadcast.CacheInvalidationMessage msg = cim.build();
 
-		for (BroadcastEventNotifier notifier : broadcastEventNotifiers) {
+		for (CacheInvalidationEventNotifier notifier : cacheInvalidationEventNotifiers) {
 			if (notifier.broadcastEvent(msg)) {
 				break;
 			}
