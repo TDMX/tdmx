@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs;
+package org.tdmx.server.scs;
 
 import java.util.Map.Entry;
 
@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.pcs.ControlService;
+import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;

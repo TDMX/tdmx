@@ -16,25 +16,29 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs;
+package org.tdmx.server.ros;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.runtime.Manageable;
-import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.scs.LocalControlServiceImpl;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.RpcCallback;
@@ -56,7 +60,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements ControlService, Manageable {
+/**
+ * Handles inbound RPC calls from SCS, ROS and WS clients.
+ * 
+ * @author Peter
+ *
+ */
+public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -83,7 +93,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	private CleanShutdownHandler shutdownHandler;
 
 	private List<PartitionControlServer> serverList;
-	private Map<PartitionControlServer, LocalControlServiceClient> serverProxyMap = new HashMap<>();
+	private Map<PartitionControlServer, RelayControlServiceClient> serverProxyMap = new HashMap<>();
 
 	private Segment segment = null;
 
@@ -93,6 +103,15 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	 */
 	private CacheInvalidationMessageListener cacheInvalidationListener;
 
+	/**
+	 * Delay in seconds between notifying PCS about load statistics.
+	 */
+	private int loadStatisticsNotificationIntervalSec = 60;
+
+	// - internal
+	private ScheduledExecutorService scheduledThreadPool = null;
+	private ExecutorService loadNotificationExecutor = null;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -100,17 +119,6 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
-		LocalControlServiceClient clientProxy = consistentHashToServer(sessionData.getSessionKey());
-		if (clientProxy != null) {
-			return clientProxy.associateApiSession(sessionData, clientCertificate);
-		} else {
-			log.warn("No PCS client proxy found for " + consistentHashCode(sessionData.getSessionKey()));
-		}
-		return null;
-	}
 
 	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) {
@@ -180,7 +188,7 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					serverProxyMap.put(pcs, new LocalControlServiceClient(clientChannel));
+					serverProxyMap.put(pcs, new RelayControlServiceClient(clientChannel));
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
@@ -225,10 +233,39 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to do initial connect to PCS", e);
 		}
+
+		scheduledThreadPool = Executors
+				.newSingleThreadScheduledExecutor(new NamedThreadFactory("ROS-LoadNotificationScheduler"));
+
+		loadNotificationExecutor = Executors.newFixedThreadPool(1,
+				new NamedThreadFactory("ROS-LoadStatisticNotificationExecutor"));
+		scheduledThreadPool.scheduleWithFixedDelay(this, loadStatisticsNotificationIntervalSec,
+				loadStatisticsNotificationIntervalSec, TimeUnit.SECONDS);
+
 	}
 
 	@Override
 	public void stop() {
+		if (scheduledThreadPool != null) {
+			scheduledThreadPool.shutdown();
+			try {
+				scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
+			}
+			scheduledThreadPool = null;
+		}
+
+		if (loadNotificationExecutor != null) {
+			loadNotificationExecutor.shutdown();
+			try {
+				loadNotificationExecutor.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of loadNotificationExecutor.", e);
+			}
+			loadNotificationExecutor = null;
+		}
+
 		if (shutdownHandler != null) {
 			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
 			try {
@@ -253,6 +290,15 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 		if (!serverProxyMap.isEmpty()) {
 			log.warn("serverProxyMap should have been cleared on shutdown.");
 			serverProxyMap.clear();
+		}
+	}
+
+	@Override
+	public void run() {
+		log.info("Notifying PCS about this ROS services load.");
+
+		for (RelayControlServiceClient pcs : serverProxyMap.values()) {
+			pcs.notifyLoad(100); // TODO
 		}
 	}
 
@@ -285,26 +331,17 @@ public class LocalControlServiceImpl implements ControlService, Manageable {
 		}
 	}
 
-	private int consistentHashCode(String key) {
-		return key.hashCode() % serverList.size();
-	}
-
-	/**
-	 * Return the PCS server to which the key maps to with a consistent hash.
-	 * 
-	 * @param key
-	 * @return null if the PCS server is not connected to, otherwise the PCS server to which the key maps consistently.
-	 */
-	private LocalControlServiceClient consistentHashToServer(String key) {
-		int serverNo = consistentHashCode(key);
-		PartitionControlServer server = serverList.get(serverNo);
-		LocalControlServiceClient localProxy = serverProxyMap.get(server);
-		return localProxy;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public int getLoadStatisticsNotificationIntervalSec() {
+		return loadStatisticsNotificationIntervalSec;
+	}
+
+	public void setLoadStatisticsNotificationIntervalSec(int loadStatisticsNotificationIntervalSec) {
+		this.loadStatisticsNotificationIntervalSec = loadStatisticsNotificationIntervalSec;
+	}
 
 	public int getConnectTimeoutMillis() {
 		return connectTimeoutMillis;

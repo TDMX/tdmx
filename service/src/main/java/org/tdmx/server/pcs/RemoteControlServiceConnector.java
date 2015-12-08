@@ -246,7 +246,7 @@ public class RemoteControlServiceConnector
 		rpcEventNotifier.setEventListener(listener);
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
-		// we give the server a blocking and non blocking (pong capable) Ping Service
+		// we give the server our Service
 		BlockingService controlServiceProxy = ControlServiceProxy.newReflectiveBlockingService(this);
 		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 

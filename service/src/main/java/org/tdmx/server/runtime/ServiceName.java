@@ -30,5 +30,6 @@ public enum ServiceName {
 	RS, // RESTful Services
 	SCS, // SessionControlService
 	PCS, // PartitionControlService
+	ROS, // RelayOutboundService
 	JOB; // Background Jobs
 }
