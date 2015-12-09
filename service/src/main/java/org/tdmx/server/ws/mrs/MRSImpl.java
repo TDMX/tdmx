@@ -246,10 +246,29 @@ public class MRSImpl implements MRS {
 			setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
+		// check srcUser's domain matches the origin's domain of the channel
+		if (!msg.getHeader().getChannel().getOrigin().getDomain().equals(srcUc.getDomainName())) {
+			setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
+			return;
+		}
+		if (!msg.getHeader().getChannel().getOrigin().getLocalname().equals(srcUc.getAddressName())) {
+			setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
+			return;
+		}
+
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
 		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
 			setError(ErrorCode.InvalidUserCredentials, response);
+			return;
+		}
+		// check destUser's domain matches the destination's domain of the channel
+		if (!msg.getHeader().getChannel().getDestination().getDomain().equals(dstUc.getDomainName())) {
+			setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
+			return;
+		}
+		if (!msg.getHeader().getChannel().getDestination().getLocalname().equals(dstUc.getAddressName())) {
+			setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
 

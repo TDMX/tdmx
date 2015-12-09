@@ -967,8 +967,17 @@ public class ZASImpl implements ZAS {
 			setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 			return response;
 		}
-
-		// TODO check that the signer (administrator)'s domain matches the domainName
+		final AgentCredentialDescriptor signingDAC = credentialFactory.createAgentCredential(
+				ca.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate(),
+				ca.getAdministratorsignature().getAdministratorIdentity().getRootcertificate());
+		if (signingDAC == null) {
+			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			return response;
+		}
+		if (!domainName.equals(signingDAC.getDomainName())) {
+			setError(ErrorCode.ChannelAuthorizationSignerDomainMismatch, response);
+			return response;
+		}
 
 		// check that the channel origin or channel destination matches the ca's domain
 		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain())
@@ -990,7 +999,20 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
-			// TODO check that the signer of the permission's domain matches the origin's domain
+			final AgentCredentialDescriptor permissionDAC = credentialFactory.createAgentCredential(
+					ca.getOriginPermission().getAdministratorsignature().getAdministratorIdentity()
+							.getDomaincertificate(),
+					ca.getOriginPermission().getAdministratorsignature().getAdministratorIdentity()
+							.getRootcertificate());
+			if (permissionDAC == null) {
+				setError(ErrorCode.InvalidOriginPermissionAdministratorCredentials, response);
+				return response;
+			}
+			// check that the signer of the permission's domain matches the origin's domain
+			if (!domainName.equals(permissionDAC.getDomainName())) {
+				setError(ErrorCode.OriginPermissionSignerDomainMismatch, response);
+				return response;
+			}
 		}
 
 		if (domainName.equals(ca.getChannel().getDestination().getDomain())) {
@@ -1005,7 +1027,20 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
-			// TODO check that the signer of the permission's domain matches the destination's domain
+			final AgentCredentialDescriptor permissionDAC = credentialFactory.createAgentCredential(
+					ca.getDestinationPermission().getAdministratorsignature().getAdministratorIdentity()
+							.getDomaincertificate(),
+					ca.getDestinationPermission().getAdministratorsignature().getAdministratorIdentity()
+							.getRootcertificate());
+			if (permissionDAC == null) {
+				setError(ErrorCode.InvalidDestinationPermissionAdministratorCredentials, response);
+				return response;
+			}
+			// check that the signer of the permission's domain matches the origin's domain
+			if (!domainName.equals(permissionDAC.getDomainName())) {
+				setError(ErrorCode.DestinationPermissionSignerDomainMismatch, response);
+				return response;
+			}
 		}
 
 		final Domain existingDomain = getDomainService().findByName(zone, domainName);
@@ -1024,10 +1059,12 @@ public class ZASImpl implements ZAS {
 			return response;
 		}
 		if (operationStatus.channelAuthorization != null) {
+			// the channelAuthorization also has the channel object fetched, everything detached
 			if (operationStatus.channelAuthorization.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 				// TODO initiate transfer of send/recv auth to other party ( processing state )
 				// by caller, depending on whether processingstate is PENDING.
 
+				// TODO initiate relay CA
 			}
 		}
 

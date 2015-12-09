@@ -25,6 +25,8 @@ public enum ErrorCode {
 	ChannelAuthorizationExist(500, "ChannelAuthorization exists."),
 	ChannelNotFound(500, "Channel not found."),
 
+	InvalidOriginPermissionAdministratorCredentials(500, "Invalid DAC credentials in origin permission."),
+	InvalidDestinationPermissionAdministratorCredentials(500, "Invalid DAC credentials in destination permission."),
 	InvalidDomainAdministratorCredentials(500, "Invalid DAC credentials."),
 	DomainAdministratorCredentialsExist(500, "DACs exists."),
 	DomainAdministratorCredentialNotFound(500, "DAC not found."),
@@ -76,6 +78,17 @@ public enum ErrorCode {
 	MissingChannelEndpointLocalname(500, "ChannelEndpoint Localname missing."),
 
 	ChannelAuthorizationDomainMismatch(500, "ChannelAuthorization domain mismatch."),
+	ChannelAuthorizationSignerDomainMismatch(500, "ChannelAuthorization signing DAC domain mismatch."),
+	OriginPermissionSignerDomainMismatch(500, "Origin permission signing DAC domain mismatch."),
+	DestinationPermissionSignerDomainMismatch(500, "Destination permission signing DAC domain mismatch."),
+	ChannelOriginUserDomainMismatch(500, "Channel origin domain does not match the sending User's domain."),
+	ChannelOriginUserLocalNameMismatch(500, "Channel origin localname does not match the sending User's local name."),
+	ChannelDestinationUserDomainMismatch(
+			500,
+			"Channel destination domain does not match the destination User's domain."),
+	ChannelDestinationUserLocalNameMismatch(
+			500,
+			"Channel destination localname does not match the destination User's local name."),
 
 	MissingEndpointPermission(500, "Channel EndpointPermission missing."),
 	InvalidSignatureEndpointPermission(500, "Channel EndpointPermission signature invalid."),

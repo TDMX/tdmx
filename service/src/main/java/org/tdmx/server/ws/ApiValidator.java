@@ -139,6 +139,7 @@ public class ApiValidator {
 		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
 			return null;
 		}
+		// TODO check the pkix certificate chain from user cert to domain issuer to zone issuer is correct
 		return signature;
 	}
 
@@ -153,6 +154,7 @@ public class ApiValidator {
 		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
 			return null;
 		}
+		// TODO check the pkix certificate chain from user cert to domain issuer to zone issuer is correct
 		return signature;
 	}
 
