@@ -18,18 +18,11 @@
  */
 package org.tdmx.server.pcs;
 
-import org.tdmx.server.pcs.protobuf.Broadcast.Channel;
-import org.tdmx.server.pcs.protobuf.Broadcast.RelayMessage;
-
-import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
-
 /**
  * The PCS functionality regarding the RelayOutboundService.
  * 
- * The WS clients relay messages to the PCS. The RelayOutboundServers register themselves with the PCS and receive the
- * relayed messages. The PCS manages to load balance channels on the available relay servers. If a channel relay has
- * stopped / completed and is idle for some time, the relay server will notify the PCS and stash the used MRS session
- * ID. The ROS periodically indicates it's load to the PCS.
+ * The PCS manages to load balance channels on the available relay servers. The ROS periodically indicates it's load to
+ * the PCS.
  * 
  * @author Peter
  *
@@ -39,49 +32,39 @@ public interface RelayControlServiceListener {
 	/**
 	 * On the attachment of a RelayServer to the PCS.
 	 * 
-	 * @param ros
-	 *            the attached relay outbound server
+	 * @param rosTcpEndpoint
+	 *            the attached relay outbound server's address.
+	 * @param sessionCapacity
+	 *            the session capacity (relay channels which can be concurrently processed).
 	 */
-	public void registerRelayServer(RpcClientChannel ros);
+	public void registerRelayServer(String rosTcpEndpoint, int sessionCapacity);
 
 	/**
 	 * On the detachment of a RelayServer, we disconnect all relay sessions.
 	 * 
-	 * @param ros
-	 *            the relay outbound server which has detached.
+	 * @param rosTcpEndpoint
+	 *            the attached relay outbound server's address.
 	 */
-	public void unregisterRelayServer(RpcClientChannel ros);
+	public void unregisterRelayServer(String rosTcpEndpoint);
 
 	/**
-	 * Notify a relay session is idle.
+	 * Determine the RelayServer to use for outbound relaying to a channel.
 	 * 
-	 * @param ros
-	 *            the relay outbound server which has notified.
-	 * @param channel
-	 *            the relay channel idle.
-	 * @param mrsSessionId
-	 *            the MRS session of the channel for later use.
+	 * @param domain
+	 *            the domain owning the channel.
+	 * @param channelKey
+	 *            the channel key.
+	 * @return the RelayServer to use for outbound relaying to the channel.
 	 */
-	public void notifyIdleSession(RpcClientChannel ros, Channel channel, String mrsSessionId);
-
-	/**
-	 * Dispatch a relay message received asynchronously from a WS towards the RelayServer which is chose to handle or is
-	 * handling the channel.
-	 * 
-	 * NOTE: the message comes from a web service MRS, MOS, MDS and is pushed to a ROS.
-	 * 
-	 * @param msg
-	 *            the message to dispatch.
-	 */
-	public void relayMessage(RelayMessage msg);
+	public String assignRelayServer(String domain, String channelKey);
 
 	/**
 	 * Set the RelayServer's current load.
 	 * 
-	 * @param ros
-	 *            the relay server which has communicated their load average.
+	 * @param rosTcpEndpoint
+	 *            the attached relay outbound server's address.
 	 * @param currentLoad
 	 *            the current load (relay channels currently in process).
 	 */
-	public void notifyLoad(RpcClientChannel ros, int currentLoad);
+	public void notifyServerLoad(String rosTcpEndpoint, int currentLoad);
 }

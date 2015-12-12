@@ -318,9 +318,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					LocalControlServiceListenerClient client = new LocalControlServiceListenerClient(clientChannel);
 					serverProxyMap.put(pcs, client);
 
+					// register ourselves to receive broadcast messages
 					client.registerServer(getManagedServiceList(), null);
 
-					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
 							serverBroadcastCallback);
 				}

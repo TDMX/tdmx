@@ -1,11 +1,7 @@
 package org.tdmx.server.pcs;
 
-import static org.mockito.Mockito.mock;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
 public class RemoteControlServiceTest {
 
@@ -19,9 +15,7 @@ public class RemoteControlServiceTest {
 
 	@Test
 	public void testRegisterRelayService() {
-		RpcClientChannel mockServer = mock(RpcClientChannel.class);
-
-		sut.registerRelayServer(mockServer);
+		sut.registerRelayServer("localhost:8447", 100);
 
 		// assertEquals(1, 1);
 		// Mockito.verifyZeroInteractions(mockServer);

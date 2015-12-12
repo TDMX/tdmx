@@ -79,21 +79,24 @@ message InvalidateCertificateResponse {
 //
 
 message RegisterRelayServerRequest {
+	optional string rosAddress = 1;
+	optional int32 sessionCapacity = 2;
 }
 
 message RegisterRelayServerResponse {
 }
 
 //
-// ROS -> PCS notify that a relay session is idle and stash the MRS sessionId for the channel.
+// WS -> PCS request that the PCS assign a ROS server to handle the relay outbound of a channel
 //
 
-message NotifyIdleRelaySessionRequest {
-	optional Channel channel = 1;
-	optional string mrsSessionId = 2;
+message AssignRelaySessionRequest {
+	optional string domainName = 1;
+	optional string channelKey = 2;
 }
 
-message NotifyIdleSessionRelayResponse {
+message AssignRelaySessionResponse {
+	optional string rosAddress = 1;
 }
 
 //
@@ -101,7 +104,8 @@ message NotifyIdleSessionRelayResponse {
 //
 
 message NotifyLoadStatisticRequest {
-	optional int32 loadValue = 1;
+	optional string rosAddress = 1;
+	optional int32 sessionLoad = 2;
 }
 
 message NotifyLoadStatisticResponse {
@@ -109,15 +113,15 @@ message NotifyLoadStatisticResponse {
 
 
 service ControlServiceProxy {
+	// SCS->PCS
     rpc associateApiSession(AssociateApiSessionRequest) returns (AssociateApiSessionResponse);
+    // WS->PCS
     rpc registerServer(RegisterServerRequest) returns (RegisterServerResponse);
     rpc notifySessionsRemoved(NotifySessionRemovedRequest) returns (NotifySessionRemovedResponse);
     rpc invalidateCertificate(InvalidateCertificateRequest) returns (InvalidateCertificateResponse);
-//
-// WS -> PCS relay message ( Out-Of-Band / Non RPC == Async )
-//
+    rpc assignRelaySession(AssignRelaySessionRequest) returns (AssignRelaySessionResponse);
+    // ROS->PCS
     rpc registerRelayServer(RegisterRelayServerRequest) returns (RegisterRelayServerResponse);
-    rpc notifyIdleRelaySession(NotifyIdleRelaySessionRequest) returns (NotifyIdleSessionRelayResponse);
     rpc notifyRelayLoadStatistic(NotifyLoadStatisticRequest) returns (NotifyLoadStatisticResponse);
 }
 

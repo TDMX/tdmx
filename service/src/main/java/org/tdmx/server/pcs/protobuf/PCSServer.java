@@ -6045,6 +6045,29 @@ public final class PCSServer {
   public interface RegisterRelayServerRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RegisterRelayServerRequest)
       com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    boolean hasRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    java.lang.String getRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRosAddressBytes();
+
+    /**
+     * <code>optional int32 sessionCapacity = 2;</code>
+     */
+    boolean hasSessionCapacity();
+    /**
+     * <code>optional int32 sessionCapacity = 2;</code>
+     */
+    int getSessionCapacity();
   }
   /**
    * Protobuf type {@code RegisterRelayServerRequest}
@@ -6080,6 +6103,7 @@ public final class PCSServer {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -6095,6 +6119,17 @@ public final class PCSServer {
                                      extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              rosAddress_ = bs;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              sessionCapacity_ = input.readInt32();
               break;
             }
           }
@@ -6136,7 +6171,67 @@ public final class PCSServer {
       return PARSER;
     }
 
+    private int bitField0_;
+    public static final int ROSADDRESS_FIELD_NUMBER = 1;
+    private java.lang.Object rosAddress_;
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public boolean hasRosAddress() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public java.lang.String getRosAddress() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          rosAddress_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRosAddressBytes() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        rosAddress_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SESSIONCAPACITY_FIELD_NUMBER = 2;
+    private int sessionCapacity_;
+    /**
+     * <code>optional int32 sessionCapacity = 2;</code>
+     */
+    public boolean hasSessionCapacity() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int32 sessionCapacity = 2;</code>
+     */
+    public int getSessionCapacity() {
+      return sessionCapacity_;
+    }
+
     private void initFields() {
+      rosAddress_ = "";
+      sessionCapacity_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6151,6 +6246,12 @@ public final class PCSServer {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getRosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, sessionCapacity_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -6160,6 +6261,14 @@ public final class PCSServer {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getRosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, sessionCapacity_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -6277,6 +6386,10 @@ public final class PCSServer {
 
       public Builder clear() {
         super.clear();
+        rosAddress_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        sessionCapacity_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -6303,6 +6416,17 @@ public final class PCSServer {
 
       public org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest buildPartial() {
         org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest result = new org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.rosAddress_ = rosAddress_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.sessionCapacity_ = sessionCapacity_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -6318,6 +6442,14 @@ public final class PCSServer {
 
       public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest other) {
         if (other == org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest.getDefaultInstance()) return this;
+        if (other.hasRosAddress()) {
+          bitField0_ |= 0x00000001;
+          rosAddress_ = other.rosAddress_;
+          onChanged();
+        }
+        if (other.hasSessionCapacity()) {
+          setSessionCapacity(other.getSessionCapacity());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -6341,6 +6473,115 @@ public final class PCSServer {
             mergeFrom(parsedMessage);
           }
         }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object rosAddress_ = "";
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public boolean hasRosAddress() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public java.lang.String getRosAddress() {
+        java.lang.Object ref = rosAddress_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            rosAddress_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRosAddressBytes() {
+        java.lang.Object ref = rosAddress_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          rosAddress_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddress(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder clearRosAddress() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        rosAddress_ = getDefaultInstance().getRosAddress();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddressBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int sessionCapacity_ ;
+      /**
+       * <code>optional int32 sessionCapacity = 2;</code>
+       */
+      public boolean hasSessionCapacity() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int32 sessionCapacity = 2;</code>
+       */
+      public int getSessionCapacity() {
+        return sessionCapacity_;
+      }
+      /**
+       * <code>optional int32 sessionCapacity = 2;</code>
+       */
+      public Builder setSessionCapacity(int value) {
+        bitField0_ |= 0x00000002;
+        sessionCapacity_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 sessionCapacity = 2;</code>
+       */
+      public Builder clearSessionCapacity() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sessionCapacity_ = 0;
+        onChanged();
         return this;
       }
 
@@ -6668,57 +6909,58 @@ public final class PCSServer {
     // @@protoc_insertion_point(class_scope:RegisterRelayServerResponse)
   }
 
-  public interface NotifyIdleRelaySessionRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:NotifyIdleRelaySessionRequest)
+  public interface AssignRelaySessionRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AssignRelaySessionRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Channel channel = 1;</code>
+     * <code>optional string domainName = 1;</code>
      */
-    boolean hasChannel();
+    boolean hasDomainName();
     /**
-     * <code>optional .Channel channel = 1;</code>
+     * <code>optional string domainName = 1;</code>
      */
-    org.tdmx.server.pcs.protobuf.Broadcast.Channel getChannel();
+    java.lang.String getDomainName();
     /**
-     * <code>optional .Channel channel = 1;</code>
-     */
-    org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder getChannelOrBuilder();
-
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    boolean hasMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    java.lang.String getMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
+     * <code>optional string domainName = 1;</code>
      */
     com.google.protobuf.ByteString
-        getMrsSessionIdBytes();
+        getDomainNameBytes();
+
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    boolean hasChannelKey();
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    java.lang.String getChannelKey();
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getChannelKeyBytes();
   }
   /**
-   * Protobuf type {@code NotifyIdleRelaySessionRequest}
+   * Protobuf type {@code AssignRelaySessionRequest}
    */
-  public static final class NotifyIdleRelaySessionRequest extends
+  public static final class AssignRelaySessionRequest extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:NotifyIdleRelaySessionRequest)
-      NotifyIdleRelaySessionRequestOrBuilder {
-    // Use NotifyIdleRelaySessionRequest.newBuilder() to construct.
-    private NotifyIdleRelaySessionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:AssignRelaySessionRequest)
+      AssignRelaySessionRequestOrBuilder {
+    // Use AssignRelaySessionRequest.newBuilder() to construct.
+    private AssignRelaySessionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private NotifyIdleRelaySessionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private AssignRelaySessionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final NotifyIdleRelaySessionRequest defaultInstance;
-    public static NotifyIdleRelaySessionRequest getDefaultInstance() {
+    private static final AssignRelaySessionRequest defaultInstance;
+    public static AssignRelaySessionRequest getDefaultInstance() {
       return defaultInstance;
     }
 
-    public NotifyIdleRelaySessionRequest getDefaultInstanceForType() {
+    public AssignRelaySessionRequest getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -6728,7 +6970,7 @@ public final class PCSServer {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private NotifyIdleRelaySessionRequest(
+    private AssignRelaySessionRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6752,22 +6994,15 @@ public final class PCSServer {
               break;
             }
             case 10: {
-              org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = channel_.toBuilder();
-              }
-              channel_ = input.readMessage(org.tdmx.server.pcs.protobuf.Broadcast.Channel.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(channel_);
-                channel_ = subBuilder.buildPartial();
-              }
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
+              domainName_ = bs;
               break;
             }
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              mrsSessionId_ = bs;
+              channelKey_ = bs;
               break;
             }
           }
@@ -6784,66 +7019,45 @@ public final class PCSServer {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleRelaySessionRequest_descriptor;
+      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleRelaySessionRequest_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.class, org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.Builder.class);
+              org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.class, org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<NotifyIdleRelaySessionRequest> PARSER =
-        new com.google.protobuf.AbstractParser<NotifyIdleRelaySessionRequest>() {
-      public NotifyIdleRelaySessionRequest parsePartialFrom(
+    public static com.google.protobuf.Parser<AssignRelaySessionRequest> PARSER =
+        new com.google.protobuf.AbstractParser<AssignRelaySessionRequest>() {
+      public AssignRelaySessionRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new NotifyIdleRelaySessionRequest(input, extensionRegistry);
+        return new AssignRelaySessionRequest(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<NotifyIdleRelaySessionRequest> getParserForType() {
+    public com.google.protobuf.Parser<AssignRelaySessionRequest> getParserForType() {
       return PARSER;
     }
 
     private int bitField0_;
-    public static final int CHANNEL_FIELD_NUMBER = 1;
-    private org.tdmx.server.pcs.protobuf.Broadcast.Channel channel_;
+    public static final int DOMAINNAME_FIELD_NUMBER = 1;
+    private java.lang.Object domainName_;
     /**
-     * <code>optional .Channel channel = 1;</code>
+     * <code>optional string domainName = 1;</code>
      */
-    public boolean hasChannel() {
+    public boolean hasDomainName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional .Channel channel = 1;</code>
+     * <code>optional string domainName = 1;</code>
      */
-    public org.tdmx.server.pcs.protobuf.Broadcast.Channel getChannel() {
-      return channel_;
-    }
-    /**
-     * <code>optional .Channel channel = 1;</code>
-     */
-    public org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder getChannelOrBuilder() {
-      return channel_;
-    }
-
-    public static final int MRSSESSIONID_FIELD_NUMBER = 2;
-    private java.lang.Object mrsSessionId_;
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    public boolean hasMrsSessionId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    public java.lang.String getMrsSessionId() {
-      java.lang.Object ref = mrsSessionId_;
+    public java.lang.String getDomainName() {
+      java.lang.Object ref = domainName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -6851,22 +7065,64 @@ public final class PCSServer {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          mrsSessionId_ = s;
+          domainName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string mrsSessionId = 2;</code>
+     * <code>optional string domainName = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getMrsSessionIdBytes() {
-      java.lang.Object ref = mrsSessionId_;
+        getDomainNameBytes() {
+      java.lang.Object ref = domainName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        mrsSessionId_ = b;
+        domainName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CHANNELKEY_FIELD_NUMBER = 2;
+    private java.lang.Object channelKey_;
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    public boolean hasChannelKey() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    public java.lang.String getChannelKey() {
+      java.lang.Object ref = channelKey_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          channelKey_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string channelKey = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getChannelKeyBytes() {
+      java.lang.Object ref = channelKey_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        channelKey_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -6874,8 +7130,8 @@ public final class PCSServer {
     }
 
     private void initFields() {
-      channel_ = org.tdmx.server.pcs.protobuf.Broadcast.Channel.getDefaultInstance();
-      mrsSessionId_ = "";
+      domainName_ = "";
+      channelKey_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6891,10 +7147,10 @@ public final class PCSServer {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, channel_);
+        output.writeBytes(1, getDomainNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getMrsSessionIdBytes());
+        output.writeBytes(2, getChannelKeyBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -6907,11 +7163,11 @@ public final class PCSServer {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, channel_);
+          .computeBytesSize(1, getDomainNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getMrsSessionIdBytes());
+          .computeBytesSize(2, getChannelKeyBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6925,53 +7181,53 @@ public final class PCSServer {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6980,7 +7236,7 @@ public final class PCSServer {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -6992,25 +7248,25 @@ public final class PCSServer {
       return builder;
     }
     /**
-     * Protobuf type {@code NotifyIdleRelaySessionRequest}
+     * Protobuf type {@code AssignRelaySessionRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:NotifyIdleRelaySessionRequest)
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:AssignRelaySessionRequest)
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleRelaySessionRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleRelaySessionRequest_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.class, org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.Builder.class);
+                org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.class, org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7022,7 +7278,6 @@ public final class PCSServer {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getChannelFieldBuilder();
         }
       }
       private static Builder create() {
@@ -7031,13 +7286,9 @@ public final class PCSServer {
 
       public Builder clear() {
         super.clear();
-        if (channelBuilder_ == null) {
-          channel_ = org.tdmx.server.pcs.protobuf.Broadcast.Channel.getDefaultInstance();
-        } else {
-          channelBuilder_.clear();
-        }
+        domainName_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        mrsSessionId_ = "";
+        channelKey_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
@@ -7048,59 +7299,57 @@ public final class PCSServer {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleRelaySessionRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionRequest_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest build() {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest build() {
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest result = new org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest(this);
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest result = new org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (channelBuilder_ == null) {
-          result.channel_ = channel_;
-        } else {
-          result.channel_ = channelBuilder_.build();
-        }
+        result.domainName_ = domainName_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.mrsSessionId_ = mrsSessionId_;
+        result.channelKey_ = channelKey_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.getDefaultInstance()) return this;
-        if (other.hasChannel()) {
-          mergeChannel(other.getChannel());
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.getDefaultInstance()) return this;
+        if (other.hasDomainName()) {
+          bitField0_ |= 0x00000001;
+          domainName_ = other.domainName_;
+          onChanged();
         }
-        if (other.hasMrsSessionId()) {
+        if (other.hasChannelKey()) {
           bitField0_ |= 0x00000002;
-          mrsSessionId_ = other.mrsSessionId_;
+          channelKey_ = other.channelKey_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -7115,11 +7364,11 @@ public final class PCSServer {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -7130,140 +7379,24 @@ public final class PCSServer {
       }
       private int bitField0_;
 
-      private org.tdmx.server.pcs.protobuf.Broadcast.Channel channel_ = org.tdmx.server.pcs.protobuf.Broadcast.Channel.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.Channel, org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder, org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder> channelBuilder_;
+      private java.lang.Object domainName_ = "";
       /**
-       * <code>optional .Channel channel = 1;</code>
+       * <code>optional string domainName = 1;</code>
        */
-      public boolean hasChannel() {
+      public boolean hasDomainName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional .Channel channel = 1;</code>
+       * <code>optional string domainName = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.Channel getChannel() {
-        if (channelBuilder_ == null) {
-          return channel_;
-        } else {
-          return channelBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public Builder setChannel(org.tdmx.server.pcs.protobuf.Broadcast.Channel value) {
-        if (channelBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          channel_ = value;
-          onChanged();
-        } else {
-          channelBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public Builder setChannel(
-          org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder builderForValue) {
-        if (channelBuilder_ == null) {
-          channel_ = builderForValue.build();
-          onChanged();
-        } else {
-          channelBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public Builder mergeChannel(org.tdmx.server.pcs.protobuf.Broadcast.Channel value) {
-        if (channelBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              channel_ != org.tdmx.server.pcs.protobuf.Broadcast.Channel.getDefaultInstance()) {
-            channel_ =
-              org.tdmx.server.pcs.protobuf.Broadcast.Channel.newBuilder(channel_).mergeFrom(value).buildPartial();
-          } else {
-            channel_ = value;
-          }
-          onChanged();
-        } else {
-          channelBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public Builder clearChannel() {
-        if (channelBuilder_ == null) {
-          channel_ = org.tdmx.server.pcs.protobuf.Broadcast.Channel.getDefaultInstance();
-          onChanged();
-        } else {
-          channelBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000001);
-        return this;
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder getChannelBuilder() {
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return getChannelFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder getChannelOrBuilder() {
-        if (channelBuilder_ != null) {
-          return channelBuilder_.getMessageOrBuilder();
-        } else {
-          return channel_;
-        }
-      }
-      /**
-       * <code>optional .Channel channel = 1;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.Channel, org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder, org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder> 
-          getChannelFieldBuilder() {
-        if (channelBuilder_ == null) {
-          channelBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.tdmx.server.pcs.protobuf.Broadcast.Channel, org.tdmx.server.pcs.protobuf.Broadcast.Channel.Builder, org.tdmx.server.pcs.protobuf.Broadcast.ChannelOrBuilder>(
-                  getChannel(),
-                  getParentForChildren(),
-                  isClean());
-          channel_ = null;
-        }
-        return channelBuilder_;
-      }
-
-      private java.lang.Object mrsSessionId_ = "";
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public boolean hasMrsSessionId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public java.lang.String getMrsSessionId() {
-        java.lang.Object ref = mrsSessionId_;
+      public java.lang.String getDomainName() {
+        java.lang.Object ref = domainName_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            mrsSessionId_ = s;
+            domainName_ = s;
           }
           return s;
         } else {
@@ -7271,92 +7404,182 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>optional string mrsSessionId = 2;</code>
+       * <code>optional string domainName = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getMrsSessionIdBytes() {
-        java.lang.Object ref = mrsSessionId_;
+          getDomainNameBytes() {
+        java.lang.Object ref = domainName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          mrsSessionId_ = b;
+          domainName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string mrsSessionId = 2;</code>
+       * <code>optional string domainName = 1;</code>
        */
-      public Builder setMrsSessionId(
+      public Builder setDomainName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        domainName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string domainName = 1;</code>
+       */
+      public Builder clearDomainName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        domainName_ = getDefaultInstance().getDomainName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string domainName = 1;</code>
+       */
+      public Builder setDomainNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        domainName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object channelKey_ = "";
+      /**
+       * <code>optional string channelKey = 2;</code>
+       */
+      public boolean hasChannelKey() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string channelKey = 2;</code>
+       */
+      public java.lang.String getChannelKey() {
+        java.lang.Object ref = channelKey_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            channelKey_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string channelKey = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getChannelKeyBytes() {
+        java.lang.Object ref = channelKey_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          channelKey_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string channelKey = 2;</code>
+       */
+      public Builder setChannelKey(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
+        channelKey_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string mrsSessionId = 2;</code>
+       * <code>optional string channelKey = 2;</code>
        */
-      public Builder clearMrsSessionId() {
+      public Builder clearChannelKey() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        mrsSessionId_ = getDefaultInstance().getMrsSessionId();
+        channelKey_ = getDefaultInstance().getChannelKey();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string mrsSessionId = 2;</code>
+       * <code>optional string channelKey = 2;</code>
        */
-      public Builder setMrsSessionIdBytes(
+      public Builder setChannelKeyBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
+        channelKey_ = value;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:NotifyIdleRelaySessionRequest)
+      // @@protoc_insertion_point(builder_scope:AssignRelaySessionRequest)
     }
 
     static {
-      defaultInstance = new NotifyIdleRelaySessionRequest(true);
+      defaultInstance = new AssignRelaySessionRequest(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:NotifyIdleRelaySessionRequest)
+    // @@protoc_insertion_point(class_scope:AssignRelaySessionRequest)
   }
 
-  public interface NotifyIdleSessionRelayResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:NotifyIdleSessionRelayResponse)
+  public interface AssignRelaySessionResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:AssignRelaySessionResponse)
       com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    boolean hasRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    java.lang.String getRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRosAddressBytes();
   }
   /**
-   * Protobuf type {@code NotifyIdleSessionRelayResponse}
+   * Protobuf type {@code AssignRelaySessionResponse}
    */
-  public static final class NotifyIdleSessionRelayResponse extends
+  public static final class AssignRelaySessionResponse extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:NotifyIdleSessionRelayResponse)
-      NotifyIdleSessionRelayResponseOrBuilder {
-    // Use NotifyIdleSessionRelayResponse.newBuilder() to construct.
-    private NotifyIdleSessionRelayResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:AssignRelaySessionResponse)
+      AssignRelaySessionResponseOrBuilder {
+    // Use AssignRelaySessionResponse.newBuilder() to construct.
+    private AssignRelaySessionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private NotifyIdleSessionRelayResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private AssignRelaySessionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final NotifyIdleSessionRelayResponse defaultInstance;
-    public static NotifyIdleSessionRelayResponse getDefaultInstance() {
+    private static final AssignRelaySessionResponse defaultInstance;
+    public static AssignRelaySessionResponse getDefaultInstance() {
       return defaultInstance;
     }
 
-    public NotifyIdleSessionRelayResponse getDefaultInstanceForType() {
+    public AssignRelaySessionResponse getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -7366,11 +7589,12 @@ public final class PCSServer {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private NotifyIdleSessionRelayResponse(
+    private AssignRelaySessionResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -7388,6 +7612,12 @@ public final class PCSServer {
               }
               break;
             }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              rosAddress_ = bs;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -7402,32 +7632,76 @@ public final class PCSServer {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleSessionRelayResponse_descriptor;
+      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleSessionRelayResponse_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.class, org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.Builder.class);
+              org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.class, org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<NotifyIdleSessionRelayResponse> PARSER =
-        new com.google.protobuf.AbstractParser<NotifyIdleSessionRelayResponse>() {
-      public NotifyIdleSessionRelayResponse parsePartialFrom(
+    public static com.google.protobuf.Parser<AssignRelaySessionResponse> PARSER =
+        new com.google.protobuf.AbstractParser<AssignRelaySessionResponse>() {
+      public AssignRelaySessionResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new NotifyIdleSessionRelayResponse(input, extensionRegistry);
+        return new AssignRelaySessionResponse(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<NotifyIdleSessionRelayResponse> getParserForType() {
+    public com.google.protobuf.Parser<AssignRelaySessionResponse> getParserForType() {
       return PARSER;
     }
 
+    private int bitField0_;
+    public static final int ROSADDRESS_FIELD_NUMBER = 1;
+    private java.lang.Object rosAddress_;
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public boolean hasRosAddress() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public java.lang.String getRosAddress() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          rosAddress_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRosAddressBytes() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        rosAddress_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
+      rosAddress_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7442,6 +7716,9 @@ public final class PCSServer {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getRosAddressBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7451,6 +7728,10 @@ public final class PCSServer {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getRosAddressBytes());
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -7463,53 +7744,53 @@ public final class PCSServer {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parseFrom(
+    public static org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7518,7 +7799,7 @@ public final class PCSServer {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -7530,25 +7811,25 @@ public final class PCSServer {
       return builder;
     }
     /**
-     * Protobuf type {@code NotifyIdleSessionRelayResponse}
+     * Protobuf type {@code AssignRelaySessionResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:NotifyIdleSessionRelayResponse)
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponseOrBuilder {
+        // @@protoc_insertion_point(builder_implements:AssignRelaySessionResponse)
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleSessionRelayResponse_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleSessionRelayResponse_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.class, org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.Builder.class);
+                org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.class, org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7568,6 +7849,8 @@ public final class PCSServer {
 
       public Builder clear() {
         super.clear();
+        rosAddress_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -7577,38 +7860,50 @@ public final class PCSServer {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_NotifyIdleSessionRelayResponse_descriptor;
+        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_AssignRelaySessionResponse_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse build() {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse build() {
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse result = new org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse(this);
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse buildPartial() {
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse result = new org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.rosAddress_ = rosAddress_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse other) {
+        if (other == org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance()) return this;
+        if (other.hasRosAddress()) {
+          bitField0_ |= 0x00000001;
+          rosAddress_ = other.rosAddress_;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -7621,11 +7916,11 @@ public final class PCSServer {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -7634,16 +7929,93 @@ public final class PCSServer {
         }
         return this;
       }
+      private int bitField0_;
 
-      // @@protoc_insertion_point(builder_scope:NotifyIdleSessionRelayResponse)
+      private java.lang.Object rosAddress_ = "";
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public boolean hasRosAddress() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public java.lang.String getRosAddress() {
+        java.lang.Object ref = rosAddress_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            rosAddress_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRosAddressBytes() {
+        java.lang.Object ref = rosAddress_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          rosAddress_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddress(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder clearRosAddress() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        rosAddress_ = getDefaultInstance().getRosAddress();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddressBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AssignRelaySessionResponse)
     }
 
     static {
-      defaultInstance = new NotifyIdleSessionRelayResponse(true);
+      defaultInstance = new AssignRelaySessionResponse(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:NotifyIdleSessionRelayResponse)
+    // @@protoc_insertion_point(class_scope:AssignRelaySessionResponse)
   }
 
   public interface NotifyLoadStatisticRequestOrBuilder extends
@@ -7651,13 +8023,27 @@ public final class PCSServer {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional int32 loadValue = 1;</code>
+     * <code>optional string rosAddress = 1;</code>
      */
-    boolean hasLoadValue();
+    boolean hasRosAddress();
     /**
-     * <code>optional int32 loadValue = 1;</code>
+     * <code>optional string rosAddress = 1;</code>
      */
-    int getLoadValue();
+    java.lang.String getRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRosAddressBytes();
+
+    /**
+     * <code>optional int32 sessionLoad = 2;</code>
+     */
+    boolean hasSessionLoad();
+    /**
+     * <code>optional int32 sessionLoad = 2;</code>
+     */
+    int getSessionLoad();
   }
   /**
    * Protobuf type {@code NotifyLoadStatisticRequest}
@@ -7711,9 +8097,15 @@ public final class PCSServer {
               }
               break;
             }
-            case 8: {
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              loadValue_ = input.readInt32();
+              rosAddress_ = bs;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              sessionLoad_ = input.readInt32();
               break;
             }
           }
@@ -7756,23 +8148,66 @@ public final class PCSServer {
     }
 
     private int bitField0_;
-    public static final int LOADVALUE_FIELD_NUMBER = 1;
-    private int loadValue_;
+    public static final int ROSADDRESS_FIELD_NUMBER = 1;
+    private java.lang.Object rosAddress_;
     /**
-     * <code>optional int32 loadValue = 1;</code>
+     * <code>optional string rosAddress = 1;</code>
      */
-    public boolean hasLoadValue() {
+    public boolean hasRosAddress() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional int32 loadValue = 1;</code>
+     * <code>optional string rosAddress = 1;</code>
      */
-    public int getLoadValue() {
-      return loadValue_;
+    public java.lang.String getRosAddress() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          rosAddress_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRosAddressBytes() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        rosAddress_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SESSIONLOAD_FIELD_NUMBER = 2;
+    private int sessionLoad_;
+    /**
+     * <code>optional int32 sessionLoad = 2;</code>
+     */
+    public boolean hasSessionLoad() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int32 sessionLoad = 2;</code>
+     */
+    public int getSessionLoad() {
+      return sessionLoad_;
     }
 
     private void initFields() {
-      loadValue_ = 0;
+      rosAddress_ = "";
+      sessionLoad_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7788,7 +8223,10 @@ public final class PCSServer {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, loadValue_);
+        output.writeBytes(1, getRosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, sessionLoad_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7801,7 +8239,11 @@ public final class PCSServer {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, loadValue_);
+          .computeBytesSize(1, getRosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, sessionLoad_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7920,8 +8362,10 @@ public final class PCSServer {
 
       public Builder clear() {
         super.clear();
-        loadValue_ = 0;
+        rosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        sessionLoad_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -7953,7 +8397,11 @@ public final class PCSServer {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.loadValue_ = loadValue_;
+        result.rosAddress_ = rosAddress_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.sessionLoad_ = sessionLoad_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7970,8 +8418,13 @@ public final class PCSServer {
 
       public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest other) {
         if (other == org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest.getDefaultInstance()) return this;
-        if (other.hasLoadValue()) {
-          setLoadValue(other.getLoadValue());
+        if (other.hasRosAddress()) {
+          bitField0_ |= 0x00000001;
+          rosAddress_ = other.rosAddress_;
+          onChanged();
+        }
+        if (other.hasSessionLoad()) {
+          setSessionLoad(other.getSessionLoad());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -8000,34 +8453,110 @@ public final class PCSServer {
       }
       private int bitField0_;
 
-      private int loadValue_ ;
+      private java.lang.Object rosAddress_ = "";
       /**
-       * <code>optional int32 loadValue = 1;</code>
+       * <code>optional string rosAddress = 1;</code>
        */
-      public boolean hasLoadValue() {
+      public boolean hasRosAddress() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional int32 loadValue = 1;</code>
+       * <code>optional string rosAddress = 1;</code>
        */
-      public int getLoadValue() {
-        return loadValue_;
+      public java.lang.String getRosAddress() {
+        java.lang.Object ref = rosAddress_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            rosAddress_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int32 loadValue = 1;</code>
+       * <code>optional string rosAddress = 1;</code>
        */
-      public Builder setLoadValue(int value) {
-        bitField0_ |= 0x00000001;
-        loadValue_ = value;
+      public com.google.protobuf.ByteString
+          getRosAddressBytes() {
+        java.lang.Object ref = rosAddress_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          rosAddress_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddress(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 loadValue = 1;</code>
+       * <code>optional string rosAddress = 1;</code>
        */
-      public Builder clearLoadValue() {
+      public Builder clearRosAddress() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        loadValue_ = 0;
+        rosAddress_ = getDefaultInstance().getRosAddress();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddressBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int sessionLoad_ ;
+      /**
+       * <code>optional int32 sessionLoad = 2;</code>
+       */
+      public boolean hasSessionLoad() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int32 sessionLoad = 2;</code>
+       */
+      public int getSessionLoad() {
+        return sessionLoad_;
+      }
+      /**
+       * <code>optional int32 sessionLoad = 2;</code>
+       */
+      public Builder setSessionLoad(int value) {
+        bitField0_ |= 0x00000002;
+        sessionLoad_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 sessionLoad = 2;</code>
+       */
+      public Builder clearSessionLoad() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sessionLoad_ = 0;
         onChanged();
         return this;
       }
@@ -8366,6 +8895,10 @@ public final class PCSServer {
     public interface Interface {
       /**
        * <code>rpc associateApiSession(.AssociateApiSessionRequest) returns (.AssociateApiSessionResponse);</code>
+       *
+       * <pre>
+       * SCS-&gt;PCS
+       * </pre>
        */
       public abstract void associateApiSession(
           com.google.protobuf.RpcController controller,
@@ -8374,6 +8907,10 @@ public final class PCSServer {
 
       /**
        * <code>rpc registerServer(.RegisterServerRequest) returns (.RegisterServerResponse);</code>
+       *
+       * <pre>
+       * WS-&gt;PCS
+       * </pre>
        */
       public abstract void registerServer(
           com.google.protobuf.RpcController controller,
@@ -8397,24 +8934,24 @@ public final class PCSServer {
           com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse> done);
 
       /**
+       * <code>rpc assignRelaySession(.AssignRelaySessionRequest) returns (.AssignRelaySessionResponse);</code>
+       */
+      public abstract void assignRelaySession(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse> done);
+
+      /**
        * <code>rpc registerRelayServer(.RegisterRelayServerRequest) returns (.RegisterRelayServerResponse);</code>
        *
        * <pre>
-       * WS -&gt; PCS relay message ( Out-Of-Band / Non RPC == Async )
+       * ROS-&gt;PCS
        * </pre>
        */
       public abstract void registerRelayServer(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request,
           com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse> done);
-
-      /**
-       * <code>rpc notifyIdleRelaySession(.NotifyIdleRelaySessionRequest) returns (.NotifyIdleSessionRelayResponse);</code>
-       */
-      public abstract void notifyIdleRelaySession(
-          com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse> done);
 
       /**
        * <code>rpc notifyRelayLoadStatistic(.NotifyLoadStatisticRequest) returns (.NotifyLoadStatisticResponse);</code>
@@ -8462,19 +8999,19 @@ public final class PCSServer {
         }
 
         @java.lang.Override
+        public  void assignRelaySession(
+            com.google.protobuf.RpcController controller,
+            org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse> done) {
+          impl.assignRelaySession(controller, request, done);
+        }
+
+        @java.lang.Override
         public  void registerRelayServer(
             com.google.protobuf.RpcController controller,
             org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request,
             com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse> done) {
           impl.registerRelayServer(controller, request, done);
-        }
-
-        @java.lang.Override
-        public  void notifyIdleRelaySession(
-            com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse> done) {
-          impl.notifyIdleRelaySession(controller, request, done);
         }
 
         @java.lang.Override
@@ -8516,9 +9053,9 @@ public final class PCSServer {
             case 3:
               return impl.invalidateCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest)request);
             case 4:
-              return impl.registerRelayServer(controller, (org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest)request);
+              return impl.assignRelaySession(controller, (org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest)request);
             case 5:
-              return impl.notifyIdleRelaySession(controller, (org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest)request);
+              return impl.registerRelayServer(controller, (org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest)request);
             case 6:
               return impl.notifyRelayLoadStatistic(controller, (org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest)request);
             default:
@@ -8544,9 +9081,9 @@ public final class PCSServer {
             case 3:
               return org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest.getDefaultInstance();
             case 4:
-              return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.getDefaultInstance();
             case 5:
-              return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest.getDefaultInstance();
             case 6:
               return org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest.getDefaultInstance();
             default:
@@ -8572,9 +9109,9 @@ public final class PCSServer {
             case 3:
               return org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse.getDefaultInstance();
             case 4:
-              return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance();
             case 5:
-              return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance();
             case 6:
               return org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse.getDefaultInstance();
             default:
@@ -8587,6 +9124,10 @@ public final class PCSServer {
 
     /**
      * <code>rpc associateApiSession(.AssociateApiSessionRequest) returns (.AssociateApiSessionResponse);</code>
+     *
+     * <pre>
+     * SCS-&gt;PCS
+     * </pre>
      */
     public abstract void associateApiSession(
         com.google.protobuf.RpcController controller,
@@ -8595,6 +9136,10 @@ public final class PCSServer {
 
     /**
      * <code>rpc registerServer(.RegisterServerRequest) returns (.RegisterServerResponse);</code>
+     *
+     * <pre>
+     * WS-&gt;PCS
+     * </pre>
      */
     public abstract void registerServer(
         com.google.protobuf.RpcController controller,
@@ -8618,24 +9163,24 @@ public final class PCSServer {
         com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse> done);
 
     /**
+     * <code>rpc assignRelaySession(.AssignRelaySessionRequest) returns (.AssignRelaySessionResponse);</code>
+     */
+    public abstract void assignRelaySession(
+        com.google.protobuf.RpcController controller,
+        org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse> done);
+
+    /**
      * <code>rpc registerRelayServer(.RegisterRelayServerRequest) returns (.RegisterRelayServerResponse);</code>
      *
      * <pre>
-     * WS -&gt; PCS relay message ( Out-Of-Band / Non RPC == Async )
+     * ROS-&gt;PCS
      * </pre>
      */
     public abstract void registerRelayServer(
         com.google.protobuf.RpcController controller,
         org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request,
         com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse> done);
-
-    /**
-     * <code>rpc notifyIdleRelaySession(.NotifyIdleRelaySessionRequest) returns (.NotifyIdleSessionRelayResponse);</code>
-     */
-    public abstract void notifyIdleRelaySession(
-        com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse> done);
 
     /**
      * <code>rpc notifyRelayLoadStatistic(.NotifyLoadStatisticRequest) returns (.NotifyLoadStatisticResponse);</code>
@@ -8688,13 +9233,13 @@ public final class PCSServer {
               done));
           return;
         case 4:
-          this.registerRelayServer(controller, (org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse>specializeCallback(
+          this.assignRelaySession(controller, (org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse>specializeCallback(
               done));
           return;
         case 5:
-          this.notifyIdleRelaySession(controller, (org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse>specializeCallback(
+          this.registerRelayServer(controller, (org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse>specializeCallback(
               done));
           return;
         case 6:
@@ -8725,9 +9270,9 @@ public final class PCSServer {
         case 3:
           return org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest.getDefaultInstance();
         case 4:
-          return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest.getDefaultInstance();
         case 5:
-          return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest.getDefaultInstance();
         case 6:
           return org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest.getDefaultInstance();
         default:
@@ -8753,9 +9298,9 @@ public final class PCSServer {
         case 3:
           return org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse.getDefaultInstance();
         case 4:
-          return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance();
         case 5:
-          return org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance();
         case 6:
           return org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse.getDefaultInstance();
         default:
@@ -8839,12 +9384,27 @@ public final class PCSServer {
             org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse.getDefaultInstance()));
       }
 
+      public  void assignRelaySession(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(4),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.class,
+            org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance()));
+      }
+
       public  void registerRelayServer(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request,
           com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(4),
+          getDescriptor().getMethods().get(5),
           controller,
           request,
           org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance(),
@@ -8852,21 +9412,6 @@ public final class PCSServer {
             done,
             org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.class,
             org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance()));
-      }
-
-      public  void notifyIdleRelaySession(
-          com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse> done) {
-        channel.callMethod(
-          getDescriptor().getMethods().get(5),
-          controller,
-          request,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance(),
-          com.google.protobuf.RpcUtil.generalizeCallback(
-            done,
-            org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.class,
-            org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance()));
       }
 
       public  void notifyRelayLoadStatistic(
@@ -8911,14 +9456,14 @@ public final class PCSServer {
           org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest request)
           throws com.google.protobuf.ServiceException;
 
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse assignRelaySession(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request)
+          throws com.google.protobuf.ServiceException;
+
       public org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse registerRelayServer(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request)
-          throws com.google.protobuf.ServiceException;
-
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse notifyIdleRelaySession(
-          com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request)
           throws com.google.protobuf.ServiceException;
 
       public org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse notifyRelayLoadStatistic(
@@ -8982,27 +9527,27 @@ public final class PCSServer {
       }
 
 
+      public org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse assignRelaySession(
+          com.google.protobuf.RpcController controller,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest request)
+          throws com.google.protobuf.ServiceException {
+        return (org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(4),
+          controller,
+          request,
+          org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse.getDefaultInstance());
+      }
+
+
       public org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse registerRelayServer(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest request)
           throws com.google.protobuf.ServiceException {
         return (org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(4),
-          controller,
-          request,
-          org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance());
-      }
-
-
-      public org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse notifyIdleRelaySession(
-          com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest request)
-          throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse) channel.callBlockingMethod(
           getDescriptor().getMethods().get(5),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerResponse.getDefaultInstance());
       }
 
 
@@ -9083,15 +9628,15 @@ public final class PCSServer {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_RegisterRelayServerResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_NotifyIdleRelaySessionRequest_descriptor;
+    internal_static_AssignRelaySessionRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_NotifyIdleRelaySessionRequest_fieldAccessorTable;
+      internal_static_AssignRelaySessionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_NotifyIdleSessionRelayResponse_descriptor;
+    internal_static_AssignRelaySessionResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_NotifyIdleSessionRelayResponse_fieldAccessorTable;
+      internal_static_AssignRelaySessionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_NotifyLoadStatisticRequest_descriptor;
   private static
@@ -9127,30 +9672,32 @@ public final class PCSServer {
       "t\022\017\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036\n" +
       "\034NotifySessionRemovedResponse\"2\n\034Invalid" +
       "ateCertificateRequest\022\022\n\nclientCert\030\001 \001(" +
-      "\014\"\037\n\035InvalidateCertificateResponse\"\034\n\032Re" +
-      "gisterRelayServerRequest\"\035\n\033RegisterRela" +
-      "yServerResponse\"P\n\035NotifyIdleRelaySessio" +
-      "nRequest\022\031\n\007channel\030\001 \001(\0132\010.Channel\022\024\n\014m",
-      "rsSessionId\030\002 \001(\t\" \n\036NotifyIdleSessionRe" +
-      "layResponse\"/\n\032NotifyLoadStatisticReques" +
-      "t\022\021\n\tloadValue\030\001 \001(\005\"\035\n\033NotifyLoadStatis" +
-      "ticResponse2\334\004\n\023ControlServiceProxy\022P\n\023a" +
-      "ssociateApiSession\022\033.AssociateApiSession" +
-      "Request\032\034.AssociateApiSessionResponse\022A\n" +
-      "\016registerServer\022\026.RegisterServerRequest\032" +
-      "\027.RegisterServerResponse\022T\n\025notifySessio" +
-      "nsRemoved\022\034.NotifySessionRemovedRequest\032" +
-      "\035.NotifySessionRemovedResponse\022V\n\025invali",
-      "dateCertificate\022\035.InvalidateCertificateR" +
-      "equest\032\036.InvalidateCertificateResponse\022P" +
-      "\n\023registerRelayServer\022\033.RegisterRelaySer" +
-      "verRequest\032\034.RegisterRelayServerResponse" +
-      "\022Y\n\026notifyIdleRelaySession\022\036.NotifyIdleR" +
-      "elaySessionRequest\032\037.NotifyIdleSessionRe" +
-      "layResponse\022U\n\030notifyRelayLoadStatistic\022" +
-      "\033.NotifyLoadStatisticRequest\032\034.NotifyLoa" +
-      "dStatisticResponseB,\n\034org.tdmx.server.pc" +
-      "s.protobufB\tPCSServer\210\001\001"
+      "\014\"\037\n\035InvalidateCertificateResponse\"I\n\032Re" +
+      "gisterRelayServerRequest\022\022\n\nrosAddress\030\001" +
+      " \001(\t\022\027\n\017sessionCapacity\030\002 \001(\005\"\035\n\033Registe" +
+      "rRelayServerResponse\"C\n\031AssignRelaySessi",
+      "onRequest\022\022\n\ndomainName\030\001 \001(\t\022\022\n\nchannel" +
+      "Key\030\002 \001(\t\"0\n\032AssignRelaySessionResponse\022" +
+      "\022\n\nrosAddress\030\001 \001(\t\"E\n\032NotifyLoadStatist" +
+      "icRequest\022\022\n\nrosAddress\030\001 \001(\t\022\023\n\013session" +
+      "Load\030\002 \001(\005\"\035\n\033NotifyLoadStatisticRespons" +
+      "e2\320\004\n\023ControlServiceProxy\022P\n\023associateAp" +
+      "iSession\022\033.AssociateApiSessionRequest\032\034." +
+      "AssociateApiSessionResponse\022A\n\016registerS" +
+      "erver\022\026.RegisterServerRequest\032\027.Register" +
+      "ServerResponse\022T\n\025notifySessionsRemoved\022",
+      "\034.NotifySessionRemovedRequest\032\035.NotifySe" +
+      "ssionRemovedResponse\022V\n\025invalidateCertif" +
+      "icate\022\035.InvalidateCertificateRequest\032\036.I" +
+      "nvalidateCertificateResponse\022M\n\022assignRe" +
+      "laySession\022\032.AssignRelaySessionRequest\032\033" +
+      ".AssignRelaySessionResponse\022P\n\023registerR" +
+      "elayServer\022\033.RegisterRelayServerRequest\032" +
+      "\034.RegisterRelayServerResponse\022U\n\030notifyR" +
+      "elayLoadStatistic\022\033.NotifyLoadStatisticR" +
+      "equest\032\034.NotifyLoadStatisticResponseB,\n\034",
+      "org.tdmx.server.pcs.protobufB\tPCSServer\210" +
+      "\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9230,31 +9777,31 @@ public final class PCSServer {
     internal_static_RegisterRelayServerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerRequest_descriptor,
-        new java.lang.String[] { });
+        new java.lang.String[] { "RosAddress", "SessionCapacity", });
     internal_static_RegisterRelayServerResponse_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_RegisterRelayServerResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerResponse_descriptor,
         new java.lang.String[] { });
-    internal_static_NotifyIdleRelaySessionRequest_descriptor =
+    internal_static_AssignRelaySessionRequest_descriptor =
       getDescriptor().getMessageTypes().get(12);
-    internal_static_NotifyIdleRelaySessionRequest_fieldAccessorTable = new
+    internal_static_AssignRelaySessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_NotifyIdleRelaySessionRequest_descriptor,
-        new java.lang.String[] { "Channel", "MrsSessionId", });
-    internal_static_NotifyIdleSessionRelayResponse_descriptor =
+        internal_static_AssignRelaySessionRequest_descriptor,
+        new java.lang.String[] { "DomainName", "ChannelKey", });
+    internal_static_AssignRelaySessionResponse_descriptor =
       getDescriptor().getMessageTypes().get(13);
-    internal_static_NotifyIdleSessionRelayResponse_fieldAccessorTable = new
+    internal_static_AssignRelaySessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_NotifyIdleSessionRelayResponse_descriptor,
-        new java.lang.String[] { });
+        internal_static_AssignRelaySessionResponse_descriptor,
+        new java.lang.String[] { "RosAddress", });
     internal_static_NotifyLoadStatisticRequest_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_NotifyLoadStatisticRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NotifyLoadStatisticRequest_descriptor,
-        new java.lang.String[] { "LoadValue", });
+        new java.lang.String[] { "RosAddress", "SessionLoad", });
     internal_static_NotifyLoadStatisticResponse_descriptor =
       getDescriptor().getMessageTypes().get(15);
     internal_static_NotifyLoadStatisticResponse_fieldAccessorTable = new

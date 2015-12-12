@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
 
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
@@ -43,17 +43,38 @@ public class RelayControlServiceClient {
 	 * The RPC channel to the server.
 	 */
 	private final RpcClientChannel rpcClient;
+	private final String tcpEndpointAddress;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayControlServiceClient(RpcClientChannel rpcClient) {
+	public RelayControlServiceClient(RpcClientChannel rpcClient, String tcpEndpointAddress) {
 		this.rpcClient = rpcClient;
+		this.tcpEndpointAddress = tcpEndpointAddress;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public void registerRelayServer(int sessionCapacity) {
+		if (!rpcClient.isClosed()) {
+			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
+			final ClientRpcController controller = rpcClient.newRpcController();
+			controller.setTimeoutMs(0);
+
+			RegisterRelayServerRequest.Builder reqBuilder = RegisterRelayServerRequest.newBuilder();
+			reqBuilder.setRosAddress(tcpEndpointAddress);
+			reqBuilder.setSessionCapacity(sessionCapacity);
+
+			RegisterRelayServerRequest request = reqBuilder.build();
+			try {
+				blockingService.registerRelayServer(controller, request);
+			} catch (ServiceException e) {
+				log.warn("registerServer call failed." + e.getMessage(), e);
+			}
+		}
+	}
 
 	public void notifyLoad(int loadValue) {
 		if (!rpcClient.isClosed()) {
@@ -62,16 +83,14 @@ public class RelayControlServiceClient {
 			controller.setTimeoutMs(0);
 
 			NotifyLoadStatisticRequest.Builder reqBuilder = NotifyLoadStatisticRequest.newBuilder();
-			reqBuilder.setLoadValue(loadValue);
+			reqBuilder.setRosAddress(tcpEndpointAddress);
+			reqBuilder.setSessionLoad(loadValue);
 
 			NotifyLoadStatisticRequest request = reqBuilder.build();
 			try {
-				NotifyLoadStatisticResponse response = blockingService.notifyRelayLoadStatistic(controller, request);
-				if (response == null) {
-					log.info("No WebServiceSessionEndpoint allocated.");
-				}
+				blockingService.notifyRelayLoadStatistic(controller, request);
 			} catch (ServiceException e) {
-				log.warn("Call failed.", e);
+				log.warn("notifyRelayLoadStatistic call failed." + e.getMessage(), e);
 			}
 		}
 	}

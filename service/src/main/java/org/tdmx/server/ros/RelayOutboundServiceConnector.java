@@ -19,6 +19,8 @@
 package org.tdmx.server.ros;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
@@ -108,9 +111,26 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 	 */
 	private int loadStatisticsNotificationIntervalSec = 60;
 
+	/**
+	 * ROS server connector tcpIp address.
+	 */
+	private String serverAddress;
+
+	/**
+	 * ROS server connector port.
+	 */
+	private int localPort;
+
+	/**
+	 * The session handling capacity of this ROS.
+	 */
+	private int sessionCapacity;
+
 	// - internal
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService loadNotificationExecutor = null;
+
+	// TODO get load from the "server" ROS part.
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -122,6 +142,16 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) {
+		String localHostAddress = null;
+		try {
+			localHostAddress = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			log.warn("Unable to determine localhost IP address.", e);
+		}
+
+		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
+		final String rosTcpEndpoint = serverHostname + ":" + localPort;
+
 		this.segment = segment;
 		try {
 			clientFactory = new DuplexTcpClientPipelineFactory();
@@ -188,7 +218,10 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					serverProxyMap.put(pcs, new RelayControlServiceClient(clientChannel));
+					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel, rosTcpEndpoint);
+
+					serverProxyMap.put(pcs, client);
+					client.registerRelayServer(sessionCapacity);
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
@@ -421,6 +454,30 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
 		this.cacheInvalidationListener = cacheInvalidationListener;
+	}
+
+	public String getServerAddress() {
+		return serverAddress;
+	}
+
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
+	}
+
+	public int getLocalPort() {
+		return localPort;
+	}
+
+	public void setLocalPort(int localPort) {
+		this.localPort = localPort;
+	}
+
+	public int getSessionCapacity() {
+		return sessionCapacity;
+	}
+
+	public void setSessionCapacity(int sessionCapacity) {
+		this.sessionCapacity = sessionCapacity;
 	}
 
 }

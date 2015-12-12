@@ -20,10 +20,6 @@ package org.tdmx.server.pcs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.server.pcs.protobuf.Broadcast.Channel;
-import org.tdmx.server.pcs.protobuf.Broadcast.RelayMessage;
-
-import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
 /**
  * The PCS implementation of the {@link RelayControlServiceListener}
@@ -53,36 +49,30 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void registerRelayServer(RpcClientChannel ros) {
+	public void registerRelayServer(String rosTcpEndpoint, int sessionCapacity) {
 		// TODO Auto-generated method stub
-		log.info("registerRelayServer " + ros.getPeerInfo());
-	}
-
-	@Override
-	public void unregisterRelayServer(RpcClientChannel ros) {
-		// TODO Auto-generated method stub
-		log.info("unregisterRelayServer " + ros.getPeerInfo());
+		log.info("registerRelayServer " + rosTcpEndpoint);
 
 	}
 
 	@Override
-	public void notifyIdleSession(RpcClientChannel ros, Channel channel, String mrsSessionId) {
+	public void unregisterRelayServer(String rosTcpEndpoint) {
 		// TODO Auto-generated method stub
-		log.info("notifyIdleSession " + ros.getPeerInfo());
+		log.info("unregisterRelayServer " + rosTcpEndpoint);
 
 	}
 
 	@Override
-	public void relayMessage(RelayMessage msg) {
-		// TODO Auto-generated method stub
-		log.info("relayMessage " + msg.getChannel());
-
+	public String assignRelayServer(String domain, String channelKey) {
+		log.info("assignRelayServer " + domain + " " + channelKey);
+		return null;
 	}
 
 	@Override
-	public void notifyLoad(RpcClientChannel ros, int currentLoad) {
+	public void notifyServerLoad(String rosTcpEndpoint, int currentLoad) {
 		// TODO Auto-generated method stub
-		log.info("notifyLoad " + ros.getPeerInfo() + " is " + currentLoad);
+		log.info("notifyLoad " + rosTcpEndpoint + " is " + currentLoad);
+
 	}
 
 	// -------------------------------------------------------------------------

@@ -41,13 +41,13 @@ import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleRelaySessionRequest;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyIdleSessionRelayResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedRequest;
@@ -373,21 +373,21 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
-		relayService.registerRelayServer(channel);
+		relayService.registerRelayServer(request.getRosAddress(), request.getSessionCapacity());
 
 		RegisterRelayServerResponse.Builder responseBuilder = RegisterRelayServerResponse.newBuilder();
 		return responseBuilder.build();
 	}
 
-	@Override
-	public NotifyIdleSessionRelayResponse notifyIdleRelaySession(RpcController controller,
-			NotifyIdleRelaySessionRequest request) throws ServiceException {
+	public AssignRelaySessionResponse assignRelaySession(RpcController controller, AssignRelaySessionRequest request)
+			throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("notifyIdleRelaySession call from " + channel.getPeerInfo());
 
-		relayService.notifyIdleSession(channel, request.getChannel(), request.getMrsSessionId());
+		String rosTcpEndpoint = relayService.assignRelayServer(request.getDomainName(), request.getChannelKey());
 
-		NotifyIdleSessionRelayResponse.Builder responseBuilder = NotifyIdleSessionRelayResponse.newBuilder();
+		AssignRelaySessionResponse.Builder responseBuilder = AssignRelaySessionResponse.newBuilder();
+		responseBuilder.setRosAddress(rosTcpEndpoint);
 		return responseBuilder.build();
 	}
 
@@ -397,7 +397,7 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("notifyRelayLoadStatistic call from " + channel.getPeerInfo());
 
-		relayService.notifyLoad(channel, request.getLoadValue());
+		relayService.notifyServerLoad(request.getRosAddress(), request.getSessionLoad());
 
 		NotifyLoadStatisticResponse.Builder responseBuilder = NotifyLoadStatisticResponse.newBuilder();
 		return responseBuilder.build();
@@ -431,10 +431,9 @@ public class RemoteControlServiceConnector
 	private void handleBroadcast(BroadcastMessage message) {
 		if (message.getCacheInvalidation() != null) {
 			handleBroadcast(message.getCacheInvalidation());
-		} else if (message.getRelay() != null) {
-			relayService.relayMessage(message.getRelay());
 		} else {
 			log.warn("Unknown broadcast message " + message);
+			// relay messages are sent OOB from WS to ROS directly.
 		}
 	}
 
