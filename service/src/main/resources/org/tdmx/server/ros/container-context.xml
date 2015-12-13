@@ -19,7 +19,9 @@
 	<bean id="ROS.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
-	            <ref bean="ros.RelayOutboundServerConnector"/>
+				<!-- we start the server connector first to be ready to receive new relay channels from the PCS -->
+	            <ref bean="ros.RelayOutboundServerServerConnector"/>
+	            <ref bean="ros.RelayOutboundServerClientConnector"/>
 	        </list>
         </property>
 		

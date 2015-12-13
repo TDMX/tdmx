@@ -13,7 +13,7 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-	<bean id="ros.RelayOutboundServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
+	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
 		<property name="loadStatisticsNotificationIntervalSec" value="${ros.loadStatisticsNotificationIntervalSec}"/>
 
 		<property name="serverAddress" value="${ros.serverAddress}"/>
@@ -31,5 +31,19 @@
 		<property name="cacheInvalidationListener" ref="tdmx.server.CacheInvalidationEventDelegater"/>
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 	</bean>
+	
+	<bean id="ros.RelayOutboundServerServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceConnector" >
+		<property name="serverAddress" value="${ros.serverAddress}" />
+		<property name="localPort" value="${ros.localPort}" />
+
+		<property name="coreRpcExecutorThreads" value="${ros.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${ros.maxRpcExecutorThreads}"/>
+		<property name="acceptorThreads" value="${ros.acceptorThreads}"/>
+		<property name="ioThreads" value="${ros.ioThreads}"/>
+		<property name="ioBufferSize" value="${ros.ioBufferSize}"/>
+		<property name="tcpNoDelay" value="${ros.tcpNoDelay}" />
+		<property name="shutdownTimeoutMs" value="${ros.shutdownTimeoutMs}" />
+	</bean>
+	
 
 </beans>
