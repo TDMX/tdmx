@@ -73,6 +73,8 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceConnector.class);
 
+	private RelayOutboundService relayOutboundService;
+
 	/**
 	 * The interface address for multi-homed hosts. Leave empty if not multi-homed.
 	 */
@@ -196,6 +198,7 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 	@Override
 	public RelayResponse relay(RpcController controller, RelayRequest request) throws ServiceException {
 		// TODO Auto-generated method stub
+		relayOutboundService.getCurrentLoad();// TODO
 		return null;
 	}
 
@@ -227,6 +230,14 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public RelayOutboundService getRelayOutboundService() {
+		return relayOutboundService;
+	}
+
+	public void setRelayOutboundService(RelayOutboundService relayOutboundService) {
+		this.relayOutboundService = relayOutboundService;
+	}
 
 	public String getServerAddress() {
 		return serverAddress;

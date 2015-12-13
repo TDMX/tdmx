@@ -13,6 +13,9 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
+	<bean id="ros.RelayOutboundService" class="org.tdmx.server.ros.RelayOutboundServiceImpl" >
+	</bean>
+	
 	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
 		<property name="loadStatisticsNotificationIntervalSec" value="${ros.loadStatisticsNotificationIntervalSec}"/>
 
@@ -33,6 +36,8 @@
 	</bean>
 	
 	<bean id="ros.RelayOutboundServerServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceConnector" >
+		<property name="relayOutboundService" ref="ros.RelayOutboundService" />
+		
 		<property name="serverAddress" value="${ros.serverAddress}" />
 		<property name="localPort" value="${ros.localPort}" />
 
@@ -45,5 +50,4 @@
 		<property name="shutdownTimeoutMs" value="${ros.shutdownTimeoutMs}" />
 	</bean>
 	
-
 </beans>
