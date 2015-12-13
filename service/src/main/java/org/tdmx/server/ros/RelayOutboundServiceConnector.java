@@ -18,58 +18,51 @@
  */
 package org.tdmx.server.ros;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
-import org.tdmx.lib.control.job.NamedThreadFactory;
-import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.CacheInvalidationMessageListener;
-import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.ROSServer.RelayOutboundServiceProxy;
+import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest;
+import org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse;
 import org.tdmx.server.runtime.Manageable;
-import org.tdmx.server.scs.LocalControlServiceImpl;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-import com.google.protobuf.RpcCallback;
+import com.google.protobuf.BlockingService;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
-import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
-import com.googlecode.protobuf.pro.duplex.client.RpcClientConnectionWatchdog;
 import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
-import com.googlecode.protobuf.pro.duplex.logging.CategoryPerServiceLogger;
+import com.googlecode.protobuf.pro.duplex.logging.NullLogger;
+import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerPipelineFactory;
 import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
-import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 /**
- * Handles inbound RPC calls from SCS, ROS and WS clients.
+ * Handles inbound RPC calls from WS clients to relay outbound.
  * 
  * @author Peter
  *
  */
-public class RelayOutboundServiceConnector implements Manageable, Runnable {
+public class RelayOutboundServiceConnector implements Manageable, RelayOutboundServiceProxy.BlockingInterface {
+
+	// TODO LATER: use SSL context for protobuf communications
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -78,59 +71,27 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(LocalControlServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceConnector.class);
 
-	private static final String PCS_ATTRIBUTE = "PCS";
-
-	private int connectTimeoutMillis = 5000;
-	private int connectResponseTimeoutMillis = 10000;
+	/**
+	 * The interface address for multi-homed hosts. Leave empty if not multi-homed.
+	 */
+	private String serverAddress;
+	private int localPort;
+	private long shutdownTimeoutMs = 20000;
 	private int coreRpcExecutorThreads = 2;
 	private int maxRpcExecutorThreads = 10;
+	private int acceptorThreads = 2;
 	private int ioThreads = 16;
 	private int ioBufferSize = 1048576;
 	private boolean tcpNoDelay = true;
-	private long shutdownTimeoutMs = 10000;
 
-	private DuplexTcpClientPipelineFactory clientFactory;
-	private Bootstrap bootstrap;
+	/**
+	 * The segment handled by this PartitionControlService.
+	 */
+	private Segment segment;
 	private CleanShutdownHandler shutdownHandler;
-
-	private List<PartitionControlServer> serverList;
-	private Map<PartitionControlServer, RelayControlServiceClient> serverProxyMap = new HashMap<>();
-
-	private Segment segment = null;
-
-	private PartitionControlServerService partitionServerService;
-	/**
-	 * Delegate for handling Broadcast events.
-	 */
-	private CacheInvalidationMessageListener cacheInvalidationListener;
-
-	/**
-	 * Delay in seconds between notifying PCS about load statistics.
-	 */
-	private int loadStatisticsNotificationIntervalSec = 60;
-
-	/**
-	 * ROS server connector tcpIp address.
-	 */
-	private String serverAddress;
-
-	/**
-	 * ROS server connector port.
-	 */
-	private int localPort;
-
-	/**
-	 * The session handling capacity of this ROS.
-	 */
-	private int sessionCapacity;
-
-	// - internal
-	private ScheduledExecutorService scheduledThreadPool = null;
-	private ExecutorService loadNotificationExecutor = null;
-
-	// TODO get load from the "server" ROS part.
+	private DuplexTcpServerPipelineFactory serverFactory;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -142,6 +103,9 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) {
+		this.segment = segment;
+		// the apis are ignored - since this is not a WS.
+
 		String localHostAddress = null;
 		try {
 			localHostAddress = InetAddress.getLocalHost().getHostAddress();
@@ -150,155 +114,93 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 		}
 
 		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
-		final String rosTcpEndpoint = serverHostname + ":" + localPort;
 
-		this.segment = segment;
-		try {
-			clientFactory = new DuplexTcpClientPipelineFactory();
+		PeerInfo serverInfo = new PeerInfo(serverHostname, localPort);
 
-			clientFactory.setConnectResponseTimeoutMillis(connectResponseTimeoutMillis);
-			RpcServerCallExecutor rpcExecutor = new ThreadPoolCallExecutor(coreRpcExecutorThreads,
-					maxRpcExecutorThreads);
-			clientFactory.setRpcServerCallExecutor(rpcExecutor);
+		RpcServerCallExecutor executor = new ThreadPoolCallExecutor(coreRpcExecutorThreads, maxRpcExecutorThreads);
 
-			// RPC payloads are uncompressed when logged - so reduce logging
-			CategoryPerServiceLogger logger = new CategoryPerServiceLogger();
-			logger.setLogRequestProto(false);
-			logger.setLogResponseProto(false);
-			clientFactory.setRpcLogger(logger);
+		serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
+		serverFactory.setRpcServerCallExecutor(executor);
+		// if ( secure ) {
+		// RpcSSLContext sslCtx = new RpcSSLContext();
+		// sslCtx.setKeystorePassword("changeme");
+		// sslCtx.setKeystorePath("./lib/server.keystore");
+		// sslCtx.setTruststorePassword("changeme");
+		// sslCtx.setTruststorePath("./lib/truststore");
+		// sslCtx.init();
+		//
+		// serverFactory.setSslContext(sslCtx);
+		// }
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
+		NullLogger logger = new NullLogger();
+		serverFactory.setLogger(logger);
 
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					if (parameter.getCacheInvalidation() != null) {
-						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
-						if (delegate != null) {
-							delegate.handleBroadcast(parameter.getCacheInvalidation());
-						}
-					}
-				}
+		// setup a RPC event listener - it just logs what happens
+		RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
+		RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
-			};
-			// Set up the event pipeline factory.
-			// setup a RPC event listener - it just logs what happens
-			RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
+			@Override
+			public void connectionReestablished(RpcClientChannel clientChannel) {
+				log.info("connectionReestablished " + clientChannel);
+			}
 
-			final RpcConnectionEventListener listener = new RpcConnectionEventListener() {
+			@Override
+			public void connectionOpened(RpcClientChannel clientChannel) {
+				log.info("connectionOpened " + clientChannel);
+			}
 
-				@Override
-				public void connectionReestablished(RpcClientChannel clientChannel) {
-					log.info("connectionReestablished " + clientChannel);
-					connection(clientChannel);
-				}
+			@Override
+			public void connectionLost(RpcClientChannel clientChannel) {
+				log.info("connectionLost " + clientChannel);
+			}
 
-				@Override
-				public void connectionOpened(RpcClientChannel clientChannel) {
-					log.info("connectionOpened " + clientChannel);
-					connection(clientChannel);
-				}
+			@Override
+			public void connectionChanged(RpcClientChannel clientChannel) {
+				log.info("connectionChanged " + clientChannel);
+			}
+		};
+		rpcEventNotifier.setEventListener(listener);
+		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
-				@Override
-				public void connectionLost(RpcClientChannel clientChannel) {
-					log.info("connectionLost " + clientChannel);
-					disconnection(clientChannel);
-				}
+		// we don't implement a RPC service, just a
+		BlockingService controlServiceProxy = RelayOutboundServiceProxy.newReflectiveBlockingService(this);
+		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 
-				@Override
-				public void connectionChanged(RpcClientChannel clientChannel) {
-					log.info("connectionChanged " + clientChannel);
-					connection(clientChannel);
-				}
+		// Configure the server.
+		ServerBootstrap bootstrap = new ServerBootstrap();
+		NioEventLoopGroup boss = new NioEventLoopGroup(acceptorThreads,
+				new RenamingThreadFactoryProxy("acceptor", Executors.defaultThreadFactory()));
+		NioEventLoopGroup workers = new NioEventLoopGroup(ioThreads,
+				new RenamingThreadFactoryProxy("worker", Executors.defaultThreadFactory()));
+		bootstrap.group(boss, workers);
+		bootstrap.channel(NioServerSocketChannel.class);
+		bootstrap.option(ChannelOption.SO_SNDBUF, ioBufferSize);
+		bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
+		bootstrap.childOption(ChannelOption.SO_RCVBUF, ioBufferSize);
+		bootstrap.childOption(ChannelOption.SO_SNDBUF, ioBufferSize);
+		bootstrap.option(ChannelOption.TCP_NODELAY, tcpNoDelay);
+		bootstrap.childHandler(serverFactory);
+		bootstrap.localAddress(serverInfo.getPort());
 
-				private void disconnection(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					serverProxyMap.remove(pcs);
-					clientChannel.setOobMessageCallback(null, null);
-				}
+		// Bind and start to accept incoming connections.
+		shutdownHandler = new CleanShutdownHandler();
+		shutdownHandler.addResource(boss);
+		shutdownHandler.addResource(workers);
+		shutdownHandler.addResource(executor);
 
-				private void connection(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel, rosTcpEndpoint);
+		bootstrap.bind();
 
-					serverProxyMap.put(pcs, client);
-					client.registerRelayServer(sessionCapacity);
+		log.info("Serving " + serverInfo);
+	}
 
-					// register ourselves to receive broadcast messages
-					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-							serverBroadcastCallback);
-				}
-
-				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
-					if (pcs == null) {
-						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
-					}
-					return pcs;
-				}
-			};
-			rpcEventNotifier.addEventListener(listener);
-			clientFactory.registerConnectionEventListener(rpcEventNotifier);
-
-			bootstrap = new Bootstrap();
-			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
-					new RenamingThreadFactoryProxy("PCS-client-workers", Executors.defaultThreadFactory()));
-
-			bootstrap.group(workers);
-			bootstrap.handler(clientFactory);
-			bootstrap.channel(NioSocketChannel.class);
-			bootstrap.option(ChannelOption.TCP_NODELAY, tcpNoDelay);
-			bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis);
-			bootstrap.option(ChannelOption.SO_SNDBUF, ioBufferSize);
-			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
-
-			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
-			watchdog.setThreadName("SCS-PCS RpcClient Watchdog");
-			rpcEventNotifier.addEventListener(watchdog);
-			watchdog.start();
-
-			shutdownHandler = new CleanShutdownHandler();
-			shutdownHandler.addResource(workers);
-			shutdownHandler.addResource(rpcExecutor);
-			shutdownHandler.addResource(watchdog);
-
-			serverList = partitionServerService.findBySegment(this.segment.getSegmentName());
-			connectToPcsServers();
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to do initial connect to PCS", e);
-		}
-
-		scheduledThreadPool = Executors
-				.newSingleThreadScheduledExecutor(new NamedThreadFactory("ROS-LoadNotificationScheduler"));
-
-		loadNotificationExecutor = Executors.newFixedThreadPool(1,
-				new NamedThreadFactory("ROS-LoadStatisticNotificationExecutor"));
-		scheduledThreadPool.scheduleWithFixedDelay(this, loadStatisticsNotificationIntervalSec,
-				loadStatisticsNotificationIntervalSec, TimeUnit.SECONDS);
-
+	@Override
+	public RelayResponse relay(RpcController controller, RelayRequest request) throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void stop() {
-		if (scheduledThreadPool != null) {
-			scheduledThreadPool.shutdown();
-			try {
-				scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted whilst waiting for termination of scheduledThreadPool.", e);
-			}
-			scheduledThreadPool = null;
-		}
-
-		if (loadNotificationExecutor != null) {
-			loadNotificationExecutor.shutdown();
-			try {
-				loadNotificationExecutor.awaitTermination(60, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted whilst waiting for termination of loadNotificationExecutor.", e);
-			}
-			loadNotificationExecutor = null;
-		}
-
 		if (shutdownHandler != null) {
 			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
 			try {
@@ -314,82 +216,32 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 			}
 			shutdownHandler = null;
 		}
-		serverList = null;
-		bootstrap = null;
-		clientFactory = null;
+		serverFactory = null;
 		segment = null;
-		// the serverProxyMap should clear automatically when each PCS server connection closes, however we do this just
-		// in case.
-		if (!serverProxyMap.isEmpty()) {
-			log.warn("serverProxyMap should have been cleared on shutdown.");
-			serverProxyMap.clear();
-		}
 	}
-
-	@Override
-	public void run() {
-		log.info("Notifying PCS about this ROS services load.");
-
-		for (RelayControlServiceClient pcs : serverProxyMap.values()) {
-			pcs.notifyLoad(100); // TODO
-		}
-	}
-
-	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
 
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Connect to each of the PCS servers.
-	 * 
-	 * @throws IOException
-	 */
-	private void connectToPcsServers() throws IOException {
-		for (PartitionControlServer pcs : serverList) {
-			if (pcs.getServerModulo() < 0 || pcs.getServerModulo() > serverList.size()) {
-				throw new IllegalStateException("pcs modulo " + pcs.getServerModulo() + " inconsistent for " + pcs);
-			}
-
-			PeerInfo server = new PeerInfo(pcs.getIpAddress(), pcs.getPort());
-
-			Map<String, Object> attributes = new HashMap<>();
-			attributes.put(PCS_ATTRIBUTE, pcs);
-
-			clientFactory.peerWith(server, bootstrap, attributes);
-			// the event listener hooks up the localproxy
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public int getLoadStatisticsNotificationIntervalSec() {
-		return loadStatisticsNotificationIntervalSec;
+	public String getServerAddress() {
+		return serverAddress;
 	}
 
-	public void setLoadStatisticsNotificationIntervalSec(int loadStatisticsNotificationIntervalSec) {
-		this.loadStatisticsNotificationIntervalSec = loadStatisticsNotificationIntervalSec;
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
 	}
 
-	public int getConnectTimeoutMillis() {
-		return connectTimeoutMillis;
+	public int getLocalPort() {
+		return localPort;
 	}
 
-	public void setConnectTimeoutMillis(int connectTimeoutMillis) {
-		this.connectTimeoutMillis = connectTimeoutMillis;
-	}
-
-	public int getConnectResponseTimeoutMillis() {
-		return connectResponseTimeoutMillis;
-	}
-
-	public void setConnectResponseTimeoutMillis(int connectResponseTimeoutMillis) {
-		this.connectResponseTimeoutMillis = connectResponseTimeoutMillis;
+	public void setLocalPort(int localPort) {
+		this.localPort = localPort;
 	}
 
 	public int getCoreRpcExecutorThreads() {
@@ -406,6 +258,14 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 
 	public void setMaxRpcExecutorThreads(int maxRpcExecutorThreads) {
 		this.maxRpcExecutorThreads = maxRpcExecutorThreads;
+	}
+
+	public int getAcceptorThreads() {
+		return acceptorThreads;
+	}
+
+	public void setAcceptorThreads(int acceptorThreads) {
+		this.acceptorThreads = acceptorThreads;
 	}
 
 	public int getIoThreads() {
@@ -440,44 +300,8 @@ public class RelayOutboundServiceConnector implements Manageable, Runnable {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
 	}
 
-	public PartitionControlServerService getPartitionServerService() {
-		return partitionServerService;
-	}
-
-	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
-		this.partitionServerService = partitionServerService;
-	}
-
-	public CacheInvalidationMessageListener getCacheInvalidationListener() {
-		return cacheInvalidationListener;
-	}
-
-	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
-		this.cacheInvalidationListener = cacheInvalidationListener;
-	}
-
-	public String getServerAddress() {
-		return serverAddress;
-	}
-
-	public void setServerAddress(String serverAddress) {
-		this.serverAddress = serverAddress;
-	}
-
-	public int getLocalPort() {
-		return localPort;
-	}
-
-	public void setLocalPort(int localPort) {
-		this.localPort = localPort;
-	}
-
-	public int getSessionCapacity() {
-		return sessionCapacity;
-	}
-
-	public void setSessionCapacity(int sessionCapacity) {
-		this.sessionCapacity = sessionCapacity;
+	public Segment getSegment() {
+		return segment;
 	}
 
 }

@@ -104,6 +104,11 @@ public class RemoteControlServiceConnector
 	private static final Logger log = LoggerFactory.getLogger(RemoteControlServiceConnector.class);
 
 	/**
+	 * The name of the attribute of a RPC client to store the session address.
+	 */
+	private static final String ROS_ADDRESS_ATTRIBUTE = "ROS";
+
+	/**
 	 * The ControlServiceListener delegate.
 	 */
 	private ControlServiceListener controlListener;
@@ -225,15 +230,21 @@ public class RemoteControlServiceConnector
 			public void connectionLost(RpcClientChannel clientChannel) {
 				log.info("connectionLost " + clientChannel);
 				clearOobCallback(clientChannel);
-				// we unregister the server's services from the control service
+
+				// we unregister the WS server's services from the control service
 				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) clientChannel
 						.getAttribute(ReverseRpcServerSessionController.SSM);
-				if (ssm == null) {
-					log.info("Disconnect of SCS client (or WS before registerServer).");
-				} else {
+				if (ssm != null) {
 					log.info("Disconnect of WS client.");
 					controlListener.unregisterServer(ssm.getServices());
 					// there should be no more references to the RpcClient which should be garbage collected.
+				}
+
+				// we disconnect the ROS server's endpoint from the relay service
+				String rosAddress = (String) clientChannel.getAttribute(ROS_ADDRESS_ATTRIBUTE);
+				if (rosAddress != null) {
+					log.info("Disconnect of ROS client " + rosAddress);
+					relayService.unregisterRelayServer(rosAddress);
 				}
 			}
 
@@ -374,6 +385,8 @@ public class RemoteControlServiceConnector
 		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
 		relayService.registerRelayServer(request.getRosAddress(), request.getSessionCapacity());
+		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
+		channel.setAttribute(ROS_ADDRESS_ATTRIBUTE, request.getRosAddress());
 
 		RegisterRelayServerResponse.Builder responseBuilder = RegisterRelayServerResponse.newBuilder();
 		return responseBuilder.build();
@@ -457,12 +470,12 @@ public class RemoteControlServiceConnector
 		return handle;
 	}
 
-	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> attrs) {
+	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
 		if (attrs == null) {
 			return null;
 		}
 		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		for (org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue attr : attrs) {
+		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
 			attributes.put(map(attr.getName()), attr.getValue());
 		}
 		return attributes;
@@ -482,7 +495,7 @@ public class RemoteControlServiceConnector
 		return result;
 	}
 
-	private SeedAttribute map(org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.AttributeId name) {
+	private SeedAttribute map(org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId name) {
 		if (name == null) {
 			return null;
 		}

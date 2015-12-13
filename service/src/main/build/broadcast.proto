@@ -5,41 +5,10 @@ option java_outer_classname = "Broadcast";
 
 message BroadcastMessage {
 	optional CacheInvalidationMessage cacheInvalidation = 1;
-	optional RelayMessage relay = 2;
 }
 
 message CacheInvalidationMessage {
 	optional string id = 1;
 	optional string cacheKey = 2;
-}
-
-message AttributeValue {
-	enum AttributeId {
-	  AccountZoneId = 0;
-	  ZoneId = 1;
-	  DomainId = 2;
-	  ChannelId = 3;
-	  TemporaryChannelId = 4;
-	  ServiceId = 5;
-	  AddressId = 6;
-	}
-	required AttributeId name = 1;
-	optional int64 value = 2;
-}
-
-message RelayMessage {
-	enum RelayType {
-	  Message = 0;
-	  ChannelAuthorization = 1;
-	  DestinationSession = 2;
-	  DeliveryReply = 3;
-	  FlowControl = 4;
-	}
-	optional string domain = 1;
-	// channelKey (originating) originLocalName@originDomain->destLocalName@destDomain#destService
-	// channelKey (destination) destLocalName@destDomain#destService->originLocalName@originDomain
-	optional string channelKey = 2; 
-	optional RelayType relayType = 3;
-	repeated AttributeValue attribute = 4;
 }
 

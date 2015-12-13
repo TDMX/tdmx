@@ -13,7 +13,7 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-	<bean id="ros.RelayOutboundServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceConnector" >
+	<bean id="ros.RelayOutboundServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
 		<property name="loadStatisticsNotificationIntervalSec" value="${ros.loadStatisticsNotificationIntervalSec}"/>
 
 		<property name="serverAddress" value="${ros.serverAddress}"/>

@@ -1,0 +1,35 @@
+// Copyright (c) 2015 Peter Klauser
+
+option java_generic_services = true;
+option java_package = "org.tdmx.server.pcs.protobuf";
+option java_outer_classname = "ROSServer";
+
+import "common.proto";
+
+message RelayRequest {
+	enum RelayType {
+	  Message = 0;
+	  ChannelAuthorization = 1;
+	  DestinationSession = 2;
+	  DeliveryReply = 3;
+	  FlowControl = 4;
+	}
+	optional string domain = 1;
+	// channelKey (originating) originLocalName@originDomain->destLocalName@destDomain#destService
+	// channelKey (destination) destLocalName@destDomain#destService->originLocalName@originDomain
+	optional string channelKey = 2; 
+	optional RelayType relayType = 3;
+	repeated AttributeValue attribute = 4;
+}
+
+
+message RelayResponse {
+}
+
+//
+// WS -> ROS RelayMessage
+//
+
+service RelayOutboundServiceProxy {
+    rpc relay(RelayRequest) returns (RelayResponse);
+}

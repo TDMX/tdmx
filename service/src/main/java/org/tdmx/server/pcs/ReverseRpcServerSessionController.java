@@ -25,12 +25,12 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue;
-import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.SessionManagerProxy;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
+import org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.SessionManagerProxy;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
@@ -88,14 +88,13 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 		reqBuilder.setClientCert(ByteString.copyFrom(cert.getX509Encoded()));
 		for (Entry<SeedAttribute, Long> entry : seedAttributes.entrySet()) {
 			AttributeValue.Builder attr = AttributeValue.newBuilder();
-			attr.setName(
-					org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.valueOf(entry.getKey().name()));
+			attr.setName(org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId.valueOf(entry.getKey().name()));
 			attr.setValue(entry.getValue());
 			reqBuilder.addAttribute(attr);
 		}
 
 		try {
-			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic response = blockingService.createSession(controller,
+			org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic response = blockingService.createSession(controller,
 					reqBuilder.build());
 			return map(response);
 		} catch (ServiceException e) {
@@ -116,7 +115,7 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 		reqBuilder.setClientCert(ByteString.copyFrom(cert.getX509Encoded()));
 
 		try {
-			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic response = blockingService
+			org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic response = blockingService
 					.addSessionCertificate(controller, reqBuilder.build());
 			return map(response);
 		} catch (ServiceException e) {
@@ -135,7 +134,7 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 		reqBuilder.setClientCert(ByteString.copyFrom(cert.getX509Encoded()));
 
 		try {
-			org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics response = blockingService
+			org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics response = blockingService
 					.removeCertificate(controller, reqBuilder.build());
 			return map(response);
 		} catch (ServiceException e) {
@@ -153,7 +152,7 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 		GetStatisticsRequest.Builder reqBuilder = GetStatisticsRequest.newBuilder();
 
 		try {
-			org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics response = blockingService
+			org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics response = blockingService
 					.getStatistics(controller, reqBuilder.build());
 			return map(response);
 		} catch (ServiceException e) {
@@ -169,18 +168,18 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private ServerServiceStatistics map(org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics statistics) {
+	private ServerServiceStatistics map(org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics statistics) {
 		if (statistics == null) {
 			return null;
 		}
 		ServerServiceStatistics stats = new ServerServiceStatistics();
-		for (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic stat : statistics.getStatisticsList()) {
+		for (org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic stat : statistics.getStatisticsList()) {
 			stats.addStatistic(map(stat));
 		}
 		return stats;
 	}
 
-	private ServiceStatistic map(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic statistic) {
+	private ServiceStatistic map(org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic statistic) {
 		if (statistic == null) {
 			return null;
 		}

@@ -1384,12 +1384,12 @@ public final class PCSServer {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> 
+    java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> 
         getAttributeList();
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue getAttribute(int index);
+    org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index);
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
@@ -1397,12 +1397,12 @@ public final class PCSServer {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    java.util.List<? extends org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder> 
+    java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList();
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder getAttributeOrBuilder(
+    org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index);
   }
   /**
@@ -1477,10 +1477,10 @@ public final class PCSServer {
             }
             case 34: {
               if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
-                attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue>();
+                attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>();
                 mutable_bitField0_ |= 0x00000008;
               }
-              attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.PARSER, extensionRegistry));
+              attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.Common.AttributeValue.PARSER, extensionRegistry));
               break;
             }
           }
@@ -1653,17 +1653,17 @@ public final class PCSServer {
     }
 
     public static final int ATTRIBUTE_FIELD_NUMBER = 4;
-    private java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> attribute_;
+    private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_;
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> getAttributeList() {
+    public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
       return attribute_;
     }
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public java.util.List<? extends org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder> 
+    public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList() {
       return attribute_;
     }
@@ -1676,13 +1676,13 @@ public final class PCSServer {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue getAttribute(int index) {
+    public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
       return attribute_.get(index);
     }
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder getAttributeOrBuilder(
+    public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index) {
       return attribute_.get(index);
     }
@@ -2246,22 +2246,22 @@ public final class PCSServer {
         return this;
       }
 
-      private java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> attribute_ =
+      private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_ =
         java.util.Collections.emptyList();
       private void ensureAttributeIsMutable() {
         if (!((bitField0_ & 0x00000008) == 0x00000008)) {
-          attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue>(attribute_);
+          attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>(attribute_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder> attributeBuilder_;
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> attributeBuilder_;
 
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> getAttributeList() {
+      public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
         if (attributeBuilder_ == null) {
           return java.util.Collections.unmodifiableList(attribute_);
         } else {
@@ -2281,7 +2281,7 @@ public final class PCSServer {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue getAttribute(int index) {
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
         if (attributeBuilder_ == null) {
           return attribute_.get(index);
         } else {
@@ -2292,7 +2292,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder setAttribute(
-          int index, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue value) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2309,7 +2309,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder setAttribute(
-          int index, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.set(index, builderForValue.build());
@@ -2322,7 +2322,7 @@ public final class PCSServer {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public Builder addAttribute(org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue value) {
+      public Builder addAttribute(org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2339,7 +2339,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          int index, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue value) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2356,7 +2356,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder builderForValue) {
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.add(builderForValue.build());
@@ -2370,7 +2370,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          int index, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.add(index, builderForValue.build());
@@ -2384,7 +2384,7 @@ public final class PCSServer {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAllAttribute(
-          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue> values) {
+          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValue> values) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2424,14 +2424,14 @@ public final class PCSServer {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder getAttributeBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder getAttributeBuilder(
           int index) {
         return getAttributeFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder getAttributeOrBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
           int index) {
         if (attributeBuilder_ == null) {
           return attribute_.get(index);  } else {
@@ -2441,7 +2441,7 @@ public final class PCSServer {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<? extends org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder> 
+      public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
            getAttributeOrBuilderList() {
         if (attributeBuilder_ != null) {
           return attributeBuilder_.getMessageOrBuilderList();
@@ -2452,31 +2452,31 @@ public final class PCSServer {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder addAttributeBuilder() {
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder() {
         return getAttributeFieldBuilder().addBuilder(
-            org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.getDefaultInstance());
+            org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder addAttributeBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder(
           int index) {
         return getAttributeFieldBuilder().addBuilder(
-            index, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.getDefaultInstance());
+            index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder> 
+      public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder> 
            getAttributeBuilderList() {
         return getAttributeFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder> 
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
           getAttributeFieldBuilder() {
         if (attributeBuilder_ == null) {
           attributeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Broadcast.AttributeValueOrBuilder>(
+              org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder>(
                   attribute_,
                   ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
@@ -9656,48 +9656,47 @@ public final class PCSServer {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020pcs-server.proto\032\017broadcast.proto\"U\n\032A" +
-      "ssociateApiSessionRequest\022\036\n\006handle\030\001 \002(" +
-      "\0132\016.SessionHandle\022\027\n\017pkixCertificate\030\002 \002" +
-      "(\014\"V\n\033AssociateApiSessionResponse\022\021\n\tses" +
-      "sionId\030\001 \001(\t\022\020\n\010httpsUrl\030\002 \001(\t\022\022\n\nserver" +
-      "Cert\030\003 \001(\014\"i\n\rSessionHandle\022\017\n\007segment\030\001" +
-      " \001(\t\022\017\n\007apiName\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(" +
-      "\t\022\"\n\tattribute\030\004 \003(\0132\017.AttributeValue\"8\n" +
-      "\025RegisterServerRequest\022\037\n\007service\030\001 \003(\0132" +
-      "\016.ServiceHandle\"\030\n\026RegisterServerRespons",
-      "e\"W\n\rServiceHandle\022\017\n\007segment\030\001 \001(\t\022\017\n\007a" +
-      "piName\030\002 \001(\t\022\020\n\010httpsUrl\030\003 \001(\t\022\022\n\nserver" +
-      "Cert\030\004 \001(\014\"A\n\033NotifySessionRemovedReques" +
-      "t\022\017\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036\n" +
-      "\034NotifySessionRemovedResponse\"2\n\034Invalid" +
-      "ateCertificateRequest\022\022\n\nclientCert\030\001 \001(" +
-      "\014\"\037\n\035InvalidateCertificateResponse\"I\n\032Re" +
-      "gisterRelayServerRequest\022\022\n\nrosAddress\030\001" +
-      " \001(\t\022\027\n\017sessionCapacity\030\002 \001(\005\"\035\n\033Registe" +
-      "rRelayServerResponse\"C\n\031AssignRelaySessi",
-      "onRequest\022\022\n\ndomainName\030\001 \001(\t\022\022\n\nchannel" +
-      "Key\030\002 \001(\t\"0\n\032AssignRelaySessionResponse\022" +
-      "\022\n\nrosAddress\030\001 \001(\t\"E\n\032NotifyLoadStatist" +
-      "icRequest\022\022\n\nrosAddress\030\001 \001(\t\022\023\n\013session" +
-      "Load\030\002 \001(\005\"\035\n\033NotifyLoadStatisticRespons" +
-      "e2\320\004\n\023ControlServiceProxy\022P\n\023associateAp" +
-      "iSession\022\033.AssociateApiSessionRequest\032\034." +
-      "AssociateApiSessionResponse\022A\n\016registerS" +
-      "erver\022\026.RegisterServerRequest\032\027.Register" +
-      "ServerResponse\022T\n\025notifySessionsRemoved\022",
-      "\034.NotifySessionRemovedRequest\032\035.NotifySe" +
-      "ssionRemovedResponse\022V\n\025invalidateCertif" +
-      "icate\022\035.InvalidateCertificateRequest\032\036.I" +
-      "nvalidateCertificateResponse\022M\n\022assignRe" +
-      "laySession\022\032.AssignRelaySessionRequest\032\033" +
-      ".AssignRelaySessionResponse\022P\n\023registerR" +
-      "elayServer\022\033.RegisterRelayServerRequest\032" +
-      "\034.RegisterRelayServerResponse\022U\n\030notifyR" +
-      "elayLoadStatistic\022\033.NotifyLoadStatisticR" +
-      "equest\032\034.NotifyLoadStatisticResponseB,\n\034",
-      "org.tdmx.server.pcs.protobufB\tPCSServer\210" +
-      "\001\001"
+      "\n\020pcs-server.proto\032\014common.proto\"U\n\032Asso" +
+      "ciateApiSessionRequest\022\036\n\006handle\030\001 \002(\0132\016" +
+      ".SessionHandle\022\027\n\017pkixCertificate\030\002 \002(\014\"" +
+      "V\n\033AssociateApiSessionResponse\022\021\n\tsessio" +
+      "nId\030\001 \001(\t\022\020\n\010httpsUrl\030\002 \001(\t\022\022\n\nserverCer" +
+      "t\030\003 \001(\014\"i\n\rSessionHandle\022\017\n\007segment\030\001 \001(" +
+      "\t\022\017\n\007apiName\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(\t\022\"" +
+      "\n\tattribute\030\004 \003(\0132\017.AttributeValue\"8\n\025Re" +
+      "gisterServerRequest\022\037\n\007service\030\001 \003(\0132\016.S" +
+      "erviceHandle\"\030\n\026RegisterServerResponse\"W",
+      "\n\rServiceHandle\022\017\n\007segment\030\001 \001(\t\022\017\n\007apiN" +
+      "ame\030\002 \001(\t\022\020\n\010httpsUrl\030\003 \001(\t\022\022\n\nserverCer" +
+      "t\030\004 \001(\014\"A\n\033NotifySessionRemovedRequest\022\017" +
+      "\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036\n\034No" +
+      "tifySessionRemovedResponse\"2\n\034Invalidate" +
+      "CertificateRequest\022\022\n\nclientCert\030\001 \001(\014\"\037" +
+      "\n\035InvalidateCertificateResponse\"I\n\032Regis" +
+      "terRelayServerRequest\022\022\n\nrosAddress\030\001 \001(" +
+      "\t\022\027\n\017sessionCapacity\030\002 \001(\005\"\035\n\033RegisterRe" +
+      "layServerResponse\"C\n\031AssignRelaySessionR",
+      "equest\022\022\n\ndomainName\030\001 \001(\t\022\022\n\nchannelKey" +
+      "\030\002 \001(\t\"0\n\032AssignRelaySessionResponse\022\022\n\n" +
+      "rosAddress\030\001 \001(\t\"E\n\032NotifyLoadStatisticR" +
+      "equest\022\022\n\nrosAddress\030\001 \001(\t\022\023\n\013sessionLoa" +
+      "d\030\002 \001(\005\"\035\n\033NotifyLoadStatisticResponse2\320" +
+      "\004\n\023ControlServiceProxy\022P\n\023associateApiSe" +
+      "ssion\022\033.AssociateApiSessionRequest\032\034.Ass" +
+      "ociateApiSessionResponse\022A\n\016registerServ" +
+      "er\022\026.RegisterServerRequest\032\027.RegisterSer" +
+      "verResponse\022T\n\025notifySessionsRemoved\022\034.N",
+      "otifySessionRemovedRequest\032\035.NotifySessi" +
+      "onRemovedResponse\022V\n\025invalidateCertifica" +
+      "te\022\035.InvalidateCertificateRequest\032\036.Inva" +
+      "lidateCertificateResponse\022M\n\022assignRelay" +
+      "Session\022\032.AssignRelaySessionRequest\032\033.As" +
+      "signRelaySessionResponse\022P\n\023registerRela" +
+      "yServer\022\033.RegisterRelayServerRequest\032\034.R" +
+      "egisterRelayServerResponse\022U\n\030notifyRela" +
+      "yLoadStatistic\022\033.NotifyLoadStatisticRequ" +
+      "est\032\034.NotifyLoadStatisticResponseB,\n\034org",
+      ".tdmx.server.pcs.protobufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9710,7 +9709,7 @@ public final class PCSServer {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.tdmx.server.pcs.protobuf.Broadcast.getDescriptor(),
+          org.tdmx.server.pcs.protobuf.Common.getDescriptor(),
         }, assigner);
     internal_static_AssociateApiSessionRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -9808,7 +9807,7 @@ public final class PCSServer {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NotifyLoadStatisticResponse_descriptor,
         new java.lang.String[] { });
-    org.tdmx.server.pcs.protobuf.Broadcast.getDescriptor();
+    org.tdmx.server.pcs.protobuf.Common.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

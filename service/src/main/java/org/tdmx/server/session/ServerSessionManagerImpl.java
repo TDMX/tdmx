@@ -49,12 +49,12 @@ import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
-import org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId;
-import org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest;
-import org.tdmx.server.pcs.protobuf.PCSClient.SessionManagerProxy;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest;
+import org.tdmx.server.pcs.protobuf.WSClient.SessionManagerProxy;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.ServerRuntimeContextService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -172,7 +172,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	// -------------------------------------------------------------------------
 
 	@Override
-	public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(RpcController controller,
+	public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic createSession(RpcController controller,
 			CreateSessionRequest request) throws ServiceException {
 		WebServiceApiName api = mapApi(request.getApiName());
 		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
@@ -184,7 +184,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 			h.setLoadValue(loadValue);
 
 			// formulate the result
-			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+			org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic
 					.newBuilder();
 			statisticBuilder.setApiName(api.name());
 			statisticBuilder.setHttpsUrl(h.getHandle().getHttpsUrl());
@@ -195,7 +195,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	}
 
 	@Override
-	public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(RpcController controller,
+	public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic addSessionCertificate(RpcController controller,
 			AddCertificateRequest request) throws ServiceException {
 		WebServiceApiName api = mapApi(request.getApiName());
 		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
@@ -205,7 +205,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 			h.setLoadValue(loadValue);
 
 			// formulate the result
-			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+			org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder statisticBuilder = org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic
 					.newBuilder();
 			statisticBuilder.setApiName(api.name());
 			statisticBuilder.setHttpsUrl(h.getHandle().getHttpsUrl());
@@ -216,7 +216,7 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	}
 
 	@Override
-	public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(RpcController controller,
+	public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics removeCertificate(RpcController controller,
 			RemoveCertificateRequest request) throws ServiceException {
 		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
 			WebServiceSessionManagerHolder h = apis.getValue();
@@ -230,14 +230,14 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	}
 
 	@Override
-	public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(RpcController controller,
+	public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics getStatistics(RpcController controller,
 			GetStatisticsRequest request) throws ServiceException {
-		org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder stats = org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics
+		org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.Builder stats = org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics
 				.newBuilder();
 		for (Entry<WebServiceApiName, WebServiceSessionManagerHolder> apis : apiManagerMap.entrySet()) {
 			WebServiceSessionManagerHolder h = apis.getValue();
 
-			org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder stat = org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic
+			org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder stat = org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic
 					.newBuilder();
 			stat.setApiName(apis.getKey().name());
 			stat.setHttpsUrl(h.getHandle().getHttpsUrl());
@@ -621,12 +621,12 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 		return channel.getPeerInfo().toString();
 	}
 
-	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attrs) {
+	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
 		if (attrs == null) {
 			return null;
 		}
 		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		for (org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue attr : attrs) {
+		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
 			attributes.put(map(attr.getName()), attr.getValue());
 		}
 		return attributes;

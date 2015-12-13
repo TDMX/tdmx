@@ -2,7 +2,7 @@
 
 option java_generic_services = true;
 option java_package = "org.tdmx.server.pcs.protobuf";
-option java_outer_classname = "PCSClient";
+option java_outer_classname = "WSClient";
 
 import "common.proto";
 

@@ -3,8 +3,8 @@
 
 package org.tdmx.server.pcs.protobuf;
 
-public final class PCSClient {
-  private PCSClient() {}
+public final class WSClient {
+  private WSClient() {}
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
@@ -132,14 +132,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServiceStatistic_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServiceStatistic_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder.class);
     }
 
     public static com.google.protobuf.Parser<ServiceStatistic> PARSER =
@@ -317,53 +317,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -372,7 +372,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -389,20 +389,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ServiceStatistic)
-        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServiceStatistic_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServiceStatistic_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.class, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -437,23 +437,23 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServiceStatistic_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServiceStatistic_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic build() {
+        org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic result = new org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic result = new org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -474,16 +474,16 @@ public final class PCSClient {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance()) return this;
         if (other.hasHttpsUrl()) {
           bitField0_ |= 0x00000001;
           httpsUrl_ = other.httpsUrl_;
@@ -509,11 +509,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -726,12 +726,12 @@ public final class PCSClient {
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> 
+    java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> 
         getStatisticsList();
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index);
+    org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic getStatistics(int index);
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
@@ -739,12 +739,12 @@ public final class PCSClient {
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+    java.util.List<? extends org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder> 
         getStatisticsOrBuilderList();
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+    org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
         int index);
   }
   /**
@@ -801,10 +801,10 @@ public final class PCSClient {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>();
+                statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              statistics_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.PARSER, extensionRegistry));
+              statistics_.add(input.readMessage(org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.PARSER, extensionRegistry));
               break;
             }
           }
@@ -824,14 +824,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServerServiceStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.Builder.class);
     }
 
     public static com.google.protobuf.Parser<ServerServiceStatistics> PARSER =
@@ -850,17 +850,17 @@ public final class PCSClient {
     }
 
     public static final int STATISTICS_FIELD_NUMBER = 1;
-    private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> statistics_;
+    private java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> statistics_;
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> getStatisticsList() {
+    public java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> getStatisticsList() {
       return statistics_;
     }
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+    public java.util.List<? extends org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder> 
         getStatisticsOrBuilderList() {
       return statistics_;
     }
@@ -873,13 +873,13 @@ public final class PCSClient {
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index) {
+    public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic getStatistics(int index) {
       return statistics_.get(index);
     }
     /**
      * <code>repeated .ServiceStatistic statistics = 1;</code>
      */
-    public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+    public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
         int index) {
       return statistics_.get(index);
     }
@@ -928,53 +928,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -983,7 +983,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -1000,20 +1000,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ServerServiceStatistics)
-        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatisticsOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServerServiceStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServerServiceStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.class, org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1049,23 +1049,23 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_ServerServiceStatistics_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_ServerServiceStatistics_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics build() {
+        org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics result = new org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics result = new org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics(this);
         int from_bitField0_ = bitField0_;
         if (statisticsBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1081,16 +1081,16 @@ public final class PCSClient {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance()) return this;
         if (statisticsBuilder_ == null) {
           if (!other.statistics_.isEmpty()) {
             if (statistics_.isEmpty()) {
@@ -1129,11 +1129,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1144,22 +1144,22 @@ public final class PCSClient {
       }
       private int bitField0_;
 
-      private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> statistics_ =
+      private java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> statistics_ =
         java.util.Collections.emptyList();
       private void ensureStatisticsIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>(statistics_);
+          statistics_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic>(statistics_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> statisticsBuilder_;
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder> statisticsBuilder_;
 
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> getStatisticsList() {
+      public java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> getStatisticsList() {
         if (statisticsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(statistics_);
         } else {
@@ -1179,7 +1179,7 @@ public final class PCSClient {
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic getStatistics(int index) {
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic getStatistics(int index) {
         if (statisticsBuilder_ == null) {
           return statistics_.get(index);
         } else {
@@ -1190,7 +1190,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder setStatistics(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+          int index, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic value) {
         if (statisticsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1207,7 +1207,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder setStatistics(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder builderForValue) {
         if (statisticsBuilder_ == null) {
           ensureStatisticsIsMutable();
           statistics_.set(index, builderForValue.build());
@@ -1220,7 +1220,7 @@ public final class PCSClient {
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public Builder addStatistics(org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+      public Builder addStatistics(org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic value) {
         if (statisticsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1237,7 +1237,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder addStatistics(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic value) {
+          int index, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic value) {
         if (statisticsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1254,7 +1254,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder addStatistics(
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder builderForValue) {
         if (statisticsBuilder_ == null) {
           ensureStatisticsIsMutable();
           statistics_.add(builderForValue.build());
@@ -1268,7 +1268,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder addStatistics(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder builderForValue) {
         if (statisticsBuilder_ == null) {
           ensureStatisticsIsMutable();
           statistics_.add(index, builderForValue.build());
@@ -1282,7 +1282,7 @@ public final class PCSClient {
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
       public Builder addAllStatistics(
-          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> values) {
+          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> values) {
         if (statisticsBuilder_ == null) {
           ensureStatisticsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -1322,14 +1322,14 @@ public final class PCSClient {
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder getStatisticsBuilder(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder getStatisticsBuilder(
           int index) {
         return getStatisticsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder getStatisticsOrBuilder(
           int index) {
         if (statisticsBuilder_ == null) {
           return statistics_.get(index);  } else {
@@ -1339,7 +1339,7 @@ public final class PCSClient {
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+      public java.util.List<? extends org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder> 
            getStatisticsOrBuilderList() {
         if (statisticsBuilder_ != null) {
           return statisticsBuilder_.getMessageOrBuilderList();
@@ -1350,31 +1350,31 @@ public final class PCSClient {
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder addStatisticsBuilder() {
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder addStatisticsBuilder() {
         return getStatisticsFieldBuilder().addBuilder(
-            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+            org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance());
       }
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder addStatisticsBuilder(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder addStatisticsBuilder(
           int index) {
         return getStatisticsFieldBuilder().addBuilder(
-            index, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+            index, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance());
       }
       /**
        * <code>repeated .ServiceStatistic statistics = 1;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder> 
+      public java.util.List<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder> 
            getStatisticsBuilderList() {
         return getStatisticsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder> 
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder> 
           getStatisticsFieldBuilder() {
         if (statisticsBuilder_ == null) {
           statisticsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatisticOrBuilder>(
+              org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.Builder, org.tdmx.server.pcs.protobuf.WSClient.ServiceStatisticOrBuilder>(
                   statistics_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -1393,625 +1393,6 @@ public final class PCSClient {
     }
 
     // @@protoc_insertion_point(class_scope:ServerServiceStatistics)
-  }
-
-  public interface AttributeValueOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:AttributeValue)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>required .AttributeValue.AttributeId name = 1;</code>
-     */
-    boolean hasName();
-    /**
-     * <code>required .AttributeValue.AttributeId name = 1;</code>
-     */
-    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName();
-
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    boolean hasValue();
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    long getValue();
-  }
-  /**
-   * Protobuf type {@code AttributeValue}
-   */
-  public static final class AttributeValue extends
-      com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:AttributeValue)
-      AttributeValueOrBuilder {
-    // Use AttributeValue.newBuilder() to construct.
-    private AttributeValue(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private AttributeValue(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final AttributeValue defaultInstance;
-    public static AttributeValue getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public AttributeValue getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private AttributeValue(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              int rawValue = input.readEnum();
-              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId value = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(1, rawValue);
-              } else {
-                bitField0_ |= 0x00000001;
-                name_ = value;
-              }
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              value_ = input.readInt64();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.class, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<AttributeValue> PARSER =
-        new com.google.protobuf.AbstractParser<AttributeValue>() {
-      public AttributeValue parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AttributeValue(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<AttributeValue> getParserForType() {
-      return PARSER;
-    }
-
-    /**
-     * Protobuf enum {@code AttributeValue.AttributeId}
-     */
-    public enum AttributeId
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>AccountZoneId = 0;</code>
-       */
-      AccountZoneId(0, 0),
-      /**
-       * <code>ZoneId = 1;</code>
-       */
-      ZoneId(1, 1),
-      /**
-       * <code>DomainId = 2;</code>
-       */
-      DomainId(2, 2),
-      /**
-       * <code>ChannelId = 3;</code>
-       */
-      ChannelId(3, 3),
-      /**
-       * <code>TemporaryChannelId = 4;</code>
-       */
-      TemporaryChannelId(4, 4),
-      /**
-       * <code>ServiceId = 5;</code>
-       */
-      ServiceId(5, 5),
-      /**
-       * <code>AddressId = 6;</code>
-       */
-      AddressId(6, 6),
-      ;
-
-      /**
-       * <code>AccountZoneId = 0;</code>
-       */
-      public static final int AccountZoneId_VALUE = 0;
-      /**
-       * <code>ZoneId = 1;</code>
-       */
-      public static final int ZoneId_VALUE = 1;
-      /**
-       * <code>DomainId = 2;</code>
-       */
-      public static final int DomainId_VALUE = 2;
-      /**
-       * <code>ChannelId = 3;</code>
-       */
-      public static final int ChannelId_VALUE = 3;
-      /**
-       * <code>TemporaryChannelId = 4;</code>
-       */
-      public static final int TemporaryChannelId_VALUE = 4;
-      /**
-       * <code>ServiceId = 5;</code>
-       */
-      public static final int ServiceId_VALUE = 5;
-      /**
-       * <code>AddressId = 6;</code>
-       */
-      public static final int AddressId_VALUE = 6;
-
-
-      public final int getNumber() { return value; }
-
-      public static AttributeId valueOf(int value) {
-        switch (value) {
-          case 0: return AccountZoneId;
-          case 1: return ZoneId;
-          case 2: return DomainId;
-          case 3: return ChannelId;
-          case 4: return TemporaryChannelId;
-          case 5: return ServiceId;
-          case 6: return AddressId;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<AttributeId>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static com.google.protobuf.Internal.EnumLiteMap<AttributeId>
-          internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<AttributeId>() {
-              public AttributeId findValueByNumber(int number) {
-                return AttributeId.valueOf(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        return getDescriptor().getValues().get(index);
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final AttributeId[] VALUES = values();
-
-      public static AttributeId valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int index;
-      private final int value;
-
-      private AttributeId(int index, int value) {
-        this.index = index;
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:AttributeValue.AttributeId)
-    }
-
-    private int bitField0_;
-    public static final int NAME_FIELD_NUMBER = 1;
-    private org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId name_;
-    /**
-     * <code>required .AttributeValue.AttributeId name = 1;</code>
-     */
-    public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>required .AttributeValue.AttributeId name = 1;</code>
-     */
-    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName() {
-      return name_;
-    }
-
-    public static final int VALUE_FIELD_NUMBER = 2;
-    private long value_;
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    public boolean hasValue() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    public long getValue() {
-      return value_;
-    }
-
-    private void initFields() {
-      name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
-      value_ = 0L;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeEnum(1, name_.getNumber());
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, value_);
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(1, name_.getNumber());
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, value_);
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code AttributeValue}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:AttributeValue)
-        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.class, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        value_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AttributeValue_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue result = new org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.value_ = value_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance()) return this;
-        if (other.hasName()) {
-          setName(other.getName());
-        }
-        if (other.hasValue()) {
-          setValue(other.getValue());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        if (!hasName()) {
-          
-          return false;
-        }
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
-      /**
-       * <code>required .AttributeValue.AttributeId name = 1;</code>
-       */
-      public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required .AttributeValue.AttributeId name = 1;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId getName() {
-        return name_;
-      }
-      /**
-       * <code>required .AttributeValue.AttributeId name = 1;</code>
-       */
-      public Builder setName(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        bitField0_ |= 0x00000001;
-        name_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required .AttributeValue.AttributeId name = 1;</code>
-       */
-      public Builder clearName() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        name_ = org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.AttributeId.AccountZoneId;
-        onChanged();
-        return this;
-      }
-
-      private long value_ ;
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public long getValue() {
-        return value_;
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public Builder setValue(long value) {
-        bitField0_ |= 0x00000002;
-        value_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public Builder clearValue() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        value_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:AttributeValue)
-    }
-
-    static {
-      defaultInstance = new AttributeValue(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:AttributeValue)
   }
 
   public interface CreateSessionRequestOrBuilder extends
@@ -2058,12 +1439,12 @@ public final class PCSClient {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> 
+    java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> 
         getAttributeList();
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index);
+    org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index);
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
@@ -2071,12 +1452,12 @@ public final class PCSClient {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+    java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList();
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+    org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index);
   }
   /**
@@ -2150,10 +1531,10 @@ public final class PCSClient {
             }
             case 34: {
               if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
-                attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue>();
+                attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>();
                 mutable_bitField0_ |= 0x00000008;
               }
-              attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.PARSER, extensionRegistry));
+              attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.Common.AttributeValue.PARSER, extensionRegistry));
               break;
             }
           }
@@ -2173,14 +1554,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_CreateSessionRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_CreateSessionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.Builder.class);
     }
 
     public static com.google.protobuf.Parser<CreateSessionRequest> PARSER =
@@ -2299,17 +1680,17 @@ public final class PCSClient {
     }
 
     public static final int ATTRIBUTE_FIELD_NUMBER = 4;
-    private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attribute_;
+    private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_;
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> getAttributeList() {
+    public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
       return attribute_;
     }
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+    public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList() {
       return attribute_;
     }
@@ -2322,13 +1703,13 @@ public final class PCSClient {
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index) {
+    public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
       return attribute_.get(index);
     }
     /**
      * <code>repeated .AttributeValue attribute = 4;</code>
      */
-    public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+    public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index) {
       return attribute_.get(index);
     }
@@ -2407,53 +1788,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2462,7 +1843,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -2479,20 +1860,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:CreateSessionRequest)
-        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequestOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_CreateSessionRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_CreateSessionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.class, org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2534,23 +1915,23 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_CreateSessionRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_CreateSessionRequest_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest build() {
+        org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest result = new org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -2580,16 +1961,16 @@ public final class PCSClient {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.getDefaultInstance()) return this;
         if (other.hasApiName()) {
           bitField0_ |= 0x00000001;
           apiName_ = other.apiName_;
@@ -2647,11 +2028,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -2849,22 +2230,22 @@ public final class PCSClient {
         return this;
       }
 
-      private java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> attribute_ =
+      private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_ =
         java.util.Collections.emptyList();
       private void ensureAttributeIsMutable() {
         if (!((bitField0_ & 0x00000008) == 0x00000008)) {
-          attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue>(attribute_);
+          attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>(attribute_);
           bitField0_ |= 0x00000008;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> attributeBuilder_;
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> attributeBuilder_;
 
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> getAttributeList() {
+      public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
         if (attributeBuilder_ == null) {
           return java.util.Collections.unmodifiableList(attribute_);
         } else {
@@ -2884,7 +2265,7 @@ public final class PCSClient {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue getAttribute(int index) {
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
         if (attributeBuilder_ == null) {
           return attribute_.get(index);
         } else {
@@ -2895,7 +2276,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder setAttribute(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2912,7 +2293,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder setAttribute(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.set(index, builderForValue.build());
@@ -2925,7 +2306,7 @@ public final class PCSClient {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public Builder addAttribute(org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+      public Builder addAttribute(org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2942,7 +2323,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue value) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2959,7 +2340,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.add(builderForValue.build());
@@ -2973,7 +2354,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAttribute(
-          int index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder builderForValue) {
+          int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           attribute_.add(index, builderForValue.build());
@@ -2987,7 +2368,7 @@ public final class PCSClient {
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
       public Builder addAllAttribute(
-          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue> values) {
+          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValue> values) {
         if (attributeBuilder_ == null) {
           ensureAttributeIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -3027,14 +2408,14 @@ public final class PCSClient {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder getAttributeBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder getAttributeBuilder(
           int index) {
         return getAttributeFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder getAttributeOrBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
           int index) {
         if (attributeBuilder_ == null) {
           return attribute_.get(index);  } else {
@@ -3044,7 +2425,7 @@ public final class PCSClient {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+      public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
            getAttributeOrBuilderList() {
         if (attributeBuilder_ != null) {
           return attributeBuilder_.getMessageOrBuilderList();
@@ -3055,31 +2436,31 @@ public final class PCSClient {
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder addAttributeBuilder() {
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder() {
         return getAttributeFieldBuilder().addBuilder(
-            org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance());
+            org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder addAttributeBuilder(
+      public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder(
           int index) {
         return getAttributeFieldBuilder().addBuilder(
-            index, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.getDefaultInstance());
+            index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
        * <code>repeated .AttributeValue attribute = 4;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder> 
+      public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder> 
            getAttributeBuilderList() {
         return getAttributeFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder> 
+          org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
           getAttributeFieldBuilder() {
         if (attributeBuilder_ == null) {
           attributeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.PCSClient.AttributeValueOrBuilder>(
+              org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder>(
                   attribute_,
                   ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
@@ -3224,14 +2605,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_AddCertificateRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_AddCertificateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.Builder.class);
     }
 
     public static com.google.protobuf.Parser<AddCertificateRequest> PARSER =
@@ -3409,53 +2790,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3464,7 +2845,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -3481,20 +2862,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:AddCertificateRequest)
-        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequestOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_AddCertificateRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_AddCertificateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.class, org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3529,23 +2910,23 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_AddCertificateRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_AddCertificateRequest_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest build() {
+        org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest result = new org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -3566,16 +2947,16 @@ public final class PCSClient {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.getDefaultInstance()) return this;
         if (other.hasApiName()) {
           bitField0_ |= 0x00000001;
           apiName_ = other.apiName_;
@@ -3601,11 +2982,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -3898,14 +3279,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_RemoveCertificateRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.Builder.class);
     }
 
     public static com.google.protobuf.Parser<RemoveCertificateRequest> PARSER =
@@ -3983,53 +3364,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4038,7 +3419,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -4055,20 +3436,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:RemoveCertificateRequest)
-        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequestOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_RemoveCertificateRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_RemoveCertificateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.class, org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4099,23 +3480,23 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_RemoveCertificateRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_RemoveCertificateRequest_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest build() {
+        org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest result = new org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -4128,16 +3509,16 @@ public final class PCSClient {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.getDefaultInstance()) return this;
         if (other.hasClientCert()) {
           setClientCert(other.getClientCert());
         }
@@ -4153,11 +3534,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -4283,14 +3664,14 @@ public final class PCSClient {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_GetStatisticsRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
+      return org.tdmx.server.pcs.protobuf.WSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.Builder.class);
+              org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.Builder.class);
     }
 
     public static com.google.protobuf.Parser<GetStatisticsRequest> PARSER =
@@ -4344,53 +3725,53 @@ public final class PCSClient {
       return super.writeReplace();
     }
 
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(byte[] data)
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseDelimitedFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parseFrom(
+    public static org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4399,7 +3780,7 @@ public final class PCSClient {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest prototype) {
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -4416,20 +3797,20 @@ public final class PCSClient {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:GetStatisticsRequest)
-        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequestOrBuilder {
+        org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_GetStatisticsRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_GetStatisticsRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.Builder.class);
+                org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.class, org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.Builder.class);
       }
 
-      // Construct using org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.newBuilder()
+      // Construct using org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4458,38 +3839,38 @@ public final class PCSClient {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.internal_static_GetStatisticsRequest_descriptor;
+        return org.tdmx.server.pcs.protobuf.WSClient.internal_static_GetStatisticsRequest_descriptor;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
+      public org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.getDefaultInstance();
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest build() {
-        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest result = buildPartial();
+      public org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest build() {
+        org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest result = new org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest(this);
+      public org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest buildPartial() {
+        org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest result = new org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest(this);
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)other);
+        if (other instanceof org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest other) {
+        if (other == org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.getDefaultInstance()) return this;
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -4502,11 +3883,11 @@ public final class PCSClient {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest parsedMessage = null;
+        org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -4540,32 +3921,32 @@ public final class PCSClient {
        */
       public abstract void createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+          org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done);
 
       /**
        * <code>rpc addSessionCertificate(.AddCertificateRequest) returns (.ServiceStatistic);</code>
        */
       public abstract void addSessionCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+          org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done);
 
       /**
        * <code>rpc removeCertificate(.RemoveCertificateRequest) returns (.ServerServiceStatistics);</code>
        */
       public abstract void removeCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+          org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done);
 
       /**
        * <code>rpc getStatistics(.GetStatisticsRequest) returns (.ServerServiceStatistics);</code>
        */
       public abstract void getStatistics(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+          org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done);
 
     }
 
@@ -4575,32 +3956,32 @@ public final class PCSClient {
         @java.lang.Override
         public  void createSession(
             com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+            org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done) {
           impl.createSession(controller, request, done);
         }
 
         @java.lang.Override
         public  void addSessionCertificate(
             com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+            org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done) {
           impl.addSessionCertificate(controller, request, done);
         }
 
         @java.lang.Override
         public  void removeCertificate(
             com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+            org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done) {
           impl.removeCertificate(controller, request, done);
         }
 
         @java.lang.Override
         public  void getStatistics(
             com.google.protobuf.RpcController controller,
-            org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+            org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request,
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done) {
           impl.getStatistics(controller, request, done);
         }
 
@@ -4627,13 +4008,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return impl.createSession(controller, (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)request);
+              return impl.createSession(controller, (org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest)request);
             case 1:
-              return impl.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)request);
+              return impl.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest)request);
             case 2:
-              return impl.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)request);
+              return impl.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest)request);
             case 3:
-              return impl.getStatistics(controller, (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)request);
+              return impl.getStatistics(controller, (org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -4649,13 +4030,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.getDefaultInstance();
             case 1:
-              return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.getDefaultInstance();
             case 2:
-              return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.getDefaultInstance();
             case 3:
-              return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -4671,13 +4052,13 @@ public final class PCSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance();
             case 1:
-              return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance();
             case 2:
-              return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance();
             case 3:
-              return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -4691,37 +4072,37 @@ public final class PCSClient {
      */
     public abstract void createSession(
         com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+        org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done);
 
     /**
      * <code>rpc addSessionCertificate(.AddCertificateRequest) returns (.ServiceStatistic);</code>
      */
     public abstract void addSessionCertificate(
         com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done);
+        org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done);
 
     /**
      * <code>rpc removeCertificate(.RemoveCertificateRequest) returns (.ServerServiceStatistics);</code>
      */
     public abstract void removeCertificate(
         com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+        org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done);
 
     /**
      * <code>rpc getStatistics(.GetStatisticsRequest) returns (.ServerServiceStatistics);</code>
      */
     public abstract void getStatistics(
         com.google.protobuf.RpcController controller,
-        org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done);
+        org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request,
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
         getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSClient.getDescriptor().getServices().get(0);
+      return org.tdmx.server.pcs.protobuf.WSClient.getDescriptor().getServices().get(0);
     }
     public final com.google.protobuf.Descriptors.ServiceDescriptor
         getDescriptorForType() {
@@ -4741,23 +4122,23 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          this.createSession(controller, (org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>specializeCallback(
+          this.createSession(controller, (org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic>specializeCallback(
               done));
           return;
         case 1:
-          this.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic>specializeCallback(
+          this.addSessionCertificate(controller, (org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic>specializeCallback(
               done));
           return;
         case 2:
-          this.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics>specializeCallback(
+          this.removeCertificate(controller, (org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics>specializeCallback(
               done));
           return;
         case 3:
-          this.getStatistics(controller, (org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics>specializeCallback(
+          this.getStatistics(controller, (org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest)request,
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics>specializeCallback(
               done));
           return;
         default:
@@ -4775,13 +4156,13 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          return org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest.getDefaultInstance();
         case 1:
-          return org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest.getDefaultInstance();
         case 2:
-          return org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest.getDefaultInstance();
         case 3:
-          return org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -4797,13 +4178,13 @@ public final class PCSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance();
         case 1:
-          return org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance();
         case 2:
-          return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance();
         case 3:
-          return org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -4814,7 +4195,7 @@ public final class PCSClient {
       return new Stub(channel);
     }
 
-    public static final class Stub extends org.tdmx.server.pcs.protobuf.PCSClient.SessionManagerProxy implements Interface {
+    public static final class Stub extends org.tdmx.server.pcs.protobuf.WSClient.SessionManagerProxy implements Interface {
       private Stub(com.google.protobuf.RpcChannel channel) {
         this.channel = channel;
       }
@@ -4827,62 +4208,62 @@ public final class PCSClient {
 
       public  void createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+          org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.class,
+            org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance()));
       }
 
       public  void addSessionCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic> done) {
+          org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(1),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.class,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.class,
+            org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance()));
       }
 
       public  void removeCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+          org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(2),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.class,
+            org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance()));
       }
 
       public  void getStatistics(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics> done) {
+          org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request,
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(3),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.class,
-            org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.class,
+            org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance()));
       }
     }
 
@@ -4892,24 +4273,24 @@ public final class PCSClient {
     }
 
     public interface BlockingInterface {
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request)
           throws com.google.protobuf.ServiceException;
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic addSessionCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request)
           throws com.google.protobuf.ServiceException;
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics removeCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request)
           throws com.google.protobuf.ServiceException;
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics getStatistics(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -4920,51 +4301,51 @@ public final class PCSClient {
 
       private final com.google.protobuf.BlockingRpcChannel channel;
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic createSession(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic createSession(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.CreateSessionRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic) channel.callBlockingMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance());
       }
 
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic addSessionCertificate(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic addSessionCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.AddCertificateRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic) channel.callBlockingMethod(
           getDescriptor().getMethods().get(1),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServiceStatistic.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.WSClient.ServiceStatistic.getDefaultInstance());
       }
 
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics removeCertificate(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics removeCertificate(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.RemoveCertificateRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics) channel.callBlockingMethod(
           getDescriptor().getMethods().get(2),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance());
       }
 
 
-      public org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics getStatistics(
+      public org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics getStatistics(
           com.google.protobuf.RpcController controller,
-          org.tdmx.server.pcs.protobuf.PCSClient.GetStatisticsRequest request)
+          org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics) channel.callBlockingMethod(
           getDescriptor().getMethods().get(3),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.PCSClient.ServerServiceStatistics.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.WSClient.ServerServiceStatistics.getDefaultInstance());
       }
 
     }
@@ -4982,11 +4363,6 @@ public final class PCSClient {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_ServerServiceStatistics_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_AttributeValue_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_AttributeValue_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_CreateSessionRequest_descriptor;
   private static
@@ -5016,31 +4392,26 @@ public final class PCSClient {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017ws-client.proto\"H\n\020ServiceStatistic\022\020\n" +
-      "\010httpsUrl\030\001 \001(\t\022\017\n\007apiName\030\002 \001(\t\022\021\n\tload" +
-      "Value\030\003 \001(\005\"@\n\027ServerServiceStatistics\022%" +
-      "\n\nstatistics\030\001 \003(\0132\021.ServiceStatistic\"\313\001" +
-      "\n\016AttributeValue\022)\n\004name\030\001 \002(\0162\033.Attribu" +
-      "teValue.AttributeId\022\r\n\005value\030\002 \001(\003\"\177\n\013At" +
-      "tributeId\022\021\n\rAccountZoneId\020\000\022\n\n\006ZoneId\020\001" +
-      "\022\014\n\010DomainId\020\002\022\r\n\tChannelId\020\003\022\026\n\022Tempora" +
-      "ryChannelId\020\004\022\r\n\tServiceId\020\005\022\r\n\tAddressI" +
-      "d\020\006\"r\n\024CreateSessionRequest\022\017\n\007apiName\030\001",
-      " \001(\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclientCert\030\003 " +
-      "\001(\014\022\"\n\tattribute\030\004 \003(\0132\017.AttributeValue\"" +
-      "O\n\025AddCertificateRequest\022\017\n\007apiName\030\001 \001(" +
-      "\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclientCert\030\003 \001(\014" +
-      "\".\n\030RemoveCertificateRequest\022\022\n\nclientCe" +
-      "rt\030\001 \001(\014\"\026\n\024GetStatisticsRequest2\240\002\n\023Ses" +
-      "sionManagerProxy\0229\n\rcreateSession\022\025.Crea" +
-      "teSessionRequest\032\021.ServiceStatistic\022B\n\025a" +
-      "ddSessionCertificate\022\026.AddCertificateReq" +
-      "uest\032\021.ServiceStatistic\022H\n\021removeCertifi",
-      "cate\022\031.RemoveCertificateRequest\032\030.Server" +
-      "ServiceStatistics\022@\n\rgetStatistics\022\025.Get" +
-      "StatisticsRequest\032\030.ServerServiceStatist" +
-      "icsB,\n\034org.tdmx.server.pcs.protobufB\tPCS" +
-      "Client\210\001\001"
+      "\n\017ws-client.proto\032\014common.proto\"H\n\020Servi" +
+      "ceStatistic\022\020\n\010httpsUrl\030\001 \001(\t\022\017\n\007apiName" +
+      "\030\002 \001(\t\022\021\n\tloadValue\030\003 \001(\005\"@\n\027ServerServi" +
+      "ceStatistics\022%\n\nstatistics\030\001 \003(\0132\021.Servi" +
+      "ceStatistic\"r\n\024CreateSessionRequest\022\017\n\007a" +
+      "piName\030\001 \001(\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclien" +
+      "tCert\030\003 \001(\014\022\"\n\tattribute\030\004 \003(\0132\017.Attribu" +
+      "teValue\"O\n\025AddCertificateRequest\022\017\n\007apiN" +
+      "ame\030\001 \001(\t\022\021\n\tsessionId\030\002 \001(\t\022\022\n\nclientCe" +
+      "rt\030\003 \001(\014\".\n\030RemoveCertificateRequest\022\022\n\n",
+      "clientCert\030\001 \001(\014\"\026\n\024GetStatisticsRequest" +
+      "2\240\002\n\023SessionManagerProxy\0229\n\rcreateSessio" +
+      "n\022\025.CreateSessionRequest\032\021.ServiceStatis" +
+      "tic\022B\n\025addSessionCertificate\022\026.AddCertif" +
+      "icateRequest\032\021.ServiceStatistic\022H\n\021remov" +
+      "eCertificate\022\031.RemoveCertificateRequest\032" +
+      "\030.ServerServiceStatistics\022@\n\rgetStatisti" +
+      "cs\022\025.GetStatisticsRequest\032\030.ServerServic" +
+      "eStatisticsB+\n\034org.tdmx.server.pcs.proto" +
+      "bufB\010WSClient\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5053,6 +4424,7 @@ public final class PCSClient {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          org.tdmx.server.pcs.protobuf.Common.getDescriptor(),
         }, assigner);
     internal_static_ServiceStatistic_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -5066,36 +4438,31 @@ public final class PCSClient {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_ServerServiceStatistics_descriptor,
         new java.lang.String[] { "Statistics", });
-    internal_static_AttributeValue_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_AttributeValue_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_AttributeValue_descriptor,
-        new java.lang.String[] { "Name", "Value", });
     internal_static_CreateSessionRequest_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_CreateSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_CreateSessionRequest_descriptor,
         new java.lang.String[] { "ApiName", "SessionId", "ClientCert", "Attribute", });
     internal_static_AddCertificateRequest_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_AddCertificateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_AddCertificateRequest_descriptor,
         new java.lang.String[] { "ApiName", "SessionId", "ClientCert", });
     internal_static_RemoveCertificateRequest_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_RemoveCertificateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RemoveCertificateRequest_descriptor,
         new java.lang.String[] { "ClientCert", });
     internal_static_GetStatisticsRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_GetStatisticsRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_GetStatisticsRequest_descriptor,
         new java.lang.String[] { });
+    org.tdmx.server.pcs.protobuf.Common.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

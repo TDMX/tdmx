@@ -1,0 +1,19 @@
+// Copyright (c) 2015 Peter Klauser
+
+option java_package = "org.tdmx.server.pcs.protobuf";
+option java_outer_classname = "Common";
+
+message AttributeValue {
+	enum AttributeId {
+	  AccountZoneId = 0;
+	  ZoneId = 1;
+	  DomainId = 2;
+	  ChannelId = 3;
+	  TemporaryChannelId = 4;
+	  ServiceId = 5;
+	  AddressId = 6;
+	}
+	required AttributeId name = 1;
+	optional int64 value = 2;
+}
+

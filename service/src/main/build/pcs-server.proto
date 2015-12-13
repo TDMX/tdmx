@@ -4,7 +4,7 @@ option java_generic_services = true;
 option java_package = "org.tdmx.server.pcs.protobuf";
 option java_outer_classname = "PCSServer";
 
-import "broadcast.proto";
+import "common.proto";
 
 //
 // SCS -> PCS to allocate WS-API sessions to clients
