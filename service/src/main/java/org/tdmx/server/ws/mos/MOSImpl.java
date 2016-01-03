@@ -269,7 +269,7 @@ public class MOSImpl implements MOS {
 		}
 
 		m.setChannel(channel);
-		SubmitMessageResultHolder result = channelService.submitMessage(zone, m);
+		SubmitMessageResultHolder result = channelService.preSubmitMessage(zone, m);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
 			return response;
@@ -285,6 +285,7 @@ public class MOSImpl implements MOS {
 		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null) {
 			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
+			channelService.create(result.message);
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);

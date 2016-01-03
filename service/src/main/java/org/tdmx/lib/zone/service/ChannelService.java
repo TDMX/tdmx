@@ -150,9 +150,8 @@ public interface ChannelService {
 	/**
 	 * Creates (persists) a ChannelMessage.
 	 * 
-	 * NOTE: this is only called by {@link ZoneTransferTask}, otherwise use the
-	 * {@link ChannelService#relayMessage(Zone, ChannelMessage)} or
-	 * {@link ChannelService#submitMessage(Zone, ChannelMessage)} are the usual creation mechanisms.
+	 * NOTE: use the {@link ChannelService#preRelayMessage(Zone, ChannelMessage)} and
+	 * {@link ChannelService#preSubmitMessage(Zone, ChannelMessage)} to do pre-persistance updates.
 	 * 
 	 * @param channel
 	 */
@@ -290,23 +289,23 @@ public interface ChannelService {
 	}
 
 	/**
-	 * Submit a Message outbound called on the sender side.
+	 * Pre-submit a Message outbound called on the sender side. Updates the FlowQuota of the channel.
 	 * 
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
 	 * @return
 	 */
-	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelMessage msg);
+	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg);
 
 	/**
-	 * Relay a Message inbound called on the receiver side.
+	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel.
 	 * 
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
 	 * @return
 	 */
-	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelMessage msg);
+	public SubmitMessageResultHolder preRelayMessage(Zone zone, ChannelMessage msg);
 
 }

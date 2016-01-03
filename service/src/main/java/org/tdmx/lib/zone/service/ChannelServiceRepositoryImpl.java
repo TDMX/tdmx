@@ -366,7 +366,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder submitMessage(Zone zone, ChannelMessage msg) {
+	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
 		// get and lock quota and check we can send
@@ -384,14 +384,13 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnSend(msg.getPayloadLength());
 
-		getChannelDao().persist(msg);
 		result.message = msg;
 		return result;
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder relayMessage(Zone zone, ChannelMessage msg) {
+	public SubmitMessageResultHolder preRelayMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
@@ -408,8 +407,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnRelay(msg.getPayloadLength());
-
-		getChannelDao().persist(msg);
 
 		result.message = msg;
 		return result;

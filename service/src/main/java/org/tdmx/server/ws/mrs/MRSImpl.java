@@ -277,7 +277,7 @@ public class MRSImpl implements MRS {
 
 		m.setChannel(channel);
 
-		SubmitMessageResultHolder result = channelService.relayMessage(zone, m);
+		SubmitMessageResultHolder result = channelService.preRelayMessage(zone, m);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
 			return;
@@ -285,6 +285,9 @@ public class MRSImpl implements MRS {
 
 		// persist Chunk via ChunkService
 		chunkService.createOrUpdate(c);
+
+		// persist the message itself.
+		channelService.create(result.message);
 
 		response.setSuccess(true);
 	}
