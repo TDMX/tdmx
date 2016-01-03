@@ -25,6 +25,7 @@ import org.tdmx.client.cli.domain.AuthorizeChannel;
 import org.tdmx.client.cli.domain.CollectCertificate;
 import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
+import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateService;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeleteAddress;
@@ -79,7 +80,7 @@ public class ClientCLI {
 			CheckScs.class, DownloadScs.class,
 			CreateZoneAdministratorCredentials.class, DescribeZoneAdministratorCredentials.class,  
 			CreateDomain.class, SearchDomain.class, DeleteDomain.class,
-			SearchDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
+			SearchDomainAdministratorCredentials.class, CreateDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
 			CollectCertificate.class,
