@@ -225,7 +225,7 @@ public class SCSImpl implements SCS, Manageable {
 		session.setLocalname(localName);
 		session.setDomain(domainName);
 		session.setServicename(serviceName);
-		session.setServiceprovider(segment.getScsUrl()); // FIXME sp url
+		session.setServiceprovider(segment.getScsUrl());
 		response.setSession(session);
 
 		Endpoint endpoint = new Endpoint();
@@ -381,7 +381,7 @@ public class SCSImpl implements SCS, Manageable {
 		}
 
 		session.setServicename(service);
-		session.setServiceprovider(serviceProviderUrl); // FIXME change to spUrl
+		session.setServiceprovider(serviceProviderUrl);
 		return session;
 	}
 

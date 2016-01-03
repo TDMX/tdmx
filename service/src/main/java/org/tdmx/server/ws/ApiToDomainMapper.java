@@ -139,11 +139,7 @@ public class ApiToDomainMapper {
 		a.setRecvAuthorization(mapEndpointPermission(ca.getDestinationPermission()));
 		a.setReqSendAuthorization(null);
 		a.setReqSendAuthorization(null);
-		// FIXME
-		// if (ca.getLimit() != null) {
-		// a.setUndeliveredBuffer(mapFlowLimit(ca.getLimit().getUndeliveredBuffer()));
-		// a.setUnsentBuffer(mapFlowLimit(ca.getLimit().getUnsentBuffer()));
-		// }
+		a.setLimit(mapFlowLimit(ca.getLimit()));
 		a.setSignature(mapAdministratorSignature(ca.getAdministratorsignature()));
 		return a;
 	}
