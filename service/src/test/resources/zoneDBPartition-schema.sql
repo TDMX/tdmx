@@ -111,7 +111,6 @@
         processingErrorCode integer,
         processingErrorMessage varchar(2048),
         processingStatus varchar(12) not null,
-        processingId varchar(36) not null,
         processingTimestamp timestamp not null,
         dsIdentifier varchar(256),
         dsScheme varchar(256),
@@ -124,17 +123,17 @@
         domain_id bigint not null,
         quota_id bigint not null,
         primary key (id),
-        unique (processingId),
         unique (authorization_id),
         unique (quota_id)
     );
 
     create table ChannelAuthorization (
         id bigint not null,
+        limitHighBytes numeric,
+        limitLowBytes numeric,
         processingErrorCode integer,
         processingErrorMessage varchar(2048),
         processingStatus varchar(12) not null,
-        processingId varchar(36) not null,
         processingTimestamp timestamp not null,
         recvGrant varchar(16),
         recvMaxPlaintextBytes numeric,
@@ -164,12 +163,7 @@
         signerPem varchar(12000),
         signatureDate timestamp,
         signature varchar(1024),
-        undeliveredHigh numeric,
-        undeliveredLow numeric,
-        unsentHigh numeric,
-        unsentLow numeric,
-        primary key (id),
-        unique (processingId)
+        primary key (id)
     );
 
     create table ChannelMessage (
@@ -288,14 +282,11 @@
     create table FlowQuota (
         id bigint not null,
         authorizationStatus varchar(8) not null,
-        receiverStatus varchar(8) not null,
-        senderStatus varchar(8) not null,
-        undeliveredHigh numeric,
-        undeliveredLow numeric,
-        undeliveredBytes numeric not null,
-        unsentHigh numeric,
-        unsentLow numeric,
-        unsentBytes numeric not null,
+        flowStatus varchar(8) not null,
+        limitHighBytes numeric,
+        limitLowBytes numeric,
+        relayStatus varchar(8) not null,
+        usedBytes numeric not null,
         primary key (id)
     );
 

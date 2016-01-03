@@ -128,16 +128,6 @@ public class ClientCliLoggingUtils {
 			buf.append("No Session").append(LINEFEED);
 		}
 		buf.append("FlowStatus [").append(toString(ci.getStatus())).append("]").append(LINEFEED);
-		if (ci.getLimit() != null) {
-			buf.append("Limit [").append(toString(ci.getLimit())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No FlowControl Limit").append(LINEFEED);
-		}
-		if (ci.getLevel() != null) {
-			buf.append(toString(ci.getLevel())).append(LINEFEED);
-		} else {
-			buf.append("No FlowControl Level").append(LINEFEED);
-		}
 		buf.append("]");
 		return buf.toString();
 	}
@@ -257,32 +247,9 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.msg.FlowStatus fs) {
 		StringBuilder buf = new StringBuilder();
-		buf.append(" Receive=").append(fs.getReceiverStatus());
-		buf.append(" Send=").append(fs.getSenderStatus());
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.FlowControlLevel fl) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Level [");
-		buf.append(" Undelivered=").append(fl.getUndeliveredBuffer());
-		buf.append(", Unsent=").append(fl.getUnsentBuffer());
-		buf.append("]");
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.FlowControlLimit li) {
-		StringBuilder buf = new StringBuilder();
-		if (li.getUnsentBuffer() != null) {
-			buf.append("Unsent [").append(toString(li.getUnsentBuffer())).append("]");
-		} else {
-			buf.append("No Unsent Limit");
-		}
-		if (li.getUndeliveredBuffer() != null) {
-			buf.append(", Undelivered [").append(toString(li.getUndeliveredBuffer())).append("]");
-		} else {
-			buf.append(", No Undelivered Limit");
-		}
+		buf.append(" RelayStatus=").append(fs.getRelayStatus());
+		buf.append(" FlowStatus=").append(fs.getFlowStatus());
+		buf.append(" UsedBytes=").append(fs.getUsedBytes());
 		return buf.toString();
 	}
 

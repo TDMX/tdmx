@@ -102,7 +102,6 @@ public class Channel implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false, unique = true) ),
 			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),

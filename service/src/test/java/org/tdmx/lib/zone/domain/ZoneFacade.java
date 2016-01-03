@@ -121,15 +121,10 @@ public class ZoneFacade {
 		recvPermission.setSignature(recvPermSignature);
 		c.setRecvAuthorization(recvPermission);
 
-		FlowLimit unsentBuffer = new FlowLimit();
-		unsentBuffer.setHighMarkBytes(ONE_GB);
-		unsentBuffer.setLowMarkBytes(ONE_MB);
-		c.setUnsentBuffer(unsentBuffer);
-
-		FlowLimit undeliveredBuffer = new FlowLimit();
-		undeliveredBuffer.setHighMarkBytes(ONE_GB);
-		undeliveredBuffer.setLowMarkBytes(ONE_MB);
-		c.setUndeliveredBuffer(undeliveredBuffer);
+		FlowLimit l = new FlowLimit();
+		l.setHighMarkBytes(ONE_GB);
+		l.setLowMarkBytes(ONE_MB);
+		c.setLimit(l);
 
 		// TODO make a valid signature
 		AgentSignature signature = new AgentSignature();
@@ -167,10 +162,10 @@ public class ZoneFacade {
 		// pending authorizations not set.
 
 		// undelivered is on the recv side
-		FlowLimit unsentBuffer = new FlowLimit();
-		unsentBuffer.setHighMarkBytes(ONE_GB);
-		unsentBuffer.setLowMarkBytes(ONE_MB);
-		c.setUnsentBuffer(unsentBuffer);
+		FlowLimit l = new FlowLimit();
+		l.setHighMarkBytes(ONE_GB);
+		l.setLowMarkBytes(ONE_MB);
+		c.setLimit(l);
 
 		// TODO make a valid signature
 		AgentSignature signature = new AgentSignature();
@@ -206,10 +201,10 @@ public class ZoneFacade {
 
 		// pending authorizations not set.
 
-		FlowLimit undeliveredBuffer = new FlowLimit();
-		undeliveredBuffer.setHighMarkBytes(ONE_GB);
-		undeliveredBuffer.setLowMarkBytes(ONE_MB);
-		c.setUndeliveredBuffer(undeliveredBuffer);
+		FlowLimit l = new FlowLimit();
+		l.setHighMarkBytes(ONE_GB);
+		l.setLowMarkBytes(ONE_MB);
+		c.setLimit(l);
 
 		// TODO make a valid signature
 		AgentSignature signature = new AgentSignature();

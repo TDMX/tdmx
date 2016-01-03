@@ -106,14 +106,9 @@ public class ChannelAuthorization implements Serializable {
 	private EndpointPermission reqRecvAuthorization;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh") ),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow") ) })
-	private FlowLimit unsentBuffer;
-
-	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh") ),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow") ) })
-	private FlowLimit undeliveredBuffer;
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "limitHighBytes") ),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "limitLowBytes") ) })
+	private FlowLimit limit;
 
 	// the signature can be null when a requested ca is relayed in before being set by the local DAC.
 	@Embedded
@@ -125,7 +120,6 @@ public class ChannelAuthorization implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "taskId", column = @Column(name = "processingId", length = ProcessingState.MAX_TASKID_LEN, nullable = false, unique = true) ),
 			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
@@ -153,8 +147,7 @@ public class ChannelAuthorization implements Serializable {
 			setReqSendAuthorization(other.getReqSendAuthorization());
 			setSendAuthorization(other.getSendAuthorization());
 			setSignature(other.getSignature());
-			setUndeliveredBuffer(other.getUndeliveredBuffer());
-			setUnsentBuffer(other.getUnsentBuffer());
+			setLimit(other.getLimit());
 		}
 	}
 
@@ -171,8 +164,7 @@ public class ChannelAuthorization implements Serializable {
 		builder.append(", recvAuthorization=").append(recvAuthorization);
 		builder.append(", reqSendAuthorization=").append(reqSendAuthorization);
 		builder.append(", reqRecvAuthorization=").append(reqRecvAuthorization);
-		builder.append(", undeliveredBuffer=").append(undeliveredBuffer);
-		builder.append(", unsentBuffer=").append(unsentBuffer);
+		builder.append(", limit=").append(limit);
 		builder.append(", signature=").append(signature);
 		builder.append(", processingState=").append(processingState);
 		builder.append("]");
@@ -239,20 +231,12 @@ public class ChannelAuthorization implements Serializable {
 		this.reqRecvAuthorization = reqRecvAuthorization;
 	}
 
-	public FlowLimit getUnsentBuffer() {
-		return unsentBuffer;
+	public FlowLimit getLimit() {
+		return limit;
 	}
 
-	public void setUnsentBuffer(FlowLimit unsentBuffer) {
-		this.unsentBuffer = unsentBuffer;
-	}
-
-	public FlowLimit getUndeliveredBuffer() {
-		return undeliveredBuffer;
-	}
-
-	public void setUndeliveredBuffer(FlowLimit undeliveredBuffer) {
-		this.undeliveredBuffer = undeliveredBuffer;
+	public void setLimit(FlowLimit limit) {
+		this.limit = limit;
 	}
 
 	public AgentSignature getSignature() {

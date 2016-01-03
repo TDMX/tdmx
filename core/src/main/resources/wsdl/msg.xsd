@@ -222,11 +222,7 @@
 					<xs:documentation>the authorization of the destination. </xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="limit" type="FlowControlLimit">
-				<xs:annotation>
-					<xs:documentation>the default flow control limit which is initially applied to all flows created in the channel.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
+			<xs:element ref="limit"/>
 			<xs:element ref="administratorsignature"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -267,57 +263,24 @@
 					<xs:documentation>the current flow control status.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="level" type="FlowControlLevel">
-				<xs:annotation>
-					<xs:documentation>the current flow control levels.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="limit" type="FlowControlLimit">
-				<xs:annotation>
-					<xs:documentation>the flow control limits for high mark and low mark set by channel authorization affects all flows.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element ref="sessioninfo" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="FlowControlLimit">
-		<xs:sequence>
-			<xs:element name="unsentBuffer" type="Limit" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the buffer limits for messages sent but not yet relayed to the receiving side of the flow.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="undeliveredBuffer" type="Limit" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the buffer limits for messags not yet delivered to receivers on the receiving side of the flow.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FlowStatus">
 		<xs:sequence>
-			<xs:element name="senderStatus" type="flowcontrolstatus" minOccurs="0">
+			<xs:element name="relayStatus" type="flowcontrolstatus">
 				<xs:annotation>
-					<xs:documentation>On the sender side, this is determined by the unsentBuffer quota.</xs:documentation>
+					<xs:documentation>Whether relaying is allowed or not. On the receiver side, this is equal to the flowStatus. On the sender side, this is the status of the receiving side.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="receiverStatus" type="flowcontrolstatus" minOccurs="0">
+			<xs:element name="flowStatus" type="flowcontrolstatus">
 				<xs:annotation>
-					<xs:documentation>On the sender side, this represents the status of relaying to the receiver side. as communicated by the receiver. On the receiver side it is determined by the undeliveredBuffer.</xs:documentation>
+					<xs:documentation>This says whether more bytes can be put into the buffer by the sender or relayer. Note: the limit is determined by the channel authorization.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="FlowControlLevel">
-		<xs:sequence>
-			<xs:element name="unsentBuffer" type="xs:unsignedLong" minOccurs="0">
+			<xs:element name="usedBytes" type="xs:unsignedLong">
 				<xs:annotation>
-					<xs:documentation>the sum of the size of payloads in the unsentBuffer. Only availible on the sender side of the flow.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="undeliveredBuffer" type="xs:unsignedLong" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>the sum of the size of payloads in the undeliveredBuffer. Only availible on the receiver side of the flow.</xs:documentation>
+					<xs:documentation>the sum of the size of payloads in the buffer.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -791,6 +754,11 @@
 	<xs:element name="ms" type="messagestatus">
 		<xs:annotation>
 			<xs:documentation>The message status.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="limit" type="Limit">
+		<xs:annotation>
+			<xs:documentation>the channel buffer's limits for flow control. Flow control is activated ( CLOSED ) when there are more bytes in the buffer than highBytes. flow control is only deactivated ( OPEN ) when the level of the buffer drops below lowBytes.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 </xs:schema>

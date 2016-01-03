@@ -56,8 +56,6 @@ public class FlowQuota implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
-	private static final FlowLimit NO_FLOW_LIMIT = new FlowLimit(BigInteger.ZERO, BigInteger.ZERO);
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowQuotaIdGen")
 	@TableGenerator(name = "FlowQuotaIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
@@ -67,32 +65,24 @@ public class FlowQuota implements Serializable {
 	private Channel channel;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
-	private FlowControlStatus senderStatus;
-
-	@Column(nullable = false)
-	private BigInteger unsentBytes;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
-	private FlowControlStatus receiverStatus;
-
-	@Column(nullable = false)
-	private BigInteger undeliveredBytes;
-
-	@Enumerated(EnumType.STRING)
 	@Column(length = ChannelAuthorizationStatus.MAX_AUTH_STATUS_LEN, nullable = false)
 	private ChannelAuthorizationStatus authorizationStatus;
 
-	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh") ),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow") ) })
-	private FlowLimit unsentBuffer;
+	@Enumerated(EnumType.STRING)
+	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
+	private FlowControlStatus relayStatus;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
+	private FlowControlStatus flowStatus;
+
+	@Column(nullable = false)
+	private BigInteger usedBytes;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh") ),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow") ) })
-	private FlowLimit undeliveredBuffer;
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "limitHighBytes") ),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "limitLowBytes") ) })
+	private FlowLimit limit;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -103,22 +93,18 @@ public class FlowQuota implements Serializable {
 
 	public FlowQuota(Channel channel) {
 		setChannel(channel);
-		setUndeliveredBytes(BigInteger.ZERO);
-		setUnsentBytes(BigInteger.ZERO);
-		setSenderStatus(FlowControlStatus.OPEN);
-		setReceiverStatus(FlowControlStatus.OPEN);
-		updateAuthorizationInfo(); // not usesfull here since there is no CA defined yet.
+		setUsedBytes(BigInteger.ZERO);
+		setFlowStatus(FlowControlStatus.OPEN);
+		setRelayStatus(FlowControlStatus.OPEN);
+		updateAuthorizationInfo();
 	}
 
 	public FlowQuota(Channel channel, FlowQuota other) {
 		setChannel(channel);
-		setUndeliveredBytes(other.getUndeliveredBytes());
-		setUnsentBytes(other.getUnsentBytes());
-		setSenderStatus(other.getSenderStatus());
-		setReceiverStatus(other.getReceiverStatus());
+		setUsedBytes(other.getUsedBytes());
+		setRelayStatus(other.getRelayStatus());
+		setFlowStatus(other.getFlowStatus());
 		setAuthorizationStatus(other.getAuthorizationStatus());
-		setUndeliveredBuffer(other.getUndeliveredBuffer());
-		setUnsentBuffer(other.getUnsentBuffer());
 	}
 
 	// -------------------------------------------------------------------------
@@ -132,24 +118,24 @@ public class FlowQuota implements Serializable {
 		if (channel != null && channel.getAuthorization() != null) {
 			setAuthorizationStatus(
 					channel.isOpen() ? ChannelAuthorizationStatus.OPEN : ChannelAuthorizationStatus.CLOSED);
-			setUndeliveredBuffer(channel.getAuthorization().getUndeliveredBuffer());
-			setUnsentBuffer(channel.getAuthorization().getUnsentBuffer());
+			setLimit(channel.getAuthorization().getLimit());
 		}
 	}
 
-	public void incrementUnsent(long payloadSizeBytes) {
-		setUnsentBytes(getUnsentBytes().add(BigInteger.valueOf(payloadSizeBytes)));
-		if (getUnsentBytes().subtract(getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+	public void incrementBufferOnSend(long payloadSizeBytes) {
+		setUsedBytes(getUsedBytes().add(BigInteger.valueOf(payloadSizeBytes)));
+		if (getUsedBytes().subtract(getLimit().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close send
-			setSenderStatus(FlowControlStatus.CLOSED);
+			setFlowStatus(FlowControlStatus.CLOSED);
 		}
 	}
 
-	public void incrementUndelivered(long payloadSizeBytes) {
-		setUndeliveredBytes(getUndeliveredBytes().add(BigInteger.valueOf(payloadSizeBytes)));
-		if (getUndeliveredBytes().subtract(getUndeliveredBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+	public void incrementBufferOnRelay(long payloadSizeBytes) {
+		setUsedBytes(getUsedBytes().add(BigInteger.valueOf(payloadSizeBytes)));
+		if (getUsedBytes().subtract(getLimit().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
 			// quota exceeded, close relay
-			setReceiverStatus(FlowControlStatus.CLOSED);
+			setFlowStatus(FlowControlStatus.CLOSED);
+			setRelayStatus(FlowControlStatus.CLOSED);
 		}
 	}
 
@@ -158,13 +144,11 @@ public class FlowQuota implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("FlowQuota [id=");
 		builder.append(id);
-		builder.append(", senderStatus=").append(senderStatus);
-		builder.append(", receiverStatus=").append(receiverStatus);
-		builder.append(", unsentBytes=").append(unsentBytes);
-		builder.append(", undeliveredBytes=").append(undeliveredBytes);
 		builder.append(", authorizationStatus=").append(authorizationStatus);
-		builder.append(", unsentBuffer=").append(unsentBuffer);
-		builder.append(", undeliveredBuffer=").append(undeliveredBuffer);
+		builder.append(", relayStatus=").append(relayStatus);
+		builder.append(", flowStatus=").append(flowStatus);
+		builder.append(", usedBytes=").append(usedBytes);
+		builder.append(", limit=").append(limit);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -193,38 +177,6 @@ public class FlowQuota implements Serializable {
 		this.id = id;
 	}
 
-	public BigInteger getUnsentBytes() {
-		return unsentBytes;
-	}
-
-	public void setUnsentBytes(BigInteger unsentBytes) {
-		this.unsentBytes = unsentBytes;
-	}
-
-	public BigInteger getUndeliveredBytes() {
-		return undeliveredBytes;
-	}
-
-	public void setUndeliveredBytes(BigInteger undeliveredBytes) {
-		this.undeliveredBytes = undeliveredBytes;
-	}
-
-	public FlowControlStatus getSenderStatus() {
-		return senderStatus;
-	}
-
-	public void setSenderStatus(FlowControlStatus senderStatus) {
-		this.senderStatus = senderStatus;
-	}
-
-	public FlowControlStatus getReceiverStatus() {
-		return receiverStatus;
-	}
-
-	public void setReceiverStatus(FlowControlStatus receiverStatus) {
-		this.receiverStatus = receiverStatus;
-	}
-
 	public ChannelAuthorizationStatus getAuthorizationStatus() {
 		return authorizationStatus;
 	}
@@ -233,20 +185,36 @@ public class FlowQuota implements Serializable {
 		this.authorizationStatus = authorizationStatus;
 	}
 
-	public FlowLimit getUnsentBuffer() {
-		return unsentBuffer;
+	public FlowControlStatus getRelayStatus() {
+		return relayStatus;
 	}
 
-	public void setUnsentBuffer(FlowLimit unsentBuffer) {
-		this.unsentBuffer = unsentBuffer;
+	public void setRelayStatus(FlowControlStatus relayStatus) {
+		this.relayStatus = relayStatus;
 	}
 
-	public FlowLimit getUndeliveredBuffer() {
-		return undeliveredBuffer;
+	public FlowControlStatus getFlowStatus() {
+		return flowStatus;
 	}
 
-	public void setUndeliveredBuffer(FlowLimit undeliveredBuffer) {
-		this.undeliveredBuffer = undeliveredBuffer;
+	public void setFlowStatus(FlowControlStatus flowStatus) {
+		this.flowStatus = flowStatus;
+	}
+
+	public BigInteger getUsedBytes() {
+		return usedBytes;
+	}
+
+	public void setUsedBytes(BigInteger usedBytes) {
+		this.usedBytes = usedBytes;
+	}
+
+	public FlowLimit getLimit() {
+		return limit;
+	}
+
+	public void setLimit(FlowLimit limit) {
+		this.limit = limit;
 	}
 
 }

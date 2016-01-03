@@ -50,14 +50,10 @@ public interface ChannelService {
 		SENDER_AUTHORIZATION_CONFIRMATION_MISSING,
 		SENDER_AUTHORIZATION_CONFIRMATION_MISMATCH,
 		SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED,
-		SENDER_UNSENT_BUFFER_LIMIT_MISSING,
-		SENDER_UNSENT_BUFFER_LIMIT_PROVIDED,
 		RECEIVER_SERVICE_NOT_FOUND, // allowing reception only when service exists.
 		RECEIVER_AUTHORIZATION_CONFIRMATION_MISSING,
 		RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED,
 		RECEIVER_AUTHORIZATION_CONFIRMATION_MISMATCH,
-		RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING,
-		RECEIVER_UNDELIVERED_BUFFER_LIMIT_PROVIDED,
 	}
 
 	public class SetAuthorizationResultHolder {
@@ -154,7 +150,9 @@ public interface ChannelService {
 	/**
 	 * Creates (persists) a ChannelMessage.
 	 * 
-	 * NOTE: this is only called by {@link ZoneTransferTask}, otherwise use the {@link ChannelService#relayMessage(Zone, ChannelMessage)} or {@link ChannelService#submitMessage(Zone, ChannelMessage)} are the usual creation mechanisms.
+	 * NOTE: this is only called by {@link ZoneTransferTask}, otherwise use the
+	 * {@link ChannelService#relayMessage(Zone, ChannelMessage)} or
+	 * {@link ChannelService#submitMessage(Zone, ChannelMessage)} are the usual creation mechanisms.
 	 * 
 	 * @param channel
 	 */

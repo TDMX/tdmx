@@ -380,13 +380,8 @@ public class SignatureUtils {
 			value.append(MISSING);
 		}
 		// flowcontrol limits
-		if (ca.getLimit().getUnsentBuffer() != null) {
-			appendValueToSign(value, ca.getLimit().getUnsentBuffer());
-		} else {
-			value.append(MISSING);
-		}
-		if (ca.getLimit().getUndeliveredBuffer() != null) {
-			appendValueToSign(value, ca.getLimit().getUndeliveredBuffer());
+		if (ca.getLimit() != null) {
+			appendValueToSign(value, ca.getLimit());
 		} else {
 			value.append(MISSING);
 		}

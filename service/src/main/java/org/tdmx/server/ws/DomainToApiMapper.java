@@ -36,8 +36,6 @@ import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.FlowControlLevel;
-import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.FlowStatus;
 import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Grant;
@@ -57,7 +55,6 @@ import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
-import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.FlowQuota;
 
 public class DomainToApiMapper {
@@ -86,21 +83,8 @@ public class DomainToApiMapper {
 		Channelinfo ci = new Channelinfo();
 		ci.setChannelauthorization(mapChannelAuthorization(c.getAuthorization()));
 		ci.setStatus(mapFlowStatus(c.getQuota()));
-		ci.setLevel(mapFlowControlLevel(c.getQuota()));
-		ci.setLimit(mapFlowControlLimit(c.getAuthorization().getUnsentBuffer(),
-				c.getAuthorization().getUndeliveredBuffer()));
 		ci.setSessioninfo(mapSessionInfo(c.getSession(), c.getProcessingState()));
 		return ci;
-	}
-
-	public FlowControlLevel mapFlowControlLevel(FlowQuota quota) {
-		if (quota == null) {
-			return null;
-		}
-		FlowControlLevel fcl = new FlowControlLevel();
-		fcl.setUnsentBuffer(quota.getUnsentBytes());
-		fcl.setUndeliveredBuffer(quota.getUndeliveredBytes());
-		return fcl;
 	}
 
 	public FlowStatus mapFlowStatus(FlowQuota quota) {
@@ -108,19 +92,10 @@ public class DomainToApiMapper {
 			return null;
 		}
 		FlowStatus fs = new FlowStatus();
-		fs.setSenderStatus(mapFlowControlStatus(quota.getSenderStatus()));
-		fs.setReceiverStatus(mapFlowControlStatus(quota.getReceiverStatus()));
+		fs.setRelayStatus(mapFlowControlStatus(quota.getRelayStatus()));
+		fs.setFlowStatus(mapFlowControlStatus(quota.getFlowStatus()));
+		fs.setUsedBytes(quota.getUsedBytes());
 		return fs;
-	}
-
-	public FlowControlLimit mapFlowControlLimit(FlowLimit unsentBuffer, FlowLimit undeliveredBuffer) {
-		if (unsentBuffer == null || undeliveredBuffer == null) {
-			return null;
-		}
-		FlowControlLimit fl = new FlowControlLimit();
-		fl.setUnsentBuffer(mapLimit(unsentBuffer));
-		fl.setUndeliveredBuffer(mapLimit(undeliveredBuffer));
-		return fl;
 	}
 
 	public Sessioninfo mapSessionInfo(DestinationSession ds, ProcessingState ps) {
@@ -264,10 +239,7 @@ public class DomainToApiMapper {
 		current.setOriginPermission(mapPermission(ca.getSendAuthorization()));
 		current.setDestinationPermission(mapPermission(ca.getRecvAuthorization()));
 
-		FlowControlLimit limit = new FlowControlLimit();
-		limit.setUnsentBuffer(mapLimit(ca.getUnsentBuffer()));
-		limit.setUndeliveredBuffer(mapLimit(ca.getUndeliveredBuffer()));
-		current.setLimit(limit);
+		current.setLimit(mapLimit(ca.getLimit()));
 		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 
 		Channelauthorization c = new Channelauthorization();

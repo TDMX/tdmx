@@ -19,7 +19,6 @@
 
 package org.tdmx.lib.zone.service;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -122,20 +121,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 					return resultHolder;
 				}
 			}
-			if (auth.getUnsentBuffer() == null) {
-				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_MISSING;
-				return resultHolder;
-			}
-			if (auth.getUndeliveredBuffer() == null) {
-				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING;
-				return resultHolder;
-			}
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
-			existingCA.setUnsentBuffer(auth.getUnsentBuffer());
-			existingCA.setUndeliveredBuffer(auth.getUndeliveredBuffer());
+			existingCA.setLimit(auth.getLimit());
 			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
 
 		} else if (existingChannel.isSend()) {
@@ -154,14 +144,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
-			if (auth.getUnsentBuffer() == null) {
-				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_MISSING;
-				return resultHolder;
-			}
-			if (auth.getUndeliveredBuffer() != null) {
-				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_PROVIDED;
-				return resultHolder;
-			}
 			// we are sender and there shall be no pending send authorization
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(null);
@@ -175,7 +157,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
-			existingCA.setUnsentBuffer(auth.getUnsentBuffer());
+			existingCA.setLimit(auth.getLimit());
 		} else {
 			// 3) recvAuth(+confirming requested sendAuth)
 			// - no reqRecvAuth allowed in existing ca.
@@ -203,14 +185,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				resultHolder.status = SetAuthorizationOperationStatus.SENDER_AUTHORIZATION_CONFIRMATION_PROVIDED;
 				return resultHolder;
 			}
-			if (auth.getUndeliveredBuffer() == null) {
-				resultHolder.status = SetAuthorizationOperationStatus.RECEIVER_UNDELIVERED_BUFFER_LIMIT_MISSING;
-				return resultHolder;
-			}
-			if (auth.getUnsentBuffer() != null) {
-				resultHolder.status = SetAuthorizationOperationStatus.SENDER_UNSENT_BUFFER_LIMIT_PROVIDED;
-				return resultHolder;
-			}
 			existingCA.setReqSendAuthorization(null);
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
@@ -223,7 +197,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
-			existingCA.setUndeliveredBuffer(auth.getUndeliveredBuffer());
+			existingCA.setLimit(auth.getLimit());
 		}
 
 		// replicate the CA data into the flowQuota
@@ -399,16 +373,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to send out.
-			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
-			return result;
-		}
-		if (FlowControlStatus.CLOSED == quota.getSenderStatus()) {
-			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
 			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
 			return result;
 		}
+		if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
+			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
+			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			return result;
+		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.incrementUnsent(msg.getPayloadLength());
+		quota.incrementBufferOnSend(msg.getPayloadLength());
 
 		getChannelDao().persist(msg);
 		result.message = msg;
@@ -426,19 +400,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
 			return result;
 		}
-		if (FlowControlStatus.CLOSED == quota.getReceiverStatus()) {
+		if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
 			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
 			// changes this status eventually
 			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
 			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUndeliveredBytes(quota.getUndeliveredBytes().add(BigInteger.valueOf(msg.getPayloadLength())));
-		if (quota.getUndeliveredBytes().subtract(quota.getUndeliveredBuffer().getHighMarkBytes())
-				.compareTo(BigInteger.ZERO) > 0) {
-			// quota exceeded, close relay
-			quota.setReceiverStatus(FlowControlStatus.CLOSED);
-		}
+		quota.incrementBufferOnRelay(msg.getPayloadLength());
 
 		getChannelDao().persist(msg);
 

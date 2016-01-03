@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +64,6 @@ import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.DomainFilter;
-import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
@@ -116,7 +114,6 @@ import org.tdmx.core.api.v01.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
-import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -1415,7 +1412,6 @@ public class ZASImplUnitTest {
 		channel.setOrigin(origin);
 		auth.setChannel(channel);
 
-		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Grant.ALLOW);
@@ -1430,17 +1426,10 @@ public class ZASImplUnitTest {
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
 
-		FlowControlLimit fcl = new FlowControlLimit();
-		Limit undeliveredBuffer = new Limit();
-		undeliveredBuffer.setHighBytes(ZoneFacade.ONE_GB);
-		undeliveredBuffer.setLowBytes(ZoneFacade.ONE_MB);
-		fcl.setUndeliveredBuffer(undeliveredBuffer);
-
-		Limit unsentBuffer = new Limit();
-		unsentBuffer.setHighBytes(ZoneFacade.ONE_GB);
-		unsentBuffer.setLowBytes(ZoneFacade.ONE_MB);
-		fcl.setUnsentBuffer(unsentBuffer);
-		auth.setLimit(fcl);
+		Limit l = new Limit();
+		l.setHighBytes(ZoneFacade.ONE_GB);
+		l.setLowBytes(ZoneFacade.ONE_MB);
+		auth.setLimit(l);
 
 		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
 		req.setCurrentchannelauthorization(auth);
@@ -1477,7 +1466,6 @@ public class ZASImplUnitTest {
 		channel.setOrigin(origin);
 		auth.setChannel(channel);
 
-		Date oneMonth = CalendarUtils.getDateWithOffset(new Date(), Calendar.MONTH, 1);
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
 		recvPermission.setPermission(Grant.ALLOW);
@@ -1492,17 +1480,10 @@ public class ZASImplUnitTest {
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
 
-		FlowControlLimit fcl = new FlowControlLimit();
-		Limit undeliveredBuffer = new Limit();
-		undeliveredBuffer.setHighBytes(ZoneFacade.ONE_GB);
-		undeliveredBuffer.setLowBytes(ZoneFacade.ONE_MB);
-		fcl.setUndeliveredBuffer(undeliveredBuffer);
-
-		Limit unsentBuffer = new Limit();
-		unsentBuffer.setHighBytes(ZoneFacade.ONE_GB);
-		unsentBuffer.setLowBytes(ZoneFacade.ONE_MB);
-		fcl.setUnsentBuffer(unsentBuffer);
-		auth.setLimit(fcl);
+		Limit l = new Limit();
+		l.setHighBytes(ZoneFacade.ONE_GB);
+		l.setLowBytes(ZoneFacade.ONE_MB);
+		auth.setLimit(l);
 
 		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
 		req.setCurrentchannelauthorization(auth);

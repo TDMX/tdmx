@@ -32,7 +32,6 @@ import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
-import org.tdmx.core.api.v01.msg.FlowControlLimit;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
@@ -174,17 +173,10 @@ public class AuthorizeChannel implements CommandExecutable {
 			ca.setDestinationPermission(destinationPermission);
 		}
 
-		FlowControlLimit fcl = new FlowControlLimit();
 		Limit l = new Limit();
 		l.setHighBytes(BigInteger.valueOf(highLimitMb * ClientCliUtils.MEGA));
 		l.setLowBytes(BigInteger.valueOf(lowLimitMb * ClientCliUtils.MEGA));
-		if (isOrigin) {
-			fcl.setUnsentBuffer(l);
-		}
-		if (isDestination) {
-			fcl.setUndeliveredBuffer(l);
-		}
-		ca.setLimit(fcl);
+		ca.setLimit(l);
 		// sign the CA
 		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), ca);
 		setChannelAuthRequest.setCurrentchannelauthorization(ca);

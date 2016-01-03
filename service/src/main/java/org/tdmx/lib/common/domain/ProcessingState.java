@@ -20,7 +20,6 @@ package org.tdmx.lib.common.domain;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -32,8 +31,6 @@ import javax.persistence.TemporalType;
 /**
  * An ProcessingState describes the current status of processing related to the enclosing entity.
  * 
- * We always have a taskId, state and timestamp when we entered the state.
- * 
  * @author Peter Klauser
  * 
  */
@@ -43,16 +40,12 @@ public class ProcessingState implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_TASKID_LEN = 36;
 	public static final int MAX_ERRORMESSAGE_LEN = 2048;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
-
-	@Column
-	private String taskId; // the link to the relay
 
 	@Enumerated(EnumType.STRING)
 	@Column
@@ -77,7 +70,6 @@ public class ProcessingState implements Serializable {
 	}
 
 	public ProcessingState(ProcessingStatus currentStatus) {
-		taskId = UUID.randomUUID().toString();
 		status = currentStatus;
 		timestamp = new Date();
 	}
@@ -90,7 +82,6 @@ public class ProcessingState implements Serializable {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Job [");
-		builder.append("taskId=").append(taskId);
 		builder.append(" status=").append(status);
 		builder.append(" timestamp=").append(timestamp);
 		builder.append(" errorCode=").append(errorCode);
@@ -110,14 +101,6 @@ public class ProcessingState implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public String getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
-	}
 
 	public ProcessingStatus getStatus() {
 		return status;
