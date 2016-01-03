@@ -53,6 +53,11 @@ public class FlowLimit implements Serializable {
 
 	}
 
+	public FlowLimit(BigInteger highMarkBytes, BigInteger lowMarkBytes) {
+		this.highMarkBytes = highMarkBytes;
+		this.lowMarkBytes = lowMarkBytes;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------

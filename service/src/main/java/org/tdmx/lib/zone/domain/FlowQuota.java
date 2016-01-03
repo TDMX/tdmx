@@ -56,6 +56,8 @@ public class FlowQuota implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -1L;
 
+	private static final FlowLimit NO_FLOW_LIMIT = new FlowLimit(BigInteger.ZERO, BigInteger.ZERO);
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "FlowQuotaIdGen")
 	@TableGenerator(name = "FlowQuotaIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
@@ -83,13 +85,13 @@ public class FlowQuota implements Serializable {
 	private ChannelAuthorizationStatus authorizationStatus;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh")),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow")) })
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "unsentHigh") ),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "unsentLow") ) })
 	private FlowLimit unsentBuffer;
 
 	@Embedded
-	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh")),
-			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow")) })
+	@AttributeOverrides({ @AttributeOverride(name = "highMarkBytes", column = @Column(name = "undeliveredHigh") ),
+			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "undeliveredLow") ) })
 	private FlowLimit undeliveredBuffer;
 
 	// -------------------------------------------------------------------------
@@ -128,10 +130,26 @@ public class FlowQuota implements Serializable {
 	 */
 	public void updateAuthorizationInfo() {
 		if (channel != null && channel.getAuthorization() != null) {
-			setAuthorizationStatus(channel.isOpen() ? ChannelAuthorizationStatus.OPEN
-					: ChannelAuthorizationStatus.CLOSED);
+			setAuthorizationStatus(
+					channel.isOpen() ? ChannelAuthorizationStatus.OPEN : ChannelAuthorizationStatus.CLOSED);
 			setUndeliveredBuffer(channel.getAuthorization().getUndeliveredBuffer());
 			setUnsentBuffer(channel.getAuthorization().getUnsentBuffer());
+		}
+	}
+
+	public void incrementUnsent(long payloadSizeBytes) {
+		setUnsentBytes(getUnsentBytes().add(BigInteger.valueOf(payloadSizeBytes)));
+		if (getUnsentBytes().subtract(getUnsentBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+			// quota exceeded, close send
+			setSenderStatus(FlowControlStatus.CLOSED);
+		}
+	}
+
+	public void incrementUndelivered(long payloadSizeBytes) {
+		setUndeliveredBytes(getUndeliveredBytes().add(BigInteger.valueOf(payloadSizeBytes)));
+		if (getUndeliveredBytes().subtract(getUndeliveredBuffer().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
+			// quota exceeded, close relay
+			setReceiverStatus(FlowControlStatus.CLOSED);
 		}
 	}
 

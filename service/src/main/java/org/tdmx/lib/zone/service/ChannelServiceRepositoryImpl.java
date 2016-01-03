@@ -408,12 +408,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			return result;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.setUnsentBytes(quota.getUnsentBytes().add(BigInteger.valueOf(msg.getPayloadLength())));
-		if (quota.getUnsentBytes().subtract(quota.getUnsentBuffer().getHighMarkBytes())
-				.compareTo(BigInteger.ZERO) > 0) {
-			// quota exceeded, close send
-			quota.setSenderStatus(FlowControlStatus.CLOSED);
-		}
+		quota.incrementUnsent(msg.getPayloadLength());
 
 		getChannelDao().persist(msg);
 		result.message = msg;
