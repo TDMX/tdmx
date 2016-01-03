@@ -25,7 +25,6 @@ import org.tdmx.client.cli.domain.AuthorizeChannel;
 import org.tdmx.client.cli.domain.CollectCertificate;
 import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
-import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateService;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeleteAddress;
@@ -44,6 +43,7 @@ import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DeleteZone;
 import org.tdmx.client.cli.zone.DescribeDns;
+import org.tdmx.client.cli.zone.DescribeZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DownloadScs;
 import org.tdmx.client.cli.zone.ModifyZone;
 import org.tdmx.client.cli.zone.Route53Dns;
@@ -77,9 +77,9 @@ public class ClientCLI {
 			CreateZone.class, ModifyZone.class, DeleteZone.class,
 			DescribeDns.class, Route53Dns.class, CheckDns.class,
 			CheckScs.class, DownloadScs.class,
-			CreateZoneAdministratorCredentials.class, CreateDomain.class, SearchDomain.class, DeleteDomain.class,
-			CreateDomainAdministratorCredentials.class, SearchDomainAdministratorCredentials.class,
-			ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
+			CreateZoneAdministratorCredentials.class, DescribeZoneAdministratorCredentials.class,  
+			CreateDomain.class, SearchDomain.class, DeleteDomain.class,
+			SearchDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
 			CollectCertificate.class,
