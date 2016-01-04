@@ -40,11 +40,18 @@ import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
+import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.RelaySessionManagerProxy;
+import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.scs.LocalControlServiceImpl;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.RpcCallback;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
@@ -71,7 +78,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  *
  */
-public class RelayOutboundServiceClientConnector implements Manageable, Runnable {
+public class RelayOutboundServiceClientConnector
+		implements Manageable, Runnable, RelaySessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -108,10 +116,7 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 	 */
 	private CacheInvalidationMessageListener cacheInvalidationListener;
 
-	/**
-	 * Delay in seconds between notifying PCS about load statistics.
-	 */
-	private int loadStatisticsNotificationIntervalSec = 60;
+	private RelayOutboundService relayOutboundService;
 
 	/**
 	 * ROS server connector tcpIp address.
@@ -124,13 +129,13 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 	private int localPort;
 
 	/**
-	 * The session handling capacity of this ROS.
+	 * The number of seconds between checks for idle sessions to disconnect.
 	 */
-	private int sessionCapacity;
+	private int idleNotificationIntervalSec = 60;
 
 	// - internal
 	private ScheduledExecutorService scheduledThreadPool = null;
-	private ExecutorService loadNotificationExecutor = null;
+	private ExecutorService idleNotificationExecutor = null;
 
 	// TODO get load from the "server" ROS part.
 
@@ -220,10 +225,10 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel, rosTcpEndpoint);
+					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel);
 
 					serverProxyMap.put(pcs, client);
-					client.registerRelayServer(sessionCapacity);
+					client.registerRelayServer(rosTcpEndpoint);
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
@@ -270,12 +275,12 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 		}
 
 		scheduledThreadPool = Executors
-				.newSingleThreadScheduledExecutor(new NamedThreadFactory("ROS-LoadNotificationScheduler"));
+				.newSingleThreadScheduledExecutor(new NamedThreadFactory("ROS-IdleNotificationScheduler"));
 
-		loadNotificationExecutor = Executors.newFixedThreadPool(1,
-				new NamedThreadFactory("ROS-LoadStatisticNotificationExecutor"));
-		scheduledThreadPool.scheduleWithFixedDelay(this, loadStatisticsNotificationIntervalSec,
-				loadStatisticsNotificationIntervalSec, TimeUnit.SECONDS);
+		idleNotificationExecutor = Executors.newFixedThreadPool(1,
+				new NamedThreadFactory("ROS-IdleNotificationExecutor"));
+		scheduledThreadPool.scheduleWithFixedDelay(this, idleNotificationIntervalSec, idleNotificationIntervalSec,
+				TimeUnit.SECONDS);
 
 	}
 
@@ -291,14 +296,14 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 			scheduledThreadPool = null;
 		}
 
-		if (loadNotificationExecutor != null) {
-			loadNotificationExecutor.shutdown();
+		if (idleNotificationExecutor != null) {
+			idleNotificationExecutor.shutdown();
 			try {
-				loadNotificationExecutor.awaitTermination(60, TimeUnit.SECONDS);
+				idleNotificationExecutor.awaitTermination(60, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
-				log.warn("Interrupted whilst waiting for termination of loadNotificationExecutor.", e);
+				log.warn("Interrupted whilst waiting for termination of idleNotificationExecutor.", e);
 			}
-			loadNotificationExecutor = null;
+			idleNotificationExecutor = null;
 		}
 
 		if (shutdownHandler != null) {
@@ -330,11 +335,29 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 
 	@Override
 	public void run() {
-		log.info("Notifying PCS about this ROS services load.");
+		log.info("Notifying PCS about this idle ROS sessions.");
 
 		for (RelayControlServiceClient pcs : serverProxyMap.values()) {
-			pcs.notifyLoad(100); // TODO
+			List<RelayChannelMrsSession> idleSessions = relayOutboundService
+					.removeIdleRelaySessions(pcs.getPcsServerName());
+			if (!idleSessions.isEmpty()) {
+				pcs.notifySessionsRemoved(idleSessions);
+			}
 		}
+	}
+
+	@Override
+	public RelayStatistic createRelaySession(RpcController controller, CreateSessionRequest request)
+			throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RelayStatistic getRelayStatistics(RpcController controller, GetStatisticsRequest request)
+			throws ServiceException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -370,12 +393,12 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public int getLoadStatisticsNotificationIntervalSec() {
-		return loadStatisticsNotificationIntervalSec;
+	public int getIdleNotificationIntervalSec() {
+		return idleNotificationIntervalSec;
 	}
 
-	public void setLoadStatisticsNotificationIntervalSec(int loadStatisticsNotificationIntervalSec) {
-		this.loadStatisticsNotificationIntervalSec = loadStatisticsNotificationIntervalSec;
+	public void setIdleNotificationIntervalSec(int idleNotificationIntervalSec) {
+		this.idleNotificationIntervalSec = idleNotificationIntervalSec;
 	}
 
 	public int getConnectTimeoutMillis() {
@@ -474,12 +497,12 @@ public class RelayOutboundServiceClientConnector implements Manageable, Runnable
 		this.localPort = localPort;
 	}
 
-	public int getSessionCapacity() {
-		return sessionCapacity;
+	public RelayOutboundService getRelayOutboundService() {
+		return relayOutboundService;
 	}
 
-	public void setSessionCapacity(int sessionCapacity) {
-		this.sessionCapacity = sessionCapacity;
+	public void setRelayOutboundService(RelayOutboundService relayOutboundService) {
+		this.relayOutboundService = relayOutboundService;
 	}
 
 }

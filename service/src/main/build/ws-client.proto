@@ -21,7 +21,6 @@ message CreateSessionRequest {
 	optional string sessionId = 2;
 	optional bytes clientCert = 3;
 	repeated AttributeValue attribute = 4;
-	
 }
 
 message AddCertificateRequest {

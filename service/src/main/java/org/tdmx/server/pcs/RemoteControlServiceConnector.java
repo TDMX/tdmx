@@ -48,8 +48,8 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticResponse;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifySessionRemovedResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
@@ -384,7 +384,7 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
-		relayService.registerRelayServer(request.getRosAddress(), request.getSessionCapacity());
+		relayService.registerRelayServer(request.getRosAddress());
 		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
 		channel.setAttribute(ROS_ADDRESS_ATTRIBUTE, request.getRosAddress());
 
@@ -397,7 +397,8 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("notifyIdleRelaySession call from " + channel.getPeerInfo());
 
-		String rosTcpEndpoint = relayService.assignRelayServer(request.getDomainName(), request.getChannelKey());
+		String rosTcpEndpoint = relayService.assignRelayServer(request.getChannelKey(),
+				mapAttributes(request.getAttributeList()));
 
 		AssignRelaySessionResponse.Builder responseBuilder = AssignRelaySessionResponse.newBuilder();
 		responseBuilder.setRosAddress(rosTcpEndpoint);
@@ -405,14 +406,14 @@ public class RemoteControlServiceConnector
 	}
 
 	@Override
-	public NotifyLoadStatisticResponse notifyRelayLoadStatistic(RpcController controller,
-			NotifyLoadStatisticRequest request) throws ServiceException {
+	public NotifyRelaySessionIdleResponse notifyRelaySessionsIdle(RpcController controller,
+			NotifyRelaySessionIdleRequest request) throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
-		log.info("notifyRelayLoadStatistic call from " + channel.getPeerInfo());
+		log.info("notifyRelaySessionsIdle call from " + channel.getPeerInfo() + " for removing "
+				+ request.getRelaySessionCount());
 
-		relayService.notifyServerLoad(request.getRosAddress(), request.getSessionLoad());
-
-		NotifyLoadStatisticResponse.Builder responseBuilder = NotifyLoadStatisticResponse.newBuilder();
+		relayService.notifySessionsRemoved(request.getRelaySessionList());
+		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
 	}
 

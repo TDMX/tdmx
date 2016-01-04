@@ -24,6 +24,8 @@ import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
+ * The client's interface to the ROS.
+ * 
  * TODO #93
  * 
  * @author Peter

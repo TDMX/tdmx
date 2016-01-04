@@ -164,7 +164,7 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 		rpcEventNotifier.setEventListener(listener);
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
-		// we don't implement a RPC service, just a
+		// we don't implement a RPC service, just a FIXME
 		BlockingService controlServiceProxy = RelayOutboundServiceProxy.newReflectiveBlockingService(this);
 		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 

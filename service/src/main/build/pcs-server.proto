@@ -80,10 +80,26 @@ message InvalidateCertificateResponse {
 
 message RegisterRelayServerRequest {
 	optional string rosAddress = 1;
-	optional int32 sessionCapacity = 2;
+	repeated string channelKeys = 2; // all currently active relay sessions
 }
 
 message RegisterRelayServerResponse {
+}
+
+//
+// ROS -> PCS the ROS notify after idle timeout of relay sessions.
+//
+
+message RelayChannelMrsSession {
+	optional string channelKey = 1;
+	optional string mrsSessionId = 2;
+}
+
+message NotifyRelaySessionIdleRequest {
+	repeated RelayChannelMrsSession relaySession = 1;
+}
+
+message NotifyRelaySessionIdleResponse {
 }
 
 //
@@ -91,26 +107,18 @@ message RegisterRelayServerResponse {
 //
 
 message AssignRelaySessionRequest {
-	optional string domainName = 1;
-	optional string channelKey = 2;
+	optional string channelKey = 1;
+	repeated AttributeValue attribute = 2;
 }
 
 message AssignRelaySessionResponse {
 	optional string rosAddress = 1;
 }
 
+
 //
-// ROS -> PCS periodic notification of load so that the PCS can do load balancing of relay sessions.
+// RPC methods
 //
-
-message NotifyLoadStatisticRequest {
-	optional string rosAddress = 1;
-	optional int32 sessionLoad = 2;
-}
-
-message NotifyLoadStatisticResponse {
-}
-
 
 service ControlServiceProxy {
 	// SCS->PCS
@@ -122,6 +130,7 @@ service ControlServiceProxy {
     rpc assignRelaySession(AssignRelaySessionRequest) returns (AssignRelaySessionResponse);
     // ROS->PCS
     rpc registerRelayServer(RegisterRelayServerRequest) returns (RegisterRelayServerResponse);
-    rpc notifyRelayLoadStatistic(NotifyLoadStatisticRequest) returns (NotifyLoadStatisticResponse);
+    // PCS->ROS
+    rpc notifyRelaySessionsIdle(NotifyRelaySessionIdleRequest) returns (NotifyRelaySessionIdleResponse);
 }
 

@@ -18,17 +18,23 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.server.pcs.RelayControlServiceListener;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
-import org.tdmx.server.pcs.protobuf.PCSServer.NotifyLoadStatisticRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
-public class RelayControlServiceClient {
+public class RelayControlServiceClient implements RelayControlServiceListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -43,54 +49,66 @@ public class RelayControlServiceClient {
 	 * The RPC channel to the server.
 	 */
 	private final RpcClientChannel rpcClient;
-	private final String tcpEndpointAddress;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayControlServiceClient(RpcClientChannel rpcClient, String tcpEndpointAddress) {
+	public RelayControlServiceClient(RpcClientChannel rpcClient) {
 		this.rpcClient = rpcClient;
-		this.tcpEndpointAddress = tcpEndpointAddress;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void registerRelayServer(int sessionCapacity) {
+	public String getPcsServerName() {
+		return rpcClient.getPeerInfo().toString();
+	}
+
+	@Override
+	public void registerRelayServer(String rosTcpEndpoint) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
 			controller.setTimeoutMs(0);
 
 			RegisterRelayServerRequest.Builder reqBuilder = RegisterRelayServerRequest.newBuilder();
-			reqBuilder.setRosAddress(tcpEndpointAddress);
-			reqBuilder.setSessionCapacity(sessionCapacity);
+			reqBuilder.setRosAddress(rosTcpEndpoint);
 
 			RegisterRelayServerRequest request = reqBuilder.build();
 			try {
 				blockingService.registerRelayServer(controller, request);
 			} catch (ServiceException e) {
-				log.warn("registerServer call failed." + e.getMessage(), e);
+				log.warn("registerRelayServer call failed." + e.getMessage(), e);
 			}
 		}
 	}
 
-	public void notifyLoad(int loadValue) {
+	@Override
+	public void unregisterRelayServer(String rosTcpEndpoint) {
+		throw new UnsupportedOperationException("Unregister relay server supported on PCS side only.");
+	}
+
+	@Override
+	public String assignRelayServer(String channelKey, Map<SeedAttribute, Long> attributes) {
+		throw new UnsupportedOperationException("assignRelayServer relay server supported on PCS side only.");
+	}
+
+	@Override
+	public void notifySessionsRemoved(List<RelayChannelMrsSession> sessions) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
 			controller.setTimeoutMs(0);
 
-			NotifyLoadStatisticRequest.Builder reqBuilder = NotifyLoadStatisticRequest.newBuilder();
-			reqBuilder.setRosAddress(tcpEndpointAddress);
-			reqBuilder.setSessionLoad(loadValue);
+			NotifyRelaySessionIdleRequest.Builder reqBuilder = NotifyRelaySessionIdleRequest.newBuilder();
+			reqBuilder.addAllRelaySession(sessions);
 
-			NotifyLoadStatisticRequest request = reqBuilder.build();
+			NotifyRelaySessionIdleRequest request = reqBuilder.build();
 			try {
-				blockingService.notifyRelayLoadStatistic(controller, request);
+				blockingService.notifyRelaySessionsIdle(controller, request);
 			} catch (ServiceException e) {
-				log.warn("notifyRelayLoadStatistic call failed." + e.getMessage(), e);
+				log.warn("notifySessionsRemoved call failed." + e.getMessage(), e);
 			}
 		}
 	}

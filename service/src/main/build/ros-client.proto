@@ -1,0 +1,30 @@
+// Copyright (c) 2015 Peter Klauser
+
+option java_generic_services = true;
+option java_package = "org.tdmx.server.pcs.protobuf";
+option java_outer_classname = "ROSClient";
+
+import "common.proto";
+
+message RelayStatistic {
+	optional int32 loadValue = 1;
+}
+
+message CreateSessionRequest {
+	optional string channelKey = 1;
+	optional string mrsSessionId = 2; // only if the MRS session id has been stored before as the idle sessionid.
+	repeated AttributeValue attribute = 3;
+}
+
+message GetStatisticsRequest {
+}
+
+
+//
+// PCS -> ROS. The PCS manages relay sessions at the ROS based on the load statistics returned in the responses.
+//
+
+service RelaySessionManagerProxy {
+    rpc createRelaySession(CreateSessionRequest) returns (RelayStatistic);
+    rpc getRelayStatistics(GetStatisticsRequest) returns (RelayStatistic);
+}

@@ -14,12 +14,9 @@ message RelayRequest {
 	  DeliveryReply = 3;
 	  FlowControl = 4;
 	}
-	optional string domain = 1;
-	// channelKey (originating) originLocalName@originDomain->destLocalName@destDomain#destService
-	// channelKey (destination) destLocalName@destDomain#destService->originLocalName@originDomain
-	optional string channelKey = 2; 
-	optional RelayType relayType = 3;
-	repeated AttributeValue attribute = 4;
+	optional string channelKey = 1; 
+	optional RelayType relayType = 2;
+	repeated AttributeValue attribute = 3;
 }
 
 

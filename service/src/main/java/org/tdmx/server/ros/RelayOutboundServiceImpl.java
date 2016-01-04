@@ -18,12 +18,14 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 /**
  * Handles the outbound relay.
@@ -51,15 +53,34 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void relayChannelAuthorization(Zone zone, Domain domain, Channel channel, ChannelAuthorization ca) {
+	public int getCurrentLoad() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void startRelaySession(String channelKey, Zone zone, Domain domain, Channel channel, String mrsSessionId,
+			String pcsServerName) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public int getCurrentLoad() {
+	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
+	}
+
+	@Override
+	public List<String> getActiveRelaySessions(String pcsServerName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void relayChannelAuthorization(String channelKey) {
+		// TODO Auto-generated method stub
+
 	}
 
 	// -------------------------------------------------------------------------

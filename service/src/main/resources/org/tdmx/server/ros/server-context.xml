@@ -17,11 +17,10 @@
 	</bean>
 	
 	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
-		<property name="loadStatisticsNotificationIntervalSec" value="${ros.loadStatisticsNotificationIntervalSec}"/>
+		<property name="idleNotificationIntervalSec" value="${ros.idleNotificationIntervalSec}"/>
 
 		<property name="serverAddress" value="${ros.serverAddress}"/>
 		<property name="localPort" value="${ros.localPort}"/>
-		<property name="sessionCapacity" value="${ros.sessionCapacity}"/>
 
 		<property name="connectTimeoutMillis" value="${ros.pcs.connectTimeoutMillis}"/>
 		<property name="connectResponseTimeoutMillis" value="${ros.pcs.connectResponseTimeoutMillis}"/>

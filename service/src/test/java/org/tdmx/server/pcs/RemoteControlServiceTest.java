@@ -15,7 +15,7 @@ public class RemoteControlServiceTest {
 
 	@Test
 	public void testRegisterRelayService() {
-		sut.registerRelayServer("localhost:8447", 100);
+		sut.registerRelayServer("localhost:8447");
 
 		// assertEquals(1, 1);
 		// Mockito.verifyZeroInteractions(mockServer);

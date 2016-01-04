@@ -18,6 +18,12 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.List;
+import java.util.Map;
+
+import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+
 /**
  * The PCS functionality regarding the RelayOutboundService.
  * 
@@ -34,10 +40,8 @@ public interface RelayControlServiceListener {
 	 * 
 	 * @param rosTcpEndpoint
 	 *            the attached relay outbound server's address.
-	 * @param sessionCapacity
-	 *            the session capacity (relay channels which can be concurrently processed).
 	 */
-	public void registerRelayServer(String rosTcpEndpoint, int sessionCapacity);
+	public void registerRelayServer(String rosTcpEndpoint);
 
 	/**
 	 * On the detachment of a RelayServer, we disconnect all relay sessions.
@@ -50,21 +54,20 @@ public interface RelayControlServiceListener {
 	/**
 	 * Determine the RelayServer to use for outbound relaying to a channel.
 	 * 
-	 * @param domain
-	 *            the domain owning the channel.
 	 * @param channelKey
 	 *            the channel key.
+	 * @param attributes
+	 *            the attributes providing the object information for the channel.
 	 * @return the RelayServer to use for outbound relaying to the channel.
+	 * 
 	 */
-	public String assignRelayServer(String domain, String channelKey);
+	public String assignRelayServer(String channelKey, Map<SeedAttribute, Long> attributes);
 
 	/**
-	 * Set the RelayServer's current load.
+	 * The RelayServer periodically notifies of sessions which have become idle and are removed from the server caching
+	 * the MRS session ID at the PCS for later use ( see ROS client assignRelaySession )
 	 * 
-	 * @param rosTcpEndpoint
-	 *            the attached relay outbound server's address.
-	 * @param currentLoad
-	 *            the current load (relay channels currently in process).
+	 * @param sessions
 	 */
-	public void notifyServerLoad(String rosTcpEndpoint, int currentLoad);
+	public void notifySessionsRemoved(List<RelayChannelMrsSession> sessions);
 }

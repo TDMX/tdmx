@@ -18,8 +18,13 @@
  */
 package org.tdmx.server.pcs;
 
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
+import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 /**
  * The PCS implementation of the {@link RelayControlServiceListener}
@@ -49,13 +54,6 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint, int sessionCapacity) {
-		// TODO Auto-generated method stub
-		log.info("registerRelayServer " + rosTcpEndpoint);
-
-	}
-
-	@Override
 	public void unregisterRelayServer(String rosTcpEndpoint) {
 		// TODO Auto-generated method stub
 		log.info("unregisterRelayServer " + rosTcpEndpoint);
@@ -63,15 +61,21 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	}
 
 	@Override
-	public String assignRelayServer(String domain, String channelKey) {
-		log.info("assignRelayServer " + domain + " " + channelKey);
+	public void registerRelayServer(String rosTcpEndpoint) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public String assignRelayServer(String channelKey, Map<SeedAttribute, Long> attributes) {
+		log.info("assignRelayServer " + channelKey);
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void notifyServerLoad(String rosTcpEndpoint, int currentLoad) {
+	public void notifySessionsRemoved(List<RelayChannelMrsSession> sessions) {
+		log.info("notifySessionsRemoved " + sessions.size());
 		// TODO Auto-generated method stub
-		log.info("notifyLoad " + rosTcpEndpoint + " is " + currentLoad);
 
 	}
 
