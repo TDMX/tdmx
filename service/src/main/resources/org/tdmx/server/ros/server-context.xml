@@ -17,6 +17,8 @@
 	</bean>
 	
 	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
+		<property name="relayOutboundService" ref="ros.RelayOutboundService" />
+
 		<property name="idleNotificationIntervalSec" value="${ros.idleNotificationIntervalSec}"/>
 
 		<property name="serverAddress" value="${ros.serverAddress}"/>

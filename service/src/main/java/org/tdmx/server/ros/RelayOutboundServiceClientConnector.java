@@ -40,6 +40,7 @@ import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
@@ -59,6 +60,7 @@ import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
 import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
 import com.googlecode.protobuf.pro.duplex.client.RpcClientConnectionWatchdog;
 import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
+import com.googlecode.protobuf.pro.duplex.execute.ServerRpcController;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.CategoryPerServiceLogger;
@@ -116,6 +118,9 @@ public class RelayOutboundServiceClientConnector
 	 */
 	private CacheInvalidationMessageListener cacheInvalidationListener;
 
+	/**
+	 * The underlying relay service.
+	 */
 	private RelayOutboundService relayOutboundService;
 
 	/**
@@ -136,6 +141,7 @@ public class RelayOutboundServiceClientConnector
 	// - internal
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService idleNotificationExecutor = null;
+	private String rosTcpEndpoint;
 
 	// TODO get load from the "server" ROS part.
 
@@ -157,7 +163,10 @@ public class RelayOutboundServiceClientConnector
 		}
 
 		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
-		final String rosTcpEndpoint = serverHostname + ":" + localPort;
+		rosTcpEndpoint = serverHostname + ":" + localPort;
+
+		// start the relay outbound service
+		relayOutboundService.start();
 
 		this.segment = segment;
 		try {
@@ -225,23 +234,19 @@ public class RelayOutboundServiceClientConnector
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
+					String controllerId = getControllerId(pcs);
+
 					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel);
 
+					List<String> activeChannelKeys = relayOutboundService.getActiveRelaySessions(controllerId);
 					serverProxyMap.put(pcs, client);
-					client.registerRelayServer(rosTcpEndpoint);
+					client.registerRelayServer(rosTcpEndpoint, activeChannelKeys);
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
 							serverBroadcastCallback);
 				}
 
-				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
-					if (pcs == null) {
-						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
-					}
-					return pcs;
-				}
 			};
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
@@ -271,6 +276,8 @@ public class RelayOutboundServiceClientConnector
 			serverList = partitionServerService.findBySegment(this.segment.getSegmentName());
 			connectToPcsServers();
 		} catch (Exception e) {
+			// force shutdown of previously started service.
+			relayOutboundService.stop();
 			throw new RuntimeException("Unable to do initial connect to PCS", e);
 		}
 
@@ -286,6 +293,12 @@ public class RelayOutboundServiceClientConnector
 
 	@Override
 	public void stop() {
+		// stop the relayOutboundService
+		Map<String, List<RelayChannelMrsSession>> deactivatedSessionsByPcs = relayOutboundService.stop();
+
+		// dump the channelKey,mrssessionID back to the PCSs
+		disonnectFromPcsServers(deactivatedSessionsByPcs);
+
 		if (scheduledThreadPool != null) {
 			scheduledThreadPool.shutdown();
 			try {
@@ -335,13 +348,14 @@ public class RelayOutboundServiceClientConnector
 
 	@Override
 	public void run() {
-		log.info("Notifying PCS about this idle ROS sessions.");
+		log.info("Checking for idle ROS sessions.");
 
 		for (RelayControlServiceClient pcs : serverProxyMap.values()) {
 			List<RelayChannelMrsSession> idleSessions = relayOutboundService
 					.removeIdleRelaySessions(pcs.getPcsServerName());
 			if (!idleSessions.isEmpty()) {
-				pcs.notifySessionsRemoved(idleSessions);
+				log.info("Notifying " + pcs.getPcsServerName() + " about " + idleSessions.size() + " idle sessions.");
+				pcs.notifySessionsRemoved(rosTcpEndpoint, idleSessions);
 			}
 		}
 	}
@@ -349,15 +363,32 @@ public class RelayOutboundServiceClientConnector
 	@Override
 	public RelayStatistic createRelaySession(RpcController controller, CreateSessionRequest request)
 			throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel pcs = ServerRpcController.getRpcChannel(controller);
+		String controllerId = getControllerId(getPartitionControlServer(pcs));
+
+		log.info("createRelaySession " + controllerId);
+
+		relayOutboundService.startRelaySession(request.getChannelKey(), mapAttributes(request.getAttributeList()),
+				request.getMrsSessionId(), controllerId);
+		RelayStatistic.Builder result = RelayStatistic.newBuilder();
+		result.setLoadValue(relayOutboundService.getCurrentLoad());
+		return result.build();
 	}
 
 	@Override
 	public RelayStatistic getRelayStatistics(RpcController controller, GetStatisticsRequest request)
 			throws ServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		RpcClientChannel pcs = ServerRpcController.getRpcChannel(controller);
+		String controllerId = getControllerId(getPartitionControlServer(pcs));
+
+		int loadValue = relayOutboundService.getCurrentLoad();
+
+		log.info("PCS " + controllerId + " requests relay statistics " + loadValue);
+
+		RelayStatistic.Builder result = RelayStatistic.newBuilder();
+		result.setLoadValue(loadValue);
+
+		return result.build();
 	}
 
 	// -------------------------------------------------------------------------
@@ -387,6 +418,44 @@ public class RelayOutboundServiceClientConnector
 			clientFactory.peerWith(server, bootstrap, attributes);
 			// the event listener hooks up the localproxy
 		}
+	}
+
+	/**
+	 * Connect to each of the PCS servers.
+	 * 
+	 * @throws IOException
+	 */
+	private void disonnectFromPcsServers(Map<String, List<RelayChannelMrsSession>> deactivatedSessionsByPcs) {
+		for (PartitionControlServer pcs : serverList) {
+			String controllerId = getControllerId(pcs);
+
+			RelayControlServiceClient client = serverProxyMap.get(pcs);
+			// we park all our MRS sessions we know with the PCS
+			client.notifySessionsRemoved(rosTcpEndpoint, deactivatedSessionsByPcs.get(controllerId));
+		}
+	}
+
+	private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
+		PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
+		if (pcs == null) {
+			throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
+		}
+		return pcs;
+	}
+
+	private String getControllerId(PartitionControlServer pcs) {
+		return pcs.getSegment() + ":" + pcs.getServerModulo();
+	}
+
+	private Map<AttributeId, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
+		if (attrs == null) {
+			return null;
+		}
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
+			attributes.put(attr.getName(), attr.getValue());
+		}
+		return attributes;
 	}
 
 	// -------------------------------------------------------------------------

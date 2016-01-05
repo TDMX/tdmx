@@ -61,7 +61,7 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint) {
+	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys) {
 		// TODO Auto-generated method stub
 	}
 
@@ -73,7 +73,7 @@ public class RelayControlServiceImpl implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void notifySessionsRemoved(List<RelayChannelMrsSession> sessions) {
+	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions) {
 		log.info("notifySessionsRemoved " + sessions.size());
 		// TODO Auto-generated method stub
 

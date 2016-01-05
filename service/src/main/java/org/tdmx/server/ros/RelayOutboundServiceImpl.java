@@ -19,12 +19,11 @@
 package org.tdmx.server.ros;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 /**
@@ -53,13 +52,25 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// -------------------------------------------------------------------------
 
 	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Map<String, List<RelayChannelMrsSession>> stop() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public int getCurrentLoad() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void startRelaySession(String channelKey, Zone zone, Domain domain, Channel channel, String mrsSessionId,
+	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String mrsSessionId,
 			String pcsServerName) {
 		// TODO Auto-generated method stub
 

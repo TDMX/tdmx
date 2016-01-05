@@ -7720,25 +7720,39 @@ public final class PCSServer {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>optional string rosAddress = 1;</code>
+     */
+    boolean hasRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    java.lang.String getRosAddress();
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRosAddressBytes();
+
+    /**
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> 
         getRelaySessionList();
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index);
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     int getRelaySessionCount();
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
         getRelaySessionOrBuilderList();
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
         int index);
@@ -7796,9 +7810,15 @@ public final class PCSServer {
               break;
             }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              rosAddress_ = bs;
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 relaySession_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession>();
-                mutable_bitField0_ |= 0x00000001;
+                mutable_bitField0_ |= 0x00000002;
               }
               relaySession_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.PARSER, extensionRegistry));
               break;
@@ -7811,7 +7831,7 @@ public final class PCSServer {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           relaySession_ = java.util.Collections.unmodifiableList(relaySession_);
         }
         this.unknownFields = unknownFields.build();
@@ -7845,35 +7865,78 @@ public final class PCSServer {
       return PARSER;
     }
 
-    public static final int RELAYSESSION_FIELD_NUMBER = 1;
+    private int bitField0_;
+    public static final int ROSADDRESS_FIELD_NUMBER = 1;
+    private java.lang.Object rosAddress_;
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public boolean hasRosAddress() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public java.lang.String getRosAddress() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          rosAddress_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string rosAddress = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRosAddressBytes() {
+      java.lang.Object ref = rosAddress_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        rosAddress_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int RELAYSESSION_FIELD_NUMBER = 2;
     private java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> relaySession_;
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> getRelaySessionList() {
       return relaySession_;
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
         getRelaySessionOrBuilderList() {
       return relaySession_;
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     public int getRelaySessionCount() {
       return relaySession_.size();
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index) {
       return relaySession_.get(index);
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
      */
     public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
         int index) {
@@ -7881,6 +7944,7 @@ public final class PCSServer {
     }
 
     private void initFields() {
+      rosAddress_ = "";
       relaySession_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -7896,8 +7960,11 @@ public final class PCSServer {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getRosAddressBytes());
+      }
       for (int i = 0; i < relaySession_.size(); i++) {
-        output.writeMessage(1, relaySession_.get(i));
+        output.writeMessage(2, relaySession_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -7908,9 +7975,13 @@ public final class PCSServer {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getRosAddressBytes());
+      }
       for (int i = 0; i < relaySession_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, relaySession_.get(i));
+          .computeMessageSize(2, relaySession_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8030,9 +8101,11 @@ public final class PCSServer {
 
       public Builder clear() {
         super.clear();
+        rosAddress_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
         if (relaySessionBuilder_ == null) {
           relaySession_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           relaySessionBuilder_.clear();
         }
@@ -8063,15 +8136,21 @@ public final class PCSServer {
       public org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest buildPartial() {
         org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest result = new org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest(this);
         int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.rosAddress_ = rosAddress_;
         if (relaySessionBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             relaySession_ = java.util.Collections.unmodifiableList(relaySession_);
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.relaySession_ = relaySession_;
         } else {
           result.relaySession_ = relaySessionBuilder_.build();
         }
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -8087,11 +8166,16 @@ public final class PCSServer {
 
       public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest other) {
         if (other == org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest.getDefaultInstance()) return this;
+        if (other.hasRosAddress()) {
+          bitField0_ |= 0x00000001;
+          rosAddress_ = other.rosAddress_;
+          onChanged();
+        }
         if (relaySessionBuilder_ == null) {
           if (!other.relaySession_.isEmpty()) {
             if (relaySession_.isEmpty()) {
               relaySession_ = other.relaySession_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensureRelaySessionIsMutable();
               relaySession_.addAll(other.relaySession_);
@@ -8104,7 +8188,7 @@ public final class PCSServer {
               relaySessionBuilder_.dispose();
               relaySessionBuilder_ = null;
               relaySession_ = other.relaySession_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
               relaySessionBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRelaySessionFieldBuilder() : null;
@@ -8140,12 +8224,88 @@ public final class PCSServer {
       }
       private int bitField0_;
 
+      private java.lang.Object rosAddress_ = "";
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public boolean hasRosAddress() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public java.lang.String getRosAddress() {
+        java.lang.Object ref = rosAddress_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            rosAddress_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRosAddressBytes() {
+        java.lang.Object ref = rosAddress_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          rosAddress_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddress(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder clearRosAddress() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        rosAddress_ = getDefaultInstance().getRosAddress();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string rosAddress = 1;</code>
+       */
+      public Builder setRosAddressBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        rosAddress_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> relaySession_ =
         java.util.Collections.emptyList();
       private void ensureRelaySessionIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           relaySession_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession>(relaySession_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
          }
       }
 
@@ -8153,7 +8313,7 @@ public final class PCSServer {
           org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> relaySessionBuilder_;
 
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> getRelaySessionList() {
         if (relaySessionBuilder_ == null) {
@@ -8163,7 +8323,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public int getRelaySessionCount() {
         if (relaySessionBuilder_ == null) {
@@ -8173,7 +8333,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index) {
         if (relaySessionBuilder_ == null) {
@@ -8183,7 +8343,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder setRelaySession(
           int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
@@ -8200,7 +8360,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder setRelaySession(
           int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
@@ -8214,7 +8374,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder addRelaySession(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
         if (relaySessionBuilder_ == null) {
@@ -8230,7 +8390,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder addRelaySession(
           int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
@@ -8247,7 +8407,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder addRelaySession(
           org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
@@ -8261,7 +8421,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder addRelaySession(
           int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
@@ -8275,7 +8435,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder addAllRelaySession(
           java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> values) {
@@ -8290,12 +8450,12 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder clearRelaySession() {
         if (relaySessionBuilder_ == null) {
           relaySession_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
           relaySessionBuilder_.clear();
@@ -8303,7 +8463,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public Builder removeRelaySession(int index) {
         if (relaySessionBuilder_ == null) {
@@ -8316,14 +8476,14 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder getRelaySessionBuilder(
           int index) {
         return getRelaySessionFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
           int index) {
@@ -8333,7 +8493,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
            getRelaySessionOrBuilderList() {
@@ -8344,14 +8504,14 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder addRelaySessionBuilder() {
         return getRelaySessionFieldBuilder().addBuilder(
             org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance());
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder addRelaySessionBuilder(
           int index) {
@@ -8359,7 +8519,7 @@ public final class PCSServer {
             index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance());
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 1;</code>
+       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
        */
       public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder> 
            getRelaySessionBuilderList() {
@@ -8372,7 +8532,7 @@ public final class PCSServer {
           relaySessionBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder>(
                   relaySession_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
           relaySession_ = null;
@@ -10833,29 +10993,29 @@ public final class PCSServer {
       "\t\022\023\n\013channelKeys\030\002 \003(\t\"\035\n\033RegisterRelayS" +
       "erverResponse\"B\n\026RelayChannelMrsSession\022",
       "\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrsSessionId\030\002 \001(" +
-      "\t\"N\n\035NotifyRelaySessionIdleRequest\022-\n\014re" +
-      "laySession\030\001 \003(\0132\027.RelayChannelMrsSessio" +
-      "n\" \n\036NotifyRelaySessionIdleResponse\"S\n\031A" +
-      "ssignRelaySessionRequest\022\022\n\nchannelKey\030\001" +
-      " \001(\t\022\"\n\tattribute\030\002 \003(\0132\017.AttributeValue" +
-      "\"0\n\032AssignRelaySessionResponse\022\022\n\nrosAdd" +
-      "ress\030\001 \001(\t2\325\004\n\023ControlServiceProxy\022P\n\023as" +
-      "sociateApiSession\022\033.AssociateApiSessionR" +
-      "equest\032\034.AssociateApiSessionResponse\022A\n\016",
-      "registerServer\022\026.RegisterServerRequest\032\027" +
-      ".RegisterServerResponse\022T\n\025notifySession" +
-      "sRemoved\022\034.NotifySessionRemovedRequest\032\035" +
-      ".NotifySessionRemovedResponse\022V\n\025invalid" +
-      "ateCertificate\022\035.InvalidateCertificateRe" +
-      "quest\032\036.InvalidateCertificateResponse\022M\n" +
-      "\022assignRelaySession\022\032.AssignRelaySession" +
-      "Request\032\033.AssignRelaySessionResponse\022P\n\023" +
-      "registerRelayServer\022\033.RegisterRelayServe" +
-      "rRequest\032\034.RegisterRelayServerResponse\022Z",
-      "\n\027notifyRelaySessionsIdle\022\036.NotifyRelayS" +
-      "essionIdleRequest\032\037.NotifyRelaySessionId" +
-      "leResponseB,\n\034org.tdmx.server.pcs.protob" +
-      "ufB\tPCSServer\210\001\001"
+      "\t\"b\n\035NotifyRelaySessionIdleRequest\022\022\n\nro" +
+      "sAddress\030\001 \001(\t\022-\n\014relaySession\030\002 \003(\0132\027.R" +
+      "elayChannelMrsSession\" \n\036NotifyRelaySess" +
+      "ionIdleResponse\"S\n\031AssignRelaySessionReq" +
+      "uest\022\022\n\nchannelKey\030\001 \001(\t\022\"\n\tattribute\030\002 " +
+      "\003(\0132\017.AttributeValue\"0\n\032AssignRelaySessi" +
+      "onResponse\022\022\n\nrosAddress\030\001 \001(\t2\325\004\n\023Contr" +
+      "olServiceProxy\022P\n\023associateApiSession\022\033." +
+      "AssociateApiSessionRequest\032\034.AssociateAp",
+      "iSessionResponse\022A\n\016registerServer\022\026.Reg" +
+      "isterServerRequest\032\027.RegisterServerRespo" +
+      "nse\022T\n\025notifySessionsRemoved\022\034.NotifySes" +
+      "sionRemovedRequest\032\035.NotifySessionRemove" +
+      "dResponse\022V\n\025invalidateCertificate\022\035.Inv" +
+      "alidateCertificateRequest\032\036.InvalidateCe" +
+      "rtificateResponse\022M\n\022assignRelaySession\022" +
+      "\032.AssignRelaySessionRequest\032\033.AssignRela" +
+      "ySessionResponse\022P\n\023registerRelayServer\022" +
+      "\033.RegisterRelayServerRequest\032\034.RegisterR",
+      "elayServerResponse\022Z\n\027notifyRelaySession" +
+      "sIdle\022\036.NotifyRelaySessionIdleRequest\032\037." +
+      "NotifyRelaySessionIdleResponseB,\n\034org.td" +
+      "mx.server.pcs.protobufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10953,7 +11113,7 @@ public final class PCSServer {
     internal_static_NotifyRelaySessionIdleRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NotifyRelaySessionIdleRequest_descriptor,
-        new java.lang.String[] { "RelaySession", });
+        new java.lang.String[] { "RosAddress", "RelaySession", });
     internal_static_NotifyRelaySessionIdleResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_NotifyRelaySessionIdleResponse_fieldAccessorTable = new

@@ -66,7 +66,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint) {
+	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
@@ -74,6 +74,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 
 			RegisterRelayServerRequest.Builder reqBuilder = RegisterRelayServerRequest.newBuilder();
 			reqBuilder.setRosAddress(rosTcpEndpoint);
+			reqBuilder.addAllChannelKeys(channelKeys);
 
 			RegisterRelayServerRequest request = reqBuilder.build();
 			try {
@@ -95,14 +96,17 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void notifySessionsRemoved(List<RelayChannelMrsSession> sessions) {
+	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
 			controller.setTimeoutMs(0);
 
 			NotifyRelaySessionIdleRequest.Builder reqBuilder = NotifyRelaySessionIdleRequest.newBuilder();
-			reqBuilder.addAllRelaySession(sessions);
+			reqBuilder.setRosAddress(rosTcpEndpoint);
+			if (sessions != null) {
+				reqBuilder.addAllRelaySession(sessions);
+			}
 
 			NotifyRelaySessionIdleRequest request = reqBuilder.build();
 			try {

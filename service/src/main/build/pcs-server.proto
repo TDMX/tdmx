@@ -96,7 +96,8 @@ message RelayChannelMrsSession {
 }
 
 message NotifyRelaySessionIdleRequest {
-	repeated RelayChannelMrsSession relaySession = 1;
+	optional string rosAddress = 1;
+	repeated RelayChannelMrsSession relaySession = 2;
 }
 
 message NotifyRelaySessionIdleResponse {

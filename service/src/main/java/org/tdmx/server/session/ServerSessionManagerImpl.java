@@ -361,13 +361,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					disconnection(clientChannel);
 				}
 
-				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
-					if (pcs == null) {
-						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
-					}
-					return pcs;
-				}
 			};
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
@@ -614,6 +607,14 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 		public void setLoadValue(int loadValue) {
 			this.loadValue = loadValue;
 		}
+	}
+
+	private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
+		PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
+		if (pcs == null) {
+			throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
+		}
+		return pcs;
 	}
 
 	private String getControllerId(RpcClientChannel channel) {

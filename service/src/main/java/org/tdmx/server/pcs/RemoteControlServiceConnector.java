@@ -384,7 +384,7 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
-		relayService.registerRelayServer(request.getRosAddress());
+		relayService.registerRelayServer(request.getRosAddress(), null); // FIXME
 		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
 		channel.setAttribute(ROS_ADDRESS_ATTRIBUTE, request.getRosAddress());
 
@@ -412,7 +412,7 @@ public class RemoteControlServiceConnector
 		log.info("notifyRelaySessionsIdle call from " + channel.getPeerInfo() + " for removing "
 				+ request.getRelaySessionCount());
 
-		relayService.notifySessionsRemoved(request.getRelaySessionList());
+		relayService.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
 		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
 	}

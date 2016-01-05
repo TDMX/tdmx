@@ -19,10 +19,9 @@
 package org.tdmx.server.ros;
 
 import java.util.List;
+import java.util.Map;
 
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 /**
@@ -34,25 +33,36 @@ import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 public interface RelayOutboundService {
 
 	/**
+	 * Start the relay service.
+	 */
+	public void start();
+
+	/**
+	 * Stop relaying and release any resources held by the service.
+	 * 
+	 * @return the mrsSessionId associated with each channel which has stopped mapped by PCS controllerId.
+	 */
+	public Map<String, List<RelayChannelMrsSession>> stop();
+
+	/**
 	 * Start the relay session.
 	 * 
 	 * @param channelKey
-	 * @param zone
-	 * @param domain
-	 * @param channel
+	 * @param attributes
+	 *            the objectIds of the zone, domain, channel
 	 * @param mrsSessionId
 	 *            the optional mrsSessionId cached at the PCS.
 	 */
-	public void startRelaySession(String channelKey, Zone zone, Domain domain, Channel channel, String mrsSessionId,
+	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String mrsSessionId,
 			String pcsServerName);
 
 	/**
 	 * Remove any idle relay session associated with the PCS server.
 	 * 
-	 * @param pcsServerName
+	 * @param controllerId
 	 * @return the channelKeys and their mrsSessionIds.
 	 */
-	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName);
+	public List<RelayChannelMrsSession> removeIdleRelaySessions(String controllerId);
 
 	/**
 	 * Gets a value indicating the current active relay session load handled by the server.
@@ -62,10 +72,10 @@ public interface RelayOutboundService {
 	/**
 	 * When we reconnect to a PCS server, we inform it of the relay sessions we are handling.
 	 * 
-	 * @param pcsServerName
+	 * @param controllerId
 	 * @return the list of active relay sessions indicated by their channelKey.
 	 */
-	public List<String> getActiveRelaySessions(String pcsServerName);
+	public List<String> getActiveRelaySessions(String controllerId);
 
 	/**
 	 * Notify that there is a ChannelAuthorization to relay.

@@ -76,6 +76,9 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceConnector.class);
 
+	/**
+	 * The underlying relay service doing the heavy lifting, irrespective of the RPC connectivity layer.
+	 */
 	private RelayOutboundService relayOutboundService;
 
 	/**
