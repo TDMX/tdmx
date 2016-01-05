@@ -78,7 +78,25 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	}
 
 	@Override
-	public void relayChannelAuthorization(String channelKey) {
+	public void relayChannelAuthorization(String channelKey, Long channelId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void relayChannelFlowControl(String channelKey, Long channelId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void relayChannelMessage(String channelKey, Long messageId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void relayChannelDestinationSession(String channelKey, Long channelId) {
 		// TODO Auto-generated method stub
 
 	}

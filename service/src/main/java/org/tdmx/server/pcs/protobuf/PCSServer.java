@@ -6061,13 +6061,39 @@ public final class PCSServer {
         getRosAddressBytes();
 
     /**
-     * <code>optional int32 sessionCapacity = 2;</code>
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
      */
-    boolean hasSessionCapacity();
+    com.google.protobuf.ProtocolStringList
+        getChannelKeysList();
     /**
-     * <code>optional int32 sessionCapacity = 2;</code>
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
      */
-    int getSessionCapacity();
+    int getChannelKeysCount();
+    /**
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
+     */
+    java.lang.String getChannelKeys(int index);
+    /**
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getChannelKeysBytes(int index);
   }
   /**
    * Protobuf type {@code RegisterRelayServerRequest}
@@ -6127,9 +6153,13 @@ public final class PCSServer {
               rosAddress_ = bs;
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              sessionCapacity_ = input.readInt32();
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                channelKeys_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              channelKeys_.add(bs);
               break;
             }
           }
@@ -6140,6 +6170,9 @@ public final class PCSServer {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          channelKeys_ = channelKeys_.getUnmodifiableView();
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -6214,24 +6247,54 @@ public final class PCSServer {
       }
     }
 
-    public static final int SESSIONCAPACITY_FIELD_NUMBER = 2;
-    private int sessionCapacity_;
+    public static final int CHANNELKEYS_FIELD_NUMBER = 2;
+    private com.google.protobuf.LazyStringList channelKeys_;
     /**
-     * <code>optional int32 sessionCapacity = 2;</code>
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
      */
-    public boolean hasSessionCapacity() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+    public com.google.protobuf.ProtocolStringList
+        getChannelKeysList() {
+      return channelKeys_;
     }
     /**
-     * <code>optional int32 sessionCapacity = 2;</code>
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
      */
-    public int getSessionCapacity() {
-      return sessionCapacity_;
+    public int getChannelKeysCount() {
+      return channelKeys_.size();
+    }
+    /**
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
+     */
+    public java.lang.String getChannelKeys(int index) {
+      return channelKeys_.get(index);
+    }
+    /**
+     * <code>repeated string channelKeys = 2;</code>
+     *
+     * <pre>
+     * all currently active relay sessions
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getChannelKeysBytes(int index) {
+      return channelKeys_.getByteString(index);
     }
 
     private void initFields() {
       rosAddress_ = "";
-      sessionCapacity_ = 0;
+      channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6249,8 +6312,8 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getRosAddressBytes());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, sessionCapacity_);
+      for (int i = 0; i < channelKeys_.size(); i++) {
+        output.writeBytes(2, channelKeys_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -6265,9 +6328,14 @@ public final class PCSServer {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getRosAddressBytes());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, sessionCapacity_);
+      {
+        int dataSize = 0;
+        for (int i = 0; i < channelKeys_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(channelKeys_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getChannelKeysList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6388,7 +6456,7 @@ public final class PCSServer {
         super.clear();
         rosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        sessionCapacity_ = 0;
+        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
@@ -6422,10 +6490,11 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000001;
         }
         result.rosAddress_ = rosAddress_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          channelKeys_ = channelKeys_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.sessionCapacity_ = sessionCapacity_;
+        result.channelKeys_ = channelKeys_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6447,8 +6516,15 @@ public final class PCSServer {
           rosAddress_ = other.rosAddress_;
           onChanged();
         }
-        if (other.hasSessionCapacity()) {
-          setSessionCapacity(other.getSessionCapacity());
+        if (!other.channelKeys_.isEmpty()) {
+          if (channelKeys_.isEmpty()) {
+            channelKeys_ = other.channelKeys_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureChannelKeysIsMutable();
+            channelKeys_.addAll(other.channelKeys_);
+          }
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -6553,34 +6629,131 @@ public final class PCSServer {
         return this;
       }
 
-      private int sessionCapacity_ ;
-      /**
-       * <code>optional int32 sessionCapacity = 2;</code>
-       */
-      public boolean hasSessionCapacity() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+      private com.google.protobuf.LazyStringList channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureChannelKeysIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          channelKeys_ = new com.google.protobuf.LazyStringArrayList(channelKeys_);
+          bitField0_ |= 0x00000002;
+         }
       }
       /**
-       * <code>optional int32 sessionCapacity = 2;</code>
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
        */
-      public int getSessionCapacity() {
-        return sessionCapacity_;
+      public com.google.protobuf.ProtocolStringList
+          getChannelKeysList() {
+        return channelKeys_.getUnmodifiableView();
       }
       /**
-       * <code>optional int32 sessionCapacity = 2;</code>
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
        */
-      public Builder setSessionCapacity(int value) {
-        bitField0_ |= 0x00000002;
-        sessionCapacity_ = value;
+      public int getChannelKeysCount() {
+        return channelKeys_.size();
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public java.lang.String getChannelKeys(int index) {
+        return channelKeys_.get(index);
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getChannelKeysBytes(int index) {
+        return channelKeys_.getByteString(index);
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public Builder setChannelKeys(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeysIsMutable();
+        channelKeys_.set(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 sessionCapacity = 2;</code>
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
        */
-      public Builder clearSessionCapacity() {
+      public Builder addChannelKeys(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeysIsMutable();
+        channelKeys_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public Builder addAllChannelKeys(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureChannelKeysIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, channelKeys_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public Builder clearChannelKeys() {
+        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
-        sessionCapacity_ = 0;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string channelKeys = 2;</code>
+       *
+       * <pre>
+       * all currently active relay sessions
+       * </pre>
+       */
+      public Builder addChannelKeysBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeysIsMutable();
+        channelKeys_.add(value);
         onChanged();
         return this;
       }
@@ -10655,34 +10828,34 @@ public final class PCSServer {
       "\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036\n\034No" +
       "tifySessionRemovedResponse\"2\n\034Invalidate" +
       "CertificateRequest\022\022\n\nclientCert\030\001 \001(\014\"\037" +
-      "\n\035InvalidateCertificateResponse\"I\n\032Regis" +
+      "\n\035InvalidateCertificateResponse\"E\n\032Regis" +
       "terRelayServerRequest\022\022\n\nrosAddress\030\001 \001(" +
-      "\t\022\027\n\017sessionCapacity\030\002 \001(\005\"\035\n\033RegisterRe" +
-      "layServerResponse\"B\n\026RelayChannelMrsSess",
-      "ion\022\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrsSessionId\030" +
-      "\002 \001(\t\"N\n\035NotifyRelaySessionIdleRequest\022-" +
-      "\n\014relaySession\030\001 \003(\0132\027.RelayChannelMrsSe" +
-      "ssion\" \n\036NotifyRelaySessionIdleResponse\"" +
-      "S\n\031AssignRelaySessionRequest\022\022\n\nchannelK" +
-      "ey\030\001 \001(\t\022\"\n\tattribute\030\002 \003(\0132\017.AttributeV" +
-      "alue\"0\n\032AssignRelaySessionResponse\022\022\n\nro" +
-      "sAddress\030\001 \001(\t2\325\004\n\023ControlServiceProxy\022P" +
-      "\n\023associateApiSession\022\033.AssociateApiSess" +
-      "ionRequest\032\034.AssociateApiSessionResponse",
-      "\022A\n\016registerServer\022\026.RegisterServerReque" +
-      "st\032\027.RegisterServerResponse\022T\n\025notifySes" +
-      "sionsRemoved\022\034.NotifySessionRemovedReque" +
-      "st\032\035.NotifySessionRemovedResponse\022V\n\025inv" +
-      "alidateCertificate\022\035.InvalidateCertifica" +
-      "teRequest\032\036.InvalidateCertificateRespons" +
-      "e\022M\n\022assignRelaySession\022\032.AssignRelaySes" +
-      "sionRequest\032\033.AssignRelaySessionResponse" +
-      "\022P\n\023registerRelayServer\022\033.RegisterRelayS" +
-      "erverRequest\032\034.RegisterRelayServerRespon",
-      "se\022Z\n\027notifyRelaySessionsIdle\022\036.NotifyRe" +
-      "laySessionIdleRequest\032\037.NotifyRelaySessi" +
-      "onIdleResponseB,\n\034org.tdmx.server.pcs.pr" +
-      "otobufB\tPCSServer\210\001\001"
+      "\t\022\023\n\013channelKeys\030\002 \003(\t\"\035\n\033RegisterRelayS" +
+      "erverResponse\"B\n\026RelayChannelMrsSession\022",
+      "\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrsSessionId\030\002 \001(" +
+      "\t\"N\n\035NotifyRelaySessionIdleRequest\022-\n\014re" +
+      "laySession\030\001 \003(\0132\027.RelayChannelMrsSessio" +
+      "n\" \n\036NotifyRelaySessionIdleResponse\"S\n\031A" +
+      "ssignRelaySessionRequest\022\022\n\nchannelKey\030\001" +
+      " \001(\t\022\"\n\tattribute\030\002 \003(\0132\017.AttributeValue" +
+      "\"0\n\032AssignRelaySessionResponse\022\022\n\nrosAdd" +
+      "ress\030\001 \001(\t2\325\004\n\023ControlServiceProxy\022P\n\023as" +
+      "sociateApiSession\022\033.AssociateApiSessionR" +
+      "equest\032\034.AssociateApiSessionResponse\022A\n\016",
+      "registerServer\022\026.RegisterServerRequest\032\027" +
+      ".RegisterServerResponse\022T\n\025notifySession" +
+      "sRemoved\022\034.NotifySessionRemovedRequest\032\035" +
+      ".NotifySessionRemovedResponse\022V\n\025invalid" +
+      "ateCertificate\022\035.InvalidateCertificateRe" +
+      "quest\032\036.InvalidateCertificateResponse\022M\n" +
+      "\022assignRelaySession\022\032.AssignRelaySession" +
+      "Request\032\033.AssignRelaySessionResponse\022P\n\023" +
+      "registerRelayServer\022\033.RegisterRelayServe" +
+      "rRequest\032\034.RegisterRelayServerResponse\022Z",
+      "\n\027notifyRelaySessionsIdle\022\036.NotifyRelayS" +
+      "essionIdleRequest\032\037.NotifyRelaySessionId" +
+      "leResponseB,\n\034org.tdmx.server.pcs.protob" +
+      "ufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10762,7 +10935,7 @@ public final class PCSServer {
     internal_static_RegisterRelayServerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerRequest_descriptor,
-        new java.lang.String[] { "RosAddress", "SessionCapacity", });
+        new java.lang.String[] { "RosAddress", "ChannelKeys", });
     internal_static_RegisterRelayServerResponse_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_RegisterRelayServerResponse_fieldAccessorTable = new

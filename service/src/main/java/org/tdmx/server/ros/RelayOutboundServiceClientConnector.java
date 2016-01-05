@@ -73,7 +73,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 /**
  * Manages the RelayOutboundServer's (ROS) connection to the PartitionControlService (PCS).
  * 
- * We connect to all PCS servers and periodically inform them about the session load on this server.
+ * We connect to all PCS servers and periodically inform them about the sessions which have reached an idle timeout.
  * 
  * @author Peter
  *

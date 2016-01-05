@@ -21,8 +21,8 @@ package org.tdmx.server.pcs;
 import java.util.List;
 import java.util.Map;
 
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 /**
  * The PCS functionality regarding the RelayOutboundService.
@@ -61,7 +61,7 @@ public interface RelayControlServiceListener {
 	 * @return the RelayServer to use for outbound relaying to the channel.
 	 * 
 	 */
-	public String assignRelayServer(String channelKey, Map<SeedAttribute, Long> attributes);
+	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes);
 
 	/**
 	 * The RelayServer periodically notifies of sessions which have become idle and are removed from the server caching

@@ -9,9 +9,9 @@ import "common.proto";
 message RelayRequest {
 	enum RelayType {
 	  Message = 0;
-	  ChannelAuthorization = 1;
-	  DestinationSession = 2;
-	  DeliveryReply = 3;
+	  DeliveryReply = 1;
+	  Authorization = 2;
+	  DestinationSession = 3;
 	  FlowControl = 4;
 	}
 	optional string channelKey = 1; 

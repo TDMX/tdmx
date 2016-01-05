@@ -20,8 +20,8 @@ package org.tdmx.server.pcs;
 
 import java.util.Map;
 
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 /**
  * A ServerHandle is a value type holding a SessionKey and the information describing the session.
@@ -41,7 +41,7 @@ public class SessionHandle {
 	private final String segment;
 	private final WebServiceApiName api;
 	private final String sessionKey;
-	private final Map<SeedAttribute, Long> seedAttributes;
+	private final Map<AttributeId, Long> seedAttributes;
 
 	/**
 	 * The sessionId is determined later after instantiation.
@@ -53,7 +53,7 @@ public class SessionHandle {
 	// -------------------------------------------------------------------------
 
 	public SessionHandle(String segment, WebServiceApiName api, String sessionKey,
-			Map<SeedAttribute, Long> seedAttributes) {
+			Map<AttributeId, Long> seedAttributes) {
 		this.segment = segment;
 		this.api = api;
 		this.sessionKey = sessionKey;
@@ -103,7 +103,7 @@ public class SessionHandle {
 		return sessionKey;
 	}
 
-	public Map<SeedAttribute, Long> getSeedAttributes() {
+	public Map<AttributeId, Long> getSeedAttributes() {
 		return seedAttributes;
 	}
 

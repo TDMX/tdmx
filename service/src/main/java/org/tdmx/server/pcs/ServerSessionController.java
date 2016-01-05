@@ -21,8 +21,8 @@ package org.tdmx.server.pcs;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public interface ServerSessionController {
 
@@ -36,7 +36,7 @@ public interface ServerSessionController {
 	 * @return the server statistics
 	 */
 	public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
-			Map<SeedAttribute, Long> seedAttributes);
+			Map<AttributeId, Long> seedAttributes);
 
 	/**
 	 * Add a new client certificate to an existing API session.

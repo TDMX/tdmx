@@ -41,6 +41,7 @@ import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
 import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
@@ -59,7 +60,6 @@ import org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
@@ -471,13 +471,13 @@ public class RemoteControlServiceConnector
 		return handle;
 	}
 
-	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
+	private Map<AttributeId, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
 		if (attrs == null) {
 			return null;
 		}
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
+		Map<AttributeId, Long> attributes = new HashMap<>();
 		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
-			attributes.put(map(attr.getName()), attr.getValue());
+			attributes.put(attr.getName(), attr.getValue());
 		}
 		return attributes;
 	}
@@ -494,13 +494,6 @@ public class RemoteControlServiceConnector
 			result.add(handle);
 		}
 		return result;
-	}
-
-	private SeedAttribute map(org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId name) {
-		if (name == null) {
-			return null;
-		}
-		return SeedAttribute.valueOf(name.name());
 	}
 
 	private WebServiceApiName mapApi(String apiName) {

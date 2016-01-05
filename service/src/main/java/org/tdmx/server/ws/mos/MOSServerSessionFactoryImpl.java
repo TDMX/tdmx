@@ -24,6 +24,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class MOSServerSessionFactoryImpl extends AbstractServerSessionFactory<MOSServerSession> {
@@ -44,14 +45,14 @@ public class MOSServerSessionFactoryImpl extends AbstractServerSessionFactory<MO
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MOSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
-		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
+	public MOSServerSession createServerSession(String sessionId, Map<AttributeId, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(AttributeId.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
-			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
-			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
+			Zone z = fetchZone(seedAttributes.get(AttributeId.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(AttributeId.DomainId));
+			Address a = fetchAddress(seedAttributes.get(AttributeId.AddressId));
 
 			MOSServerSession mss = new MOSServerSession(sessionId, az, z, d, a);
 			return mss;

@@ -72,11 +72,11 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -157,11 +157,11 @@ public class MOSImplUnitTest {
 		address = data.getDomains().get(0).getAddresses().get(0).getAddress();
 		uc = data.getDomains().get(0).getAddresses().get(0).getUcs().get(0).getCredential();
 
-		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
-		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
-		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
-		seedAttributeMap.put(SeedAttribute.AddressId, address.getId());
+		Map<AttributeId, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(AttributeId.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(AttributeId.ZoneId, zone.getId());
+		seedAttributeMap.put(AttributeId.DomainId, domain.getId());
+		seedAttributeMap.put(AttributeId.AddressId, address.getId());
 
 		serverSessionManager.createSession(UC_SESSION_ID, "pcs-1", uc.getPublicCert(), seedAttributeMap);
 	}

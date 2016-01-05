@@ -20,17 +20,9 @@ package org.tdmx.server.ws.session;
 
 import java.util.Map;
 
-public interface WebServiceSessionFactory<E extends WebServiceSession> {
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 
-	public enum SeedAttribute {
-		AccountZoneId,
-		ZoneId,
-		DomainId,
-		ChannelId,
-		TemporaryChannelId,
-		ServiceId,
-		AddressId,
-	}
+public interface WebServiceSessionFactory<E extends WebServiceSession> {
 
 	/**
 	 * Initialize a WebServiceSession given the seedAttributes.
@@ -41,6 +33,6 @@ public interface WebServiceSessionFactory<E extends WebServiceSession> {
 	 *            the initial session attribute values which can be resolved to objects.
 	 * @return a new WebServiceSession initialized with the seedAttributes
 	 */
-	public E createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes);
+	public E createServerSession(String sessionId, Map<AttributeId, Long> seedAttributes);
 
 }

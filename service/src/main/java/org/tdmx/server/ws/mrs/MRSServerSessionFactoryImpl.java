@@ -23,6 +23,7 @@ import java.util.Map;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MRSServerSession> {
@@ -43,19 +44,19 @@ public class MRSServerSessionFactoryImpl extends AbstractServerSessionFactory<MR
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MRSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
-		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
+	public MRSServerSession createServerSession(String sessionId, Map<AttributeId, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(AttributeId.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
-			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
+			Zone z = fetchZone(seedAttributes.get(AttributeId.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(AttributeId.DomainId));
 			MRSServerSession mss = new MRSServerSession(sessionId, az, z, d);
-			if (seedAttributes.containsKey(SeedAttribute.ChannelId)) {
-				mss.setChannel(fetchChannel(seedAttributes.get(SeedAttribute.ChannelId)));
+			if (seedAttributes.containsKey(AttributeId.ChannelId)) {
+				mss.setChannel(fetchChannel(seedAttributes.get(AttributeId.ChannelId)));
 			}
-			if (seedAttributes.containsKey(SeedAttribute.TemporaryChannelId)) {
-				mss.setTemporaryChannel(fetchTemporaryChannel(seedAttributes.get(SeedAttribute.TemporaryChannelId)));
+			if (seedAttributes.containsKey(AttributeId.TemporaryChannelId)) {
+				mss.setTemporaryChannel(fetchTemporaryChannel(seedAttributes.get(AttributeId.TemporaryChannelId)));
 			}
 
 			return mss;

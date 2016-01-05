@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 
 public interface WebServiceSessionManager {
 
@@ -51,7 +51,7 @@ public interface WebServiceSessionManager {
 	 * @return the number of active sessions.
 	 */
 	public int createSession(String sessionId, String controllerId, PKIXCertificate cert,
-			Map<SeedAttribute, Long> seedAttributes);
+			Map<AttributeId, Long> seedAttributes);
 
 	/**
 	 * Removes all sessions controlled by the controller.

@@ -135,12 +135,12 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.session.SessionCertificateInvalidationService;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSessionFactory;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -231,15 +231,15 @@ public class ZASImplUnitTest {
 		String subdomain = domain.getDomainName().substring(0, domain.getDomainName().indexOf(zone.getZoneApex()) - 1);
 		dac2 = TestCredentialGenerator.createDAC(zac, subdomain, 2, 2);
 
-		Map<SeedAttribute, Long> zacSeedAttributeMap = new HashMap<>();
-		zacSeedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
-		zacSeedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		serverSessionManager.createSession(ZAC_SESSION_ID, "pcs-1", zac.getPublicCert(), zacSeedAttributeMap);
+		Map<AttributeId, Long> zacAttributeIdMap = new HashMap<>();
+		zacAttributeIdMap.put(AttributeId.AccountZoneId, accountZone.getId());
+		zacAttributeIdMap.put(AttributeId.ZoneId, zone.getId());
+		serverSessionManager.createSession(ZAC_SESSION_ID, "pcs-1", zac.getPublicCert(), zacAttributeIdMap);
 
-		Map<SeedAttribute, Long> seedAttributeMap = new HashMap<>();
-		seedAttributeMap.put(SeedAttribute.AccountZoneId, accountZone.getId());
-		seedAttributeMap.put(SeedAttribute.ZoneId, zone.getId());
-		seedAttributeMap.put(SeedAttribute.DomainId, domain.getId());
+		Map<AttributeId, Long> seedAttributeMap = new HashMap<>();
+		seedAttributeMap.put(AttributeId.AccountZoneId, accountZone.getId());
+		seedAttributeMap.put(AttributeId.ZoneId, zone.getId());
+		seedAttributeMap.put(AttributeId.DomainId, domain.getId());
 		serverSessionManager.createSession(DAC_SESSION_ID, "pcs-1", dac.getPublicCert(), seedAttributeMap);
 
 		reset(mockSessionInvalidationService);

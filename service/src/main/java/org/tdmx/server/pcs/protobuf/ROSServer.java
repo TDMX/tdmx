@@ -188,17 +188,17 @@ public final class ROSServer {
        */
       Message(0, 0),
       /**
-       * <code>ChannelAuthorization = 1;</code>
+       * <code>DeliveryReply = 1;</code>
        */
-      ChannelAuthorization(1, 1),
+      DeliveryReply(1, 1),
       /**
-       * <code>DestinationSession = 2;</code>
+       * <code>Authorization = 2;</code>
        */
-      DestinationSession(2, 2),
+      Authorization(2, 2),
       /**
-       * <code>DeliveryReply = 3;</code>
+       * <code>DestinationSession = 3;</code>
        */
-      DeliveryReply(3, 3),
+      DestinationSession(3, 3),
       /**
        * <code>FlowControl = 4;</code>
        */
@@ -210,17 +210,17 @@ public final class ROSServer {
        */
       public static final int Message_VALUE = 0;
       /**
-       * <code>ChannelAuthorization = 1;</code>
+       * <code>DeliveryReply = 1;</code>
        */
-      public static final int ChannelAuthorization_VALUE = 1;
+      public static final int DeliveryReply_VALUE = 1;
       /**
-       * <code>DestinationSession = 2;</code>
+       * <code>Authorization = 2;</code>
        */
-      public static final int DestinationSession_VALUE = 2;
+      public static final int Authorization_VALUE = 2;
       /**
-       * <code>DeliveryReply = 3;</code>
+       * <code>DestinationSession = 3;</code>
        */
-      public static final int DeliveryReply_VALUE = 3;
+      public static final int DestinationSession_VALUE = 3;
       /**
        * <code>FlowControl = 4;</code>
        */
@@ -232,9 +232,9 @@ public final class ROSServer {
       public static RelayType valueOf(int value) {
         switch (value) {
           case 0: return Message;
-          case 1: return ChannelAuthorization;
-          case 2: return DestinationSession;
-          case 3: return DeliveryReply;
+          case 1: return DeliveryReply;
+          case 2: return Authorization;
+          case 3: return DestinationSession;
           case 4: return FlowControl;
           default: return null;
         }
@@ -1616,16 +1616,16 @@ public final class ROSServer {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020ros-server.proto\032\014common.proto\"\342\001\n\014Rel" +
+      "\n\020ros-server.proto\032\014common.proto\"\333\001\n\014Rel" +
       "ayRequest\022\022\n\nchannelKey\030\001 \001(\t\022*\n\trelayTy" +
       "pe\030\002 \001(\0162\027.RelayRequest.RelayType\022\"\n\tatt" +
-      "ribute\030\003 \003(\0132\017.AttributeValue\"n\n\tRelayTy" +
-      "pe\022\013\n\007Message\020\000\022\030\n\024ChannelAuthorization\020" +
-      "\001\022\026\n\022DestinationSession\020\002\022\021\n\rDeliveryRep" +
-      "ly\020\003\022\017\n\013FlowControl\020\004\"\017\n\rRelayResponse2C" +
-      "\n\031RelayOutboundServiceProxy\022&\n\005relay\022\r.R" +
-      "elayRequest\032\016.RelayResponseB,\n\034org.tdmx." +
-      "server.pcs.protobufB\tROSServer\210\001\001"
+      "ribute\030\003 \003(\0132\017.AttributeValue\"g\n\tRelayTy" +
+      "pe\022\013\n\007Message\020\000\022\021\n\rDeliveryReply\020\001\022\021\n\rAu" +
+      "thorization\020\002\022\026\n\022DestinationSession\020\003\022\017\n" +
+      "\013FlowControl\020\004\"\017\n\rRelayResponse2C\n\031Relay" +
+      "OutboundServiceProxy\022&\n\005relay\022\r.RelayReq" +
+      "uest\032\016.RelayResponseB,\n\034org.tdmx.server." +
+      "pcs.protobufB\tROSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

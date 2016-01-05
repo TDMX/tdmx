@@ -20,7 +20,9 @@ package org.tdmx.server.ros;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -29,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayOutboundServiceProxy;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse;
@@ -164,7 +167,7 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 		rpcEventNotifier.setEventListener(listener);
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
-		// we don't implement a RPC service, just a FIXME
+		// we implement a RPC service for clients to call directly.
 		BlockingService controlServiceProxy = RelayOutboundServiceProxy.newReflectiveBlockingService(this);
 		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 
@@ -197,8 +200,29 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 
 	@Override
 	public RelayResponse relay(RpcController controller, RelayRequest request) throws ServiceException {
-		// TODO Auto-generated method stub
-		relayOutboundService.getCurrentLoad();// TODO
+		String channelKey = request.getChannelKey();
+
+		Map<AttributeId, Long> attrs = mapAttributes(request.getAttributeList());
+		switch (request.getRelayType()) {
+		case Authorization:
+			relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.ChannelId));
+			break;
+		case DeliveryReply:
+			// TODO #95 DR
+			break;
+		case DestinationSession:
+			relayOutboundService.relayChannelDestinationSession(channelKey, attrs.get(AttributeId.ChannelId));
+			break;
+		case FlowControl:
+			relayOutboundService.relayChannelFlowControl(channelKey, attrs.get(AttributeId.ChannelId));
+			break;
+		case Message:
+			relayOutboundService.relayChannelMessage(channelKey, attrs.get(AttributeId.MessageId));
+			break;
+		default:
+			break;
+		}
+
 		return null;
 	}
 
@@ -226,6 +250,17 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private Map<AttributeId, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
+		if (attrs == null) {
+			return null;
+		}
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
+			attributes.put(attr.getName(), attr.getValue());
+		}
+		return attributes;
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

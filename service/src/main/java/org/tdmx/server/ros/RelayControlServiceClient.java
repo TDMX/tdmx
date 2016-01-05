@@ -24,11 +24,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.pcs.RelayControlServiceListener;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
@@ -90,7 +90,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public String assignRelayServer(String channelKey, Map<SeedAttribute, Long> attributes) {
+	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes) {
 		throw new UnsupportedOperationException("assignRelayServer relay server supported on PCS side only.");
 	}
 

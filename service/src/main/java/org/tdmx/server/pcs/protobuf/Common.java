@@ -170,6 +170,22 @@ public final class Common {
        * <code>AddressId = 6;</code>
        */
       AddressId(6, 6),
+      /**
+       * <code>AuthorizationId = 7;</code>
+       */
+      AuthorizationId(7, 7),
+      /**
+       * <code>FlowQuotaId = 8;</code>
+       */
+      FlowQuotaId(8, 8),
+      /**
+       * <code>MessageId = 9;</code>
+       */
+      MessageId(9, 9),
+      /**
+       * <code>DeliveryReportId = 10;</code>
+       */
+      DeliveryReportId(10, 10),
       ;
 
       /**
@@ -200,6 +216,22 @@ public final class Common {
        * <code>AddressId = 6;</code>
        */
       public static final int AddressId_VALUE = 6;
+      /**
+       * <code>AuthorizationId = 7;</code>
+       */
+      public static final int AuthorizationId_VALUE = 7;
+      /**
+       * <code>FlowQuotaId = 8;</code>
+       */
+      public static final int FlowQuotaId_VALUE = 8;
+      /**
+       * <code>MessageId = 9;</code>
+       */
+      public static final int MessageId_VALUE = 9;
+      /**
+       * <code>DeliveryReportId = 10;</code>
+       */
+      public static final int DeliveryReportId_VALUE = 10;
 
 
       public final int getNumber() { return value; }
@@ -213,6 +245,10 @@ public final class Common {
           case 4: return TemporaryChannelId;
           case 5: return ServiceId;
           case 6: return AddressId;
+          case 7: return AuthorizationId;
+          case 8: return FlowQuotaId;
+          case 9: return MessageId;
+          case 10: return DeliveryReportId;
           default: return null;
         }
       }
@@ -641,13 +677,15 @@ public final class Common {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014common.proto\"\313\001\n\016AttributeValue\022)\n\004nam" +
+      "\n\014common.proto\"\227\002\n\016AttributeValue\022)\n\004nam" +
       "e\030\001 \002(\0162\033.AttributeValue.AttributeId\022\r\n\005" +
-      "value\030\002 \001(\003\"\177\n\013AttributeId\022\021\n\rAccountZon" +
-      "eId\020\000\022\n\n\006ZoneId\020\001\022\014\n\010DomainId\020\002\022\r\n\tChann" +
-      "elId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tServic" +
-      "eId\020\005\022\r\n\tAddressId\020\006B&\n\034org.tdmx.server." +
-      "pcs.protobufB\006Common"
+      "value\030\002 \001(\003\"\312\001\n\013AttributeId\022\021\n\rAccountZo" +
+      "neId\020\000\022\n\n\006ZoneId\020\001\022\014\n\010DomainId\020\002\022\r\n\tChan" +
+      "nelId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tServi" +
+      "ceId\020\005\022\r\n\tAddressId\020\006\022\023\n\017AuthorizationId" +
+      "\020\007\022\017\n\013FlowQuotaId\020\010\022\r\n\tMessageId\020\t\022\024\n\020De" +
+      "liveryReportId\020\nB&\n\034org.tdmx.server.pcs." +
+      "protobufB\006Common"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

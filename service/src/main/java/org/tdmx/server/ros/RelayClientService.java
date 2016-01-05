@@ -20,7 +20,9 @@ package org.tdmx.server.ros;
 
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -31,7 +33,7 @@ import org.tdmx.lib.zone.domain.Zone;
  * @author Peter
  *
  */
-public interface RelayService {
+public interface RelayClientService {
 
 	/**
 	 * Initiate relay of a ChannelAuthorization.
@@ -47,4 +49,43 @@ public interface RelayService {
 	 */
 	public void relayChannelAuthorization(Zone zone, Domain domain, Channel channel, ChannelAuthorization ca);
 
+	/**
+	 * Initiate relay of a ChannelDestinationSession.
+	 * 
+	 * @param zone
+	 *            the detached zone
+	 * @param domain
+	 *            the detached domain
+	 * @param channel
+	 *            the detached channel
+	 */
+	public void relayChannelDestinationSession(Zone zone, Domain domain, Channel channel);
+
+	/**
+	 * Initiate relay of a Channel FlowControl state.
+	 * 
+	 * @param zone
+	 *            the detached zone
+	 * @param domain
+	 *            the detached domain
+	 * @param channel
+	 *            the detached channel
+	 * @param flowquota
+	 *            the detached channel flow quota
+	 */
+	public void relayChannelFlowControl(Zone zone, Domain domain, Channel channel, FlowQuota quota);
+
+	/**
+	 * Initiate relay of a Channel Message.
+	 * 
+	 * @param zone
+	 *            the detached zone
+	 * @param domain
+	 *            the detached domain
+	 * @param channel
+	 *            the detached channel
+	 * @param msg
+	 *            the detached message
+	 */
+	public void relayChannelMessage(Zone zone, Domain domain, Channel channel, ChannelMessage msg);
 }

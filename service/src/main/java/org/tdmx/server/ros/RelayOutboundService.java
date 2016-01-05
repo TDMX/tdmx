@@ -71,6 +71,37 @@ public interface RelayOutboundService {
 	 * Notify that there is a ChannelAuthorization to relay.
 	 * 
 	 * @param channelKey
+	 * @param caId
+	 *            the identifier of the channel authorization.
 	 */
-	public void relayChannelAuthorization(String channelKey);
+	public void relayChannelAuthorization(String channelKey, Long caId);
+
+	/**
+	 * Notify that there is a Channel DestinationSession to relay.
+	 * 
+	 * @param channelKey
+	 * @param channelId
+	 *            the identifier of the channel.
+	 */
+	public void relayChannelDestinationSession(String channelKey, Long channelId);
+
+	/**
+	 * Notify that there is an opening of the channel flow control to relay.
+	 * 
+	 * @param channelKey
+	 * @param channelId
+	 *            the identifier of the channel.
+	 */
+	public void relayChannelFlowControl(String channelKey, Long channelId);
+
+	/**
+	 * Notify that there is a ChannelMessage to relay.
+	 * 
+	 * @param channelKey
+	 * @param messageId
+	 *            the identifier of the channel message.
+	 */
+	public void relayChannelMessage(String channelKey, Long messageId);
+
+	// TODO relay of DR #95
 }

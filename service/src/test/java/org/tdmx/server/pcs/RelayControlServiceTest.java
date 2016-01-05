@@ -23,16 +23,16 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.SegmentFacade;
 import org.tdmx.server.pcs.RemoteControlServiceImpl.ServerHolder;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public class RelayControlServiceTest {
 
 	RemoteControlServiceImpl sut;
 
 	private Segment segment = SegmentFacade.createSegment("segment", "https://scsHostname/scs");
-	private Map<SeedAttribute, Long> seedAttributes;
+	private Map<AttributeId, Long> seedAttributes;
 
 	@Before
 	public void setUp() throws Exception {

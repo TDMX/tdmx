@@ -25,6 +25,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MDSServerSession> {
@@ -45,15 +46,15 @@ public class MDSServerSessionFactoryImpl extends AbstractServerSessionFactory<MD
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public MDSServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
-		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
+	public MDSServerSession createServerSession(String sessionId, Map<AttributeId, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(AttributeId.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
-			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
-			Service s = fetchService(seedAttributes.get(SeedAttribute.ServiceId));
-			Address a = fetchAddress(seedAttributes.get(SeedAttribute.AddressId));
+			Zone z = fetchZone(seedAttributes.get(AttributeId.ZoneId));
+			Domain d = fetchDomain(seedAttributes.get(AttributeId.DomainId));
+			Service s = fetchService(seedAttributes.get(AttributeId.ServiceId));
+			Address a = fetchAddress(seedAttributes.get(AttributeId.AddressId));
 
 			MDSServerSession mss = new MDSServerSession(sessionId, az, z, d, a, s);
 			return mss;

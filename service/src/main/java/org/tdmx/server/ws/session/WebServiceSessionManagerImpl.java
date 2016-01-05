@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.ServerRuntimeContextService;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 		implements WebServiceSessionManager, WebServiceSessionLookupService<E>, WebServiceSessionTrustManager {
@@ -82,7 +82,7 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 
 	@Override
 	public int createSession(String sessionId, String controllerId, PKIXCertificate cert,
-			Map<SeedAttribute, Long> seedAttributes) {
+			Map<AttributeId, Long> seedAttributes) {
 		E ss = sessionFactory.createServerSession(sessionId, seedAttributes);
 		ss.setControllerId(controllerId);
 		ss.addAuthorizedCertificate(cert);

@@ -32,7 +32,6 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
@@ -78,9 +77,9 @@ public class LocalControlServiceClient implements ControlService {
 			sh.setApiName(sessionData.getApi().name());
 			sh.setSegment(sessionData.getSegment());
 			sh.setSessionKey(sessionData.getSessionKey());
-			for (Entry<SeedAttribute, Long> entry : sessionData.getSeedAttributes().entrySet()) {
+			for (Entry<AttributeId, Long> entry : sessionData.getSeedAttributes().entrySet()) {
 				AttributeValue.Builder attr = AttributeValue.newBuilder();
-				attr.setName(AttributeId.valueOf(entry.getKey().name()));
+				attr.setName(entry.getKey());
 				attr.setValue(entry.getValue());
 				sh.addAttribute(attr);
 			}

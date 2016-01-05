@@ -30,8 +30,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.server.pcs.SessionHandle;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
@@ -54,11 +54,11 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
 	@Override
 	public SessionHandle createMOSSessionHandle(AccountZone az, AgentCredential agent) {
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		attributes.put(SeedAttribute.AccountZoneId, az.getId());
-		attributes.put(SeedAttribute.ZoneId, agent.getZone().getId());
-		attributes.put(SeedAttribute.DomainId, agent.getDomain().getId());
-		attributes.put(SeedAttribute.AddressId, agent.getAddress().getId());
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		attributes.put(AttributeId.AccountZoneId, az.getId());
+		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
+		attributes.put(AttributeId.DomainId, agent.getDomain().getId());
+		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 
 		String sessionKey = az.getZoneApex() + ":" + agent.getAddress().getLocalName() + "@"
 				+ agent.getDomain().getDomainName();
@@ -68,12 +68,12 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
 	@Override
 	public SessionHandle createMDSSessionHandle(AccountZone az, AgentCredential agent, Service service) {
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		attributes.put(SeedAttribute.AccountZoneId, az.getId());
-		attributes.put(SeedAttribute.ZoneId, agent.getZone().getId());
-		attributes.put(SeedAttribute.DomainId, agent.getDomain().getId());
-		attributes.put(SeedAttribute.AddressId, agent.getAddress().getId());
-		attributes.put(SeedAttribute.ServiceId, service.getId());
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		attributes.put(AttributeId.AccountZoneId, az.getId());
+		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
+		attributes.put(AttributeId.DomainId, agent.getDomain().getId());
+		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
+		attributes.put(AttributeId.ServiceId, service.getId());
 
 		String sessionKey = az.getZoneApex() + ":" + agent.getAddress().getLocalName() + "@"
 				+ agent.getDomain().getDomainName() + ":" + "#" + service.getServiceName();
@@ -84,11 +84,11 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
 	@Override
 	public SessionHandle createZASSessionHandle(AccountZone az, AgentCredential agent) {
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		attributes.put(SeedAttribute.AccountZoneId, az.getId());
-		attributes.put(SeedAttribute.ZoneId, agent.getZone().getId());
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		attributes.put(AttributeId.AccountZoneId, az.getId());
+		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
 		if (agent.getDomain() != null) {
-			attributes.put(SeedAttribute.DomainId, agent.getDomain().getId());
+			attributes.put(AttributeId.DomainId, agent.getDomain().getId());
 		}
 
 		String sessionKey = az.getZoneApex();
@@ -102,11 +102,11 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
 	@Override
 	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, TemporaryChannel channel) {
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		attributes.put(SeedAttribute.AccountZoneId, az.getId());
-		attributes.put(SeedAttribute.ZoneId, channel.getDomain().getZone().getId());
-		attributes.put(SeedAttribute.DomainId, channel.getDomain().getId());
-		attributes.put(SeedAttribute.TemporaryChannelId, channel.getId());
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		attributes.put(AttributeId.AccountZoneId, az.getId());
+		attributes.put(AttributeId.ZoneId, channel.getDomain().getZone().getId());
+		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
+		attributes.put(AttributeId.TemporaryChannelId, channel.getId());
 
 		String sessionKey = az.getZoneApex() + ":" + channel.getOrigin().getLocalName() + "@"
 				+ channel.getOrigin().getDomainName() + "->" + channel.getDestination().getLocalName() + "@"
@@ -118,11 +118,11 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 
 	@Override
 	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, Channel channel) {
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
-		attributes.put(SeedAttribute.AccountZoneId, az.getId());
-		attributes.put(SeedAttribute.ZoneId, channel.getDomain().getZone().getId());
-		attributes.put(SeedAttribute.DomainId, channel.getDomain().getId());
-		attributes.put(SeedAttribute.ChannelId, channel.getId());
+		Map<AttributeId, Long> attributes = new HashMap<>();
+		attributes.put(AttributeId.AccountZoneId, az.getId());
+		attributes.put(AttributeId.ZoneId, channel.getDomain().getZone().getId());
+		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
+		attributes.put(AttributeId.ChannelId, channel.getId());
 
 		String sessionKey = az.getZoneApex() + ":" + channel.getOrigin().getLocalName() + "@"
 				+ channel.getOrigin().getDomainName() + "->" + channel.getDestination().getLocalName() + "@"

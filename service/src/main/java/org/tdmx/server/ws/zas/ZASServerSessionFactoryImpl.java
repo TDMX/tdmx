@@ -23,6 +23,7 @@ import java.util.Map;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.AbstractServerSessionFactory;
 
 public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZASServerSession> {
@@ -43,14 +44,14 @@ public class ZASServerSessionFactoryImpl extends AbstractServerSessionFactory<ZA
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 	@Override
-	public ZASServerSession createServerSession(String sessionId, Map<SeedAttribute, Long> seedAttributes) {
-		AccountZone az = fetchAccountZone(seedAttributes.get(SeedAttribute.AccountZoneId));
+	public ZASServerSession createServerSession(String sessionId, Map<AttributeId, Long> seedAttributes) {
+		AccountZone az = fetchAccountZone(seedAttributes.get(AttributeId.AccountZoneId));
 
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			Zone z = fetchZone(seedAttributes.get(SeedAttribute.ZoneId));
+			Zone z = fetchZone(seedAttributes.get(AttributeId.ZoneId));
 			// note domain is null for ZACs
-			Domain d = fetchDomain(seedAttributes.get(SeedAttribute.DomainId));
+			Domain d = fetchDomain(seedAttributes.get(AttributeId.DomainId));
 
 			ZASServerSession zass = new ZASServerSession(sessionId, az, z, d);
 			return zass;

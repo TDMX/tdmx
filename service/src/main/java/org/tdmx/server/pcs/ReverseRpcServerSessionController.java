@@ -26,13 +26,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.SessionManagerProxy;
 import org.tdmx.server.ws.session.WebServiceApiName;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
@@ -76,7 +76,7 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 
 	@Override
 	public ServiceStatistic createSession(WebServiceApiName apiName, String sessionId, PKIXCertificate cert,
-			Map<SeedAttribute, Long> seedAttributes) {
+			Map<AttributeId, Long> seedAttributes) {
 
 		SessionManagerProxy.BlockingInterface blockingService = SessionManagerProxy.newBlockingStub(channel);
 		final ClientRpcController controller = channel.newRpcController();
@@ -86,9 +86,9 @@ class ReverseRpcServerSessionController implements ServerSessionController {
 		reqBuilder.setApiName(apiName.name());
 		reqBuilder.setSessionId(sessionId);
 		reqBuilder.setClientCert(ByteString.copyFrom(cert.getX509Encoded()));
-		for (Entry<SeedAttribute, Long> entry : seedAttributes.entrySet()) {
+		for (Entry<AttributeId, Long> entry : seedAttributes.entrySet()) {
 			AttributeValue.Builder attr = AttributeValue.newBuilder();
-			attr.setName(org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId.valueOf(entry.getKey().name()));
+			attr.setName(entry.getKey());
 			attr.setValue(entry.getValue());
 			reqBuilder.addAttribute(attr);
 		}

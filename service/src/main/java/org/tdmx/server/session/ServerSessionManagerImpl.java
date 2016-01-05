@@ -59,7 +59,6 @@ import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.ServerRuntimeContextService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSession;
-import org.tdmx.server.ws.session.WebServiceSessionFactory.SeedAttribute;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 import com.google.protobuf.BlockingService;
@@ -621,22 +620,15 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 		return channel.getPeerInfo().toString();
 	}
 
-	private Map<SeedAttribute, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
+	private Map<AttributeId, Long> mapAttributes(List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attrs) {
 		if (attrs == null) {
 			return null;
 		}
-		Map<SeedAttribute, Long> attributes = new HashMap<>();
+		Map<AttributeId, Long> attributes = new HashMap<>();
 		for (org.tdmx.server.pcs.protobuf.Common.AttributeValue attr : attrs) {
-			attributes.put(map(attr.getName()), attr.getValue());
+			attributes.put(attr.getName(), attr.getValue());
 		}
 		return attributes;
-	}
-
-	private SeedAttribute map(AttributeId name) {
-		if (name == null) {
-			return null;
-		}
-		return SeedAttribute.valueOf(name.name());
 	}
 
 	private WebServiceApiName mapApi(String apiName) {
