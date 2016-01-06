@@ -20,7 +20,7 @@
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
 				<!-- order important here to start service before connector -->
-	            <ref bean="pcs.RemoteControlService"/>
+	            <ref bean="pcs.SessionControlService"/>
 	            <ref bean="pcs.RemoteControlConnector"/>
 	        </list>
         </property>

@@ -24,7 +24,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.ControlServiceListener;
+import org.tdmx.server.pcs.SessionControlServiceListener;
 import org.tdmx.server.pcs.ServerSessionController;
 import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
@@ -35,7 +35,7 @@ import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
-public class LocalControlServiceListenerClient implements ControlServiceListener {
+public class LocalControlServiceListenerClient implements SessionControlServiceListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

@@ -109,19 +109,24 @@ public class RemoteControlServiceConnector
 	private static final String ROS_ADDRESS_ATTRIBUTE = "ROS";
 
 	/**
-	 * The ControlServiceListener delegate.
+	 * The SessionControlServiceListener delegate.
 	 */
-	private ControlServiceListener controlListener;
+	private SessionControlServiceListener controlListener;
 
 	/**
-	 * The ControlService delegate.
+	 * The SessionControlService delegate.
 	 */
-	private ControlService controlService;
+	private SessionControlService sessionControlService;
+
+	/**
+	 * The RelayControlServiceListener delegate.
+	 */
+	private RelayControlServiceListener relayListener;
 
 	/**
 	 * The RelayControlService delegate.
 	 */
-	private RelayControlServiceListener relayService;
+	private RelayControlService relayService;
 
 	/**
 	 * The interface address for multi-homed hosts. Leave empty if not multi-homed.
@@ -244,7 +249,7 @@ public class RemoteControlServiceConnector
 				String rosAddress = (String) clientChannel.getAttribute(ROS_ADDRESS_ATTRIBUTE);
 				if (rosAddress != null) {
 					log.info("Disconnect of ROS client " + rosAddress);
-					relayService.unregisterRelayServer(rosAddress);
+					relayListener.unregisterRelayServer(rosAddress);
 				}
 			}
 
@@ -314,7 +319,7 @@ public class RemoteControlServiceConnector
 
 		SessionHandle sh = mapSession(request.getHandle());
 		PKIXCertificate clientCert = CertificateIOUtils.safeDecodeX509(request.getPkixCertificate().toByteArray());
-		WebServiceSessionEndpoint wsse = controlService.associateApiSession(sh, clientCert);
+		WebServiceSessionEndpoint wsse = sessionControlService.associateApiSession(sh, clientCert);
 
 		AssociateApiSessionResponse.Builder responseBuilder = AssociateApiSessionResponse.newBuilder();
 		if (wsse != null) {
@@ -384,7 +389,7 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
-		relayService.registerRelayServer(request.getRosAddress(), null); // FIXME
+		relayListener.registerRelayServer(request.getRosAddress(), null); // FIXME
 		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
 		channel.setAttribute(ROS_ADDRESS_ATTRIBUTE, request.getRosAddress());
 
@@ -412,7 +417,7 @@ public class RemoteControlServiceConnector
 		log.info("notifyRelaySessionsIdle call from " + channel.getPeerInfo() + " for removing "
 				+ request.getRelaySessionCount());
 
-		relayService.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
+		relayListener.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
 		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
 	}
@@ -504,11 +509,19 @@ public class RemoteControlServiceConnector
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public RelayControlServiceListener getRelayService() {
-		return relayService;
+	public RelayControlServiceListener getRelayListener() {
+		return relayListener;
 	}
 
-	public void setRelayService(RelayControlServiceListener relayService) {
+	public void setRelayListener(RelayControlServiceListener relayListener) {
+		this.relayListener = relayListener;
+	}
+
+	public RelayControlServiceListener getRelayService() {
+		return relayListener;
+	}
+
+	public void setRelayService(RelayControlService relayService) {
 		this.relayService = relayService;
 	}
 
@@ -520,20 +533,20 @@ public class RemoteControlServiceConnector
 		this.partitionServerService = partitionServerService;
 	}
 
-	public ControlServiceListener getControlListener() {
+	public SessionControlServiceListener getControlListener() {
 		return controlListener;
 	}
 
-	public void setControlListener(ControlServiceListener controlListener) {
+	public void setControlListener(SessionControlServiceListener controlListener) {
 		this.controlListener = controlListener;
 	}
 
-	public ControlService getControlService() {
-		return controlService;
+	public SessionControlService getControlService() {
+		return sessionControlService;
 	}
 
-	public void setControlService(ControlService controlService) {
-		this.controlService = controlService;
+	public void setControlService(SessionControlService sessionControlService) {
+		this.sessionControlService = sessionControlService;
 	}
 
 	public String getServerAddress() {

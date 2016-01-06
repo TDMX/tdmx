@@ -39,6 +39,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.CacheInvalidationMessageListener;
+import org.tdmx.server.pcs.client.LocalControlServiceImpl;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
@@ -47,7 +48,6 @@ import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelaySessionManagerProxy;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
-import org.tdmx.server.scs.LocalControlServiceImpl;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.RpcCallback;

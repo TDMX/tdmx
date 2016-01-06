@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.scs;
+package org.tdmx.server.pcs.client;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,7 +33,7 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.pcs.CacheInvalidationMessageListener;
-import org.tdmx.server.pcs.ControlService;
+import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.runtime.Manageable;
@@ -59,7 +59,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements ControlService, Manageable {
+public class LocalControlServiceImpl implements SessionControlService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS

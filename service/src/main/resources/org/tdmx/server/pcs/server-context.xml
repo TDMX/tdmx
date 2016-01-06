@@ -13,21 +13,25 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-	<bean id="pcs.RemoteControlService" class="org.tdmx.server.pcs.RemoteControlServiceImpl" >
+	<bean id="pcs.SessionControlService" class="org.tdmx.server.pcs.SessionControlServiceImpl" >
 		<property name="sessionIdLength" value="32" />
 		<property name="maximumRoundRobinSize" value="4" />
 		<property name="sessionStatisticsCheckIntervalSec" value="${pcs.sessionStatisticsCheckIntervalSec}"/>
 	</bean>
 
+<!-- 
 	<bean id="pcs.RelayControlService" class="org.tdmx.server.pcs.RelayControlServiceImpl" >
 	</bean>
-	
+ -->
+ 	
 	<bean id="pcs.RemoteControlConnector" class="org.tdmx.server.pcs.RemoteControlServiceConnector" >
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
-		
+		<!-- 
 		<property name="relayService" ref="pcs.RelayControlService" />
-		<property name="controlListener" ref="pcs.RemoteControlService" />
-		<property name="controlService" ref="pcs.RemoteControlService" />
+		<property name="relayListener" ref="pcs.RelayControlService" />
+		 -->
+		<property name="controlListener" ref="pcs.SessionControlService" />
+		<property name="controlService" ref="pcs.SessionControlService" />
 		<property name="serverAddress" value="${pcs.serverAddress}" />
 		<property name="localPort" value="${pcs.localPort}" />
 

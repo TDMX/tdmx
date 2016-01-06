@@ -27,8 +27,8 @@ import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.server.pcs.SessionHandle;
 
 /**
- * The SessionHandleFactory creates SessionHandles which the ControlService uses. It is an intermediary between the
- * ServerSessionAllocationService and the ControlService.
+ * The SessionHandleFactory creates SessionHandles which the SessionControlService uses. It is an intermediary between the
+ * ServerSessionAllocationService and the SessionControlService.
  * 
  * @author Peter
  *

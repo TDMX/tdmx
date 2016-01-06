@@ -16,23 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.session;
+package org.tdmx.server.pcs;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.session.WebServiceSessionEndpoint;
 
-/**
- * Interface local to a WebService (ZAS) which invalidates the certificate via the SessionControlServiceListener in the entire
- * PCS cluster.
- * 
- * @author Peter
- *
- */
-public interface SessionCertificateInvalidationService {
+public interface SessionControlService {
 
 	/**
-	 * Invalidate the certificate in all sessions which it belongs to.
+	 * Try and associate the clientCertificate a session for the API in the sessionData. Called by SessionControlService
+	 * towards the PartitionControlService.
 	 * 
-	 * @param cert
+	 * @param sessionData
+	 * @param clientCertificate
+	 * @return null if no capacity available.
 	 */
-	public void invalidateCertificate(PKIXCertificate cert);
+	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate);
+
 }

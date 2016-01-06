@@ -19,9 +19,7 @@
 package org.tdmx.server.pcs;
 
 import java.util.List;
-import java.util.Map;
 
-import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 /**
@@ -34,18 +32,6 @@ import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
  *
  */
 public interface RelayControlServiceListener {
-
-	/**
-	 * Determine the RelayServer to use for outbound relaying to a channel. Called by WS.
-	 * 
-	 * @param channelKey
-	 *            the channel key.
-	 * @param attributes
-	 *            the attributes providing the object information for the channel.
-	 * @return the RelayServer to use for outbound relaying to the channel.
-	 * 
-	 */
-	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes);
 
 	/**
 	 * On the attachment of a RelayServer to the PCS. Called by ROS.

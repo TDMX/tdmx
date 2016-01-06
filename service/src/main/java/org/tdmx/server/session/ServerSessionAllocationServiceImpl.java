@@ -26,7 +26,7 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
-import org.tdmx.server.pcs.ControlService;
+import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 
 public class ServerSessionAllocationServiceImpl implements ServerSessionAllocationService {
@@ -41,7 +41,7 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 	private static final Logger log = LoggerFactory.getLogger(ServerSessionAllocationServiceImpl.class);
 
 	private SessionHandleFactory handleFactory;
-	private ControlService controlService;
+	private SessionControlService sessionControlService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -55,21 +55,21 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
 		SessionHandle handle = handleFactory.createMDSSessionHandle(az, agent, service);
 
-		return controlService.associateApiSession(handle, agent.getPublicCertificate());
+		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
 	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
 		SessionHandle handle = handleFactory.createMOSSessionHandle(az, agent);
 
-		return controlService.associateApiSession(handle, agent.getPublicCertificate());
+		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
 	public WebServiceSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
 		SessionHandle handle = handleFactory.createZASSessionHandle(az, agent);
 
-		return controlService.associateApiSession(handle, agent.getPublicCertificate());
+		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
@@ -77,14 +77,14 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 			TemporaryChannel tempChannel) {
 		SessionHandle handle = handleFactory.createMRSSessionHandle(az, client, tempChannel);
 
-		return controlService.associateApiSession(handle, client);
+		return sessionControlService.associateApiSession(handle, client);
 	}
 
 	@Override
 	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client, Channel channel) {
 		SessionHandle handle = handleFactory.createMRSSessionHandle(az, client, channel);
 
-		return controlService.associateApiSession(handle, client);
+		return sessionControlService.associateApiSession(handle, client);
 	}
 
 	// -------------------------------------------------------------------------
@@ -107,12 +107,12 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 		this.handleFactory = handleFactory;
 	}
 
-	public ControlService getControlService() {
-		return controlService;
+	public SessionControlService getControlService() {
+		return sessionControlService;
 	}
 
-	public void setControlService(ControlService controlService) {
-		this.controlService = controlService;
+	public void setControlService(SessionControlService sessionControlService) {
+		this.sessionControlService = sessionControlService;
 	}
 
 }

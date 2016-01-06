@@ -21,7 +21,7 @@
 		<property name="authenticatedClientService" ref="scs.authenticatedClientService" />
 	</bean>
 	
-	<bean id="scs.LocalControlService" class="org.tdmx.server.scs.LocalControlServiceImpl">
+	<bean id="scs.LocalControlService" class="org.tdmx.server.pcs.client.LocalControlServiceImpl">
 		<property name="connectTimeoutMillis" value="${scs.pcs.connectTimeoutMillis}"/>
 		<property name="connectResponseTimeoutMillis" value="${scs.pcs.connectResponseTimeoutMillis}"/>
 		<property name="coreRpcExecutorThreads" value="${scs.pcs.coreRpcExecutorThreads}"/>

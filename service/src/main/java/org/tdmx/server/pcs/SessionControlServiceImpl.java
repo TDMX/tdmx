@@ -59,7 +59,7 @@ import org.tdmx.server.ws.session.WebServiceApiName;
  * @author Peter
  *
  */
-public class RemoteControlServiceImpl implements ControlService, ControlServiceListener, Manageable, Runnable {
+public class SessionControlServiceImpl implements Manageable, Runnable, SessionControlService, SessionControlServiceListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -68,7 +68,7 @@ public class RemoteControlServiceImpl implements ControlService, ControlServiceL
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(RemoteControlServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(SessionControlServiceImpl.class);
 
 	/**
 	 * The segment is determined at startup time.

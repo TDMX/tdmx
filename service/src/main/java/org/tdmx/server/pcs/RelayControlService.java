@@ -18,19 +18,22 @@
  */
 package org.tdmx.server.pcs;
 
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.session.WebServiceSessionEndpoint;
+import java.util.Map;
 
-public interface ControlService {
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+
+public interface RelayControlService {
 
 	/**
-	 * Try and associate the clientCertificate a session for the API in the sessionData. Called by SessionControlService
-	 * towards the PartitionControlService.
+	 * Determine the RelayServer to use for outbound relaying to a channel. Called by WS.
 	 * 
-	 * @param sessionData
-	 * @param clientCertificate
-	 * @return null if no capacity available.
+	 * @param channelKey
+	 *            the channel key.
+	 * @param attributes
+	 *            the attributes providing the object information for the channel.
+	 * @return the RelayServer to use for outbound relaying to the channel.
+	 * 
 	 */
-	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate);
+	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes);
 
 }

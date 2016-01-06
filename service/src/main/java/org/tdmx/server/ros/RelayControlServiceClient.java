@@ -19,12 +19,10 @@
 package org.tdmx.server.ros;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.pcs.RelayControlServiceListener;
-import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
@@ -88,11 +86,6 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	@Override
 	public void unregisterRelayServer(String rosTcpEndpoint) {
 		throw new UnsupportedOperationException("Unregister relay server supported on PCS side only.");
-	}
-
-	@Override
-	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes) {
-		throw new UnsupportedOperationException("assignRelayServer relay server supported on PCS side only.");
 	}
 
 	@Override

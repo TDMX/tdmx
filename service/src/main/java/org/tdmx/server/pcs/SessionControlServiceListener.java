@@ -24,10 +24,10 @@ import java.util.Set;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-public interface ControlServiceListener {
+public interface SessionControlServiceListener {
 
 	/**
-	 * On the attachment of a Server with it's supported Services to the ControlService.
+	 * On the attachment of a Server with it's supported Services to the SessionControlService.
 	 * 
 	 * @param services
 	 * @param ssm
@@ -36,14 +36,14 @@ public interface ControlServiceListener {
 	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm);
 
 	/**
-	 * On the detachment of a Server with it's supported Services from the ControlService.
+	 * On the detachment of a Server with it's supported Services from the SessionControlService.
 	 * 
 	 * @param services
 	 */
 	public void unregisterServer(List<ServiceHandle> services);
 
 	/**
-	 * WebServiceSessionManagers notify the ControlService when session's have not been used for some time and are
+	 * WebServiceSessionManagers notify the SessionControlService when session's have not been used for some time and are
 	 * removed locally.
 	 * 
 	 * @param api

@@ -16,18 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.scs;
+package org.tdmx.server.pcs.client;
 
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.ControlService;
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.server.pcs.SessionControlService;
+import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
@@ -38,7 +43,7 @@ import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
-public class LocalControlServiceClient implements ControlService {
+public class LocalControlServiceClient implements SessionControlService, RelayControlService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -97,6 +102,37 @@ public class LocalControlServiceClient implements ControlService {
 					return sep;
 				} else {
 					log.info("No WebServiceSessionEndpoint allocated.");
+				}
+			} catch (ServiceException e) {
+				log.warn("Call failed.", e);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes) {
+		if (!rpcClient.isClosed()) {
+			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
+			final ClientRpcController controller = rpcClient.newRpcController();
+			controller.setTimeoutMs(0);
+
+			AssignRelaySessionRequest.Builder reqBuilder = AssignRelaySessionRequest.newBuilder();
+			reqBuilder.setChannelKey(channelKey);
+			for (Entry<AttributeId, Long> entry : attributes.entrySet()) {
+				AttributeValue.Builder attr = AttributeValue.newBuilder();
+				attr.setName(entry.getKey());
+				attr.setValue(entry.getValue());
+				reqBuilder.addAttribute(attr);
+			}
+
+			AssignRelaySessionRequest request = reqBuilder.build();
+			try {
+				AssignRelaySessionResponse response = blockingService.assignRelaySession(controller, request);
+				if (response != null && StringUtils.hasText(response.getRosAddress())) {
+					return response.getRosAddress();
+				} else {
+					log.info("No ROS Address allocated for ." + channelKey);
 				}
 			} catch (ServiceException e) {
 				log.warn("Call failed.", e);

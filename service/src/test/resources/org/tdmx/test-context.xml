@@ -16,7 +16,7 @@
 	    <constructor-arg value="org.tdmx.server.session.SessionCertificateInvalidationService" /> 
 	</bean>
 	<bean id="scs.LocalControlService" class="org.mockito.Mockito" factory-method="mock"> 
-	    <constructor-arg value="org.tdmx.server.pcs.ControlService" /> 
+	    <constructor-arg value="org.tdmx.server.pcs.SessionControlService" /> 
 	</bean>
 
 	<!-- CONFIGURATION -->
