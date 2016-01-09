@@ -40,8 +40,13 @@ public interface RelayControlServiceListener {
 	 *            the attached relay outbound server's address.
 	 * @param channelKeys
 	 *            the channel keys associated with this PCS.
+	 * @param segment
+	 *            the segment of the ROS.
+	 * @param ros
+	 *            the reverse RPC api to the ROS (not available on ROS, only PCS)
 	 */
-	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys);
+	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
+			RelayOutboundServiceController ros);
 
 	/**
 	 * On the detachment of a RelayServer, we disconnect all relay sessions. Happens on disconnect of ROS.

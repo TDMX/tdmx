@@ -59,7 +59,8 @@ import org.tdmx.server.ws.session.WebServiceApiName;
  * @author Peter
  *
  */
-public class SessionControlServiceImpl implements Manageable, Runnable, SessionControlService, SessionControlServiceListener {
+public class SessionControlServiceImpl
+		implements Manageable, Runnable, SessionControlService, SessionControlServiceListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -501,7 +502,7 @@ public class SessionControlServiceImpl implements Manageable, Runnable, SessionC
 	public void run() {
 		// we iterate through all ServerHolders and accumulate distinct ServerSessionControllers
 		// which we then get the statistic from ( for all apis )
-		log.info("Gathering statistics.");
+		log.info("Gathering WS load statistics.");
 		Set<ServerSessionController> serverControllers = new HashSet<>();
 		for (WebServiceApiName api : WebServiceApiName.values()) {
 			ServerApiHolder servers = serverMap.get(api);

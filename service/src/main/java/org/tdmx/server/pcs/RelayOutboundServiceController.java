@@ -21,21 +21,27 @@ package org.tdmx.server.pcs;
 import java.util.Map;
 
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 
-public interface RelayControlService {
+public interface RelayOutboundServiceController {
 
 	/**
-	 * Determine the RelayServer to use for outbound relaying to a channel. Called by WS.
+	 * Creates a new relay session for a channel.
 	 * 
 	 * @param channelKey
-	 *            the channel key.
-	 * @param segment
-	 *            the caller's segment. Used to check if client on same segment as the PCS.
 	 * @param attributes
-	 *            the attributes providing the object information for the channel.
-	 * @return the RelayServer to use for outbound relaying to the channel.
+	 *            providing objectIds for channel objects.
+	 * @param mrsSessionId
 	 * 
+	 * @return the relay server load statistics or null if this failed.
 	 */
-	public String assignRelayServer(String channelKey, String segment, Map<AttributeId, Long> attributes);
+	public RelayStatistic createRelaySession(String channelKey, Map<AttributeId, Long> seedAttributes,
+			String mrsSessionId);
 
+	/**
+	 * Return the server's load statistics.
+	 * 
+	 * @return the server's load statistics or null if the operation failed.
+	 */
+	public RelayStatistic getStatistics();
 }

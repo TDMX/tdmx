@@ -6061,7 +6061,21 @@ public final class PCSServer {
         getRosAddressBytes();
 
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>optional string segment = 2;</code>
+     */
+    boolean hasSegment();
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    java.lang.String getSegment();
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSegmentBytes();
+
+    /**
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6070,7 +6084,7 @@ public final class PCSServer {
     com.google.protobuf.ProtocolStringList
         getChannelKeysList();
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6078,7 +6092,7 @@ public final class PCSServer {
      */
     int getChannelKeysCount();
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6086,7 +6100,7 @@ public final class PCSServer {
      */
     java.lang.String getChannelKeys(int index);
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6155,9 +6169,15 @@ public final class PCSServer {
             }
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              bitField0_ |= 0x00000002;
+              segment_ = bs;
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                 channelKeys_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               channelKeys_.add(bs);
               break;
@@ -6170,7 +6190,7 @@ public final class PCSServer {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           channelKeys_ = channelKeys_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -6247,10 +6267,52 @@ public final class PCSServer {
       }
     }
 
-    public static final int CHANNELKEYS_FIELD_NUMBER = 2;
+    public static final int SEGMENT_FIELD_NUMBER = 2;
+    private java.lang.Object segment_;
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public boolean hasSegment() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public java.lang.String getSegment() {
+      java.lang.Object ref = segment_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          segment_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSegmentBytes() {
+      java.lang.Object ref = segment_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        segment_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CHANNELKEYS_FIELD_NUMBER = 3;
     private com.google.protobuf.LazyStringList channelKeys_;
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6261,7 +6323,7 @@ public final class PCSServer {
       return channelKeys_;
     }
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6271,7 +6333,7 @@ public final class PCSServer {
       return channelKeys_.size();
     }
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6281,7 +6343,7 @@ public final class PCSServer {
       return channelKeys_.get(index);
     }
     /**
-     * <code>repeated string channelKeys = 2;</code>
+     * <code>repeated string channelKeys = 3;</code>
      *
      * <pre>
      * all currently active relay sessions
@@ -6294,6 +6356,7 @@ public final class PCSServer {
 
     private void initFields() {
       rosAddress_ = "";
+      segment_ = "";
       channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
@@ -6312,8 +6375,11 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getRosAddressBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getSegmentBytes());
+      }
       for (int i = 0; i < channelKeys_.size(); i++) {
-        output.writeBytes(2, channelKeys_.getByteString(i));
+        output.writeBytes(3, channelKeys_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -6327,6 +6393,10 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getRosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getSegmentBytes());
       }
       {
         int dataSize = 0;
@@ -6456,8 +6526,10 @@ public final class PCSServer {
         super.clear();
         rosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        segment_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -6490,9 +6562,13 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000001;
         }
         result.rosAddress_ = rosAddress_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.segment_ = segment_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
           channelKeys_ = channelKeys_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.channelKeys_ = channelKeys_;
         result.bitField0_ = to_bitField0_;
@@ -6516,10 +6592,15 @@ public final class PCSServer {
           rosAddress_ = other.rosAddress_;
           onChanged();
         }
+        if (other.hasSegment()) {
+          bitField0_ |= 0x00000002;
+          segment_ = other.segment_;
+          onChanged();
+        }
         if (!other.channelKeys_.isEmpty()) {
           if (channelKeys_.isEmpty()) {
             channelKeys_ = other.channelKeys_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureChannelKeysIsMutable();
             channelKeys_.addAll(other.channelKeys_);
@@ -6629,15 +6710,91 @@ public final class PCSServer {
         return this;
       }
 
+      private java.lang.Object segment_ = "";
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public boolean hasSegment() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public java.lang.String getSegment() {
+        java.lang.Object ref = segment_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            segment_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSegmentBytes() {
+        java.lang.Object ref = segment_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          segment_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder setSegment(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        segment_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder clearSegment() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        segment_ = getDefaultInstance().getSegment();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder setSegmentBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        segment_ = value;
+        onChanged();
+        return this;
+      }
+
       private com.google.protobuf.LazyStringList channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureChannelKeysIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
           channelKeys_ = new com.google.protobuf.LazyStringArrayList(channelKeys_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
          }
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6648,7 +6805,7 @@ public final class PCSServer {
         return channelKeys_.getUnmodifiableView();
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6658,7 +6815,7 @@ public final class PCSServer {
         return channelKeys_.size();
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6668,7 +6825,7 @@ public final class PCSServer {
         return channelKeys_.get(index);
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6679,7 +6836,7 @@ public final class PCSServer {
         return channelKeys_.getByteString(index);
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6696,7 +6853,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6713,7 +6870,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6728,7 +6885,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -6736,12 +6893,12 @@ public final class PCSServer {
        */
       public Builder clearChannelKeys() {
         channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string channelKeys = 2;</code>
+       * <code>repeated string channelKeys = 3;</code>
        *
        * <pre>
        * all currently active relay sessions
@@ -8883,25 +9040,39 @@ public final class PCSServer {
         getChannelKeyBytes();
 
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>optional string segment = 2;</code>
+     */
+    boolean hasSegment();
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    java.lang.String getSegment();
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSegmentBytes();
+
+    /**
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> 
         getAttributeList();
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index);
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     int getAttributeCount();
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList();
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index);
@@ -8965,9 +9136,15 @@ public final class PCSServer {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              segment_ = bs;
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                 attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.Common.AttributeValue.PARSER, extensionRegistry));
               break;
@@ -8980,7 +9157,7 @@ public final class PCSServer {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           attribute_ = java.util.Collections.unmodifiableList(attribute_);
         }
         this.unknownFields = unknownFields.build();
@@ -9057,35 +9234,77 @@ public final class PCSServer {
       }
     }
 
-    public static final int ATTRIBUTE_FIELD_NUMBER = 2;
+    public static final int SEGMENT_FIELD_NUMBER = 2;
+    private java.lang.Object segment_;
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public boolean hasSegment() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public java.lang.String getSegment() {
+      java.lang.Object ref = segment_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          segment_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string segment = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSegmentBytes() {
+      java.lang.Object ref = segment_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        segment_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int ATTRIBUTE_FIELD_NUMBER = 3;
     private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_;
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
       return attribute_;
     }
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
         getAttributeOrBuilderList() {
       return attribute_;
     }
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     public int getAttributeCount() {
       return attribute_.size();
     }
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
       return attribute_.get(index);
     }
     /**
-     * <code>repeated .AttributeValue attribute = 2;</code>
+     * <code>repeated .AttributeValue attribute = 3;</code>
      */
     public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
         int index) {
@@ -9094,6 +9313,7 @@ public final class PCSServer {
 
     private void initFields() {
       channelKey_ = "";
+      segment_ = "";
       attribute_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -9118,8 +9338,11 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getChannelKeyBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getSegmentBytes());
+      }
       for (int i = 0; i < attribute_.size(); i++) {
-        output.writeMessage(2, attribute_.get(i));
+        output.writeMessage(3, attribute_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -9134,9 +9357,13 @@ public final class PCSServer {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getChannelKeyBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getSegmentBytes());
+      }
       for (int i = 0; i < attribute_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, attribute_.get(i));
+          .computeMessageSize(3, attribute_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9258,9 +9485,11 @@ public final class PCSServer {
         super.clear();
         channelKey_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        segment_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         if (attributeBuilder_ == null) {
           attribute_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
         } else {
           attributeBuilder_.clear();
         }
@@ -9296,10 +9525,14 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000001;
         }
         result.channelKey_ = channelKey_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.segment_ = segment_;
         if (attributeBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
             attribute_ = java.util.Collections.unmodifiableList(attribute_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           }
           result.attribute_ = attribute_;
         } else {
@@ -9326,11 +9559,16 @@ public final class PCSServer {
           channelKey_ = other.channelKey_;
           onChanged();
         }
+        if (other.hasSegment()) {
+          bitField0_ |= 0x00000002;
+          segment_ = other.segment_;
+          onChanged();
+        }
         if (attributeBuilder_ == null) {
           if (!other.attribute_.isEmpty()) {
             if (attribute_.isEmpty()) {
               attribute_ = other.attribute_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureAttributeIsMutable();
               attribute_.addAll(other.attribute_);
@@ -9343,7 +9581,7 @@ public final class PCSServer {
               attributeBuilder_.dispose();
               attributeBuilder_ = null;
               attribute_ = other.attribute_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
               attributeBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAttributeFieldBuilder() : null;
@@ -9461,12 +9699,88 @@ public final class PCSServer {
         return this;
       }
 
+      private java.lang.Object segment_ = "";
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public boolean hasSegment() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public java.lang.String getSegment() {
+        java.lang.Object ref = segment_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            segment_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSegmentBytes() {
+        java.lang.Object ref = segment_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          segment_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder setSegment(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        segment_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder clearSegment() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        segment_ = getDefaultInstance().getSegment();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string segment = 2;</code>
+       */
+      public Builder setSegmentBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        segment_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_ =
         java.util.Collections.emptyList();
       private void ensureAttributeIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
           attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>(attribute_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
          }
       }
 
@@ -9474,7 +9788,7 @@ public final class PCSServer {
           org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> attributeBuilder_;
 
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> getAttributeList() {
         if (attributeBuilder_ == null) {
@@ -9484,7 +9798,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public int getAttributeCount() {
         if (attributeBuilder_ == null) {
@@ -9494,7 +9808,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public org.tdmx.server.pcs.protobuf.Common.AttributeValue getAttribute(int index) {
         if (attributeBuilder_ == null) {
@@ -9504,7 +9818,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder setAttribute(
           int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
@@ -9521,7 +9835,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder setAttribute(
           int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
@@ -9535,7 +9849,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder addAttribute(org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
         if (attributeBuilder_ == null) {
@@ -9551,7 +9865,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder addAttribute(
           int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue value) {
@@ -9568,7 +9882,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder addAttribute(
           org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
@@ -9582,7 +9896,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder addAttribute(
           int index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder builderForValue) {
@@ -9596,7 +9910,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder addAllAttribute(
           java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValue> values) {
@@ -9611,12 +9925,12 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder clearAttribute() {
         if (attributeBuilder_ == null) {
           attribute_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
         } else {
           attributeBuilder_.clear();
@@ -9624,7 +9938,7 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public Builder removeAttribute(int index) {
         if (attributeBuilder_ == null) {
@@ -9637,14 +9951,14 @@ public final class PCSServer {
         return this;
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder getAttributeBuilder(
           int index) {
         return getAttributeFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder getAttributeOrBuilder(
           int index) {
@@ -9654,7 +9968,7 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public java.util.List<? extends org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder> 
            getAttributeOrBuilderList() {
@@ -9665,14 +9979,14 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder() {
         return getAttributeFieldBuilder().addBuilder(
             org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder addAttributeBuilder(
           int index) {
@@ -9680,7 +9994,7 @@ public final class PCSServer {
             index, org.tdmx.server.pcs.protobuf.Common.AttributeValue.getDefaultInstance());
       }
       /**
-       * <code>repeated .AttributeValue attribute = 2;</code>
+       * <code>repeated .AttributeValue attribute = 3;</code>
        */
       public java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder> 
            getAttributeBuilderList() {
@@ -9693,7 +10007,7 @@ public final class PCSServer {
           attributeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder>(
                   attribute_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000004) == 0x00000004),
                   getParentForChildren(),
                   isClean());
           attribute_ = null;
@@ -10988,34 +11302,35 @@ public final class PCSServer {
       "\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036\n\034No" +
       "tifySessionRemovedResponse\"2\n\034Invalidate" +
       "CertificateRequest\022\022\n\nclientCert\030\001 \001(\014\"\037" +
-      "\n\035InvalidateCertificateResponse\"E\n\032Regis" +
+      "\n\035InvalidateCertificateResponse\"V\n\032Regis" +
       "terRelayServerRequest\022\022\n\nrosAddress\030\001 \001(" +
-      "\t\022\023\n\013channelKeys\030\002 \003(\t\"\035\n\033RegisterRelayS" +
-      "erverResponse\"B\n\026RelayChannelMrsSession\022",
-      "\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrsSessionId\030\002 \001(" +
-      "\t\"b\n\035NotifyRelaySessionIdleRequest\022\022\n\nro" +
-      "sAddress\030\001 \001(\t\022-\n\014relaySession\030\002 \003(\0132\027.R" +
-      "elayChannelMrsSession\" \n\036NotifyRelaySess" +
-      "ionIdleResponse\"S\n\031AssignRelaySessionReq" +
-      "uest\022\022\n\nchannelKey\030\001 \001(\t\022\"\n\tattribute\030\002 " +
-      "\003(\0132\017.AttributeValue\"0\n\032AssignRelaySessi" +
-      "onResponse\022\022\n\nrosAddress\030\001 \001(\t2\325\004\n\023Contr" +
-      "olServiceProxy\022P\n\023associateApiSession\022\033." +
-      "AssociateApiSessionRequest\032\034.AssociateAp",
-      "iSessionResponse\022A\n\016registerServer\022\026.Reg" +
-      "isterServerRequest\032\027.RegisterServerRespo" +
-      "nse\022T\n\025notifySessionsRemoved\022\034.NotifySes" +
-      "sionRemovedRequest\032\035.NotifySessionRemove" +
-      "dResponse\022V\n\025invalidateCertificate\022\035.Inv" +
-      "alidateCertificateRequest\032\036.InvalidateCe" +
-      "rtificateResponse\022M\n\022assignRelaySession\022" +
-      "\032.AssignRelaySessionRequest\032\033.AssignRela" +
-      "ySessionResponse\022P\n\023registerRelayServer\022" +
-      "\033.RegisterRelayServerRequest\032\034.RegisterR",
-      "elayServerResponse\022Z\n\027notifyRelaySession" +
-      "sIdle\022\036.NotifyRelaySessionIdleRequest\032\037." +
-      "NotifyRelaySessionIdleResponseB,\n\034org.td" +
-      "mx.server.pcs.protobufB\tPCSServer\210\001\001"
+      "\t\022\017\n\007segment\030\002 \001(\t\022\023\n\013channelKeys\030\003 \003(\t\"" +
+      "\035\n\033RegisterRelayServerResponse\"B\n\026RelayC",
+      "hannelMrsSession\022\022\n\nchannelKey\030\001 \001(\t\022\024\n\014" +
+      "mrsSessionId\030\002 \001(\t\"b\n\035NotifyRelaySession" +
+      "IdleRequest\022\022\n\nrosAddress\030\001 \001(\t\022-\n\014relay" +
+      "Session\030\002 \003(\0132\027.RelayChannelMrsSession\" " +
+      "\n\036NotifyRelaySessionIdleResponse\"d\n\031Assi" +
+      "gnRelaySessionRequest\022\022\n\nchannelKey\030\001 \001(" +
+      "\t\022\017\n\007segment\030\002 \001(\t\022\"\n\tattribute\030\003 \003(\0132\017." +
+      "AttributeValue\"0\n\032AssignRelaySessionResp" +
+      "onse\022\022\n\nrosAddress\030\001 \001(\t2\325\004\n\023ControlServ" +
+      "iceProxy\022P\n\023associateApiSession\022\033.Associ",
+      "ateApiSessionRequest\032\034.AssociateApiSessi" +
+      "onResponse\022A\n\016registerServer\022\026.RegisterS" +
+      "erverRequest\032\027.RegisterServerResponse\022T\n" +
+      "\025notifySessionsRemoved\022\034.NotifySessionRe" +
+      "movedRequest\032\035.NotifySessionRemovedRespo" +
+      "nse\022V\n\025invalidateCertificate\022\035.Invalidat" +
+      "eCertificateRequest\032\036.InvalidateCertific" +
+      "ateResponse\022M\n\022assignRelaySession\022\032.Assi" +
+      "gnRelaySessionRequest\032\033.AssignRelaySessi" +
+      "onResponse\022P\n\023registerRelayServer\022\033.Regi",
+      "sterRelayServerRequest\032\034.RegisterRelaySe" +
+      "rverResponse\022Z\n\027notifyRelaySessionsIdle\022" +
+      "\036.NotifyRelaySessionIdleRequest\032\037.Notify" +
+      "RelaySessionIdleResponseB,\n\034org.tdmx.ser" +
+      "ver.pcs.protobufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11095,7 +11410,7 @@ public final class PCSServer {
     internal_static_RegisterRelayServerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerRequest_descriptor,
-        new java.lang.String[] { "RosAddress", "ChannelKeys", });
+        new java.lang.String[] { "RosAddress", "Segment", "ChannelKeys", });
     internal_static_RegisterRelayServerResponse_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_RegisterRelayServerResponse_fieldAccessorTable = new
@@ -11125,7 +11440,7 @@ public final class PCSServer {
     internal_static_AssignRelaySessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_AssignRelaySessionRequest_descriptor,
-        new java.lang.String[] { "ChannelKey", "Attribute", });
+        new java.lang.String[] { "ChannelKey", "Segment", "Attribute", });
     internal_static_AssignRelaySessionResponse_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_AssignRelaySessionResponse_fieldAccessorTable = new

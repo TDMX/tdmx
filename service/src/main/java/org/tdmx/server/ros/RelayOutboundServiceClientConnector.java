@@ -240,7 +240,7 @@ public class RelayOutboundServiceClientConnector
 
 					List<String> activeChannelKeys = relayOutboundService.getActiveRelaySessions(controllerId);
 					serverProxyMap.put(pcs, client);
-					client.registerRelayServer(rosTcpEndpoint, activeChannelKeys);
+					client.registerRelayServer(rosTcpEndpoint, activeChannelKeys, segment.getSegmentName(), null);
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),

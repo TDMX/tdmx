@@ -104,11 +104,6 @@ public class RemoteControlServiceConnector
 	private static final Logger log = LoggerFactory.getLogger(RemoteControlServiceConnector.class);
 
 	/**
-	 * The name of the attribute of a RPC client to store the session address.
-	 */
-	private static final String ROS_ADDRESS_ATTRIBUTE = "ROS";
-
-	/**
 	 * The SessionControlServiceListener delegate.
 	 */
 	private SessionControlServiceListener controlListener;
@@ -246,10 +241,11 @@ public class RemoteControlServiceConnector
 				}
 
 				// we disconnect the ROS server's endpoint from the relay service
-				String rosAddress = (String) clientChannel.getAttribute(ROS_ADDRESS_ATTRIBUTE);
-				if (rosAddress != null) {
-					log.info("Disconnect of ROS client " + rosAddress);
-					relayListener.unregisterRelayServer(rosAddress);
+				ReverseRpcRelayOutboundServiceController ros = (ReverseRpcRelayOutboundServiceController) clientChannel
+						.getAttribute(ReverseRpcRelayOutboundServiceController.ROS);
+				if (ros != null) {
+					log.info("Disconnect of ROS client " + ros.getRosTcpAddress());
+					relayListener.unregisterRelayServer(ros.getRosTcpAddress());
 				}
 			}
 
@@ -387,11 +383,17 @@ public class RemoteControlServiceConnector
 	public RegisterRelayServerResponse registerRelayServer(RpcController controller, RegisterRelayServerRequest request)
 			throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
-		log.info("registerRelayServer call from " + channel.getPeerInfo());
 
-		relayListener.registerRelayServer(request.getRosAddress(), null); // FIXME
 		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
-		channel.setAttribute(ROS_ADDRESS_ATTRIBUTE, request.getRosAddress());
+		ReverseRpcRelayOutboundServiceController reverseRpc = new ReverseRpcRelayOutboundServiceController(channel,
+				request.getRosAddress());
+		log.info("ROS client endpoint " + reverseRpc.getRosTcpAddress() + " for " + request.getChannelKeysCount()
+				+ " channels.");
+
+		log.info("registerRelayServer call from " + channel.getPeerInfo() + " for " + request.getRosAddress());
+
+		relayListener.registerRelayServer(request.getRosAddress(), request.getChannelKeysList(), request.getSegment(),
+				reverseRpc);
 
 		RegisterRelayServerResponse.Builder responseBuilder = RegisterRelayServerResponse.newBuilder();
 		return responseBuilder.build();
@@ -402,7 +404,7 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("notifyIdleRelaySession call from " + channel.getPeerInfo());
 
-		String rosTcpEndpoint = relayService.assignRelayServer(request.getChannelKey(),
+		String rosTcpEndpoint = relayService.assignRelayServer(request.getChannelKey(), request.getSegment(),
 				mapAttributes(request.getAttributeList()));
 
 		AssignRelaySessionResponse.Builder responseBuilder = AssignRelaySessionResponse.newBuilder();

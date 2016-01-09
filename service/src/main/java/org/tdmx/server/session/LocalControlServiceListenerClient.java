@@ -24,9 +24,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.server.pcs.SessionControlServiceListener;
 import org.tdmx.server.pcs.ServerSessionController;
 import org.tdmx.server.pcs.ServiceHandle;
+import org.tdmx.server.pcs.SessionControlServiceListener;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
@@ -65,6 +65,9 @@ public class LocalControlServiceListenerClient implements SessionControlServiceL
 
 	@Override
 	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm) {
+		if (ssm != null) {
+			throw new IllegalArgumentException("ssm should not be set on WS client.");
+		}
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();

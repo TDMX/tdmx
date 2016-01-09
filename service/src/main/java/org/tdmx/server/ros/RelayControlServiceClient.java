@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.server.pcs.RelayControlServiceListener;
+import org.tdmx.server.pcs.RelayOutboundServiceController;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
@@ -64,7 +65,11 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys) {
+	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
+			RelayOutboundServiceController ros) {
+		if (ros != null) {
+			throw new IllegalArgumentException("ros should not be set on ROS client.");
+		}
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();

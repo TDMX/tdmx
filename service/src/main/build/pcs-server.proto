@@ -80,7 +80,8 @@ message InvalidateCertificateResponse {
 
 message RegisterRelayServerRequest {
 	optional string rosAddress = 1;
-	repeated string channelKeys = 2; // all currently active relay sessions
+	optional string segment = 2;
+	repeated string channelKeys = 3; // all currently active relay sessions
 }
 
 message RegisterRelayServerResponse {
@@ -109,7 +110,8 @@ message NotifyRelaySessionIdleResponse {
 
 message AssignRelaySessionRequest {
 	optional string channelKey = 1;
-	repeated AttributeValue attribute = 2;
+	optional string segment = 2;
+	repeated AttributeValue attribute = 3;
 }
 
 message AssignRelaySessionResponse {

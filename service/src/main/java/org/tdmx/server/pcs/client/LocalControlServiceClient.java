@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.RelayControlService;
+import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -111,7 +111,7 @@ public class LocalControlServiceClient implements SessionControlService, RelayCo
 	}
 
 	@Override
-	public String assignRelayServer(String channelKey, Map<AttributeId, Long> attributes) {
+	public String assignRelayServer(String channelKey, String segment, Map<AttributeId, Long> attributes) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
@@ -119,6 +119,7 @@ public class LocalControlServiceClient implements SessionControlService, RelayCo
 
 			AssignRelaySessionRequest.Builder reqBuilder = AssignRelaySessionRequest.newBuilder();
 			reqBuilder.setChannelKey(channelKey);
+			reqBuilder.setSegment(segment);
 			for (Entry<AttributeId, Long> entry : attributes.entrySet()) {
 				AttributeValue.Builder attr = AttributeValue.newBuilder();
 				attr.setName(entry.getKey());
