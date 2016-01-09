@@ -233,31 +233,24 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 			return null;
 		}
 
-		SessionHolder existingSession = null;
-		// lookup any existing sessionholder
-		synchronized (this) {
-			existingSession = sessionMap.get(channelKey);
-			if (existingSession == null) {
-				existingSession = new SessionHolder();
-				sessionMap.put(channelKey, existingSession);
-			}
-		}
+		SessionHolder existingSession = getSessionHolder(channelKey);
 
 		// we've hooked the session into the map, but it may be "new" and need to allocate the endpoint
+		// since it takes some time, we want to make sure we only do it once when called concurrently.
 		synchronized (existingSession) {
 			if (existingSession.getRosTcpEndpoint() == null) {
 				ServerHolder ros = getLoadBalancedServer();
 				if (ros != null) {
-					// create the sessionId
 					existingSession.setRosTcpEndpoint(ros.getRosTcpEndpoint());
 
-					// we need to allocate the new session for the client on a backend server with the least load
+					// we need to allocate the new relay session for the client on a ROS server with the least load
 					RelayStatistic stat = ros.getRos().createRelaySession(channelKey, attributes,
 							existingSession.getMrsSessionId());
 					if (stat != null) {
 						updateServerStats(ros, stat.getLoadValue());
 
 						existingSession.setRosTcpEndpoint(ros.getRosTcpEndpoint());
+						existingSession.setMrsSessionId(null); // successfully xfered to the other.
 					} else {
 						log.warn("Unable to create relay session on remote ROS server "
 								+ existingSession.getRosTcpEndpoint());
@@ -276,20 +269,60 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 	@Override
 	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
 			RelayOutboundServiceController ros) {
-		// TODO Auto-generated method stub
+		ServerHolder serverHolder = serverMap.get(rosTcpEndpoint);
+		if (serverHolder != null) {
+			log.warn("ROS connection should not be known " + rosTcpEndpoint);
+			unregisterRelayServer(rosTcpEndpoint);
+		}
+		serverHolder = new ServerHolder(rosTcpEndpoint, ros);
+		serverMap.put(rosTcpEndpoint, serverHolder);
 
+		// pre-populate all the channel keys (sessions) that the newly connecting ROS claims to own.
+		for (String channelKey : channelKeys) {
+			SessionHolder sh = getSessionHolder(channelKey);
+			if (sh.getRosTcpEndpoint() != null) {
+				log.warn("Existing ROS " + sh.getRosTcpEndpoint() + " for connecting ROS claiming handling for "
+						+ channelKey);
+			}
+			sh.setRosTcpEndpoint(rosTcpEndpoint);
+		}
 	}
 
 	@Override
 	public void unregisterRelayServer(String rosTcpEndpoint) {
-		// TODO Auto-generated method stub
+		serverMap.remove(rosTcpEndpoint);
 
+		for (SessionHolder sh : sessionMap.values()) {
+			if (rosTcpEndpoint.equals(sh.getRosTcpEndpoint())) {
+				sh.setRosTcpEndpoint(null);
+			}
+		}
 	}
 
 	@Override
 	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions) {
-		// TODO Auto-generated method stub
-
+		for (RelayChannelMrsSession rcms : sessions) {
+			if (rcms.getChannelKey() == null) {
+				log.warn("Missing channel key.");
+				continue;
+			}
+			if (rcms.getMrsSessionId() == null) {
+				log.warn("Missing MRS sessionId.");
+				continue;
+			}
+			SessionHolder sh = sessionMap.get(rcms.getChannelKey());
+			if (sh != null) {
+				if (rosTcpEndpoint.equals(sh.getRosTcpEndpoint())) {
+					sh.setRosTcpEndpoint(null);
+					sh.setMrsSessionId(rcms.getMrsSessionId());
+				} else {
+					log.warn("Existing channel tcpEndpoint " + sh.getRosTcpEndpoint()
+							+ " does not match disconnecting claimant " + rosTcpEndpoint);
+				}
+			} else {
+				log.warn("Could not find existing session for channel " + rcms.getChannelKey());
+			}
+		}
 	}
 
 	@Override
@@ -358,6 +391,20 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private SessionHolder getSessionHolder(String channelKey) {
+		SessionHolder sh = sessionMap.get(channelKey);
+		if (sh == null) {
+			synchronized (sessionMap) {
+				sh = sessionMap.get(channelKey);
+				if (sh == null) {
+					sh = new SessionHolder();
+					sessionMap.put(channelKey, sh);
+				}
+			}
+		}
+		return sh;
+	}
 
 	private void clear() {
 		serverMap.clear();
