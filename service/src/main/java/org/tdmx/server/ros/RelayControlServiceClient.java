@@ -77,6 +77,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 
 			RegisterRelayServerRequest.Builder reqBuilder = RegisterRelayServerRequest.newBuilder();
 			reqBuilder.setRosAddress(rosTcpEndpoint);
+			reqBuilder.setSegment(segment);
 			reqBuilder.addAllChannelKeys(channelKeys);
 
 			RegisterRelayServerRequest request = reqBuilder.build();

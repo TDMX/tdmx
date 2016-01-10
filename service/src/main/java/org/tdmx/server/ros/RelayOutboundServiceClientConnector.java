@@ -50,6 +50,7 @@ import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
+import com.google.protobuf.BlockingService;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
@@ -251,6 +252,10 @@ public class RelayOutboundServiceClientConnector
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
 
+			// we implement a RPC service for ROS to do reverse RPC calling back to manage this ROS.
+			BlockingService controlServiceProxy = RelaySessionManagerProxy.newReflectiveBlockingService(this);
+			clientFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
+
 			bootstrap = new Bootstrap();
 			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
 					new RenamingThreadFactoryProxy("PCS-client-workers", Executors.defaultThreadFactory()));
@@ -430,8 +435,10 @@ public class RelayOutboundServiceClientConnector
 			String controllerId = getControllerId(pcs);
 
 			RelayControlServiceClient client = serverProxyMap.get(pcs);
-			// we park all our MRS sessions we know with the PCS
-			client.notifySessionsRemoved(rosTcpEndpoint, deactivatedSessionsByPcs.get(controllerId));
+			if (client != null) {
+				// we park all our MRS sessions we know with the PCS
+				client.notifySessionsRemoved(rosTcpEndpoint, deactivatedSessionsByPcs.get(controllerId));
+			}
 		}
 	}
 

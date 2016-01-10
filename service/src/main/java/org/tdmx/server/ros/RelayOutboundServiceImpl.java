@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	@Override
 	public List<String> getActiveRelaySessions(String pcsServerName) {
 		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override
