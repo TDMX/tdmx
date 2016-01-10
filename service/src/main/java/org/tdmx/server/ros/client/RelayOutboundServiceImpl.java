@@ -16,39 +16,37 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs.client;
+package org.tdmx.server.ros.client;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
-import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.CacheInvalidationMessageListener;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.RelayControlService;
-import org.tdmx.server.pcs.SessionControlService;
-import org.tdmx.server.pcs.SessionHandle;
-import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.ros.RosAddressUtils;
 import org.tdmx.server.runtime.Manageable;
-import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-import com.google.protobuf.RpcCallback;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
 import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
-import com.googlecode.protobuf.pro.duplex.client.RpcClientConnectionWatchdog;
 import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
@@ -61,7 +59,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements SessionControlService, RelayControlService, Manageable {
+/**
+ * The ROS client connects to all PCS servers and keeps these RPC connections alive.
+ * 
+ * 
+ * @author Peter
+ *
+ */
+public class RelayOutboundServiceImpl implements RelayClientService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -70,9 +75,13 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(LocalControlServiceImpl.class);
+	private static Logger log = LoggerFactory.getLogger(RelayOutboundServiceImpl.class);
 
-	private static final String PCS_ATTRIBUTE = "PCS";
+	private static final String ROS_TCP_ADDRESS = "ROS_TCP_ADDRESS";
+	private static final String PCS_FAILURE = "Unable to establish associated ROS server from PCS.";
+	private static final String ROS_FAILURE = "Unable to establish ROS server connection.";
+
+	private RelayControlService relayControlService;
 
 	private int connectTimeoutMillis = 5000;
 	private int connectResponseTimeoutMillis = 10000;
@@ -87,16 +96,12 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	private Bootstrap bootstrap;
 	private CleanShutdownHandler shutdownHandler;
 
-	private List<PartitionControlServer> serverList;
-	private Map<PartitionControlServer, LocalControlServiceClient> serverProxyMap = new HashMap<>();
-
 	private Segment segment = null;
 
-	private PartitionControlServerService partitionServerService;
 	/**
-	 * Delegate for handling Broadcast events.
+	 * A Map of ROS client mapped by ROS RPC endpoint address.
 	 */
-	private CacheInvalidationMessageListener cacheInvalidationListener;
+	private Map<String, RelayClientService> serverProxyMap = new ConcurrentHashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -107,25 +112,74 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	// -------------------------------------------------------------------------
 
 	@Override
-	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {
-		LocalControlServiceClient clientProxy = consistentHashToServer(sessionData.getSessionKey());
-		if (clientProxy != null) {
-			return clientProxy.associateApiSession(sessionData, clientCertificate);
-		} else {
-			log.warn("No PCS client proxy found for " + consistentHashCode(sessionData.getSessionKey()));
+	public RelayStatus relayChannelAuthorization(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			ChannelAuthorization ca) {
+		String channelKey = channel.getChannelKey(domain.getDomainName());
+
+		if (rosTcpAddress == null) {
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, ca, null);
 		}
-		return null;
+		if (rosTcpAddress == null) {
+			return RelayStatus.failure(channelKey, PCS_FAILURE);
+		}
+		RelayClientService rosClient = getRelayClient(rosTcpAddress);
+		if (rosClient == null) {
+			return RelayStatus.failure(channelKey, ROS_FAILURE);
+		}
+		return rosClient.relayChannelAuthorization(rosTcpAddress, zone, domain, channel, ca);
 	}
 
 	@Override
-	public String assignRelayServer(String channelKey, String segment, Map<AttributeId, Long> attributes) {
-		LocalControlServiceClient clientProxy = consistentHashToServer(channelKey);
-		if (clientProxy != null) {
-			return clientProxy.assignRelayServer(channelKey, segment, attributes);
-		} else {
-			log.warn("No PCS client proxy found for " + consistentHashCode(channelKey));
+	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, Zone zone, Domain domain, Channel channel) {
+		String channelKey = channel.getChannelKey(domain.getDomainName());
+
+		if (rosTcpAddress == null) {
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null);
 		}
-		return null;
+		if (rosTcpAddress == null) {
+			return RelayStatus.failure(channelKey, PCS_FAILURE);
+		}
+		RelayClientService rosClient = getRelayClient(rosTcpAddress);
+		if (rosClient == null) {
+			return RelayStatus.failure(channelKey, ROS_FAILURE);
+		}
+		return rosClient.relayChannelDestinationSession(rosTcpAddress, zone, domain, channel);
+	}
+
+	@Override
+	public RelayStatus relayChannelFlowControl(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			FlowQuota quota) {
+		String channelKey = channel.getChannelKey(domain.getDomainName());
+
+		if (rosTcpAddress == null) {
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, quota);
+		}
+		if (rosTcpAddress == null) {
+			return RelayStatus.failure(channelKey, PCS_FAILURE);
+		}
+		RelayClientService rosClient = getRelayClient(rosTcpAddress);
+		if (rosClient == null) {
+			return RelayStatus.failure(channelKey, ROS_FAILURE);
+		}
+		return rosClient.relayChannelFlowControl(rosTcpAddress, zone, domain, channel, quota);
+	}
+
+	@Override
+	public RelayStatus relayChannelMessage(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			ChannelMessage msg) {
+		String channelKey = channel.getChannelKey(domain.getDomainName());
+
+		if (rosTcpAddress == null) {
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null); // TODO extend with msg.id
+		}
+		if (rosTcpAddress == null) {
+			return RelayStatus.failure(channelKey, PCS_FAILURE);
+		}
+		RelayClientService rosClient = getRelayClient(rosTcpAddress);
+		if (rosClient == null) {
+			return RelayStatus.failure(channelKey, ROS_FAILURE);
+		}
+		return rosClient.relayChannelMessage(rosTcpAddress, zone, domain, channel, msg);
 	}
 
 	@Override
@@ -145,19 +199,6 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 			logger.setLogResponseProto(false);
 			clientFactory.setRpcLogger(logger);
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
-
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					if (parameter.getCacheInvalidation() != null) {
-						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
-						if (delegate != null) {
-							delegate.handleBroadcast(parameter.getCacheInvalidation());
-						}
-					}
-				}
-
-			};
 			// Set up the event pipeline factory.
 			// setup a RPC event listener - it just logs what happens
 			RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
@@ -189,27 +230,16 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 				}
 
 				private void disconnection(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					serverProxyMap.remove(pcs);
-					clientChannel.setOobMessageCallback(null, null);
+					String rosAddress = getRosTcpAddress(clientChannel);
+					serverProxyMap.remove(rosAddress);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					serverProxyMap.put(pcs, new LocalControlServiceClient(clientChannel));
+					String rosAddress = getRosTcpAddress(clientChannel);
 
-					// register ourselves to receive broadcast messages
-					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-							serverBroadcastCallback);
+					serverProxyMap.put(rosAddress, new RelayOutboundServiceClient(clientChannel));
 				}
 
-				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
-					PartitionControlServer pcs = (PartitionControlServer) clientChannel.getAttribute(PCS_ATTRIBUTE);
-					if (pcs == null) {
-						throw new IllegalStateException("No PCS attribute on clientChannel " + clientChannel);
-					}
-					return pcs;
-				}
 			};
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
@@ -226,20 +256,12 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 			bootstrap.option(ChannelOption.SO_SNDBUF, ioBufferSize);
 			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
 
-			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
-			watchdog.setThreadName("SCS-PCS RpcClient Watchdog");
-			rpcEventNotifier.addEventListener(watchdog);
-			watchdog.start();
-
 			shutdownHandler = new CleanShutdownHandler();
 			shutdownHandler.addResource(workers);
 			shutdownHandler.addResource(rpcExecutor);
-			shutdownHandler.addResource(watchdog);
 
-			serverList = partitionServerService.findBySegment(this.segment.getSegmentName());
-			connectToPcsServers();
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to do initial connect to PCS", e);
+			throw new RuntimeException("Unable to do setup the ROS client.", e);
 		}
 	}
 
@@ -260,7 +282,6 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 			}
 			shutdownHandler = null;
 		}
-		serverList = null;
 		bootstrap = null;
 		clientFactory = null;
 		segment = null;
@@ -280,42 +301,55 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Connect to each of the PCS servers.
-	 * 
-	 * @throws IOException
-	 */
-	private void connectToPcsServers() throws IOException {
-		for (PartitionControlServer pcs : serverList) {
-			if (pcs.getServerModulo() < 0 || pcs.getServerModulo() > serverList.size()) {
-				throw new IllegalStateException("pcs modulo " + pcs.getServerModulo() + " inconsistent for " + pcs);
-			}
-
-			PeerInfo server = new PeerInfo(pcs.getIpAddress(), pcs.getPort());
-
-			Map<String, Object> attributes = new HashMap<>();
-			attributes.put(PCS_ATTRIBUTE, pcs);
-
-			clientFactory.peerWith(server, bootstrap, attributes);
-			// the event listener hooks up the localproxy
+	private String getRosTcpAddress(RpcClientChannel clientChannel) {
+		String rosAddress = (String) clientChannel.getAttribute(ROS_TCP_ADDRESS);
+		if (rosAddress == null) {
+			throw new IllegalStateException("No ROS endpoint address attribute on clientChannel " + clientChannel);
 		}
+		return rosAddress;
 	}
 
-	private int consistentHashCode(String key) {
-		return key.hashCode() % serverList.size();
+	private String getRelayAddress(String channelKey, Zone zone, Domain domain, Channel channel,
+			ChannelAuthorization ca, FlowQuota flow) {
+
+		Map<AttributeId, Long> attributes = new HashMap<>();
+
+		attributes.put(AttributeId.ZoneId, zone.getId());
+		attributes.put(AttributeId.DomainId, domain.getId());
+		attributes.put(AttributeId.ChannelId, channel.getId());
+		if (ca != null) {
+			attributes.put(AttributeId.AuthorizationId, ca.getId());
+		}
+		if (flow != null) {
+			attributes.put(AttributeId.FlowQuotaId, flow.getId());
+		}
+
+		return relayControlService.assignRelayServer(channelKey, segment.getSegmentName(), attributes);
 	}
 
-	/**
-	 * Return the PCS server to which the key maps to with a consistent hash.
-	 * 
-	 * @param key
-	 * @return null if the PCS server is not connected to, otherwise the PCS server to which the key maps consistently.
-	 */
-	private LocalControlServiceClient consistentHashToServer(String key) {
-		int serverNo = consistentHashCode(key);
-		PartitionControlServer server = serverList.get(serverNo);
-		LocalControlServiceClient localProxy = serverProxyMap.get(server);
-		return localProxy;
+	private RelayClientService getRelayClient(String rosTcpAddress) {
+
+		RelayClientService client = serverProxyMap.get(rosTcpAddress);
+		if (client == null) {
+			synchronized (this) {
+				client = serverProxyMap.get(rosTcpAddress);
+				if (client == null) {
+					Map<String, Object> attrs = new HashMap<>();
+					attrs.put(ROS_TCP_ADDRESS, rosTcpAddress);
+
+					PeerInfo rosServer = new PeerInfo(RosAddressUtils.getRosHost(rosTcpAddress),
+							RosAddressUtils.getRosPort(rosTcpAddress));
+					try {
+						clientFactory.peerWith(rosServer, bootstrap, attrs);
+						// the serverProxyMap must be set now
+						return serverProxyMap.get(rosTcpAddress);
+					} catch (IOException e) {
+						log.warn("Unable to open ROS client connection to " + rosServer);
+					}
+				}
+			}
+		}
+		return client;
 	}
 
 	// -------------------------------------------------------------------------
@@ -384,22 +418,6 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 
 	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
-	}
-
-	public PartitionControlServerService getPartitionServerService() {
-		return partitionServerService;
-	}
-
-	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
-		this.partitionServerService = partitionServerService;
-	}
-
-	public CacheInvalidationMessageListener getCacheInvalidationListener() {
-		return cacheInvalidationListener;
-	}
-
-	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
-		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 }

@@ -164,7 +164,7 @@ public class RelayOutboundServiceClientConnector
 		}
 
 		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
-		rosTcpEndpoint = serverHostname + ":" + localPort;
+		rosTcpEndpoint = RosAddressUtils.getRosAddress(serverHostname, localPort);
 
 		// start the relay outbound service
 		relayOutboundService.start();

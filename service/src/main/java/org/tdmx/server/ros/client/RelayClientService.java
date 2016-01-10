@@ -28,8 +28,6 @@ import org.tdmx.lib.zone.domain.Zone;
 /**
  * The client's interface to the ROS.
  * 
- * TODO #93
- * 
  * @author Peter
  *
  */
@@ -38,6 +36,8 @@ public interface RelayClientService {
 	/**
 	 * Initiate relay of a ChannelAuthorization.
 	 * 
+	 * @param rosTcpAddress
+	 *            the RPC endpoint address of the ROS handling the channel.
 	 * @param zone
 	 *            the detached zone
 	 * @param domain
@@ -46,24 +46,31 @@ public interface RelayClientService {
 	 *            the detached channel
 	 * @param ca
 	 *            the detached channel authorization
+	 * @return the relay status
 	 */
-	public void relayChannelAuthorization(Zone zone, Domain domain, Channel channel, ChannelAuthorization ca);
+	public RelayStatus relayChannelAuthorization(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			ChannelAuthorization ca);
 
 	/**
 	 * Initiate relay of a ChannelDestinationSession.
 	 * 
+	 * @param rosTcpAddress
+	 *            the RPC endpoint address of the ROS handling the channel.
 	 * @param zone
 	 *            the detached zone
 	 * @param domain
 	 *            the detached domain
 	 * @param channel
 	 *            the detached channel
+	 * @return the relay status
 	 */
-	public void relayChannelDestinationSession(Zone zone, Domain domain, Channel channel);
+	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, Zone zone, Domain domain, Channel channel);
 
 	/**
 	 * Initiate relay of a Channel FlowControl state.
 	 * 
+	 * @param rosTcpAddress
+	 *            the RPC endpoint address of the ROS handling the channel.
 	 * @param zone
 	 *            the detached zone
 	 * @param domain
@@ -72,12 +79,16 @@ public interface RelayClientService {
 	 *            the detached channel
 	 * @param flowquota
 	 *            the detached channel flow quota
+	 * @return the relay status
 	 */
-	public void relayChannelFlowControl(Zone zone, Domain domain, Channel channel, FlowQuota quota);
+	public RelayStatus relayChannelFlowControl(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			FlowQuota quota);
 
 	/**
 	 * Initiate relay of a Channel Message.
 	 * 
+	 * @param rosTcpAddress
+	 *            the RPC endpoint address of the ROS handling the channel.
 	 * @param zone
 	 *            the detached zone
 	 * @param domain
@@ -86,6 +97,8 @@ public interface RelayClientService {
 	 *            the detached channel
 	 * @param msg
 	 *            the detached message
+	 * @return the relay status
 	 */
-	public void relayChannelMessage(Zone zone, Domain domain, Channel channel, ChannelMessage msg);
+	public RelayStatus relayChannelMessage(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
+			ChannelMessage msg);
 }

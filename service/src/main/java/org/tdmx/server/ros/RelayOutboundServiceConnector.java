@@ -208,7 +208,7 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 		Map<AttributeId, Long> attrs = mapAttributes(request.getAttributeList());
 		switch (request.getRelayType()) {
 		case Authorization:
-			relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.ChannelId));
+			relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.AuthorizationId));
 			break;
 		case DeliveryReply:
 			// TODO #95 DR
@@ -217,7 +217,7 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 			relayOutboundService.relayChannelDestinationSession(channelKey, attrs.get(AttributeId.ChannelId));
 			break;
 		case FlowControl:
-			relayOutboundService.relayChannelFlowControl(channelKey, attrs.get(AttributeId.ChannelId));
+			relayOutboundService.relayChannelFlowControl(channelKey, attrs.get(AttributeId.FlowQuotaId));
 			break;
 		case Message:
 			relayOutboundService.relayChannelMessage(channelKey, attrs.get(AttributeId.MessageId));
