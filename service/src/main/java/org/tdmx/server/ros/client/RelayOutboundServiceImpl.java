@@ -117,7 +117,7 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, ca, null);
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, ca, null, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -134,7 +134,7 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null);
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -152,7 +152,7 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, quota);
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, quota, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -170,7 +170,7 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null); // TODO extend with msg.id
+			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null, msg);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -310,7 +310,7 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 	}
 
 	private String getRelayAddress(String channelKey, Zone zone, Domain domain, Channel channel,
-			ChannelAuthorization ca, FlowQuota flow) {
+			ChannelAuthorization ca, FlowQuota flow, ChannelMessage msg) {
 
 		Map<AttributeId, Long> attributes = new HashMap<>();
 
@@ -322,6 +322,9 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 		}
 		if (flow != null) {
 			attributes.put(AttributeId.FlowQuotaId, flow.getId());
+		}
+		if (msg != null) {
+			attributes.put(AttributeId.MessageId, flow.getId());
 		}
 
 		return relayControlService.assignRelayServer(channelKey, segment.getSegmentName(), attributes);
