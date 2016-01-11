@@ -37,6 +37,12 @@ import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
+/**
+ * RPC helper to call the ROS server.
+ * 
+ * @author Peter
+ *
+ */
 public class RelayOutboundServiceClient implements RelayClientService {
 
 	// -------------------------------------------------------------------------

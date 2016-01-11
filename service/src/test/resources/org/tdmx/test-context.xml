@@ -15,8 +15,11 @@
 	<bean id="ws.ServerSessionManager" class="org.mockito.Mockito" factory-method="mock"> 
 	    <constructor-arg value="org.tdmx.server.session.SessionCertificateInvalidationService" /> 
 	</bean>
-	<bean id="scs.LocalControlService" class="org.mockito.Mockito" factory-method="mock"> 
+	<bean id="pcs.client.LocalControlService" class="org.mockito.Mockito" factory-method="mock"> 
 	    <constructor-arg value="org.tdmx.server.pcs.SessionControlService" /> 
+	</bean>
+	<bean id="ros.client.RelayOutboundService" class="org.mockito.Mockito" factory-method="mock"> 
+	    <constructor-arg value="org.tdmx.server.ros.client.RelayClientService" /> 
 	</bean>
 
 	<!-- CONFIGURATION -->
@@ -31,11 +34,11 @@
 	<!-- JOB SPRING CONFIG -->
 	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 
-	<!-- SERVER -->
+	<!-- SERVICE CONFIG -->
 	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
 	
-	<!-- SERVICE CONFIG -->
+	<!-- SERVER -->
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ws/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/scs/server-context.xml"/>

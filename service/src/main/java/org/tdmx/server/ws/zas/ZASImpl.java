@@ -114,6 +114,8 @@ import org.tdmx.lib.zone.service.ChannelService.SetAuthorizationResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.session.SessionCertificateInvalidationService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
@@ -136,6 +138,7 @@ public class ZASImpl implements ZAS {
 	private AuthorizedSessionLookupService<ZASServerSession> authorizedSessionService;
 	private AuthenticatedClientLookupService authenticatedClientService;
 	private SessionCertificateInvalidationService sessionInvalidationService;
+	private RelayClientService relayClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -1049,10 +1052,15 @@ public class ZASImpl implements ZAS {
 		if (operationStatus.channelAuthorization != null) {
 			// the channelAuthorization also has the channel object fetched, everything detached
 			if (operationStatus.channelAuthorization.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
-				// TODO initiate transfer of send/recv auth to other party ( processing state )
+				// initiate transfer of send/recv auth to other party ( processing state )
 				// by caller, depending on whether processingstate is PENDING.
-
-				// TODO initiate relay CA
+				// we don't cache the rosTcpAddress and get it each time from the PCS since the ZAS session is bound to
+				// the domain and not the channel
+				RelayStatus rs = relayClientService.relayChannelAuthorization(null, zone, existingDomain,
+						operationStatus.channelAuthorization.getChannel(), operationStatus.channelAuthorization);
+				if (!rs.isSuccess()) {
+					// TODO reset the relay processing status of the CA to error
+				}
 			}
 		}
 
@@ -1407,6 +1415,14 @@ public class ZASImpl implements ZAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public RelayClientService getRelayClientService() {
+		return relayClientService;
+	}
+
+	public void setRelayClientService(RelayClientService relayClientService) {
+		this.relayClientService = relayClientService;
+	}
 
 	public SessionCertificateInvalidationService getSessionInvalidationService() {
 		return sessionInvalidationService;

@@ -62,6 +62,9 @@
 	</bean>
 
 	<bean id="ws.ZAS.Implementation" class="org.tdmx.server.ws.zas.ZASImpl" >
+	
+		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
+		
 		<property name="sessionInvalidationService" ref="ws.ServerSessionManager"/>
 		<property name="authorizedSessionService" ref="ws.ZAS.AuthorizedSessionService"/>
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
