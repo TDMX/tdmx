@@ -50,20 +50,12 @@ import org.tdmx.core.api.v01.zas.DeleteService;
 import org.tdmx.core.api.v01.zas.DeleteServiceResponse;
 import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
-import org.tdmx.core.api.v01.zas.DownloadChunk;
-import org.tdmx.core.api.v01.zas.DownloadChunkResponse;
-import org.tdmx.core.api.v01.zas.ListChannelMessage;
-import org.tdmx.core.api.v01.zas.ListChannelMessageResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
 import org.tdmx.core.api.v01.zas.ModifyIpZone;
 import org.tdmx.core.api.v01.zas.ModifyIpZoneResponse;
 import org.tdmx.core.api.v01.zas.ModifyUser;
 import org.tdmx.core.api.v01.zas.ModifyUserResponse;
-import org.tdmx.core.api.v01.zas.ReceiptMessage;
-import org.tdmx.core.api.v01.zas.ReceiptMessageResponse;
-import org.tdmx.core.api.v01.zas.ReceiveMessage;
-import org.tdmx.core.api.v01.zas.ReceiveMessageResponse;
 import org.tdmx.core.api.v01.zas.SearchAddress;
 import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
@@ -82,10 +74,6 @@ import org.tdmx.core.api.v01.zas.SearchUser;
 import org.tdmx.core.api.v01.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.zas.SubmitMessage;
-import org.tdmx.core.api.v01.zas.SubmitMessageResponse;
-import org.tdmx.core.api.v01.zas.UploadChunk;
-import org.tdmx.core.api.v01.zas.UploadChunkResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -142,22 +130,6 @@ public class ZASSecurityWrapper implements ZAS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.searchUser(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
-	public UploadChunkResponse uploadChunk(UploadChunk parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.uploadChunk(parameters);
 
 		} finally {
 			getAuthorizationService().clearAuthorizedSession();
@@ -342,22 +314,6 @@ public class ZASSecurityWrapper implements ZAS {
 	}
 
 	@Override
-	public ListChannelMessageResponse listChannelMessage(ListChannelMessage parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.listChannelMessage(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
 	public ReportResponse report(Report parameters) {
 		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
 		authorizationService.setAuthorizedSession(session);
@@ -406,22 +362,6 @@ public class ZASSecurityWrapper implements ZAS {
 	}
 
 	@Override
-	public SubmitMessageResponse submitMessage(SubmitMessage parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.submitMessage(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
 	public SearchAddressResponse searchAddress(SearchAddress parameters) {
 		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
 		authorizationService.setAuthorizedSession(session);
@@ -454,22 +394,6 @@ public class ZASSecurityWrapper implements ZAS {
 	}
 
 	@Override
-	public ReceiveMessageResponse receiveMessage(ReceiveMessage parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.receiveMessage(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
 	public DeleteServiceResponse deleteService(DeleteService parameters) {
 		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
 		authorizationService.setAuthorizedSession(session);
@@ -494,22 +418,6 @@ public class ZASSecurityWrapper implements ZAS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.searchChannel(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
-	public ReceiptMessageResponse receiptMessage(ReceiptMessage parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.receiptMessage(parameters);
 
 		} finally {
 			getAuthorizationService().clearAuthorizedSession();
@@ -606,22 +514,6 @@ public class ZASSecurityWrapper implements ZAS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.createService(parameters);
-
-		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
-		}
-	}
-
-	@Override
-	public DownloadChunkResponse downloadChunk(DownloadChunk parameters) {
-		ZASServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.downloadChunk(parameters);
 
 		} finally {
 			getAuthorizationService().clearAuthorizedSession();

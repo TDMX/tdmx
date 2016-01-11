@@ -61,20 +61,12 @@ import org.tdmx.core.api.v01.zas.DeleteService;
 import org.tdmx.core.api.v01.zas.DeleteServiceResponse;
 import org.tdmx.core.api.v01.zas.DeleteUser;
 import org.tdmx.core.api.v01.zas.DeleteUserResponse;
-import org.tdmx.core.api.v01.zas.DownloadChunk;
-import org.tdmx.core.api.v01.zas.DownloadChunkResponse;
-import org.tdmx.core.api.v01.zas.ListChannelMessage;
-import org.tdmx.core.api.v01.zas.ListChannelMessageResponse;
 import org.tdmx.core.api.v01.zas.ModifyAdministrator;
 import org.tdmx.core.api.v01.zas.ModifyAdministratorResponse;
 import org.tdmx.core.api.v01.zas.ModifyIpZone;
 import org.tdmx.core.api.v01.zas.ModifyIpZoneResponse;
 import org.tdmx.core.api.v01.zas.ModifyUser;
 import org.tdmx.core.api.v01.zas.ModifyUserResponse;
-import org.tdmx.core.api.v01.zas.ReceiptMessage;
-import org.tdmx.core.api.v01.zas.ReceiptMessageResponse;
-import org.tdmx.core.api.v01.zas.ReceiveMessage;
-import org.tdmx.core.api.v01.zas.ReceiveMessageResponse;
 import org.tdmx.core.api.v01.zas.SearchAddress;
 import org.tdmx.core.api.v01.zas.SearchAddressResponse;
 import org.tdmx.core.api.v01.zas.SearchAdministrator;
@@ -93,10 +85,6 @@ import org.tdmx.core.api.v01.zas.SearchUser;
 import org.tdmx.core.api.v01.zas.SearchUserResponse;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorization;
 import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
-import org.tdmx.core.api.v01.zas.SubmitMessage;
-import org.tdmx.core.api.v01.zas.SubmitMessageResponse;
-import org.tdmx.core.api.v01.zas.UploadChunk;
-import org.tdmx.core.api.v01.zas.UploadChunkResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
@@ -1310,42 +1298,6 @@ public class ZASImpl implements ZAS {
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
 		return response;
-	}
-
-	@Override
-	public UploadChunkResponse uploadChunk(UploadChunk parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ListChannelMessageResponse listChannelMessage(ListChannelMessage parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public SubmitMessageResponse submitMessage(SubmitMessage parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ReceiveMessageResponse receiveMessage(ReceiveMessage parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ReceiptMessageResponse receiptMessage(ReceiptMessage parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DownloadChunkResponse downloadChunk(DownloadChunk parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	// -------------------------------------------------------------------------
