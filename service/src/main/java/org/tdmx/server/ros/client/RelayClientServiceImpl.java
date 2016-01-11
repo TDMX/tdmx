@@ -66,7 +66,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  *
  */
-public class RelayOutboundServiceImpl implements RelayClientService, Manageable {
+public class RelayClientServiceImpl implements RelayClientService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -75,12 +75,15 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(RelayOutboundServiceImpl.class);
+	private static Logger log = LoggerFactory.getLogger(RelayClientServiceImpl.class);
 
 	private static final String ROS_TCP_ADDRESS = "ROS_TCP_ADDRESS";
 	private static final String PCS_FAILURE = "Unable to establish associated ROS server from PCS.";
 	private static final String ROS_FAILURE = "Unable to establish ROS server connection.";
 
+	/**
+	 * The service used to lookup the rosTcpAddress for any given channel from the PCS.
+	 */
 	private RelayControlService relayControlService;
 
 	private int connectTimeoutMillis = 5000;
@@ -421,6 +424,14 @@ public class RelayOutboundServiceImpl implements RelayClientService, Manageable 
 
 	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
+	}
+
+	public RelayControlService getRelayControlService() {
+		return relayControlService;
+	}
+
+	public void setRelayControlService(RelayControlService relayControlService) {
+		this.relayControlService = relayControlService;
 	}
 
 }

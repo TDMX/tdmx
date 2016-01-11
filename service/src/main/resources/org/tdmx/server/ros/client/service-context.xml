@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+	<bean id="ros.client.RelayOutboundService" class="org.tdmx.server.ros.client.RelayClientServiceImpl" >
+		<property name="relayControlService" ref="pcs.client.LocalControlService"/>
+	
+		<property name="connectTimeoutMillis" value="${ros.client.connectTimeoutMillis}"/>
+		<property name="connectResponseTimeoutMillis" value="${ros.client.connectResponseTimeoutMillis}"/>
+		<property name="coreRpcExecutorThreads" value="${ros.client.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${ros.client.maxRpcExecutorThreads}"/>
+		<property name="ioThreads" value="${ros.client.ioThreads}"/>
+		<property name="ioBufferSize" value="${ros.client.ioBufferSize}"/>
+		<property name="tcpNoDelay" value="true"/>
+		<property name="shutdownTimeoutMs" value="${ros.client.shutdownTimeoutMs}"/>
+	</bean>
+	
+</beans>

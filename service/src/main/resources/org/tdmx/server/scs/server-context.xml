@@ -17,7 +17,7 @@
 		<property name="handleFactory">
 			<bean class="org.tdmx.server.session.SessionHandleFactoryImpl"/>
 		</property>
-		<property name="controlService" ref="scs.LocalControlService"/>
+		<property name="controlService" ref="pcs.client.LocalControlService"/>
 	</bean>
 
 	<bean id="ws.SCS" class="org.tdmx.server.ws.scs.SCSImpl" >

@@ -42,9 +42,17 @@
 	<import resource="classpath:/org/tdmx/server/rs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/rs/container-context.xml"/>
 
+	<!-- PCS CLIENT CONFIG -->
+	<import resource="classpath:/org/tdmx/server/pcs/client/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/pcs/client/container-context.xml"/>
+	
 	<!-- PCS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/pcs/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/pcs/container-context.xml"/>
+
+	<!-- ROS CLIENT CONFIG -->
+	<import resource="classpath:/org/tdmx/server/ros/client/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/ros/client/container-context.xml"/>
 
 	<!-- ROS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/ros/server-context.xml"/>

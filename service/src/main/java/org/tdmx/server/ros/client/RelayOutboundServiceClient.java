@@ -49,6 +49,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceClient.class);
 
 	private static final String RPC_CHANNEL_CLOSED = "RPC channel to ROS is closed.";
+
 	/**
 	 * The RPC channel to the server.
 	 */

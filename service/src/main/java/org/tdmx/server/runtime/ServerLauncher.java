@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -80,6 +81,10 @@ public class ServerLauncher {
 	private static final String STOP_ADDRESS_ARG_PREFIX = "--stopAddress=";
 	private static final String DEFAULT_SEGMENT = "DEFAULT";
 
+	private static List<ServiceName> PCC_REQUISITES = Arrays
+			.asList(new ServiceName[] { ServiceName.ROS, ServiceName.RS, ServiceName.SCS, ServiceName.WS });
+	private static List<ServiceName> ROC_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
+
 	private static ApplicationContext context;
 
 	private ServerLauncher() {
@@ -98,6 +103,13 @@ public class ServerLauncher {
 			if (StringUtils.hasText(arg) && arg.startsWith(SERVICE_ARG_PREFIX)) {
 				for (ServiceName srvName : ServiceName.values()) {
 					if (arg.toUpperCase().indexOf(srvName.toString()) != -1) {
+						// add any prerequisites before the actual service.
+						if (PCC_REQUISITES.contains(srvName) && !services.contains(ServiceName.PCC)) {
+							services.add(ServiceName.PCC);
+						}
+						if (ROC_REQUISITES.contains(srvName) && !services.contains(ServiceName.ROC)) {
+							services.add(ServiceName.ROC);
+						}
 						services.add(srvName);
 					}
 				}

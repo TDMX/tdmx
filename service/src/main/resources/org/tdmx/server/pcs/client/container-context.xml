@@ -14,13 +14,12 @@
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 	
 
-	<bean id="PCS.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
+
+
+	<bean id="PCC.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
-				<!-- order important here to start service before connector -->
-	            <ref bean="pcs.RelayControlService"/>
-	            <ref bean="pcs.SessionControlService"/>
-	            <ref bean="pcs.RemoteControlConnector"/>
+	            <ref bean="pcs.client.LocalControlService"/>
 	        </list>
         </property>
 		

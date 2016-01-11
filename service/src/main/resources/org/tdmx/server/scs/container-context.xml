@@ -21,19 +21,6 @@
 		<property name="authenticatedClientService" ref="scs.authenticatedClientService" />
 	</bean>
 	
-	<bean id="scs.LocalControlService" class="org.tdmx.server.pcs.client.LocalControlServiceImpl">
-		<property name="connectTimeoutMillis" value="${scs.pcs.connectTimeoutMillis}"/>
-		<property name="connectResponseTimeoutMillis" value="${scs.pcs.connectResponseTimeoutMillis}"/>
-		<property name="coreRpcExecutorThreads" value="${scs.pcs.coreRpcExecutorThreads}"/>
-		<property name="maxRpcExecutorThreads" value="${scs.pcs.maxRpcExecutorThreads}"/>
-		<property name="ioThreads" value="${scs.pcs.ioThreads}"/>
-		<property name="ioBufferSize" value="${scs.pcs.ioBufferSize}"/>
-		<property name="tcpNoDelay" value="true"/>
-		<property name="shutdownTimeoutMs" value="${scs.pcs.shutdownTimeoutMs}"/>
-		<property name="cacheInvalidationListener" ref="tdmx.server.CacheInvalidationEventDelegater"/>
-		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
-	</bean>
-
 	<bean id="SCS.Server" class="org.tdmx.server.scs.SCSWebServiceServerContainer" init-method="init">
 
 		<property name="cipherSuites" value="${scs.httpsCipherList}"/>
@@ -56,7 +43,6 @@
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
  				<ref bean="ws.SCS"/>
- 				<ref bean="scs.LocalControlService"/>
  	        </list>
         </property>
 		 
