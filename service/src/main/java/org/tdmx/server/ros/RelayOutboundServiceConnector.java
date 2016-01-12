@@ -226,7 +226,8 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 			break;
 		}
 
-		return null;
+		RelayResponse.Builder response = RelayResponse.newBuilder();
+		return response.build();
 	}
 
 	@Override

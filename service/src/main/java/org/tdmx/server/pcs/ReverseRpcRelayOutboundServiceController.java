@@ -85,7 +85,9 @@ class ReverseRpcRelayOutboundServiceController implements RelayOutboundServiceCo
 			attr.setValue(entry.getValue());
 			reqBuilder.addAttribute(attr);
 		}
-		reqBuilder.setMrsSessionId(mrsSessionId);
+		if (mrsSessionId != null) {
+			reqBuilder.setMrsSessionId(mrsSessionId);
+		}
 
 		try {
 			org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic response = blockingService
