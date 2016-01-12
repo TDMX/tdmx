@@ -23,6 +23,7 @@ import java.util.List;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -33,6 +34,7 @@ import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -308,4 +310,30 @@ public interface ChannelService {
 	 */
 	public SubmitMessageResultHolder preRelayMessage(Zone zone, ChannelMessage msg);
 
+	/**
+	 * Update the ProcessingState of the Channel's DestinationSession.
+	 * 
+	 * @param channelId
+	 * @param newState
+	 * @return the modified Channel not including the CA and FlowQuota
+	 */
+	public Channel updateStatusDestinationSession(Long channelId, ProcessingState newState);
+
+	/**
+	 * Update the ProcessingState of the Channel's ChannelAuthorization.
+	 * 
+	 * @param channelId
+	 * @param newState
+	 * @return the modified Channel which includes the ChannelAuthorization
+	 */
+	public Channel updateStatusChannelAuthorization(Long channelId, ProcessingState newState);
+
+	/**
+	 * Update the ProcessingState of the Channel's FlowControl change.
+	 * 
+	 * @param quotaId
+	 * @param newState
+	 * @return the modified FlowQuota
+	 */
+	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState);
 }

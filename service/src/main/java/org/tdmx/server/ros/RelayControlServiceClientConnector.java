@@ -81,7 +81,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  *
  */
-public class RelayOutboundServiceClientConnector
+public class RelayControlServiceClientConnector
 		implements Manageable, Runnable, RelaySessionManagerProxy.BlockingInterface {
 
 	// -------------------------------------------------------------------------

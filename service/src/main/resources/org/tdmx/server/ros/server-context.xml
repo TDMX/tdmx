@@ -16,7 +16,8 @@
 	<bean id="ros.RelayOutboundService" class="org.tdmx.server.ros.RelayOutboundServiceImpl" >
 	</bean>
 	
-	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayOutboundServiceClientConnector" >
+	<!-- client of all PCS -->
+	<bean id="ros.RelayOutboundServerClientConnector" class="org.tdmx.server.ros.RelayControlServiceClientConnector" >
 		<property name="relayOutboundService" ref="ros.RelayOutboundService" />
 
 		<property name="idleNotificationIntervalSec" value="${ros.idleNotificationIntervalSec}"/>
@@ -36,6 +37,7 @@
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 	</bean>
 	
+	<!-- serves WS clients -->
 	<bean id="ros.RelayOutboundServerServerConnector" class="org.tdmx.server.ros.RelayOutboundServiceConnector" >
 		<property name="relayOutboundService" ref="ros.RelayOutboundService" />
 		

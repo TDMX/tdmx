@@ -42,6 +42,8 @@ public class ProcessingState implements Serializable {
 	// -------------------------------------------------------------------------
 	public static final int MAX_ERRORMESSAGE_LEN = 2048;
 
+	public static final int FAILURE_RELAY_INITIATION = 501;
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -72,6 +74,13 @@ public class ProcessingState implements Serializable {
 	public ProcessingState(ProcessingStatus currentStatus) {
 		status = currentStatus;
 		timestamp = new Date();
+	}
+
+	public static ProcessingState error(int errorCode, String errorMsg) {
+		ProcessingState e = new ProcessingState(ProcessingStatus.FAILURE);
+		e.setErrorCode(errorCode);
+		e.setErrorMessage(errorMsg);
+		return e;
 	}
 
 	// -------------------------------------------------------------------------

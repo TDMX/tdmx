@@ -509,6 +509,31 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		return getChannelDao().loadChannelMessageByMessageId(msgId);
 	}
 
+	@Override
+	@Transactional(value = "ZoneDB")
+	public Channel updateStatusDestinationSession(Long channelId, ProcessingState newState) {
+		Channel c = getChannelDao().loadById(channelId, false, false);
+		c.setProcessingState(newState);
+		return c;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public Channel updateStatusChannelAuthorization(Long channelId, ProcessingState newState) {
+		Channel c = getChannelDao().loadById(channelId, false, true);
+		c.getAuthorization().setProcessingState(newState);
+		return c;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState) {
+		FlowQuota fc = getChannelDao().lock(quotaId);
+		// TODO #93 introduce PS into FlowQuota
+		// fc.setProcessingState(newState);
+		return fc;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

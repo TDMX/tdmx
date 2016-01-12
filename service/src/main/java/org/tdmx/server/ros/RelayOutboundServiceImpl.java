@@ -54,63 +54,67 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
-
+		log.info("Starting RelayOutboundService.");
+		// TODO #93
 	}
 
 	@Override
 	public Map<String, List<RelayChannelMrsSession>> stop() {
-		// TODO Auto-generated method stub
+		log.info("Stopping RelayOutboundService.");
+		// TODO #93
 		return null;
 	}
 
 	@Override
 	public int getCurrentLoad() {
-		// TODO Auto-generated method stub
+		log.debug("Current load ");
+		// TODO #93
 		return 0;
 	}
 
 	@Override
 	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String mrsSessionId,
 			String pcsServerName) {
-		// TODO Auto-generated method stub
-
+		log.info("Start relay session " + channelKey);
+		// TODO #93
 	}
 
 	@Override
 	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName) {
-		// TODO Auto-generated method stub
+		log.info("Remove idle relay sessions for " + pcsServerName);
+		// TODO #93
 		return null;
 	}
 
 	@Override
 	public List<String> getActiveRelaySessions(String pcsServerName) {
-		// TODO Auto-generated method stub
+		log.info("Get active relay sessions for " + pcsServerName);
+		// TODO #93
 		return Collections.emptyList();
 	}
 
 	@Override
 	public void relayChannelAuthorization(String channelKey, Long channelId) {
-		// TODO Auto-generated method stub
-
+		log.info("relayChannelAuthorization " + channelKey);
+		// TODO #93
 	}
 
 	@Override
 	public void relayChannelFlowControl(String channelKey, Long channelId) {
-		// TODO Auto-generated method stub
-
+		log.info("relayChannelFlowControl " + channelKey);
+		// TODO #93
 	}
 
 	@Override
 	public void relayChannelMessage(String channelKey, Long messageId) {
-		// TODO Auto-generated method stub
-
+		log.info("relayChannelMessage " + channelKey);
+		// TODO #93
 	}
 
 	@Override
 	public void relayChannelDestinationSession(String channelKey, Long channelId) {
-		// TODO Auto-generated method stub
-
+		log.info("relayChannelDestinationSession " + channelKey);
+		// TODO #93
 	}
 
 	// -------------------------------------------------------------------------

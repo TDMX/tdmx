@@ -88,6 +88,7 @@ import org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -138,6 +139,7 @@ public class ZASImpl implements ZAS {
 	private AuthorizedSessionLookupService<ZASServerSession> authorizedSessionService;
 	private AuthenticatedClientLookupService authenticatedClientService;
 	private SessionCertificateInvalidationService sessionInvalidationService;
+
 	private RelayClientService relayClientService;
 
 	private DomainService domainService;
@@ -450,12 +452,6 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	public SearchIpZoneResponse searchIpZone(SearchIpZone parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public CreateAddressResponse createAddress(CreateAddress parameters) {
 		final CreateAddressResponse response = new CreateAddressResponse();
 
@@ -543,30 +539,6 @@ public class ZASImpl implements ZAS {
 	}
 
 	@Override
-	public IncidentResponse incident(Incident parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CreateIpZoneResponse createIpZone(CreateIpZone parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DeleteIpZoneResponse deleteIpZone(DeleteIpZone parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ReportResponse report(Report parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public DeleteUserResponse deleteUser(DeleteUser parameters) {
 		final DeleteUserResponse response = new DeleteUserResponse();
 
@@ -605,12 +577,6 @@ public class ZASImpl implements ZAS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	public ModifyIpZoneResponse modifyIpZone(ModifyIpZone parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -1052,14 +1018,17 @@ public class ZASImpl implements ZAS {
 		if (operationStatus.channelAuthorization != null) {
 			// the channelAuthorization also has the channel object fetched, everything detached
 			if (operationStatus.channelAuthorization.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+				org.tdmx.lib.zone.domain.Channel relayChannel = operationStatus.channelAuthorization.getChannel();
 				// initiate transfer of send/recv auth to other party ( processing state )
 				// by caller, depending on whether processingstate is PENDING.
 				// we don't cache the rosTcpAddress and get it each time from the PCS since the ZAS session is bound to
 				// the domain and not the channel
-				RelayStatus rs = relayClientService.relayChannelAuthorization(null, zone, existingDomain,
-						operationStatus.channelAuthorization.getChannel(), operationStatus.channelAuthorization);
+				RelayStatus rs = relayClientService.relayChannelAuthorization(null, zone, existingDomain, relayChannel,
+						operationStatus.channelAuthorization);
 				if (!rs.isSuccess()) {
-					// TODO reset the relay processing status of the CA to error
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
+							rs.getErrorMessage());
+					channelService.updateStatusChannelAuthorization(relayChannel.getId(), error);
 				}
 			}
 		}
@@ -1306,6 +1275,42 @@ public class ZASImpl implements ZAS {
 		response.setSuccess(true);
 		response.setPage(parameters.getPage());
 		return response;
+	}
+
+	@Override
+	public IncidentResponse incident(Incident parameters) {
+		// TODO Phase#2
+		return null;
+	}
+
+	@Override
+	public ReportResponse report(Report parameters) {
+		// TODO Phase#2
+		return null;
+	}
+
+	@Override
+	public SearchIpZoneResponse searchIpZone(SearchIpZone parameters) {
+		// TODO Phase#2
+		return null;
+	}
+
+	@Override
+	public CreateIpZoneResponse createIpZone(CreateIpZone parameters) {
+		// TODO Phase#2
+		return null;
+	}
+
+	@Override
+	public ModifyIpZoneResponse modifyIpZone(ModifyIpZone parameters) {
+		// TODO Phase#2
+		return null;
+	}
+
+	@Override
+	public DeleteIpZoneResponse deleteIpZone(DeleteIpZone parameters) {
+		// TODO Phase#2
+		return null;
 	}
 
 	// -------------------------------------------------------------------------
