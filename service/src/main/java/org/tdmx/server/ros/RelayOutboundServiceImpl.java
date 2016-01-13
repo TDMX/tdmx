@@ -18,9 +18,12 @@
  */
 package org.tdmx.server.ros;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,16 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceImpl.class);
+
+	/**
+	 * Map of all RelayContext's keyed by channelKey.
+	 */
+	private final Map<String, RelayContext> contextMap = new HashMap<>();
+
+	/**
+	 * The current load value.
+	 */
+	private final AtomicInteger loadValue = new AtomicInteger(0);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -76,27 +89,66 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String mrsSessionId,
 			String pcsServerName) {
 		log.info("Start relay session " + channelKey);
-		// TODO #93
+
+		// TODO #93 lookup the domain objects.
+
+		RelayContext rc = new RelayContext(pcsServerName, channelKey, null /* zone */, null /* domain */,
+				null /* channel */);
+		// take over existing mrs sessionId if provided by PCS.
+		rc.setMrsSessionId(mrsSessionId);
+		contextMap.put(channelKey, rc);
 	}
 
 	@Override
 	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName) {
 		log.info("Remove idle relay sessions for " + pcsServerName);
-		// TODO #93
-		return null;
+		List<String> idleSessions = new ArrayList<>();
+		for (Entry<String, RelayContext> ctxEntry : contextMap.entrySet()) {
+			RelayContext rc = ctxEntry.getValue();
+			if (pcsServerName.equals(rc.getPcsServerName()) && RelayContextState.IDLE == rc.getState()) {
+				idleSessions.add(ctxEntry.getKey());
+			}
+		}
+		List<RelayChannelMrsSession> result = new ArrayList<>();
+		for (String channelKey : idleSessions) {
+			RelayContext rc = contextMap.remove(channelKey);
+			if (pcsServerName.equals(rc.getPcsServerName()) && RelayContextState.IDLE == rc.getState()) {
+				RelayChannelMrsSession.Builder rs = RelayChannelMrsSession.newBuilder();
+				rs.setChannelKey(channelKey);
+				rs.setMrsSessionId(rc.getMrsSessionId());
+				result.add(rs.build());
+			} else {
+				contextMap.put(channelKey, rc);
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public List<String> getActiveRelaySessions(String pcsServerName) {
 		log.info("Get active relay sessions for " + pcsServerName);
-		// TODO #93
-		return Collections.emptyList();
+		// we find any non IDLE sessions ( active ) to give to the PCS ( discovery on connect ).
+		List<String> activeSessions = new ArrayList<>();
+		for (Entry<String, RelayContext> ctxEntry : contextMap.entrySet()) {
+			if (RelayContextState.IDLE != ctxEntry.getValue().getState()) {
+				activeSessions.add(ctxEntry.getKey());
+			}
+		}
+		return activeSessions;
 	}
 
 	@Override
 	public void relayChannelAuthorization(String channelKey, Long channelId) {
 		log.info("relayChannelAuthorization " + channelKey);
 		// TODO #93
+		RelayContext rc = contextMap.get(channelKey);
+		if (rc != null) {
+			// add the CA to the relay context
+
+		} else {
+			// just warn - but since we don't have a session , we cannot lookup the domain object.
+			log.warn("relayChannelAuthorization " + channelKey + " could not find relay context.");
+		}
 	}
 
 	@Override
