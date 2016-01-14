@@ -18,21 +18,28 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
  * The control state of a channel's relaying activity.
  * 
+ * META - we have a meta relaying job scheduled. No data or fetching allowed.
+ * 
+ * FETCH - we have a data fetching job scheduled. Only one data fetching job can be scheduled at one time.
+ * 
  * @author Peter
  *
  */
-public class RelayContext {
+public class RelayChannelContext {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -41,12 +48,19 @@ public class RelayContext {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(RelayContext.class);
+	private static final Logger log = LoggerFactory.getLogger(RelayChannelContext.class);
+
+	private final Comparator<RelayJobContext> ORDER = new Comparator<RelayJobContext>() {
+		@Override
+		public int compare(RelayJobContext o1, RelayJobContext o2) {
+			return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+		}
+	};
 
 	// internal
-	private RelayContextState state = RelayContextState.META;
-
-	private final LinkedList<RelayObject> objects = new LinkedList<>();
+	private RelayContextState state = RelayContextState.IDLE;
+	private LinkedList<RelayJobContext> scheduledJobs = new LinkedList<>();
+	private LinkedList<RelayJobContext> pendingJobs = new LinkedList<>();
 	private String mrsSessionId;
 
 	// reference
@@ -54,22 +68,79 @@ public class RelayContext {
 	private final String channelKey;
 	private final Zone zone;
 	private final Domain domain;
-	private final Channel channel;
+	private final Long channelId;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayContext(String pcsServerName, String channelKey, Zone zone, Domain domain, Channel channel) {
+	public RelayChannelContext(String pcsServerName, String channelKey, Zone zone, Domain domain, Long channelId) {
 		this.pcsServerName = pcsServerName;
 		this.channelKey = channelKey;
 		this.zone = zone;
 		this.domain = domain;
-		this.channel = channel;
+		this.channelId = channelId;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * TODO
+	 * 
+	 * @param rjc
+	 * @return the jobs to schedule.
+	 */
+	public List<RelayJobContext> addRelayJob(RelayJobContext rjc) {
+		List<RelayJobContext> result = new ArrayList<>();
+		switch (state) {
+		case META:
+			break;
+		case DATA:
+			break;
+		case FETCH:
+			break;
+		case IDLE:
+			scheduledJobs.add(rjc);
+			result.add(rjc);
+			if (RelayJobType.MetaDataRelay == rjc.getType()) {
+				state = RelayContextState.META;
+			} else
+				if (RelayJobType.DeliveryReportFetch == rjc.getType() || RelayJobType.MessageFetch == rjc.getType()) {
+				state = RelayContextState.FETCH;
+			} else {
+				state = RelayContextState.DATA;
+			}
+			break;
+		default:
+			break;
+
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param rjc
+	 * @return the jobs to schedule.
+	 */
+	public List<RelayJobContext> finishRelayJob(RelayJobContext rjc, ProcessingState ps) {
+		List<RelayJobContext> result = new ArrayList<>();
+		switch (state) {
+		case META:
+			break;
+		case DATA:
+			break;
+		case FETCH:
+			break;
+		case IDLE:
+			break;
+		default:
+			break;
+
+		}
+		return result;
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -99,16 +170,16 @@ public class RelayContext {
 		return domain;
 	}
 
-	public Channel getChannel() {
-		return channel;
-	}
-
 	public String getMrsSessionId() {
 		return mrsSessionId;
 	}
 
 	public void setMrsSessionId(String mrsSessionId) {
 		this.mrsSessionId = mrsSessionId;
+	}
+
+	public Long getChannelId() {
+		return channelId;
 	}
 
 	public RelayContextState getState() {

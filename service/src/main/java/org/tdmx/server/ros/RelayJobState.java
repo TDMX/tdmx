@@ -18,11 +18,10 @@
  */
 package org.tdmx.server.ros;
 
-public enum RelayObjectType {
+public enum RelayJobState {
 
-	ChannelAuthorization,
-	ChannelFlowControl,
-	ChannelDestinationSession,
-	ChannelMessage,
-	DeliveryReport;
+	NEW,
+	SCHEDULED,
+	STARTED,
+	FINISHED;
 }

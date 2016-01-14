@@ -20,6 +20,7 @@ package org.tdmx.server.ros;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**
  * The reference to an object which can be relayed.
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter
  *
  */
-public class RelayObject {
+public class RelayJobContext {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,24 +37,53 @@ public class RelayObject {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(RelayObject.class);
+	private static final Logger log = LoggerFactory.getLogger(RelayJobContext.class);
 
-	private final long objectId;
-	private final long timestamp;
-	private final RelayObjectType type;
+	private final RelayChannelContext channelContext;
+	private final RelayJobType type;
+	private Object relayObject;
+
+	private long timestamp = 0L;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayObject(RelayObjectType type, long objectId, long timestamp) {
+	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type) {
+		this.channelContext = channelContext;
 		this.type = type;
-		this.objectId = objectId;
-		this.timestamp = timestamp;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public void setChannelMessage(ChannelMessage msg) {
+		relayObject = msg;
+		timestamp = msg.getSignature().getSignatureDate().getTime();
+	}
+
+	public ChannelMessage getChannelMessage() {
+		if (relayObject instanceof ChannelMessage) {
+			return (ChannelMessage) relayObject;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the relay object's id for ChannelMessages and object references, or null if not an object.
+	 * 
+	 * @return the relay object's id for ChannelMessages and object references, or null if not an object.
+	 */
+	public Long getObjectId() {
+		if (relayObject instanceof ChannelMessage) {
+			return ((ChannelMessage) relayObject).getId();
+		} else if (relayObject instanceof Long) {
+			return (Long) relayObject;
+		}
+		return null;
+	}
+
+	// TODO #95 DR
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -67,12 +97,12 @@ public class RelayObject {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public RelayObjectType getType() {
-		return type;
+	public RelayChannelContext getChannelContext() {
+		return channelContext;
 	}
 
-	public long getObjectId() {
-		return objectId;
+	public RelayJobType getType() {
+		return type;
 	}
 
 	public long getTimestamp() {

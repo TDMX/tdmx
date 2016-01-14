@@ -48,9 +48,9 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceImpl.class);
 
 	/**
-	 * Map of all RelayContext's keyed by channelKey.
+	 * Map of all RelayChannelContext's keyed by channelKey.
 	 */
-	private final Map<String, RelayContext> contextMap = new HashMap<>();
+	private final Map<String, RelayChannelContext> contextMap = new HashMap<>();
 
 	/**
 	 * The current load value.
@@ -92,8 +92,8 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 		// TODO #93 lookup the domain objects.
 
-		RelayContext rc = new RelayContext(pcsServerName, channelKey, null /* zone */, null /* domain */,
-				null /* channel */);
+		RelayChannelContext rc = new RelayChannelContext(pcsServerName, channelKey, null /* zone */, null /* domain */,
+				null /* channelId */);
 		// take over existing mrs sessionId if provided by PCS.
 		rc.setMrsSessionId(mrsSessionId);
 		contextMap.put(channelKey, rc);
@@ -103,15 +103,15 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName) {
 		log.info("Remove idle relay sessions for " + pcsServerName);
 		List<String> idleSessions = new ArrayList<>();
-		for (Entry<String, RelayContext> ctxEntry : contextMap.entrySet()) {
-			RelayContext rc = ctxEntry.getValue();
+		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
+			RelayChannelContext rc = ctxEntry.getValue();
 			if (pcsServerName.equals(rc.getPcsServerName()) && RelayContextState.IDLE == rc.getState()) {
 				idleSessions.add(ctxEntry.getKey());
 			}
 		}
 		List<RelayChannelMrsSession> result = new ArrayList<>();
 		for (String channelKey : idleSessions) {
-			RelayContext rc = contextMap.remove(channelKey);
+			RelayChannelContext rc = contextMap.remove(channelKey);
 			if (pcsServerName.equals(rc.getPcsServerName()) && RelayContextState.IDLE == rc.getState()) {
 				RelayChannelMrsSession.Builder rs = RelayChannelMrsSession.newBuilder();
 				rs.setChannelKey(channelKey);
@@ -129,7 +129,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		log.info("Get active relay sessions for " + pcsServerName);
 		// we find any non IDLE sessions ( active ) to give to the PCS ( discovery on connect ).
 		List<String> activeSessions = new ArrayList<>();
-		for (Entry<String, RelayContext> ctxEntry : contextMap.entrySet()) {
+		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
 			if (RelayContextState.IDLE != ctxEntry.getValue().getState()) {
 				activeSessions.add(ctxEntry.getKey());
 			}
@@ -141,7 +141,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	public void relayChannelAuthorization(String channelKey, Long channelId) {
 		log.info("relayChannelAuthorization " + channelKey);
 		// TODO #93
-		RelayContext rc = contextMap.get(channelKey);
+		RelayChannelContext rc = contextMap.get(channelKey);
 		if (rc != null) {
 			// add the CA to the relay context
 
