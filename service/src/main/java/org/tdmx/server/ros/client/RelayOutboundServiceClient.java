@@ -20,6 +20,7 @@ package org.tdmx.server.ros.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -73,8 +74,8 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public RelayStatus relayChannelAuthorization(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			ChannelAuthorization ca) {
+	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, ChannelAuthorization ca) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
@@ -86,7 +87,8 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	}
 
 	@Override
-	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, Zone zone, Domain domain, Channel channel) {
+	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
@@ -98,8 +100,8 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	}
 
 	@Override
-	public RelayStatus relayChannelFlowControl(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			FlowQuota quota) {
+	public RelayStatus relayChannelFlowControl(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, FlowQuota quota) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
@@ -111,8 +113,8 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	}
 
 	@Override
-	public RelayStatus relayChannelMessage(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			ChannelMessage msg) {
+	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, ChannelMessage msg) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 

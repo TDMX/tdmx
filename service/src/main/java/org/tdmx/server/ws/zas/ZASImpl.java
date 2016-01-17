@@ -1023,8 +1023,8 @@ public class ZASImpl implements ZAS {
 				// by caller, depending on whether processingstate is PENDING.
 				// we don't cache the rosTcpAddress and get it each time from the PCS since the ZAS session is bound to
 				// the domain and not the channel
-				RelayStatus rs = relayClientService.relayChannelAuthorization(null, zone, existingDomain, relayChannel,
-						operationStatus.channelAuthorization);
+				RelayStatus rs = relayClientService.relayChannelAuthorization(null, session.getAccountZone(), zone,
+						existingDomain, relayChannel, operationStatus.channelAuthorization);
 				if (!rs.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
 							rs.getErrorMessage());

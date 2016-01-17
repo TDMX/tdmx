@@ -18,10 +18,32 @@
  */
 package org.tdmx.server.ros;
 
-public enum RelayJobState {
+import java.util.List;
 
-	NEW,
-	SCHEDULED,
-	STARTED,
-	FINISHED;
+import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.Zone;
+
+/**
+ * Fetches data from zone services.
+ * 
+ * @author Peter
+ *
+ */
+public interface RelayDataService {
+
+	public AccountZone getAccountZone(Long accountZoneId);
+
+	public Zone getZone(AccountZone az, Long zoneId);
+
+	public Domain getDomain(AccountZone az, Zone z, Long domainId);
+
+	public Channel getChannel(AccountZone az, Zone z, Domain d, Long channelId);
+
+	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long msgId);
+
+	public List<ChannelMessage> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
+
 }

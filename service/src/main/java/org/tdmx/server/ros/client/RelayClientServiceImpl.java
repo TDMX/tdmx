@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
@@ -115,12 +116,12 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public RelayStatus relayChannelAuthorization(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			ChannelAuthorization ca) {
+	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, ChannelAuthorization ca) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, ca, null, null);
+			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, ca, null, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -129,15 +130,16 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (rosClient == null) {
 			return RelayStatus.failure(channelKey, ROS_FAILURE);
 		}
-		return rosClient.relayChannelAuthorization(rosTcpAddress, zone, domain, channel, ca);
+		return rosClient.relayChannelAuthorization(rosTcpAddress, az, zone, domain, channel, ca);
 	}
 
 	@Override
-	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, Zone zone, Domain domain, Channel channel) {
+	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null, null);
+			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -146,16 +148,16 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (rosClient == null) {
 			return RelayStatus.failure(channelKey, ROS_FAILURE);
 		}
-		return rosClient.relayChannelDestinationSession(rosTcpAddress, zone, domain, channel);
+		return rosClient.relayChannelDestinationSession(rosTcpAddress, az, zone, domain, channel);
 	}
 
 	@Override
-	public RelayStatus relayChannelFlowControl(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			FlowQuota quota) {
+	public RelayStatus relayChannelFlowControl(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, FlowQuota quota) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, quota, null);
+			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, quota, null);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -164,16 +166,16 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (rosClient == null) {
 			return RelayStatus.failure(channelKey, ROS_FAILURE);
 		}
-		return rosClient.relayChannelFlowControl(rosTcpAddress, zone, domain, channel, quota);
+		return rosClient.relayChannelFlowControl(rosTcpAddress, az, zone, domain, channel, quota);
 	}
 
 	@Override
-	public RelayStatus relayChannelMessage(String rosTcpAddress, Zone zone, Domain domain, Channel channel,
-			ChannelMessage msg) {
+	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+			Channel channel, ChannelMessage msg) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, zone, domain, channel, null, null, msg);
+			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, msg);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, PCS_FAILURE);
@@ -182,7 +184,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (rosClient == null) {
 			return RelayStatus.failure(channelKey, ROS_FAILURE);
 		}
-		return rosClient.relayChannelMessage(rosTcpAddress, zone, domain, channel, msg);
+		return rosClient.relayChannelMessage(rosTcpAddress, az, zone, domain, channel, msg);
 	}
 
 	@Override
@@ -312,11 +314,12 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		return rosAddress;
 	}
 
-	private String getRelayAddress(String channelKey, Zone zone, Domain domain, Channel channel,
+	private String getRelayAddress(String channelKey, AccountZone az, Zone zone, Domain domain, Channel channel,
 			ChannelAuthorization ca, FlowQuota flow, ChannelMessage msg) {
 
 		Map<AttributeId, Long> attributes = new HashMap<>();
 
+		attributes.put(AttributeId.AccountZoneId, az.getId());
 		attributes.put(AttributeId.ZoneId, zone.getId());
 		attributes.put(AttributeId.DomainId, domain.getId());
 		attributes.put(AttributeId.ChannelId, channel.getId());

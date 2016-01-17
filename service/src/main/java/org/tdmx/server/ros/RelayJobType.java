@@ -21,13 +21,9 @@ package org.tdmx.server.ros;
 public enum RelayJobType {
 
 	// CA, DS, FC
-	MetaDataRelay,
-	// MSG
-	MessageFetch,
-	MessageRelay,
-	MessageRelayById,
-	// DR
-	DeliveryReportFetch,
-	DeliveryReportRelay,
-	DeliveryReportRelayById;
+	MetaData,
+	// Fetch MSG/DR
+	Fetch,
+	// MSG/DR (retrieved or just referenced by id)
+	Data,;
 }

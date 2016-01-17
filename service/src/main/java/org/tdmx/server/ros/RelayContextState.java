@@ -18,19 +18,11 @@
  */
 package org.tdmx.server.ros;
 
-/**
- * The state that a relay context can be in.
- * 
- * META <-> DATA <-> FETCH <-> IDLE
- * 
- * @author Peter
- *
- */
 public enum RelayContextState {
 
 	META,
 	FETCH,
 	DATA,
-	IDLE;
-
+	IDLE,
+	SHUTDOWN;
 }

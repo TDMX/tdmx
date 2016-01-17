@@ -155,6 +155,16 @@ public class Channel implements Serializable {
 		return new ChannelName(origin, destination);
 	}
 
+	/**
+	 * When the same domain is both sender and receiver, we don't need to relay effectively via the MRS but can shortcut
+	 * the relay entirely.
+	 * 
+	 * @return whether the same domain is at both sender and receiver ends of the channel.
+	 */
+	public boolean isSameDomain() {
+		return isSend() && isRecv();
+	}
+
 	public boolean isSend() {
 		return domain.getDomainName().equals(origin.getDomainName());
 	}

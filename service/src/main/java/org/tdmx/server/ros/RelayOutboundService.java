@@ -99,10 +99,10 @@ public interface RelayOutboundService {
 	 * Notify that there is an opening of the channel flow control to relay.
 	 * 
 	 * @param channelKey
-	 * @param channelId
-	 *            the identifier of the channel.
+	 * @param flowQuotaId
+	 *            the identifier of the channel flow quota.
 	 */
-	public void relayChannelFlowControl(String channelKey, Long channelId);
+	public void relayChannelFlowControl(String channelKey, Long quotalId);
 
 	/**
 	 * Notify that there is a ChannelMessage to relay.

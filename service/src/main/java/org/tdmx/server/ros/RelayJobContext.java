@@ -39,23 +39,36 @@ public class RelayJobContext {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayJobContext.class);
 
+	// parent reference
 	private final RelayChannelContext channelContext;
-	private final RelayJobType type;
-	private Object relayObject;
 
+	// reference
+	private final RelayJobType type;
+	private final Long objectId;
+
+	private Object relayObject;
 	private long timestamp = 0L;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type) {
+	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type, Long objectId) {
 		this.channelContext = channelContext;
 		this.type = type;
+		this.objectId = objectId;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("RelayJobContext [type=").append(type);
+		builder.append("objectId=").append(objectId).append("]");
+		return builder.toString();
+	}
 
 	public void setChannelMessage(ChannelMessage msg) {
 		relayObject = msg;
@@ -65,20 +78,6 @@ public class RelayJobContext {
 	public ChannelMessage getChannelMessage() {
 		if (relayObject instanceof ChannelMessage) {
 			return (ChannelMessage) relayObject;
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the relay object's id for ChannelMessages and object references, or null if not an object.
-	 * 
-	 * @return the relay object's id for ChannelMessages and object references, or null if not an object.
-	 */
-	public Long getObjectId() {
-		if (relayObject instanceof ChannelMessage) {
-			return ((ChannelMessage) relayObject).getId();
-		} else if (relayObject instanceof Long) {
-			return (Long) relayObject;
 		}
 		return null;
 	}
@@ -103,6 +102,10 @@ public class RelayJobContext {
 
 	public RelayJobType getType() {
 		return type;
+	}
+
+	public Long getObjectId() {
+		return objectId;
 	}
 
 	public long getTimestamp() {

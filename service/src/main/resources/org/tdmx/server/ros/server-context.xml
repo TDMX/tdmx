@@ -13,7 +13,16 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
+	<bean id="ros.RelayDataService" class="org.tdmx.server.ros.RelayDataServiceImpl" >
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+	</bean>
+	
 	<bean id="ros.RelayOutboundService" class="org.tdmx.server.ros.RelayOutboundServiceImpl" >
+		<property name="relayDataService" ref="ros.RelayDataService"/>
 	</bean>
 	
 	<!-- client of all PCS -->
