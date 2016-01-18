@@ -16,15 +16,23 @@ message CreateSessionRequest {
 	repeated AttributeValue attribute = 3;
 }
 
+message CreateSessionResponse {
+	optional bool success = 1;
+	optional RelayStatistic statistic = 2;
+}
+
 message GetStatisticsRequest {
 }
 
+message GetStatisticsResponse {
+	optional RelayStatistic statistic = 1;
+}
 
 //
 // PCS -> ROS. The PCS manages relay sessions at the ROS based on the load statistics returned in the responses.
 //
 
 service RelaySessionManagerProxy {
-    rpc createRelaySession(CreateSessionRequest) returns (RelayStatistic);
-    rpc getRelayStatistics(GetStatisticsRequest) returns (RelayStatistic);
+    rpc createRelaySession(CreateSessionRequest) returns (CreateSessionResponse);
+    rpc getRelayStatistics(GetStatisticsRequest) returns (GetStatisticsResponse);
 }

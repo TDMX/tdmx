@@ -30,29 +30,60 @@ public class RelayStatus {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	public enum ErrorCode {
+		// non retryable errors
+		PCS_FAILURE(false, "Unable to communicate with the PCS."),
+		ROS_CONNECTION_REFUSED(false, "Unable to connect to the ROS."),
+
+		ROS_RPC_CHANNEL_CLOSED(true, "Channel to ROS has closed."),
+		ROS_RELAY_DECLINED(true, "ROS declined to relay data."),
+		ROS_RPC_CALL_FAILURE(false, "ROS RPC call failure."),
+		//
+		;
+
+		private ErrorCode(boolean retry, String errorMsg) {
+			this.retry = retry;
+			this.errorMessage = errorMsg;
+		}
+
+		private boolean retry;
+		private String errorMessage;
+
+		public String getErrorMessage() {
+			return errorMessage;
+		}
+
+		public boolean isRetryable() {
+			return retry;
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private final boolean success;
 	private final String channelKey;
-	private final String errorMessage;
+	private final ErrorCode errorCode;
+	private final String rosTcpAddress;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	private RelayStatus(boolean success, String channelKey, String errorMessage) {
+	private RelayStatus(boolean success, String channelKey, String rosTcpAddress, ErrorCode errorCode) {
 		this.success = success;
 		this.channelKey = channelKey;
-		this.errorMessage = errorMessage;
+		this.rosTcpAddress = rosTcpAddress;
+		this.errorCode = errorCode;
 	}
 
-	public static RelayStatus success(String channelKey) {
-		return new RelayStatus(true, channelKey, null);
+	public static RelayStatus success(String channelKey, String rosTcpAddress) {
+		return new RelayStatus(true, channelKey, rosTcpAddress, null);
 	}
 
-	public static RelayStatus failure(String channelKey, String errorMsg) {
-		return new RelayStatus(false, channelKey, errorMsg);
+	public static RelayStatus failure(String channelKey, ErrorCode errorCode) {
+		return new RelayStatus(false, channelKey, null, errorCode);
 	}
 
 	// -------------------------------------------------------------------------
@@ -66,8 +97,8 @@ public class RelayStatus {
 		builder.append(success);
 		builder.append(", channelKey=");
 		builder.append(channelKey);
-		builder.append(", errorMessage=");
-		builder.append(errorMessage);
+		builder.append(", errorCode=");
+		builder.append(errorCode);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -92,8 +123,12 @@ public class RelayStatus {
 		return channelKey;
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
+	public ErrorCode getErrorCode() {
+		return errorCode;
+	}
+
+	public String getRosTcpAddress() {
+		return rosTcpAddress;
 	}
 
 }

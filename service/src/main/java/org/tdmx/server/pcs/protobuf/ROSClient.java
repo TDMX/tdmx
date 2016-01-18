@@ -1458,6 +1458,592 @@ public final class ROSClient {
     // @@protoc_insertion_point(class_scope:CreateSessionRequest)
   }
 
+  public interface CreateSessionResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:CreateSessionResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    boolean hasSuccess();
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    boolean getSuccess();
+
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    boolean hasStatistic();
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic();
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder();
+  }
+  /**
+   * Protobuf type {@code CreateSessionResponse}
+   */
+  public static final class CreateSessionResponse extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:CreateSessionResponse)
+      CreateSessionResponseOrBuilder {
+    // Use CreateSessionResponse.newBuilder() to construct.
+    private CreateSessionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CreateSessionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CreateSessionResponse defaultInstance;
+    public static CreateSessionResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CreateSessionResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CreateSessionResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              success_ = input.readBool();
+              break;
+            }
+            case 18: {
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = statistic_.toBuilder();
+              }
+              statistic_ = input.readMessage(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(statistic_);
+                statistic_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_CreateSessionResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_CreateSessionResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.class, org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CreateSessionResponse> PARSER =
+        new com.google.protobuf.AbstractParser<CreateSessionResponse>() {
+      public CreateSessionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CreateSessionResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateSessionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int SUCCESS_FIELD_NUMBER = 1;
+    private boolean success_;
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    public boolean hasSuccess() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    public boolean getSuccess() {
+      return success_;
+    }
+
+    public static final int STATISTIC_FIELD_NUMBER = 2;
+    private org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic statistic_;
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    public boolean hasStatistic() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic() {
+      return statistic_;
+    }
+    /**
+     * <code>optional .RelayStatistic statistic = 2;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder() {
+      return statistic_;
+    }
+
+    private void initFields() {
+      success_ = false;
+      statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, success_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, statistic_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, success_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, statistic_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code CreateSessionResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:CreateSessionResponse)
+        org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_CreateSessionResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_CreateSessionResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.class, org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getStatisticFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        success_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (statisticBuilder_ == null) {
+          statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+        } else {
+          statisticBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_CreateSessionResponse_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse build() {
+        org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse buildPartial() {
+        org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse result = new org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.success_ = success_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (statisticBuilder_ == null) {
+          result.statistic_ = statistic_;
+        } else {
+          result.statistic_ = statisticBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse other) {
+        if (other == org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance()) return this;
+        if (other.hasSuccess()) {
+          setSuccess(other.getSuccess());
+        }
+        if (other.hasStatistic()) {
+          mergeStatistic(other.getStatistic());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private boolean success_ ;
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public boolean hasSuccess() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public boolean getSuccess() {
+        return success_;
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public Builder setSuccess(boolean value) {
+        bitField0_ |= 0x00000001;
+        success_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public Builder clearSuccess() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        success_ = false;
+        onChanged();
+        return this;
+      }
+
+      private org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder> statisticBuilder_;
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public boolean hasStatistic() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic() {
+        if (statisticBuilder_ == null) {
+          return statistic_;
+        } else {
+          return statisticBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public Builder setStatistic(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic value) {
+        if (statisticBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          statistic_ = value;
+          onChanged();
+        } else {
+          statisticBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public Builder setStatistic(
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder builderForValue) {
+        if (statisticBuilder_ == null) {
+          statistic_ = builderForValue.build();
+          onChanged();
+        } else {
+          statisticBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public Builder mergeStatistic(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic value) {
+        if (statisticBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              statistic_ != org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance()) {
+            statistic_ =
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.newBuilder(statistic_).mergeFrom(value).buildPartial();
+          } else {
+            statistic_ = value;
+          }
+          onChanged();
+        } else {
+          statisticBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public Builder clearStatistic() {
+        if (statisticBuilder_ == null) {
+          statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+          onChanged();
+        } else {
+          statisticBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder getStatisticBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getStatisticFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder() {
+        if (statisticBuilder_ != null) {
+          return statisticBuilder_.getMessageOrBuilder();
+        } else {
+          return statistic_;
+        }
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder> 
+          getStatisticFieldBuilder() {
+        if (statisticBuilder_ == null) {
+          statisticBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder>(
+                  getStatistic(),
+                  getParentForChildren(),
+                  isClean());
+          statistic_ = null;
+        }
+        return statisticBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:CreateSessionResponse)
+    }
+
+    static {
+      defaultInstance = new CreateSessionResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:CreateSessionResponse)
+  }
+
   public interface GetStatisticsRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:GetStatisticsRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -1771,6 +2357,514 @@ public final class ROSClient {
     // @@protoc_insertion_point(class_scope:GetStatisticsRequest)
   }
 
+  public interface GetStatisticsResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:GetStatisticsResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    boolean hasStatistic();
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic();
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder();
+  }
+  /**
+   * Protobuf type {@code GetStatisticsResponse}
+   */
+  public static final class GetStatisticsResponse extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:GetStatisticsResponse)
+      GetStatisticsResponseOrBuilder {
+    // Use GetStatisticsResponse.newBuilder() to construct.
+    private GetStatisticsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GetStatisticsResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GetStatisticsResponse defaultInstance;
+    public static GetStatisticsResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GetStatisticsResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GetStatisticsResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = statistic_.toBuilder();
+              }
+              statistic_ = input.readMessage(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(statistic_);
+                statistic_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_GetStatisticsResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_GetStatisticsResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.class, org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GetStatisticsResponse> PARSER =
+        new com.google.protobuf.AbstractParser<GetStatisticsResponse>() {
+      public GetStatisticsResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GetStatisticsResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GetStatisticsResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int STATISTIC_FIELD_NUMBER = 1;
+    private org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic statistic_;
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    public boolean hasStatistic() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic() {
+      return statistic_;
+    }
+    /**
+     * <code>optional .RelayStatistic statistic = 1;</code>
+     */
+    public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder() {
+      return statistic_;
+    }
+
+    private void initFields() {
+      statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, statistic_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, statistic_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code GetStatisticsResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:GetStatisticsResponse)
+        org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_GetStatisticsResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_GetStatisticsResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.class, org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.Builder.class);
+      }
+
+      // Construct using org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getStatisticFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (statisticBuilder_ == null) {
+          statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+        } else {
+          statisticBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.internal_static_GetStatisticsResponse_descriptor;
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse getDefaultInstanceForType() {
+        return org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance();
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse build() {
+        org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse buildPartial() {
+        org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse result = new org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (statisticBuilder_ == null) {
+          result.statistic_ = statistic_;
+        } else {
+          result.statistic_ = statisticBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse) {
+          return mergeFrom((org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse other) {
+        if (other == org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance()) return this;
+        if (other.hasStatistic()) {
+          mergeStatistic(other.getStatistic());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder> statisticBuilder_;
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public boolean hasStatistic() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getStatistic() {
+        if (statisticBuilder_ == null) {
+          return statistic_;
+        } else {
+          return statisticBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public Builder setStatistic(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic value) {
+        if (statisticBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          statistic_ = value;
+          onChanged();
+        } else {
+          statisticBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public Builder setStatistic(
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder builderForValue) {
+        if (statisticBuilder_ == null) {
+          statistic_ = builderForValue.build();
+          onChanged();
+        } else {
+          statisticBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public Builder mergeStatistic(org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic value) {
+        if (statisticBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              statistic_ != org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance()) {
+            statistic_ =
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.newBuilder(statistic_).mergeFrom(value).buildPartial();
+          } else {
+            statistic_ = value;
+          }
+          onChanged();
+        } else {
+          statisticBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public Builder clearStatistic() {
+        if (statisticBuilder_ == null) {
+          statistic_ = org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+          onChanged();
+        } else {
+          statisticBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder getStatisticBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getStatisticFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder getStatisticOrBuilder() {
+        if (statisticBuilder_ != null) {
+          return statisticBuilder_.getMessageOrBuilder();
+        } else {
+          return statistic_;
+        }
+      }
+      /**
+       * <code>optional .RelayStatistic statistic = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder> 
+          getStatisticFieldBuilder() {
+        if (statisticBuilder_ == null) {
+          statisticBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.Builder, org.tdmx.server.pcs.protobuf.ROSClient.RelayStatisticOrBuilder>(
+                  getStatistic(),
+                  getParentForChildren(),
+                  isClean());
+          statistic_ = null;
+        }
+        return statisticBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:GetStatisticsResponse)
+    }
+
+    static {
+      defaultInstance = new GetStatisticsResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:GetStatisticsResponse)
+  }
+
   /**
    * Protobuf service {@code RelaySessionManagerProxy}
    */
@@ -1780,20 +2874,20 @@ public final class ROSClient {
 
     public interface Interface {
       /**
-       * <code>rpc createRelaySession(.CreateSessionRequest) returns (.RelayStatistic);</code>
+       * <code>rpc createRelaySession(.CreateSessionRequest) returns (.CreateSessionResponse);</code>
        */
       public abstract void createRelaySession(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done);
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse> done);
 
       /**
-       * <code>rpc getRelayStatistics(.GetStatisticsRequest) returns (.RelayStatistic);</code>
+       * <code>rpc getRelayStatistics(.GetStatisticsRequest) returns (.GetStatisticsResponse);</code>
        */
       public abstract void getRelayStatistics(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done);
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse> done);
 
     }
 
@@ -1804,7 +2898,7 @@ public final class ROSClient {
         public  void createRelaySession(
             com.google.protobuf.RpcController controller,
             org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done) {
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse> done) {
           impl.createRelaySession(controller, request, done);
         }
 
@@ -1812,7 +2906,7 @@ public final class ROSClient {
         public  void getRelayStatistics(
             com.google.protobuf.RpcController controller,
             org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request,
-            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done) {
+            com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse> done) {
           impl.getRelayStatistics(controller, request, done);
         }
 
@@ -1875,9 +2969,9 @@ public final class ROSClient {
           }
           switch(method.getIndex()) {
             case 0:
-              return org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance();
             case 1:
-              return org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+              return org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -1887,20 +2981,20 @@ public final class ROSClient {
     }
 
     /**
-     * <code>rpc createRelaySession(.CreateSessionRequest) returns (.RelayStatistic);</code>
+     * <code>rpc createRelaySession(.CreateSessionRequest) returns (.CreateSessionResponse);</code>
      */
     public abstract void createRelaySession(
         com.google.protobuf.RpcController controller,
         org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done);
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse> done);
 
     /**
-     * <code>rpc getRelayStatistics(.GetStatisticsRequest) returns (.RelayStatistic);</code>
+     * <code>rpc getRelayStatistics(.GetStatisticsRequest) returns (.GetStatisticsResponse);</code>
      */
     public abstract void getRelayStatistics(
         com.google.protobuf.RpcController controller,
         org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request,
-        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done);
+        com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
@@ -1926,12 +3020,12 @@ public final class ROSClient {
       switch(method.getIndex()) {
         case 0:
           this.createRelaySession(controller, (org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic>specializeCallback(
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse>specializeCallback(
               done));
           return;
         case 1:
           this.getRelayStatistics(controller, (org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest)request,
-            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic>specializeCallback(
+            com.google.protobuf.RpcUtil.<org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse>specializeCallback(
               done));
           return;
         default:
@@ -1967,9 +3061,9 @@ public final class ROSClient {
       }
       switch(method.getIndex()) {
         case 0:
-          return org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance();
         case 1:
-          return org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance();
+          return org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -1994,31 +3088,31 @@ public final class ROSClient {
       public  void createRelaySession(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done) {
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.class,
-            org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.class,
+            org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance()));
       }
 
       public  void getRelayStatistics(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request,
-          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic> done) {
+          com.google.protobuf.RpcCallback<org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(1),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance(),
+          org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.class,
-            org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance()));
+            org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.class,
+            org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance()));
       }
     }
 
@@ -2028,12 +3122,12 @@ public final class ROSClient {
     }
 
     public interface BlockingInterface {
-      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic createRelaySession(
+      public org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse createRelaySession(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request)
           throws com.google.protobuf.ServiceException;
 
-      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getRelayStatistics(
+      public org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse getRelayStatistics(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request)
           throws com.google.protobuf.ServiceException;
@@ -2046,27 +3140,27 @@ public final class ROSClient {
 
       private final com.google.protobuf.BlockingRpcChannel channel;
 
-      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic createRelaySession(
+      public org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse createRelaySession(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse) channel.callBlockingMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse.getDefaultInstance());
       }
 
 
-      public org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic getRelayStatistics(
+      public org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse getRelayStatistics(
           com.google.protobuf.RpcController controller,
           org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest request)
           throws com.google.protobuf.ServiceException {
-        return (org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic) channel.callBlockingMethod(
+        return (org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse) channel.callBlockingMethod(
           getDescriptor().getMethods().get(1),
           controller,
           request,
-          org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic.getDefaultInstance());
+          org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse.getDefaultInstance());
       }
 
     }
@@ -2085,10 +3179,20 @@ public final class ROSClient {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_CreateSessionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_CreateSessionResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_CreateSessionResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_GetStatisticsRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_GetStatisticsRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_GetStatisticsResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_GetStatisticsResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2102,12 +3206,16 @@ public final class ROSClient {
       "yStatistic\022\021\n\tloadValue\030\001 \001(\005\"d\n\024CreateS" +
       "essionRequest\022\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrs" +
       "SessionId\030\002 \001(\t\022\"\n\tattribute\030\003 \003(\0132\017.Att" +
-      "ributeValue\"\026\n\024GetStatisticsRequest2\226\001\n\030" +
-      "RelaySessionManagerProxy\022<\n\022createRelayS" +
-      "ession\022\025.CreateSessionRequest\032\017.RelaySta" +
-      "tistic\022<\n\022getRelayStatistics\022\025.GetStatis" +
-      "ticsRequest\032\017.RelayStatisticB,\n\034org.tdmx" +
-      ".server.pcs.protobufB\tROSClient\210\001\001"
+      "ributeValue\"L\n\025CreateSessionResponse\022\017\n\007" +
+      "success\030\001 \001(\010\022\"\n\tstatistic\030\002 \001(\0132\017.Relay" +
+      "Statistic\"\026\n\024GetStatisticsRequest\";\n\025Get" +
+      "StatisticsResponse\022\"\n\tstatistic\030\001 \001(\0132\017." +
+      "RelayStatistic2\244\001\n\030RelaySessionManagerPr" +
+      "oxy\022C\n\022createRelaySession\022\025.CreateSessio",
+      "nRequest\032\026.CreateSessionResponse\022C\n\022getR" +
+      "elayStatistics\022\025.GetStatisticsRequest\032\026." +
+      "GetStatisticsResponseB,\n\034org.tdmx.server" +
+      ".pcs.protobufB\tROSClient\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2134,12 +3242,24 @@ public final class ROSClient {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_CreateSessionRequest_descriptor,
         new java.lang.String[] { "ChannelKey", "MrsSessionId", "Attribute", });
-    internal_static_GetStatisticsRequest_descriptor =
+    internal_static_CreateSessionResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
+    internal_static_CreateSessionResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_CreateSessionResponse_descriptor,
+        new java.lang.String[] { "Success", "Statistic", });
+    internal_static_GetStatisticsRequest_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_GetStatisticsRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_GetStatisticsRequest_descriptor,
         new java.lang.String[] { });
+    internal_static_GetStatisticsResponse_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_GetStatisticsResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_GetStatisticsResponse_descriptor,
+        new java.lang.String[] { "Statistic", });
     org.tdmx.server.pcs.protobuf.Common.getDescriptor();
   }
 

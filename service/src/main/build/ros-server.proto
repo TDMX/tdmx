@@ -21,6 +21,7 @@ message RelayRequest {
 
 
 message RelayResponse {
+	optional bool success = 1; 
 }
 
 //

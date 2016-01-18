@@ -206,27 +206,29 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 		String channelKey = request.getChannelKey();
 
 		Map<AttributeId, Long> attrs = mapAttributes(request.getAttributeList());
+		boolean result = false;
 		switch (request.getRelayType()) {
 		case Authorization:
-			relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.AuthorizationId));
+			result = relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.AuthorizationId));
 			break;
 		case DeliveryReply:
 			// TODO #95 DR
 			break;
 		case DestinationSession:
-			relayOutboundService.relayChannelDestinationSession(channelKey, attrs.get(AttributeId.ChannelId));
+			result = relayOutboundService.relayChannelDestinationSession(channelKey, attrs.get(AttributeId.ChannelId));
 			break;
 		case FlowControl:
-			relayOutboundService.relayChannelFlowControl(channelKey, attrs.get(AttributeId.FlowQuotaId));
+			result = relayOutboundService.relayChannelFlowControl(channelKey, attrs.get(AttributeId.FlowQuotaId));
 			break;
 		case Message:
-			relayOutboundService.relayChannelMessage(channelKey, attrs.get(AttributeId.MessageId));
+			result = relayOutboundService.relayChannelMessage(channelKey, attrs.get(AttributeId.MessageId));
 			break;
 		default:
 			break;
 		}
 
 		RelayResponse.Builder response = RelayResponse.newBuilder();
+		response.setSuccess(result);
 		return response.build();
 	}
 

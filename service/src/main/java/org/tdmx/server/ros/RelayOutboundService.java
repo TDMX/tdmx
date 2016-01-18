@@ -83,8 +83,9 @@ public interface RelayOutboundService {
 	 * @param channelKey
 	 * @param caId
 	 *            the identifier of the channel authorization.
+	 * @return true if relay data successfully received.
 	 */
-	public void relayChannelAuthorization(String channelKey, Long caId);
+	public boolean relayChannelAuthorization(String channelKey, Long caId);
 
 	/**
 	 * Notify that there is a Channel DestinationSession to relay.
@@ -92,8 +93,9 @@ public interface RelayOutboundService {
 	 * @param channelKey
 	 * @param channelId
 	 *            the identifier of the channel.
+	 * @return true if relay data successfully received.
 	 */
-	public void relayChannelDestinationSession(String channelKey, Long channelId);
+	public boolean relayChannelDestinationSession(String channelKey, Long channelId);
 
 	/**
 	 * Notify that there is an opening of the channel flow control to relay.
@@ -101,8 +103,9 @@ public interface RelayOutboundService {
 	 * @param channelKey
 	 * @param flowQuotaId
 	 *            the identifier of the channel flow quota.
+	 * @return true if relay data successfully received.
 	 */
-	public void relayChannelFlowControl(String channelKey, Long quotalId);
+	public boolean relayChannelFlowControl(String channelKey, Long quotalId);
 
 	/**
 	 * Notify that there is a ChannelMessage to relay.
@@ -110,8 +113,9 @@ public interface RelayOutboundService {
 	 * @param channelKey
 	 * @param messageId
 	 *            the identifier of the channel message.
+	 * @return true if relay data successfully received.
 	 */
-	public void relayChannelMessage(String channelKey, Long messageId);
+	public boolean relayChannelMessage(String channelKey, Long messageId);
 
 	// TODO relay of DR #95
 }

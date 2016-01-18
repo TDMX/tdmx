@@ -67,6 +67,7 @@ public class RelayChannelContext {
 	private LinkedList<RelayJobContext> scheduledJobs = new LinkedList<>();
 	private LinkedList<RelayJobContext> queuedJobs = new LinkedList<>();
 	private String mrsSessionId;
+	private long lastActivityTimestamp = 0L;
 
 	// reference
 	private final String pcsServerName;
@@ -112,6 +113,11 @@ public class RelayChannelContext {
 		return RelayContextState.IDLE == state;
 	}
 
+	public boolean isIdleTimeout(long millisSinceLastActivity) {
+		return RelayContextState.IDLE == state
+				&& System.currentTimeMillis() - millisSinceLastActivity > lastActivityTimestamp;
+	}
+
 	public boolean isShutdown() {
 		return RelayContextState.SHUTDOWN == state;
 	}
@@ -126,6 +132,7 @@ public class RelayChannelContext {
 	public synchronized List<RelayJobContext> finishJob(RelayJobContext finishedJob) {
 		scheduledJobs.remove(finishedJob);
 		handleFinish(finishedJob);
+		lastActivityTimestamp = System.currentTimeMillis();
 		return schedule(transition());
 	}
 

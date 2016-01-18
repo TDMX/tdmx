@@ -1027,7 +1027,7 @@ public class ZASImpl implements ZAS {
 						existingDomain, relayChannel, operationStatus.channelAuthorization);
 				if (!rs.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
-							rs.getErrorMessage());
+							rs.getErrorCode().getErrorMessage());
 					channelService.updateStatusChannelAuthorization(relayChannel.getId(), error);
 				}
 			}

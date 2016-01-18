@@ -44,7 +44,9 @@ import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelaySessionManagerProxy;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
@@ -366,7 +368,7 @@ public class RelayControlServiceClientConnector
 	}
 
 	@Override
-	public RelayStatistic createRelaySession(RpcController controller, CreateSessionRequest request)
+	public CreateSessionResponse createRelaySession(RpcController controller, CreateSessionRequest request)
 			throws ServiceException {
 		RpcClientChannel pcs = ServerRpcController.getRpcChannel(controller);
 		String controllerId = getControllerId(getPartitionControlServer(pcs));
@@ -375,13 +377,16 @@ public class RelayControlServiceClientConnector
 
 		relayOutboundService.startRelaySession(request.getChannelKey(), mapAttributes(request.getAttributeList()),
 				request.getMrsSessionId(), controllerId);
-		RelayStatistic.Builder result = RelayStatistic.newBuilder();
-		result.setLoadValue(relayOutboundService.getCurrentLoad());
-		return result.build();
+		RelayStatistic.Builder stats = RelayStatistic.newBuilder();
+		stats.setLoadValue(relayOutboundService.getCurrentLoad());
+
+		CreateSessionResponse.Builder response = CreateSessionResponse.newBuilder();
+		response.setStatistic(stats);
+		return response.build();
 	}
 
 	@Override
-	public RelayStatistic getRelayStatistics(RpcController controller, GetStatisticsRequest request)
+	public GetStatisticsResponse getRelayStatistics(RpcController controller, GetStatisticsRequest request)
 			throws ServiceException {
 		RpcClientChannel pcs = ServerRpcController.getRpcChannel(controller);
 		String controllerId = getControllerId(getPartitionControlServer(pcs));
@@ -390,10 +395,12 @@ public class RelayControlServiceClientConnector
 
 		log.info("PCS " + controllerId + " requests relay statistics " + loadValue);
 
-		RelayStatistic.Builder result = RelayStatistic.newBuilder();
-		result.setLoadValue(loadValue);
+		RelayStatistic.Builder stats = RelayStatistic.newBuilder();
+		stats.setLoadValue(loadValue);
 
-		return result.build();
+		GetStatisticsResponse.Builder response = GetStatisticsResponse.newBuilder();
+		response.setStatistic(stats);
+		return response.build();
 	}
 
 	// -------------------------------------------------------------------------

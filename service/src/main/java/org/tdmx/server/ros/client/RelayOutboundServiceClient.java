@@ -33,6 +33,7 @@ import org.tdmx.server.pcs.protobuf.ROSServer.RelayOutboundServiceProxy;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest.RelayType;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse;
+import org.tdmx.server.ros.client.RelayStatus.ErrorCode;
 
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
@@ -54,8 +55,6 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(RelayOutboundServiceClient.class);
-
-	private static final String RPC_CHANNEL_CLOSED = "RPC channel to ROS is closed.";
 
 	/**
 	 * The RPC channel to the server.
@@ -81,9 +80,9 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.Authorization, AttributeId.AuthorizationId,
 					ca.getId());
-			return relay(request);
+			return relay(request, rosTcpAddress);
 		}
-		return RelayStatus.failure(channelKey, RPC_CHANNEL_CLOSED);
+		return RelayStatus.failure(channelKey, ErrorCode.ROS_RPC_CHANNEL_CLOSED);
 	}
 
 	@Override
@@ -94,9 +93,9 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.DestinationSession, AttributeId.ChannelId,
 					channel.getId());
-			return relay(request);
+			return relay(request, rosTcpAddress);
 		}
-		return RelayStatus.failure(channelKey, RPC_CHANNEL_CLOSED);
+		return RelayStatus.failure(channelKey, ErrorCode.ROS_RPC_CHANNEL_CLOSED);
 	}
 
 	@Override
@@ -107,9 +106,9 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.FlowControl, AttributeId.FlowQuotaId,
 					quota.getId());
-			return relay(request);
+			return relay(request, rosTcpAddress);
 		}
-		return RelayStatus.failure(channelKey, RPC_CHANNEL_CLOSED);
+		return RelayStatus.failure(channelKey, ErrorCode.ROS_RPC_CHANNEL_CLOSED);
 	}
 
 	@Override
@@ -120,9 +119,9 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.Message, AttributeId.MessageId,
 					msg.getId());
-			return relay(request);
+			return relay(request, rosTcpAddress);
 		}
-		return RelayStatus.failure(channelKey, RPC_CHANNEL_CLOSED);
+		return RelayStatus.failure(channelKey, ErrorCode.ROS_RPC_CHANNEL_CLOSED);
 	}
 
 	// -------------------------------------------------------------------------
@@ -147,8 +146,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 		return reqBuilder.build();
 	}
 
-	private RelayStatus relay(RelayRequest request) {
-		String errorMsg = null;
+	private RelayStatus relay(RelayRequest request, String rosTcpAddress) {
 		try {
 			RelayOutboundServiceProxy.BlockingInterface blockingService = RelayOutboundServiceProxy
 					.newBlockingStub(rpcClient);
@@ -157,15 +155,18 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 			RelayResponse response = blockingService.relay(controller, request);
 			if (response != null) {
-				return RelayStatus.success(request.getChannelKey());
+				if (response.getSuccess()) {
+					return RelayStatus.success(request.getChannelKey(), rosTcpAddress);
+				} else {
+					return RelayStatus.failure(request.getChannelKey(), ErrorCode.ROS_RELAY_DECLINED);
+				}
 			} else {
-				errorMsg = "No ROS Address allocated for ." + request.getChannelKey();
+				return RelayStatus.failure(request.getChannelKey(), ErrorCode.ROS_RPC_CALL_FAILURE);
 			}
 		} catch (ServiceException e) {
-			errorMsg = "relay call failed. " + e.getMessage();
-			log.warn(errorMsg, e);
+			log.warn("ROS call failed.", e);
 		}
-		return RelayStatus.failure(request.getChannelKey(), errorMsg);
+		return RelayStatus.failure(request.getChannelKey(), ErrorCode.ROS_RPC_CALL_FAILURE);
 	}
 
 	// -------------------------------------------------------------------------

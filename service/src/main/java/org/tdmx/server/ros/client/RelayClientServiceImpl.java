@@ -40,6 +40,7 @@ import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ros.RosAddressUtils;
+import org.tdmx.server.ros.client.RelayStatus.ErrorCode;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
@@ -79,8 +80,6 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	private static Logger log = LoggerFactory.getLogger(RelayClientServiceImpl.class);
 
 	private static final String ROS_TCP_ADDRESS = "ROS_TCP_ADDRESS";
-	private static final String PCS_FAILURE = "Unable to establish associated ROS server from PCS.";
-	private static final String ROS_FAILURE = "Unable to establish ROS server connection.";
 
 	/**
 	 * The service used to lookup the rosTcpAddress for any given channel from the PCS.
@@ -119,17 +118,17 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, ChannelAuthorization ca) {
 		String channelKey = channel.getChannelKey(domain.getDomainName());
-
 		if (rosTcpAddress == null) {
 			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, ca, null, null);
 		}
 		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, PCS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
 		}
 		RelayClientService rosClient = getRelayClient(rosTcpAddress);
 		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ROS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
 		}
+
 		return rosClient.relayChannelAuthorization(rosTcpAddress, az, zone, domain, channel, ca);
 	}
 
@@ -142,11 +141,11 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, null);
 		}
 		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, PCS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
 		}
 		RelayClientService rosClient = getRelayClient(rosTcpAddress);
 		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ROS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
 		}
 		return rosClient.relayChannelDestinationSession(rosTcpAddress, az, zone, domain, channel);
 	}
@@ -160,11 +159,11 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, quota, null);
 		}
 		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, PCS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
 		}
 		RelayClientService rosClient = getRelayClient(rosTcpAddress);
 		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ROS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
 		}
 		return rosClient.relayChannelFlowControl(rosTcpAddress, az, zone, domain, channel, quota);
 	}
@@ -178,11 +177,11 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, msg);
 		}
 		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, PCS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
 		}
 		RelayClientService rosClient = getRelayClient(rosTcpAddress);
 		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ROS_FAILURE);
+			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
 		}
 		return rosClient.relayChannelMessage(rosTcpAddress, az, zone, domain, channel, msg);
 	}

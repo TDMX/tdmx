@@ -66,6 +66,11 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	 */
 	private final AtomicInteger loadValue = new AtomicInteger(0);
 
+	/**
+	 * Idle timeout ( 5min )
+	 */
+	private long idleTimeoutMillis = 300000;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -126,7 +131,6 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		Domain d = relayDataService.getDomain(az, z, attributes.get(AttributeId.DomainId));
 		Channel c = relayDataService.getChannel(az, z, d, attributes.get(AttributeId.ChannelId));
 
-		// TODO not initialized.
 		RelayDirection dir = c.isSameDomain() ? RelayDirection.Both
 				: c.isSend() ? RelayDirection.Fowards : RelayDirection.Backwards;
 
@@ -142,14 +146,14 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		List<String> idleSessions = new ArrayList<>();
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
 			RelayChannelContext rc = ctxEntry.getValue();
-			if (pcsServerName.equals(rc.getPcsServerName()) && rc.isIdle()) {
+			if (pcsServerName.equals(rc.getPcsServerName()) && rc.isIdleTimeout(idleTimeoutMillis)) {
 				idleSessions.add(ctxEntry.getKey());
 			}
 		}
 		List<RelayChannelMrsSession> result = new ArrayList<>();
 		for (String channelKey : idleSessions) {
 			RelayChannelContext rc = contextMap.remove(channelKey);
-			if (pcsServerName.equals(rc.getPcsServerName()) && rc.isIdle()) {
+			if (pcsServerName.equals(rc.getPcsServerName()) && rc.isIdleTimeout(idleTimeoutMillis)) {
 				RelayChannelMrsSession.Builder rs = RelayChannelMrsSession.newBuilder();
 				rs.setChannelKey(channelKey);
 				rs.setMrsSessionId(rc.getMrsSessionId());
@@ -158,6 +162,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 				contextMap.put(channelKey, rc);
 			}
 		}
+		log.info("Removed " + result.size() + " idle relay sessions for " + pcsServerName);
 		return result;
 	}
 
@@ -175,55 +180,59 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	}
 
 	@Override
-	public void relayChannelAuthorization(String channelKey, Long channelId) {
+	public boolean relayChannelAuthorization(String channelKey, Long channelId) {
 		log.info("relayChannelAuthorization " + channelKey);
 		RelayChannelContext rc = contextMap.get(channelKey);
-		if (rc != null) {
-			// add the CA to the relay context
-			schedule(rc.relayChannelAuthorization(channelId));
-		} else {
-			// just warn - but since we don't have a session , we cannot lookup the domain object.
-			log.warn("relayChannelAuthorization " + channelKey + " could not find relay context.");
+		if (rc == null) {
+			// normal if ROS session has idle timed-out, client must get new ROS session
+			log.debug("relayChannelAuthorization " + channelKey + " could not find relay context.");
+			return false;
 		}
+		// add the CA to the relay context
+		schedule(rc.relayChannelAuthorization(channelId));
+		return true;
 	}
 
 	@Override
-	public void relayChannelFlowControl(String channelKey, Long quotaId) {
+	public boolean relayChannelFlowControl(String channelKey, Long quotaId) {
 		log.info("relayChannelFlowControl " + channelKey);
 		RelayChannelContext rc = contextMap.get(channelKey);
-		if (rc != null) {
-			// add the CA to the relay context
-			schedule(rc.relayChannelFlowControl(quotaId));
-		} else {
-			// just warn - but since we don't have a session , we cannot lookup the domain object.
-			log.warn("relayChannelFlowControl " + channelKey + " could not find relay context.");
+		if (rc == null) {
+			// normal if ROS session has idle timed-out, client must get new ROS session
+			log.debug("relayChannelFlowControl " + channelKey + " could not find relay context.");
+			return false;
 		}
+		// add the FC to the relay context
+		schedule(rc.relayChannelFlowControl(quotaId));
+		return true;
 	}
 
 	@Override
-	public void relayChannelMessage(String channelKey, Long messageId) {
+	public boolean relayChannelMessage(String channelKey, Long messageId) {
 		log.info("relayChannelMessage " + channelKey);
 		RelayChannelContext rc = contextMap.get(channelKey);
-		if (rc != null) {
-			// add the CA to the relay context
-			schedule(rc.relayChannelMessage(messageId));
-		} else {
-			// just warn - but since we don't have a session , we cannot lookup the domain object.
-			log.warn("relayChannelMessage " + channelKey + " could not find relay context.");
+		if (rc == null) {
+			// normal if ROS session has idle timed-out, client must get new ROS session
+			log.debug("relayChannelMessage " + channelKey + " could not find relay context.");
+			return false;
 		}
+		// add the MSG to the relay context
+		schedule(rc.relayChannelMessage(messageId));
+		return true;
 	}
 
 	@Override
-	public void relayChannelDestinationSession(String channelKey, Long channelId) {
+	public boolean relayChannelDestinationSession(String channelKey, Long channelId) {
 		log.info("relayChannelDestinationSession " + channelKey);
 		RelayChannelContext rc = contextMap.get(channelKey);
-		if (rc != null) {
-			// add the CA to the relay context
-			schedule(rc.relayChannelDestinationSession(channelId));
-		} else {
-			// just warn - but since we don't have a session , we cannot lookup the domain object.
-			log.warn("relayChannelDestinationSession " + channelKey + " could not find relay context.");
+		if (rc == null) {
+			// normal if ROS session has idle timed-out, client must get new ROS session
+			log.debug("relayChannelDestinationSession " + channelKey + " could not find relay context.");
+			return false;
 		}
+		// add the DS to the relay context
+		schedule(rc.relayChannelDestinationSession(channelId));
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -247,6 +256,14 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	public void setRelayDataService(RelayDataService relayDataService) {
 		this.relayDataService = relayDataService;
+	}
+
+	public long getIdleTimeoutMillis() {
+		return idleTimeoutMillis;
+	}
+
+	public void setIdleTimeoutMillis(long idleTimeoutMillis) {
+		this.idleTimeoutMillis = idleTimeoutMillis;
 	}
 
 }

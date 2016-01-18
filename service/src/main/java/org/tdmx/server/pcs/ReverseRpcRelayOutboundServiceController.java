@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
+import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelaySessionManagerProxy;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 
@@ -90,9 +92,10 @@ class ReverseRpcRelayOutboundServiceController implements RelayOutboundServiceCo
 		}
 
 		try {
-			org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic response = blockingService
-					.createRelaySession(controller, reqBuilder.build());
-			return response;
+			CreateSessionResponse response = blockingService.createRelaySession(controller, reqBuilder.build());
+			if (response.getSuccess()) {
+				return response.getStatistic();
+			}
 		} catch (ServiceException e) {
 			log.warn("createRelaySession call failed.", e);
 		}
@@ -108,9 +111,8 @@ class ReverseRpcRelayOutboundServiceController implements RelayOutboundServiceCo
 		GetStatisticsRequest.Builder reqBuilder = GetStatisticsRequest.newBuilder();
 
 		try {
-			org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic response = blockingService
-					.getRelayStatistics(controller, reqBuilder.build());
-			return response;
+			GetStatisticsResponse response = blockingService.getRelayStatistics(controller, reqBuilder.build());
+			return response.getStatistic();
 		} catch (ServiceException e) {
 			log.warn("getStatistics call failed.", e);
 		}

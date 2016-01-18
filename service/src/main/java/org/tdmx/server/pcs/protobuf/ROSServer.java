@@ -1055,6 +1055,15 @@ public final class ROSServer {
   public interface RelayResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RelayResponse)
       com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    boolean hasSuccess();
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    boolean getSuccess();
   }
   /**
    * Protobuf type {@code RelayResponse}
@@ -1090,6 +1099,7 @@ public final class ROSServer {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -1105,6 +1115,11 @@ public final class ROSServer {
                                      extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              success_ = input.readBool();
               break;
             }
           }
@@ -1146,7 +1161,24 @@ public final class ROSServer {
       return PARSER;
     }
 
+    private int bitField0_;
+    public static final int SUCCESS_FIELD_NUMBER = 1;
+    private boolean success_;
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    public boolean hasSuccess() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool success = 1;</code>
+     */
+    public boolean getSuccess() {
+      return success_;
+    }
+
     private void initFields() {
+      success_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1161,6 +1193,9 @@ public final class ROSServer {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, success_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1170,6 +1205,10 @@ public final class ROSServer {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, success_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -1287,6 +1326,8 @@ public final class ROSServer {
 
       public Builder clear() {
         super.clear();
+        success_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -1313,6 +1354,13 @@ public final class ROSServer {
 
       public org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse buildPartial() {
         org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse result = new org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.success_ = success_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1328,6 +1376,9 @@ public final class ROSServer {
 
       public Builder mergeFrom(org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse other) {
         if (other == org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse.getDefaultInstance()) return this;
+        if (other.hasSuccess()) {
+          setSuccess(other.getSuccess());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1351,6 +1402,39 @@ public final class ROSServer {
             mergeFrom(parsedMessage);
           }
         }
+        return this;
+      }
+      private int bitField0_;
+
+      private boolean success_ ;
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public boolean hasSuccess() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public boolean getSuccess() {
+        return success_;
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public Builder setSuccess(boolean value) {
+        bitField0_ |= 0x00000001;
+        success_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool success = 1;</code>
+       */
+      public Builder clearSuccess() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        success_ = false;
+        onChanged();
         return this;
       }
 
@@ -1622,10 +1706,11 @@ public final class ROSServer {
       "ribute\030\003 \003(\0132\017.AttributeValue\"g\n\tRelayTy" +
       "pe\022\013\n\007Message\020\000\022\021\n\rDeliveryReply\020\001\022\021\n\rAu" +
       "thorization\020\002\022\026\n\022DestinationSession\020\003\022\017\n" +
-      "\013FlowControl\020\004\"\017\n\rRelayResponse2C\n\031Relay" +
-      "OutboundServiceProxy\022&\n\005relay\022\r.RelayReq" +
-      "uest\032\016.RelayResponseB,\n\034org.tdmx.server." +
-      "pcs.protobufB\tROSServer\210\001\001"
+      "\013FlowControl\020\004\" \n\rRelayResponse\022\017\n\007succe" +
+      "ss\030\001 \001(\0102C\n\031RelayOutboundServiceProxy\022&\n" +
+      "\005relay\022\r.RelayRequest\032\016.RelayResponseB,\n" +
+      "\034org.tdmx.server.pcs.protobufB\tROSServer",
+      "\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1651,7 +1736,7 @@ public final class ROSServer {
     internal_static_RelayResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RelayResponse_descriptor,
-        new java.lang.String[] { });
+        new java.lang.String[] { "Success", });
     org.tdmx.server.pcs.protobuf.Common.getDescriptor();
   }
 
