@@ -914,13 +914,17 @@ public class ZASImpl implements ZAS {
 		}
 
 		// validate all channel and provided permission fields are specified.
+		final Channel c = validator.checkChannel(parameters.getChannel(), response);
+		if (c == null) {
+			return response;
+		}
 		final Currentchannelauthorization ca = validator
 				.checkChannelauthorization(parameters.getCurrentchannelauthorization(), response);
 		if (ca == null) {
 			return response;
 		}
 		// check the signature of the current ca is ok
-		if (!SignatureUtils.checkChannelAuthorizationSignature(ca)) {
+		if (!SignatureUtils.checkChannelAuthorizationSignature(c, ca)) {
 			setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 			return response;
 		}
@@ -937,14 +941,13 @@ public class ZASImpl implements ZAS {
 		}
 
 		// check that the channel origin or channel destination matches the ca's domain
-		if (!(domainName.equals(ca.getChannel().getOrigin().getDomain())
-				|| domainName.equals(ca.getChannel().getDestination().getDomain()))) {
+		if (!(domainName.equals(c.getOrigin().getDomain()) || domainName.equals(c.getDestination().getDomain()))) {
 			setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
 			return response;
 		}
 		// note if the domain matches both send and recv then we validate both
 
-		if (domainName.equals(ca.getChannel().getOrigin().getDomain())) {
+		if (domainName.equals(c.getOrigin().getDomain())) {
 			// if the origin domain matches the domain - check that we have a send permission and that the signature is
 			// ok
 
@@ -952,7 +955,7 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getOriginPermission())) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(c, ca.getOriginPermission())) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
@@ -972,7 +975,7 @@ public class ZASImpl implements ZAS {
 			}
 		}
 
-		if (domainName.equals(ca.getChannel().getDestination().getDomain())) {
+		if (domainName.equals(c.getDestination().getDomain())) {
 			// if the destination domain matches the ca's domain - check that we have a recv permission and that the
 			// signature is ok
 
@@ -980,7 +983,7 @@ public class ZASImpl implements ZAS {
 				setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
-			if (!SignatureUtils.checkEndpointPermissionSignature(ca.getChannel(), ca.getDestinationPermission())) {
+			if (!SignatureUtils.checkEndpointPermissionSignature(c, ca.getDestinationPermission())) {
 				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
@@ -1009,8 +1012,8 @@ public class ZASImpl implements ZAS {
 		// we construct a detached channel authorization from the provided request data
 
 		final SetAuthorizationResultHolder operationStatus = channelService.setAuthorization(zone, existingDomain,
-				a2d.mapChannelOrigin(ca.getChannel().getOrigin()),
-				a2d.mapChannelDestination(ca.getChannel().getDestination()), a2d.mapChannelAuthorization(ca));
+				a2d.mapChannelOrigin(c.getOrigin()), a2d.mapChannelDestination(c.getDestination()),
+				a2d.mapChannelAuthorization(ca));
 		if (operationStatus.status != null) {
 			setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
 			return response;

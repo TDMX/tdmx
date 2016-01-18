@@ -161,18 +161,18 @@ public class SignatureUtils {
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static boolean checkChannelAuthorizationSignature(Currentchannelauthorization ca) {
+	public static boolean checkChannelAuthorizationSignature(Channel c, Currentchannelauthorization ca) {
 		PKIXCertificate publicCert = CertificateIOUtils
 				.safeDecodeX509(ca.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate());
 		SignatureAlgorithm alg = SignatureAlgorithm
 				.getByAlgorithmName(ca.getAdministratorsignature().getSignaturevalue().getSignatureAlgorithm().value());
 
 		return CalendarUtils.isInPast(ca.getAdministratorsignature().getSignaturevalue().getTimestamp())
-				&& checkEndpointPermissionSignature(publicCert, alg, ca);
+				&& checkEndpointPermissionSignature(publicCert, alg, c, ca);
 	}
 
 	public static void createChannelAuthorizationSignature(PKIXCredential credential, SignatureAlgorithm alg,
-			Date signatureDate, Currentchannelauthorization ca) {
+			Date signatureDate, Channel c, Currentchannelauthorization ca) {
 		AdministratorIdentity id = new AdministratorIdentity();
 		id.setDomaincertificate(credential.getPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
@@ -186,7 +186,7 @@ public class SignatureUtils {
 		signature.setSignaturevalue(sig);
 		ca.setAdministratorsignature(signature);
 
-		String valueToSign = getValueToSign(ca);
+		String valueToSign = getValueToSign(c, ca);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
@@ -360,14 +360,14 @@ public class SignatureUtils {
 		return value.toString();
 	}
 
-	private static String getValueToSign(Currentchannelauthorization ca) {
+	private static String getValueToSign(Channel c, Currentchannelauthorization ca) {
 		StringBuilder value = new StringBuilder();
 		// channel origin -> destination + service
-		value.append(toValue(ca.getChannel().getOrigin().getLocalname()));
-		value.append(toValue(ca.getChannel().getOrigin().getDomain()));
-		value.append(toValue(ca.getChannel().getDestination().getLocalname()));
-		value.append(toValue(ca.getChannel().getDestination().getDomain()));
-		value.append(toValue(ca.getChannel().getDestination().getServicename()));
+		value.append(toValue(c.getOrigin().getLocalname()));
+		value.append(toValue(c.getOrigin().getDomain()));
+		value.append(toValue(c.getDestination().getLocalname()));
+		value.append(toValue(c.getDestination().getDomain()));
+		value.append(toValue(c.getDestination().getServicename()));
 		// send and receive permissions
 		if (ca.getOriginPermission() != null) {
 			appendValueToSign(value, ca.getOriginPermission());
@@ -413,8 +413,8 @@ public class SignatureUtils {
 	}
 
 	private static boolean checkEndpointPermissionSignature(PKIXCertificate signingPublicCert, SignatureAlgorithm alg,
-			Currentchannelauthorization ca) {
-		String valueToSign = getValueToSign(ca);
+			Channel c, Currentchannelauthorization ca) {
+		String valueToSign = getValueToSign(c, ca);
 		String signatureHex = ca.getAdministratorsignature().getSignaturevalue().getSignature();
 
 		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,

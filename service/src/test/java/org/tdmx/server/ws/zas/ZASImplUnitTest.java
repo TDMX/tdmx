@@ -1410,7 +1410,7 @@ public class ZASImplUnitTest {
 		origin.setDomain(domain.getDomainName());
 		origin.setLocalname(uc.getPublicCert().getCommonName());
 		channel.setOrigin(origin);
-		auth.setChannel(channel);
+		req.setChannel(channel);
 
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
@@ -1431,7 +1431,8 @@ public class ZASImplUnitTest {
 		l.setLowBytes(ZoneFacade.ONE_MB);
 		auth.setLimit(l);
 
-		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
+		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				auth);
 		req.setCurrentchannelauthorization(auth);
 
 		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);
@@ -1464,7 +1465,7 @@ public class ZASImplUnitTest {
 		origin.setDomain(domain.getDomainName());
 		origin.setLocalname(uc.getPublicCert().getCommonName());
 		channel.setOrigin(origin);
-		auth.setChannel(channel);
+		req.setChannel(channel);
 
 		Permission recvPermission = new Permission();
 		recvPermission.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
@@ -1485,7 +1486,8 @@ public class ZASImplUnitTest {
 		l.setLowBytes(ZoneFacade.ONE_MB);
 		auth.setLimit(l);
 
-		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), auth);
+		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				auth);
 		req.setCurrentchannelauthorization(auth);
 
 		SetChannelAuthorizationResponse response = zas.setChannelAuthorization(req);
@@ -1620,7 +1622,7 @@ public class ZASImplUnitTest {
 		delReq.setSessionId(DAC_SESSION_ID);
 
 		delReq.setDomain(dac.getPublicCert().getCommonName());
-		delReq.setChannel(caToDel.getCurrent().getChannel());
+		delReq.setChannel(caToDel.getChannel());
 
 		DeleteChannelAuthorizationResponse delRes = zas.deleteChannelAuthorization(delReq);
 		assertSuccess(delRes);

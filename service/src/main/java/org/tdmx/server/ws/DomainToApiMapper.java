@@ -233,18 +233,17 @@ public class DomainToApiMapper {
 		if (ca == null) {
 			return null;
 		}
-
-		Currentchannelauthorization current = new Currentchannelauthorization();
-		current.setChannel(mapChannel(ca.getChannel()));
-		current.setOriginPermission(mapPermission(ca.getSendAuthorization()));
-		current.setDestinationPermission(mapPermission(ca.getRecvAuthorization()));
-
-		current.setLimit(mapLimit(ca.getLimit()));
-		current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
-
 		Channelauthorization c = new Channelauthorization();
+		c.setChannel(mapChannel(ca.getChannel()));
 		c.setDomain(ca.getChannel().getDomain().getDomainName());
-		c.setCurrent(current);
+		if (ca.getSendAuthorization() != null || ca.getRecvAuthorization() != null) {
+			Currentchannelauthorization current = new Currentchannelauthorization();
+			current.setOriginPermission(mapPermission(ca.getSendAuthorization()));
+			current.setDestinationPermission(mapPermission(ca.getRecvAuthorization()));
+			current.setLimit(mapLimit(ca.getLimit()));
+			current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
+			c.setCurrent(current);
+		}
 		if (ca.getReqRecvAuthorization() != null || ca.getSendAuthorization() != null) {
 			RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
 			unconfirmed.setOriginPermission(mapPermission(ca.getReqSendAuthorization()));

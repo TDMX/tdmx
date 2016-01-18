@@ -135,15 +135,23 @@ public class ClientCliLoggingUtils {
 	public static String toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
 		StringBuilder buf = new StringBuilder();
 		buf.append("Domain [").append(ca.getDomain()).append("]").append(LINEFEED);
-		buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
-		buf.append("Requested Authorization [").append(toString(ca.getUnconfirmed())).append("]").append(LINEFEED);
+		buf.append("Channel [").append(ca.getChannel()).append("]").append(LINEFEED);
+		if (ca.getCurrent() != null) {
+			buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Current Authorization").append(LINEFEED);
+		}
+		if (ca.getUnconfirmed() != null) {
+			buf.append("Requested Authorization [").append(toString(ca.getUnconfirmed())).append("]").append(LINEFEED);
+		} else {
+			buf.append("No Requested Authorization").append(LINEFEED);
+		}
 		buf.append(toString(ca.getPs()));
 		return buf.toString();
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Currentchannelauthorization cca) {
 		StringBuilder buf = new StringBuilder();
-		buf.append(toString(cca.getChannel())).append(LINEFEED);
 		if (cca.getOriginPermission() != null) {
 			buf.append("Origin Permission [").append(toString(cca.getOriginPermission())).append("]").append(LINEFEED);
 		} else {

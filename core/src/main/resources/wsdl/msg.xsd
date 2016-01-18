@@ -211,7 +211,6 @@
 	</xs:complexType>
 	<xs:complexType name="CurrentChannelAuthorization">
 		<xs:sequence>
-			<xs:element ref="channel"/>
 			<xs:element name="originPermission" type="EndpointPermission" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the authorization of the origin.</xs:documentation>
@@ -229,12 +228,13 @@
 	<xs:complexType name="ChannelAuthorization">
 		<xs:sequence>
 			<xs:element ref="domain"/>
-			<xs:element name="current" type="CurrentChannelAuthorization">
+			<xs:element ref="channel"/>
+			<xs:element name="current" type="CurrentChannelAuthorization" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the current authorization of the channel.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="unconfirmed" type="RequestedChannelAuthorization">
+			<xs:element name="unconfirmed" type="RequestedChannelAuthorization" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>the yet to be confirmed authorization of the channel.</xs:documentation>
 				</xs:annotation>

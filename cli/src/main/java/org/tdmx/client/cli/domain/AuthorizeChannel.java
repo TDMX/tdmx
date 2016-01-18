@@ -86,6 +86,8 @@ public class AuthorizeChannel implements CommandExecutable {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	// TODO channel:authorize to confirm other's requested perms
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
@@ -150,10 +152,9 @@ public class AuthorizeChannel implements CommandExecutable {
 		Channel c = new Channel();
 		c.setOrigin(origin);
 		c.setDestination(dest);
+		setChannelAuthRequest.setChannel(c);
 
 		Currentchannelauthorization ca = new Currentchannelauthorization();
-		ca.setChannel(c);
-
 		if (isOrigin) {
 			Permission originPermission = new Permission();
 			originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
@@ -178,7 +179,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		l.setLowBytes(BigInteger.valueOf(lowLimitMb * ClientCliUtils.MEGA));
 		ca.setLimit(l);
 		// sign the CA
-		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), ca);
+		SignatureUtils.createChannelAuthorizationSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c, ca);
 		setChannelAuthRequest.setCurrentchannelauthorization(ca);
 
 		setChannelAuthRequest.setSessionId(sessionResponse.getSession().getSessionId());
@@ -186,7 +187,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse setChannelAuthResponse = zas
 				.setChannelAuthorization(setChannelAuthRequest);
 		if (setChannelAuthResponse.isSuccess()) {
-			out.println("Authorization " + ClientCliLoggingUtils.toString(ca.getChannel()) + " successful.");
+			out.println("Authorization " + ClientCliLoggingUtils.toString(c) + " successful.");
 
 		} else {
 			ClientCliUtils.logError(out, setChannelAuthResponse.getError());

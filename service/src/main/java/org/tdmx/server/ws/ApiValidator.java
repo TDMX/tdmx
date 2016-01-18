@@ -89,9 +89,6 @@ public class ApiValidator {
 			setError(ErrorCode.MissingChannelAuthorization, ack);
 			return null;
 		}
-		if (checkChannel(ca.getChannel(), ack) == null) {
-			return null;
-		}
 		if (ca.getOriginPermission() != null && checkEndpointPermission(ca.getOriginPermission(), ack) == null) {
 			return null;
 		}
