@@ -213,7 +213,7 @@ public interface ChannelService {
 	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 	/**
-	 * Fetch the ChannelMessage which has the messageId provided.
+	 * Fetch the ChannelMessage which has the messageId provided. No fetch plan.
 	 * 
 	 * @param zone
 	 * @param msgId

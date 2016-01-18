@@ -212,10 +212,6 @@ public class Channel implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setDomain(Domain domain) {
-		this.domain = domain;
-	}
-
 	private void setQuota(FlowQuota quota) {
 		this.quota = quota;
 	}
@@ -234,6 +230,15 @@ public class Channel implements Serializable {
 
 	public Domain getDomain() {
 		return domain;
+	}
+
+	/**
+	 * IMPORTANT!!! only use if you really know what you're doing.
+	 * 
+	 * @param domain
+	 */
+	public void setDomain(Domain domain) {
+		this.domain = domain;
 	}
 
 	public ChannelOrigin getOrigin() {

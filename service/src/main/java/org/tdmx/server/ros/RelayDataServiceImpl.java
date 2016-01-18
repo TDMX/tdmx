@@ -72,7 +72,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 
 	@Override
 	public Zone getZone(AccountZone az, Long zoneId) {
-		if (az == null) {
+		if (az == null || zoneId == null) {
 			return null;
 		}
 		associateZoneDB(az.getZonePartitionId());
@@ -85,12 +85,15 @@ public class RelayDataServiceImpl implements RelayDataService {
 
 	@Override
 	public Domain getDomain(AccountZone az, Zone z, Long domainId) {
-		if (az == null || z == null) {
+		if (az == null || z == null || domainId == null) {
 			return null;
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			return domainId != null ? domainService.findById(domainId) : null;
+
+			Domain d = domainService.findById(domainId);
+			d.setZone(z);
+			return d;
 		} finally {
 			disassociateZoneDB();
 		}
@@ -98,12 +101,15 @@ public class RelayDataServiceImpl implements RelayDataService {
 
 	@Override
 	public Channel getChannel(AccountZone az, Zone z, Domain d, Long channelId) {
-		if (az == null || z == null || d == null) {
+		if (az == null || z == null || d == null || channelId == null) {
 			return null;
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			return channelId != null ? channelService.findById(channelId, true, true) : null;
+			Channel c = channelService.findById(channelId, true, true);
+			// the channel's domain is not fetched by findById
+			c.setDomain(d);
+			return c;
 		} finally {
 			disassociateZoneDB();
 		}
@@ -111,12 +117,14 @@ public class RelayDataServiceImpl implements RelayDataService {
 
 	@Override
 	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long msgId) {
-		if (az == null || z == null || d == null || channel == null) {
+		if (az == null || z == null || d == null || channel == null || msgId == null) {
 			return null;
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			return msgId != null ? channelService.findByMessageId(msgId) : null;
+			ChannelMessage msg = channelService.findByMessageId(msgId);
+			msg.setChannel(channel);
+			return msg;
 		} finally {
 			disassociateZoneDB();
 		}

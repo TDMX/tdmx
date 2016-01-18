@@ -105,10 +105,6 @@ public class Domain implements Serializable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
 	private void setDomainName(String domainName) {
 		this.domainName = domainName;
 	}
@@ -127,6 +123,15 @@ public class Domain implements Serializable {
 
 	public Zone getZone() {
 		return zone;
+	}
+
+	/**
+	 * IMPORTANT!!! only use if you know what you're doing.
+	 * 
+	 * @param zone
+	 */
+	public void setZone(Zone zone) {
+		this.zone = zone;
 	}
 
 	public String getDomainName() {

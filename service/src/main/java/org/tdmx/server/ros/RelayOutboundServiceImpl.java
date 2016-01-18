@@ -126,6 +126,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		Domain d = relayDataService.getDomain(az, z, attributes.get(AttributeId.DomainId));
 		Channel c = relayDataService.getChannel(az, z, d, attributes.get(AttributeId.ChannelId));
 
+		// TODO not initialized.
 		RelayDirection dir = c.isSameDomain() ? RelayDirection.Both
 				: c.isSend() ? RelayDirection.Fowards : RelayDirection.Backwards;
 

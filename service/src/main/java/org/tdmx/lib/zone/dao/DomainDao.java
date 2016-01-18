@@ -38,7 +38,20 @@ public interface DomainDao {
 
 	public Domain merge(Domain value);
 
+	/**
+	 * Return the Domain with the id provided. No fetch plan.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public Domain loadById(Long id);
 
+	/**
+	 * Search for the Domains matching the search criteria. No fetch plan.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
 	public List<Domain> search(Zone zone, DomainSearchCriteria criteria);
 }

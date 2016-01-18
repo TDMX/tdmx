@@ -34,6 +34,12 @@ public interface DomainService {
 
 	public void createOrUpdate(Domain domain);
 
+	/**
+	 * Return the Domain with the id. No fetch plan.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public Domain findById(Long id);
 
 	public Domain findByName(Zone zone, String domainName);
