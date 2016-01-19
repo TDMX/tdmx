@@ -46,10 +46,10 @@ public class MOSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final String LAST_CHANNEL_USED = "LAST_CHANNEL_USED";
+	private static final String CHANNEL_MAP = "CHANNEL_MAP";
 
 	// Map[msgId]->MessageContextHolder
-	private static final String MESSAGE_CONTEXT_MAP = "MESSAGE_CONTEXT_MAP";
+	private static final String MESSAGE_MAP = "MESSAGE_MAP";
 
 	private static final int LEN_ENTROPY = 32;
 	private static final int LEN_CONTINUATION_ID = 8;
@@ -64,9 +64,13 @@ public class MOSServerSession extends WebServiceSession {
 		setDomain(domain);
 		setOriginatingAddress(address);
 
-		// each MOS session has a pre-initiated context map for sending messages
+		// pre-initiated context map for Channels.
+		Map<String, ChannelContextHolder> ccm = new ConcurrentHashMap<>();
+		setAttribute(CHANNEL_MAP, ccm);
+
+		// pre-initiated context map for sending messages
 		Map<String, MessageContextHolder> mcm = new ConcurrentHashMap<>();
-		setAttribute(MESSAGE_CONTEXT_MAP, mcm);
+		setAttribute(MESSAGE_MAP, mcm);
 	}
 
 	/**
@@ -111,6 +115,42 @@ public class MOSServerSession extends WebServiceSession {
 
 	}
 
+	/**
+	 * A ChannelContextHolder holds a channel in a session.
+	 * 
+	 * @author Peter
+	 * 
+	 */
+	public static class ChannelContextHolder {
+		private final String channelKey;
+		private final Channel channel;
+
+		// we cache the relay address for each channel
+		private String rosTcpAddress;
+
+		public ChannelContextHolder(String channelKey, Channel channel) {
+			this.channelKey = channelKey;
+			this.channel = channel;
+		}
+
+		public String getChannelKey() {
+			return channelKey;
+		}
+
+		public Channel getChannel() {
+			return channel;
+		}
+
+		public String getRosTcpAddress() {
+			return rosTcpAddress;
+		}
+
+		public void setRosTcpAddress(String rosTcpAddress) {
+			this.rosTcpAddress = rosTcpAddress;
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
@@ -131,24 +171,28 @@ public class MOSServerSession extends WebServiceSession {
 		return getAttribute(ORIGIN_ADDRESS);
 	}
 
-	public Channel getLastChannelUsed() {
-		return getAttribute(LAST_CHANNEL_USED);
+	public ChannelContextHolder getChannel(String channelKey) {
+		return getChannelMap().get(channelKey);
 	}
 
-	public void setLastChannelUsed(Channel channel) {
-		setAttribute(LAST_CHANNEL_USED, channel);
+	public ChannelContextHolder addChannel(String channelKey, Channel channel) {
+		ChannelContextHolder cch = new ChannelContextHolder(channelKey, channel);
+
+		Map<String, ChannelContextHolder> ccm = getChannelMap();
+		ccm.put(cch.getChannelKey(), cch);
+		return cch;
 	}
 
 	public MessageContextHolder addMessage(ChannelMessage msg) {
 		MessageContextHolder mch = new MessageContextHolder(msg);
 
-		Map<String, MessageContextHolder> mcm = getMessageContextMap();
+		Map<String, MessageContextHolder> mcm = getMessageMap();
 		mcm.put(mch.getMsgId(), mch);
 		return mch;
 	}
 
 	public MessageContextHolder getMessage(String msgId) {
-		return getMessageContextMap().get(msgId);
+		return getMessageMap().get(msgId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -175,8 +219,12 @@ public class MOSServerSession extends WebServiceSession {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private Map<String, MessageContextHolder> getMessageContextMap() {
-		return getAttribute(MESSAGE_CONTEXT_MAP);
+	private Map<String, MessageContextHolder> getMessageMap() {
+		return getAttribute(MESSAGE_MAP);
+	}
+
+	private Map<String, ChannelContextHolder> getChannelMap() {
+		return getAttribute(CHANNEL_MAP);
 	}
 
 	// -------------------------------------------------------------------------

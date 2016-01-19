@@ -43,6 +43,7 @@ public class ProcessingState implements Serializable {
 	public static final int MAX_ERRORMESSAGE_LEN = 2048;
 
 	public static final int FAILURE_RELAY_INITIATION = 501;
+	public static final int FAILURE_RELAY_RETRY = 502;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS

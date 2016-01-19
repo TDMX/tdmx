@@ -56,6 +56,7 @@ import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.Address;
@@ -77,10 +78,13 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.mos.MOSServerSession.ChannelContextHolder;
 import org.tdmx.server.ws.mos.MOSServerSession.MessageContextHolder;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
@@ -98,6 +102,8 @@ public class MOSImpl implements MOS {
 
 	private AuthorizedSessionLookupService<MOSServerSession> authorizedSessionService;
 	private AuthenticatedClientLookupService authenticatedClientService;
+
+	private RelayClientService relayClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -249,8 +255,9 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		Channel channel = session.getLastChannelUsed();
-		if (channel == null || !cn.equals(channel.getChannelName())) {
+		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
+		ChannelContextHolder cch = session.getChannel(channelKey);
+		if (cch == null) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 			sc.setDomainName(authorizedUser.getTdmxDomainName());
 			sc.getOrigin().setDomainName(header.getChannel().getOrigin().getDomain());
@@ -264,11 +271,11 @@ public class MOSImpl implements MOS {
 				setError(ErrorCode.ChannelNotFound, response);
 				return response;
 			}
-			channel = channels.get(0);
-			session.setLastChannelUsed(channel);
+			Channel channel = channels.get(0);
+			cch = session.addChannel(channelKey, channel);
 		}
 
-		m.setChannel(channel);
+		m.setChannel(cch.getChannel());
 		SubmitMessageResultHolder result = channelService.preSubmitMessage(zone, m);
 		if (result.status != null) {
 			setError(mapSubmitOperationStatus(result.status), response);
@@ -286,6 +293,9 @@ public class MOSImpl implements MOS {
 		if (continuationId == null) {
 			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
 			channelService.create(result.message);
+
+			// give the message to the ROS to relay.
+			relayWithRetry(session, cch, result.message);
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
@@ -439,6 +449,35 @@ public class MOSImpl implements MOS {
 		}
 	}
 
+	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, ChannelMessage msg) {
+		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getChannelKey(), session.getAccountZone(),
+				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), msg);
+		if (!rs.isSuccess()) {
+			if (rs.getErrorCode().isRetryable()) {
+				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new ROS session */,
+						session.getAccountZone(), session.getZone(), cch.getChannel().getDomain(), cch.getChannel(),
+						msg);
+				if (!retry.isSuccess()) {
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+							rs.getErrorCode().getErrorMessage());
+					// TODO channelService.updateStatusMessage(result.message.getId(), error);
+				} else {
+					// cache the potentially changed ROS address
+					cch.setRosTcpAddress(retry.getRosTcpAddress());
+				}
+			} else {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+						rs.getErrorCode().getErrorMessage());
+				// TODO channelService.updateStatusMessage(result.message.getId(), error);
+
+			}
+
+		} else {
+			// cache the working ROS address
+			cch.setRosTcpAddress(rs.getRosTcpAddress());
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -457,6 +496,14 @@ public class MOSImpl implements MOS {
 
 	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
 		this.authenticatedClientService = authenticatedClientService;
+	}
+
+	public RelayClientService getRelayClientService() {
+		return relayClientService;
+	}
+
+	public void setRelayClientService(RelayClientService relayClientService) {
+		this.relayClientService = relayClientService;
 	}
 
 	public DomainService getDomainService() {

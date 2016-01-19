@@ -75,7 +75,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	@Override
 	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, ChannelAuthorization ca) {
-		String channelKey = channel.getChannelKey(domain.getDomainName());
+		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.Authorization, AttributeId.AuthorizationId,
@@ -88,7 +88,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	@Override
 	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel) {
-		String channelKey = channel.getChannelKey(domain.getDomainName());
+		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.DestinationSession, AttributeId.ChannelId,
@@ -101,7 +101,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	@Override
 	public RelayStatus relayChannelFlowControl(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, FlowQuota quota) {
-		String channelKey = channel.getChannelKey(domain.getDomainName());
+		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.FlowControl, AttributeId.FlowQuotaId,
@@ -114,7 +114,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	@Override
 	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, ChannelMessage msg) {
-		String channelKey = channel.getChannelKey(domain.getDomainName());
+		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
 			RelayRequest request = createRelayRequest(channelKey, RelayType.Message, AttributeId.MessageId,

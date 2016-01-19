@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,9 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -73,6 +77,8 @@ import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -101,6 +107,9 @@ public class MOSImplUnitTest {
 	@Autowired
 	@Named("ws.MOS.ServerSessionManager")
 	private WebServiceSessionManager serverSessionManager;
+
+	@Autowired
+	private RelayClientService mockRelayClientService;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -248,6 +257,10 @@ public class MOSImplUnitTest {
 	public void testSubmitMessageAndUploadChunk() throws Exception {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
+		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+				Mockito.any(ChannelMessage.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+
 		Submit req = new Submit();
 		req.setSessionId(UC_SESSION_ID);
 
@@ -259,6 +272,9 @@ public class MOSImplUnitTest {
 		SubmitResponse response = mos.submit(req);
 		assertSuccess(response, false);
 
+		Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+				Mockito.any(ChannelMessage.class));
 		// FIXME assertNotNull(response.getContinuation());
 
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1);
