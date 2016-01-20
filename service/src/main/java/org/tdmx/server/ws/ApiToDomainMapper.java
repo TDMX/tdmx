@@ -85,9 +85,10 @@ public class ApiToDomainMapper {
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
 		md.setPayloadSignature(msg.getHeader().getPayloadSignature());
 		md.setExternalReference(msg.getHeader().getExternalReference());
-		md.setReceiverCertificateChainPem(
-				CertificateIOUtils.safeX509certsToPem(msg.getHeader().getTo().getUsercertificate(),
-						msg.getHeader().getTo().getDomaincertificate(), msg.getHeader().getTo().getRootcertificate()));
+		// on submit of a message, we don't have the "receipt" signature parts, just the identity.
+		org.tdmx.core.api.v01.msg.UserSignature receipt = new org.tdmx.core.api.v01.msg.UserSignature();
+		receipt.setUserIdentity(msg.getHeader().getTo());
+		md.setReceipt(mapUserSignature(receipt));
 		md.setSignature(mapUserSignature(msg.getHeader().getUsersignature()));
 
 		md.setChunkSize(msg.getPayload().getChunkSize());
@@ -162,7 +163,7 @@ public class ApiToDomainMapper {
 		return s;
 	}
 
-	public AgentSignature mapUserSignature(org.tdmx.core.api.v01.msg.Usersignature signature) {
+	public AgentSignature mapUserSignature(org.tdmx.core.api.v01.msg.UserSignature signature) {
 		if (signature == null) {
 			return null;
 		}

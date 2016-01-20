@@ -597,51 +597,11 @@
 					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="ChannelMessageSummary">
-		<xs:annotation>
-			<xs:documentation>TODO: msg status RECV, NEW etc. relaying. TODO externalReference to global ref short text.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msgId"/>
-			<xs:element name="ttl" type="xs:dateTime">
+			<xs:element name="signature" type="signature">
 				<xs:annotation>
-					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>
+					<xs:documentation>the message signature value.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="externalReference" type="common:longtext" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="senderSN" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>the certificate serialNumber of the sender.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="receiverSN" type="xs:unsignedShort">
-				<xs:annotation>
-					<xs:documentation>the certificate serialNumber of the receiver.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="chunkSize" type="xs:unsignedInt">
-				<xs:annotation>
-					<xs:documentation>chunk size in bytes.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="length" type="xs:unsignedInt">
-				<xs:annotation>
-					<xs:documentation>the total bytes of the payload - ( encrypted, zipped ) - equal to the sum of all payload chunk lengths.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="plaintextLength" type="xs:unsignedInt">
-				<xs:annotation>
-					<xs:documentation>the size in bytes of the plaiintext ( decrypted, uncompressed ) - known in advance so as to allow safe decompression.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element ref="ms"/>
-			<xs:element ref="common:ps"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="Chunk">
@@ -665,9 +625,14 @@
 	</xs:complexType>
 	<xs:complexType name="DeliveryReport">
 		<xs:sequence>
-			<xs:element ref="msgRef"/>
-			<xs:element ref="receiptsignature" minOccurs="0"/>
-			<xs:element ref="common:ps" minOccurs="0"/>
+			<xs:element ref="msgreference"/>
+			<xs:choice>
+				<xs:annotation>
+					<xs:documentation>either the message delivery was successful or not.</xs:documentation>
+				</xs:annotation>
+				<xs:element ref="receiptsignature" minOccurs="0"/>
+				<xs:element ref="common:error" minOccurs="0"/>
+			</xs:choice>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="messagestatus">
@@ -699,7 +664,7 @@
 			<xs:documentation>A message.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="msgRef" type="MessageReference">
+	<xs:element name="msgreference" type="MessageReference">
 		<xs:annotation>
 			<xs:documentation>A message.</xs:documentation>
 		</xs:annotation>
@@ -736,24 +701,14 @@
 			<xs:documentation>The chunk data.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="receiptsignature" type="SignatureValue">
+	<xs:element name="receiptsignature" type="UserSignature">
 		<xs:annotation>
-			<xs:documentation>The signature of receipt by the target user. All the MessageReference fields are signed by the receiptsignature.</xs:documentation>
+			<xs:documentation>The signature of receipt by the target user. All the msgreference fields are signed by the receiptsignature.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="dr" type="DeliveryReport">
 		<xs:annotation>
 			<xs:documentation>The message delivery report.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="cms" type="ChannelMessageSummary">
-		<xs:annotation>
-			<xs:documentation>The channel message summary.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="ms" type="messagestatus">
-		<xs:annotation>
-			<xs:documentation>The message status.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="limit" type="Limit">

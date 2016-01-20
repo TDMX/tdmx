@@ -97,7 +97,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingChannel = new Channel(domain, origin, dest);
 			newChannel = true;
 			existingCA = new ChannelAuthorization(existingChannel);
-			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 		} else {
 			existingChannel = existingCA.getChannel();
 		}
@@ -126,7 +125,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setLimit(auth.getLimit());
-			existingCA.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS)); // no need to relay
+			existingCA.setProcessingState(ProcessingState.none()); // no need to relay
 
 		} else if (existingChannel.isSend()) {
 			// we must confirm any requested recvAuth if there is one, but not invent one
@@ -153,8 +152,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			if (existingCA.getSendAuthorization() == null
 					|| !existingCA.getSendAuthorization().getSignature().getValue()
 							.equals(auth.getSendAuthorization().getSignature().getValue())
-					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
-				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+					|| auth.getProcessingState().getStatus() != ProcessingStatus.NONE) {
+				existingCA.setProcessingState(ProcessingState.pending());
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setLimit(auth.getLimit());
@@ -193,8 +192,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			if (existingCA.getRecvAuthorization() == null
 					|| !existingCA.getRecvAuthorization().getSignature().getValue()
 							.equals(auth.getRecvAuthorization().getSignature().getValue())
-					|| auth.getProcessingState().getStatus() != ProcessingStatus.SUCCESS) {
-				existingCA.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+					|| auth.getProcessingState().getStatus() != ProcessingStatus.NONE) {
+				existingCA.setProcessingState(ProcessingState.pending());
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setLimit(auth.getLimit());
@@ -209,6 +208,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			Destination d = destinationDao.loadByChannelDestination(zone, existingChannel.getDestination());
 			if (d != null) {
 				setChannelDestinationSession(zone, existingChannel, d.getDestinationSession());
+				// we don't relay this DS - because the ROS will automatically relay CA and then DS
 			}
 		} else if (!existingChannel.isOpen()) {
 			// if the channel is "CLOSED" we don't allow any DestinationSession
@@ -251,7 +251,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		Channel newChannel = new Channel(tempChannel.getDomain(), tempChannel.getOrigin(),
 				tempChannel.getDestination());
 		ChannelAuthorization newCA = new ChannelAuthorization(newChannel);
-		newCA.setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 
 		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
 		if (newChannel.isSend()) {
@@ -277,6 +276,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		Channel channel = findById(channelId, false, false);
 		setChannelDestinationSession(zone, channel, destinationSession);
 		// persist should not be necessary
+
+		// TODO #93: return the Channel
 	}
 
 	@Override
@@ -384,7 +385,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnSend(msg.getPayloadLength());
 
-		result.message = msg;
 		return result;
 	}
 
@@ -408,7 +408,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnRelay(msg.getPayloadLength());
 
-		result.message = msg;
 		return result;
 	}
 
@@ -548,9 +547,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// both
 		// sender and receiver
 		if (!channel.isSend() && channel.isRecv()) {
-			channel.setProcessingState(new ProcessingState(ProcessingStatus.PENDING));
+			channel.setProcessingState(ProcessingState.pending());
 		} else {
-			channel.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
+			channel.setProcessingState(ProcessingState.none());
 		}
 	}
 

@@ -154,8 +154,8 @@ public class MDSImpl implements MDS {
 		Service service = session.getService();
 
 		// check authUser is ds.signer
-		PKIXCertificate uc = CertificateIOUtils.safeDecodeX509(ds.getUsersignature().getUserIdentity()
-				.getUsercertificate());
+		PKIXCertificate uc = CertificateIOUtils
+				.safeDecodeX509(ds.getUsersignature().getUserIdentity().getUsercertificate());
 		if (uc == null || !authorizedUser.isIdentical(uc)) {
 			setError(ErrorCode.InvalidSignerDestinationSession, response);
 			return response;
@@ -176,8 +176,8 @@ public class MDSImpl implements MDS {
 		boolean more = true;
 		// fetch ALL Channels which have this Destination as Destination.
 		for (int pageNo = 0; more; pageNo++) {
-			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(pageNo,
-					getBatchSize()));
+			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setDomain(domain);
 			sc.getDestination().setLocalName(address.getLocalName());
 			sc.getDestination().setDomainName(domain.getDomainName());
@@ -186,6 +186,8 @@ public class MDSImpl implements MDS {
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
 				channelService.setChannelDestinationSession(zone, channel.getId(), dest.getDestinationSession());
+
+				// TODO #93: relay "pending" channel destination sessions back to origin
 			}
 			if (channels.isEmpty()) {
 				more = false;

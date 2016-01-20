@@ -124,7 +124,7 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
-	private ProcessingState processingState;
+	private ProcessingState processingState = ProcessingState.none();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -148,6 +148,7 @@ public class ChannelAuthorization implements Serializable {
 			setSendAuthorization(other.getSendAuthorization());
 			setSignature(other.getSignature());
 			setLimit(other.getLimit());
+			setProcessingState(other.getProcessingState());
 		}
 	}
 
@@ -166,7 +167,7 @@ public class ChannelAuthorization implements Serializable {
 		builder.append(", reqRecvAuthorization=").append(reqRecvAuthorization);
 		builder.append(", limit=").append(limit);
 		builder.append(", signature=").append(signature);
-		builder.append(", processingState=").append(processingState);
+		builder.append(", ps=").append(processingState);
 		builder.append("]");
 		return builder.toString();
 	}

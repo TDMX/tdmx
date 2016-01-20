@@ -16,80 +16,41 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.common.domain;
+package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 /**
- * An ProcessingState describes the current status of processing related to the enclosing entity.
+ * A DeliveryReceipt of a ChannelMessage.
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class ProcessingState implements Serializable {
+public class DeliveryReceipt implements Serializable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_ERRORMESSAGE_LEN = 2048;
-
-	public static final int FAILURE_RELAY_INITIATION = 501;
-	public static final int FAILURE_RELAY_RETRY = 502;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Enumerated(EnumType.STRING)
-	@Column
-	private ProcessingStatus status;
+	private String msgId;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column
-	private Date timestamp; // the time since we've been in this status
+	private String externalReference;
 
-	@Column
-	private Integer errorCode;
+	private AgentSignature senderSignature;
 
-	@Column
-	private String errorMessage;
+	private AgentSignature receiverSignature;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	private ProcessingState() {
-		this(ProcessingStatus.NONE);
-	}
+	public DeliveryReceipt() {
 
-	private ProcessingState(ProcessingStatus currentStatus) {
-		status = currentStatus;
-		timestamp = new Date();
-	}
-
-	public static ProcessingState error(int errorCode, String errorMsg) {
-		ProcessingState e = new ProcessingState(ProcessingStatus.FAILURE);
-		e.setErrorCode(errorCode);
-		e.setErrorMessage(errorMsg);
-		return e;
-	}
-
-	public static ProcessingState none() {
-		return new ProcessingState(ProcessingStatus.NONE);
-	}
-
-	public static ProcessingState pending() {
-		return new ProcessingState(ProcessingStatus.PENDING);
 	}
 
 	// -------------------------------------------------------------------------
@@ -99,11 +60,15 @@ public class ProcessingState implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ProcessingState [");
-		builder.append(" status=").append(status);
-		builder.append(" timestamp=").append(timestamp);
-		builder.append(" errorCode=").append(errorCode);
-		builder.append(" errorMessage=").append(errorMessage);
+		builder.append("DeliveryReport [");
+		builder.append("msgId=").append(msgId);
+		builder.append(", externalReference=").append(externalReference);
+		if (senderSignature != null && senderSignature.getSignatureDate() != null) {
+			builder.append(", sentAt=").append(senderSignature.getSignatureDate());
+		}
+		if (receiverSignature != null && receiverSignature.getSignatureDate() != null) {
+			builder.append(", receivedAt=").append(receiverSignature.getSignatureDate());
+		}
 		builder.append("]");
 		return builder.toString();
 	}
@@ -120,36 +85,36 @@ public class ProcessingState implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public ProcessingStatus getStatus() {
-		return status;
+	public String getMsgId() {
+		return msgId;
 	}
 
-	public void setStatus(ProcessingStatus status) {
-		this.status = status;
+	public void setMsgId(String msgId) {
+		this.msgId = msgId;
 	}
 
-	public Date getTimestamp() {
-		return timestamp;
+	public String getExternalReference() {
+		return externalReference;
 	}
 
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
+	public void setExternalReference(String externalReference) {
+		this.externalReference = externalReference;
 	}
 
-	public Integer getErrorCode() {
-		return errorCode;
+	public AgentSignature getSenderSignature() {
+		return senderSignature;
 	}
 
-	public void setErrorCode(Integer errorCode) {
-		this.errorCode = errorCode;
+	public void setSenderSignature(AgentSignature senderSignature) {
+		this.senderSignature = senderSignature;
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
+	public AgentSignature getReceiverSignature() {
+		return receiverSignature;
 	}
 
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
+	public void setReceiverSignature(AgentSignature receiverSignature) {
+		this.receiverSignature = receiverSignature;
 	}
 
 }

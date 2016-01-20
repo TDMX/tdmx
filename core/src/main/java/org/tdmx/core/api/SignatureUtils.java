@@ -39,9 +39,9 @@ import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.core.api.v01.msg.SignatureValue;
+import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.Usersignature;
+import org.tdmx.core.api.v01.msg.UserSignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -112,14 +112,14 @@ public class SignatureUtils {
 
 	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
 			Header header) {
-		Usersignature us = new Usersignature();
+		UserSignature us = new UserSignature();
 
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
 		id.setDomaincertificate(credential.getIssuerPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
-		SignatureValue sig = new SignatureValue();
+		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
@@ -148,7 +148,7 @@ public class SignatureUtils {
 		id.setDomaincertificate(credential.getPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
-		SignatureValue sig = new SignatureValue();
+		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
@@ -177,7 +177,7 @@ public class SignatureUtils {
 		id.setDomaincertificate(credential.getPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
-		SignatureValue sig = new SignatureValue();
+		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
@@ -198,11 +198,11 @@ public class SignatureUtils {
 		id.setDomaincertificate(credential.getIssuerPublicCert().getX509Encoded());
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
-		SignatureValue sig = new SignatureValue();
+		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
-		Usersignature signature = new Usersignature();
+		UserSignature signature = new UserSignature();
 		signature.setUserIdentity(id);
 		signature.setSignaturevalue(sig);
 		ft.setUsersignature(signature);

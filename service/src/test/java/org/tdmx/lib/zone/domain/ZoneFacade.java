@@ -26,8 +26,6 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.lib.common.domain.ProcessingState;
-import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 
@@ -134,8 +132,6 @@ public class ZoneFacade {
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
 
-		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
-
 		channel.getQuota().updateAuthorizationInfo();
 		return c;
 	}
@@ -175,8 +171,6 @@ public class ZoneFacade {
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
 
-		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
-
 		channel.getQuota().updateAuthorizationInfo();
 		return c;
 	}
@@ -213,8 +207,6 @@ public class ZoneFacade {
 		signature.setSignatureDate(new Date());
 		signature.setValue("hexvalueofsignature");
 		c.setSignature(signature);
-
-		c.setProcessingState(new ProcessingState(ProcessingStatus.SUCCESS));
 
 		channel.getQuota().updateAuthorizationInfo();
 		return c;

@@ -210,7 +210,7 @@ public class ClientCliLoggingUtils {
 		return buf.toString();
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.SignatureValue sv) {
+	public static String toString(org.tdmx.core.api.v01.msg.Signaturevalue sv) {
 		StringBuilder buf = new StringBuilder();
 		buf.append(" SignatureValue [");
 		buf.append(" Timestamp=").append(toString(sv.getTimestamp()));
@@ -229,7 +229,7 @@ public class ClientCliLoggingUtils {
 		return buf.toString();
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.Usersignature sig) {
+	public static String toString(org.tdmx.core.api.v01.msg.UserSignature sig) {
 		StringBuilder buf = new StringBuilder();
 		buf.append("User Signature [");
 		buf.append(toString(sig.getUserIdentity()));

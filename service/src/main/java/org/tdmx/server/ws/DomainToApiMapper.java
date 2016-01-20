@@ -46,10 +46,10 @@ import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.Sessioninfo;
 import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
-import org.tdmx.core.api.v01.msg.SignatureValue;
+import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.Usersignature;
+import org.tdmx.core.api.v01.msg.UserSignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -282,21 +282,21 @@ public class DomainToApiMapper {
 		return s;
 	}
 
-	public Usersignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+	public UserSignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
 		if (agentSignature == null) {
 			return null;
 		}
-		Usersignature us = new Usersignature();
+		UserSignature us = new UserSignature();
 		us.setSignaturevalue(mapSignature(agentSignature));
 		us.setUserIdentity(mapUserIdentity(agentSignature.getCertificateChain()));
 		return us;
 	}
 
-	public SignatureValue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+	public Signaturevalue mapSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
 		if (agentSignature == null) {
 			return null;
 		}
-		SignatureValue sig = new SignatureValue();
+		Signaturevalue sig = new Signaturevalue();
 		sig.setTimestamp(CalendarUtils.cast(agentSignature.getSignatureDate()));
 		sig.setSignature(agentSignature.getValue());
 		sig.setSignatureAlgorithm(mapSignatureAlgorithm(agentSignature.getAlgorithm()));

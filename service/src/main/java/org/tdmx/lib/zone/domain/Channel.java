@@ -106,7 +106,9 @@ public class Channel implements Serializable {
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
-	private ProcessingState processingState;
+	private ProcessingState processingState = ProcessingState.none(); // of relay of DestinationSession
+
+	// TODO #93 relay DS and toggle PS to pending()
 
 	/**
 	 * The quota association is "owned" ie. managed through this Channel
@@ -136,7 +138,6 @@ public class Channel implements Serializable {
 		setOrigin(origin);
 		setDestination(destination);
 		setQuota(new FlowQuota(this));
-		setProcessingState(new ProcessingState(ProcessingStatus.NONE));
 	}
 
 	public Channel(Domain domain, Channel other) {

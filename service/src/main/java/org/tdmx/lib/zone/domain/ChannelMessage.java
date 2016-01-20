@@ -40,9 +40,12 @@ import javax.persistence.TemporalType;
 
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
- * An ChannelMessage is a message in a Flow.
+ * An ChannelMessage is a message in a Flow. The ChannelMessage "includes" the DeliveryReceipt data @see
+ * {@link #getReceipt()}
  * 
  * ChannelMessages are created at by the {@link MOS#submit(org.tdmx.core.api.v01.mos.Submit)} when the Channel's
  * FlowControl permits sending on the originating side, and when relayed in with
@@ -68,7 +71,9 @@ public class ChannelMessage implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO MSG#ProcessingState tracking status of msg relay and msg delivery report.
+	// TODO #93 MSG#ProcessingState tracking status of msg relay
+
+	// TODO #95 DR#ProcessingState tracking status msg delivery report.
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelMessageIdGen")
@@ -89,12 +94,15 @@ public class ChannelMessage implements Serializable {
 	private Date ttlTimestamp;
 
 	/**
-	 * The public certificate of the receiving Agent.
-	 * 
-	 * NOTE: Maximum length is defined by {@link AgentCredential#MAX_CERTIFICATECHAIN_LEN}
+	 * The delivery receipt double's as the receiver cert.
 	 */
-	@Column(name = "receiverPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
-	private String receiverCertificateChainPem;
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "signatureDate", column = @Column(name = "receiverSignatureDate", nullable = true) ),
+			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "receiverPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false) ),
+			@AttributeOverride(name = "value", column = @Column(name = "receiverSignature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = true) ),
+			@AttributeOverride(name = "algorithm", column = @Column(name = "receiverSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = true) ) })
+	private AgentSignature receipt;
 
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String encryptionContextId;
@@ -153,6 +161,14 @@ public class ChannelMessage implements Serializable {
 	// CONTROL FIELDS
 	// -------------------------------------------------------------------------
 
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
+	private ProcessingState processingState = ProcessingState.none();
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -160,12 +176,12 @@ public class ChannelMessage implements Serializable {
 	public ChannelMessage() {
 	}
 
-	public ChannelMessage(Channel channel,ChannelMessage other) {
+	public ChannelMessage(Channel channel, ChannelMessage other) {
 		this.channel = channel;
 		// header fields
 		this.msgId = other.getMsgId();
 		this.ttlTimestamp = other.getTtlTimestamp();
-		this.receiverCertificateChainPem = other.getReceiverCertificateChainPem();
+		this.receipt = other.getReceipt();
 		this.encryptionContextId = other.getEncryptionContextId();
 		this.payloadSignature = other.getPayloadSignature();
 		this.signature = other.getSignature();
@@ -176,6 +192,8 @@ public class ChannelMessage implements Serializable {
 		this.encryptionContext = other.getEncryptionContext();
 		this.plaintextLength = other.getPlaintextLength();
 		this.macOfMacs = other.getMacOfMacs();
+		// control fields
+		this.processingState = other.getProcessingState();
 	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -196,9 +214,30 @@ public class ChannelMessage implements Serializable {
 		builder.append(id);
 		builder.append(" msgId=").append(msgId);
 		builder.append(" ttlTimestamp=").append(ttlTimestamp);
+		if (signature != null) {
+			builder.append(" sentAt=").append(signature.getSignatureDate());
+		}
 		builder.append(" payloadLength=").append(payloadLength);
+		if (receipt != null) {
+			builder.append(" receivedAt=").append(receipt.getSignatureDate());
+		}
+		builder.append(" processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * Return the DR contained in this ChannelMessage.
+	 * 
+	 * @return the DR contained in this ChannelMessage.
+	 */
+	public DeliveryReceipt getDeliveryReport() {
+		DeliveryReceipt dr = new DeliveryReceipt();
+		dr.setMsgId(msgId);
+		dr.setReceiverSignature(receipt);
+		dr.setSenderSignature(signature);
+		dr.setExternalReference(externalReference);
+		return dr;
 	}
 
 	// -------------------------------------------------------------------------
@@ -293,14 +332,6 @@ public class ChannelMessage implements Serializable {
 		this.encryptionContextId = encryptionContextId;
 	}
 
-	public String getReceiverCertificateChainPem() {
-		return receiverCertificateChainPem;
-	}
-
-	public void setReceiverCertificateChainPem(String receiverCertificateChainPem) {
-		this.receiverCertificateChainPem = receiverCertificateChainPem;
-	}
-
 	public AgentSignature getSignature() {
 		return signature;
 	}
@@ -309,12 +340,28 @@ public class ChannelMessage implements Serializable {
 		this.signature = signature;
 	}
 
+	public AgentSignature getReceipt() {
+		return receipt;
+	}
+
+	public void setReceipt(AgentSignature receipt) {
+		this.receipt = receipt;
+	}
+
 	public String getMacOfMacs() {
 		return macOfMacs;
 	}
 
 	public void setMacOfMacs(String macOfMacs) {
 		this.macOfMacs = macOfMacs;
+	}
+
+	public ProcessingState getProcessingState() {
+		return processingState;
+	}
+
+	public void setProcessingState(ProcessingState processingState) {
+		this.processingState = processingState;
 	}
 
 }

@@ -287,7 +287,7 @@ public class MRSImpl implements MRS {
 		chunkService.createOrUpdate(c);
 
 		// persist the message itself.
-		channelService.create(result.message);
+		channelService.create(m);
 
 		response.setSuccess(true);
 	}

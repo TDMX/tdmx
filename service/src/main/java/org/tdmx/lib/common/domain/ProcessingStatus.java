@@ -22,7 +22,6 @@ public enum ProcessingStatus {
 
 	NONE,
 	PENDING,
-	SUCCESS,
 	FAILURE;
 
 	public static final int MAX_PROCESSINGSTATUS_LEN = 12;

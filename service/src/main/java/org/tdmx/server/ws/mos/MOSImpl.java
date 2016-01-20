@@ -286,16 +286,16 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// add the sent message to the session.
-		MessageContextHolder mch = session.addMessage(result.message);
+		MessageContextHolder mch = session.addMessage(m);
 
 		// give the caller the continuationId for the next chunk
 		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null) {
 			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
-			channelService.create(result.message);
+			channelService.create(m);
 
 			// give the message to the ROS to relay.
-			relayWithRetry(session, cch, result.message);
+			relayWithRetry(session, cch, m);
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);

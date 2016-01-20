@@ -36,6 +36,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
+
 /**
  * An FlowQuota is separated as it's own instance from the Channel so that it can be updated with a higher frequency
  * without incurring the penalty of the data of the Channel not changing fast.
@@ -84,6 +87,14 @@ public class FlowQuota implements Serializable {
 			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "limitLowBytes") ) })
 	private FlowLimit limit;
 
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
+	private ProcessingState processingState = ProcessingState.none(); // of relay of FlowControl "OPEN" event
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -122,6 +133,11 @@ public class FlowQuota implements Serializable {
 		}
 	}
 
+	/**
+	 * Adapt flow control to increase of bytes to be sent out.
+	 * 
+	 * @param payloadSizeBytes
+	 */
 	public void incrementBufferOnSend(long payloadSizeBytes) {
 		setUsedBytes(getUsedBytes().add(BigInteger.valueOf(payloadSizeBytes)));
 		if (getUsedBytes().subtract(getLimit().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
@@ -130,6 +146,11 @@ public class FlowQuota implements Serializable {
 		}
 	}
 
+	/**
+	 * Adapt flow control to the bytes which are incoming over the relay.
+	 * 
+	 * @param payloadSizeBytes
+	 */
 	public void incrementBufferOnRelay(long payloadSizeBytes) {
 		setUsedBytes(getUsedBytes().add(BigInteger.valueOf(payloadSizeBytes)));
 		if (getUsedBytes().subtract(getLimit().getHighMarkBytes()).compareTo(BigInteger.ZERO) > 0) {
@@ -149,6 +170,7 @@ public class FlowQuota implements Serializable {
 		builder.append(", flowStatus=").append(flowStatus);
 		builder.append(", usedBytes=").append(usedBytes);
 		builder.append(", limit=").append(limit);
+		builder.append(", ps=").append(processingState);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -215,6 +237,14 @@ public class FlowQuota implements Serializable {
 
 	public void setLimit(FlowLimit limit) {
 		this.limit = limit;
+	}
+
+	public ProcessingState getProcessingState() {
+		return processingState;
+	}
+
+	public void setProcessingState(ProcessingState processingState) {
+		this.processingState = processingState;
 	}
 
 }
