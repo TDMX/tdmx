@@ -29,9 +29,9 @@ import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayOutboundServiceProxy;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest;
-import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest.RelayType;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayResponse;
 import org.tdmx.server.ros.client.RelayStatus.ErrorCode;
 
@@ -78,7 +78,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
-			RelayRequest request = createRelayRequest(channelKey, RelayType.Authorization, AttributeId.AuthorizationId,
+			RelayRequest request = createRelayRequest(channelKey, ObjectType.Authorization, AttributeId.AuthorizationId,
 					ca.getId());
 			return relay(request, rosTcpAddress);
 		}
@@ -91,7 +91,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
-			RelayRequest request = createRelayRequest(channelKey, RelayType.DestinationSession, AttributeId.ChannelId,
+			RelayRequest request = createRelayRequest(channelKey, ObjectType.DestinationSession, AttributeId.ChannelId,
 					channel.getId());
 			return relay(request, rosTcpAddress);
 		}
@@ -104,7 +104,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
-			RelayRequest request = createRelayRequest(channelKey, RelayType.FlowControl, AttributeId.FlowQuotaId,
+			RelayRequest request = createRelayRequest(channelKey, ObjectType.FlowControl, AttributeId.FlowQuotaId,
 					quota.getId());
 			return relay(request, rosTcpAddress);
 		}
@@ -117,7 +117,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
-			RelayRequest request = createRelayRequest(channelKey, RelayType.Message, AttributeId.MessageId,
+			RelayRequest request = createRelayRequest(channelKey, ObjectType.Message, AttributeId.MessageId,
 					msg.getId());
 			return relay(request, rosTcpAddress);
 		}
@@ -132,7 +132,7 @@ public class RelayOutboundServiceClient implements RelayClientService {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private RelayRequest createRelayRequest(String channelKey, RelayType type, AttributeId attrId,
+	private RelayRequest createRelayRequest(String channelKey, ObjectType type, AttributeId attrId,
 			Long attributeValue) {
 		RelayRequest.Builder reqBuilder = RelayRequest.newBuilder();
 		reqBuilder.setChannelKey(channelKey);

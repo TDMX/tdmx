@@ -129,6 +129,12 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	}
 
 	@Override
+	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
+		// TODO #93 delegate calling PCS to rpc client.
+		return null;
+	}
+
+	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) {
 		this.segment = segment;
 		try {

@@ -1,0 +1,31 @@
+// Copyright (c) 2015 Peter Klauser
+
+option java_generic_services = true;
+option java_package = "org.tdmx.server.pcs.protobuf";
+option java_outer_classname = "TOSServer";
+
+import "common.proto";
+
+message TransferRequest {
+	optional string segment = 1;
+	optional string apiName = 2;
+	optional string sessionKey = 3;
+	optional ObjectType transferType = 4;
+	repeated AttributeValue attribute = 5;
+}
+
+
+message TransferResponse {
+	optional bool success = 1; 
+}
+
+//
+// MRS -> MDS relay in of MSG
+// MRS -> MOS relay in of DR
+// MRS -> MRS(sender) transfer FC-open
+// MDS -> MRS initiate FC-open
+//
+
+service TransferObjectServiceProxy {
+    rpc transfer(TransferRequest) returns (TransferResponse);
+}

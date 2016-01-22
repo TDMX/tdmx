@@ -47,6 +47,8 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.InvalidateCertificateResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
@@ -399,6 +401,7 @@ public class RemoteControlServiceConnector
 		return responseBuilder.build();
 	}
 
+	@Override
 	public AssignRelaySessionResponse assignRelaySession(RpcController controller, AssignRelaySessionRequest request)
 			throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
@@ -422,6 +425,13 @@ public class RemoteControlServiceConnector
 		relayListener.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
 		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
+	}
+
+	@Override
+	public FindApiSessionResponse findApiSession(RpcController controller, FindApiSessionRequest request)
+			throws ServiceException {
+		// TODO #93: find the api session for the requester
+		return null;
 	}
 
 	@Override

@@ -414,6 +414,13 @@ public class SessionControlServiceImpl
 	}
 
 	@Override
+	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
+		// TODO #93: find the api session with the key
+
+		return null;
+	}
+
+	@Override
 	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm) {
 		for (ServiceHandle service : services) {
 			registerService(service, ssm);
@@ -708,4 +715,5 @@ public class SessionControlServiceImpl
 	public void setSessionStatisticsCheckIntervalSec(int sessionStatisticsCheckIntervalSec) {
 		this.sessionStatisticsCheckIntervalSec = sessionStatisticsCheckIntervalSec;
 	}
+
 }

@@ -37,6 +37,7 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
@@ -107,6 +108,12 @@ public class LocalControlServiceClient implements SessionControlService, RelayCo
 				log.warn("Call failed.", e);
 			}
 		}
+		return null;
+	}
+
+	@Override
+	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
+		// TODO #93: ask the PCS for the session endpoint
 		return null;
 	}
 

@@ -75,6 +75,8 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 		attributes.put(AttributeId.ServiceId, service.getId());
 
+		// TODO #93: facter out the sessionKey construction into a SessionKeyFactory
+
 		String sessionKey = az.getZoneApex() + ":" + agent.getAddress().getLocalName() + "@"
 				+ agent.getDomain().getDomainName() + ":" + "#" + service.getServiceName();
 

@@ -7,15 +7,8 @@ option java_outer_classname = "ROSServer";
 import "common.proto";
 
 message RelayRequest {
-	enum RelayType {
-	  Message = 0;
-	  DeliveryReply = 1;
-	  Authorization = 2;
-	  DestinationSession = 3;
-	  FlowControl = 4;
-	}
 	optional string channelKey = 1; 
-	optional RelayType relayType = 2;
+	optional ObjectType relayType = 2;
 	repeated AttributeValue attribute = 3;
 }
 

@@ -10,6 +10,13 @@ import "common.proto";
 // SCS -> PCS to allocate WS-API sessions to clients
 //
 
+message SessionHandle {
+	optional string segment = 1;
+	optional string apiName = 2;
+	optional string sessionKey = 3;
+	repeated AttributeValue attribute = 4;
+}
+
 message AssociateApiSessionRequest {
 	required SessionHandle handle = 1;
     required bytes pkixCertificate = 2;
@@ -21,11 +28,19 @@ message AssociateApiSessionResponse {
     optional bytes serverCert = 3;
 }
 
-message SessionHandle {
+
+//
+// WS -> PCS any service client can ask the PCS where a session is located.
+//
+
+message FindApiSessionRequest {
 	optional string segment = 1;
 	optional string apiName = 2;
 	optional string sessionKey = 3;
-	repeated AttributeValue attribute = 4;
+}
+
+message FindApiSessionResponse {
+	optional string tosAddress = 1;
 }
 
 
@@ -35,6 +50,7 @@ message SessionHandle {
 
 message RegisterServerRequest {
 	repeated ServiceHandle service = 1;
+	optional string risAddress = 2;
 }
 
 message RegisterServerResponse {
@@ -118,7 +134,6 @@ message AssignRelaySessionResponse {
 	optional string rosAddress = 1;
 }
 
-
 //
 // RPC methods
 //
@@ -126,6 +141,8 @@ message AssignRelaySessionResponse {
 service ControlServiceProxy {
 	// SCS->PCS
     rpc associateApiSession(AssociateApiSessionRequest) returns (AssociateApiSessionResponse);
+    // WS->PCS (transfer object service locator)
+    rpc findApiSession(FindApiSessionRequest) returns (FindApiSessionResponse);
     // WS->PCS
     rpc registerServer(RegisterServerRequest) returns (RegisterServerResponse);
     rpc notifySessionsRemoved(NotifySessionRemovedRequest) returns (NotifySessionRemovedResponse);

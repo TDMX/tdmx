@@ -8,6 +8,115 @@ public final class Common {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
+  /**
+   * Protobuf enum {@code ObjectType}
+   */
+  public enum ObjectType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>Message = 0;</code>
+     */
+    Message(0, 0),
+    /**
+     * <code>DeliveryReply = 1;</code>
+     */
+    DeliveryReply(1, 1),
+    /**
+     * <code>Authorization = 2;</code>
+     */
+    Authorization(2, 2),
+    /**
+     * <code>DestinationSession = 3;</code>
+     */
+    DestinationSession(3, 3),
+    /**
+     * <code>FlowControl = 4;</code>
+     */
+    FlowControl(4, 4),
+    ;
+
+    /**
+     * <code>Message = 0;</code>
+     */
+    public static final int Message_VALUE = 0;
+    /**
+     * <code>DeliveryReply = 1;</code>
+     */
+    public static final int DeliveryReply_VALUE = 1;
+    /**
+     * <code>Authorization = 2;</code>
+     */
+    public static final int Authorization_VALUE = 2;
+    /**
+     * <code>DestinationSession = 3;</code>
+     */
+    public static final int DestinationSession_VALUE = 3;
+    /**
+     * <code>FlowControl = 4;</code>
+     */
+    public static final int FlowControl_VALUE = 4;
+
+
+    public final int getNumber() { return value; }
+
+    public static ObjectType valueOf(int value) {
+      switch (value) {
+        case 0: return Message;
+        case 1: return DeliveryReply;
+        case 2: return Authorization;
+        case 3: return DestinationSession;
+        case 4: return FlowControl;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<ObjectType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<ObjectType>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ObjectType>() {
+            public ObjectType findValueByNumber(int number) {
+              return ObjectType.valueOf(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return org.tdmx.server.pcs.protobuf.Common.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final ObjectType[] VALUES = values();
+
+    public static ObjectType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int index;
+    private final int value;
+
+    private ObjectType(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:ObjectType)
+  }
+
   public interface AttributeValueOrBuilder extends
       // @@protoc_insertion_point(interface_extends:AttributeValue)
       com.google.protobuf.MessageOrBuilder {
@@ -684,8 +793,11 @@ public final class Common {
       "nelId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tServi" +
       "ceId\020\005\022\r\n\tAddressId\020\006\022\023\n\017AuthorizationId" +
       "\020\007\022\017\n\013FlowQuotaId\020\010\022\r\n\tMessageId\020\t\022\024\n\020De" +
-      "liveryReportId\020\nB&\n\034org.tdmx.server.pcs." +
-      "protobufB\006Common"
+      "liveryReportId\020\n*h\n\nObjectType\022\013\n\007Messag" +
+      "e\020\000\022\021\n\rDeliveryReply\020\001\022\021\n\rAuthorization\020" +
+      "\002\022\026\n\022DestinationSession\020\003\022\017\n\013FlowControl",
+      "\020\004B&\n\034org.tdmx.server.pcs.protobufB\006Comm" +
+      "on"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

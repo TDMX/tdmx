@@ -20,6 +20,7 @@ package org.tdmx.server.pcs;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
 public interface SessionControlService {
 
@@ -32,5 +33,15 @@ public interface SessionControlService {
 	 * @return null if no capacity available.
 	 */
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate);
+
+	/**
+	 * Lookup on which tosAddress the session resides.
+	 * 
+	 * @param segment
+	 * @param api
+	 * @param sessionKey
+	 * @return tosAddress or null if the session is not active.
+	 */
+	public String findApiSession(String segment, WebServiceApiName api, String sessionKey);
 
 }
