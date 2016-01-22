@@ -51,6 +51,7 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -185,9 +186,13 @@ public class MDSImpl implements MDS {
 
 			List<Channel> channels = channelService.search(zone, sc);
 			for (Channel channel : channels) {
-				channelService.setChannelDestinationSession(zone, channel.getId(), dest.getDestinationSession());
+				Channel updatedChannel = channelService.setChannelDestinationSession(zone, channel.getId(),
+						dest.getDestinationSession());
 
-				// TODO #93: relay "pending" channel destination sessions back to origin
+				if (ProcessingStatus.PENDING == updatedChannel.getProcessingState().getStatus()) {
+					// TODO #93: relay "pending" channel destination sessions back to origin
+
+				}
 			}
 			if (channels.isEmpty()) {
 				more = false;

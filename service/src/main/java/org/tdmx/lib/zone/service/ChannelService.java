@@ -235,15 +235,14 @@ public interface ChannelService {
 	 * This is called on the receiving end of the channel by the target's
 	 * {@link MDS#setDestinationSession(org.tdmx.core.api.v01.mds.SetDestinationSession)} propagation to each channel.
 	 * 
-	 * TODO #93: return Channel with the processingstate for relaying
-	 * 
 	 * @param zone
 	 *            the zone
 	 * @param channelId
 	 *            id of the channel
 	 * @param destinationSession
+	 * @return the updated Channel who's processing state defines if relay of the changed DS is necessary.
 	 */
-	public void setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession);
+	public Channel setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession);
 
 	/**
 	 * Updates the DestinationSession within a Channel.

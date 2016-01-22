@@ -272,12 +272,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
+	public Channel setChannelDestinationSession(Zone zone, Long channelId, DestinationSession destinationSession) {
 		Channel channel = findById(channelId, false, false);
 		setChannelDestinationSession(zone, channel, destinationSession);
-		// persist should not be necessary
-
-		// TODO #93: return the Channel
+		return channel;
 	}
 
 	@Override
@@ -528,8 +526,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState) {
 		FlowQuota fc = getChannelDao().lock(quotaId);
-		// TODO #93 introduce PS into FlowQuota
-		// fc.setProcessingState(newState);
+		fc.setProcessingState(newState);
 		return fc;
 	}
 

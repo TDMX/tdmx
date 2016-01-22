@@ -240,7 +240,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// -------------------------------------------------------------------------
 
 	private void schedule(List<RelayJobContext> jobs) {
-		// TODO #93
+		// TODO #93 implement relay executor
 		for (RelayJobContext job : jobs) {
 			log.debug("Scheduling " + job);
 		}
