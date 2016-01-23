@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ros;
+package org.tdmx.server.runtime;
 
-public class RosAddressUtils {
+public class RpcAddressUtils {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,7 +31,7 @@ public class RosAddressUtils {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	private RosAddressUtils() {
+	private RpcAddressUtils() {
 	}
 
 	// -------------------------------------------------------------------------

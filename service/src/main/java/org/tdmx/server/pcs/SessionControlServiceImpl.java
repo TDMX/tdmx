@@ -41,6 +41,7 @@ import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -432,7 +433,7 @@ public class SessionControlServiceImpl
 	}
 
 	@Override
-	public String findApiSession(String s, WebServiceApiName api, String sessionKey) {
+	public FindApiSessionResponse findApiSession(String s, WebServiceApiName api, String sessionKey) {
 		// first we check if we are allowed to handle the segment which is provided, or we are not "started"
 		if (segment == null || !segment.getSegmentName().equals(s)) {
 			return null;
@@ -440,7 +441,12 @@ public class SessionControlServiceImpl
 		// find the api session with the key
 		SessionHolder session = lookupSession(api, sessionKey);
 
-		return session != null ? session.getTosAddress() : null;
+		FindApiSessionResponse.Builder r = FindApiSessionResponse.newBuilder();
+		if (session != null) {
+			r.setSessionId(session.getHandle().getSessionId());
+			r.setTosAddress(session.getTosAddress());
+		}
+		return r.build();
 	}
 
 	@Override

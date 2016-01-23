@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+	<!-- serves WS clients -->
+	<bean id="tos.TransferObjectServerConnector" class="org.tdmx.server.tos.TransferObjectServiceConnector" >
+		
+		<property name="objectReceiver" ref="ws.ServerSessionManager"/>
+		
+		<property name="serverAddress" value="${tos.serverAddress}" />
+		<property name="localPort" value="${tos.localPort}" />
+
+		<property name="coreRpcExecutorThreads" value="${tos.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${tos.maxRpcExecutorThreads}"/>
+		<property name="acceptorThreads" value="${tos.acceptorThreads}"/>
+		<property name="ioThreads" value="${tos.ioThreads}"/>
+		<property name="ioBufferSize" value="${tos.ioBufferSize}"/>
+		<property name="tcpNoDelay" value="${tos.tcpNoDelay}" />
+		<property name="shutdownTimeoutMs" value="${tos.shutdownTimeoutMs}" />
+	</bean>
+	
+</beans>

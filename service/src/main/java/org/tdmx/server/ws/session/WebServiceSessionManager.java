@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 
 public interface WebServiceSessionManager {
 
@@ -86,5 +87,15 @@ public interface WebServiceSessionManager {
 	 * @return the number of active sessions.
 	 */
 	public int removeCertificate(PKIXCertificate cert);
+
+	/**
+	 * Object transferred in from another service.
+	 * 
+	 * @param sessionId
+	 * @param type
+	 * @param attributes
+	 * @return true if the object was sucessfully processed.
+	 */
+	public boolean transferObject(String sessionId, ObjectType type, Map<AttributeId, Long> attributes);
 
 }

@@ -24,6 +24,10 @@
 	</bean>
 	
 	<bean id="ws.ServerSessionManager" class="org.tdmx.server.session.ServerSessionManagerImpl">
+	
+		<property name="tosAddress" value="${tos.serverAddress}"/>
+		<property name="tosPort" value="${tos.localPort}"/>
+	
 		<property name="connectTimeoutMillis" value="${ws.pcs.connectTimeoutMillis}"/>
 		<property name="connectResponseTimeoutMillis" value="${ws.pcs.connectResponseTimeoutMillis}"/>
 		<property name="coreRpcExecutorThreads" value="${ws.pcs.coreRpcExecutorThreads}"/>

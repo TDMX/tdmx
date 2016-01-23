@@ -29,6 +29,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.ws.session.WebServiceSession;
 
 /**
@@ -154,6 +156,12 @@ public class MOSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
+		// TODO #93: MOS receives DR from MRS
+		return false;
+	}
 
 	public AccountZone getAccountZone() {
 		return getAttribute(ACCOUNT_ZONE);

@@ -50,6 +50,7 @@ import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelaySessionManagerProxy;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.runtime.RpcAddressUtils;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.BlockingService;
@@ -166,7 +167,7 @@ public class RelayControlServiceClientConnector
 		}
 
 		String serverHostname = StringUtils.hasText(serverAddress) ? serverAddress : localHostAddress;
-		rosTcpEndpoint = RosAddressUtils.getRosAddress(serverHostname, localPort);
+		rosTcpEndpoint = RpcAddressUtils.getRosAddress(serverHostname, localPort);
 
 		// start the relay outbound service
 		relayOutboundService.start();

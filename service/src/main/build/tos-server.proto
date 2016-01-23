@@ -9,7 +9,7 @@ import "common.proto";
 message TransferRequest {
 	optional string segment = 1;
 	optional string apiName = 2;
-	optional string sessionKey = 3;
+	optional string sessionId = 3;
 	optional ObjectType transferType = 4;
 	repeated AttributeValue attribute = 5;
 }

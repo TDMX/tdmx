@@ -3304,6 +3304,20 @@ public final class PCSServer {
      */
     com.google.protobuf.ByteString
         getTosAddressBytes();
+
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    boolean hasSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    java.lang.String getSessionId();
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSessionIdBytes();
   }
   /**
    * Protobuf type {@code FindApiSessionResponse}
@@ -3361,6 +3375,12 @@ public final class PCSServer {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
               tosAddress_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              sessionId_ = bs;
               break;
             }
           }
@@ -3445,8 +3465,51 @@ public final class PCSServer {
       }
     }
 
+    public static final int SESSIONID_FIELD_NUMBER = 2;
+    private java.lang.Object sessionId_;
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public boolean hasSessionId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public java.lang.String getSessionId() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          sessionId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string sessionId = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSessionIdBytes() {
+      java.lang.Object ref = sessionId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        sessionId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       tosAddress_ = "";
+      sessionId_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3464,6 +3527,9 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getTosAddressBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getSessionIdBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3476,6 +3542,10 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getTosAddressBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getSessionIdBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3596,6 +3666,8 @@ public final class PCSServer {
         super.clear();
         tosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        sessionId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -3628,6 +3700,10 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000001;
         }
         result.tosAddress_ = tosAddress_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.sessionId_ = sessionId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3647,6 +3723,11 @@ public final class PCSServer {
         if (other.hasTosAddress()) {
           bitField0_ |= 0x00000001;
           tosAddress_ = other.tosAddress_;
+          onChanged();
+        }
+        if (other.hasSessionId()) {
+          bitField0_ |= 0x00000002;
+          sessionId_ = other.sessionId_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -3748,6 +3829,82 @@ public final class PCSServer {
   }
   bitField0_ |= 0x00000001;
         tosAddress_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object sessionId_ = "";
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public boolean hasSessionId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public java.lang.String getSessionId() {
+        java.lang.Object ref = sessionId_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            sessionId_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSessionIdBytes() {
+        java.lang.Object ref = sessionId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          sessionId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder clearSessionId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sessionId_ = getDefaultInstance().getSessionId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string sessionId = 2;</code>
+       */
+      public Builder setSessionIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        sessionId_ = value;
         onChanged();
         return this;
       }
@@ -12810,48 +12967,48 @@ public final class PCSServer {
       "piSessionResponse\022\021\n\tsessionId\030\001 \001(\t\022\020\n\010" +
       "httpsUrl\030\002 \001(\t\022\022\n\nserverCert\030\003 \001(\014\"M\n\025Fi" +
       "ndApiSessionRequest\022\017\n\007segment\030\001 \001(\t\022\017\n\007" +
-      "apiName\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(\t\",\n\026Fin",
-      "dApiSessionResponse\022\022\n\ntosAddress\030\001 \001(\t\"" +
-      "L\n\025RegisterServerRequest\022\037\n\007service\030\001 \003(" +
-      "\0132\016.ServiceHandle\022\022\n\ntosAddress\030\002 \001(\t\"\030\n" +
-      "\026RegisterServerResponse\"W\n\rServiceHandle" +
-      "\022\017\n\007segment\030\001 \001(\t\022\017\n\007apiName\030\002 \001(\t\022\020\n\010ht" +
-      "tpsUrl\030\003 \001(\t\022\022\n\nserverCert\030\004 \001(\014\"A\n\033Noti" +
-      "fySessionRemovedRequest\022\017\n\007apiName\030\001 \001(\t" +
-      "\022\021\n\tsessionId\030\002 \003(\t\"\036\n\034NotifySessionRemo" +
-      "vedResponse\"2\n\034InvalidateCertificateRequ" +
-      "est\022\022\n\nclientCert\030\001 \001(\014\"\037\n\035InvalidateCer",
-      "tificateResponse\"V\n\032RegisterRelayServerR" +
-      "equest\022\022\n\nrosAddress\030\001 \001(\t\022\017\n\007segment\030\002 " +
-      "\001(\t\022\023\n\013channelKeys\030\003 \003(\t\"\035\n\033RegisterRela" +
-      "yServerResponse\"B\n\026RelayChannelMrsSessio" +
-      "n\022\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrsSessionId\030\002 " +
-      "\001(\t\"b\n\035NotifyRelaySessionIdleRequest\022\022\n\n" +
-      "rosAddress\030\001 \001(\t\022-\n\014relaySession\030\002 \003(\0132\027" +
-      ".RelayChannelMrsSession\" \n\036NotifyRelaySe" +
-      "ssionIdleResponse\"d\n\031AssignRelaySessionR" +
-      "equest\022\022\n\nchannelKey\030\001 \001(\t\022\017\n\007segment\030\002 ",
-      "\001(\t\022\"\n\tattribute\030\003 \003(\0132\017.AttributeValue\"" +
-      "0\n\032AssignRelaySessionResponse\022\022\n\nrosAddr" +
-      "ess\030\001 \001(\t2\230\005\n\023ControlServiceProxy\022P\n\023ass" +
-      "ociateApiSession\022\033.AssociateApiSessionRe" +
-      "quest\032\034.AssociateApiSessionResponse\022A\n\016f" +
-      "indApiSession\022\026.FindApiSessionRequest\032\027." +
-      "FindApiSessionResponse\022A\n\016registerServer" +
-      "\022\026.RegisterServerRequest\032\027.RegisterServe" +
-      "rResponse\022T\n\025notifySessionsRemoved\022\034.Not" +
-      "ifySessionRemovedRequest\032\035.NotifySession",
-      "RemovedResponse\022V\n\025invalidateCertificate" +
-      "\022\035.InvalidateCertificateRequest\032\036.Invali" +
-      "dateCertificateResponse\022M\n\022assignRelaySe" +
-      "ssion\022\032.AssignRelaySessionRequest\032\033.Assi" +
-      "gnRelaySessionResponse\022P\n\023registerRelayS" +
-      "erver\022\033.RegisterRelayServerRequest\032\034.Reg" +
-      "isterRelayServerResponse\022Z\n\027notifyRelayS" +
-      "essionsIdle\022\036.NotifyRelaySessionIdleRequ" +
-      "est\032\037.NotifyRelaySessionIdleResponseB,\n\034" +
-      "org.tdmx.server.pcs.protobufB\tPCSServer\210",
-      "\001\001"
+      "apiName\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(\t\"?\n\026Fin",
+      "dApiSessionResponse\022\022\n\ntosAddress\030\001 \001(\t\022" +
+      "\021\n\tsessionId\030\002 \001(\t\"L\n\025RegisterServerRequ" +
+      "est\022\037\n\007service\030\001 \003(\0132\016.ServiceHandle\022\022\n\n" +
+      "tosAddress\030\002 \001(\t\"\030\n\026RegisterServerRespon" +
+      "se\"W\n\rServiceHandle\022\017\n\007segment\030\001 \001(\t\022\017\n\007" +
+      "apiName\030\002 \001(\t\022\020\n\010httpsUrl\030\003 \001(\t\022\022\n\nserve" +
+      "rCert\030\004 \001(\014\"A\n\033NotifySessionRemovedReque" +
+      "st\022\017\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036" +
+      "\n\034NotifySessionRemovedResponse\"2\n\034Invali" +
+      "dateCertificateRequest\022\022\n\nclientCert\030\001 \001",
+      "(\014\"\037\n\035InvalidateCertificateResponse\"V\n\032R" +
+      "egisterRelayServerRequest\022\022\n\nrosAddress\030" +
+      "\001 \001(\t\022\017\n\007segment\030\002 \001(\t\022\023\n\013channelKeys\030\003 " +
+      "\003(\t\"\035\n\033RegisterRelayServerResponse\"B\n\026Re" +
+      "layChannelMrsSession\022\022\n\nchannelKey\030\001 \001(\t" +
+      "\022\024\n\014mrsSessionId\030\002 \001(\t\"b\n\035NotifyRelaySes" +
+      "sionIdleRequest\022\022\n\nrosAddress\030\001 \001(\t\022-\n\014r" +
+      "elaySession\030\002 \003(\0132\027.RelayChannelMrsSessi" +
+      "on\" \n\036NotifyRelaySessionIdleResponse\"d\n\031" +
+      "AssignRelaySessionRequest\022\022\n\nchannelKey\030",
+      "\001 \001(\t\022\017\n\007segment\030\002 \001(\t\022\"\n\tattribute\030\003 \003(" +
+      "\0132\017.AttributeValue\"0\n\032AssignRelaySession" +
+      "Response\022\022\n\nrosAddress\030\001 \001(\t2\230\005\n\023Control" +
+      "ServiceProxy\022P\n\023associateApiSession\022\033.As" +
+      "sociateApiSessionRequest\032\034.AssociateApiS" +
+      "essionResponse\022A\n\016findApiSession\022\026.FindA" +
+      "piSessionRequest\032\027.FindApiSessionRespons" +
+      "e\022A\n\016registerServer\022\026.RegisterServerRequ" +
+      "est\032\027.RegisterServerResponse\022T\n\025notifySe" +
+      "ssionsRemoved\022\034.NotifySessionRemovedRequ",
+      "est\032\035.NotifySessionRemovedResponse\022V\n\025in" +
+      "validateCertificate\022\035.InvalidateCertific" +
+      "ateRequest\032\036.InvalidateCertificateRespon" +
+      "se\022M\n\022assignRelaySession\022\032.AssignRelaySe" +
+      "ssionRequest\032\033.AssignRelaySessionRespons" +
+      "e\022P\n\023registerRelayServer\022\033.RegisterRelay" +
+      "ServerRequest\032\034.RegisterRelayServerRespo" +
+      "nse\022Z\n\027notifyRelaySessionsIdle\022\036.NotifyR" +
+      "elaySessionIdleRequest\032\037.NotifyRelaySess" +
+      "ionIdleResponseB,\n\034org.tdmx.server.pcs.p",
+      "rotobufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -12895,7 +13052,7 @@ public final class PCSServer {
     internal_static_FindApiSessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_FindApiSessionResponse_descriptor,
-        new java.lang.String[] { "TosAddress", });
+        new java.lang.String[] { "TosAddress", "SessionId", });
     internal_static_RegisterServerRequest_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_RegisterServerRequest_fieldAccessorTable = new

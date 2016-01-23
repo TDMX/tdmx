@@ -41,6 +41,7 @@ message FindApiSessionRequest {
 
 message FindApiSessionResponse {
 	optional string tosAddress = 1;
+	optional string sessionId = 2;
 }
 
 

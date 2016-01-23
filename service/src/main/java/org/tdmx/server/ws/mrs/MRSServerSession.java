@@ -18,11 +18,15 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import java.util.Map;
+
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.ws.session.WebServiceSession;
 
 public class MRSServerSession extends WebServiceSession {
@@ -48,6 +52,12 @@ public class MRSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
+		// MRS does not handle any inbound objects
+		return false;
+	}
 
 	public AccountZone getAccountZone() {
 		return getAttribute(ACCOUNT_ZONE);

@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 
 public abstract class WebServiceSession {
 
@@ -99,6 +101,15 @@ public abstract class WebServiceSession {
 		}
 		return certificates;
 	}
+
+	/**
+	 * An object is transferred to this session.
+	 * 
+	 * @param type
+	 * @param attributes
+	 * @return true if the object is sucessfully handled.
+	 */
+	public abstract boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes);
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

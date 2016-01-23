@@ -38,6 +38,7 @@ import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -129,8 +130,13 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	}
 
 	@Override
-	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
-		// TODO #93 delegate calling PCS to rpc client.
+	public FindApiSessionResponse findApiSession(String segment, WebServiceApiName api, String sessionKey) {
+		LocalControlServiceClient clientProxy = consistentHashToServer(sessionKey);
+		if (clientProxy != null) {
+			return clientProxy.findApiSession(segment, api, sessionKey);
+		} else {
+			log.warn("No PCS client proxy found for " + consistentHashCode(sessionKey));
+		}
 		return null;
 	}
 

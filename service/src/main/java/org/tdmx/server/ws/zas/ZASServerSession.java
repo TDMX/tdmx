@@ -18,9 +18,13 @@
  */
 package org.tdmx.server.ws.zas;
 
+import java.util.Map;
+
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.ws.session.WebServiceSession;
 
 public class ZASServerSession extends WebServiceSession {
@@ -74,6 +78,12 @@ public class ZASServerSession extends WebServiceSession {
 	public String getAuthorizedDomainName() {
 		Domain d = getDomain();
 		return d != null ? d.getDomainName() : null;
+	}
+
+	@Override
+	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
+		// TODO LATER: handle fast notification of CA.
+		return false;
 	}
 
 	// -------------------------------------------------------------------------

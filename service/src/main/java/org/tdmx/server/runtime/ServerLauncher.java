@@ -84,6 +84,7 @@ public class ServerLauncher {
 	private static List<ServiceName> PCC_REQUISITES = Arrays
 			.asList(new ServiceName[] { ServiceName.ROS, ServiceName.RS, ServiceName.SCS, ServiceName.WS });
 	private static List<ServiceName> ROC_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
+	private static List<ServiceName> TOS_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
 
 	private static ApplicationContext context;
 
@@ -104,6 +105,9 @@ public class ServerLauncher {
 				for (ServiceName srvName : ServiceName.values()) {
 					if (arg.toUpperCase().indexOf(srvName.toString()) != -1) {
 						// add any prerequisites before the actual service.
+						if (TOS_REQUISITES.contains(srvName) && !services.contains(ServiceName.TOS)) {
+							services.add(ServiceName.TOS);
+						}
 						if (PCC_REQUISITES.contains(srvName) && !services.contains(ServiceName.PCC)) {
 							services.add(ServiceName.PCC);
 						}

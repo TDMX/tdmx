@@ -16,25 +16,40 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.runtime;
+package org.tdmx.server.tos;
+
+import java.util.Map;
+
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
+import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
- * The name of an independent service.
+ * A receiver of object references passed between services.
+ * 
+ * MRS -(MSG)-> MDS
+ *
+ * MRS -(DR)-> MOS
+ * 
+ * TODO #93: use relay service from MRS to transfer relayed-in FC-open to ROS(sender side)
+ * 
+ * later, possible MRS -(DS)-> MOS, MRS -(CA)-> ZAS
  * 
  * @author Peter
- * 
+ *
  */
-public enum ServiceName {
+public interface TransferObjectReceiver {
 
-	TOS, // TransferObjectService
-	PCC, // PartitionControlService client
-	ROC, // RelayOutboundService client
-
-	WS, // Web(SOAP) Services - MOS,MDS,MRS,ZAS APIs
-	RS, // RESTful Services
-	SCS, // SessionControlService
-	PCS, // PartitionControlService
-	ROS, // RelayOutboundService
-	JOB; // Background Jobs
+	/**
+	 * Inbound transfer of an object to a session.
+	 * 
+	 * @param sessionKey
+	 * @param api
+	 * @param type
+	 * @param attributes
+	 * @return
+	 */
+	public boolean transferObject(String sessionKey, WebServiceApiName api, ObjectType type,
+			Map<AttributeId, Long> attributes);
 
 }

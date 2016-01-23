@@ -19,6 +19,8 @@
 package org.tdmx.server.session;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -40,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
@@ -50,12 +53,15 @@ import org.tdmx.server.pcs.ServiceHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.GetStatisticsRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.RemoveCertificateRequest;
 import org.tdmx.server.pcs.protobuf.WSClient.SessionManagerProxy;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.runtime.RpcAddressUtils;
+import org.tdmx.server.tos.TransferObjectReceiver;
 import org.tdmx.server.ws.ServerRuntimeContextService;
 import org.tdmx.server.ws.session.WebServiceApiName;
 import org.tdmx.server.ws.session.WebServiceSession;
@@ -92,7 +98,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * 
  */
 public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInvalidationEventNotifier,
-		SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface {
+		SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface, TransferObjectReceiver {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -104,6 +110,12 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	private static final Logger log = LoggerFactory.getLogger(ServerSessionManagerImpl.class);
 
 	private static final String PCS_ATTRIBUTE = "PCS";
+
+	/**
+	 * RPC endpoint for the TOS TransferObjectService
+	 */
+	private String tosAddress;
+	private int tosPort;
 
 	private int connectTimeoutMillis = 5000;
 	private int connectResponseTimeoutMillis = 10000;
@@ -274,6 +286,16 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 			}
 		}
 
+		String localHostAddress = null;
+		try {
+			localHostAddress = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			log.warn("Unable to determine localhost IP address.", e);
+		}
+
+		String tosHostname = StringUtils.hasText(tosAddress) ? tosAddress : localHostAddress;
+		String tosTcpEndpoint = RpcAddressUtils.getRosAddress(tosHostname, tosPort);
+
 		// create the protobuf interface to ALL the PCS servers which are known for the segment
 		try {
 			clientFactory = new DuplexTcpClientPipelineFactory();
@@ -317,9 +339,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					LocalControlServiceListenerClient client = new LocalControlServiceListenerClient(clientChannel);
 					serverProxyMap.put(pcs, client);
 
-					// register ourselves to receive broadcast messages
-					client.registerServer(getManagedServiceList(), null,
-							null /* TODO #93 attribute value tosAddress */);
+					// register ourselves to receive broadcast messages and session events from the PCS
+					// telling it our own TOS address to give to others.
+					client.registerServer(getManagedServiceList(), null, tosTcpEndpoint);
 
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
 							serverBroadcastCallback);
@@ -520,6 +542,13 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 				log.warn("PCS Server targetted for cache invalidation not connected.");
 			}
 		}
+		return false;
+	}
+
+	@Override
+	public boolean transferObject(String sessionKey, WebServiceApiName api, ObjectType type,
+			Map<AttributeId, Long> attributes) {
+		// #93: delegate to specific session
 		return false;
 	}
 
@@ -767,6 +796,22 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 
 	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
 		this.cacheInvalidationListener = cacheInvalidationListener;
+	}
+
+	public String getTosAddress() {
+		return tosAddress;
+	}
+
+	public void setTosAddress(String tosAddress) {
+		this.tosAddress = tosAddress;
+	}
+
+	public int getTosPort() {
+		return tosPort;
+	}
+
+	public void setTosPort(int tosPort) {
+		this.tosPort = tosPort;
 	}
 
 }

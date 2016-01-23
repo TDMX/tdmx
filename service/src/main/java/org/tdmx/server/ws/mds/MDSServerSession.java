@@ -18,11 +18,15 @@
  */
 package org.tdmx.server.ws.mds;
 
+import java.util.Map;
+
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.ws.session.WebServiceSession;
 
 public class MDSServerSession extends WebServiceSession {
@@ -51,6 +55,12 @@ public class MDSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
+		// TODO #93: MDS receives MSG from MRS
+		return false;
+	}
 
 	public AccountZone getAccountZone() {
 		return getAttribute(ACCOUNT_ZONE);

@@ -41,18 +41,18 @@ public final class TOSServer {
         getApiNameBytes();
 
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
-    boolean hasSessionKey();
+    boolean hasSessionId();
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
-    java.lang.String getSessionKey();
+    java.lang.String getSessionId();
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
     com.google.protobuf.ByteString
-        getSessionKeyBytes();
+        getSessionIdBytes();
 
     /**
      * <code>optional .ObjectType transferType = 4;</code>
@@ -154,7 +154,7 @@ public final class TOSServer {
             case 26: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              sessionKey_ = bs;
+              sessionId_ = bs;
               break;
             }
             case 32: {
@@ -303,19 +303,19 @@ public final class TOSServer {
       }
     }
 
-    public static final int SESSIONKEY_FIELD_NUMBER = 3;
-    private java.lang.Object sessionKey_;
+    public static final int SESSIONID_FIELD_NUMBER = 3;
+    private java.lang.Object sessionId_;
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
-    public boolean hasSessionKey() {
+    public boolean hasSessionId() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
-    public java.lang.String getSessionKey() {
-      java.lang.Object ref = sessionKey_;
+    public java.lang.String getSessionId() {
+      java.lang.Object ref = sessionId_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -323,22 +323,22 @@ public final class TOSServer {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          sessionKey_ = s;
+          sessionId_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string sessionKey = 3;</code>
+     * <code>optional string sessionId = 3;</code>
      */
     public com.google.protobuf.ByteString
-        getSessionKeyBytes() {
-      java.lang.Object ref = sessionKey_;
+        getSessionIdBytes() {
+      java.lang.Object ref = sessionId_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        sessionKey_ = b;
+        sessionId_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -398,7 +398,7 @@ public final class TOSServer {
     private void initFields() {
       segment_ = "";
       apiName_ = "";
-      sessionKey_ = "";
+      sessionId_ = "";
       transferType_ = org.tdmx.server.pcs.protobuf.Common.ObjectType.Message;
       attribute_ = java.util.Collections.emptyList();
     }
@@ -428,7 +428,7 @@ public final class TOSServer {
         output.writeBytes(2, getApiNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getSessionKeyBytes());
+        output.writeBytes(3, getSessionIdBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeEnum(4, transferType_.getNumber());
@@ -455,7 +455,7 @@ public final class TOSServer {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getSessionKeyBytes());
+          .computeBytesSize(3, getSessionIdBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -587,7 +587,7 @@ public final class TOSServer {
         bitField0_ = (bitField0_ & ~0x00000001);
         apiName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        sessionKey_ = "";
+        sessionId_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
         transferType_ = org.tdmx.server.pcs.protobuf.Common.ObjectType.Message;
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -636,7 +636,7 @@ public final class TOSServer {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.sessionKey_ = sessionKey_;
+        result.sessionId_ = sessionId_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
@@ -676,9 +676,9 @@ public final class TOSServer {
           apiName_ = other.apiName_;
           onChanged();
         }
-        if (other.hasSessionKey()) {
+        if (other.hasSessionId()) {
           bitField0_ |= 0x00000004;
-          sessionKey_ = other.sessionKey_;
+          sessionId_ = other.sessionId_;
           onChanged();
         }
         if (other.hasTransferType()) {
@@ -895,24 +895,24 @@ public final class TOSServer {
         return this;
       }
 
-      private java.lang.Object sessionKey_ = "";
+      private java.lang.Object sessionId_ = "";
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
-      public boolean hasSessionKey() {
+      public boolean hasSessionId() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
-      public java.lang.String getSessionKey() {
-        java.lang.Object ref = sessionKey_;
+      public java.lang.String getSessionId() {
+        java.lang.Object ref = sessionId_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            sessionKey_ = s;
+            sessionId_ = s;
           }
           return s;
         } else {
@@ -920,53 +920,53 @@ public final class TOSServer {
         }
       }
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
       public com.google.protobuf.ByteString
-          getSessionKeyBytes() {
-        java.lang.Object ref = sessionKey_;
+          getSessionIdBytes() {
+        java.lang.Object ref = sessionId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          sessionKey_ = b;
+          sessionId_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
-      public Builder setSessionKey(
+      public Builder setSessionId(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000004;
-        sessionKey_ = value;
+        sessionId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
-      public Builder clearSessionKey() {
+      public Builder clearSessionId() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        sessionKey_ = getDefaultInstance().getSessionKey();
+        sessionId_ = getDefaultInstance().getSessionId();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string sessionKey = 3;</code>
+       * <code>optional string sessionId = 3;</code>
        */
-      public Builder setSessionKeyBytes(
+      public Builder setSessionIdBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000004;
-        sessionKey_ = value;
+        sessionId_ = value;
         onChanged();
         return this;
       }
@@ -1905,15 +1905,15 @@ public final class TOSServer {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020tos-server.proto\032\014common.proto\"\216\001\n\017Tra" +
+      "\n\020tos-server.proto\032\014common.proto\"\215\001\n\017Tra" +
       "nsferRequest\022\017\n\007segment\030\001 \001(\t\022\017\n\007apiName" +
-      "\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(\t\022!\n\014transferTy" +
-      "pe\030\004 \001(\0162\013.ObjectType\022\"\n\tattribute\030\005 \003(\013" +
-      "2\017.AttributeValue\"#\n\020TransferResponse\022\017\n" +
-      "\007success\030\001 \001(\0102M\n\032TransferObjectServiceP" +
-      "roxy\022/\n\010transfer\022\020.TransferRequest\032\021.Tra" +
-      "nsferResponseB,\n\034org.tdmx.server.pcs.pro" +
-      "tobufB\tTOSServer\210\001\001"
+      "\030\002 \001(\t\022\021\n\tsessionId\030\003 \001(\t\022!\n\014transferTyp" +
+      "e\030\004 \001(\0162\013.ObjectType\022\"\n\tattribute\030\005 \003(\0132" +
+      "\017.AttributeValue\"#\n\020TransferResponse\022\017\n\007" +
+      "success\030\001 \001(\0102M\n\032TransferObjectServicePr" +
+      "oxy\022/\n\010transfer\022\020.TransferRequest\032\021.Tran" +
+      "sferResponseB,\n\034org.tdmx.server.pcs.prot" +
+      "obufB\tTOSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1933,7 +1933,7 @@ public final class TOSServer {
     internal_static_TransferRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_TransferRequest_descriptor,
-        new java.lang.String[] { "Segment", "ApiName", "SessionKey", "TransferType", "Attribute", });
+        new java.lang.String[] { "Segment", "ApiName", "SessionId", "TransferType", "Attribute", });
     internal_static_TransferResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_TransferResponse_fieldAccessorTable = new

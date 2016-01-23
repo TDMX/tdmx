@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.ws.ServerRuntimeContextService;
 
 public class WebServiceSessionManagerImpl<E extends WebServiceSession>
@@ -173,6 +174,15 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 		return apiName;
 	}
 
+	@Override
+	public boolean transferObject(String sessionId, ObjectType type, Map<AttributeId, Long> attributes) {
+		E ss = sessionMap.get(sessionId);
+		if (ss != null) {
+			return ss.transferObject(type, attributes);
+		}
+		return false;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -238,4 +248,5 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 	public void setApiEndpointPath(String apiEndpointPath) {
 		this.apiEndpointPath = apiEndpointPath;
 	}
+
 }

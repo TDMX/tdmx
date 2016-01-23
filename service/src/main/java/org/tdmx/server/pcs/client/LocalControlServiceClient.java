@@ -36,6 +36,8 @@ import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssociateApiSessionResponse;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionRequest;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
@@ -112,8 +114,30 @@ public class LocalControlServiceClient implements SessionControlService, RelayCo
 	}
 
 	@Override
-	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
-		// TODO #93: ask the PCS for the session endpoint
+	public FindApiSessionResponse findApiSession(String segment, WebServiceApiName api, String sessionKey) {
+		if (!rpcClient.isClosed()) {
+			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
+			final ClientRpcController controller = rpcClient.newRpcController();
+			controller.setTimeoutMs(0);
+
+			FindApiSessionRequest.Builder reqBuilder = FindApiSessionRequest.newBuilder();
+
+			reqBuilder.setApiName(api.name());
+			reqBuilder.setSessionKey(sessionKey);
+			reqBuilder.setSegment(segment);
+
+			FindApiSessionRequest request = reqBuilder.build();
+			try {
+				FindApiSessionResponse response = blockingService.findApiSession(controller, request);
+				if (response != null && response.getSessionId() != null) {
+					return response;
+				} else {
+					log.debug("No active SessionId found for" + sessionKey);
+				}
+			} catch (ServiceException e) {
+				log.warn("Call failed.", e);
+			}
+		}
 		return null;
 	}
 

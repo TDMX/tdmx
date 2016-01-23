@@ -39,9 +39,9 @@ import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
-import org.tdmx.server.ros.RosAddressUtils;
 import org.tdmx.server.ros.client.RelayStatus.ErrorCode;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.runtime.RpcAddressUtils;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -345,8 +345,8 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 					Map<String, Object> attrs = new HashMap<>();
 					attrs.put(ROS_TCP_ADDRESS, rosTcpAddress);
 
-					PeerInfo rosServer = new PeerInfo(RosAddressUtils.getRosHost(rosTcpAddress),
-							RosAddressUtils.getRosPort(rosTcpAddress));
+					PeerInfo rosServer = new PeerInfo(RpcAddressUtils.getRosHost(rosTcpAddress),
+							RpcAddressUtils.getRosPort(rosTcpAddress));
 					try {
 						clientFactory.peerWith(rosServer, bootstrap, attrs);
 						// the serverProxyMap must be set now

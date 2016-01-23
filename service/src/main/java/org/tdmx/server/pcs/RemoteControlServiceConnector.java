@@ -336,14 +336,8 @@ public class RemoteControlServiceConnector
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("findApiSession call from " + channel.getPeerInfo());
 
-		String tosAddress = sessionControlService.findApiSession(request.getSegment(), mapApi(request.getApiName()),
+		return sessionControlService.findApiSession(request.getSegment(), mapApi(request.getApiName()),
 				request.getSessionKey());
-
-		FindApiSessionResponse.Builder responseBuilder = FindApiSessionResponse.newBuilder();
-		if (tosAddress != null) {
-			responseBuilder.setTosAddress(tosAddress);
-		}
-		return responseBuilder.build();
 	}
 
 	@Override
