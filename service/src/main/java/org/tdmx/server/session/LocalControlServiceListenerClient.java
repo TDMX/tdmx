@@ -64,7 +64,7 @@ public class LocalControlServiceListenerClient implements SessionControlServiceL
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm) {
+	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm, String tosAddress) {
 		if (ssm != null) {
 			throw new IllegalArgumentException("ssm should not be set on WS client.");
 		}
@@ -75,6 +75,7 @@ public class LocalControlServiceListenerClient implements SessionControlServiceL
 
 			org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerRequest.Builder rb = org.tdmx.server.pcs.protobuf.PCSServer.RegisterServerRequest
 					.newBuilder();
+			rb.setTosAddress(tosAddress);
 			for (ServiceHandle service : services) {
 				org.tdmx.server.pcs.protobuf.PCSServer.ServiceHandle.Builder sh = org.tdmx.server.pcs.protobuf.PCSServer.ServiceHandle
 						.newBuilder();

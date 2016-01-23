@@ -3792,18 +3792,18 @@ public final class PCSServer {
         int index);
 
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
-    boolean hasRisAddress();
+    boolean hasTosAddress();
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
-    java.lang.String getRisAddress();
+    java.lang.String getTosAddress();
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
     com.google.protobuf.ByteString
-        getRisAddressBytes();
+        getTosAddressBytes();
   }
   /**
    * Protobuf type {@code RegisterServerRequest}
@@ -3868,7 +3868,7 @@ public final class PCSServer {
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              risAddress_ = bs;
+              tosAddress_ = bs;
               break;
             }
           }
@@ -3949,19 +3949,19 @@ public final class PCSServer {
       return service_.get(index);
     }
 
-    public static final int RISADDRESS_FIELD_NUMBER = 2;
-    private java.lang.Object risAddress_;
+    public static final int TOSADDRESS_FIELD_NUMBER = 2;
+    private java.lang.Object tosAddress_;
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
-    public boolean hasRisAddress() {
+    public boolean hasTosAddress() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
-    public java.lang.String getRisAddress() {
-      java.lang.Object ref = risAddress_;
+    public java.lang.String getTosAddress() {
+      java.lang.Object ref = tosAddress_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -3969,22 +3969,22 @@ public final class PCSServer {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          risAddress_ = s;
+          tosAddress_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string risAddress = 2;</code>
+     * <code>optional string tosAddress = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getRisAddressBytes() {
-      java.lang.Object ref = risAddress_;
+        getTosAddressBytes() {
+      java.lang.Object ref = tosAddress_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        risAddress_ = b;
+        tosAddress_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -3993,7 +3993,7 @@ public final class PCSServer {
 
     private void initFields() {
       service_ = java.util.Collections.emptyList();
-      risAddress_ = "";
+      tosAddress_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4012,7 +4012,7 @@ public final class PCSServer {
         output.writeMessage(1, service_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(2, getRisAddressBytes());
+        output.writeBytes(2, getTosAddressBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -4029,7 +4029,7 @@ public final class PCSServer {
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getRisAddressBytes());
+          .computeBytesSize(2, getTosAddressBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4155,7 +4155,7 @@ public final class PCSServer {
         } else {
           serviceBuilder_.clear();
         }
-        risAddress_ = "";
+        tosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
@@ -4197,7 +4197,7 @@ public final class PCSServer {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.risAddress_ = risAddress_;
+        result.tosAddress_ = tosAddress_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4240,9 +4240,9 @@ public final class PCSServer {
             }
           }
         }
-        if (other.hasRisAddress()) {
+        if (other.hasTosAddress()) {
           bitField0_ |= 0x00000002;
-          risAddress_ = other.risAddress_;
+          tosAddress_ = other.tosAddress_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -4512,24 +4512,24 @@ public final class PCSServer {
         return serviceBuilder_;
       }
 
-      private java.lang.Object risAddress_ = "";
+      private java.lang.Object tosAddress_ = "";
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
-      public boolean hasRisAddress() {
+      public boolean hasTosAddress() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
-      public java.lang.String getRisAddress() {
-        java.lang.Object ref = risAddress_;
+      public java.lang.String getTosAddress() {
+        java.lang.Object ref = tosAddress_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            risAddress_ = s;
+            tosAddress_ = s;
           }
           return s;
         } else {
@@ -4537,53 +4537,53 @@ public final class PCSServer {
         }
       }
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getRisAddressBytes() {
-        java.lang.Object ref = risAddress_;
+          getTosAddressBytes() {
+        java.lang.Object ref = tosAddress_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          risAddress_ = b;
+          tosAddress_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
-      public Builder setRisAddress(
+      public Builder setTosAddress(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        risAddress_ = value;
+        tosAddress_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
-      public Builder clearRisAddress() {
+      public Builder clearTosAddress() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        risAddress_ = getDefaultInstance().getRisAddress();
+        tosAddress_ = getDefaultInstance().getTosAddress();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string risAddress = 2;</code>
+       * <code>optional string tosAddress = 2;</code>
        */
-      public Builder setRisAddressBytes(
+      public Builder setTosAddressBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        risAddress_ = value;
+        tosAddress_ = value;
         onChanged();
         return this;
       }
@@ -12813,7 +12813,7 @@ public final class PCSServer {
       "apiName\030\002 \001(\t\022\022\n\nsessionKey\030\003 \001(\t\",\n\026Fin",
       "dApiSessionResponse\022\022\n\ntosAddress\030\001 \001(\t\"" +
       "L\n\025RegisterServerRequest\022\037\n\007service\030\001 \003(" +
-      "\0132\016.ServiceHandle\022\022\n\nrisAddress\030\002 \001(\t\"\030\n" +
+      "\0132\016.ServiceHandle\022\022\n\ntosAddress\030\002 \001(\t\"\030\n" +
       "\026RegisterServerResponse\"W\n\rServiceHandle" +
       "\022\017\n\007segment\030\001 \001(\t\022\017\n\007apiName\030\002 \001(\t\022\020\n\010ht" +
       "tpsUrl\030\003 \001(\t\022\022\n\nserverCert\030\004 \001(\014\"A\n\033Noti" +
@@ -12901,7 +12901,7 @@ public final class PCSServer {
     internal_static_RegisterServerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterServerRequest_descriptor,
-        new java.lang.String[] { "Service", "RisAddress", });
+        new java.lang.String[] { "Service", "TosAddress", });
     internal_static_RegisterServerResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_RegisterServerResponse_fieldAccessorTable = new

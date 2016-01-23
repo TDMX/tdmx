@@ -331,6 +331,22 @@ public class RemoteControlServiceConnector
 	}
 
 	@Override
+	public FindApiSessionResponse findApiSession(RpcController controller, FindApiSessionRequest request)
+			throws ServiceException {
+		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
+		log.info("findApiSession call from " + channel.getPeerInfo());
+
+		String tosAddress = sessionControlService.findApiSession(request.getSegment(), mapApi(request.getApiName()),
+				request.getSessionKey());
+
+		FindApiSessionResponse.Builder responseBuilder = FindApiSessionResponse.newBuilder();
+		if (tosAddress != null) {
+			responseBuilder.setTosAddress(tosAddress);
+		}
+		return responseBuilder.build();
+	}
+
+	@Override
 	public RegisterServerResponse registerServer(RpcController controller, RegisterServerRequest request)
 			throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
@@ -348,7 +364,7 @@ public class RemoteControlServiceConnector
 		// links the ReverseRpcServerSessionController with the RpcClient
 		ReverseRpcServerSessionController ssm = new ReverseRpcServerSessionController(channel, services);
 
-		controlListener.registerServer(services, ssm);
+		controlListener.registerServer(services, ssm, request.getTosAddress());
 		RegisterServerResponse.Builder responseBuilder = RegisterServerResponse.newBuilder();
 		return responseBuilder.build();
 	}
@@ -425,13 +441,6 @@ public class RemoteControlServiceConnector
 		relayListener.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
 		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
-	}
-
-	@Override
-	public FindApiSessionResponse findApiSession(RpcController controller, FindApiSessionRequest request)
-			throws ServiceException {
-		// TODO #93: find the api session for the requester
-		return null;
 	}
 
 	@Override

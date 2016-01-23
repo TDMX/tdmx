@@ -34,6 +34,8 @@ public class RemoteControlServiceTest {
 	private Segment segment = SegmentFacade.createSegment("segment", "https://scsHostname/scs");
 	private Map<AttributeId, Long> seedAttributes;
 
+	private String tosAddress = "localhost:1111";
+
 	@Before
 	public void setUp() throws Exception {
 		seedAttributes = new HashMap<>();
@@ -61,7 +63,7 @@ public class RemoteControlServiceTest {
 		ServerSessionController ssm = mock(ServerSessionController.class);
 		ServiceHandle sh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-1", serviceCert);
 
-		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm);
+		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm, tosAddress);
 
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 	}
@@ -74,7 +76,7 @@ public class RemoteControlServiceTest {
 				serviceCert);
 		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
 				serviceCert);
-		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
+		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm, tosAddress);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
 
@@ -138,7 +140,7 @@ public class RemoteControlServiceTest {
 		PKIXCertificate serviceCert = mock(PKIXCertificate.class);
 		ServerSessionController ssm = mock(ServerSessionController.class);
 		ServiceHandle sh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MOS, "url-1", serviceCert);
-		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm);
+		sut.registerServer(Arrays.<ServiceHandle> asList(sh), ssm, tosAddress);
 
 		sut.unregisterServer(Arrays.<ServiceHandle> asList(sh));
 		assertEquals(0, sut.getServers(WebServiceApiName.MOS).size());
@@ -152,7 +154,7 @@ public class RemoteControlServiceTest {
 				serviceCert);
 		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
 				serviceCert);
-		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
+		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm, tosAddress);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
 		assertEquals(0, sut.getApiSessions(WebServiceApiName.MOS).size());
@@ -189,7 +191,7 @@ public class RemoteControlServiceTest {
 				serviceCert);
 		ServiceHandle mdssh = new ServiceHandle(segment.getSegmentName(), WebServiceApiName.MDS, "url-mds",
 				serviceCert);
-		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm);
+		sut.registerServer(Arrays.<ServiceHandle> asList(mossh, mdssh), ssm, tosAddress);
 		assertEquals(1, sut.getServers(WebServiceApiName.MOS).size());
 		assertEquals(1, sut.getServers(WebServiceApiName.MDS).size());
 		assertEquals(0, sut.getApiSessions(WebServiceApiName.MOS).size());

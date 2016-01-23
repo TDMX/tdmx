@@ -33,7 +33,7 @@ public interface SessionControlServiceListener {
 	 * @param ssm
 	 *            callback
 	 */
-	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm);
+	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm, String tosAddress);
 
 	/**
 	 * On the detachment of a Server with it's supported Services from the SessionControlService.
@@ -43,8 +43,8 @@ public interface SessionControlServiceListener {
 	public void unregisterServer(List<ServiceHandle> services);
 
 	/**
-	 * WebServiceSessionManagers notify the SessionControlService when session's have not been used for some time and are
-	 * removed locally.
+	 * WebServiceSessionManagers notify the SessionControlService when session's have not been used for some time and
+	 * are removed locally.
 	 * 
 	 * @param api
 	 * @param sessionIds

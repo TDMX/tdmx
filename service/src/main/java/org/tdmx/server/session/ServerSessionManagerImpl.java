@@ -318,7 +318,8 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					serverProxyMap.put(pcs, client);
 
 					// register ourselves to receive broadcast messages
-					client.registerServer(getManagedServiceList(), null);
+					client.registerServer(getManagedServiceList(), null,
+							null /* TODO #93 attribute value tosAddress */);
 
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
 							serverBroadcastCallback);

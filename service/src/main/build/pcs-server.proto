@@ -50,7 +50,7 @@ message FindApiSessionResponse {
 
 message RegisterServerRequest {
 	repeated ServiceHandle service = 1;
-	optional string risAddress = 2;
+	optional string tosAddress = 2;
 }
 
 message RegisterServerResponse {

@@ -132,15 +132,38 @@ public class SessionControlServiceImpl
 		private Set<String> certificateSet = new HashSet<>();
 
 		/**
-		 * Where the session is situated ( running on a server ).
+		 * The server on which the session resides.
 		 */
-		private WebServiceSessionEndpoint sessionEndpoint;
+		private ServerHolder server;
 
 		public SessionHolder(SessionHandle handle) {
 			if (handle == null) {
 				throw new IllegalArgumentException();
 			}
 			this.handle = handle;
+		}
+
+		public String getTosAddress() {
+			if (server != null) {
+				return server.getTosAddress();
+			}
+			return null;
+		}
+
+		public String getHttpsUrl() {
+			if (server != null) {
+				return server.getHandle().getHttpsUrl();
+			}
+			return null;
+		}
+
+		public WebServiceSessionEndpoint getSessionEndpoint() {
+			if (server != null) {
+				return new WebServiceSessionEndpoint(handle.getSessionId(), server.getHandle().getHttpsUrl(),
+						server.getHandle().getPublicCertificate());
+
+			}
+			return null;
 		}
 
 		public SessionHandle getHandle() {
@@ -153,10 +176,6 @@ public class SessionControlServiceImpl
 
 		public Set<String> getCertificates() {
 			return certificateSet;
-		}
-
-		public String getHttpsUrl() {
-			return this.sessionEndpoint != null ? this.sessionEndpoint.getHttpsUrl() : null;
 		}
 
 		public void addCertificate(String fingerprint) {
@@ -196,13 +215,14 @@ public class SessionControlServiceImpl
 			return true;
 		}
 
-		public WebServiceSessionEndpoint getSessionEndpoint() {
-			return sessionEndpoint;
+		public ServerHolder getServer() {
+			return server;
 		}
 
-		public void setSessionEndpoint(WebServiceSessionEndpoint sessionEndpoint) {
-			this.sessionEndpoint = sessionEndpoint;
+		public void setServer(ServerHolder server) {
+			this.server = server;
 		}
+
 	}
 
 	/**
@@ -214,19 +234,24 @@ public class SessionControlServiceImpl
 	public static class ServerHolder {
 		private final ServiceHandle handle;
 		private final ServerSessionController ssm;
+		private final String tosAddress;
 
 		private int loadValue;
 
-		public ServerHolder(ServiceHandle handle, ServerSessionController ssm) {
+		public ServerHolder(ServiceHandle handle, ServerSessionController ssm, String tosAddress) {
 			if (handle == null) {
 				throw new IllegalArgumentException();
 			}
 			if (ssm == null) {
 				throw new IllegalArgumentException();
 			}
+			if (tosAddress == null) {
+				throw new IllegalArgumentException();
+			}
 
 			this.handle = handle;
 			this.ssm = ssm;
+			this.tosAddress = tosAddress;
 		}
 
 		public ServiceHandle getHandle() {
@@ -243,6 +268,10 @@ public class SessionControlServiceImpl
 
 		public ServerSessionController getSsm() {
 			return ssm;
+		}
+
+		public String getTosAddress() {
+			return tosAddress;
 		}
 	}
 
@@ -347,22 +376,14 @@ public class SessionControlServiceImpl
 		}
 
 		ServerApiHolder servers = serverMap.get(sessionData.getApi());
-
-		// we lookup in the sessions for the api requested
-		Map<String, SessionHolder> apiSessionMap = sessionMap.get(sessionData.getApi());
-		// lookup any existing sessionholder
-		SessionHolder existingSession = null;
-		synchronized (this) {
-			existingSession = apiSessionMap.get(sessionData.getSessionKey());
-			if (existingSession == null) {
-				existingSession = new SessionHolder(sessionData);
-				apiSessionMap.put(existingSession.getSessionKey(), existingSession);
-			}
+		SessionHolder existingSession = lookupSession(sessionData.getApi(), sessionData.getSessionKey());
+		if (existingSession == null) {
+			existingSession = createSession(sessionData);
 		}
 
 		// we've hooked the session into the map, but it may be "new" and need to allocate the endpoint
 		synchronized (existingSession) {
-			if (existingSession.getSessionEndpoint() == null) {
+			if (existingSession.getServer() == null) {
 				ServerHolder api = servers.getLoadBalancedServer();
 				if (api != null) {
 					// create the sessionId
@@ -377,11 +398,8 @@ public class SessionControlServiceImpl
 							clientCertificate, sessionData.getSeedAttributes());
 					if (stat != null) {
 						updateServerStat(stat);
-
-						WebServiceSessionEndpoint wsse = new WebServiceSessionEndpoint(sessionId,
-								api.getHandle().getHttpsUrl(), api.getHandle().getPublicCertificate());
-						existingSession.setSessionEndpoint(wsse);
-						return wsse;
+						existingSession.setServer(api);
+						return existingSession.getSessionEndpoint();
 					} else {
 						log.warn("Unable to create session on remote server.");
 					}
@@ -414,16 +432,21 @@ public class SessionControlServiceImpl
 	}
 
 	@Override
-	public String findApiSession(String segment, WebServiceApiName api, String sessionKey) {
-		// TODO #93: find the api session with the key
+	public String findApiSession(String s, WebServiceApiName api, String sessionKey) {
+		// first we check if we are allowed to handle the segment which is provided, or we are not "started"
+		if (segment == null || !segment.getSegmentName().equals(s)) {
+			return null;
+		}
+		// find the api session with the key
+		SessionHolder session = lookupSession(api, sessionKey);
 
-		return null;
+		return session != null ? session.getTosAddress() : null;
 	}
 
 	@Override
-	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm) {
+	public void registerServer(List<ServiceHandle> services, ServerSessionController ssm, String tosAddress) {
 		for (ServiceHandle service : services) {
-			registerService(service, ssm);
+			registerService(service, ssm, tosAddress);
 		}
 	}
 
@@ -566,12 +589,31 @@ public class SessionControlServiceImpl
 		return ByteArray.asHex(rnd);
 	}
 
-	private void registerService(ServiceHandle service, ServerSessionController ssm) {
+	private SessionHolder lookupSession(WebServiceApiName api, String sessionKey) {
+		// we lookup in the sessions for the api requested
+		Map<String, SessionHolder> apiSessionMap = sessionMap.get(api);
+		// lookup any existing sessionholder
+		SessionHolder existingSession = apiSessionMap.get(sessionKey);
+		return existingSession;
+	}
+
+	private synchronized SessionHolder createSession(SessionHandle sessionData) {
+		Map<String, SessionHolder> apiSessionMap = sessionMap.get(sessionData.getApi());
+		// lookup any existing sessionholder
+		SessionHolder existingSession = apiSessionMap.get(sessionData.getSessionKey());
+		if (existingSession == null) {
+			existingSession = new SessionHolder(sessionData);
+			apiSessionMap.put(existingSession.getSessionKey(), existingSession);
+		}
+		return existingSession;
+	}
+
+	private void registerService(ServiceHandle service, ServerSessionController ssm, String tosAddress) {
 		Map<String, ServerHolder> serviceMap = serverMap.get(service.getApi()).getServerMap();
 		if (serviceMap.get(service.getHttpsUrl()) != null) {
 			log.warn("Server exists. " + service.getHttpsUrl());
 		} else {
-			ServerHolder holder = new ServerHolder(service, ssm);
+			ServerHolder holder = new ServerHolder(service, ssm, tosAddress);
 			serviceMap.put(service.getHttpsUrl(), holder);
 		}
 	}
