@@ -60,8 +60,8 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 		attributes.put(AttributeId.DomainId, agent.getDomain().getId());
 		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 
-		String sessionKey = az.getZoneApex() + ":" + agent.getAddress().getLocalName() + "@"
-				+ agent.getDomain().getDomainName();
+		String sessionKey = SessionKeyUtil.createMOSSessionKey(az.getZoneApex(), agent.getDomain(), agent.getAddress());
+
 		SessionHandle handle = new SessionHandle(az.getSegment(), WebServiceApiName.MOS, sessionKey, attributes);
 		return handle;
 	}
@@ -75,10 +75,8 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 		attributes.put(AttributeId.ServiceId, service.getId());
 
-		// TODO #93: facter out the sessionKey construction into a SessionKeyFactory
-
-		String sessionKey = az.getZoneApex() + ":" + agent.getAddress().getLocalName() + "@"
-				+ agent.getDomain().getDomainName() + ":" + "#" + service.getServiceName();
+		String sessionKey = SessionKeyUtil.createMDSSessionKey(az.getZoneApex(), agent.getDomain(), agent.getAddress(),
+				service);
 
 		SessionHandle handle = new SessionHandle(az.getSegment(), WebServiceApiName.MDS, sessionKey, attributes);
 		return handle;
@@ -93,10 +91,8 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 			attributes.put(AttributeId.DomainId, agent.getDomain().getId());
 		}
 
-		String sessionKey = az.getZoneApex();
-		if (agent.getDomain() != null) {
-			sessionKey = sessionKey + ":" + agent.getDomain().getDomainName();
-		}
+		String sessionKey = SessionKeyUtil.createZASSessionKey(az.getZoneApex(),
+				agent.getDomain() != null ? agent.getDomain().getDomainName() : null);
 
 		SessionHandle handle = new SessionHandle(az.getSegment(), WebServiceApiName.ZAS, sessionKey, attributes);
 		return handle;
@@ -110,9 +106,8 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
 		attributes.put(AttributeId.TemporaryChannelId, channel.getId());
 
-		String sessionKey = az.getZoneApex() + ":" + channel.getOrigin().getLocalName() + "@"
-				+ channel.getOrigin().getDomainName() + "->" + channel.getDestination().getLocalName() + "@"
-				+ channel.getDestination().getLocalName() + "#" + channel.getDestination().getServiceName();
+		String sessionKey = SessionKeyUtil.createMRSSessionKey(az.getZoneApex(), channel.getOrigin(),
+				channel.getDestination());
 
 		SessionHandle handle = new SessionHandle(az.getSegment(), WebServiceApiName.MRS, sessionKey, attributes);
 		return handle;
@@ -126,9 +121,7 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
 		attributes.put(AttributeId.ChannelId, channel.getId());
 
-		String sessionKey = az.getZoneApex() + ":" + channel.getOrigin().getLocalName() + "@"
-				+ channel.getOrigin().getDomainName() + "->" + channel.getDestination().getLocalName() + "@"
-				+ channel.getDestination().getLocalName() + "#" + channel.getDestination().getServiceName();
+		String sessionKey = SessionKeyUtil.createMRSSessionKey(az.getZoneApex(), channel);
 
 		SessionHandle handle = new SessionHandle(az.getSegment(), WebServiceApiName.MRS, sessionKey, attributes);
 		return handle;
