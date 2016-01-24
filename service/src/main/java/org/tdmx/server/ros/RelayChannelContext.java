@@ -31,6 +31,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -39,6 +40,15 @@ import org.tdmx.lib.zone.domain.Zone;
  * META - we have a meta relaying job scheduled. No data or fetching allowed.
  * 
  * FETCH - we have a data fetching job scheduled. Only one data fetching job can be scheduled at one time.
+ * 
+ * When FlowControl is "closed" by the receiving end at the sending end ( ROS receives FC-closed on relay out - clears
+ * all msg in queued jobs ), then the FlowQuota relay status is changed at the sender, so all WS ros clients which
+ * initiate relaying will refrain. This will cause the ROS session at the sender to become idle if the FC-closed
+ * situation is longer than the idle timeout.
+ * 
+ * When FlowControl is "opened" by the receiving end at the sending end ( MRS receives relay in of FC-open ), then the
+ * MRS initiates a "relayFlowControl" to the ROS which transitions the IDLE ROS session to re-evaluate if CA/CDS
+ * (Metadata) needs relaying and continuing to fetch and relay messages.
  * 
  * @author Peter
  *
@@ -78,12 +88,13 @@ public class RelayChannelContext {
 	private final Domain domain;
 	private final Channel channel;
 	private final RelayDirection direction;
+	private final int maxConcurrentMessages;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 	public RelayChannelContext(String pcsServerName, String channelKey, AccountZone az, Zone zone, Domain domain,
-			Channel channel, RelayDirection direction) {
+			Channel channel, RelayDirection direction, int maxConcurrentMessages) {
 		this.pcsServerName = pcsServerName;
 		this.channelKey = channelKey;
 		this.accountZone = az;
@@ -91,6 +102,7 @@ public class RelayChannelContext {
 		this.domain = domain;
 		this.channel = channel;
 		this.direction = direction;
+		this.maxConcurrentMessages = maxConcurrentMessages;
 	}
 
 	// -------------------------------------------------------------------------
@@ -134,22 +146,6 @@ public class RelayChannelContext {
 		handleFinish(finishedJob);
 		lastActivityTimestamp = System.currentTimeMillis();
 		return schedule(transition());
-	}
-
-	public synchronized void queueChannelMessages(List<ChannelMessage> msgs) {
-		log.debug("queueChannelMessages");
-		for (ChannelMessage msg : msgs) {
-			RelayJobContext existingJob = getPendingJob(RelayJobType.Data, msg.getId());
-			if (existingJob != null) {
-				// enrich the existing relay job with a found Msg
-				existingJob.setChannelMessage(msg);
-			} else {
-				RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.Data, msg.getId());
-				newCtx.setChannelMessage(msg);
-				queuedJobs.add(newCtx);
-			}
-		}
-		Collections.sort(queuedJobs, ORDER);
 	}
 
 	public synchronized List<RelayJobContext> relayChannelMessage(Long messageId) {
@@ -201,6 +197,15 @@ public class RelayChannelContext {
 	// -------------------------------------------------------------------------
 
 	private void handleFinish(RelayJobContext finishedJob) {
+		// if we finish a task and the state of flow control is now closed, we discard any queued job.
+		if (finishedJob.getFlowStatus() == FlowControlStatus.CLOSED) {
+			log.info("Skipping " + scheduledJobs.size() + " scheduled jobs due to flow control close.");
+			scheduledJobs.clear();
+			// we transition to idle state so if multiple data relay jobs concurrently finish we don't trigger
+			// a new fetch, since we don't track the flow control status when fetching.
+			state = RelayContextState.IDLE;
+		}
+
 		switch (state) {
 		case META:
 			if (RelayJobType.MetaData == finishedJob.getType()
@@ -224,6 +229,20 @@ public class RelayChannelContext {
 			}
 			break;
 		case FETCH:
+			if (RelayJobType.Fetch == finishedJob.getType()) {
+				for (ChannelMessage msg : finishedJob.getChannelMessages()) {
+					RelayJobContext existingJob = getPendingJob(RelayJobType.Data, msg.getId());
+					if (existingJob != null) {
+						// enrich the existing relay job with a found Msg
+						existingJob.setChannelMessage(msg);
+					} else {
+						RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.Data, msg.getId());
+						newCtx.setChannelMessage(msg);
+						queuedJobs.add(newCtx);
+					}
+				}
+				Collections.sort(queuedJobs, ORDER);
+			}
 			break;
 		case IDLE:
 			break;
@@ -239,17 +258,34 @@ public class RelayChannelContext {
 		List<RelayJobContext> result = new ArrayList<>();
 
 		// relay any meta data before any messages.
-		RelayJobContext metaJob = getFirstPendingJob(RelayJobType.MetaData);
-		if (metaJob != null && removePendingJob(metaJob)) {
-			result.add(metaJob);
+		RelayJobContext job = getFirstPendingJob(RelayJobType.MetaData);
+		if (job != null && removePendingJob(job)) {
+			result.add(job);
 			state = RelayContextState.META;
+			return result;
 		}
 
-		// TODO Data
+		// we look how many messages we can send at any one time
+		int runningCount = getCountScheduledJobs();
+		int pendingCount = getCountPendingJob(Arrays.asList(RelayJobType.Data));
+		int availibleCount = Math.min(maxConcurrentMessages - runningCount, pendingCount);
+		removePendingJobs(RelayJobType.Data, availibleCount, result);
+		// if we still have data to send, we stay in data state even if this time we schedule no new transfers.
+		if (availibleCount > 0 && runningCount > 0) {
+			state = RelayContextState.DATA;
+			return result;
+		}
 
-		// TODO Fetch
+		// No data but an instruction to fetch more exists
+		job = getFirstPendingJob(RelayJobType.Fetch);
+		if (job != null && removePendingJob(job)) {
+			result.add(job);
+			state = RelayContextState.FETCH;
+			return result;
+		}
 
-		// TODO catch IDLE
+		// we must be left in IDLE state
+		state = RelayContextState.IDLE;
 
 		return result;
 	}
@@ -294,6 +330,23 @@ public class RelayChannelContext {
 	}
 
 	/**
+	 * Remove a number of pending job with a matching type.
+	 * 
+	 * @param type
+	 * @param number
+	 *            the max number of jobs to remove.
+	 */
+	private void removePendingJobs(RelayJobType type, int number, List<RelayJobContext> result) {
+		int i = 0;
+		for (RelayJobContext ctx : queuedJobs) {
+			if (type == ctx.getType() && i < number) {
+				i++;
+				result.add(ctx);
+			}
+		}
+	}
+
+	/**
 	 * Count the pending jobs with the types specified.
 	 * 
 	 * @param types
@@ -307,6 +360,15 @@ public class RelayChannelContext {
 			}
 		}
 		return count;
+	}
+
+	/**
+	 * Count the scheduled jobs with the types specified.
+	 * 
+	 * @return the number of scheduled jobs irrespective of type.
+	 */
+	private int getCountScheduledJobs() {
+		return scheduledJobs.size();
 	}
 
 	/**
@@ -370,6 +432,10 @@ public class RelayChannelContext {
 
 	public RelayDirection getDirection() {
 		return direction;
+	}
+
+	public int getMaxConcurrentMessages() {
+		return maxConcurrentMessages;
 	}
 
 }

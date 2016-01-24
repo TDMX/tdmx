@@ -71,6 +71,13 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	 */
 	private long idleTimeoutMillis = 300000;
 
+	/**
+	 * The max concurrent relays per channel.
+	 * 
+	 * TODO LATER: the number of concurrent messages relayed at any one time should be a ChannelAuthorization property.
+	 */
+	private int maxConcurrentRelaysPerChannel = 5;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -134,7 +141,8 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		RelayDirection dir = c.isSameDomain() ? RelayDirection.Both
 				: c.isSend() ? RelayDirection.Fowards : RelayDirection.Backwards;
 
-		RelayChannelContext rc = new RelayChannelContext(pcsServerName, channelKey, az, z, d, c, dir);
+		RelayChannelContext rc = new RelayChannelContext(pcsServerName, channelKey, az, z, d, c, dir,
+				maxConcurrentRelaysPerChannel);
 		// take over existing mrs sessionId if provided by PCS.
 		rc.setMrsSessionId(mrsSessionId);
 		contextMap.put(channelKey, rc);
@@ -264,6 +272,14 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	public void setIdleTimeoutMillis(long idleTimeoutMillis) {
 		this.idleTimeoutMillis = idleTimeoutMillis;
+	}
+
+	public int getMaxConcurrentRelaysPerChannel() {
+		return maxConcurrentRelaysPerChannel;
+	}
+
+	public void setMaxConcurrentRelaysPerChannel(int maxConcurrentRelaysPerChannel) {
+		this.maxConcurrentRelaysPerChannel = maxConcurrentRelaysPerChannel;
 	}
 
 }

@@ -33,7 +33,7 @@ import org.tdmx.server.ws.session.WebServiceApiName;
  * 
  * TODO #93: use relay service from MRS to transfer relayed-in FC-open to ROS(sender side)
  * 
- * later, possible MRS -(DS)-> MOS, MRS -(CA)-> ZAS
+ * TODO #93: fast inform of MOS sender that a CDS has changed. Flowquota to include DS id.
  * 
  * @author Peter
  *

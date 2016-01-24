@@ -18,9 +18,13 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 
 /**
  * The reference to an object which can be relayed.
@@ -49,6 +53,11 @@ public class RelayJobContext {
 	private Object relayObject;
 	private long timestamp = 0L;
 
+	/**
+	 * After each relay, the channel flow status is known to the sender.
+	 */
+	private FlowControlStatus flowStatus = FlowControlStatus.OPEN;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -71,13 +80,28 @@ public class RelayJobContext {
 	}
 
 	public void setChannelMessage(ChannelMessage msg) {
-		relayObject = msg;
-		timestamp = msg.getSignature().getSignatureDate().getTime();
+		if (RelayJobType.Data == type) {
+			relayObject = msg;
+			timestamp = msg.getSignature().getSignatureDate().getTime();
+		}
 	}
 
 	public ChannelMessage getChannelMessage() {
-		if (relayObject instanceof ChannelMessage) {
+		if (RelayJobType.Data == type) {
 			return (ChannelMessage) relayObject;
+		}
+		return null;
+	}
+
+	public void setChannelMessages(List<ChannelMessage> msgs) {
+		if (RelayJobType.Fetch == type) {
+			relayObject = msgs.toArray(new ChannelMessage[0]);
+		}
+	}
+
+	public List<ChannelMessage> getChannelMessages() {
+		if (RelayJobType.Fetch == type && relayObject instanceof ChannelMessage[]) {
+			return Arrays.asList((ChannelMessage[]) relayObject);
 		}
 		return null;
 	}
@@ -110,6 +134,14 @@ public class RelayJobContext {
 
 	public long getTimestamp() {
 		return timestamp;
+	}
+
+	public FlowControlStatus getFlowStatus() {
+		return flowStatus;
+	}
+
+	public void setFlowStatus(FlowControlStatus flowStatus) {
+		this.flowStatus = flowStatus;
 	}
 
 }
