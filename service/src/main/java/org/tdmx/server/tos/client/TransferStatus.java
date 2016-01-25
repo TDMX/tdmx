@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ros.client;
+package org.tdmx.server.tos.client;
 
 /**
- * A value object describing the final status of relay initiation.
+ * A value object describing the final status of internal transfer between client sessions.
  * 
  * @author Peter
  *
  */
-public class RelayStatus {
+public class TransferStatus {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -33,11 +33,11 @@ public class RelayStatus {
 	public enum ErrorCode {
 		// non retryable errors
 		PCS_FAILURE(false, "Unable to communicate with the PCS."),
-		ROS_CONNECTION_REFUSED(false, "Unable to connect to the ROS."),
-		ROS_RPC_CALL_FAILURE(false, "ROS RPC call failure."),
+		TOS_CONNECTION_REFUSED(false, "Unable to connect to the TOS."),
+		TOS_RPC_CHANNEL_CLOSED(false, "Channel to TOS has closed."),
+		TOS_RPC_CALL_FAILURE(false, "TOS RPC call failure."),
 		// retryable errors
-		ROS_RPC_CHANNEL_CLOSED(true, "Channel to ROS has closed."),
-		ROS_RELAY_DECLINED(true, "ROS declined to relay data."),
+		TOS_RELAY_DECLINED(true, "TOS declined to accept transfer of data."),
 		//
 		;
 
@@ -63,27 +63,27 @@ public class RelayStatus {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private final boolean success;
-	private final String channelKey;
+	private final String sessionId;
 	private final ErrorCode errorCode;
-	private final String rosTcpAddress;
+	private final String tosTcpAddress;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	private RelayStatus(boolean success, String channelKey, String rosTcpAddress, ErrorCode errorCode) {
+	private TransferStatus(boolean success, String sessionId, String tosTcpAddress, ErrorCode errorCode) {
 		this.success = success;
-		this.channelKey = channelKey;
-		this.rosTcpAddress = rosTcpAddress;
+		this.sessionId = sessionId;
+		this.tosTcpAddress = tosTcpAddress;
 		this.errorCode = errorCode;
 	}
 
-	public static RelayStatus success(String channelKey, String rosTcpAddress) {
-		return new RelayStatus(true, channelKey, rosTcpAddress, null);
+	public static TransferStatus success(String sessionId, String tosTcpAddress) {
+		return new TransferStatus(true, sessionId, tosTcpAddress, null);
 	}
 
-	public static RelayStatus failure(String channelKey, ErrorCode errorCode) {
-		return new RelayStatus(false, channelKey, null, errorCode);
+	public static TransferStatus failure(ErrorCode errorCode) {
+		return new TransferStatus(false, null, null, errorCode);
 	}
 
 	// -------------------------------------------------------------------------
@@ -93,12 +93,12 @@ public class RelayStatus {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("RelayStatus [success=");
+		builder.append("TransferStatus [success=");
 		builder.append(success);
-		builder.append(", channelKey=");
-		builder.append(channelKey);
-		builder.append(", rosTcpAddress=");
-		builder.append(rosTcpAddress);
+		builder.append(", sessionId=");
+		builder.append(sessionId);
+		builder.append(", tosTcpAddress=");
+		builder.append(tosTcpAddress);
 		builder.append(", errorCode=");
 		builder.append(errorCode);
 		builder.append("]");
@@ -121,16 +121,16 @@ public class RelayStatus {
 		return success;
 	}
 
-	public String getChannelKey() {
-		return channelKey;
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public String getTosTcpAddress() {
+		return tosTcpAddress;
 	}
 
 	public ErrorCode getErrorCode() {
 		return errorCode;
-	}
-
-	public String getRosTcpAddress() {
-		return rosTcpAddress;
 	}
 
 }

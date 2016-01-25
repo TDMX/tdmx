@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.ros.client;
+package org.tdmx.server.tos.client;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,16 +32,15 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.server.pcs.RelayControlService;
-import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
-import org.tdmx.server.ros.client.RelayStatus.ErrorCode;
+import org.tdmx.server.pcs.SessionControlService;
+import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.runtime.RpcAddressUtils;
+import org.tdmx.server.session.SessionKeyUtil;
+import org.tdmx.server.tos.client.TransferStatus.ErrorCode;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -62,14 +61,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
- * The ROS client connects to each used ROS server. The ROS server connection is not closed but it is also not
- * re-established after it breaks.
+ * The TOS client connects to each used TOS server. The TOS server connection is re-used, not closed, but also not
+ * reestablished if the connection breaks.
+ * 
  * 
  * 
  * @author Peter
  *
  */
-public class RelayClientServiceImpl implements RelayClientService, Manageable {
+public class TransferClientServiceImpl implements TransferClientService, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -78,14 +78,14 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(RelayClientServiceImpl.class);
+	private static Logger log = LoggerFactory.getLogger(TransferClientServiceImpl.class);
 
-	private static final String ROS_TCP_ADDRESS = "ROS_TCP_ADDRESS";
+	private static final String TOS_TCP_ADDRESS = "TOS_TCP_ADDRESS";
 
 	/**
-	 * The service used to lookup the rosTcpAddress for any given channel from the PCS.
+	 * The service used to lookup the tosTcpAddress and sessionId for any given sessionKey from the PCS.
 	 */
-	private RelayControlService relayControlService;
+	private SessionControlService controlService;
 
 	private int connectTimeoutMillis = 5000;
 	private int connectResponseTimeoutMillis = 10000;
@@ -103,9 +103,9 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	private Segment segment = null;
 
 	/**
-	 * A Map of ROS client mapped by ROS RPC endpoint address.
+	 * A Map of TOS client mapped by TOS RPC endpoint address.
 	 */
-	private Map<String, RelayClientService> serverProxyMap = new ConcurrentHashMap<>();
+	private Map<String, TransferObjectServiceClient> serverProxyMap = new ConcurrentHashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -116,75 +116,26 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
-			Channel channel, ChannelAuthorization ca) {
-		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
-		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, ca, null, null);
-		}
-		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
-		}
-		RelayClientService rosClient = getRelayClient(rosTcpAddress);
-		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
-		}
-
-		return rosClient.relayChannelAuthorization(rosTcpAddress, az, zone, domain, channel, ca);
-	}
-
-	@Override
-	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
-			Channel channel) {
-		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
-
-		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, null);
-		}
-		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
-		}
-		RelayClientService rosClient = getRelayClient(rosTcpAddress);
-		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
-		}
-		return rosClient.relayChannelDestinationSession(rosTcpAddress, az, zone, domain, channel);
-	}
-
-	@Override
-	public RelayStatus relayChannelFlowControl(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
-			Channel channel, FlowQuota quota) {
-		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
-
-		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, quota, null);
-		}
-		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
-		}
-		RelayClientService rosClient = getRelayClient(rosTcpAddress);
-		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
-		}
-		return rosClient.relayChannelFlowControl(rosTcpAddress, az, zone, domain, channel, quota);
-	}
-
-	@Override
-	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
+	public TransferStatus transferMDS(String tosTcpAddress, String sessionId, AccountZone az, Zone zone, Domain domain,
 			Channel channel, ChannelMessage msg) {
-		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
+		String sessionKey = SessionKeyUtil.createMDSSessionKey(az.getZoneApex(), channel.getDestination());
 
-		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, msg);
+		if (tosTcpAddress == null || sessionId == null) {
+			FindApiSessionResponse pcsInfo = controlService.findApiSession(segment.getSegmentName(),
+					WebServiceApiName.MDS, sessionKey);
+			if (pcsInfo != null) {
+				tosTcpAddress = pcsInfo.getTosAddress();
+				sessionId = pcsInfo.getSessionId();
+			}
 		}
-		if (rosTcpAddress == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
+		if (tosTcpAddress == null || sessionId == null) {
+			return TransferStatus.failure(ErrorCode.PCS_FAILURE);
 		}
-		RelayClientService rosClient = getRelayClient(rosTcpAddress);
-		if (rosClient == null) {
-			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
+		TransferObjectServiceClient tosClient = getTransferClient(tosTcpAddress);
+		if (tosClient == null) {
+			return TransferStatus.failure(ErrorCode.TOS_CONNECTION_REFUSED);
 		}
-		return rosClient.relayChannelMessage(rosTcpAddress, az, zone, domain, channel, msg);
+		return tosClient.transferMDS(segment.getSegmentName(), tosTcpAddress, sessionId, msg);
 	}
 
 	@Override
@@ -235,14 +186,14 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 				}
 
 				private void disconnection(RpcClientChannel clientChannel) {
-					String rosAddress = getRosTcpAddress(clientChannel);
-					serverProxyMap.remove(rosAddress);
+					String tosAddress = getTosTcpAddress(clientChannel);
+					serverProxyMap.remove(tosAddress);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
-					String rosAddress = getRosTcpAddress(clientChannel);
+					String tosAddress = getTosTcpAddress(clientChannel);
 
-					serverProxyMap.put(rosAddress, new RelayOutboundServiceClient(clientChannel));
+					serverProxyMap.put(tosAddress, new TransferObjectServiceClient(clientChannel));
 				}
 
 			};
@@ -251,7 +202,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 
 			bootstrap = new Bootstrap();
 			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
-					new RenamingThreadFactoryProxy("ROS-client-workers", Executors.defaultThreadFactory()));
+					new RenamingThreadFactoryProxy("TOS-client-workers", Executors.defaultThreadFactory()));
 
 			bootstrap.group(workers);
 			bootstrap.handler(clientFactory);
@@ -306,54 +257,32 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private String getRosTcpAddress(RpcClientChannel clientChannel) {
-		String rosAddress = (String) clientChannel.getAttribute(ROS_TCP_ADDRESS);
-		if (rosAddress == null) {
-			throw new IllegalStateException("No ROS endpoint address attribute on clientChannel " + clientChannel);
+	private String getTosTcpAddress(RpcClientChannel clientChannel) {
+		String tosAddress = (String) clientChannel.getAttribute(TOS_TCP_ADDRESS);
+		if (tosAddress == null) {
+			throw new IllegalStateException("No TOS endpoint address attribute on clientChannel " + clientChannel);
 		}
-		return rosAddress;
+		return tosAddress;
 	}
 
-	private String getRelayAddress(String channelKey, AccountZone az, Zone zone, Domain domain, Channel channel,
-			ChannelAuthorization ca, FlowQuota flow, ChannelMessage msg) {
+	private TransferObjectServiceClient getTransferClient(String tosTcpAddress) {
 
-		Map<AttributeId, Long> attributes = new HashMap<>();
-
-		attributes.put(AttributeId.AccountZoneId, az.getId());
-		attributes.put(AttributeId.ZoneId, zone.getId());
-		attributes.put(AttributeId.DomainId, domain.getId());
-		attributes.put(AttributeId.ChannelId, channel.getId());
-		if (ca != null) {
-			attributes.put(AttributeId.AuthorizationId, ca.getId());
-		}
-		if (flow != null) {
-			attributes.put(AttributeId.FlowQuotaId, flow.getId());
-		}
-		if (msg != null) {
-			attributes.put(AttributeId.MessageId, flow.getId());
-		}
-
-		return relayControlService.assignRelayServer(channelKey, segment.getSegmentName(), attributes);
-	}
-
-	private RelayClientService getRelayClient(String rosTcpAddress) {
-
-		RelayClientService client = serverProxyMap.get(rosTcpAddress);
+		TransferObjectServiceClient client = serverProxyMap.get(tosTcpAddress);
 		if (client == null) {
 			synchronized (this) {
-				client = serverProxyMap.get(rosTcpAddress);
+				client = serverProxyMap.get(tosTcpAddress);
 				if (client == null) {
 					Map<String, Object> attrs = new HashMap<>();
-					attrs.put(ROS_TCP_ADDRESS, rosTcpAddress);
+					attrs.put(TOS_TCP_ADDRESS, tosTcpAddress);
 
-					PeerInfo rosServer = new PeerInfo(RpcAddressUtils.getRosHost(rosTcpAddress),
-							RpcAddressUtils.getRosPort(rosTcpAddress));
+					PeerInfo tosServer = new PeerInfo(RpcAddressUtils.getRosHost(tosTcpAddress),
+							RpcAddressUtils.getRosPort(tosTcpAddress));
 					try {
-						clientFactory.peerWith(rosServer, bootstrap, attrs);
+						clientFactory.peerWith(tosServer, bootstrap, attrs);
 						// the serverProxyMap must be set now
-						return serverProxyMap.get(rosTcpAddress);
+						return serverProxyMap.get(tosTcpAddress);
 					} catch (IOException e) {
-						log.warn("Unable to open ROS client connection to " + rosServer);
+						log.warn("Unable to open TOS client connection to " + tosServer);
 					}
 				}
 			}
@@ -364,6 +293,14 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public SessionControlService getControlService() {
+		return controlService;
+	}
+
+	public void setControlService(SessionControlService controlService) {
+		this.controlService = controlService;
+	}
 
 	public int getConnectTimeoutMillis() {
 		return connectTimeoutMillis;
@@ -427,14 +364,6 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 
 	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
-	}
-
-	public RelayControlService getRelayControlService() {
-		return relayControlService;
-	}
-
-	public void setRelayControlService(RelayControlService relayControlService) {
-		this.relayControlService = relayControlService;
 	}
 
 }

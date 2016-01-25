@@ -19,6 +19,7 @@
 	<bean id="TOS.Server" class="org.tdmx.server.runtime.ManageableServerContainer">
 		<property name="manageables">
 			<list value-type="org.tdmx.server.runtime.Manageable">
+	            <ref bean="tos.client.TransferObjectService"/>
 	            <ref bean="tos.TransferObjectServerConnector"/>
 	        </list>
         </property>

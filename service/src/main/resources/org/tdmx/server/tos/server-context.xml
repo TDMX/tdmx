@@ -13,7 +13,22 @@
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-	<!-- serves WS clients -->
+
+	<bean id="tos.client.TransferObjectService" class="org.tdmx.server.tos.client.TransferClientServiceImpl" >
+		<property name="controlService" ref="pcs.client.LocalControlService"/>
+	
+		<property name="connectTimeoutMillis" value="${tos.client.connectTimeoutMillis}"/>
+		<property name="connectResponseTimeoutMillis" value="${tos.client.connectResponseTimeoutMillis}"/>
+		<property name="coreRpcExecutorThreads" value="${tos.client.coreRpcExecutorThreads}"/>
+		<property name="maxRpcExecutorThreads" value="${tos.client.maxRpcExecutorThreads}"/>
+		<property name="ioThreads" value="${tos.client.ioThreads}"/>
+		<property name="ioBufferSize" value="${tos.client.ioBufferSize}"/>
+		<property name="tcpNoDelay" value="true"/>
+		<property name="shutdownTimeoutMs" value="${tos.client.shutdownTimeoutMs}"/>
+	</bean>
+	
+
+	<!-- Server serving WS clients -->
 	<bean id="tos.TransferObjectServerConnector" class="org.tdmx.server.tos.TransferObjectServiceConnector" >
 		
 		<property name="objectReceiver" ref="ws.ServerSessionManager"/>

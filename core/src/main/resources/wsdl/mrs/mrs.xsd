@@ -36,6 +36,7 @@
 						<xs:element ref="msg:msg" minOccurs="0"/>
 						<xs:element ref="msg:chunk" minOccurs="0"/>
 						<xs:element ref="msg:dr" minOccurs="0"/>
+						<xs:element ref="msg:relayStatus" minOccurs="0"/>
 					</xs:choice>
 				</xs:sequence>
 			</xs:extension>
@@ -49,6 +50,7 @@
 			<xs:extension base="common:Acknowledge">
 				<xs:sequence>
 					<xs:element ref="correlationID" minOccurs="0"/>
+					<xs:element ref="msg:relayStatus" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

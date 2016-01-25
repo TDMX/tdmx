@@ -31,6 +31,7 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -51,6 +52,8 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.tos.client.TransferClientService;
+import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -88,6 +91,8 @@ public class MRSImpl implements MRS {
 
 	private int batchSize = 100;
 
+	private TransferClientService transferService;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -107,9 +112,12 @@ public class MRSImpl implements MRS {
 			processMessage(parameters.getMsg(), response);
 		} else if (parameters.getChunk() != null) {
 			// TODO #70: relay in Chunk
+		} else if (parameters.getDr() != null) {
+			// TODO #95: relay in DR
+		} else if (parameters.getRelayStatus() != null) {
+			// TODO #93: relay in FC-open
 		} else {
-
-			// TODO other relays
+			// none of the above - equals missing data.
 			setError(ErrorCode.MissingRelayPayload, response);
 		}
 		return response;
@@ -287,7 +295,14 @@ public class MRSImpl implements MRS {
 		chunkService.createOrUpdate(c);
 
 		// persist the message itself.
+		m.setProcessingState(ProcessingState.pending());
 		channelService.create(m);
+
+		// attempt to "fast" transfer the MSG to the MDS responsible for the channel's destination.
+		// TODO #96: keep track of when last tried to lookup any sessionId
+		TransferStatus ts = transferService.transferMDS(null, null, session.getAccountZone(), zone, session.getDomain(),
+				channel, m);
+		// TODO #96: keep the tosAddress, sessionId in the session for later use.
 
 		response.setSuccess(true);
 	}
@@ -401,6 +416,14 @@ public class MRSImpl implements MRS {
 
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	public TransferClientService getTransferService() {
+		return transferService;
+	}
+
+	public void setTransferService(TransferClientService transferService) {
+		this.transferService = transferService;
 	}
 
 }

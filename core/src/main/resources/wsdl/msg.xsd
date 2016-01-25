@@ -268,11 +268,7 @@
 	</xs:complexType>
 	<xs:complexType name="FlowStatus">
 		<xs:sequence>
-			<xs:element name="relayStatus" type="flowcontrolstatus">
-				<xs:annotation>
-					<xs:documentation>Whether relaying is allowed or not. On the receiver side, this is equal to the flowStatus. On the sender side, this is the status of the receiving side.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
+			<xs:element ref="relayStatus"/>
 			<xs:element name="flowStatus" type="flowcontrolstatus">
 				<xs:annotation>
 					<xs:documentation>This says whether more bytes can be put into the buffer by the sender or relayer. Note: the limit is determined by the channel authorization.</xs:documentation>
@@ -714,6 +710,11 @@
 	<xs:element name="limit" type="Limit">
 		<xs:annotation>
 			<xs:documentation>the channel buffer's limits for flow control. Flow control is activated ( CLOSED ) when there are more bytes in the buffer than highBytes. flow control is only deactivated ( OPEN ) when the level of the buffer drops below lowBytes.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="relayStatus" type="flowcontrolstatus">
+		<xs:annotation>
+			<xs:documentation>Whether relaying is allowed or not due to flow control. On the receiver side, this is equal to the flowStatus. On the sender side, this is the status of the receiving side.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 </xs:schema>

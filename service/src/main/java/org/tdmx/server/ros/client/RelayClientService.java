@@ -38,7 +38,7 @@ public interface RelayClientService {
 	 * Initiate relay of a ChannelAuthorization.
 	 * 
 	 * @param rosTcpAddress
-	 *            the RPC endpoint address of the ROS handling the channel.
+	 *            the RPC endpoint address of the ROS handling the channel ( null if not known ).
 	 * @param accountzone
 	 *            the detached accountzone
 	 * @param zone

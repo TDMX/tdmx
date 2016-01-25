@@ -21,6 +21,9 @@
 	<bean id="ros.client.RelayOutboundService" class="org.mockito.Mockito" factory-method="mock"> 
 	    <constructor-arg value="org.tdmx.server.ros.client.RelayClientService" /> 
 	</bean>
+	<bean id="tos.client.TransferObjectService" class="org.mockito.Mockito" factory-method="mock"> 
+	    <constructor-arg value="org.tdmx.server.tos.client.TransferClientService" /> 
+	</bean>
 
 	<!-- CONFIGURATION -->
 	<import resource="classpath:/org/tdmx/core/system/env/test-config-context.xml"/>

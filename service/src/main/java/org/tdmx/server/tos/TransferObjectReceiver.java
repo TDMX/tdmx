@@ -27,9 +27,9 @@ import org.tdmx.server.ws.session.WebServiceApiName;
 /**
  * A receiver of object references passed between services.
  * 
- * MRS -(MSG)-> MDS
+ * TODO #93: MRS -(MSG)-> MDS
  *
- * MRS -(DR)-> MOS
+ * TODO #93: MRS -(DR)-> MOS
  * 
  * TODO #93: use relay service from MRS to transfer relayed-in FC-open to ROS(sender side)
  * 
@@ -49,7 +49,7 @@ public interface TransferObjectReceiver {
 	 * @param attributes
 	 * @return
 	 */
-	public boolean transferObject(String sessionKey, WebServiceApiName api, ObjectType type,
+	public boolean transferObject(String sessionId, WebServiceApiName api, ObjectType type,
 			Map<AttributeId, Long> attributes);
 
 }
