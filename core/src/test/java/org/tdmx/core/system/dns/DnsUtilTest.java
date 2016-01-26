@@ -103,6 +103,7 @@ public class DnsUtilTest {
 				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/" };
 		DnsResultHolder h = DnsUtils.getTdmxZoneRecord("kidsmathstrainer.com",
 				DnsUtils.getSystemDnsResolverAddresses());
+		assertNotNull(h);
 		assertEquals("kidsmathstrainer.com", h.getApex());
 		assertArrayEquals(txtRecords, h.getRecords().toArray(new String[0]));
 	}

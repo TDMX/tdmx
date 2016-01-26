@@ -110,6 +110,8 @@ public interface ChannelService {
 	 * later confirmed by the domain administrator using
 	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
 	 * 
+	 * TODO #93 return Channel for MRS
+	 * 
 	 * @param zone
 	 * @param channelId
 	 * @param otherPerm

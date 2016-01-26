@@ -27,6 +27,7 @@ import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
@@ -103,6 +104,7 @@ public class MRSImpl implements MRS {
 
 	@Override
 	public RelayResponse relay(Relay parameters) {
+
 		RelayResponse response = new RelayResponse();
 		if (parameters.getPermission() != null) {
 			processChannelAuthorization(parameters.getPermission(), response);
@@ -171,6 +173,7 @@ public class MRSImpl implements MRS {
 
 		Zone zone = session.getZone();
 		if (sessionChannel != null) {
+			// TODO #93: return channel with flowquota
 			channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
 		} else if (tempChannel != null) {
 			// create a new Channel and swap the tempChannel for newChannel
@@ -178,6 +181,7 @@ public class MRSImpl implements MRS {
 			session.setTemporaryChannel(null);
 			session.setChannel(newChannel);
 		}
+		// TODO #93: receiver provide the flowquota's relaystate back to the caller in the relay response.
 
 		response.setSuccess(true);
 	}
@@ -215,6 +219,8 @@ public class MRSImpl implements MRS {
 
 		Zone zone = session.getZone();
 
+		// we don't tell the destination side of the receivers flow control status
+		// only the other way around.
 		channelService.relayChannelDestinationSession(zone, sessionChannel.getId(), cds);
 
 		response.setSuccess(true);
@@ -287,6 +293,8 @@ public class MRSImpl implements MRS {
 
 		SubmitMessageResultHolder result = channelService.preRelayMessage(zone, m);
 		if (result.status != null) {
+			// provide the flowquota's relaystate back to the caller in the relay response.
+			response.setRelayStatus(Flowcontrolstatus.CLOSED);
 			setError(mapSubmitOperationStatus(result.status), response);
 			return;
 		}

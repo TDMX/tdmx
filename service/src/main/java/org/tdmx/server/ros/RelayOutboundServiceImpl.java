@@ -78,6 +78,8 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	 */
 	private int maxConcurrentRelaysPerChannel = 5;
 
+	// TODO #93: executor and thread pool started/stopped
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
