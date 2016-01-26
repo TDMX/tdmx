@@ -7,11 +7,11 @@
   		</encoder>
 	</appender>
 
-	<logger name="org.tdmx" level="debug" additivity="false">
+	<logger name="org.tdmx" level="warn" additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>
 
-	<root level="info">
+	<root level="warn">
 		<appender-ref ref="STDOUT" />
 	</root>
 
