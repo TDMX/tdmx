@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ros;
 
+import java.io.IOException;
+
 import org.tdmx.client.adapter.ClientCredentialProvider;
 import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
 import org.tdmx.client.adapter.ServerTrustManagerFactoryImpl;
@@ -25,6 +27,8 @@ import org.tdmx.client.adapter.SingleTrustedCertificateProvider;
 import org.tdmx.client.adapter.SoapClientFactory;
 import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
@@ -32,6 +36,9 @@ import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.server.ws.DomainToApiMapper;
 
 /**
  * Relay Connection Provider
@@ -39,7 +46,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
  * @author Peter
  *
  */
-public class RelayConnectionProviderImpl {
+public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -59,13 +66,20 @@ public class RelayConnectionProviderImpl {
 			"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
 	};
 	//@formatter:on
-	private String TLS_VERSION = "TLSv1.2";
-	private int CONNECTION_TIMEOUT_MS = 10000;
-	private int READ_TIMEOUT_MS = 60000;
+	private static final String TLS_VERSION = "TLSv1.2";
+	private static final int CONNECTION_TIMEOUT_MS = 10000;
+	private static final int READ_TIMEOUT_MS = 60000;
 
-	// TODO #93: dependency inject server's client certificate
+	private String keyStoreFile;
+	private String keyStoreType;
+	private String keyStorePassword;
+	private String keyStoreAlias;
 
 	// TODO #93: dep inject TrustedServerCertificateProvider
+	private final DomainToApiMapper d2a = new DomainToApiMapper();
+
+	// internal
+	private PKIXCredential clientCredential;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -75,15 +89,32 @@ public class RelayConnectionProviderImpl {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public MRSSessionHolder getMRS(String channelKey) {
-		PKIXCredential credential = null; // TODO #93: get from "ros-client" keystore.
+	public void init() {
+		String errorMsg = "Unable to load client keystore " + keyStoreFile;
+		try {
+			byte[] keystoreContents = FileUtils.getFileContents(keyStoreFile);
+			if (keystoreContents == null) {
+				throw new IllegalStateException(errorMsg);
+			}
+			clientCredential = KeyStoreUtils.getPrivateCredential(keystoreContents, keyStoreType, keyStorePassword,
+					keyStoreAlias);
+		} catch (IOException e) {
+			throw new IllegalStateException(errorMsg, e);
+		} catch (CryptoCertificateException e) {
+			throw new IllegalStateException(errorMsg, e);
+		}
+	}
+
+	@Override
+	public MRSSessionHolder getMRS(Channel channel) {
+
 		String url = null; // TODO #93: map from DnsService
 
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
 			public PKIXCredential getCredential() {
-				return credential;
+				return clientCredential;
 			}
 
 		};
@@ -110,7 +141,8 @@ public class RelayConnectionProviderImpl {
 
 		SCS scsClient = factory.createClient();
 
-		GetMRSSession sessionRequest = new GetMRSSession(); // TODO #93
+		GetMRSSession sessionRequest = new GetMRSSession();
+		sessionRequest.setChannel(d2a.mapChannel(channel));
 		GetMRSSessionResponse sessionResponse = scsClient.getMRSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			return MRSSessionHolder.error(sessionResponse.getError().getCode(),
@@ -145,4 +177,39 @@ public class RelayConnectionProviderImpl {
 		return MRSSessionHolder.success(mrsClient, sessionResponse.getSession().getSessionId());
 	}
 
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
+
+	public String getKeyStoreFile() {
+		return keyStoreFile;
+	}
+
+	public void setKeyStoreFile(String keyStoreFile) {
+		this.keyStoreFile = keyStoreFile;
+	}
+
+	public String getKeyStoreType() {
+		return keyStoreType;
+	}
+
+	public void setKeyStoreType(String keyStoreType) {
+		this.keyStoreType = keyStoreType;
+	}
+
+	public String getKeyStorePassword() {
+		return keyStorePassword;
+	}
+
+	public void setKeyStorePassword(String keyStorePassword) {
+		this.keyStorePassword = keyStorePassword;
+	}
+
+	public String getKeyStoreAlias() {
+		return keyStoreAlias;
+	}
+
+	public void setKeyStoreAlias(String keyStoreAlias) {
+		this.keyStoreAlias = keyStoreAlias;
+	}
 }

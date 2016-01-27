@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ros;
 
+import org.tdmx.lib.zone.domain.Channel;
+
 /**
  * Provides the connection to the remote MRS for a channel.
  * 
@@ -29,9 +31,9 @@ public interface RelayConnectionProvider {
 	/**
 	 * Lookup an MRS Endpoint for the channel from the remote SCS ( determined by the other party's DNS ).
 	 * 
-	 * @param channelKey
+	 * @param channel
 	 * @return the information of success or failure.
 	 */
-	public MRSSessionHolder getMRS(String channelKey);
+	public MRSSessionHolder getMRS(Channel channel);
 
 }

@@ -68,7 +68,6 @@ import com.googlecode.protobuf.pro.duplex.execute.ServerRpcController;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.CategoryPerServiceLogger;
-import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
@@ -260,8 +259,7 @@ public class RelayControlServiceClientConnector
 			clientFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 
 			bootstrap = new Bootstrap();
-			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
-					new RenamingThreadFactoryProxy("PCS-client-workers", Executors.defaultThreadFactory()));
+			EventLoopGroup workers = new NioEventLoopGroup(ioThreads, new NamedThreadFactory("PCS-client-workers"));
 
 			bootstrap.group(workers);
 			bootstrap.handler(clientFactory);

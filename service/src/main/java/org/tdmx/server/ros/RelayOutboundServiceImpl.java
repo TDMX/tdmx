@@ -23,11 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
@@ -57,16 +62,6 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	private RelayDataService relayDataService;
 
 	/**
-	 * Map of all RelayChannelContext's keyed by channelKey.
-	 */
-	private final Map<String, RelayChannelContext> contextMap = new HashMap<>();
-
-	/**
-	 * The current load value.
-	 */
-	private final AtomicInteger loadValue = new AtomicInteger(0);
-
-	/**
 	 * Idle timeout ( 5min )
 	 */
 	private long idleTimeoutMillis = 300000;
@@ -78,12 +73,60 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	 */
 	private int maxConcurrentRelaysPerChannel = 5;
 
-	// TODO #93: executor and thread pool started/stopped
+	/**
+	 * The execution service for jobs.
+	 */
+	private RelayJobExecutionService jobExecutionService;
+
+	private int coreRelayThreads = 10;
+
+	private int maxRelayThreads = 200;
+
+	// internal
+	/**
+	 * The executor service which provides the threads to run the relay jobs, bounded by coreRelayThreads and
+	 * maxRelayThreads.
+	 */
+	private ExecutorService jobRunner = null;
+
+	/**
+	 * The current load value.
+	 */
+	private final AtomicInteger loadValue = new AtomicInteger(0);
+
+	/**
+	 * Map of all RelayChannelContext's keyed by channelKey.
+	 */
+	private final Map<String, RelayChannelContext> contextMap = new HashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public class RelayJobRunner implements Runnable {
+
+		private final RelayJobContext job;
+
+		public RelayJobRunner(RelayJobContext job) {
+			this.job = job;
+		}
+
+		@Override
+		public void run() {
+			loadValue.incrementAndGet();
+			try {
+				RelayJobExecutionService jes = getJobExecutionService();
+				if (jes != null) {
+					jes.executeJob(job);
+					job.getChannelContext().finishJob(job);
+				}
+
+			} finally {
+				loadValue.decrementAndGet();
+			}
+		}
+
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
@@ -93,11 +136,25 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		log.info("Starting RelayOutboundService.");
 		// we start with an emtpy context map.
 		contextMap.clear();
+
+		// like cachedThreadPoolRunner but with bounded max.
+		jobRunner = new ThreadPoolExecutor(coreRelayThreads, maxRelayThreads, 60L, TimeUnit.SECONDS,
+				new SynchronousQueue<Runnable>(), new NamedThreadFactory("RelayJobRunner"));
 	}
 
 	@Override
 	public Map<String, List<RelayChannelMrsSession>> stop() {
 		log.info("Stopping RelayOutboundService.");
+
+		// shutdown the relaying threads
+		jobRunner.shutdown();
+		try {
+			jobRunner.awaitTermination(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted whilst waiting for termination of jobRunner.", e);
+		}
+
+		// collect the mrsSessionIds
 		Map<String, List<RelayChannelMrsSession>> result = new HashMap<>();
 
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
@@ -125,8 +182,9 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	@Override
 	public int getCurrentLoad() {
-		log.debug("Current load ");
-		return loadValue.get();
+		int currentLoad = loadValue.get();
+		log.debug("Current load " + currentLoad);
+		return currentLoad;
 	}
 
 	@Override
@@ -250,9 +308,10 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// -------------------------------------------------------------------------
 
 	private void schedule(List<RelayJobContext> jobs) {
-		// TODO #93 implement relay executor
+		// submit all newly determined runnable jobs to the relay executor
 		for (RelayJobContext job : jobs) {
 			log.debug("Scheduling " + job);
+			jobRunner.submit(new RelayJobRunner(job));
 		}
 	}
 
@@ -266,6 +325,14 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	public void setRelayDataService(RelayDataService relayDataService) {
 		this.relayDataService = relayDataService;
+	}
+
+	public RelayJobExecutionService getJobExecutionService() {
+		return jobExecutionService;
+	}
+
+	public void setJobExecutionService(RelayJobExecutionService jobExecutionService) {
+		this.jobExecutionService = jobExecutionService;
 	}
 
 	public long getIdleTimeoutMillis() {
@@ -282,6 +349,22 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 
 	public void setMaxConcurrentRelaysPerChannel(int maxConcurrentRelaysPerChannel) {
 		this.maxConcurrentRelaysPerChannel = maxConcurrentRelaysPerChannel;
+	}
+
+	public int getCoreRelayThreads() {
+		return coreRelayThreads;
+	}
+
+	public void setCoreRelayThreads(int coreRelayThreads) {
+		this.coreRelayThreads = coreRelayThreads;
+	}
+
+	public int getMaxRelayThreads() {
+		return maxRelayThreads;
+	}
+
+	public void setMaxRelayThreads(int maxRelayThreads) {
+		this.maxRelayThreads = maxRelayThreads;
 	}
 
 }

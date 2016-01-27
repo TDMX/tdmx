@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayOutboundServiceProxy;
 import org.tdmx.server.pcs.protobuf.ROSServer.RelayRequest;
@@ -50,7 +50,6 @@ import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.NullLogger;
 import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerPipelineFactory;
-import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
@@ -176,10 +175,8 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 
 		// Configure the server.
 		ServerBootstrap bootstrap = new ServerBootstrap();
-		NioEventLoopGroup boss = new NioEventLoopGroup(acceptorThreads,
-				new RenamingThreadFactoryProxy("acceptor", Executors.defaultThreadFactory()));
-		NioEventLoopGroup workers = new NioEventLoopGroup(ioThreads,
-				new RenamingThreadFactoryProxy("worker", Executors.defaultThreadFactory()));
+		NioEventLoopGroup boss = new NioEventLoopGroup(acceptorThreads, new NamedThreadFactory("ROS-acceptor"));
+		NioEventLoopGroup workers = new NioEventLoopGroup(ioThreads, new NamedThreadFactory("ROS-worker"));
 		bootstrap.group(boss, workers);
 		bootstrap.channel(NioServerSocketChannel.class);
 		bootstrap.option(ChannelOption.SO_SNDBUF, ioBufferSize);

@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -53,7 +53,6 @@ import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.listener.RpcConnectionEventListener;
 import com.googlecode.protobuf.pro.duplex.logging.CategoryPerServiceLogger;
-import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
@@ -250,8 +249,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
 
 			bootstrap = new Bootstrap();
-			EventLoopGroup workers = new NioEventLoopGroup(ioThreads,
-					new RenamingThreadFactoryProxy("ROS-client-workers", Executors.defaultThreadFactory()));
+			EventLoopGroup workers = new NioEventLoopGroup(ioThreads, new NamedThreadFactory("ROS-client-workers"));
 
 			bootstrap.group(workers);
 			bootstrap.handler(clientFactory);

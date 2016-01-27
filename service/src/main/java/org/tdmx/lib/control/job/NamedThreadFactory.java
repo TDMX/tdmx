@@ -38,10 +38,10 @@ public class NamedThreadFactory implements ThreadFactory {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public NamedThreadFactory(String name) {
+	public NamedThreadFactory(String namePrefix) {
 		SecurityManager s = System.getSecurityManager();
 		group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-		namePrefix = name;
+		this.namePrefix = namePrefix;
 	}
 
 	// -------------------------------------------------------------------------
