@@ -12,7 +12,6 @@ message RelayStatistic {
 
 message CreateSessionRequest {
 	optional string channelKey = 1;
-	optional string mrsSessionId = 2; // only if the MRS session id has been stored before as the idle sessionid.
 	repeated AttributeValue attribute = 3;
 }
 

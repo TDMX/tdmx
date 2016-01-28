@@ -72,8 +72,7 @@ class ReverseRpcRelayOutboundServiceController implements RelayOutboundServiceCo
 	}
 
 	@Override
-	public RelayStatistic createRelaySession(String channelKey, Map<AttributeId, Long> seedAttributes,
-			String mrsSessionId) {
+	public RelayStatistic createRelaySession(String channelKey, Map<AttributeId, Long> seedAttributes) {
 
 		RelaySessionManagerProxy.BlockingInterface blockingService = RelaySessionManagerProxy.newBlockingStub(channel);
 		final ClientRpcController controller = channel.newRpcController();
@@ -86,9 +85,6 @@ class ReverseRpcRelayOutboundServiceController implements RelayOutboundServiceCo
 			attr.setName(entry.getKey());
 			attr.setValue(entry.getValue());
 			reqBuilder.addAttribute(attr);
-		}
-		if (mrsSessionId != null) {
-			reqBuilder.setMrsSessionId(mrsSessionId);
 		}
 
 		try {

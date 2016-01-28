@@ -424,32 +424,6 @@ public final class ROSClient {
         getChannelKeyBytes();
 
     /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    boolean hasMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    java.lang.String getMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    com.google.protobuf.ByteString
-        getMrsSessionIdBytes();
-
-    /**
      * <code>repeated .AttributeValue attribute = 3;</code>
      */
     java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> 
@@ -531,16 +505,10 @@ public final class ROSClient {
               channelKey_ = bs;
               break;
             }
-            case 18: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
-              mrsSessionId_ = bs;
-              break;
-            }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               attribute_.add(input.readMessage(org.tdmx.server.pcs.protobuf.Common.AttributeValue.PARSER, extensionRegistry));
               break;
@@ -553,7 +521,7 @@ public final class ROSClient {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           attribute_ = java.util.Collections.unmodifiableList(attribute_);
         }
         this.unknownFields = unknownFields.build();
@@ -630,60 +598,6 @@ public final class ROSClient {
       }
     }
 
-    public static final int MRSSESSIONID_FIELD_NUMBER = 2;
-    private java.lang.Object mrsSessionId_;
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    public boolean hasMrsSessionId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    public java.lang.String getMrsSessionId() {
-      java.lang.Object ref = mrsSessionId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          mrsSessionId_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     *
-     * <pre>
-     * only if the MRS session id has been stored before as the idle sessionid.
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getMrsSessionIdBytes() {
-      java.lang.Object ref = mrsSessionId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        mrsSessionId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     public static final int ATTRIBUTE_FIELD_NUMBER = 3;
     private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_;
     /**
@@ -721,7 +635,6 @@ public final class ROSClient {
 
     private void initFields() {
       channelKey_ = "";
-      mrsSessionId_ = "";
       attribute_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -746,9 +659,6 @@ public final class ROSClient {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getChannelKeyBytes());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getMrsSessionIdBytes());
-      }
       for (int i = 0; i < attribute_.size(); i++) {
         output.writeMessage(3, attribute_.get(i));
       }
@@ -764,10 +674,6 @@ public final class ROSClient {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getChannelKeyBytes());
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getMrsSessionIdBytes());
       }
       for (int i = 0; i < attribute_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -893,11 +799,9 @@ public final class ROSClient {
         super.clear();
         channelKey_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        mrsSessionId_ = "";
-        bitField0_ = (bitField0_ & ~0x00000002);
         if (attributeBuilder_ == null) {
           attribute_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           attributeBuilder_.clear();
         }
@@ -933,14 +837,10 @@ public final class ROSClient {
           to_bitField0_ |= 0x00000001;
         }
         result.channelKey_ = channelKey_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.mrsSessionId_ = mrsSessionId_;
         if (attributeBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             attribute_ = java.util.Collections.unmodifiableList(attribute_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.attribute_ = attribute_;
         } else {
@@ -967,16 +867,11 @@ public final class ROSClient {
           channelKey_ = other.channelKey_;
           onChanged();
         }
-        if (other.hasMrsSessionId()) {
-          bitField0_ |= 0x00000002;
-          mrsSessionId_ = other.mrsSessionId_;
-          onChanged();
-        }
         if (attributeBuilder_ == null) {
           if (!other.attribute_.isEmpty()) {
             if (attribute_.isEmpty()) {
               attribute_ = other.attribute_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensureAttributeIsMutable();
               attribute_.addAll(other.attribute_);
@@ -989,7 +884,7 @@ public final class ROSClient {
               attributeBuilder_.dispose();
               attributeBuilder_ = null;
               attribute_ = other.attribute_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000002);
               attributeBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAttributeFieldBuilder() : null;
@@ -1107,112 +1002,12 @@ public final class ROSClient {
         return this;
       }
 
-      private java.lang.Object mrsSessionId_ = "";
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public boolean hasMrsSessionId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public java.lang.String getMrsSessionId() {
-        java.lang.Object ref = mrsSessionId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            mrsSessionId_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public com.google.protobuf.ByteString
-          getMrsSessionIdBytes() {
-        java.lang.Object ref = mrsSessionId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          mrsSessionId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public Builder setMrsSessionId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public Builder clearMrsSessionId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        mrsSessionId_ = getDefaultInstance().getMrsSessionId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       *
-       * <pre>
-       * only if the MRS session id has been stored before as the idle sessionid.
-       * </pre>
-       */
-      public Builder setMrsSessionIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<org.tdmx.server.pcs.protobuf.Common.AttributeValue> attribute_ =
         java.util.Collections.emptyList();
       private void ensureAttributeIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           attribute_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.Common.AttributeValue>(attribute_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
          }
       }
 
@@ -1362,7 +1157,7 @@ public final class ROSClient {
       public Builder clearAttribute() {
         if (attributeBuilder_ == null) {
           attribute_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
           attributeBuilder_.clear();
@@ -1439,7 +1234,7 @@ public final class ROSClient {
           attributeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.tdmx.server.pcs.protobuf.Common.AttributeValue, org.tdmx.server.pcs.protobuf.Common.AttributeValue.Builder, org.tdmx.server.pcs.protobuf.Common.AttributeValueOrBuilder>(
                   attribute_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
           attribute_ = null;
@@ -3203,19 +2998,19 @@ public final class ROSClient {
   static {
     java.lang.String[] descriptorData = {
       "\n\020ros-client.proto\032\014common.proto\"#\n\016Rela" +
-      "yStatistic\022\021\n\tloadValue\030\001 \001(\005\"d\n\024CreateS" +
-      "essionRequest\022\022\n\nchannelKey\030\001 \001(\t\022\024\n\014mrs" +
-      "SessionId\030\002 \001(\t\022\"\n\tattribute\030\003 \003(\0132\017.Att" +
-      "ributeValue\"L\n\025CreateSessionResponse\022\017\n\007" +
-      "success\030\001 \001(\010\022\"\n\tstatistic\030\002 \001(\0132\017.Relay" +
-      "Statistic\"\026\n\024GetStatisticsRequest\";\n\025Get" +
-      "StatisticsResponse\022\"\n\tstatistic\030\001 \001(\0132\017." +
-      "RelayStatistic2\244\001\n\030RelaySessionManagerPr" +
-      "oxy\022C\n\022createRelaySession\022\025.CreateSessio",
-      "nRequest\032\026.CreateSessionResponse\022C\n\022getR" +
-      "elayStatistics\022\025.GetStatisticsRequest\032\026." +
-      "GetStatisticsResponseB,\n\034org.tdmx.server" +
-      ".pcs.protobufB\tROSClient\210\001\001"
+      "yStatistic\022\021\n\tloadValue\030\001 \001(\005\"N\n\024CreateS" +
+      "essionRequest\022\022\n\nchannelKey\030\001 \001(\t\022\"\n\tatt" +
+      "ribute\030\003 \003(\0132\017.AttributeValue\"L\n\025CreateS" +
+      "essionResponse\022\017\n\007success\030\001 \001(\010\022\"\n\tstati" +
+      "stic\030\002 \001(\0132\017.RelayStatistic\"\026\n\024GetStatis" +
+      "ticsRequest\";\n\025GetStatisticsResponse\022\"\n\t" +
+      "statistic\030\001 \001(\0132\017.RelayStatistic2\244\001\n\030Rel" +
+      "aySessionManagerProxy\022C\n\022createRelaySess" +
+      "ion\022\025.CreateSessionRequest\032\026.CreateSessi",
+      "onResponse\022C\n\022getRelayStatistics\022\025.GetSt" +
+      "atisticsRequest\032\026.GetStatisticsResponseB" +
+      ",\n\034org.tdmx.server.pcs.protobufB\tROSClie" +
+      "nt\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3241,7 +3036,7 @@ public final class ROSClient {
     internal_static_CreateSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_CreateSessionRequest_descriptor,
-        new java.lang.String[] { "ChannelKey", "MrsSessionId", "Attribute", });
+        new java.lang.String[] { "ChannelKey", "Attribute", });
     internal_static_CreateSessionResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_CreateSessionResponse_fieldAccessorTable = new

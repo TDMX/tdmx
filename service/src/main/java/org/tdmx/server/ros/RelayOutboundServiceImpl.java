@@ -37,7 +37,6 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
-import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 /**
  * Handles the outbound relay.
@@ -143,7 +142,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	}
 
 	@Override
-	public Map<String, List<RelayChannelMrsSession>> stop() {
+	public void stop() {
 		log.info("Stopping RelayOutboundService.");
 
 		// shutdown the relaying threads
@@ -154,30 +153,13 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 			log.warn("Interrupted whilst waiting for termination of jobRunner.", e);
 		}
 
-		// collect the mrsSessionIds
-		Map<String, List<RelayChannelMrsSession>> result = new HashMap<>();
-
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
 			RelayChannelContext rc = ctxEntry.getValue();
 
 			if (!rc.isShutdown()) {
-				String mrsSessionId = rc.getMrsSessionId();
-				if (mrsSessionId != null) {
-					List<RelayChannelMrsSession> serverChannelList = result.get(rc.getPcsServerName());
-					if (serverChannelList == null) {
-						serverChannelList = new ArrayList<>();
-						result.put(rc.getPcsServerName(), serverChannelList);
-					}
-					RelayChannelMrsSession.Builder rcms = RelayChannelMrsSession.newBuilder();
-					rcms.setChannelKey(rc.getChannelKey());
-					rcms.setMrsSessionId(rc.getMrsSessionId());
-					serverChannelList.add(rcms.build());
-				}
-			} else {
 				rc.shutdown();
 			}
 		}
-		return result;
 	}
 
 	@Override
@@ -188,8 +170,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	}
 
 	@Override
-	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String mrsSessionId,
-			String pcsServerName) {
+	public void startRelaySession(String channelKey, Map<AttributeId, Long> attributes, String pcsServerName) {
 		log.info("Start relay session " + channelKey);
 
 		// lookup the domain objects.
@@ -204,12 +185,11 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		RelayChannelContext rc = new RelayChannelContext(pcsServerName, channelKey, az, z, d, c, dir,
 				maxConcurrentRelaysPerChannel);
 		// take over existing mrs sessionId if provided by PCS.
-		rc.setMrsSessionId(mrsSessionId);
 		contextMap.put(channelKey, rc);
 	}
 
 	@Override
-	public List<RelayChannelMrsSession> removeIdleRelaySessions(String pcsServerName) {
+	public List<String> removeIdleRelaySessions(String pcsServerName) {
 		log.info("Remove idle relay sessions for " + pcsServerName);
 		List<String> idleSessions = new ArrayList<>();
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
@@ -218,33 +198,33 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 				idleSessions.add(ctxEntry.getKey());
 			}
 		}
-		List<RelayChannelMrsSession> result = new ArrayList<>();
+		List<String> result = new ArrayList<>();
 		for (String channelKey : idleSessions) {
-			RelayChannelContext rc = contextMap.remove(channelKey);
-			if (pcsServerName.equals(rc.getPcsServerName()) && rc.isIdleTimeout(idleTimeoutMillis)) {
-				RelayChannelMrsSession.Builder rs = RelayChannelMrsSession.newBuilder();
-				rs.setChannelKey(channelKey);
-				rs.setMrsSessionId(rc.getMrsSessionId());
-				result.add(rs.build());
-			} else {
-				contextMap.put(channelKey, rc);
-			}
+			contextMap.remove(channelKey);
+			result.add(channelKey);
 		}
 		log.info("Removed " + result.size() + " idle relay sessions for " + pcsServerName);
 		return result;
 	}
 
 	@Override
-	public List<String> getActiveRelaySessions(String pcsServerName) {
-		log.info("Get active relay sessions for " + pcsServerName);
-		// we find any non IDLE sessions ( active ) to give to the PCS ( discovery on connect ).
-		List<String> activeSessions = new ArrayList<>();
+	public List<String> shutdownRelaySessions(String pcsServerName) {
+		log.info("Shutdown relay sessions for " + pcsServerName);
+		List<String> sessions = new ArrayList<>();
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
-			if (!ctxEntry.getValue().isIdle()) {
-				activeSessions.add(ctxEntry.getKey());
+			RelayChannelContext rc = ctxEntry.getValue();
+			if (pcsServerName.equals(rc.getPcsServerName())) {
+				rc.shutdown();
+				sessions.add(ctxEntry.getKey());
 			}
 		}
-		return activeSessions;
+		List<String> result = new ArrayList<>();
+		for (String channelKey : sessions) {
+			contextMap.remove(channelKey);
+			result.add(channelKey);
+		}
+		log.info("Shutdown " + result.size() + " relay sessions for " + pcsServerName);
+		return result;
 	}
 
 	@Override

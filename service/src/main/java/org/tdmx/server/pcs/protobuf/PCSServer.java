@@ -7656,41 +7656,6 @@ public final class PCSServer {
      */
     com.google.protobuf.ByteString
         getSegmentBytes();
-
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    com.google.protobuf.ProtocolStringList
-        getChannelKeysList();
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    int getChannelKeysCount();
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    java.lang.String getChannelKeys(int index);
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    com.google.protobuf.ByteString
-        getChannelKeysBytes(int index);
   }
   /**
    * Protobuf type {@code RegisterRelayServerRequest}
@@ -7756,15 +7721,6 @@ public final class PCSServer {
               segment_ = bs;
               break;
             }
-            case 26: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                channelKeys_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              channelKeys_.add(bs);
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -7773,9 +7729,6 @@ public final class PCSServer {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-          channelKeys_ = channelKeys_.getUnmodifiableView();
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -7892,55 +7845,9 @@ public final class PCSServer {
       }
     }
 
-    public static final int CHANNELKEYS_FIELD_NUMBER = 3;
-    private com.google.protobuf.LazyStringList channelKeys_;
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    public com.google.protobuf.ProtocolStringList
-        getChannelKeysList() {
-      return channelKeys_;
-    }
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    public int getChannelKeysCount() {
-      return channelKeys_.size();
-    }
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    public java.lang.String getChannelKeys(int index) {
-      return channelKeys_.get(index);
-    }
-    /**
-     * <code>repeated string channelKeys = 3;</code>
-     *
-     * <pre>
-     * all currently active relay sessions
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getChannelKeysBytes(int index) {
-      return channelKeys_.getByteString(index);
-    }
-
     private void initFields() {
       rosAddress_ = "";
       segment_ = "";
-      channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7961,9 +7868,6 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getSegmentBytes());
       }
-      for (int i = 0; i < channelKeys_.size(); i++) {
-        output.writeBytes(3, channelKeys_.getByteString(i));
-      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7980,15 +7884,6 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getSegmentBytes());
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < channelKeys_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(channelKeys_.getByteString(i));
-        }
-        size += dataSize;
-        size += 1 * getChannelKeysList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8111,8 +8006,6 @@ public final class PCSServer {
         bitField0_ = (bitField0_ & ~0x00000001);
         segment_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -8149,11 +8042,6 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000002;
         }
         result.segment_ = segment_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          channelKeys_ = channelKeys_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000004);
-        }
-        result.channelKeys_ = channelKeys_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8178,16 +8066,6 @@ public final class PCSServer {
         if (other.hasSegment()) {
           bitField0_ |= 0x00000002;
           segment_ = other.segment_;
-          onChanged();
-        }
-        if (!other.channelKeys_.isEmpty()) {
-          if (channelKeys_.isEmpty()) {
-            channelKeys_ = other.channelKeys_;
-            bitField0_ = (bitField0_ & ~0x00000004);
-          } else {
-            ensureChannelKeysIsMutable();
-            channelKeys_.addAll(other.channelKeys_);
-          }
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -8365,135 +8243,6 @@ public final class PCSServer {
   }
   bitField0_ |= 0x00000002;
         segment_ = value;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringList channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensureChannelKeysIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          channelKeys_ = new com.google.protobuf.LazyStringArrayList(channelKeys_);
-          bitField0_ |= 0x00000004;
-         }
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public com.google.protobuf.ProtocolStringList
-          getChannelKeysList() {
-        return channelKeys_.getUnmodifiableView();
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public int getChannelKeysCount() {
-        return channelKeys_.size();
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public java.lang.String getChannelKeys(int index) {
-        return channelKeys_.get(index);
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public com.google.protobuf.ByteString
-          getChannelKeysBytes(int index) {
-        return channelKeys_.getByteString(index);
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public Builder setChannelKeys(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureChannelKeysIsMutable();
-        channelKeys_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public Builder addChannelKeys(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureChannelKeysIsMutable();
-        channelKeys_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public Builder addAllChannelKeys(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureChannelKeysIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, channelKeys_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public Builder clearChannelKeys() {
-        channelKeys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000004);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string channelKeys = 3;</code>
-       *
-       * <pre>
-       * all currently active relay sessions
-       * </pre>
-       */
-      public Builder addChannelKeysBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureChannelKeysIsMutable();
-        channelKeys_.add(value);
         onChanged();
         return this;
       }
@@ -8822,639 +8571,6 @@ public final class PCSServer {
     // @@protoc_insertion_point(class_scope:RegisterRelayServerResponse)
   }
 
-  public interface RelayChannelMrsSessionOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:RelayChannelMrsSession)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    boolean hasChannelKey();
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    java.lang.String getChannelKey();
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    com.google.protobuf.ByteString
-        getChannelKeyBytes();
-
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    boolean hasMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    java.lang.String getMrsSessionId();
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    com.google.protobuf.ByteString
-        getMrsSessionIdBytes();
-  }
-  /**
-   * Protobuf type {@code RelayChannelMrsSession}
-   */
-  public static final class RelayChannelMrsSession extends
-      com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:RelayChannelMrsSession)
-      RelayChannelMrsSessionOrBuilder {
-    // Use RelayChannelMrsSession.newBuilder() to construct.
-    private RelayChannelMrsSession(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private RelayChannelMrsSession(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final RelayChannelMrsSession defaultInstance;
-    public static RelayChannelMrsSession getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public RelayChannelMrsSession getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private RelayChannelMrsSession(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              channelKey_ = bs;
-              break;
-            }
-            case 18: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
-              mrsSessionId_ = bs;
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_RelayChannelMrsSession_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_RelayChannelMrsSession_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.class, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<RelayChannelMrsSession> PARSER =
-        new com.google.protobuf.AbstractParser<RelayChannelMrsSession>() {
-      public RelayChannelMrsSession parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new RelayChannelMrsSession(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<RelayChannelMrsSession> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    public static final int CHANNELKEY_FIELD_NUMBER = 1;
-    private java.lang.Object channelKey_;
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    public boolean hasChannelKey() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    public java.lang.String getChannelKey() {
-      java.lang.Object ref = channelKey_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          channelKey_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string channelKey = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getChannelKeyBytes() {
-      java.lang.Object ref = channelKey_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        channelKey_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int MRSSESSIONID_FIELD_NUMBER = 2;
-    private java.lang.Object mrsSessionId_;
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    public boolean hasMrsSessionId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    public java.lang.String getMrsSessionId() {
-      java.lang.Object ref = mrsSessionId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          mrsSessionId_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string mrsSessionId = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-        getMrsSessionIdBytes() {
-      java.lang.Object ref = mrsSessionId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        mrsSessionId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    private void initFields() {
-      channelKey_ = "";
-      mrsSessionId_ = "";
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getChannelKeyBytes());
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getMrsSessionIdBytes());
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getChannelKeyBytes());
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getMrsSessionIdBytes());
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code RelayChannelMrsSession}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:RelayChannelMrsSession)
-        org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_RelayChannelMrsSession_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_RelayChannelMrsSession_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.class, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder.class);
-      }
-
-      // Construct using org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        channelKey_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
-        mrsSessionId_ = "";
-        bitField0_ = (bitField0_ & ~0x00000002);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.internal_static_RelayChannelMrsSession_descriptor;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getDefaultInstanceForType() {
-        return org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance();
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession build() {
-        org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession buildPartial() {
-        org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession result = new org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.channelKey_ = channelKey_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.mrsSessionId_ = mrsSessionId_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession) {
-          return mergeFrom((org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession other) {
-        if (other == org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance()) return this;
-        if (other.hasChannelKey()) {
-          bitField0_ |= 0x00000001;
-          channelKey_ = other.channelKey_;
-          onChanged();
-        }
-        if (other.hasMrsSessionId()) {
-          bitField0_ |= 0x00000002;
-          mrsSessionId_ = other.mrsSessionId_;
-          onChanged();
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      private java.lang.Object channelKey_ = "";
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public boolean hasChannelKey() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public java.lang.String getChannelKey() {
-        java.lang.Object ref = channelKey_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            channelKey_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public com.google.protobuf.ByteString
-          getChannelKeyBytes() {
-        java.lang.Object ref = channelKey_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          channelKey_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public Builder setChannelKey(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        channelKey_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public Builder clearChannelKey() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        channelKey_ = getDefaultInstance().getChannelKey();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string channelKey = 1;</code>
-       */
-      public Builder setChannelKeyBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        channelKey_ = value;
-        onChanged();
-        return this;
-      }
-
-      private java.lang.Object mrsSessionId_ = "";
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public boolean hasMrsSessionId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public java.lang.String getMrsSessionId() {
-        java.lang.Object ref = mrsSessionId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            mrsSessionId_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public com.google.protobuf.ByteString
-          getMrsSessionIdBytes() {
-        java.lang.Object ref = mrsSessionId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          mrsSessionId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public Builder setMrsSessionId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public Builder clearMrsSessionId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        mrsSessionId_ = getDefaultInstance().getMrsSessionId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string mrsSessionId = 2;</code>
-       */
-      public Builder setMrsSessionIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        mrsSessionId_ = value;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:RelayChannelMrsSession)
-    }
-
-    static {
-      defaultInstance = new RelayChannelMrsSession(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:RelayChannelMrsSession)
-  }
-
   public interface NotifyRelaySessionIdleRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:NotifyRelaySessionIdleRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -9474,28 +8590,23 @@ public final class PCSServer {
         getRosAddressBytes();
 
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> 
-        getRelaySessionList();
+    com.google.protobuf.ProtocolStringList
+        getChannelKeyList();
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index);
+    int getChannelKeyCount();
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    int getRelaySessionCount();
+    java.lang.String getChannelKey(int index);
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
-        getRelaySessionOrBuilderList();
-    /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-     */
-    org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
-        int index);
+    com.google.protobuf.ByteString
+        getChannelKeyBytes(int index);
   }
   /**
    * Protobuf type {@code NotifyRelaySessionIdleRequest}
@@ -9556,11 +8667,12 @@ public final class PCSServer {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                relaySession_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession>();
+                channelKey_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              relaySession_.add(input.readMessage(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.PARSER, extensionRegistry));
+              channelKey_.add(bs);
               break;
             }
           }
@@ -9572,7 +8684,7 @@ public final class PCSServer {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          relaySession_ = java.util.Collections.unmodifiableList(relaySession_);
+          channelKey_ = channelKey_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -9648,44 +8760,38 @@ public final class PCSServer {
       }
     }
 
-    public static final int RELAYSESSION_FIELD_NUMBER = 2;
-    private java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> relaySession_;
+    public static final int CHANNELKEY_FIELD_NUMBER = 2;
+    private com.google.protobuf.LazyStringList channelKey_;
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> getRelaySessionList() {
-      return relaySession_;
+    public com.google.protobuf.ProtocolStringList
+        getChannelKeyList() {
+      return channelKey_;
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
-        getRelaySessionOrBuilderList() {
-      return relaySession_;
+    public int getChannelKeyCount() {
+      return channelKey_.size();
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    public int getRelaySessionCount() {
-      return relaySession_.size();
+    public java.lang.String getChannelKey(int index) {
+      return channelKey_.get(index);
     }
     /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+     * <code>repeated string channelKey = 2;</code>
      */
-    public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index) {
-      return relaySession_.get(index);
-    }
-    /**
-     * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-     */
-    public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
-        int index) {
-      return relaySession_.get(index);
+    public com.google.protobuf.ByteString
+        getChannelKeyBytes(int index) {
+      return channelKey_.getByteString(index);
     }
 
     private void initFields() {
       rosAddress_ = "";
-      relaySession_ = java.util.Collections.emptyList();
+      channelKey_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9703,8 +8809,8 @@ public final class PCSServer {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getRosAddressBytes());
       }
-      for (int i = 0; i < relaySession_.size(); i++) {
-        output.writeMessage(2, relaySession_.get(i));
+      for (int i = 0; i < channelKey_.size(); i++) {
+        output.writeBytes(2, channelKey_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -9719,9 +8825,14 @@ public final class PCSServer {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getRosAddressBytes());
       }
-      for (int i = 0; i < relaySession_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, relaySession_.get(i));
+      {
+        int dataSize = 0;
+        for (int i = 0; i < channelKey_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(channelKey_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getChannelKeyList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9832,7 +8943,6 @@ public final class PCSServer {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getRelaySessionFieldBuilder();
         }
       }
       private static Builder create() {
@@ -9843,12 +8953,8 @@ public final class PCSServer {
         super.clear();
         rosAddress_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (relaySessionBuilder_ == null) {
-          relaySession_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
-        } else {
-          relaySessionBuilder_.clear();
-        }
+        channelKey_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -9881,15 +8987,11 @@ public final class PCSServer {
           to_bitField0_ |= 0x00000001;
         }
         result.rosAddress_ = rosAddress_;
-        if (relaySessionBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            relaySession_ = java.util.Collections.unmodifiableList(relaySession_);
-            bitField0_ = (bitField0_ & ~0x00000002);
-          }
-          result.relaySession_ = relaySession_;
-        } else {
-          result.relaySession_ = relaySessionBuilder_.build();
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          channelKey_ = channelKey_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
+        result.channelKey_ = channelKey_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9911,31 +9013,15 @@ public final class PCSServer {
           rosAddress_ = other.rosAddress_;
           onChanged();
         }
-        if (relaySessionBuilder_ == null) {
-          if (!other.relaySession_.isEmpty()) {
-            if (relaySession_.isEmpty()) {
-              relaySession_ = other.relaySession_;
-              bitField0_ = (bitField0_ & ~0x00000002);
-            } else {
-              ensureRelaySessionIsMutable();
-              relaySession_.addAll(other.relaySession_);
-            }
-            onChanged();
+        if (!other.channelKey_.isEmpty()) {
+          if (channelKey_.isEmpty()) {
+            channelKey_ = other.channelKey_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureChannelKeyIsMutable();
+            channelKey_.addAll(other.channelKey_);
           }
-        } else {
-          if (!other.relaySession_.isEmpty()) {
-            if (relaySessionBuilder_.isEmpty()) {
-              relaySessionBuilder_.dispose();
-              relaySessionBuilder_ = null;
-              relaySession_ = other.relaySession_;
-              bitField0_ = (bitField0_ & ~0x00000002);
-              relaySessionBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getRelaySessionFieldBuilder() : null;
-            } else {
-              relaySessionBuilder_.addAllMessages(other.relaySession_);
-            }
-          }
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -10040,244 +9126,97 @@ public final class PCSServer {
         return this;
       }
 
-      private java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> relaySession_ =
-        java.util.Collections.emptyList();
-      private void ensureRelaySessionIsMutable() {
+      private com.google.protobuf.LazyStringList channelKey_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureChannelKeyIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          relaySession_ = new java.util.ArrayList<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession>(relaySession_);
+          channelKey_ = new com.google.protobuf.LazyStringArrayList(channelKey_);
           bitField0_ |= 0x00000002;
          }
       }
-
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> relaySessionBuilder_;
-
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> getRelaySessionList() {
-        if (relaySessionBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(relaySession_);
-        } else {
-          return relaySessionBuilder_.getMessageList();
-        }
+      public com.google.protobuf.ProtocolStringList
+          getChannelKeyList() {
+        return channelKey_.getUnmodifiableView();
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public int getRelaySessionCount() {
-        if (relaySessionBuilder_ == null) {
-          return relaySession_.size();
-        } else {
-          return relaySessionBuilder_.getCount();
-        }
+      public int getChannelKeyCount() {
+        return channelKey_.size();
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession getRelaySession(int index) {
-        if (relaySessionBuilder_ == null) {
-          return relaySession_.get(index);
-        } else {
-          return relaySessionBuilder_.getMessage(index);
-        }
+      public java.lang.String getChannelKey(int index) {
+        return channelKey_.get(index);
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public Builder setRelaySession(
-          int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
-        if (relaySessionBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureRelaySessionIsMutable();
-          relaySession_.set(index, value);
-          onChanged();
-        } else {
-          relaySessionBuilder_.setMessage(index, value);
-        }
+      public com.google.protobuf.ByteString
+          getChannelKeyBytes(int index) {
+        return channelKey_.getByteString(index);
+      }
+      /**
+       * <code>repeated string channelKey = 2;</code>
+       */
+      public Builder setChannelKey(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeyIsMutable();
+        channelKey_.set(index, value);
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public Builder setRelaySession(
-          int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
-        if (relaySessionBuilder_ == null) {
-          ensureRelaySessionIsMutable();
-          relaySession_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          relaySessionBuilder_.setMessage(index, builderForValue.build());
-        }
+      public Builder addChannelKey(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeyIsMutable();
+        channelKey_.add(value);
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public Builder addRelaySession(org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
-        if (relaySessionBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureRelaySessionIsMutable();
-          relaySession_.add(value);
-          onChanged();
-        } else {
-          relaySessionBuilder_.addMessage(value);
-        }
+      public Builder addAllChannelKey(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureChannelKeyIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, channelKey_);
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public Builder addRelaySession(
-          int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession value) {
-        if (relaySessionBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureRelaySessionIsMutable();
-          relaySession_.add(index, value);
-          onChanged();
-        } else {
-          relaySessionBuilder_.addMessage(index, value);
-        }
+      public Builder clearChannelKey() {
+        channelKey_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
+       * <code>repeated string channelKey = 2;</code>
        */
-      public Builder addRelaySession(
-          org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
-        if (relaySessionBuilder_ == null) {
-          ensureRelaySessionIsMutable();
-          relaySession_.add(builderForValue.build());
-          onChanged();
-        } else {
-          relaySessionBuilder_.addMessage(builderForValue.build());
-        }
+      public Builder addChannelKeyBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureChannelKeyIsMutable();
+        channelKey_.add(value);
+        onChanged();
         return this;
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public Builder addRelaySession(
-          int index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder builderForValue) {
-        if (relaySessionBuilder_ == null) {
-          ensureRelaySessionIsMutable();
-          relaySession_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          relaySessionBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public Builder addAllRelaySession(
-          java.lang.Iterable<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession> values) {
-        if (relaySessionBuilder_ == null) {
-          ensureRelaySessionIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, relaySession_);
-          onChanged();
-        } else {
-          relaySessionBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public Builder clearRelaySession() {
-        if (relaySessionBuilder_ == null) {
-          relaySession_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
-          onChanged();
-        } else {
-          relaySessionBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public Builder removeRelaySession(int index) {
-        if (relaySessionBuilder_ == null) {
-          ensureRelaySessionIsMutable();
-          relaySession_.remove(index);
-          onChanged();
-        } else {
-          relaySessionBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder getRelaySessionBuilder(
-          int index) {
-        return getRelaySessionFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder getRelaySessionOrBuilder(
-          int index) {
-        if (relaySessionBuilder_ == null) {
-          return relaySession_.get(index);  } else {
-          return relaySessionBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public java.util.List<? extends org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
-           getRelaySessionOrBuilderList() {
-        if (relaySessionBuilder_ != null) {
-          return relaySessionBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(relaySession_);
-        }
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder addRelaySessionBuilder() {
-        return getRelaySessionFieldBuilder().addBuilder(
-            org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder addRelaySessionBuilder(
-          int index) {
-        return getRelaySessionFieldBuilder().addBuilder(
-            index, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .RelayChannelMrsSession relaySession = 2;</code>
-       */
-      public java.util.List<org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder> 
-           getRelaySessionBuilderList() {
-        return getRelaySessionFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder> 
-          getRelaySessionFieldBuilder() {
-        if (relaySessionBuilder_ == null) {
-          relaySessionBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession.Builder, org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSessionOrBuilder>(
-                  relaySession_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
-                  getParentForChildren(),
-                  isClean());
-          relaySession_ = null;
-        }
-        return relaySessionBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:NotifyRelaySessionIdleRequest)
@@ -12925,11 +11864,6 @@ public final class PCSServer {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_RegisterRelayServerResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_RelayChannelMrsSession_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_RelayChannelMrsSession_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_NotifyRelaySessionIdleRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -12978,37 +11912,34 @@ public final class PCSServer {
       "st\022\017\n\007apiName\030\001 \001(\t\022\021\n\tsessionId\030\002 \003(\t\"\036" +
       "\n\034NotifySessionRemovedResponse\"2\n\034Invali" +
       "dateCertificateRequest\022\022\n\nclientCert\030\001 \001",
-      "(\014\"\037\n\035InvalidateCertificateResponse\"V\n\032R" +
+      "(\014\"\037\n\035InvalidateCertificateResponse\"A\n\032R" +
       "egisterRelayServerRequest\022\022\n\nrosAddress\030" +
-      "\001 \001(\t\022\017\n\007segment\030\002 \001(\t\022\023\n\013channelKeys\030\003 " +
-      "\003(\t\"\035\n\033RegisterRelayServerResponse\"B\n\026Re" +
-      "layChannelMrsSession\022\022\n\nchannelKey\030\001 \001(\t" +
-      "\022\024\n\014mrsSessionId\030\002 \001(\t\"b\n\035NotifyRelaySes" +
-      "sionIdleRequest\022\022\n\nrosAddress\030\001 \001(\t\022-\n\014r" +
-      "elaySession\030\002 \003(\0132\027.RelayChannelMrsSessi" +
-      "on\" \n\036NotifyRelaySessionIdleResponse\"d\n\031" +
-      "AssignRelaySessionRequest\022\022\n\nchannelKey\030",
-      "\001 \001(\t\022\017\n\007segment\030\002 \001(\t\022\"\n\tattribute\030\003 \003(" +
-      "\0132\017.AttributeValue\"0\n\032AssignRelaySession" +
-      "Response\022\022\n\nrosAddress\030\001 \001(\t2\230\005\n\023Control" +
-      "ServiceProxy\022P\n\023associateApiSession\022\033.As" +
-      "sociateApiSessionRequest\032\034.AssociateApiS" +
-      "essionResponse\022A\n\016findApiSession\022\026.FindA" +
-      "piSessionRequest\032\027.FindApiSessionRespons" +
-      "e\022A\n\016registerServer\022\026.RegisterServerRequ" +
-      "est\032\027.RegisterServerResponse\022T\n\025notifySe" +
-      "ssionsRemoved\022\034.NotifySessionRemovedRequ",
-      "est\032\035.NotifySessionRemovedResponse\022V\n\025in" +
-      "validateCertificate\022\035.InvalidateCertific" +
-      "ateRequest\032\036.InvalidateCertificateRespon" +
-      "se\022M\n\022assignRelaySession\022\032.AssignRelaySe" +
-      "ssionRequest\032\033.AssignRelaySessionRespons" +
-      "e\022P\n\023registerRelayServer\022\033.RegisterRelay" +
-      "ServerRequest\032\034.RegisterRelayServerRespo" +
-      "nse\022Z\n\027notifyRelaySessionsIdle\022\036.NotifyR" +
-      "elaySessionIdleRequest\032\037.NotifyRelaySess" +
-      "ionIdleResponseB,\n\034org.tdmx.server.pcs.p",
-      "rotobufB\tPCSServer\210\001\001"
+      "\001 \001(\t\022\017\n\007segment\030\002 \001(\t\"\035\n\033RegisterRelayS" +
+      "erverResponse\"G\n\035NotifyRelaySessionIdleR" +
+      "equest\022\022\n\nrosAddress\030\001 \001(\t\022\022\n\nchannelKey" +
+      "\030\002 \003(\t\" \n\036NotifyRelaySessionIdleResponse" +
+      "\"d\n\031AssignRelaySessionRequest\022\022\n\nchannel" +
+      "Key\030\001 \001(\t\022\017\n\007segment\030\002 \001(\t\022\"\n\tattribute\030" +
+      "\003 \003(\0132\017.AttributeValue\"0\n\032AssignRelaySes" +
+      "sionResponse\022\022\n\nrosAddress\030\001 \001(\t2\230\005\n\023Con",
+      "trolServiceProxy\022P\n\023associateApiSession\022" +
+      "\033.AssociateApiSessionRequest\032\034.Associate" +
+      "ApiSessionResponse\022A\n\016findApiSession\022\026.F" +
+      "indApiSessionRequest\032\027.FindApiSessionRes" +
+      "ponse\022A\n\016registerServer\022\026.RegisterServer" +
+      "Request\032\027.RegisterServerResponse\022T\n\025noti" +
+      "fySessionsRemoved\022\034.NotifySessionRemoved" +
+      "Request\032\035.NotifySessionRemovedResponse\022V" +
+      "\n\025invalidateCertificate\022\035.InvalidateCert" +
+      "ificateRequest\032\036.InvalidateCertificateRe",
+      "sponse\022M\n\022assignRelaySession\022\032.AssignRel" +
+      "aySessionRequest\032\033.AssignRelaySessionRes" +
+      "ponse\022P\n\023registerRelayServer\022\033.RegisterR" +
+      "elayServerRequest\032\034.RegisterRelayServerR" +
+      "esponse\022Z\n\027notifyRelaySessionsIdle\022\036.Not" +
+      "ifyRelaySessionIdleRequest\032\037.NotifyRelay" +
+      "SessionIdleResponseB,\n\034org.tdmx.server.p" +
+      "cs.protobufB\tPCSServer\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13100,39 +12031,33 @@ public final class PCSServer {
     internal_static_RegisterRelayServerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerRequest_descriptor,
-        new java.lang.String[] { "RosAddress", "Segment", "ChannelKeys", });
+        new java.lang.String[] { "RosAddress", "Segment", });
     internal_static_RegisterRelayServerResponse_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_RegisterRelayServerResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RegisterRelayServerResponse_descriptor,
         new java.lang.String[] { });
-    internal_static_RelayChannelMrsSession_descriptor =
-      getDescriptor().getMessageTypes().get(14);
-    internal_static_RelayChannelMrsSession_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_RelayChannelMrsSession_descriptor,
-        new java.lang.String[] { "ChannelKey", "MrsSessionId", });
     internal_static_NotifyRelaySessionIdleRequest_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_NotifyRelaySessionIdleRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NotifyRelaySessionIdleRequest_descriptor,
-        new java.lang.String[] { "RosAddress", "RelaySession", });
+        new java.lang.String[] { "RosAddress", "ChannelKey", });
     internal_static_NotifyRelaySessionIdleResponse_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_NotifyRelaySessionIdleResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_NotifyRelaySessionIdleResponse_descriptor,
         new java.lang.String[] { });
     internal_static_AssignRelaySessionRequest_descriptor =
-      getDescriptor().getMessageTypes().get(17);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_AssignRelaySessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_AssignRelaySessionRequest_descriptor,
         new java.lang.String[] { "ChannelKey", "Segment", "Attribute", });
     internal_static_AssignRelaySessionResponse_descriptor =
-      getDescriptor().getMessageTypes().get(18);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_AssignRelaySessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_AssignRelaySessionResponse_descriptor,

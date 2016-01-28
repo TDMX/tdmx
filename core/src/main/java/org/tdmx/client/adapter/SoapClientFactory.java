@@ -55,8 +55,6 @@ public class SoapClientFactory<E> {
 	private String tlsProtocolVersion;
 	private String[] enabledCipherSuites;
 
-	// TODO hookin ServerTrustManagerFactory
-
 	private ClientKeyManagerFactory keyManagerFactory;
 	private ServerTrustManagerFactory trustManagerFactory;
 
@@ -122,15 +120,15 @@ public class SoapClientFactory<E> {
 		params.setCipherSuites(Arrays.asList(getEnabledCipherSuites()));
 
 		// setup the client identity certificate
-		if (getKeyManagerFactory() != null) {
-			KeyManager clientKeyManager = getKeyManagerFactory().getKeyManager();
+		if (keyManagerFactory != null) {
+			KeyManager clientKeyManager = keyManagerFactory.getKeyManager();
 			if (clientKeyManager != null) {
 				params.setKeyManagers(new KeyManager[] { clientKeyManager });
 			}
 		}
 		// setup the server trust manager
-		if (getTrustManagerFactory() != null) {
-			TrustManager serverTrustManager = getTrustManagerFactory().getTrustManager();
+		if (trustManagerFactory != null) {
+			TrustManager serverTrustManager = trustManagerFactory.getTrustManager();
 			if (serverTrustManager != null) {
 				params.setTrustManagers(new TrustManager[] { serverTrustManager });
 			}

@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
-import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 import org.tdmx.server.pcs.protobuf.ROSClient.RelayStatistic;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -118,7 +117,6 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 	public static class SessionHolder {
 
 		private String rosTcpEndpoint;
-		private String mrsSessionId;
 
 		public String getRosTcpEndpoint() {
 			return rosTcpEndpoint;
@@ -126,14 +124,6 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 
 		public void setRosTcpEndpoint(String rosTcpEndpoint) {
 			this.rosTcpEndpoint = rosTcpEndpoint;
-		}
-
-		public String getMrsSessionId() {
-			return mrsSessionId;
-		}
-
-		public void setMrsSessionId(String mrsSessionId) {
-			this.mrsSessionId = mrsSessionId;
 		}
 	}
 
@@ -244,13 +234,11 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 					existingSession.setRosTcpEndpoint(ros.getRosTcpEndpoint());
 
 					// we need to allocate the new relay session for the client on a ROS server with the least load
-					RelayStatistic stat = ros.getRos().createRelaySession(channelKey, attributes,
-							existingSession.getMrsSessionId());
+					RelayStatistic stat = ros.getRos().createRelaySession(channelKey, attributes);
 					if (stat != null) {
 						updateServerStats(ros, stat.getLoadValue());
 
 						existingSession.setRosTcpEndpoint(ros.getRosTcpEndpoint());
-						existingSession.setMrsSessionId(null); // successfully xfered to the other.
 					} else {
 						log.warn("Unable to create relay session on remote ROS server "
 								+ existingSession.getRosTcpEndpoint());
@@ -267,8 +255,7 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 	}
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
-			RelayOutboundServiceController ros) {
+	public void registerRelayServer(String rosTcpEndpoint, String segment, RelayOutboundServiceController ros) {
 		ServerHolder serverHolder = serverMap.get(rosTcpEndpoint);
 		if (serverHolder != null) {
 			log.warn("ROS connection should not be known " + rosTcpEndpoint);
@@ -276,16 +263,6 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 		}
 		serverHolder = new ServerHolder(rosTcpEndpoint, ros);
 		serverMap.put(rosTcpEndpoint, serverHolder);
-
-		// pre-populate all the channel keys (sessions) that the newly connecting ROS claims to own.
-		for (String channelKey : channelKeys) {
-			SessionHolder sh = getSessionHolder(channelKey);
-			if (sh.getRosTcpEndpoint() != null) {
-				log.warn("Existing ROS " + sh.getRosTcpEndpoint() + " for connecting ROS claiming handling for "
-						+ channelKey);
-			}
-			sh.setRosTcpEndpoint(rosTcpEndpoint);
-		}
 	}
 
 	@Override
@@ -300,27 +277,19 @@ public class RelayControlServiceImpl implements Manageable, Runnable, RelayContr
 	}
 
 	@Override
-	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions) {
-		for (RelayChannelMrsSession rcms : sessions) {
-			if (rcms.getChannelKey() == null) {
-				log.warn("Missing channel key.");
-				continue;
-			}
-			if (rcms.getMrsSessionId() == null) {
-				log.warn("Missing MRS sessionId.");
-				continue;
-			}
-			SessionHolder sh = sessionMap.get(rcms.getChannelKey());
+	public void notifySessionsRemoved(String rosTcpEndpoint, List<String> channelKeys) {
+		for (String channelKey : channelKeys) {
+			log.debug("Removing session " + channelKey + " from " + rosTcpEndpoint);
+			SessionHolder sh = sessionMap.get(channelKey);
 			if (sh != null) {
 				if (rosTcpEndpoint.equals(sh.getRosTcpEndpoint())) {
 					sh.setRosTcpEndpoint(null);
-					sh.setMrsSessionId(rcms.getMrsSessionId());
 				} else {
 					log.warn("Existing channel tcpEndpoint " + sh.getRosTcpEndpoint()
 							+ " does not match disconnecting claimant " + rosTcpEndpoint);
 				}
 			} else {
-				log.warn("Could not find existing session for channel " + rcms.getChannelKey());
+				log.warn("Could not find existing session for channel " + channelKey);
 			}
 		}
 	}

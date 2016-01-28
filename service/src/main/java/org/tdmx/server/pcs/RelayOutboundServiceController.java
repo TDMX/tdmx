@@ -31,12 +31,10 @@ public interface RelayOutboundServiceController {
 	 * @param channelKey
 	 * @param attributes
 	 *            providing objectIds for channel objects.
-	 * @param mrsSessionId
 	 * 
 	 * @return the relay server load statistics or null if this failed.
 	 */
-	public RelayStatistic createRelaySession(String channelKey, Map<AttributeId, Long> seedAttributes,
-			String mrsSessionId);
+	public RelayStatistic createRelaySession(String channelKey, Map<AttributeId, Long> seedAttributes);
 
 	/**
 	 * Return the server's load statistics.

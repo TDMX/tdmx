@@ -62,6 +62,10 @@ public class MRSSessionHolder {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	public boolean isValid() {
+		return errorCode == null;
+	}
+
 	public MRS getMrs() {
 		return mrs;
 	}

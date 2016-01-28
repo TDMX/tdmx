@@ -42,7 +42,6 @@ import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.client.LocalControlServiceImpl;
 import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
-import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse;
 import org.tdmx.server.pcs.protobuf.ROSClient.GetStatisticsRequest;
@@ -231,19 +230,21 @@ public class RelayControlServiceClientConnector
 
 				private void disconnection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
+					String controllerId = getControllerId(pcs);
+					// we force shutdown all relays with channelKeys linked to the PCS
+					relayOutboundService.shutdownRelaySessions(controllerId);
 					serverProxyMap.remove(pcs);
+
 					clientChannel.setOobMessageCallback(null, null);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
-					String controllerId = getControllerId(pcs);
 
 					RelayControlServiceClient client = new RelayControlServiceClient(clientChannel);
 
-					List<String> activeChannelKeys = relayOutboundService.getActiveRelaySessions(controllerId);
 					serverProxyMap.put(pcs, client);
-					client.registerRelayServer(rosTcpEndpoint, activeChannelKeys, segment.getSegmentName(), null);
+					client.registerRelayServer(rosTcpEndpoint, segment.getSegmentName(), null);
 
 					// register ourselves to receive broadcast messages
 					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
@@ -300,10 +301,7 @@ public class RelayControlServiceClientConnector
 	@Override
 	public void stop() {
 		// stop the relayOutboundService
-		Map<String, List<RelayChannelMrsSession>> deactivatedSessionsByPcs = relayOutboundService.stop();
-
-		// dump the channelKey,mrssessionID back to the PCSs
-		disonnectFromPcsServers(deactivatedSessionsByPcs);
+		relayOutboundService.stop();
 
 		if (scheduledThreadPool != null) {
 			scheduledThreadPool.shutdown();
@@ -357,8 +355,7 @@ public class RelayControlServiceClientConnector
 		log.info("Checking for idle ROS sessions.");
 
 		for (RelayControlServiceClient pcs : serverProxyMap.values()) {
-			List<RelayChannelMrsSession> idleSessions = relayOutboundService
-					.removeIdleRelaySessions(pcs.getPcsServerName());
+			List<String> idleSessions = relayOutboundService.removeIdleRelaySessions(pcs.getPcsServerName());
 			if (!idleSessions.isEmpty()) {
 				log.info("Notifying " + pcs.getPcsServerName() + " about " + idleSessions.size() + " idle sessions.");
 				pcs.notifySessionsRemoved(rosTcpEndpoint, idleSessions);
@@ -375,7 +372,7 @@ public class RelayControlServiceClientConnector
 		log.info("createRelaySession " + controllerId);
 
 		relayOutboundService.startRelaySession(request.getChannelKey(), mapAttributes(request.getAttributeList()),
-				request.getMrsSessionId(), controllerId);
+				controllerId);
 		RelayStatistic.Builder stats = RelayStatistic.newBuilder();
 		stats.setLoadValue(relayOutboundService.getCurrentLoad());
 
@@ -428,23 +425,6 @@ public class RelayControlServiceClientConnector
 
 			clientFactory.peerWith(server, bootstrap, attributes);
 			// the event listener hooks up the localproxy
-		}
-	}
-
-	/**
-	 * Connect to each of the PCS servers.
-	 * 
-	 * @throws IOException
-	 */
-	private void disonnectFromPcsServers(Map<String, List<RelayChannelMrsSession>> deactivatedSessionsByPcs) {
-		for (PartitionControlServer pcs : serverList) {
-			String controllerId = getControllerId(pcs);
-
-			RelayControlServiceClient client = serverProxyMap.get(pcs);
-			if (client != null) {
-				// we park all our MRS sessions we know with the PCS
-				client.notifySessionsRemoved(rosTcpEndpoint, deactivatedSessionsByPcs.get(controllerId));
-			}
 		}
 	}
 

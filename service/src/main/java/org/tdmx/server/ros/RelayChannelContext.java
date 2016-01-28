@@ -76,7 +76,8 @@ public class RelayChannelContext {
 
 	private LinkedList<RelayJobContext> scheduledJobs = new LinkedList<>();
 	private LinkedList<RelayJobContext> queuedJobs = new LinkedList<>();
-	private String mrsSessionId;
+	private MRSSessionHolder mrsSession;
+
 	private long lastActivityTimestamp = 0L;
 
 	// reference
@@ -422,12 +423,12 @@ public class RelayChannelContext {
 		this.state = state;
 	}
 
-	public String getMrsSessionId() {
-		return mrsSessionId;
+	public MRSSessionHolder getMrsSession() {
+		return mrsSession;
 	}
 
-	public void setMrsSessionId(String mrsSessionId) {
-		this.mrsSessionId = mrsSessionId;
+	public void setMrsSession(MRSSessionHolder mrsSession) {
+		this.mrsSession = mrsSession;
 	}
 
 	public RelayDirection getDirection() {

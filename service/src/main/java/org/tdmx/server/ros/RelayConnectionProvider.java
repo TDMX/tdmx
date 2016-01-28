@@ -32,8 +32,10 @@ public interface RelayConnectionProvider {
 	 * Lookup an MRS Endpoint for the channel from the remote SCS ( determined by the other party's DNS ).
 	 * 
 	 * @param channel
+	 * @param direction
+	 *            BOTH not allowed.
 	 * @return the information of success or failure.
 	 */
-	public MRSSessionHolder getMRS(Channel channel);
+	public MRSSessionHolder getMRS(Channel channel, RelayDirection direction);
 
 }

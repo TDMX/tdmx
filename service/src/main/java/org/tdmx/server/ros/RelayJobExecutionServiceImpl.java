@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.EndpointPermission;
 
 /**
  * Handles the execution of individual relay jobs.
@@ -88,20 +89,74 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 
 		// relay the CA
 		if (c.getAuthorization().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
-			// CA sender to receiver
-
-			// CA receiver to sender
+			if (ctx.getDirection() == RelayDirection.Both) {
+				// TODO #93: LATER shortcut relay for same domain
+			} else {
+				EndpointPermission perm = ctx.getDirection() == RelayDirection.Fowards
+						? c.getAuthorization().getSendAuthorization() : c.getAuthorization().getRecvAuthorization();
+				if (perm != null) {
+					MRSSessionHolder sh = getSessionHolder(ctx);
+					if (sh.isValid()) {
+						// TODO #93: use the MRS to relay the CA to the other side
+					} else {
+						// TODO #93: update CA processing state to error of the MRS session holder error
+					}
+				} else {
+					// TODO #93: set the PS to error - missing perm
+				}
+			}
 		}
 
 		// relay the CDS receiver to sender
 		if (c.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+			if (ctx.getDirection() == RelayDirection.Both) {
+				// TODO #93: LATER shortcut relay for same domain
+			} else if (ctx.getDirection() == RelayDirection.Backwards) {
+				if (c.getSession() != null) {
+					MRSSessionHolder sh = getSessionHolder(ctx);
+					if (sh.isValid()) {
+						// TODO #93: use the MRS to relay the CDS to the sender side
+					} else {
+						// TODO update CDS processing state to error of the MRS session holder error
+					}
 
+				} else {
+					// TODO #93: error no CDS
+				}
+			} else {
+				// it is an error to want to relay the CDS from origin to destination
+				// TODO #93: error
+			}
 		}
 
 		// relay the FC-open receiver to sender
 		if (c.getQuota().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+			if (ctx.getDirection() == RelayDirection.Both) {
+				// TODO #93: error should never be set to pending
+			} else if (ctx.getDirection() == RelayDirection.Backwards) {
+				MRSSessionHolder sh = getSessionHolder(ctx);
+				if (sh.isValid()) {
+					// TODO #93: use the MRS to relay the FC-open to the sender side
+				} else {
+					// TODO update FC processing state to error of the MRS session holder error
+				}
+			} else {
+				// it is an error to want to relay the CDS from origin to destination
+				// TODO #93: error
+			}
 
 		}
+	}
+
+	private MRSSessionHolder getSessionHolder(RelayChannelContext ctx) {
+		MRSSessionHolder sh = ctx.getMrsSession();
+		if (sh == null || !sh.isValid()) {
+			log.debug("Setting up new MRS session to " + ctx.getChannelKey());
+
+			sh = relayConnectionProvider.getMRS(ctx.getChannel(), ctx.getDirection());
+			ctx.setMrsSession(sh);
+		}
+		return sh;
 	}
 
 	// -------------------------------------------------------------------------

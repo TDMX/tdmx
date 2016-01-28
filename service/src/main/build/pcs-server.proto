@@ -98,7 +98,6 @@ message InvalidateCertificateResponse {
 message RegisterRelayServerRequest {
 	optional string rosAddress = 1;
 	optional string segment = 2;
-	repeated string channelKeys = 3; // all currently active relay sessions
 }
 
 message RegisterRelayServerResponse {
@@ -108,14 +107,9 @@ message RegisterRelayServerResponse {
 // ROS -> PCS the ROS notify after idle timeout of relay sessions.
 //
 
-message RelayChannelMrsSession {
-	optional string channelKey = 1;
-	optional string mrsSessionId = 2;
-}
-
 message NotifyRelaySessionIdleRequest {
 	optional string rosAddress = 1;
-	repeated RelayChannelMrsSession relaySession = 2;
+	repeated string channelKey = 2;
 }
 
 message NotifyRelaySessionIdleResponse {

@@ -20,8 +20,6 @@ package org.tdmx.server.pcs;
 
 import java.util.List;
 
-import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
-
 /**
  * The PCS functionality regarding the RelayOutboundService.
  * 
@@ -38,15 +36,12 @@ public interface RelayControlServiceListener {
 	 * 
 	 * @param rosTcpEndpoint
 	 *            the attached relay outbound server's address.
-	 * @param channelKeys
-	 *            the channel keys associated with this PCS.
 	 * @param segment
 	 *            the segment of the ROS.
 	 * @param ros
 	 *            the reverse RPC api to the ROS (not available on ROS, only PCS)
 	 */
-	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
-			RelayOutboundServiceController ros);
+	public void registerRelayServer(String rosTcpEndpoint, String segment, RelayOutboundServiceController ros);
 
 	/**
 	 * On the detachment of a RelayServer, we disconnect all relay sessions. Happens on disconnect of ROS.
@@ -57,10 +52,13 @@ public interface RelayControlServiceListener {
 	public void unregisterRelayServer(String rosTcpEndpoint);
 
 	/**
-	 * The RelayServer periodically notifies of sessions which have become idle and are removed from the server caching
-	 * the MRS session ID at the PCS for later use ( see ROS client assignRelaySession ). Called by ROS.
+	 * The RelayServer periodically notifies of sessions which have become idle and are removed from the server. Called
+	 * by ROS.
 	 * 
-	 * @param sessions
+	 * @param rosTcpEndpoint
+	 *            the attached relay outbound server's address.
+	 * @param channelKeys
+	 *            the sessions which have expired
 	 */
-	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions);
+	public void notifySessionsRemoved(String rosTcpEndpoint, List<String> channelKeys);
 }

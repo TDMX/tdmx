@@ -27,7 +27,6 @@ import org.tdmx.server.pcs.RelayOutboundServiceController;
 import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.NotifyRelaySessionIdleRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.RegisterRelayServerRequest;
-import org.tdmx.server.pcs.protobuf.PCSServer.RelayChannelMrsSession;
 
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
@@ -65,8 +64,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void registerRelayServer(String rosTcpEndpoint, List<String> channelKeys, String segment,
-			RelayOutboundServiceController ros) {
+	public void registerRelayServer(String rosTcpEndpoint, String segment, RelayOutboundServiceController ros) {
 		if (ros != null) {
 			throw new IllegalArgumentException("ros should not be set on ROS client.");
 		}
@@ -78,7 +76,6 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 			RegisterRelayServerRequest.Builder reqBuilder = RegisterRelayServerRequest.newBuilder();
 			reqBuilder.setRosAddress(rosTcpEndpoint);
 			reqBuilder.setSegment(segment);
-			reqBuilder.addAllChannelKeys(channelKeys);
 
 			RegisterRelayServerRequest request = reqBuilder.build();
 			try {
@@ -95,7 +92,7 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 	}
 
 	@Override
-	public void notifySessionsRemoved(String rosTcpEndpoint, List<RelayChannelMrsSession> sessions) {
+	public void notifySessionsRemoved(String rosTcpEndpoint, List<String> channelKeys) {
 		if (!rpcClient.isClosed()) {
 			ControlServiceProxy.BlockingInterface blockingService = ControlServiceProxy.newBlockingStub(rpcClient);
 			final ClientRpcController controller = rpcClient.newRpcController();
@@ -103,9 +100,6 @@ public class RelayControlServiceClient implements RelayControlServiceListener {
 
 			NotifyRelaySessionIdleRequest.Builder reqBuilder = NotifyRelaySessionIdleRequest.newBuilder();
 			reqBuilder.setRosAddress(rosTcpEndpoint);
-			if (sessions != null) {
-				reqBuilder.addAllRelaySession(sessions);
-			}
 
 			NotifyRelaySessionIdleRequest request = reqBuilder.build();
 			try {

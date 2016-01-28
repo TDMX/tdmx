@@ -396,13 +396,11 @@ public class RemoteControlServiceConnector
 		// keep track of which ROS server is associated with the RPC client, so we can cleanly disconnect it later.
 		ReverseRpcRelayOutboundServiceController reverseRpc = new ReverseRpcRelayOutboundServiceController(channel,
 				request.getRosAddress());
-		log.info("ROS client endpoint " + reverseRpc.getRosTcpAddress() + " for " + request.getChannelKeysCount()
-				+ " channels.");
+		log.info("ROS client endpoint " + reverseRpc.getRosTcpAddress());
 
 		log.info("registerRelayServer call from " + channel.getPeerInfo() + " for " + request.getRosAddress());
 
-		relayListener.registerRelayServer(request.getRosAddress(), request.getChannelKeysList(), request.getSegment(),
-				reverseRpc);
+		relayListener.registerRelayServer(request.getRosAddress(), request.getSegment(), reverseRpc);
 
 		RegisterRelayServerResponse.Builder responseBuilder = RegisterRelayServerResponse.newBuilder();
 		return responseBuilder.build();
@@ -427,9 +425,9 @@ public class RemoteControlServiceConnector
 			NotifyRelaySessionIdleRequest request) throws ServiceException {
 		RpcClientChannel channel = ServerRpcController.getRpcChannel(controller);
 		log.info("notifyRelaySessionsIdle call from " + channel.getPeerInfo() + " for removing "
-				+ request.getRelaySessionCount());
+				+ request.getChannelKeyCount());
 
-		relayListener.notifySessionsRemoved(request.getRosAddress(), request.getRelaySessionList());
+		relayListener.notifySessionsRemoved(request.getRosAddress(), request.getChannelKeyList());
 		NotifyRelaySessionIdleResponse.Builder responseBuilder = NotifyRelaySessionIdleResponse.newBuilder();
 		return responseBuilder.build();
 	}

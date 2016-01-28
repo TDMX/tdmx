@@ -20,6 +20,9 @@ package org.tdmx.server.ros;
 
 import java.io.IOException;
 
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.message.Message;
 import org.tdmx.client.adapter.ClientCredentialProvider;
 import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
 import org.tdmx.client.adapter.ServerTrustManagerFactoryImpl;
@@ -79,7 +82,8 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
 	// internal
-	private PKIXCredential clientCredential;
+	private ClientKeyManagerFactoryImpl kmf;
+	private SCS scsClient;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -91,6 +95,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 	public void init() {
 		String errorMsg = "Unable to load client keystore " + keyStoreFile;
+		final PKIXCredential clientCredential;
 		try {
 			byte[] keystoreContents = FileUtils.getFileContents(keyStoreFile);
 			if (keystoreContents == null) {
@@ -103,12 +108,6 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		} catch (CryptoCertificateException e) {
 			throw new IllegalStateException(errorMsg, e);
 		}
-	}
-
-	@Override
-	public MRSSessionHolder getMRS(Channel channel) {
-
-		String url = null; // TODO #93: map from DnsService
 
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
@@ -118,7 +117,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 			}
 
 		};
-		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
 		SystemDefaultTrustedCertificateProvider sdtcp = new SystemDefaultTrustedCertificateProvider();
@@ -127,7 +126,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		stfm.setCertificateProvider(sdtcp);
 
 		SoapClientFactory<SCS> factory = new SoapClientFactory<>();
-		factory.setUrl(url);
+		factory.setUrl("https://scs-url-defined-per-request");
 		factory.setConnectionTimeoutMillis(CONNECTION_TIMEOUT_MS);
 		factory.setKeepAlive(true);
 		factory.setClazz(SCS.class);
@@ -139,7 +138,17 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		factory.setEnabledCipherSuites(STRONG_CIPHERS);
 
-		SCS scsClient = factory.createClient();
+		scsClient = factory.createClient();
+	}
+
+	@Override
+	public MRSSessionHolder getMRS(Channel channel, RelayDirection direction) {
+
+		String url = null; // TODO #93: map from DnsService
+
+		// set the URL on a per request basis.
+		Client proxy = ClientProxy.getClient(scsClient);
+		proxy.getRequestContext().put(Message.ENDPOINT_ADDRESS, url);
 
 		GetMRSSession sessionRequest = new GetMRSSession();
 		sessionRequest.setChannel(d2a.mapChannel(channel));
@@ -155,9 +164,9 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		PKIXCertificate mrsServerCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
 
 		// we only trust the one certificate which the MRS gave to us!
-		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mrsServerCert);
+		SingleTrustedCertificateProvider stcp = new SingleTrustedCertificateProvider(mrsServerCert);
 		ServerTrustManagerFactoryImpl rtfm = new ServerTrustManagerFactoryImpl();
-		stfm.setCertificateProvider(tcp);
+		rtfm.setCertificateProvider(stcp);
 
 		SoapClientFactory<MRS> mrsFactory = new SoapClientFactory<>();
 		mrsFactory.setUrl(endpoint.getUrl());
