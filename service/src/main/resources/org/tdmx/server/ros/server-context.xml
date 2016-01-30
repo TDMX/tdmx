@@ -59,7 +59,6 @@
 		<property name="ioBufferSize" value="${ros.pcs.ioBufferSize}"/>
 		<property name="tcpNoDelay" value="true"/>
 		<property name="shutdownTimeoutMs" value="${ros.pcs.shutdownTimeoutMs}"/>
-		<property name="cacheInvalidationListener" ref="tdmx.server.CacheInvalidationEventDelegater"/>
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 	</bean>
 	

@@ -297,10 +297,19 @@ public class RemoteControlServiceConnector
 		log.info("Received cache invalidation[" + message.getId() + ":" + message.getCacheKey() + "]");
 		if (serverFactory != null) {
 			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Relaying message " + message.getId() + " to " + channel.getPeerInfo());
+				// we only broadcast events to the only PCC, which is a prerequisite service for all services except PCS
+				// itself.
+				if (null == channel.getAttribute(ReverseRpcServerSessionController.SSM)
+						&& null == channel.getAttribute(ReverseRpcRelayOutboundServiceController.ROS)) {
+					if (log.isDebugEnabled()) {
+						log.debug("Relaying message " + message.getId() + " to " + channel.getPeerInfo());
+					}
+					channel.sendOobMessage(message);
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Not broadcasting to ROS/WS connection " + channel.getPeerInfo());
+					}
 				}
-				channel.sendOobMessage(message);
 			}
 		}
 	}

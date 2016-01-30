@@ -32,11 +32,13 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
 import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
@@ -61,7 +63,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class LocalControlServiceImpl implements SessionControlService, RelayControlService, Manageable {
+public class LocalControlServiceImpl
+		implements SessionControlService, RelayControlService, CacheInvalidationEventNotifier, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -105,6 +108,19 @@ public class LocalControlServiceImpl implements SessionControlService, RelayCont
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public boolean broadcastEvent(CacheInvalidationMessage cacheInvalidationMsg) {
+		// if we are connected to any PCS at all, then taking one is enough.
+		// we use a hash distribution of the unique ID but we could do round-robin instead.
+		LocalControlServiceClient clientProxy = consistentHashToServer(cacheInvalidationMsg.getId());
+		if (clientProxy != null) {
+			return clientProxy.broadcastEvent(cacheInvalidationMsg);
+		} else {
+			log.warn("No PCS client proxy found for " + consistentHashCode(cacheInvalidationMsg.getId()));
+		}
+		return false;
+	}
 
 	@Override
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {

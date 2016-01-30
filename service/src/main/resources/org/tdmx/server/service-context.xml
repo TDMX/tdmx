@@ -16,11 +16,7 @@
 
 	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier" init-method="init">
 	<!-- replaced with spring lookup in init()
-		<property name="broadcastEventNotifiers">
-			<list value-type="org.tdmx.server.pcs.CacheInvalidationEventNotifier">
-	            <ref bean="ws.ServerSessionManager"/>
-	        </list>
-		</property>
+		<property name="broadcastEventNotifier" ref="ws.ServerSessionManager"/>
 	 -->
 	</bean>
 

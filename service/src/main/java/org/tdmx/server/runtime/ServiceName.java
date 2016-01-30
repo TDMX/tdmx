@@ -19,16 +19,17 @@
 package org.tdmx.server.runtime;
 
 /**
- * The name of an independent service.
+ * The name of an independent services.
  * 
  * @author Peter
  * 
  */
 public enum ServiceName {
 
-	TOS, // TransferObjectService
-	PCC, // PartitionControlService client
-	ROC, // RelayOutboundService client
+	PCC, // PartitionControlService client ( prerequisite of all except PCS )
+
+	TOS, // TransferObjectService ( prerequisite of WS [MRS], )
+	ROC, // RelayOutboundService client ( prerequisite of WS [MOS,MDS,ZAS] )
 
 	WS, // Web(SOAP) Services - MOS,MDS,MRS,ZAS APIs
 	RS, // RESTful Services

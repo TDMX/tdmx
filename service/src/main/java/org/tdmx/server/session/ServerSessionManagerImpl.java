@@ -47,11 +47,7 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
-import org.tdmx.server.pcs.CacheInvalidationMessageListener;
 import org.tdmx.server.pcs.ServiceHandle;
-import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.Common.ObjectType;
 import org.tdmx.server.pcs.protobuf.WSClient.AddCertificateRequest;
@@ -68,7 +64,6 @@ import org.tdmx.server.ws.session.WebServiceSession;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 import com.google.protobuf.BlockingService;
-import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -96,8 +91,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * @author Peter
  * 
  */
-public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInvalidationEventNotifier,
-		SessionCertificateInvalidationService, SessionManagerProxy.BlockingInterface, TransferObjectReceiver {
+public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCertificateInvalidationService,
+		SessionManagerProxy.BlockingInterface, TransferObjectReceiver {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -167,11 +162,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	 * The PartitionControlService gives us the information about the PCS servers.
 	 */
 	private PartitionControlServerService partitionServerService;
-
-	/**
-	 * Delegate for handling CacheInvalidationMessage events.
-	 */
-	private CacheInvalidationMessageListener cacheInvalidationListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -304,21 +294,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					maxRpcExecutorThreads);
 			clientFactory.setRpcServerCallExecutor(rpcExecutor);
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
-
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					if (parameter.getCacheInvalidation() != null) {
-						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
-						if (delegate != null) {
-							delegate.handleBroadcast(parameter.getCacheInvalidation());
-						}
-					} else {
-						log.warn("Unhandled broadcast event." + parameter);
-					}
-				}
-
-			};
 			// RPC payloads are uncompressed when logged - so reduce logging
 			CategoryPerServiceLogger logger = new CategoryPerServiceLogger();
 			logger.setLogRequestProto(false);
@@ -341,9 +316,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 					// register ourselves to receive broadcast messages and session events from the PCS
 					// telling it our own TOS address to give to others.
 					client.registerServer(getManagedServiceList(), null, tosTcpEndpoint);
-
-					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-							serverBroadcastCallback);
 				}
 
 				private void disconnection(RpcClientChannel clientChannel) {
@@ -356,7 +328,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 							apis.getValue().getSessionManager().disconnectController(controllerId);
 						}
 					}
-					clientChannel.setOobMessageCallback(null, null);
 				}
 
 				@Override
@@ -523,27 +494,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 	}
 
 	@Override
-	public boolean broadcastEvent(CacheInvalidationMessage cacheInvalidationMsg) {
-		if (serverProxyMap.size() > 0) {
-			// if we are connected to any PCS at all, then taking one is enough.
-			// we use a hash distribution of the unique ID but we could do round-robin instead.
-			LocalControlServiceListenerClient pcsServer = consistentHashToServer(cacheInvalidationMsg.getId());
-			if (pcsServer != null) {
-				Broadcast.BroadcastMessage.Builder eventBuilder = Broadcast.BroadcastMessage.newBuilder();
-				eventBuilder.setCacheInvalidation(cacheInvalidationMsg);
-
-				Broadcast.BroadcastMessage msg = eventBuilder.build();
-
-				pcsServer.getRpcClient().sendOobMessage(msg);
-				return true;
-			} else {
-				log.warn("PCS Server targetted for cache invalidation not connected.");
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public boolean transferObject(String sessionKey, WebServiceApiName api, ObjectType type,
 			Map<AttributeId, Long> attributes) {
 		// #93: delegate to specific session
@@ -577,24 +527,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 			clientFactory.peerWith(server, bootstrap, attributes);
 			// the event listener hooks up the localproxy
 		}
-	}
-
-	private int consistentHashCode(String key) {
-		return key.hashCode() % serverList.size();
-	}
-
-	/**
-	 * Return the PCS server proxy to which the key maps to with a consistent hash.
-	 * 
-	 * @param key
-	 * @return null if the PCS server proxy is not connected to, otherwise the PCS server to which the key maps
-	 *         consistently.
-	 */
-	private LocalControlServiceListenerClient consistentHashToServer(String key) {
-		int serverNo = consistentHashCode(key);
-		PartitionControlServer server = serverList.get(serverNo);
-		LocalControlServiceListenerClient localProxy = serverProxyMap.get(server);
-		return localProxy;
 	}
 
 	/**
@@ -786,14 +718,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, CacheInva
 
 	public void setShutdownTimeoutMs(long shutdownTimeoutMs) {
 		this.shutdownTimeoutMs = shutdownTimeoutMs;
-	}
-
-	public CacheInvalidationMessageListener getCacheInvalidationListener() {
-		return cacheInvalidationListener;
-	}
-
-	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
-		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 	public String getTosAddress() {

@@ -81,9 +81,13 @@ public class ServerLauncher {
 	private static final String STOP_ADDRESS_ARG_PREFIX = "--stopAddress=";
 	private static final String DEFAULT_SEGMENT = "DEFAULT";
 
-	private static List<ServiceName> PCC_REQUISITES = Arrays
-			.asList(new ServiceName[] { ServiceName.ROS, ServiceName.RS, ServiceName.SCS, ServiceName.WS });
+	// PCC is the client of the PCS - all services except PCS itself require PCS support at least for cache invalidation
+	// support.
+	private static List<ServiceName> PCC_REQUISITES = Arrays.asList(
+			new ServiceName[] { ServiceName.ROS, ServiceName.JOB, ServiceName.RS, ServiceName.SCS, ServiceName.WS });
+	// ROC is the client of the RelayOutbound - all WS need to use initiate outbound relay.
 	private static List<ServiceName> ROC_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
+	// TOC is the client of the TransferObject service - some WS need to transfer objects.
 	private static List<ServiceName> TOS_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
 
 	private static ApplicationContext context;

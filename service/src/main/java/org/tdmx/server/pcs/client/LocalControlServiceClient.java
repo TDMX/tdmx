@@ -26,9 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
+import org.tdmx.server.pcs.protobuf.Broadcast;
+import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
@@ -46,7 +49,8 @@ import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
-public class LocalControlServiceClient implements SessionControlService, RelayControlService {
+public class LocalControlServiceClient
+		implements SessionControlService, RelayControlService, CacheInvalidationEventNotifier {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -72,6 +76,20 @@ public class LocalControlServiceClient implements SessionControlService, RelayCo
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public boolean broadcastEvent(CacheInvalidationMessage msg) {
+		if (!rpcClient.isClosed()) {
+			Broadcast.BroadcastMessage.Builder eventBuilder = Broadcast.BroadcastMessage.newBuilder();
+			eventBuilder.setCacheInvalidation(msg);
+
+			Broadcast.BroadcastMessage event = eventBuilder.build();
+
+			rpcClient.sendOobMessage(event);
+			return true;
+		}
+		return false;
+	}
 
 	@Override
 	public WebServiceSessionEndpoint associateApiSession(SessionHandle sessionData, PKIXCertificate clientCertificate) {

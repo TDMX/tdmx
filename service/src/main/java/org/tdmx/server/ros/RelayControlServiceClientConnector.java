@@ -38,9 +38,6 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.CacheInvalidationMessageListener;
-import org.tdmx.server.pcs.client.LocalControlServiceImpl;
-import org.tdmx.server.pcs.protobuf.Broadcast;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse;
@@ -53,7 +50,6 @@ import org.tdmx.server.runtime.RpcAddressUtils;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.BlockingService;
-import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -92,7 +88,7 @@ public class RelayControlServiceClientConnector
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static Logger log = LoggerFactory.getLogger(LocalControlServiceImpl.class);
+	private static Logger log = LoggerFactory.getLogger(RelayControlServiceClientConnector.class);
 
 	private static final String PCS_ATTRIBUTE = "PCS";
 
@@ -115,10 +111,6 @@ public class RelayControlServiceClientConnector
 	private Segment segment = null;
 
 	private PartitionControlServerService partitionServerService;
-	/**
-	 * Delegate for handling Broadcast events.
-	 */
-	private CacheInvalidationMessageListener cacheInvalidationListener;
 
 	/**
 	 * The underlying relay service.
@@ -185,19 +177,6 @@ public class RelayControlServiceClientConnector
 			logger.setLogResponseProto(false);
 			clientFactory.setRpcLogger(logger);
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
-
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					if (parameter.getCacheInvalidation() != null) {
-						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
-						if (delegate != null) {
-							delegate.handleBroadcast(parameter.getCacheInvalidation());
-						}
-					}
-				}
-
-			};
 			// Set up the event pipeline factory.
 			// setup a RPC event listener - it just logs what happens
 			RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
@@ -235,7 +214,6 @@ public class RelayControlServiceClientConnector
 					relayOutboundService.shutdownRelaySessions(controllerId);
 					serverProxyMap.remove(pcs);
 
-					clientChannel.setOobMessageCallback(null, null);
 				}
 
 				private void connection(RpcClientChannel clientChannel) {
@@ -245,10 +223,6 @@ public class RelayControlServiceClientConnector
 
 					serverProxyMap.put(pcs, client);
 					client.registerRelayServer(rosTcpEndpoint, segment.getSegmentName(), null);
-
-					// register ourselves to receive broadcast messages
-					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-							serverBroadcastCallback);
 				}
 
 			};
@@ -533,14 +507,6 @@ public class RelayControlServiceClientConnector
 
 	public void setPartitionServerService(PartitionControlServerService partitionServerService) {
 		this.partitionServerService = partitionServerService;
-	}
-
-	public CacheInvalidationMessageListener getCacheInvalidationListener() {
-		return cacheInvalidationListener;
-	}
-
-	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
-		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 	public String getServerAddress() {

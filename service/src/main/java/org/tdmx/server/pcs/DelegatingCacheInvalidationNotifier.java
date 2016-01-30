@@ -18,7 +18,6 @@
  */
 package org.tdmx.server.pcs;
 
-import java.util.Collection;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	private static final Logger log = LoggerFactory.getLogger(DelegatingCacheInvalidationNotifier.class);
 
 	// internal
-	private Collection<CacheInvalidationEventNotifier> cacheInvalidationEventNotifiers;
+	private CacheInvalidationEventNotifier cacheInvalidationEventNotifier;
 	private ApplicationContext ctx;
 
 	// -------------------------------------------------------------------------
@@ -68,7 +67,7 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 		if (ctx == null) {
 			throw new IllegalStateException("No beanFactory.");
 		}
-		cacheInvalidationEventNotifiers = ctx.getBeansOfType(CacheInvalidationEventNotifier.class).values();
+		cacheInvalidationEventNotifier = ctx.getBean(CacheInvalidationEventNotifier.class);
 	}
 
 	@Override
@@ -78,20 +77,15 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 
 	@Override
 	public void cacheInvalidated(String key) {
-		if (cacheInvalidationEventNotifiers == null || cacheInvalidationEventNotifiers.isEmpty()) {
-			log.warn("No cacheInvalidationEventNotifiers.");
-			return;
-		}
 		Broadcast.CacheInvalidationMessage.Builder cim = Broadcast.CacheInvalidationMessage.newBuilder();
 		cim.setCacheKey(key);
 		cim.setId(UUID.randomUUID().toString());
 
 		Broadcast.CacheInvalidationMessage msg = cim.build();
 
-		for (CacheInvalidationEventNotifier notifier : cacheInvalidationEventNotifiers) {
-			if (notifier.broadcastEvent(msg)) {
-				break;
-			}
+		boolean broadcastOk = cacheInvalidationEventNotifier.broadcastEvent(msg);
+		if (!broadcastOk) {
+			log.warn("Unable to broadcast cache invalidation for " + key);
 		}
 	}
 
