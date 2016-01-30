@@ -110,13 +110,12 @@ public interface ChannelService {
 	 * later confirmed by the domain administrator using
 	 * {@link ChannelService#setAuthorization(Zone, Domain, ChannelOrigin, ChannelDestination, ChannelAuthorization)}.
 	 * 
-	 * TODO #93 return Channel for MRS
-	 * 
 	 * @param zone
 	 * @param channelId
 	 * @param otherPerm
+	 * @return channel so that the caller knows the current flowcontrol status
 	 */
-	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
+	public Channel relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm);
 
 	/**
 	 * Initial relayed in EndpointPermission.
@@ -128,6 +127,7 @@ public interface ChannelService {
 	 * @param zone
 	 * @param tempChannelId
 	 * @param otherPerm
+	 * @return channel so that the caller knows the current flowcontrol status
 	 */
 	public Channel relayInitialAuthorization(Zone zone, Long tempChannelId, EndpointPermission otherPerm);
 

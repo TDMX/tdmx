@@ -226,9 +226,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm) {
+	public Channel relayAuthorization(Zone zone, Long channelId, EndpointPermission otherPerm) {
 		// lookup any existing ChannelAuthorization in the domain given the provided channel(origin+destination).
-		Channel existingChannel = findById(channelId, false, true);
+		Channel existingChannel = findById(channelId, true, true);
 		// lookup or create a new ChannelAuthorization to hold the relayed in Permission
 		ChannelAuthorization existingCA = existingChannel.getAuthorization();
 		if (existingChannel.isSend()) {
@@ -240,6 +240,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setReqRecvAuthorization(null);
 			existingCA.setReqSendAuthorization(otherPerm);
 		}
+		return existingChannel;
 	}
 
 	@Override

@@ -172,17 +172,21 @@ public class MRSImpl implements MRS {
 		}
 
 		Zone zone = session.getZone();
+		Channel usedChannel = null;
 		if (sessionChannel != null) {
-			// TODO #93: return channel with flowquota
-			channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
+			// apply the new permission
+			usedChannel = channelService.relayAuthorization(zone, sessionChannel.getId(), otherPerm);
 		} else if (tempChannel != null) {
 			// create a new Channel and swap the tempChannel for newChannel
 			Channel newChannel = channelService.relayInitialAuthorization(zone, tempChannel.getId(), otherPerm);
 			session.setTemporaryChannel(null);
 			session.setChannel(newChannel);
+			usedChannel = newChannel;
 		}
-		// TODO #93: receiver provide the flowquota's relaystate back to the caller in the relay response.
-
+		// receiver provide the flowquota's relaystate back to the caller in the relay response.
+		if (usedChannel.isRecv()) {
+			response.setRelayStatus(d2a.mapFlowControlStatus(usedChannel.getQuota().getRelayStatus()));
+		}
 		response.setSuccess(true);
 	}
 
