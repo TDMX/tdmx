@@ -26,6 +26,7 @@
 		<property name="keyStoreType" value="${ros.keyStoreType}"/>
 		<property name="keyStorePassword" value="${ros.keyStorePassword}"/>
 		<property name="keyStoreAlias" value="${ros.keyStoreAlias}"/>
+		<!-- TODO trustManager  -->
 	</bean>
 
 	<bean id="ros.RelayJobExecutionService" class="org.tdmx.server.ros.RelayJobExecutionServiceImpl" >

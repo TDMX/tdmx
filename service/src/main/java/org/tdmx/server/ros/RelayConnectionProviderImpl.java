@@ -20,11 +20,16 @@ package org.tdmx.server.ros;
 
 import java.io.IOException;
 
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.client.adapter.ClientCredentialProvider;
 import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
+import org.tdmx.client.adapter.ServerTrustManagerFactory;
 import org.tdmx.client.adapter.ServerTrustManagerFactoryImpl;
 import org.tdmx.client.adapter.SingleTrustedCertificateProvider;
 import org.tdmx.client.adapter.SoapClientFactory;
@@ -58,6 +63,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(RelayConnectionProviderImpl.class);
 
 	//@formatter:off
 	private final String[] STRONG_CIPHERS = new String[] {
@@ -78,7 +84,9 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	private String keyStorePassword;
 	private String keyStoreAlias;
 
-	// TODO #93: dep inject TrustedServerCertificateProvider
+	// TODO #93: wire up trustManager
+	private X509TrustManager trustManager;
+
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
 	// internal
@@ -120,10 +128,13 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SystemDefaultTrustedCertificateProvider sdtcp = new SystemDefaultTrustedCertificateProvider();
-
-		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
-		stfm.setCertificateProvider(sdtcp);
+		if (trustManager == null) {
+			SystemDefaultTrustedCertificateProvider sdtcp = new SystemDefaultTrustedCertificateProvider();
+			ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+			stfm.setCertificateProvider(sdtcp);
+			log.warn("No explicit X509TrustManager declared.");
+			trustManager = stfm.getTrustManager();
+		}
 
 		SoapClientFactory<SCS> factory = new SoapClientFactory<>();
 		factory.setUrl("https://scs-url-defined-per-request");
@@ -133,7 +144,12 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
 		factory.setDisableCNCheck(true); // FIXME
 		factory.setKeyManagerFactory(kmf);
-		factory.setTrustManagerFactory(stfm);
+		factory.setTrustManagerFactory(new ServerTrustManagerFactory() {
+			@Override
+			public X509TrustManager getTrustManager() {
+				return trustManager;
+			}
+		});
 		factory.setTlsProtocolVersion(TLS_VERSION);
 
 		factory.setEnabledCipherSuites(STRONG_CIPHERS);
@@ -189,6 +205,14 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public X509TrustManager getTrustManager() {
+		return trustManager;
+	}
+
+	public void setTrustManager(X509TrustManager trustManager) {
+		this.trustManager = trustManager;
+	}
 
 	public String getKeyStoreFile() {
 		return keyStoreFile;
