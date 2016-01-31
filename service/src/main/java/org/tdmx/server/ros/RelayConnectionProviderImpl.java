@@ -45,8 +45,11 @@ import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.server.runtime.DomainZoneResolutionService;
 import org.tdmx.server.ws.DomainToApiMapper;
+import org.tdmx.server.ws.ErrorCode;
 
 /**
  * Relay Connection Provider
@@ -86,6 +89,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 	// TODO #93: wire up trustManager
 	private X509TrustManager trustManager;
+	private DomainZoneResolutionService domainZoneResolver;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
@@ -160,7 +164,18 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	@Override
 	public MRSSessionHolder getMRS(Channel channel, RelayDirection direction) {
 
-		String url = null; // TODO #93: map from DnsService
+		// the URL of the SCS is mapped from the Doamin we are trying to relay to in DNS.
+		String otherDomain = direction == RelayDirection.Fowards ? channel.getDestination().getDomainName()
+				: channel.getOrigin().getDomainName();
+		DomainZoneApexInfo apexInfo = domainZoneResolver.resolveDomain(otherDomain);
+		if (apexInfo == null) {
+			return MRSSessionHolder.error(ErrorCode.DnsZoneApexMissing.getErrorCode(),
+					ErrorCode.DnsZoneApexMissing.getErrorDescription());
+		}
+		String url = apexInfo.getScsUrl().toString();
+		if (log.isDebugEnabled()) {
+			log.debug("Resolved SCS url of " + otherDomain + " to be " + url);
+		}
 
 		// set the URL on a per request basis.
 		Client proxy = ClientProxy.getClient(scsClient);
@@ -205,6 +220,14 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public DomainZoneResolutionService getDomainZoneResolver() {
+		return domainZoneResolver;
+	}
+
+	public void setDomainZoneResolver(DomainZoneResolutionService domainZoneResolver) {
+		this.domainZoneResolver = domainZoneResolver;
+	}
 
 	public X509TrustManager getTrustManager() {
 		return trustManager;

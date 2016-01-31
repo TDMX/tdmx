@@ -143,7 +143,7 @@ public enum ErrorCode {
 	SubmitChannelClosed(306, "No channel authorization - submit prohibited."),
 	ReceiveChannelClosed(306, "No channel authorization - relay and receive prohibited."),
 
-	DnsZoneApexMissing(306, "Unable to locate TDMX zone information in DNS."),;
+	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain in DNS."),;
 
 	private final int errorCode;
 	private final String errorDescription;

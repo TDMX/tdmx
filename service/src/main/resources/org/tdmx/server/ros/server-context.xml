@@ -27,6 +27,7 @@
 		<property name="keyStorePassword" value="${ros.keyStorePassword}"/>
 		<property name="keyStoreAlias" value="${ros.keyStoreAlias}"/>
 		<!-- TODO trustManager  -->
+		<property name="domainZoneResolver" ref="tdmx.server.DomainZoneResolutionService"/>
 	</bean>
 
 	<bean id="ros.RelayJobExecutionService" class="org.tdmx.server.ros.RelayJobExecutionServiceImpl" >

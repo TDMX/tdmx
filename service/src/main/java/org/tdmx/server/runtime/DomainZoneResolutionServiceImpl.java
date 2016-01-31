@@ -30,7 +30,8 @@ import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.control.service.DnsDomainZoneService;
 
 /**
- * The concrete implementation of {@link DomainZoneResolutionService}
+ * The concrete implementation of {@link DomainZoneResolutionService}. This implementation uses a DB backed cache of
+ * zone information for each domain successfully resolved.
  * 
  * @author Peter Klauser
  * 
@@ -48,7 +49,7 @@ public class DomainZoneResolutionServiceImpl implements DomainZoneResolutionServ
 
 	private DnsZoneResolutionService dnsZoneResolutionService;
 	private DnsDomainZoneService dnsDomainZoneService;
-	private int dnsCacheValiditySeconds = 24 * 60 * 60;
+	private int dnsCacheValiditySeconds = 24 * 60 * 60; // 24hrs
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
