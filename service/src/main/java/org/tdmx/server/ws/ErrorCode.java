@@ -122,6 +122,9 @@ public enum ErrorCode {
 	MissingDestinationSessionSessionKey(500, "DestinationSession sessionKey missing."),
 
 	MissingRelayPayload(500, "Relay payload missing."),
+	RelayChannelDestinationForwards(500, "Relay ChannelDestinationSession only allowed from destination to origin."),
+	RelayFlowControlForwards(500, "Relay Flowcontrol open only allowed from destination to origin."),
+	RelayFlowControlBothDirection(500, "Relay Flowcontrol for same domain not allowed."),
 
 	SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
 	SenderChannelAuthorizationMismatch(
@@ -143,8 +146,9 @@ public enum ErrorCode {
 	SubmitChannelClosed(306, "No channel authorization - submit prohibited."),
 	ReceiveChannelClosed(306, "No channel authorization - relay and receive prohibited."),
 
-	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain in DNS."),;
+	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain in DNS."),
 
+	;
 	private final int errorCode;
 	private final String errorDescription;
 

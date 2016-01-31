@@ -147,6 +147,36 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
+	public void updateChannelDestinationSessionProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
+			ProcessingState newState) {
+		if (az == null || z == null || d == null || channelId == null || newState == null) {
+			log.warn("Missing parameter.");
+			return;
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			channelService.updateStatusDestinationSession(channelId, newState);
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
+	public void updateChannelFlowControlProcessingState(AccountZone az, Zone z, Domain d, Long quotaId,
+			ProcessingState newState) {
+		if (az == null || z == null || d == null || quotaId == null || newState == null) {
+			log.warn("Missing parameter.");
+			return;
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			channelService.updateStatusFlowQuota(quotaId, newState);
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
 	public List<ChannelMessage> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
 		// TODO #93 - fetch up to maxMsg pending channel messages.
 		return null;

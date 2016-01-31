@@ -49,4 +49,10 @@ public interface RelayDataService {
 
 	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
 			ProcessingState newState);
+
+	public void updateChannelDestinationSessionProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
+			ProcessingState newState);
+
+	public void updateChannelFlowControlProcessingState(AccountZone az, Zone z, Domain d, Long quotaId,
+			ProcessingState newState);
 }

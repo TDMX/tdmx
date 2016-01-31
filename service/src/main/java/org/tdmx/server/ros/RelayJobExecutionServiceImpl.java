@@ -20,9 +20,11 @@ package org.tdmx.server.ros;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.server.ws.ErrorCode;
 
 /**
  * Handles the execution of individual relay jobs.
@@ -99,10 +101,17 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					if (sh.isValid()) {
 						// TODO #93: use the MRS to relay the CA to the other side
 					} else {
-						// TODO #93: update CA processing state to error of the MRS session holder error
+						// update CA processing state to error of the MRS session holder error
+						ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
+						relayDataService.updateChannelAuthorizationProcessingState(ctx.getAccountZone(), ctx.getZone(),
+								ctx.getDomain(), job.getObjectId(), error);
 					}
 				} else {
-					// TODO #93: set the PS to error - missing perm
+					// set the PS to error - missing perm
+					ProcessingState error = ProcessingState.error(ErrorCode.MissingEndpointPermission.getErrorCode(),
+							ErrorCode.MissingEndpointPermission.getErrorDescription());
+					relayDataService.updateChannelAuthorizationProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							ctx.getDomain(), job.getObjectId(), error);
 				}
 			}
 		}
@@ -117,32 +126,52 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					if (sh.isValid()) {
 						// TODO #93: use the MRS to relay the CDS to the sender side
 					} else {
-						// TODO update CDS processing state to error of the MRS session holder error
+						// update CDS processing state to error of the MRS session holder error
+						ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
+						relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+								ctx.getZone(), ctx.getDomain(), job.getObjectId(), error);
 					}
 
 				} else {
-					// TODO #93: error no CDS
+					// error no CDS
+					ProcessingState error = ProcessingState.error(ErrorCode.MissingDestinationSession.getErrorCode(),
+							ErrorCode.MissingDestinationSession.getErrorDescription());
+					relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							ctx.getDomain(), job.getObjectId(), error);
 				}
 			} else {
 				// it is an error to want to relay the CDS from origin to destination
-				// TODO #93: error
+				ProcessingState error = ProcessingState.error(ErrorCode.RelayChannelDestinationForwards.getErrorCode(),
+						ErrorCode.RelayChannelDestinationForwards.getErrorDescription());
+				relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+						ctx.getDomain(), job.getObjectId(), error);
 			}
 		}
 
 		// relay the FC-open receiver to sender
 		if (c.getQuota().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Both) {
-				// TODO #93: error should never be set to pending
+				// error should never be set to pending
+				ProcessingState error = ProcessingState.error(ErrorCode.RelayFlowControlBothDirection.getErrorCode(),
+						ErrorCode.RelayFlowControlBothDirection.getErrorDescription());
+				relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+						ctx.getDomain(), c.getQuota().getId(), error);
 			} else if (ctx.getDirection() == RelayDirection.Backwards) {
 				MRSSessionHolder sh = getSessionHolder(ctx);
 				if (sh.isValid()) {
 					// TODO #93: use the MRS to relay the FC-open to the sender side
 				} else {
-					// TODO update FC processing state to error of the MRS session holder error
+					// update FC processing state to error of the MRS session holder error
+					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
+					relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							ctx.getDomain(), c.getQuota().getId(), error);
 				}
 			} else {
-				// it is an error to want to relay the CDS from origin to destination
-				// TODO #93: error
+				// it is an error to want to relay the FC-open from origin to destination
+				ProcessingState error = ProcessingState.error(ErrorCode.RelayFlowControlForwards.getErrorCode(),
+						ErrorCode.RelayFlowControlForwards.getErrorDescription());
+				relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+						ctx.getDomain(), c.getQuota().getId(), error);
 			}
 
 		}
