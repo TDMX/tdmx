@@ -20,6 +20,7 @@ package org.tdmx.server.ros;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -46,4 +47,6 @@ public interface RelayDataService {
 
 	public List<ChannelMessage> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
 
+	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
+			ProcessingState newState);
 }

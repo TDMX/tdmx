@@ -292,7 +292,12 @@ public class MOSImpl implements MOS {
 		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null) {
 			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
-			channelService.create(m);
+			try {
+				m.setProcessingState(ProcessingState.pending());
+				channelService.create(m);
+			} finally {
+				session.removeMessage(m);
+			}
 
 			// give the message to the ROS to relay.
 			relayWithRetry(session, cch, m);

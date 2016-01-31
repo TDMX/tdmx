@@ -509,18 +509,18 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public Channel updateStatusDestinationSession(Long channelId, ProcessingState newState) {
+	public void updateStatusDestinationSession(Long channelId, ProcessingState newState) {
 		Channel c = getChannelDao().loadById(channelId, false, false);
+		// TODO #93: make dao update
 		c.setProcessingState(newState);
-		return c;
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public Channel updateStatusChannelAuthorization(Long channelId, ProcessingState newState) {
+	public void updateStatusChannelAuthorization(Long channelId, ProcessingState newState) {
 		Channel c = getChannelDao().loadById(channelId, false, true);
+		// TODO #93: make dao update
 		c.getAuthorization().setProcessingState(newState);
-		return c;
 	}
 
 	@Override
@@ -529,6 +529,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		FlowQuota fc = getChannelDao().lock(quotaId);
 		fc.setProcessingState(newState);
 		return fc;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void updateStatusMessage(Long msgId, ProcessingState newState) {
+		getChannelDao().updateChannelMessageProcessingState(msgId, newState);
 	}
 
 	// -------------------------------------------------------------------------

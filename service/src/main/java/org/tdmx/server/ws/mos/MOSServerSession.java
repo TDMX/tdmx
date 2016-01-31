@@ -199,6 +199,11 @@ public class MOSServerSession extends WebServiceSession {
 		return mch;
 	}
 
+	public void removeMessage(ChannelMessage msg) {
+		Map<String, MessageContextHolder> mcm = getMessageMap();
+		mcm.remove(msg.getMsgId());
+	}
+
 	public MessageContextHolder getMessage(String msgId) {
 		return getMessageMap().get(msgId);
 	}

@@ -317,18 +317,16 @@ public interface ChannelService {
 	 * 
 	 * @param channelId
 	 * @param newState
-	 * @return the modified Channel not including the CA and FlowQuota
 	 */
-	public Channel updateStatusDestinationSession(Long channelId, ProcessingState newState);
+	public void updateStatusDestinationSession(Long channelId, ProcessingState newState);
 
 	/**
 	 * Update the ProcessingState of the Channel's ChannelAuthorization.
 	 * 
 	 * @param channelId
 	 * @param newState
-	 * @return the modified Channel which includes the ChannelAuthorization
 	 */
-	public Channel updateStatusChannelAuthorization(Long channelId, ProcessingState newState);
+	public void updateStatusChannelAuthorization(Long channelId, ProcessingState newState);
 
 	/**
 	 * Update the ProcessingState of the Channel's FlowControl change.
@@ -338,4 +336,13 @@ public interface ChannelService {
 	 * @return the modified FlowQuota
 	 */
 	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState);
+
+	/**
+	 * Update the ProcessingState of a ChannelMessage ( which is it's relay status, delivery status and delivery report
+	 * status ).
+	 * 
+	 * @param msgId
+	 * @param newState
+	 */
+	public void updateStatusMessage(Long msgId, ProcessingState newState);
 }

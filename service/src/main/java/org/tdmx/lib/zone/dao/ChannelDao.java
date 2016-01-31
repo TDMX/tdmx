@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -45,6 +46,8 @@ public interface ChannelDao {
 	public Channel merge(Channel value);
 
 	public void persist(ChannelMessage value);
+
+	public void updateChannelMessageProcessingState(Long msgId, ProcessingState ps);
 
 	public void delete(Channel value);
 

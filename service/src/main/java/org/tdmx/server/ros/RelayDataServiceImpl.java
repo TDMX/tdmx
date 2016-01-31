@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
@@ -125,6 +126,21 @@ public class RelayDataServiceImpl implements RelayDataService {
 			ChannelMessage msg = channelService.findByMessageId(msgId);
 			msg.setChannel(channel);
 			return msg;
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
+	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
+			ProcessingState newState) {
+		if (az == null || z == null || d == null || channelId == null || newState == null) {
+			log.warn("Missing parameter.");
+			return;
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			channelService.updateStatusChannelAuthorization(channelId, newState);
 		} finally {
 			disassociateZoneDB();
 		}

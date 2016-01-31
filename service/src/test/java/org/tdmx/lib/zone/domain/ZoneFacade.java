@@ -26,6 +26,7 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 
@@ -216,5 +217,34 @@ public class ZoneFacade {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.YEAR, years);
 		return cal.getTime();
+	}
+
+	public static ChannelMessage createChannelMessage(String msgId, Channel channel, ProcessingState ps) {
+		ChannelMessage cm = new ChannelMessage();
+		cm.setMsgId(msgId);
+		cm.setChannel(channel);
+		cm.setProcessingState(ps);
+
+		// not null properties
+		AgentSignature sig = new AgentSignature();
+		sig.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		sig.setSignatureDate(new Date());
+		sig.setCertificateChainPem("SENDER CERT");
+		sig.setValue("" + System.currentTimeMillis());
+		cm.setSignature(sig);
+
+		AgentSignature rec = new AgentSignature();
+		rec.setCertificateChainPem("RECEIVER CERT");
+		cm.setReceipt(rec);
+
+		cm.setEncryptionContext(new byte[] { 1, 2, 3, 4, 5 });
+		cm.setTtlTimestamp(new Date());
+		cm.setPayloadSignature("" + System.currentTimeMillis());
+		cm.setEncryptionContextId("" + System.currentTimeMillis());
+		cm.setChunkSize(100000);
+		cm.setPayloadLength(100000000);
+		cm.setPlaintextLength(100000000);
+		cm.setMacOfMacs("MAC" + System.currentTimeMillis());
+		return cm;
 	}
 }

@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
@@ -40,7 +41,10 @@ import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ZoneFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -159,8 +163,8 @@ public class ChannelServiceRepositoryUnitTest {
 	public void testLookup_FindByChannel() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
-		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(), ca.getChannel()
-				.getOrigin(), ca.getChannel().getDestination());
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
+				ca.getChannel().getOrigin(), ca.getChannel().getDestination());
 		assertNotNull(storedCA);
 	}
 
@@ -177,6 +181,113 @@ public class ChannelServiceRepositoryUnitTest {
 		List<Channel> channels = channelService.search(gugus, criteria);
 		assertNotNull(channels);
 		assertEquals(0, channels.size());
+	}
+
+	@Test
+	public void testUpdate_ChannelProcessingState() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
+				ca.getChannel().getOrigin(), ca.getChannel().getDestination());
+		assertNotNull(storedCA);
+
+		Channel c = storedCA.getChannel();
+		assertNotNull(c);
+
+		ProcessingState error = ProcessingState.error(1, "unit test");
+
+		channelService.updateStatusDestinationSession(c.getId(), error);
+
+		Channel storedC = channelService.findById(c.getId(), false, false);
+		assertNotNull(storedC);
+
+		assertEquals(error.getErrorCode(), storedC.getProcessingState().getErrorCode());
+		assertEquals(error.getErrorMessage(), storedC.getProcessingState().getErrorMessage());
+		assertEquals(error.getStatus(), storedC.getProcessingState().getStatus());
+		assertEquals(error.getTimestamp(), storedC.getProcessingState().getTimestamp());
+	}
+
+	@Test
+	public void testUpdate_ChannelMessageProcessingState() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
+				ca.getChannel().getOrigin(), ca.getChannel().getDestination());
+		assertNotNull(storedCA);
+
+		Channel c = storedCA.getChannel();
+		assertNotNull(c);
+
+		ProcessingState success = ProcessingState.none();
+
+		ChannelMessage cm = ZoneFacade.createChannelMessage("" + System.currentTimeMillis(), c, success);
+		channelService.create(cm);
+		assertNotNull(cm.getId());
+
+		ProcessingState error = ProcessingState.error(1, "unit test");
+		assertNotNull(cm);
+
+		channelService.updateStatusMessage(cm.getId(), error);
+
+		ChannelMessage storedCm = channelService.findByMessageId(cm.getId());
+		assertNotNull(storedCm);
+
+		assertEquals(error.getErrorCode(), storedCm.getProcessingState().getErrorCode());
+		assertEquals(error.getErrorMessage(), storedCm.getProcessingState().getErrorMessage());
+		assertEquals(error.getStatus(), storedCm.getProcessingState().getStatus());
+		assertEquals(error.getTimestamp(), storedCm.getProcessingState().getTimestamp());
+	}
+
+	@Test
+	public void testUpdate_ChannelAuthorizationProcessingState() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
+				ca.getChannel().getOrigin(), ca.getChannel().getDestination());
+		assertNotNull(storedCA);
+
+		Channel c = storedCA.getChannel();
+		assertNotNull(c);
+
+		ProcessingState error = ProcessingState.error(1, "unit test");
+
+		channelService.updateStatusChannelAuthorization(c.getId(), error);
+
+		Channel storedC = channelService.findById(c.getId(), false, true);
+		assertNotNull(storedC);
+
+		storedCA = storedC.getAuthorization();
+
+		assertEquals(error.getErrorCode(), storedCA.getProcessingState().getErrorCode());
+		assertEquals(error.getErrorMessage(), storedCA.getProcessingState().getErrorMessage());
+		assertEquals(error.getStatus(), storedCA.getProcessingState().getStatus());
+		assertEquals(error.getTimestamp(), storedCA.getProcessingState().getTimestamp());
+	}
+
+	@Test
+	public void testUpdate_ChannelFlowQuotaProcessingState() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
+				ca.getChannel().getOrigin(), ca.getChannel().getDestination());
+		assertNotNull(storedCA);
+
+		Channel c = storedCA.getChannel();
+		assertNotNull(c);
+
+		ProcessingState error = ProcessingState.error(1, "unit test");
+
+		channelService.updateStatusFlowQuota(c.getQuota().getId(), error);
+
+		Channel storedC = channelService.findById(c.getId(), true, false);
+		assertNotNull(storedC);
+
+		FlowQuota storedFQ = storedC.getQuota();
+
+		assertEquals(error.getErrorCode(), storedFQ.getProcessingState().getErrorCode());
+		assertEquals(error.getErrorMessage(), storedFQ.getProcessingState().getErrorMessage());
+		assertEquals(error.getStatus(), storedFQ.getProcessingState().getStatus());
+		assertEquals(error.getTimestamp(), storedFQ.getProcessingState().getTimestamp());
 	}
 
 }

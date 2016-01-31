@@ -32,6 +32,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -44,6 +45,7 @@ import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.jpa.impl.JPAUpdateClause;
 import com.mysema.query.types.expr.BooleanExpression;
 
 public class ChannelDaoImpl implements ChannelDao {
@@ -252,6 +254,20 @@ public class ChannelDaoImpl implements ChannelDao {
 		}
 		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.id.eq(msgId));
 		return query.uniqueResult(channelMessage);
+	}
+
+	@Override
+	public void updateChannelMessageProcessingState(Long msgId, ProcessingState ps) {
+		if (msgId == null) {
+			throw new IllegalArgumentException("missing msgId");
+		}
+		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesnt work - try later.
+		JPAUpdateClause update = new JPAUpdateClause(em, channelMessage).where(channelMessage.id.eq(msgId))
+				.set(channelMessage.processingState.status, ps.getStatus())
+				.set(channelMessage.processingState.timestamp, ps.getTimestamp())
+				.set(channelMessage.processingState.errorCode, ps.getErrorCode())
+				.set(channelMessage.processingState.errorMessage, ps.getErrorMessage());
+		update.execute();
 	}
 
 	@Override
