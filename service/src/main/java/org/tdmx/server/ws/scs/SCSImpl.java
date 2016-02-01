@@ -149,12 +149,12 @@ public class SCSImpl implements SCS, Manageable {
 
 		DomainZoneApexInfo destZoneApexInfo = domainZoneResolutionService.resolveDomain(cd.getDomainName());
 		if (destZoneApexInfo == null) {
-			setError(ErrorCode.DnsZoneApexMissing, response);
+			setError(ErrorCode.DnsZoneApexMissing, response, cd.getDomainName());
 			return response;
 		}
 		DomainZoneApexInfo originZoneApexInfo = domainZoneResolutionService.resolveDomain(co.getDomainName());
 		if (originZoneApexInfo == null) {
-			setError(ErrorCode.DnsZoneApexMissing, response);
+			setError(ErrorCode.DnsZoneApexMissing, response, co.getDomainName());
 			return response;
 		}
 
@@ -383,6 +383,14 @@ public class SCSImpl implements SCS, Manageable {
 		session.setServicename(service);
 		session.setServiceprovider(serviceProviderUrl);
 		return session;
+	}
+
+	private void setError(ErrorCode ec, Acknowledge ack, Object... params) {
+		Error error = new Error();
+		error.setCode(ec.getErrorCode());
+		error.setDescription(ec.getErrorDescription(params));
+		ack.setError(error);
+		ack.setSuccess(false);
 	}
 
 	private void setError(ErrorCode ec, Acknowledge ack) {

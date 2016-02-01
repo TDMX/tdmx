@@ -126,6 +126,10 @@ public enum ErrorCode {
 	RelayFlowControlForwards(500, "Relay Flowcontrol open only allowed from destination to origin."),
 	RelayFlowControlBothDirection(500, "Relay Flowcontrol for same domain not allowed."),
 
+	RelayChannelAuthorizationFault(501, "Relay ChannelAuthorization to remote MRS failed. Reason=%s"),
+	RelayDestinationSessionFault(501, "Relay ChannelDestinationSession to remote MRS failed. Reason=%s"),
+	RelayFlowControlOpenFault(501, "Relay FlowControl open to remote MRS failed. Reason=%s"),
+
 	SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
 	SenderChannelAuthorizationMismatch(
 			301,
@@ -146,7 +150,7 @@ public enum ErrorCode {
 	SubmitChannelClosed(306, "No channel authorization - submit prohibited."),
 	ReceiveChannelClosed(306, "No channel authorization - relay and receive prohibited."),
 
-	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain in DNS."),
+	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain %s in DNS."),
 
 	;
 	private final int errorCode;
@@ -165,4 +169,7 @@ public enum ErrorCode {
 		return errorDescription;
 	}
 
+	public String getErrorDescription(Object... params) {
+		return String.format(errorDescription, params);
+	}
 }

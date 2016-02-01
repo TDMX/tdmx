@@ -170,7 +170,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		DomainZoneApexInfo apexInfo = domainZoneResolver.resolveDomain(otherDomain);
 		if (apexInfo == null) {
 			return MRSSessionHolder.error(ErrorCode.DnsZoneApexMissing.getErrorCode(),
-					ErrorCode.DnsZoneApexMissing.getErrorDescription());
+					ErrorCode.DnsZoneApexMissing.getErrorDescription(otherDomain));
 		}
 		String url = apexInfo.getScsUrl().toString();
 		if (log.isDebugEnabled()) {

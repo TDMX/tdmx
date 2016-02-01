@@ -146,12 +146,15 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		log.info("Stopping RelayOutboundService.");
 
 		// shutdown the relaying threads
-		jobRunner.shutdown();
-		try {
-			jobRunner.awaitTermination(60, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			log.warn("Interrupted whilst waiting for termination of jobRunner.", e);
+		if (jobRunner != null) {
+			jobRunner.shutdown();
+			try {
+				jobRunner.awaitTermination(60, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted whilst waiting for termination of jobRunner.", e);
+			}
 		}
+		jobRunner = null;
 
 		for (Entry<String, RelayChannelContext> ctxEntry : contextMap.entrySet()) {
 			RelayChannelContext rc = ctxEntry.getValue();

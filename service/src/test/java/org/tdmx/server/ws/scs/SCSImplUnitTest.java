@@ -420,7 +420,7 @@ public class SCSImplUnitTest {
 		req.setChannel(channel);
 
 		GetMRSSessionResponse response = scs.getMRSSession(req);
-		assertError(ErrorCode.DnsZoneApexMissing, response);
+		assertError(ErrorCode.DnsZoneApexMissing, response, "tdmx.kidsmathstrainer.com");
 	}
 
 	@Test
@@ -538,4 +538,12 @@ public class SCSImplUnitTest {
 		assertEquals(expected.getErrorDescription(), ack.getError().getDescription());
 	}
 
+	private void assertError(ErrorCode expected, Acknowledge ack, Object... params) {
+		assertNotNull(ack);
+		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";
+		assertFalse(errorDesc, ack.isSuccess());
+		assertNotNull(ack.getError());
+		assertEquals(expected.getErrorCode(), ack.getError().getCode());
+		assertEquals(expected.getErrorDescription(params), ack.getError().getDescription());
+	}
 }

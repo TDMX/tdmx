@@ -135,7 +135,7 @@ public class ClientCliLoggingUtils {
 	public static String toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
 		StringBuilder buf = new StringBuilder();
 		buf.append("Domain [").append(ca.getDomain()).append("]").append(LINEFEED);
-		buf.append("Channel [").append(ca.getChannel()).append("]").append(LINEFEED);
+		buf.append("Channel [").append(toString(ca.getChannel())).append("]").append(LINEFEED);
 		if (ca.getCurrent() != null) {
 			buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
 		} else {
