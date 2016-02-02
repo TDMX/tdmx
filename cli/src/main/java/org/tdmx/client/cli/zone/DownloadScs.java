@@ -67,7 +67,7 @@ public class DownloadScs implements CommandExecutable {
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
-		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl());
+		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl(), null);
 		out.println("Step: " + ctr.getTestStep());
 		out.println("Remote IPAddress: " + ctr.getRemoteIpAddress());
 		if (ctr.getServerCertChain() != null) {

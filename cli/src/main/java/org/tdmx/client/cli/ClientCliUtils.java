@@ -512,7 +512,8 @@ public class ClientCliUtils {
 	// PUBLIC METHODS - API-s
 	// -------------------------------------------------------------------------
 
-	public static ConnectionTestResult sslTest(PKIXCredential credential, URL url) {
+	public static ConnectionTestResult sslTest(PKIXCredential credential, URL url,
+			PKIXCertificate scsPublicCertificate) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -525,10 +526,15 @@ public class ClientCliUtils {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SystemDefaultTrustedCertificateProvider stcp = new SystemDefaultTrustedCertificateProvider();
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(scsPublicCertificate);
+
+		SystemDefaultTrustedCertificateProvider sdtcp = new SystemDefaultTrustedCertificateProvider();
+		DelegatingTrustedCertificateProvider dtcp = new DelegatingTrustedCertificateProvider();
+
+		dtcp.setDelegateProviders(Arrays.asList(new TrustedServerCertificateProvider[] { tcp, sdtcp }));
 
 		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
-		stfm.setCertificateProvider(stcp);
+		stfm.setCertificateProvider(dtcp);
 
 		SslProbeService sslprobe = new SslProbeService();
 		sslprobe.setConnectionTimeoutMillis(CONNECTION_TIMEOUT_MS);

@@ -45,6 +45,9 @@ public class CheckScs implements CommandExecutable {
 	@Parameter(name = "verbose", defaultValue = "false", description = "provide more detailed certificate information.")
 	private boolean verbose;
 
+	@Parameter(name = "scsTrustedCertFile", description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
+	private String scsTrustedCertFile;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -64,7 +67,13 @@ public class CheckScs implements CommandExecutable {
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
-		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl());
+		// optionally get the scs trusted certificate
+		PKIXCertificate scsPublicCertificate = null;
+		if (scsTrustedCertFile != null) {
+			scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
+		}
+
+		ConnectionTestResult ctr = ClientCliUtils.sslTest(zac, zd.getScsUrl(), scsPublicCertificate);
 		out.println("Step: " + ctr.getTestStep());
 		out.println("Remote IPAddress: " + ctr.getRemoteIpAddress());
 		if (ctr.getServerCertChain() != null) {

@@ -18,14 +18,9 @@
  */
 package org.tdmx.client.adapter;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 
 public class SingleTrustedCertificateProvider implements TrustedServerCertificateProvider {
 
@@ -39,21 +34,24 @@ public class SingleTrustedCertificateProvider implements TrustedServerCertificat
 	private static final Logger log = LoggerFactory.getLogger(SingleTrustedCertificateProvider.class);
 
 	private PKIXCertificate trustedCertificate;
-	
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public SingleTrustedCertificateProvider( PKIXCertificate trustedCertificate ) {
+	public SingleTrustedCertificateProvider(PKIXCertificate trustedCertificate) {
 		this.trustedCertificate = trustedCertificate;
 	}
-	
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
 	public PKIXCertificate[] getTrustedCertificates() {
-		return new PKIXCertificate[]{trustedCertificate};
+		if (trustedCertificate == null) {
+			return new PKIXCertificate[0];
+		}
+		return new PKIXCertificate[] { trustedCertificate };
 	}
 
 	// -------------------------------------------------------------------------
