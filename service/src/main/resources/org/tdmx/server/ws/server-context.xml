@@ -14,7 +14,7 @@
 		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 	
 
-	<bean id="ws.Configuration" class="org.tdmx.server.ws.ServerRuntimeContextServiceImpl" init-method="init">
+	<bean id="ws.ServerCertificateGenerator" class="org.tdmx.server.ws.ServerRuntimeContextServiceImpl">
 		<property name="httpsPort" value="${ws.httpsPort}" />
 		<property name="serverAddress" value="${ws.serverAddress}" />
 		<property name="contextPath" value="${ws.contextPath}"/>
@@ -46,7 +46,7 @@
 		<property name="sessionFactory" ref="ws.ZAS.SessionFactory"/>
 		<property name="apiName" value="ZAS"/>
 		<property name="apiEndpointPath" value="${ws.endpointPath}/zas"/>
-		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="runtimeService" ref="ws.ServerCertificateGenerator"/>
 	</bean>
 	
 	<bean id="ws.ZAS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -98,7 +98,7 @@
 		<property name="sessionFactory" ref="ws.MOS.SessionFactory"/>
 		<property name="apiName" value="MOS"/>
 		<property name="apiEndpointPath" value="${ws.endpointPath}/mos"/>
-		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="runtimeService" ref="ws.ServerCertificateGenerator"/>
 	</bean>
 	
 	<bean id="ws.MOS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -150,7 +150,7 @@
 		<property name="sessionFactory" ref="ws.MDS.SessionFactory"/>
 		<property name="apiName" value="MDS"/>
 		<property name="apiEndpointPath" value="${ws.endpointPath}/mds"/>
-		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="runtimeService" ref="ws.ServerCertificateGenerator"/>
 	</bean>
 	
 	<bean id="ws.MDS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">
@@ -198,7 +198,7 @@
 		<property name="sessionFactory" ref="ws.MRS.SessionFactory"/>
 		<property name="apiName" value="MRS"/>
 		<property name="apiEndpointPath" value="${ws.endpointPath}/mrs"/>
-		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="runtimeService" ref="ws.ServerCertificateGenerator"/>
 	</bean>
 	
 	<bean id="ws.MRS.ServerSecurityManager" class="org.tdmx.server.ws.security.ServerSecurityManagerImpl">

@@ -97,6 +97,9 @@ public class WebServiceServerContainer implements ServerContainer {
 
 	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) throws Exception {
+		// construct a new private/public keypair just for this IP.
+		runtimeContext.generateKeyStore();
+
 		// Create a basic jetty server object without declaring the port. Since we are configuring connectors
 		// directly we'll be setting ports on those connectors.
 		jetty = new Server();

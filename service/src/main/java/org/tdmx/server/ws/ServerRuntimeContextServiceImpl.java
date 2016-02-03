@@ -70,7 +70,9 @@ public class ServerRuntimeContextServiceImpl implements ServerRuntimeContextServ
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public void init() {
+
+	@Override
+	public void generateKeyStore() {
 		try {
 			InetAddress serverInterface = StringUtils.hasText(serverAddress) ? InetAddress.getByName(serverAddress)
 					: InetAddress.getLocalHost();

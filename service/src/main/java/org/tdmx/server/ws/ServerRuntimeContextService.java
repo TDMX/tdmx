@@ -37,4 +37,9 @@ public interface ServerRuntimeContextService {
 	public String getKeyStoreAlias();
 
 	public PKIXCertificate getPublicKey();
+
+	/**
+	 * Generate a new server keystore.
+	 */
+	public void generateKeyStore();
 }

@@ -37,7 +37,7 @@
 		<property name="tcpNoDelay" value="true"/>
 		<property name="shutdownTimeoutMs" value="${ws.pcs.shutdownTimeoutMs}"/>
 		
-		<property name="runtimeService" ref="ws.Configuration"/>
+		<property name="runtimeService" ref="ws.ServerCertificateGenerator"/>
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
 		<property name="webServiceSessionManagers">
 			<list value-type="org.tdmx.server.ws.session.WebServiceSessionManager">
@@ -55,7 +55,7 @@
 	</bean>
 
 	<bean id="WS.Server" class="org.tdmx.server.ws.WebServiceServerContainer">
-		<property name="runtimeContext" ref="ws.Configuration"/>
+		<property name="runtimeContext" ref="ws.ServerCertificateGenerator"/>
 
 		<property name="cipherSuites" value="${ws.httpsCipherList}"/>
 		<property name="httpsProtocols" value="${ws.httpsProtocols}"/>
