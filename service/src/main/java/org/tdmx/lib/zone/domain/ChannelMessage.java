@@ -51,6 +51,9 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
  * FlowControl permits sending on the originating side, and when relayed in with
  * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)} at the destination side .
  * 
+ * The origin and destination UserCertificate's serial numbers are denormalized here to allow more efficient selecting
+ * messages or delivery receipts for specific users at either end.
+ * 
  * @author Peter Klauser
  * 
  */
@@ -70,10 +73,6 @@ public class ChannelMessage implements Serializable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
-
-	// TODO #93 MSG#ProcessingState tracking status of msg relay
-
-	// TODO #95 DR#ProcessingState tracking status msg delivery report.
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelMessageIdGen")
@@ -169,6 +168,12 @@ public class ChannelMessage implements Serializable {
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState = ProcessingState.none();
 
+	@Column(nullable = false)
+	private int originSerialNr = -1;
+
+	@Column(nullable = false)
+	private int destinationSerialNr = -1;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -194,6 +199,8 @@ public class ChannelMessage implements Serializable {
 		this.macOfMacs = other.getMacOfMacs();
 		// control fields
 		this.processingState = other.getProcessingState();
+		this.originSerialNr = other.getOriginSerialNr();
+		this.destinationSerialNr = other.getDestinationSerialNr();
 	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -362,6 +369,22 @@ public class ChannelMessage implements Serializable {
 
 	public void setProcessingState(ProcessingState processingState) {
 		this.processingState = processingState;
+	}
+
+	public int getOriginSerialNr() {
+		return originSerialNr;
+	}
+
+	public void setOriginSerialNr(int originSerialNr) {
+		this.originSerialNr = originSerialNr;
+	}
+
+	public int getDestinationSerialNr() {
+		return destinationSerialNr;
+	}
+
+	public void setDestinationSerialNr(int destinationSerialNr) {
+		this.destinationSerialNr = destinationSerialNr;
 	}
 
 }

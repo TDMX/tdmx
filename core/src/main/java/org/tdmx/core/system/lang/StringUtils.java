@@ -185,6 +185,24 @@ public class StringUtils {
 		return result;
 	}
 
+	public static String getExceptionSummary(Exception e) {
+		StringBuilder sb = new StringBuilder();
+		if (e != null) {
+			String clazz = e.getClass().getName();
+			String msg = e.getMessage();
+			if (!StringUtils.hasText(msg) || !msg.contains(clazz)) {
+				sb.append(clazz).append(": ").append(msg);
+			} else {
+				sb.append(msg);
+			}
+			sb.append(msg);
+			if (e.getCause() != null) {
+				sb.append(" Cause: ").append(e.getCause().getMessage());
+			}
+		}
+		return sb.toString();
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

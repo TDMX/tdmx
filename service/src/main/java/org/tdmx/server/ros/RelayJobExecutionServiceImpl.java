@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Channel;
@@ -131,7 +132,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 							if (log.isDebugEnabled()) {
 								log.debug("MRS call failed", wse);
 							}
-							String errorInfo = getErrorInfo(wse);
+							String errorInfo = StringUtils.getExceptionSummary(wse);
 							log.info("MRS relay CA call to remote failed " + errorInfo);
 							ProcessingState error = ProcessingState.error(
 									ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
@@ -191,7 +192,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 							if (log.isDebugEnabled()) {
 								log.debug("MRS call failed", wse);
 							}
-							String errorInfo = getErrorInfo(wse);
+							String errorInfo = StringUtils.getExceptionSummary(wse);
 							log.info("MRS relay CDS call to remote failed " + errorInfo);
 							ProcessingState error = ProcessingState.error(
 									ErrorCode.RelayDestinationSessionFault.getErrorCode(),
@@ -262,7 +263,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						if (log.isDebugEnabled()) {
 							log.debug("MRS relay FC call failed", wse);
 						}
-						String errorInfo = getErrorInfo(wse);
+						String errorInfo = StringUtils.getExceptionSummary(wse);
 						log.info("MRS relay FC call to remote failed " + errorInfo);
 						ProcessingState error = ProcessingState.error(
 								ErrorCode.RelayFlowControlOpenFault.getErrorCode(),
@@ -298,15 +299,6 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 			ctx.setMrsSession(sh);
 		}
 		return sh;
-	}
-
-	private String getErrorInfo(WebServiceException exception) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("WebServiceException ").append(exception.getMessage());
-		if (exception.getCause() != null) {
-			sb.append(" ").append(exception.getCause().getMessage());
-		}
-		return sb.toString();
 	}
 
 	// -------------------------------------------------------------------------

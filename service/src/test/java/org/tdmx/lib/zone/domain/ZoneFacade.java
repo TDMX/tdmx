@@ -224,6 +224,8 @@ public class ZoneFacade {
 		cm.setMsgId(msgId);
 		cm.setChannel(channel);
 		cm.setProcessingState(ps);
+		cm.setOriginSerialNr(1);
+		cm.setDestinationSerialNr(1);
 
 		// not null properties
 		AgentSignature sig = new AgentSignature();

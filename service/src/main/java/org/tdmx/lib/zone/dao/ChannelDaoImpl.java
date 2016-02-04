@@ -275,6 +275,7 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
+		// TODO #93: make fetching the domain an optional thing
 		JPAQuery query = new JPAQuery(em).from(channelMessage).innerJoin(channelMessage.channel, channel).fetch()
 				.innerJoin(channel.domain, domain).fetch();
 
@@ -307,6 +308,8 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
 			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
 		}
+		// TODO #93: received Y/N, processingStatus
+
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
 				(long) criteria.getPageSpecifier().getFirstResult()));

@@ -96,6 +96,9 @@ public class ApiToDomainMapper {
 		md.setEncryptionContext(msg.getPayload().getEncryptionContext());
 		md.setPlaintextLength(msg.getPayload().getPlaintextLength());
 		md.setMacOfMacs(msg.getPayload().getMACofMACs());
+
+		// remember also to denormalize the sender's and receiver's serial number
+		// @see MOSImpl#submit and MRSImpl#processMessage
 		return md;
 	}
 

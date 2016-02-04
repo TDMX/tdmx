@@ -28,6 +28,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.tdmx.core.system.lang.StringUtils;
+
 /**
  * An ProcessingState describes the current status of processing related to the enclosing entity.
  * 
@@ -149,7 +151,7 @@ public class ProcessingState implements Serializable {
 	}
 
 	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
+		this.errorMessage = StringUtils.truncateToMaxLen(errorMessage, MAX_ERRORMESSAGE_LEN);
 	}
 
 }

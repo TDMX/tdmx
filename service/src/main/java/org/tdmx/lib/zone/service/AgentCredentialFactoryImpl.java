@@ -81,6 +81,8 @@ public class AgentCredentialFactoryImpl implements AgentCredentialFactory {
 			PKIXCertificate publicKey = certChain[0];
 			acd.setFingerprint(publicKey.getFingerprint());
 
+			acd.setSerialNumber(publicKey.getSerialNumber());
+
 			if (publicKey.isTdmxZoneAdminCertificate()) {
 				if (certChain.length != 1) {
 					return null;

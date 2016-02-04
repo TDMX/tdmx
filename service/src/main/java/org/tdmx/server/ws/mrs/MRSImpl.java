@@ -273,6 +273,7 @@ public class MRSImpl implements MRS {
 			setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
 			return;
 		}
+		m.setOriginSerialNr(1); // FIXME
 
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
@@ -289,6 +290,7 @@ public class MRSImpl implements MRS {
 			setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
+		m.setDestinationSerialNr(1); // FIXME
 
 		Zone zone = session.getZone();
 		Channel channel = session.getChannel();

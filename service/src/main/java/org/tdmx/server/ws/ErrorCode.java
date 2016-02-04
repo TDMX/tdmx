@@ -126,9 +126,11 @@ public enum ErrorCode {
 	RelayFlowControlForwards(500, "Relay Flowcontrol open only allowed from destination to origin."),
 	RelayFlowControlBothDirection(500, "Relay Flowcontrol for same domain not allowed."),
 
+	RelayClientConstructionFailed(501, "MRS client construction failed. Reason=%s"),
 	RelayChannelAuthorizationFault(501, "Relay ChannelAuthorization to remote MRS failed. Reason=%s"),
 	RelayDestinationSessionFault(501, "Relay ChannelDestinationSession to remote MRS failed. Reason=%s"),
 	RelayFlowControlOpenFault(501, "Relay FlowControl open to remote MRS failed. Reason=%s"),
+	RelayGetSessionFault(501, "Relay setup call to remote SCS failed. Reason=%s"),
 
 	SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),
 	SenderChannelAuthorizationMismatch(

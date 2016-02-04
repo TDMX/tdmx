@@ -19,9 +19,10 @@
 package org.tdmx.lib.zone.domain;
 
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
- * The SearchCriteria for ChannelMessages.
+ * The SearchCriteria for ChannelMessages (including their delivery reports).
  * 
  * @author Peter Klauser
  * 
@@ -45,7 +46,28 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 	 * Find by owning Channel
 	 */
 	private Channel channel;
-	
+
+	private Boolean received;
+
+	/**
+	 * Origin side, processingStatus relates to relaying out the message or delivery of the receipt depending on whether
+	 * the message has a receipt timestamp or not.
+	 * 
+	 * Destination side, processingStatus relates to delivery of the message or relay out of the recept depending on
+	 * whether the message has a recept timestamp or not.
+	 */
+	private ProcessingStatus processingStatus;
+
+	/**
+	 * To select delivery reports for delivery to a specific origin.
+	 */
+	private Integer originSerialNr;
+
+	/**
+	 * To select messages for delivery to a specific destination.
+	 */
+	private Integer destinationSerialNr;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -83,6 +105,38 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 
 	public void setChannel(Channel channel) {
 		this.channel = channel;
+	}
+
+	public Boolean getReceived() {
+		return received;
+	}
+
+	public void setReceived(Boolean received) {
+		this.received = received;
+	}
+
+	public ProcessingStatus getProcessingStatus() {
+		return processingStatus;
+	}
+
+	public void setProcessingStatus(ProcessingStatus processingStatus) {
+		this.processingStatus = processingStatus;
+	}
+
+	public Integer getOriginSerialNr() {
+		return originSerialNr;
+	}
+
+	public void setOriginSerialNr(Integer originSerialNr) {
+		this.originSerialNr = originSerialNr;
+	}
+
+	public Integer getDestinationSerialNr() {
+		return destinationSerialNr;
+	}
+
+	public void setDestinationSerialNr(Integer destinationSerialNr) {
+		this.destinationSerialNr = destinationSerialNr;
 	}
 
 }

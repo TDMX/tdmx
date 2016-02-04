@@ -18,16 +18,20 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.ChannelService;
@@ -177,8 +181,26 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
-	public List<ChannelMessage> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
-		// TODO #93 - fetch up to maxMsg pending channel messages.
+	public List<ChannelMessage> getForwardRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
+		if (az == null || z == null || d == null || channel == null) {
+			log.warn("Missing parameter.");
+			return Collections.emptyList();
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
+			criteria.setChannel(channel);
+			criteria.setReceived(false);
+			criteria.setProcessingStatus(ProcessingStatus.PENDING);
+			return channelService.search(z, criteria);
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
+	public List<ChannelMessage> getReverseRelayReceipts(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

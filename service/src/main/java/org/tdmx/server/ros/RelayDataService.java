@@ -45,7 +45,33 @@ public interface RelayDataService {
 
 	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long msgId);
 
-	public List<ChannelMessage> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
+	/**
+	 * Outbound ChannelMessages to be relayed on origin side {@see RelayDirection#Fowards} have a pending
+	 * {@see ChannelMessage#getProcessingState()}.
+	 * 
+	 * @param az
+	 * @param z
+	 * @param d
+	 * @param channel
+	 * @param maxMsg
+	 *            fetch up to this number of pending messages.
+	 * @return
+	 */
+	public List<ChannelMessage> getForwardRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
+
+	/**
+	 * Delivered ChannelMessages (where {@link ChannelMessage#getReceipt()} is signed) have the DR relayed back
+	 * {@see RelayDirection#Backwards}
+	 * 
+	 * @param az
+	 * @param z
+	 * @param d
+	 * @param channel
+	 * @param maxMsg
+	 *            fetch up to this number of pending message receipts.
+	 * @return
+	 */
+	public List<ChannelMessage> getReverseRelayReceipts(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
 
 	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
 			ProcessingState newState);

@@ -67,6 +67,11 @@ public class AgentCredentialDescriptor {
 	 */
 	private String certificateChainPem;
 
+	/**
+	 * The public certificate's serialNumber.
+	 */
+	private int serialNumber;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -154,6 +159,14 @@ public class AgentCredentialDescriptor {
 
 	public void setCertificateChain(PKIXCertificate[] certificateChain) {
 		this.certificateChain = certificateChain;
+	}
+
+	public int getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(int serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 }

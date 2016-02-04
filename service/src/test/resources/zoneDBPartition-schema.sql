@@ -169,11 +169,13 @@
     create table ChannelMessage (
         id bigint not null,
         chunkSize bigint not null,
+        destinationSerialNr integer not null,
         encryptionContext longvarbinary not null,
         encryptionContextId varchar(256) not null,
         externalReference varchar(256),
         macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
+        originSerialNr integer not null,
         payloadLength bigint not null,
         payloadSignature varchar(1024) not null,
         plaintextLength bigint not null,

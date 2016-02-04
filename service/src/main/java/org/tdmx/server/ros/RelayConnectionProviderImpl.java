@@ -21,6 +21,7 @@ package org.tdmx.server.ros;
 import java.io.IOException;
 
 import javax.net.ssl.X509TrustManager;
+import javax.xml.ws.WebServiceException;
 
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -45,6 +46,7 @@ import org.tdmx.core.api.v01.scs.GetMRSSession;
 import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.FileUtils;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.server.runtime.DomainZoneResolutionService;
@@ -183,13 +185,23 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		GetMRSSession sessionRequest = new GetMRSSession();
 		sessionRequest.setChannel(d2a.mapChannel(channel));
-		GetMRSSessionResponse sessionResponse = scsClient.getMRSSession(sessionRequest);
-		if (!sessionResponse.isSuccess()) {
-			return MRSSessionHolder.error(sessionResponse.getError().getCode(),
-					sessionResponse.getError().getDescription());
+		GetMRSSessionResponse sessionResponse = null;
+		try {
+			sessionResponse = scsClient.getMRSSession(sessionRequest);
+			if (!sessionResponse.isSuccess()) {
+				return MRSSessionHolder.error(sessionResponse.getError().getCode(),
+						sessionResponse.getError().getDescription());
+			}
+		} catch (WebServiceException wse) {
+			// runtime error handling
+			if (log.isDebugEnabled()) {
+				log.debug("SCS call failed", wse);
+			}
+			String errorInfo = StringUtils.getExceptionSummary(wse);
+			log.info("MRS relay SCS call to remote failed " + errorInfo);
+			return MRSSessionHolder.error(ErrorCode.RelayGetSessionFault.getErrorCode(),
+					ErrorCode.RelayGetSessionFault.getErrorDescription(errorInfo));
 		}
-
-		// TODO #93 catch some WS runtime exception
 
 		Endpoint endpoint = sessionResponse.getEndpoint();
 		PKIXCertificate mrsServerCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
@@ -212,9 +224,21 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		mrsFactory.setEnabledCipherSuites(STRONG_CIPHERS);
 
-		MRS mrsClient = mrsFactory.createClient();
+		MRS mrsClient = null;
+		try {
+			mrsClient = mrsFactory.createClient();
 
-		return MRSSessionHolder.success(mrsClient, sessionResponse.getSession().getSessionId());
+			return MRSSessionHolder.success(mrsClient, sessionResponse.getSession().getSessionId());
+		} catch (WebServiceException wse) {
+			// runtime error handling
+			if (log.isDebugEnabled()) {
+				log.debug("SCS call failed", wse);
+			}
+			String errorInfo = StringUtils.getExceptionSummary(wse);
+			log.info("MRS relay SCS call to remote failed " + errorInfo);
+			return MRSSessionHolder.error(ErrorCode.RelayClientConstructionFailed.getErrorCode(),
+					ErrorCode.RelayClientConstructionFailed.getErrorDescription(errorInfo));
+		}
 	}
 
 	// -------------------------------------------------------------------------
