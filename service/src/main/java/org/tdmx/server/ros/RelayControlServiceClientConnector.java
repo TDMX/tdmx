@@ -137,8 +137,6 @@ public class RelayControlServiceClientConnector
 	private ExecutorService idleNotificationExecutor = null;
 	private String rosTcpEndpoint;
 
-	// TODO get load from the "server" ROS part.
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------

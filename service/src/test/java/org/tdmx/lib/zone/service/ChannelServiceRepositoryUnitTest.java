@@ -34,6 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
@@ -42,6 +43,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
@@ -157,6 +159,36 @@ public class ChannelServiceRepositoryUnitTest {
 		List<Channel> channels = channelService.search(zone, criteria);
 		assertNotNull(channels);
 		assertEquals(1, channels.size());
+	}
+
+	@Test
+	public void testSearch_RelayPendingMessages() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, 999));
+		criteria.setChannel(ca.getChannel());
+		criteria.setReceived(false);
+		criteria.setProcessingStatus(ProcessingStatus.PENDING);
+
+		List<ChannelMessage> messages = channelService.search(zone, criteria);
+		assertNotNull(messages);
+		// currently the test data factory creates the messages without pending status
+		assertEquals(0, messages.size());
+	}
+
+	@Test
+	public void testSearch_RelayPendingReceipts() throws Exception {
+		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
+
+		ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, 999));
+		criteria.setChannel(ca.getChannel());
+		criteria.setReceived(true);
+		criteria.setProcessingStatus(ProcessingStatus.PENDING);
+
+		List<ChannelMessage> messages = channelService.search(zone, criteria);
+		assertNotNull(messages);
+		// currently the test data factory creates the messages without pending status
+		assertEquals(0, messages.size());
 	}
 
 	@Test

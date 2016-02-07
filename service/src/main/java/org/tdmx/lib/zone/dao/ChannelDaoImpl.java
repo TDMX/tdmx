@@ -261,7 +261,7 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (msgId == null) {
 			throw new IllegalArgumentException("missing msgId");
 		}
-		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesnt work - try later.
+		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesn't work - try later.
 		JPAUpdateClause update = new JPAUpdateClause(em, channelMessage).where(channelMessage.id.eq(msgId))
 				.set(channelMessage.processingState.status, ps.getStatus())
 				.set(channelMessage.processingState.timestamp, ps.getTimestamp())
@@ -275,41 +275,58 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
-		// TODO #93: make fetching the domain an optional thing
-		JPAQuery query = new JPAQuery(em).from(channelMessage).innerJoin(channelMessage.channel, channel).fetch()
-				.innerJoin(channel.domain, domain).fetch();
+		JPAQuery query = new JPAQuery(em).from(channelMessage);
 
-		BooleanExpression where = domain.zone.eq(zone);
+		BooleanExpression where = null;
 
 		if (criteria.getChannel() != null) {
-			where = where.and(channel.eq(criteria.getChannel()));
+			where = channelMessage.channel.eq(criteria.getChannel());
+		} else {
+			// we are not looking for messages of a specific channel, so we need to fetch the channel and it's domain
+			query = query.innerJoin(channelMessage.channel, channel).fetch().innerJoin(channel.domain, domain).fetch();
+
+			where = domain.zone.eq(zone);
+			if (StringUtils.hasText(criteria.getDomainName())) {
+				where = where.and(domain.domainName.eq(criteria.getDomainName()));
+			}
+			if (criteria.getDomain() != null) {
+				where = where.and(channel.domain.eq(criteria.getDomain()));
+			}
+			if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
+				where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+			}
+			if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
+				where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+			}
+			if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
+				where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
+			}
+			if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
+				where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
+			}
+			if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
+				where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
+			}
 		}
 		if (StringUtils.hasText(criteria.getMsgId())) {
 			where = where.and(channelMessage.msgId.eq(criteria.getMsgId()));
 		}
-		if (StringUtils.hasText(criteria.getDomainName())) {
-			where = where.and(domain.domainName.eq(criteria.getDomainName()));
+		if (criteria.getReceived() != null) {
+			if (Boolean.TRUE == criteria.getReceived()) {
+				where = where.and(channelMessage.receipt.signatureDate.isNotNull());
+			} else {
+				where = where.and(channelMessage.receipt.signatureDate.isNull());
+			}
 		}
-		if (criteria.getDomain() != null) {
-			where = where.and(channel.domain.eq(criteria.getDomain()));
+		if (criteria.getDestinationSerialNr() != null) {
+			where = where.and(channelMessage.destinationSerialNr.eq(criteria.getDestinationSerialNr()));
 		}
-		if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
-			where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
+		if (criteria.getOriginSerialNr() != null) {
+			where = where.and(channelMessage.originSerialNr.eq(criteria.getOriginSerialNr()));
 		}
-		if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
-			where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
+		if (criteria.getProcessingStatus() != null) {
+			where = where.and(channelMessage.processingState.status.eq(criteria.getProcessingStatus()));
 		}
-		if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-			where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
-		}
-		if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-			where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
-		}
-		if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-			where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
-		}
-		// TODO #93: received Y/N, processingStatus
-
 		query.where(where);
 		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
 				(long) criteria.getPageSpecifier().getFirstResult()));

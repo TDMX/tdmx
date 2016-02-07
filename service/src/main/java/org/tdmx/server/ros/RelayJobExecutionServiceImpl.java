@@ -18,6 +18,8 @@
  */
 package org.tdmx.server.ros;
 
+import java.util.List;
+
 import javax.xml.ws.WebServiceException;
 
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
@@ -73,8 +76,15 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 	public void executeJob(RelayJobContext job) {
 		switch (job.getType()) {
 		case Data:
+			// TODO #93 relay data
 			break;
 		case Fetch:
+			// fetch data
+			if (RelayDirection.Fowards == job.getChannelContext().getDirection()) {
+				fetchMessageData(job.getChannelContext(), job);
+			} else {
+				fetchReceiptData(job.getChannelContext(), job);
+			}
 			break;
 		case MetaData:
 			relayMetaData(job.getChannelContext(), job);
@@ -87,6 +97,22 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void fetchMessageData(RelayChannelContext ctx, RelayJobContext job) {
+		// fetch the message data from the DB
+		List<ChannelMessage> msgs = relayDataService.getForwardRelayMessages(ctx.getAccountZone(), ctx.getZone(),
+				ctx.getDomain(), ctx.getChannel(), ctx.getMaxConcurrentMessages());
+
+		job.setChannelMessages(msgs);
+	}
+
+	private void fetchReceiptData(RelayChannelContext ctx, RelayJobContext job) {
+		// fetch the delivery report data from the DB
+		List<ChannelMessage> msgs = relayDataService.getReverseRelayReceipts(ctx.getAccountZone(), ctx.getZone(),
+				ctx.getDomain(), ctx.getChannel(), ctx.getMaxConcurrentMessages());
+
+		job.setChannelMessages(msgs);
+	}
 
 	private void relayMetaData(RelayChannelContext ctx, RelayJobContext job) {
 		// fetch the channel from the DB with up-to-date info

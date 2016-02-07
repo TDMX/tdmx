@@ -98,7 +98,8 @@ public interface ChannelDao {
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
 
 	/**
-	 * Search for ChannelFlowMessages. FetchPlan includes Channel, Domain.
+	 * Search for ChannelFlowMessages. FetchPlan includes Channel, Domain, unless the channel is provided explicitly, in
+	 * which case we only fetch the ChannelMessage.
 	 * 
 	 * @param zone
 	 * @param criteria

@@ -200,8 +200,20 @@ public class RelayDataServiceImpl implements RelayDataService {
 
 	@Override
 	public List<ChannelMessage> getReverseRelayReceipts(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
-		// TODO Auto-generated method stub
-		return null;
+		if (az == null || z == null || d == null || channel == null) {
+			log.warn("Missing parameter.");
+			return Collections.emptyList();
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
+			criteria.setChannel(channel);
+			criteria.setReceived(true);
+			criteria.setProcessingStatus(ProcessingStatus.PENDING);
+			return channelService.search(z, criteria);
+		} finally {
+			disassociateZoneDB();
+		}
 	}
 
 	// -------------------------------------------------------------------------
