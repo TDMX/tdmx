@@ -33,6 +33,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
@@ -130,6 +131,36 @@ public class RelayDataServiceImpl implements RelayDataService {
 			ChannelMessage msg = channelService.findByMessageId(msgId);
 			msg.setChannel(channel);
 			return msg;
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
+	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long msgId,
+			ProcessingState newState) {
+		if (az == null || z == null || d == null || channel == null || msgId == null || newState == null) {
+			log.warn("Missing parameter.");
+			return;
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			channelService.updateStatusMessage(msgId, newState);
+		} finally {
+			disassociateZoneDB();
+		}
+	}
+
+	@Override
+	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
+			FlowControlStatus relayStatus) {
+		if (az == null || z == null || d == null || msg == null || relayStatus == null) {
+			log.warn("Missing parameter.");
+			return;
+		}
+		associateZoneDB(az.getZonePartitionId());
+		try {
+			channelService.postRelayOutMessage(z, msg, relayStatus);
 		} finally {
 			disassociateZoneDB();
 		}

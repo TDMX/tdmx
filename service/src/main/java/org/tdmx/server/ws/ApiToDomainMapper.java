@@ -41,6 +41,7 @@ import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowLimit;
 import org.tdmx.lib.zone.domain.Service;
 
@@ -232,6 +233,13 @@ public class ApiToDomainMapper {
 			return null;
 		}
 		return EndpointPermissionGrant.valueOf(permission.value());
+	}
+
+	public FlowControlStatus mapFlowControlStatus(org.tdmx.core.api.v01.msg.Flowcontrolstatus fcs) {
+		if (fcs == null) {
+			return null;
+		}
+		return FlowControlStatus.valueOf(fcs.value());
 	}
 
 	public org.tdmx.client.crypto.algorithm.SignatureAlgorithm mapSignatureAlgorithm(SignatureAlgorithm sa) {

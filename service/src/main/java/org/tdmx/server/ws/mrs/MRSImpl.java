@@ -297,7 +297,7 @@ public class MRSImpl implements MRS {
 
 		m.setChannel(channel);
 
-		SubmitMessageResultHolder result = channelService.preRelayMessage(zone, m);
+		SubmitMessageResultHolder result = channelService.preRelayInMessage(zone, m);
 		if (result.status != null) {
 			// provide the flowquota's relaystate back to the caller in the relay response.
 			response.setRelayStatus(Flowcontrolstatus.CLOSED);

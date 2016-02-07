@@ -34,6 +34,7 @@ import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.DestinationSession;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
@@ -154,7 +155,7 @@ public interface ChannelService {
 	/**
 	 * Creates (persists) a ChannelMessage.
 	 * 
-	 * NOTE: use the {@link ChannelService#preRelayMessage(Zone, ChannelMessage)} and
+	 * NOTE: use the {@link ChannelService#preRelayInMessage(Zone, ChannelMessage)} and
 	 * {@link ChannelService#preSubmitMessage(Zone, ChannelMessage)} to do pre-persistance updates.
 	 * 
 	 * @param channel
@@ -303,14 +304,26 @@ public interface ChannelService {
 	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg);
 
 	/**
-	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel.
+	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
+	 * undelivered).
 	 * 
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
 	 * @return
 	 */
-	public SubmitMessageResultHolder preRelayMessage(Zone zone, ChannelMessage msg);
+	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg);
+
+	/**
+	 * Post-relay Message updates the FlowQuota of the channel ( reducing unsent ).
+	 * 
+	 * @param zone
+	 * @param msg
+	 *            detached ChannelMessage
+	 * @param relayStatus
+	 *            the other side's relay status known after we send out the message.
+	 */
+	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.
@@ -345,4 +358,5 @@ public interface ChannelService {
 	 * @param newState
 	 */
 	public void updateStatusMessage(Long msgId, ProcessingState newState);
+
 }

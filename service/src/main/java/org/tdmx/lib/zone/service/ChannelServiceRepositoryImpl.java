@@ -389,7 +389,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder preRelayMessage(Zone zone, ChannelMessage msg) {
+	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
 		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
@@ -408,6 +408,15 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		quota.incrementBufferOnRelay(msg.getPayloadLength());
 
 		return result;
+	}
+
+	@Override
+	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
+		// get and lock quota
+		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+		quota.setRelayStatus(relayStatus);
+		// #93: rest?
+
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -72,6 +73,12 @@ public interface RelayDataService {
 	 * @return
 	 */
 	public List<ChannelMessage> getReverseRelayReceipts(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
+
+	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
+			FlowControlStatus relayStatus);
+
+	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long msgId,
+			ProcessingState newState);
 
 	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,
 			ProcessingState newState);
