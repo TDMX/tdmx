@@ -40,6 +40,7 @@ import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -55,6 +56,7 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
@@ -212,7 +214,12 @@ public class MDSImpl implements MDS {
 	@Override
 	public ReceiveResponse receive(Receive parameters) {
 		// TODO Auto-generated method stub
-		return null;
+		ChannelMessage msg = null;
+		Msg m = d2a.mapChannelMessage(msg, null); // TODO get 1st chunk
+
+		ReceiveResponse response = new ReceiveResponse();
+		response.setMsg(m);
+		return response;
 	}
 
 	@Override

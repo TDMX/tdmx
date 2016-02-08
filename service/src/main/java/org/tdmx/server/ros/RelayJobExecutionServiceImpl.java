@@ -140,7 +140,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 
 					Relay relayCA = new Relay();
 					relayCA.setSessionId(sh.getMrsSessionId());
-					relayCA.setMsg(null); // TODO #93: map channelmsg to api
+					relayCA.setMsg(d2a.mapChannelMessage(msg, null)); // TODO #93: get chunks
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayCA);
 						if (rr.isSuccess()) {
@@ -161,7 +161,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					} catch (WebServiceException wse) {
 						// runtime error handling
 						if (log.isDebugEnabled()) {
-							log.debug("MRS call failed", wse);
+							log.debug("MRS call to relay MSG failed.", wse);
 						}
 						String errorInfo = StringUtils.getExceptionSummary(wse);
 						log.info("MRS relay MSG call to remote failed " + errorInfo);
@@ -192,7 +192,68 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 	}
 
 	private void relayReceiptData(RelayChannelContext ctx, RelayJobContext job) {
-		// TODO #93 like relayMsg but the DR instead
+		// like relayMsg but the DR instead
+		// fetch the msg containing receipt from the db if it wasn't fetched already
+		ChannelMessage msg = job.getChannelMessage();
+		if (msg == null) {
+			msg = relayDataService.getMessage(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(), ctx.getChannel(),
+					job.getObjectId());
+		}
+		if (msg == null) {
+			log.warn("Unable to find message for . " + job);
+			return;
+		}
+
+		// relay the MSG
+		if (msg.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+			if (ctx.getDirection() == RelayDirection.Both) {
+				// TODO #93: LATER shortcut relay for same domain
+			} else {
+				MRSSessionHolder sh = getSessionHolder(ctx);
+				if (sh.isValid()) {
+					// use the MRS to relay the CA to the other side
+					if (log.isDebugEnabled()) {
+						log.debug("Relay DR " + ctx.getChannelKey());
+					}
+
+					Relay relayCA = new Relay();
+					relayCA.setSessionId(sh.getMrsSessionId());
+					relayCA.setDr(d2a.mapDeliveryReceipt(msg));
+					try {
+						RelayResponse rr = sh.getMrs().relay(relayCA);
+						if (rr.isSuccess()) {
+							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
+							// there is no "reverse" flowcontrol to stop DR relaying
+						} else {
+							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
+									rr.getError().getDescription());
+							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+						}
+					} catch (WebServiceException wse) {
+						// runtime error handling
+						if (log.isDebugEnabled()) {
+							log.debug("MRS call to relay DR failed.", wse);
+						}
+						String errorInfo = StringUtils.getExceptionSummary(wse);
+						log.info("MRS relay MSG call to remote failed " + errorInfo);
+						ProcessingState error = ProcessingState.error(
+								ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
+								ErrorCode.RelayChannelAuthorizationFault.getErrorDescription(errorInfo));
+
+						relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+
+					}
+				} else {
+					// update MSG processing state to error of the MRS session holder error
+					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
+					relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+				}
+			}
+		}
 	}
 
 	private void relayMetaData(RelayChannelContext ctx, RelayJobContext job) {

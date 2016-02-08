@@ -32,15 +32,21 @@ import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
 import org.tdmx.core.api.v01.msg.Channelinfo;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.FlowStatus;
 import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Grant;
+import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.IpAddressList;
 import org.tdmx.core.api.v01.msg.Limit;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Msgreference;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.msg.Service;
@@ -141,7 +147,7 @@ public class DomainToApiMapper {
 		User us = new User();
 		us.setUserIdentity(mapUserIdentity(cred.getCertificateChain()));
 		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
-		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
+		us.setWhitelist(new IpAddressList()); // TODO #99: ipwhitelist
 		return us;
 	}
 
@@ -164,7 +170,7 @@ public class DomainToApiMapper {
 		Administrator us = new Administrator();
 		us.setStatus(CredentialStatus.fromValue(cred.getCredentialStatus().name()));
 		us.setAdministratorIdentity(mapAdministratorIdentity(cred.getCertificateChain()));
-		us.setWhitelist(new IpAddressList()); // TODO ipwhitelist
+		us.setWhitelist(new IpAddressList()); // TODO #99: ipwhitelist
 		return us;
 	}
 
@@ -207,6 +213,64 @@ public class DomainToApiMapper {
 		d.setLocalname(dest.getLocalName());
 		d.setServicename(dest.getServiceName());
 		return d;
+	}
+
+	public Msg mapChannelMessage(org.tdmx.lib.zone.domain.ChannelMessage msg, org.tdmx.lib.message.domain.Chunk chunk) {
+		if (msg == null) {
+			return null;
+		}
+		Msg m = new Msg();
+
+		Header h = new Header();
+		h.setMsgId(msg.getMsgId());
+		h.setChannel(mapChannel(msg.getChannel()));
+		h.setEncryptionContextId(msg.getEncryptionContextId());
+		h.setExternalReference(msg.getExternalReference());
+		h.setTtl(CalendarUtils.cast(msg.getTtlTimestamp()));
+		h.setPayloadSignature(msg.getPayloadSignature());
+		h.setTo(mapUserIdentity(msg.getReceipt().getCertificateChain()));
+		h.setUsersignature(mapUserSignature(msg.getSignature()));
+		m.setHeader(h);
+
+		Payload p = new Payload();
+		p.setChunkSize(msg.getChunkSize());
+		p.setEncryptionContext(msg.getEncryptionContext());
+		p.setLength(msg.getPayloadLength());
+		p.setPlaintextLength(msg.getPlaintextLength());
+		p.setMACofMACs(msg.getMacOfMacs());
+		m.setPayload(p);
+
+		m.setChunk(mapChunk(chunk));
+
+		return m;
+	}
+
+	public Chunk mapChunk(org.tdmx.lib.message.domain.Chunk chunk) {
+		if (chunk == null) {
+			return null;
+		}
+		Chunk c = new Chunk();
+		c.setMsgId(chunk.getMsgId());
+		c.setPos(chunk.getPos());
+		c.setMac(chunk.getMac());
+		c.setData(chunk.getData());
+		return c;
+	}
+
+	public Dr mapDeliveryReceipt(org.tdmx.lib.zone.domain.ChannelMessage msg) {
+		if (msg == null) {
+			return null;
+		}
+		Dr dr = new Dr();
+
+		Msgreference r = new Msgreference();
+		r.setMsgId(msg.getMsgId());
+		r.setExternalReference(msg.getExternalReference());
+		r.setSignature(msg.getSignature().getValue());
+		dr.setMsgreference(r);
+
+		dr.setReceiptsignature(mapUserSignature(msg.getReceipt()));
+		return dr;
 	}
 
 	public Channel mapChannel(org.tdmx.lib.zone.domain.Channel channel) {
