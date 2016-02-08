@@ -108,8 +108,6 @@ public class Channel implements Serializable {
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState = ProcessingState.none(); // of relay of DestinationSession
 
-	// TODO #93 relay DS and toggle PS to pending()
-
 	/**
 	 * The quota association is "owned" ie. managed through this Channel
 	 */

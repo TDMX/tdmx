@@ -52,6 +52,7 @@ import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
@@ -69,6 +70,8 @@ import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -89,6 +92,8 @@ public class MDSImpl implements MDS {
 
 	private AuthorizedSessionLookupService<MDSServerSession> authorizedSessionService;
 	private AuthenticatedClientLookupService authenticatedClientService;
+
+	private RelayClientService relayClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -192,8 +197,16 @@ public class MDSImpl implements MDS {
 						dest.getDestinationSession());
 
 				if (ProcessingStatus.PENDING == updatedChannel.getProcessingState().getStatus()) {
-					// TODO #93: relay "pending" channel destination sessions back to origin
+					// relay "pending" channel destination sessions back to origin
+					// TODO LATER: we could think about caching the ROS addresses per channel known to the destination
 
+					RelayStatus rs = relayClientService.relayChannelDestinationSession(null, session.getAccountZone(),
+							zone, session.getDomain(), updatedChannel);
+					if (!rs.isSuccess()) {
+						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
+								rs.getErrorCode().getErrorMessage());
+						channelService.updateStatusDestinationSession(updatedChannel.getId(), error);
+					}
 				}
 			}
 			if (channels.isEmpty()) {
@@ -315,6 +328,14 @@ public class MDSImpl implements MDS {
 
 	public void setAuthenticatedClientService(AuthenticatedClientLookupService authenticatedClientService) {
 		this.authenticatedClientService = authenticatedClientService;
+	}
+
+	public RelayClientService getRelayClientService() {
+		return relayClientService;
+	}
+
+	public void setRelayClientService(RelayClientService relayClientService) {
+		this.relayClientService = relayClientService;
 	}
 
 	public DomainService getDomainService() {

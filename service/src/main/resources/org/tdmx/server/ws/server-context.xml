@@ -166,6 +166,9 @@
 	</bean>
 
 	<bean id="ws.MDS.Implementation" class="org.tdmx.server.ws.mds.MDSImpl" >
+	
+		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
+		
 		<property name="authorizedSessionService" ref="ws.MDS.AuthorizedSessionService"/>
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
