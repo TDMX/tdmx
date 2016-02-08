@@ -49,7 +49,7 @@ public interface RelayClientService {
 	 *            the detached channel
 	 * @param ca
 	 *            the detached channel authorization
-	 * @return the relay status
+	 * @return the relay internal transfer status
 	 */
 	public RelayStatus relayChannelAuthorization(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, ChannelAuthorization ca);
@@ -67,13 +67,14 @@ public interface RelayClientService {
 	 *            the detached domain
 	 * @param channel
 	 *            the detached channel
-	 * @return the relay status
+	 * @return the relay internal transfer status
 	 */
 	public RelayStatus relayChannelDestinationSession(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel);
 
 	/**
-	 * Initiate relay of a Channel FlowControl state.
+	 * Initiate relay of a Channel FlowControl state (destination side), or notify that the Channel FlowControl state
+	 * has changed ( origin side).
 	 * 
 	 * @param rosTcpAddress
 	 *            the RPC endpoint address of the ROS handling the channel.
@@ -87,7 +88,7 @@ public interface RelayClientService {
 	 *            the detached channel
 	 * @param flowquota
 	 *            the detached channel flow quota
-	 * @return the relay status
+	 * @return the relay internal transfer status
 	 */
 	public RelayStatus relayChannelFlowControl(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
 			Channel channel, FlowQuota quota);

@@ -53,6 +53,7 @@ import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
+import org.tdmx.server.ros.client.RelayClientService;
 import org.tdmx.server.tos.client.TransferClientService;
 import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
@@ -93,6 +94,7 @@ public class MRSImpl implements MRS {
 	private int batchSize = 100;
 
 	private TransferClientService transferService;
+	private RelayClientService relayClientService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -117,7 +119,7 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getDr() != null) {
 			// TODO #95: relay in DR
 		} else if (parameters.getRelayStatus() != null) {
-			// TODO #93: relay in FC-open
+			// TODO #93: relay in FC-open, notify ROS of FC change
 		} else {
 			// none of the above - equals missing data.
 			setError(ErrorCode.MissingRelayPayload, response);
@@ -438,6 +440,14 @@ public class MRSImpl implements MRS {
 
 	public void setTransferService(TransferClientService transferService) {
 		this.transferService = transferService;
+	}
+
+	public RelayClientService getRelayClientService() {
+		return relayClientService;
+	}
+
+	public void setRelayClientService(RelayClientService relayClientService) {
+		this.relayClientService = relayClientService;
 	}
 
 }

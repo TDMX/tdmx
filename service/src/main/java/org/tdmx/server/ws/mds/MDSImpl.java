@@ -67,6 +67,8 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
+import org.tdmx.lib.zone.service.ChannelService.ReceiveMessageOperationStatus;
+import org.tdmx.lib.zone.service.ChannelService.ReceiveMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -226,9 +228,24 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public ReceiveResponse receive(Receive parameters) {
-		// TODO Auto-generated method stub
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		// TODO #95: get ready message
 		ChannelMessage msg = null;
 		Msg m = d2a.mapChannelMessage(msg, null); // TODO get 1st chunk
+
+		// TODO #93: on msg acknowledge/commit
+		// acknowledge the message, possibly opening the relay flow control
+		ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(), msg);
+		if (ackStatus.status == ReceiveMessageOperationStatus.FLOW_CONTROL_OPENED) {
+			RelayStatus rs = relayClientService.relayChannelFlowControl(null, session.getAccountZone(),
+					session.getZone(), session.getDomain(), msg.getChannel(), ackStatus.flowQuota);
+			if (!rs.isSuccess()) {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
+						rs.getErrorCode().getErrorMessage());
+				channelService.updateStatusFlowQuota(ackStatus.flowQuota.getId(), error);
+			}
+		}
 
 		ReceiveResponse response = new ReceiveResponse();
 		response.setMsg(m);

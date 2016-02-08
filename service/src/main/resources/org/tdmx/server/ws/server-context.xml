@@ -62,9 +62,7 @@
 	</bean>
 
 	<bean id="ws.ZAS.Implementation" class="org.tdmx.server.ws.zas.ZASImpl" >
-	
 		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
-		
 		<property name="sessionInvalidationService" ref="ws.ServerSessionManager"/>
 		<property name="authorizedSessionService" ref="ws.ZAS.AuthorizedSessionService"/>
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
@@ -166,9 +164,7 @@
 	</bean>
 
 	<bean id="ws.MDS.Implementation" class="org.tdmx.server.ws.mds.MDSImpl" >
-	
 		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
-		
 		<property name="authorizedSessionService" ref="ws.MDS.AuthorizedSessionService"/>
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>
 		<property name="credentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
@@ -228,8 +224,8 @@
 		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
-		
 		<property name="transferService" ref="tos.client.TransferObjectService"/>
+		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
 	</bean>
 
 

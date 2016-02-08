@@ -315,7 +315,7 @@ public interface ChannelService {
 	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg);
 
 	/**
-	 * Post-relay Message updates the FlowQuota of the channel ( reducing unsent ).
+	 * Post-relay Message updates the FlowQuota of the channel ( reducing unsent buffer on origin side ).
 	 * 
 	 * @param zone
 	 * @param msg
@@ -324,6 +324,27 @@ public interface ChannelService {
 	 *            the other side's relay status known after we send out the message.
 	 */
 	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus);
+
+	public enum ReceiveMessageOperationStatus {
+		FLOW_CONTROL_OPENED,
+		CHANNEL_CLOSED,
+	}
+
+	public class ReceiveMessageResultHolder {
+		public ReceiveMessageOperationStatus status;
+		public FlowQuota flowQuota;
+	}
+
+	/**
+	 * Message acknowledge updates the FlowQuota of the channel ( reducing undelivered buffer on destination side ).
+	 * 
+	 * @param zone
+	 * @param msg
+	 *            detached ChannelMessage
+	 * 
+	 *            TODO #95: include DR
+	 */
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.

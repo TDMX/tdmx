@@ -412,11 +412,20 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
-		// get and lock quota
+		// TODO #93: get and lock quota, reduce unsent buffer on origin side
 		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+		// update other side's relay status
 		quota.setRelayStatus(relayStatus);
-		// #93: rest?
 
+	}
+
+	@Override
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg) {
+		// TODO #93 lock quota, reduce buffer, set status if crossing low limit
+		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
+		result.flowQuota = null;
+		result.status = ReceiveMessageOperationStatus.FLOW_CONTROL_OPENED;
+		return result;
 	}
 
 	@Override
