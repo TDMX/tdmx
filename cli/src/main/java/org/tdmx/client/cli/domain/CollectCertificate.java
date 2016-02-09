@@ -23,6 +23,7 @@ import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
@@ -76,6 +77,10 @@ public class CollectCertificate implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
+		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
+		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
+		// TODO #93: collect and then process step
+
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("No TDMX DNS TXT record found for " + domain);

@@ -23,6 +23,7 @@ import java.util.Calendar;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 
 /**
  * Utilities for logging for Client CLI commands.
@@ -42,6 +43,8 @@ public class ClientCliLoggingUtils {
 	private static final String LINEFEED = System.getProperty("line.separator", "\n");
 	private static final String TAB = "\t";
 
+	// TODO better rep.
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -55,6 +58,14 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.common.Error error) {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
+	}
+
+	public static String toString(TrustStoreEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Friendly Name=").append(entry.getFriendlyName()).append(LINEFEED);
+		sb.append(entry.getCertificate()).append(LINEFEED);
+		sb.append(entry.getComment()).append(LINEFEED);
+		return sb.toString();
 	}
 
 	public static String toString(PKIXCertificate pk) {

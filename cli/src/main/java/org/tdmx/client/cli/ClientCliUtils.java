@@ -25,8 +25,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +53,8 @@ import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
+import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -74,6 +80,10 @@ public class ClientCliUtils {
 	// -------------------------------------------------------------------------
 	public static final String ZONE_DESCRIPTOR = "zone.tdmx";
 	public static final String TRUSTED_SCS_CERT = "scs.crt";
+
+	public static final String ZONE_TRUST_STORE = "trusted.store";
+	public static final String ZONE_DISTRUST_STORE = "distrusted.store";
+	public static final String STORE_ENCODING = "UTF-8";
 
 	public static final String KEYSTORE_TYPE = "jks";
 
@@ -274,6 +284,89 @@ public class ClientCliUtils {
 			return version;
 		}
 
+	}
+
+	/**
+	 * Helper class to store trusted or distrusted Certificates.
+	 */
+	public static class ZoneTrustStore {
+		// map of fingerprint->Certificate
+		private final Map<String, TrustStoreEntry> certificateMap = new HashMap<>();
+
+		public ZoneTrustStore(List<TrustStoreEntry> entries) {
+			for (TrustStoreEntry entry : entries) {
+				add(entry);
+			}
+		}
+
+		public boolean contains(PKIXCertificate cert) {
+			return certificateMap.containsKey(cert.getFingerprint());
+		}
+
+		public void add(TrustStoreEntry entry) {
+			certificateMap.put(entry.getCertificate().getFingerprint(), entry);
+		}
+
+		public void remove(TrustStoreEntry entry) {
+			certificateMap.remove(entry.getCertificate().getFingerprint());
+		}
+
+		public List<TrustStoreEntry> getCertificates() {
+			List<TrustStoreEntry> result = new ArrayList<>();
+			result.addAll(certificateMap.values());
+			return result;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - Trust/Distrust Stores
+	// -------------------------------------------------------------------------
+
+	public static ZoneTrustStore loadTrustedCertificates() {
+		return loadStore(ZONE_TRUST_STORE);
+	}
+
+	public static ZoneTrustStore loadDistrustedCertificates() {
+		return loadStore(ZONE_DISTRUST_STORE);
+	}
+
+	private static ZoneTrustStore loadStore(String filename) {
+		byte[] bytes;
+		try {
+			bytes = FileUtils.getFileContents(filename);
+			if (bytes == null) {
+				// 1st time - no file.
+				return new ZoneTrustStore(Collections.emptyList());
+			}
+			String contents = new String(bytes, STORE_ENCODING);
+
+			List<TrustStoreEntry> entries = TrustStoreCertificateIOUtils.pemToTrustStoreEntries(contents);
+			return new ZoneTrustStore(entries);
+		} catch (CryptoCertificateException | IOException e) {
+			throw new IllegalStateException("Unable to load certificte store " + filename, e);
+		}
+	}
+
+	public static void saveTrustedCertificates(ZoneTrustStore store) {
+		saveStore(store, ZONE_TRUST_STORE);
+	}
+
+	public static void saveDistrustedCertificates(ZoneTrustStore store) {
+		saveStore(store, ZONE_DISTRUST_STORE);
+	}
+
+	private static void saveStore(ZoneTrustStore store, String filename) {
+		try {
+			StringBuilder contents = new StringBuilder();
+			for (TrustStoreEntry entry : store.getCertificates()) {
+				String entryPem = TrustStoreCertificateIOUtils.trustStoreEntryToPem(entry);
+				contents.append(entryPem);
+			}
+			byte[] bytes = contents.toString().getBytes(STORE_ENCODING);
+			FileUtils.storeFileContents(filename, bytes, ".tmp");
+		} catch (IOException | CryptoCertificateException e) {
+			throw new IllegalStateException("Unable to store certificate store " + filename, e);
+		}
 	}
 
 	// -------------------------------------------------------------------------

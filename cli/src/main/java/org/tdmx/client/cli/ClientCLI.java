@@ -42,12 +42,16 @@ import org.tdmx.client.cli.zone.CheckDns;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
+import org.tdmx.client.cli.zone.DeleteDistrust;
+import org.tdmx.client.cli.zone.DeleteTrust;
 import org.tdmx.client.cli.zone.DeleteZone;
 import org.tdmx.client.cli.zone.DescribeDns;
 import org.tdmx.client.cli.zone.DescribeZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DownloadScs;
 import org.tdmx.client.cli.zone.ModifyZone;
 import org.tdmx.client.cli.zone.Route53Dns;
+import org.tdmx.client.cli.zone.SearchDistrust;
+import org.tdmx.client.cli.zone.SearchTrust;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -83,6 +87,8 @@ public class ClientCLI {
 			SearchDomainAdministratorCredentials.class, CreateDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
+			SearchTrust.class, DeleteTrust.class,
+			SearchDistrust.class, DeleteDistrust.class,
 			CollectCertificate.class,
 			AuthorizeChannel.class, SearchChannel.class,
 			CreateUserCredentials.class, };

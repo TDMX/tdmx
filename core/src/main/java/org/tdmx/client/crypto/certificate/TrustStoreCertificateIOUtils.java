@@ -35,7 +35,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 public class TrustStoreCertificateIOUtils {
 
@@ -60,8 +60,8 @@ public class TrustStoreCertificateIOUtils {
 		String fingerprint = entry.getCertificate().getFingerprint();
 		StringWriter writer = new StringWriter();
 		if (entry.getFriendlyName() != null) {
-			writer.write(TrustStoreEntry.FRIENDLY_NAME + fingerprint + " " + entry.getFriendlyName()
-					+ TrustStoreEntry.NL);
+			writer.write(
+					TrustStoreEntry.FRIENDLY_NAME + fingerprint + " " + entry.getFriendlyName() + TrustStoreEntry.NL);
 		}
 		if (entry.getComment() != null) {
 			BufferedReader br = new BufferedReader(new StringReader(entry.getComment()));
@@ -75,7 +75,7 @@ public class TrustStoreCertificateIOUtils {
 			}
 
 		}
-		PEMWriter pemWrtCer = new PEMWriter(writer);
+		JcaPEMWriter pemWrtCer = new JcaPEMWriter(writer);
 		try {
 			pemWrtCer.writeObject(entry.getCertificate().getCertificate());
 			pemWrtCer.close();
@@ -90,6 +90,7 @@ public class TrustStoreCertificateIOUtils {
 		StringReader sr = new StringReader(input);
 		PEMParser pp = new PEMParser(sr);
 
+		// we make 2 passes , first extracting certs, 2nd extracting meta infos
 		List<TrustStoreEntry> certList = new ArrayList<>();
 		Object o = null;
 		try {
