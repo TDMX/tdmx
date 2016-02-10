@@ -21,6 +21,7 @@ package org.tdmx.client.cli;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
@@ -58,6 +59,14 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.common.Error error) {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
+	}
+
+	public static String toString(ZoneDescriptor zd) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("zone=").append(zd.getZoneApex()).append(LINEFEED);
+		sb.append("scsUrl=").append(zd.getScsUrl()).append(LINEFEED);
+		sb.append("version=").append(zd.getVersion()).append(LINEFEED);
+		return sb.toString();
 	}
 
 	public static String toString(TrustStoreEntry entry) {

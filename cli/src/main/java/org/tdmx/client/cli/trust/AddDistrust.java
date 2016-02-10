@@ -29,8 +29,8 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
-@Cli(name = "trust:add", description = "Add untrusted certificates to the zone's trusted certificate store file - trusted.store")
-public class AddTrust implements CommandExecutable {
+@Cli(name = "distrust:add", description = "Add untrusted certificates to the zone's distrusted certificate store file - distrusted.store")
+public class AddDistrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -63,7 +63,7 @@ public class AddTrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
+		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
 		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
 
 		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
@@ -84,17 +84,17 @@ public class AddTrust implements CommandExecutable {
 			}
 		}
 		if (numMatches == 1) {
-			if (!trusted.contains(matchingEntry.getCertificate())) {
+			if (!distrusted.contains(matchingEntry.getCertificate())) {
 				TrustStoreEntry newEntry = new TrustStoreEntry(matchingEntry.getCertificate());
 				newEntry.setFriendlyName(friendlyName);
 				newEntry.addComment(comment);
-				trusted.add(newEntry);
+				distrusted.add(newEntry);
 
-				ClientCliUtils.saveTrustedCertificates(trusted);
+				ClientCliUtils.saveDistrustedCertificates(distrusted);
 
-				out.println("Added to trust store " + ClientCliLoggingUtils.toString(newEntry));
+				out.println("Added to distrust store " + ClientCliLoggingUtils.toString(newEntry));
 			} else {
-				out.println("Already in trust store.");
+				out.println("Already in distrust store.");
 			}
 		} else {
 			out.println("Matched " + numMatches + "/" + totalEntries + " untrusted certificates.");

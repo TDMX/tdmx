@@ -54,6 +54,9 @@ public class ModifyZone implements CommandExecutable {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 		if (NetUtils.isValidUrl(scsUrl)) {
 			zd.setScsUrl(NetUtils.getURL(scsUrl));
+		} else {
+			out.println("Not a valid URL " + scsUrl);
+			return;
 		}
 
 		ClientCliUtils.storeZoneDescriptor(zd);

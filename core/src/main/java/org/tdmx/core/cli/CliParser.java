@@ -100,6 +100,7 @@ public class CliParser {
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
 				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
+					// TODO separate "HELP" for all commands
 					listCommands(out);
 				} else if (token.equalsIgnoreCase(PI_ABORT)) {
 					state = ParserState.INITIAL;
@@ -111,7 +112,7 @@ public class CliParser {
 				if (cmd == null) {
 					logError("No cmd.", err);
 					state = ParserState.ERROR;
-				} else if (token.equalsIgnoreCase(PI_HELP)) {
+				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_USAGE)) {
 					printHelp(cmd, out);
 				} else if (token.equalsIgnoreCase(PI_LIST)) {
 					listParameters(cmd, out);

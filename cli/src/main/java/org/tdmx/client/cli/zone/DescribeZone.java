@@ -16,21 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.trust;
+package org.tdmx.client.cli.zone;
 
 import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
-import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
+import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
-@Cli(name = "trust:add", description = "Add untrusted certificates to the zone's trusted certificate store file - trusted.store")
-public class AddTrust implements CommandExecutable {
+@Cli(name = "zone:describe", description = "Describe the zone - shows info from the zone descriptor file.")
+public class DescribeZone implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,19 +36,6 @@ public class AddTrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-
-	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
-	private String fingerprint;
-	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
-	private String domain;
-	@Parameter(name = "text", description = "find any certificate which matches this text.")
-	private String text;
-
-	// added
-	@Parameter(name = "friendlyName", description = "sets the trust store entries friendlyName.")
-	private String friendlyName;
-	@Parameter(name = "comment", description = "sets the trust store entries comment.")
-	private String comment;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,42 +47,9 @@ public class AddTrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
-		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
+		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 
-		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
-		if (!criteria.hasCriteria()) {
-			out.println("No matching criteria provided ( fingerprint, domain, text ).");
-			return;
-		}
-
-		int numMatches = 0;
-		int totalEntries = 0;
-		TrustStoreEntry matchingEntry = null;
-		for (TrustStoreEntry entry : untrusted.getCertificates()) {
-			totalEntries++;
-
-			if (ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				numMatches++;
-				matchingEntry = entry;
-			}
-		}
-		if (numMatches == 1) {
-			if (!trusted.contains(matchingEntry.getCertificate())) {
-				TrustStoreEntry newEntry = new TrustStoreEntry(matchingEntry.getCertificate());
-				newEntry.setFriendlyName(friendlyName);
-				newEntry.addComment(comment);
-				trusted.add(newEntry);
-
-				ClientCliUtils.saveTrustedCertificates(trusted);
-
-				out.println("Added to trust store " + ClientCliLoggingUtils.toString(newEntry));
-			} else {
-				out.println("Already in trust store.");
-			}
-		} else {
-			out.println("Matched " + numMatches + "/" + totalEntries + " untrusted certificates.");
-		}
+		out.println(ClientCliLoggingUtils.toString(zd));
 	}
 
 	// -------------------------------------------------------------------------

@@ -36,6 +36,8 @@ import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SearchService;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
+import org.tdmx.client.cli.trust.AddDistrust;
+import org.tdmx.client.cli.trust.AddTrust;
 import org.tdmx.client.cli.trust.CollectUntrust;
 import org.tdmx.client.cli.trust.DeleteDistrust;
 import org.tdmx.client.cli.trust.DeleteTrust;
@@ -50,6 +52,7 @@ import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DeleteZone;
 import org.tdmx.client.cli.zone.DescribeDns;
+import org.tdmx.client.cli.zone.DescribeZone;
 import org.tdmx.client.cli.zone.DescribeZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DownloadScs;
 import org.tdmx.client.cli.zone.ModifyZone;
@@ -81,7 +84,7 @@ public class ClientCLI {
 	//@formatter:off
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
-			CreateZone.class, ModifyZone.class, DeleteZone.class,
+			CreateZone.class, ModifyZone.class, DeleteZone.class, DescribeZone.class,
 			DescribeDns.class, Route53Dns.class, CheckDns.class,
 			CheckScs.class, DownloadScs.class,
 			CreateZoneAdministratorCredentials.class, DescribeZoneAdministratorCredentials.class,  
@@ -90,8 +93,8 @@ public class ClientCLI {
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
 			CollectUntrust.class, SearchUntrust.class, DeleteUntrust.class,
-			SearchTrust.class, DeleteTrust.class,
-			SearchDistrust.class, DeleteDistrust.class,
+			SearchTrust.class, DeleteTrust.class, AddTrust.class,
+			SearchDistrust.class, DeleteDistrust.class, AddDistrust.class,
 			AuthorizeChannel.class, SearchChannel.class,
 			CreateUserCredentials.class, };
 	//@formatter:on

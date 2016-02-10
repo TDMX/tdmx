@@ -69,8 +69,8 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	@Parameter(name = "validityInYears", defaultValue = "10", description = "the validity of the zone administrator's credential in years.")
 	private int validityInYears;
 
-	@Parameter(name = "password", required = true, description = "the zone administrator's keystore password.")
-	private String password;
+	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore zacPassword.")
+	private String zacPassword;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -109,8 +109,8 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 
 			PKIXCertificate publicCertificate = zac.getPublicCert();
 
-			// save the keystore protected with the password
-			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", password, "zac");
+			// save the keystore protected with the zacPassword
+			byte[] ks = KeyStoreUtils.saveKeyStore(zac, "jks", zacPassword, "zac");
 			FileUtils.storeFileContents(ClientCliUtils.createZACKeystoreFilename(zd.getZoneApex()), ks, ".tmp");
 
 			// save the public key separately alongside the keystore

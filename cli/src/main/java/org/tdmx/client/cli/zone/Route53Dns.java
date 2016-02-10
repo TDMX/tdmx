@@ -54,7 +54,7 @@ import com.amazonaws.services.route53.model.RRType;
 import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 
-@Cli(name = "dns:route53", description = "Describes the TXT record for the zone.", note = "Helps to copy-paste the DNS TXT record contents into a DNS server configuration tool.")
+@Cli(name = "dns:route53", description = "Provisions the TDMX zone information into DNS.", note = "Only for Route53 managed hosted zones. Requires AWS credental file to be found in ~/.aws/credential.")
 public class Route53Dns implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -68,7 +68,7 @@ public class Route53Dns implements CommandExecutable {
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
-	@Parameter(name = "awsRegion", required = true, description = "the Amazon AWS region name.")
+	@Parameter(name = "awsRegion", required = true, description = "the Amazon AWS region name ie. us-gov-west-1, us-east-1, us-west-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-1, ap-southeast-2, ap-northeast-1, sa-east-1, cn-north-1.")
 	private String awsRegion;
 
 	@Parameter(name = "awsHostedZoneName", defaultValueText = "<the TDMX zone name>", description = "the Amazon AWS HostedZone name - equal or super domain of the zone name.")
