@@ -28,7 +28,7 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "trust:delete", description = "Delete certificates from the zone's truststore file - trusted.store", note = "This doesn't result in distrust in the certificate - it just becomes untrusted.")
+@Cli(name = "trust:delete", description = "Delete certificates from the zone's truststore file - trusted.store", note = "This doesn't result in distrust or untrust of the certificate - it is just not trusted anymore. Use untrust:gather to gather new untrusted certificates which can then be trusted or distrusted.")
 public class DeleteTrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public class DeleteTrust implements CommandExecutable {
 		if (foundEntry != null) {
 			trusted.remove(foundEntry);
 			ClientCliUtils.saveTrustedCertificates(trusted);
-			out.println("Certificate removed.");
+			out.println("Trusted certificate removed.");
 		} else {
 			out.println("Certificate not found.");
 		}

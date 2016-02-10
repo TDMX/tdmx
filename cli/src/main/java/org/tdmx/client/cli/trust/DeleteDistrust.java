@@ -65,7 +65,7 @@ public class DeleteDistrust implements CommandExecutable {
 		if (foundEntry != null) {
 			trusted.remove(foundEntry);
 			ClientCliUtils.saveDistrustedCertificates(trusted);
-			out.println("Certificate removed.");
+			out.println("Distrusted certificate removed.");
 		} else {
 			out.println("Certificate not found.");
 		}

@@ -82,7 +82,7 @@ public class SearchTrust implements CommandExecutable {
 				out.println(ClientCliLoggingUtils.toString(entry));
 			}
 		}
-		out.println("Found " + numMatches + "/" + totalEntries + " Trusted Certificates.");
+		out.println("Found " + numMatches + "/" + totalEntries + " trusted certificates.");
 
 	}
 

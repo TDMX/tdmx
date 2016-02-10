@@ -29,8 +29,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "distrust:search", description = "Search for certificates in the zone's distrusted certificate store file - distrusted.store")
-public class SearchDistrust implements CommandExecutable {
+@Cli(name = "untrust:search", description = "Search for certificates in the zone's untrusted certificate store file - untrusted.store")
+public class SearchUntrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -57,7 +57,7 @@ public class SearchDistrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadDistrustedCertificates();
+		ZoneTrustStore trusted = ClientCliUtils.loadUntrustedCertificates();
 
 		boolean noCriteria = !StringUtils.hasText(fingerprint) && !StringUtils.hasText(domain)
 				&& !StringUtils.hasText(text);
@@ -82,7 +82,7 @@ public class SearchDistrust implements CommandExecutable {
 				out.println(ClientCliLoggingUtils.toString(entry));
 			}
 		}
-		out.println("Found " + numMatches + "/" + totalEntries + " distrusted certificates.");
+		out.println("Found " + numMatches + "/" + totalEntries + " untrusted certificates.");
 
 	}
 

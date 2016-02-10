@@ -20,7 +20,6 @@ package org.tdmx.client.cli.trust;
 
 import java.io.PrintStream;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
@@ -29,8 +28,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "distrust:search", description = "Search for certificates in the zone's distrusted certificate store file - distrusted.store")
-public class SearchDistrust implements CommandExecutable {
+@Cli(name = "untrust:delete", description = "Delete certificates from the zone's untrusted certificate store file - untrusted.store", note = "This doesn't result in trust or distrust of the certificate - it is just not untrusted.")
+public class DeleteUntrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,12 +39,8 @@ public class SearchDistrust implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
+	@Parameter(name = "fingerprint", required = true, description = "the SHA2 fingerprint of a certificate to remove.")
 	private String fingerprint;
-	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
-	private String domain;
-	@Parameter(name = "text", description = "find any certificate which matches this text.")
-	private String text;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -57,32 +52,23 @@ public class SearchDistrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadDistrustedCertificates();
+		ZoneTrustStore trusted = ClientCliUtils.loadUntrustedCertificates();
 
-		boolean noCriteria = !StringUtils.hasText(fingerprint) && !StringUtils.hasText(domain)
-				&& !StringUtils.hasText(text);
-
-		int numMatches = 0;
-		int totalEntries = 0;
+		TrustStoreEntry foundEntry = null;
 		for (TrustStoreEntry entry : trusted.getCertificates()) {
-			totalEntries++;
-			boolean match = noCriteria; // if we have no criteria we match all!
 
 			if (StringUtils.hasText(fingerprint)) {
-				match = fingerprint.equalsIgnoreCase(entry.getCertificate().getFingerprint());
-			}
-			if (StringUtils.hasText(domain)) {
-				match = domain.equalsIgnoreCase(entry.getCertificate().getTdmxDomainName());
-			}
-			if (StringUtils.hasText(text)) {
-				String cert = entry.getCertificate().toString().toLowerCase();
-				match = cert.contains(text.toLowerCase());
-			}
-			if (match) {
-				out.println(ClientCliLoggingUtils.toString(entry));
+				foundEntry = entry;
+				break;
 			}
 		}
-		out.println("Found " + numMatches + "/" + totalEntries + " distrusted certificates.");
+		if (foundEntry != null) {
+			trusted.remove(foundEntry);
+			ClientCliUtils.saveUntrustedCertificates(trusted);
+			out.println("Untrusted certificate removed.");
+		} else {
+			out.println("Certificate not found.");
+		}
 
 	}
 

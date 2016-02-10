@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,6 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
-import org.tdmx.core.system.lang.FileUtils;
 
 @Cli(name = "untrust:collect", description = "collects untrusted zone administration certificates known to the domain at the service provider.", note = "After collecting untrusted certificates, use trust:add or distrust:add to allow channel authorization.")
 public class CollectUntrust implements CommandExecutable {
@@ -113,6 +111,7 @@ public class CollectUntrust implements CommandExecutable {
 
 		Map<String, PKIXCertificate> authCertMap = new HashMap<>();
 
+		int totalUnconfirmedChannels = 0;
 		int iteration = 0;
 		boolean again = false;
 		do {
@@ -124,6 +123,7 @@ public class CollectUntrust implements CommandExecutable {
 
 			ChannelAuthorizationFilter caf = new ChannelAuthorizationFilter();
 			caf.setDomain(domain);
+			caf.setUnconfirmedFlag(true);
 			caf.setDestination(new ChannelDestinationFilter());
 			caf.setOrigin(new ChannelEndpointFilter());
 			searchChannelRequest.setFilter(caf);
@@ -133,6 +133,8 @@ public class CollectUntrust implements CommandExecutable {
 			org.tdmx.core.api.v01.zas.SearchChannelResponse searchChannelResponse = zas
 					.searchChannel(searchChannelRequest);
 			if (searchChannelResponse.isSuccess()) {
+				totalUnconfirmedChannels += searchChannelResponse.getChannelinfos().size();
+
 				for (Channelinfo channel : searchChannelResponse.getChannelinfos()) {
 					PKIXCertificate cert = null;
 					// we extract the zone root cert from all the authorization signatures
@@ -188,7 +190,8 @@ public class CollectUntrust implements CommandExecutable {
 		if (changed) {
 			ClientCliUtils.saveUntrustedCertificates(untrusted);
 		} else {
-			out.println("No new untrusted certificates found.");
+			out.println("No new untrusted certificates found. Checked " + totalUnconfirmedChannels
+					+ " channels with unconfirmed permissions.");
 		}
 	}
 
@@ -209,13 +212,6 @@ public class CollectUntrust implements CommandExecutable {
 		return CertificateIOUtils.safeDecodeX509(rootCert);
 	}
 
-	private void handleCertificate(String zoneApex, String fingerprint, String suffix, byte[] bytes) {
-		try {
-			FileUtils.storeFileContents(zoneApex + "-" + fingerprint + "." + suffix + ".crt", bytes, ".tmp");
-		} catch (IOException e) {
-			throw new IllegalStateException("Unable to save certificate.", e);
-		}
-	}
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
