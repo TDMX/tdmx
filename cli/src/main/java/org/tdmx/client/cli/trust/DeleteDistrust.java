@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.zone;
+package org.tdmx.client.cli.trust;
 
 import java.io.PrintStream;
 
@@ -28,8 +28,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "trust:delete", description = "Delete certificates from the zone's truststore file - trusted.store", note = "This doesn't result in distrust in the certificate - it just becomes untrusted.")
-public class DeleteTrust implements CommandExecutable {
+@Cli(name = "distrust:delete", description = "Delete certificates from the zone's distrusted certificate store file - distrusted.store", note = "This doesn't result in trust in the certificate - it just becomes untrusted.")
+public class DeleteDistrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -52,7 +52,7 @@ public class DeleteTrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
+		ZoneTrustStore trusted = ClientCliUtils.loadDistrustedCertificates();
 
 		TrustStoreEntry foundEntry = null;
 		for (TrustStoreEntry entry : trusted.getCertificates()) {
@@ -64,7 +64,7 @@ public class DeleteTrust implements CommandExecutable {
 		}
 		if (foundEntry != null) {
 			trusted.remove(foundEntry);
-			ClientCliUtils.saveTrustedCertificates(trusted);
+			ClientCliUtils.saveDistrustedCertificates(trusted);
 			out.println("Certificate removed.");
 		} else {
 			out.println("Certificate not found.");

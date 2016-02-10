@@ -83,6 +83,7 @@ public class ClientCliUtils {
 
 	public static final String ZONE_TRUST_STORE = "trusted.store";
 	public static final String ZONE_DISTRUST_STORE = "distrusted.store";
+	public static final String ZONE_UNTRUST_STORE = "untrusted.store";
 	public static final String STORE_ENCODING = "UTF-8";
 
 	public static final String KEYSTORE_TYPE = "jks";
@@ -330,6 +331,10 @@ public class ClientCliUtils {
 		return loadStore(ZONE_DISTRUST_STORE);
 	}
 
+	public static ZoneTrustStore loadUntrustedCertificates() {
+		return loadStore(ZONE_UNTRUST_STORE);
+	}
+
 	private static ZoneTrustStore loadStore(String filename) {
 		byte[] bytes;
 		try {
@@ -353,6 +358,10 @@ public class ClientCliUtils {
 
 	public static void saveDistrustedCertificates(ZoneTrustStore store) {
 		saveStore(store, ZONE_DISTRUST_STORE);
+	}
+
+	public static void saveUntrustedCertificates(ZoneTrustStore store) {
+		saveStore(store, ZONE_UNTRUST_STORE);
 	}
 
 	private static void saveStore(ZoneTrustStore store, String filename) {

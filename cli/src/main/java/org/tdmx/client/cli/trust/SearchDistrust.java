@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.zone;
+package org.tdmx.client.cli.trust;
 
 import java.io.PrintStream;
 
@@ -29,8 +29,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "trust:search", description = "Search for certificates in the zone's truststore file - trusted.store")
-public class SearchTrust implements CommandExecutable {
+@Cli(name = "distrust:search", description = "Search for certificates in the zone's distrusted certificate store file - distrusted.store")
+public class SearchDistrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -57,7 +57,7 @@ public class SearchTrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
+		ZoneTrustStore trusted = ClientCliUtils.loadDistrustedCertificates();
 
 		boolean noCriteria = !StringUtils.hasText(fingerprint) && !StringUtils.hasText(domain)
 				&& !StringUtils.hasText(text);
@@ -82,7 +82,7 @@ public class SearchTrust implements CommandExecutable {
 				out.println(ClientCliLoggingUtils.toString(entry));
 			}
 		}
-		out.println("Found " + numMatches + "/" + totalEntries + " Trusted Certificates.");
+		out.println("Found " + numMatches + "/" + totalEntries + " Distrusted Certificates.");
 
 	}
 

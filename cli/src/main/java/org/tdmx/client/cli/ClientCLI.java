@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.AuthorizeChannel;
-import org.tdmx.client.cli.domain.CollectCertificate;
 import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
@@ -37,21 +36,22 @@ import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SearchService;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
+import org.tdmx.client.cli.trust.CollectUntrust;
+import org.tdmx.client.cli.trust.DeleteDistrust;
+import org.tdmx.client.cli.trust.DeleteTrust;
+import org.tdmx.client.cli.trust.SearchDistrust;
+import org.tdmx.client.cli.trust.SearchTrust;
 import org.tdmx.client.cli.user.CreateUserCredentials;
 import org.tdmx.client.cli.zone.CheckDns;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
-import org.tdmx.client.cli.zone.DeleteDistrust;
-import org.tdmx.client.cli.zone.DeleteTrust;
 import org.tdmx.client.cli.zone.DeleteZone;
 import org.tdmx.client.cli.zone.DescribeDns;
 import org.tdmx.client.cli.zone.DescribeZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DownloadScs;
 import org.tdmx.client.cli.zone.ModifyZone;
 import org.tdmx.client.cli.zone.Route53Dns;
-import org.tdmx.client.cli.zone.SearchDistrust;
-import org.tdmx.client.cli.zone.SearchTrust;
 import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
@@ -87,9 +87,9 @@ public class ClientCLI {
 			SearchDomainAdministratorCredentials.class, CreateDomainAdministratorCredentials.class, ActivateDomainAdministratorCredentials.class, SuspendDomainAdministratorCredentials.class, DeactivateDomainAdministratorCredentials.class,
 			CreateService.class, SearchService.class, DeleteService.class,
 			CreateAddress.class, SearchAddress.class, DeleteAddress.class,
+			CollectUntrust.class,
 			SearchTrust.class, DeleteTrust.class,
 			SearchDistrust.class, DeleteDistrust.class,
-			CollectCertificate.class,
 			AuthorizeChannel.class, SearchChannel.class,
 			CreateUserCredentials.class, };
 	//@formatter:on

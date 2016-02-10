@@ -16,10 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.domain;
+package org.tdmx.client.cli.trust;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
@@ -27,6 +29,7 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
@@ -43,8 +46,8 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "certificate:collect", description = "collects zone administration certificates known to the domain at the service provider.", note = "Zone administration certificates with undecided trust have the filename <zone>.undecided.crt. The ZACs are fetched by traversing all channel authorizations of the domain.")
-public class CollectCertificate implements CommandExecutable {
+@Cli(name = "untrust:collect", description = "collects untrusted zone administration certificates known to the domain at the service provider.", note = "After collecting untrusted certificates, use trust:add or distrust:add to allow channel authorization.")
+public class CollectUntrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -77,10 +80,6 @@ public class CollectCertificate implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
-		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
-		// TODO #93: collect and then process step
-
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("No TDMX DNS TXT record found for " + domain);
@@ -112,9 +111,7 @@ public class CollectCertificate implements CommandExecutable {
 		// CLI FUNCTION
 		// -------------------------------------------------------------------------
 
-		String ownZoneApex = dac.getPublicCert().getTdmxZoneInfo().getZoneRoot();
-		// TODO skip own zone
-		// TODO load all "trusted", "untrusted" and "undefined" via UTILS.
+		Map<String, PKIXCertificate> authCertMap = new HashMap<>();
 
 		int iteration = 0;
 		boolean again = false;
@@ -137,22 +134,28 @@ public class CollectCertificate implements CommandExecutable {
 					.searchChannel(searchChannelRequest);
 			if (searchChannelResponse.isSuccess()) {
 				for (Channelinfo channel : searchChannelResponse.getChannelinfos()) {
+					PKIXCertificate cert = null;
 					// we extract the zone root cert from all the authorization signatures
 					if (channel.getChannelauthorization().getCurrent().getOriginPermission() != null) {
-						processSigner(out, channel.getChannelauthorization().getCurrent().getOriginPermission()
+						cert = processSigner(out, channel.getChannelauthorization().getCurrent().getOriginPermission()
 								.getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getCurrent().getDestinationPermission() != null) {
-						processSigner(out, channel.getChannelauthorization().getCurrent().getDestinationPermission()
-								.getAdministratorsignature());
+						cert = processSigner(out, channel.getChannelauthorization().getCurrent()
+								.getDestinationPermission().getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getUnconfirmed().getOriginPermission() != null) {
-						processSigner(out, channel.getChannelauthorization().getUnconfirmed().getOriginPermission()
-								.getAdministratorsignature());
+						cert = processSigner(out, channel.getChannelauthorization().getUnconfirmed()
+								.getOriginPermission().getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getUnconfirmed().getDestinationPermission() != null) {
-						processSigner(out, channel.getChannelauthorization().getUnconfirmed().getDestinationPermission()
-								.getAdministratorsignature());
+						cert = processSigner(out, channel.getChannelauthorization().getUnconfirmed()
+								.getDestinationPermission().getAdministratorsignature());
+					}
+					if (cert != null) {
+						authCertMap.put(cert.getFingerprint(), cert);
+					} else {
+						out.println("Unable to process certificate for " + ClientCliLoggingUtils.toString(channel));
 					}
 				}
 				again = searchChannelResponse.getChannelinfos().size() == batchsize;
@@ -162,6 +165,31 @@ public class CollectCertificate implements CommandExecutable {
 			}
 
 		} while (again);
+
+		// add any as yet unknown certificates to the untrusted store
+		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
+		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
+		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
+
+		boolean changed = false;
+		for (PKIXCertificate cert : authCertMap.values()) {
+			if (dac.getZoneRootPublicCert().isIdentical(cert)) {
+				// skip own zone admin's certificate
+				continue;
+			}
+			if (!trusted.contains(cert) && !distrusted.contains(cert)) {
+				// add to untrusted store, friendly name and comment are not managed in the untrusted store.
+				out.println("Added untrusted certificate: " + ClientCliLoggingUtils.toString(cert));
+				TrustStoreEntry entry = new TrustStoreEntry(cert);
+				untrusted.add(entry);
+				changed = true;
+			}
+		}
+		if (changed) {
+			ClientCliUtils.saveUntrustedCertificates(untrusted);
+		} else {
+			out.println("No new untrusted certificates found.");
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -171,21 +199,14 @@ public class CollectCertificate implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private void processSigner(PrintStream out, Administratorsignature signer) {
+
+	private PKIXCertificate processSigner(PrintStream out, Administratorsignature signer) {
 		if (signer == null || signer.getAdministratorIdentity() == null
 				|| signer.getAdministratorIdentity().getRootcertificate() == null) {
-			return;
+			return null;
 		}
 		byte[] rootCert = signer.getAdministratorIdentity().getRootcertificate();
-		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(rootCert);
-		if (pk == null) {
-			handleCertificate("unknown", "" + System.currentTimeMillis(), "error", rootCert);
-			return;
-		}
-		String zoneApex = pk.getTdmxZoneInfo().getZoneRoot();
-		String fingerprint = pk.getFingerprint();
-		out.println("Discovered " + ClientCliLoggingUtils.toString(pk));
-		handleCertificate(zoneApex, fingerprint, "undefined", rootCert);
+		return CertificateIOUtils.safeDecodeX509(rootCert);
 	}
 
 	private void handleCertificate(String zoneApex, String fingerprint, String suffix, byte[] bytes) {
