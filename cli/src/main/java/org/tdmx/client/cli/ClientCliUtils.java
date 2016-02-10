@@ -319,9 +319,78 @@ public class ClientCliUtils {
 		}
 	}
 
+	public static class TrustStoreEntrySearchCriteria {
+		private String fingerprint;
+		private String domain;
+		private String fullText;
+
+		public TrustStoreEntrySearchCriteria() {
+		}
+
+		public TrustStoreEntrySearchCriteria(String fingerprint, String domain, String fullText) {
+			this.fingerprint = fingerprint;
+			this.domain = domain;
+			this.fullText = fullText;
+		}
+
+		public boolean hasCriteria() {
+			return StringUtils.hasText(fingerprint) || StringUtils.hasText(domain) || StringUtils.hasText(fullText);
+		}
+
+		public String getFingerprint() {
+			return fingerprint;
+		}
+
+		public void setFingerprint(String fingerprint) {
+			this.fingerprint = fingerprint;
+		}
+
+		public String getDomain() {
+			return domain;
+		}
+
+		public void setDomain(String domain) {
+			this.domain = domain;
+		}
+
+		public String getFullText() {
+			return fullText;
+		}
+
+		public void setFullText(String fullText) {
+			this.fullText = fullText;
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS - Trust/Distrust Stores
 	// -------------------------------------------------------------------------
+
+	public static boolean matchesTrustedCertificate(TrustStoreEntry entry, TrustStoreEntrySearchCriteria criteria) {
+		boolean match = false;
+		if (StringUtils.hasText(criteria.getFingerprint())) {
+			match |= criteria.getFingerprint().equalsIgnoreCase(entry.getCertificate().getFingerprint());
+		}
+		if (StringUtils.hasText(criteria.getDomain())) {
+			match |= criteria.getDomain().equalsIgnoreCase(entry.getCertificate().getTdmxDomainName());
+		}
+		if (StringUtils.hasText(criteria.getFullText())) {
+			String cert = entry.getCertificate().toString().toLowerCase();
+			match |= cert.contains(criteria.getFullText().toLowerCase());
+
+			String comments = entry.getComment().toLowerCase();
+			if (StringUtils.hasText(comments)) {
+				match |= comments.contains(criteria.getFullText().toLowerCase());
+			}
+
+			String fn = entry.getFriendlyName().toLowerCase();
+			if (StringUtils.hasText(fn)) {
+				match |= fn.contains(criteria.getFullText().toLowerCase());
+			}
+		}
+		return match;
+	}
 
 	public static ZoneTrustStore loadTrustedCertificates() {
 		return loadStore(ZONE_TRUST_STORE);

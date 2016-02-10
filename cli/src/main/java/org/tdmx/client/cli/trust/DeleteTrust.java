@@ -20,13 +20,14 @@ package org.tdmx.client.cli.trust;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.StringUtils;
 
 @Cli(name = "trust:delete", description = "Delete certificates from the zone's truststore file - trusted.store", note = "This doesn't result in distrust or untrust of the certificate - it is just not trusted anymore. Use untrust:gather to gather new untrusted certificates which can then be trusted or distrusted.")
 public class DeleteTrust implements CommandExecutable {
@@ -39,8 +40,12 @@ public class DeleteTrust implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "fingerprint", required = true, description = "the SHA2 fingerprint of a certificate to remove.")
+	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
 	private String fingerprint;
+	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
+	private String domain;
+	@Parameter(name = "text", description = "find any certificate which matches this text.")
+	private String text;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -54,22 +59,30 @@ public class DeleteTrust implements CommandExecutable {
 	public void run(PrintStream out) {
 		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
 
-		TrustStoreEntry foundEntry = null;
-		for (TrustStoreEntry entry : trusted.getCertificates()) {
+		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
+		if (!criteria.hasCriteria()) {
+			out.println("No matching criteria provided ( fingerprint, domain, text ).");
+			return;
+		}
 
-			if (StringUtils.hasText(fingerprint)) {
-				foundEntry = entry;
-				break;
+		int numMatches = 0;
+		int totalEntries = 0;
+		TrustStoreEntry matchingEntry = null;
+		for (TrustStoreEntry entry : trusted.getCertificates()) {
+			totalEntries++;
+			if (ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
+				numMatches++;
+				matchingEntry = entry;
 			}
 		}
-		if (foundEntry != null) {
-			trusted.remove(foundEntry);
+		if (numMatches == 1) {
+			out.println("Removing " + ClientCliLoggingUtils.toString(matchingEntry));
+			trusted.remove(matchingEntry);
 			ClientCliUtils.saveTrustedCertificates(trusted);
 			out.println("Trusted certificate removed.");
 		} else {
-			out.println("Certificate not found.");
+			out.println("Matched " + numMatches + "/" + totalEntries + " trusted certificates. None removed.");
 		}
-
 	}
 
 	// -------------------------------------------------------------------------

@@ -29,8 +29,8 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
-@Cli(name = "untrust:search", description = "Search for certificates in the zone's untrusted certificate store file - untrusted.store")
-public class SearchUntrust implements CommandExecutable {
+@Cli(name = "trust:add", description = "Add untrusted certificates to the zone's trusted certificate store file - trusted.store")
+public class AddTrust implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,6 +47,8 @@ public class SearchUntrust implements CommandExecutable {
 	@Parameter(name = "text", description = "find any certificate which matches this text.")
 	private String text;
 
+	// TODO #93: friendlyName + comment
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -57,20 +59,38 @@ public class SearchUntrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
+		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
 		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
 
 		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
-
+		if (!criteria.hasCriteria()) {
+			out.println("No matching criteria provided ( fingerprint, domain, text ).");
+			return;
+		}
 		int numMatches = 0;
 		int totalEntries = 0;
+		TrustStoreEntry matchingEntry = null;
 		for (TrustStoreEntry entry : untrusted.getCertificates()) {
 			totalEntries++;
+			boolean match = !criteria.hasCriteria(); // if we have no criteria we match all!
 
-			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				out.println(ClientCliLoggingUtils.toString(entry));
+			match |= ClientCliUtils.matchesTrustedCertificate(entry, criteria);
+			if (match) {
+				numMatches++;
+				matchingEntry = entry;
 			}
 		}
-		out.println("Found " + numMatches + "/" + totalEntries + " untrusted certificates.");
+		if (numMatches == 1) {
+			out.println(ClientCliLoggingUtils.toString(matchingEntry));
+			if (!trusted.contains(matchingEntry.getCertificate())) {
+				trusted.add(matchingEntry);
+				ClientCliUtils.saveTrustedCertificates(trusted);
+			} else {
+				out.println("Already in trust store.");
+			}
+		} else {
+			out.println("Matched " + numMatches + "/" + totalEntries + " untrusted certificates.");
+		}
 
 	}
 

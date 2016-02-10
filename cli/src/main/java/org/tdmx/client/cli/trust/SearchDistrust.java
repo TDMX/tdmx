@@ -22,12 +22,12 @@ import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.StringUtils;
 
 @Cli(name = "distrust:search", description = "Search for certificates in the zone's distrusted certificate store file - distrusted.store")
 public class SearchDistrust implements CommandExecutable {
@@ -57,28 +57,16 @@ public class SearchDistrust implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneTrustStore trusted = ClientCliUtils.loadDistrustedCertificates();
+		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
 
-		boolean noCriteria = !StringUtils.hasText(fingerprint) && !StringUtils.hasText(domain)
-				&& !StringUtils.hasText(text);
+		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
 
 		int numMatches = 0;
 		int totalEntries = 0;
-		for (TrustStoreEntry entry : trusted.getCertificates()) {
+		for (TrustStoreEntry entry : distrusted.getCertificates()) {
 			totalEntries++;
-			boolean match = noCriteria; // if we have no criteria we match all!
 
-			if (StringUtils.hasText(fingerprint)) {
-				match = fingerprint.equalsIgnoreCase(entry.getCertificate().getFingerprint());
-			}
-			if (StringUtils.hasText(domain)) {
-				match = domain.equalsIgnoreCase(entry.getCertificate().getTdmxDomainName());
-			}
-			if (StringUtils.hasText(text)) {
-				String cert = entry.getCertificate().toString().toLowerCase();
-				match = cert.contains(text.toLowerCase());
-			}
-			if (match) {
+			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
 				out.println(ClientCliLoggingUtils.toString(entry));
 			}
 		}
