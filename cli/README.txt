@@ -142,3 +142,45 @@ Now we are ready to work with the service provider and provision
 
 Step 12: create a domain
 
+ClientCLI> domain:create domain=z2.tdmx.org zacPassword=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: ababe79662219d836e2d32081e3dc62c
+         >Domain z2.tdmx.org successfully created.
+
+confirm with 
+ClientCLI> domain:search zacPassword=changeme exec
+         >ZAS sessionId: ababe79662219d836e2d32081e3dc62c
+         >Found 1 domains.
+         >z2.tdmx.org
+
+Step 13: create a domain administrator
+
+ClientCLI> domainadmin:create domain=z2.tdmx.org password=changeme zacPassword=changeme exec
+         >certificate=-----BEGIN CERTIFICATE-----
+         >MIIFazCCA1WgAwIBAgIBATALBgkqhkiG9w0BAQwwgYcxCzAJBgNVBAYTAkNIMQww
+         >..
+         >IR8MVtTbBst2nmqC7niFuW7gLuLWSL7RZRX75ydhZRkZo1VZEKcu/DOC1W0xAnQ=
+         >-----END CERTIFICATE-----
+         >
+         >serialNumber=1
+ 
+Step 14: activate the domain administrator at the service provider
+
+ClientCLI> domainadmin:activate domain=z2.tdmx.org zacPassword=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: ababe79662219d836e2d32081e3dc62c
+         >Administrator for domain z2.tdmx.org with fingerprint 50214b243c62676ffd2944f6ad8ea0bdfa00e2e72b38fe0b5ec3a75a201a90f1 activated.
+
+confirm with 
+
+ClientCLI> domainadmin:search zacPassword=changeme exec
+         >ZAS sessionId: ababe79662219d836e2d32081e3dc62c
+         >Found 1 domain administrators.
+         >Administrator[ z2.tdmx.org SerialNumber=1 Fingerprint=50214b243c62676ffd2944f6ad8ea0bdfa00e2e72b38fe0b5ec3a75a201a90f1 Status=ACTIVE Administrator Public Key=-----BEGIN CERTIFICATE-----
+         >MIIFazCCA1WgAwIBAgIBATALBgkqhkiG9w0BAQwwgYcxCzAJBgNVBAYTAkNIMQww
+         >IR8MVtTbBst2nmqC7niFuW7gLuLWSL7RZRX75ydhZRkZo1VZEKcu/DOC1W0xAnQ=
+         >-----END CERTIFICATE-----
+
+
+Step 15:
+

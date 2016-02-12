@@ -66,8 +66,16 @@ public class DescribeDns implements CommandExecutable {
 		out.println(
 				"The following line contains the expected DNS TXT record contents for the zone " + zd.getZoneApex());
 
-		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
+		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getZoneApex(), zd.getVersion(), zacFingerprint, zd.getScsUrl());
 		out.println(DnsUtils.formatDnsTxtRecord(zr));
+
+		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(zd.getZoneApex());
+		if (domainInfo == null) {
+			out.println("DNS TXT record not found for zone " + zd.getZoneApex());
+			return;
+		}
+		out.println("Found");
+		out.println(DnsUtils.formatDnsTxtRecord(domainInfo));
 	}
 
 	// -------------------------------------------------------------------------

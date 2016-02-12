@@ -124,9 +124,10 @@ public class DnsUtilTest {
 
 	@Test
 	public void testParseTxtRecord() {
-		TdmxZoneRecord zr = DnsUtils.parseTdmxZoneRecord(
+		TdmxZoneRecord zr = DnsUtils.parseTdmxZoneRecord("zone.apex",
 				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/");
 		assertNotNull(zr);
+		assertEquals("zone.apex", zr.getZoneApex());
 		assertEquals(1, zr.getVersion());
 		assertEquals("a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310", zr.getZacFingerprint());
 		assertEquals("https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/", zr.getScsUrl().toString());

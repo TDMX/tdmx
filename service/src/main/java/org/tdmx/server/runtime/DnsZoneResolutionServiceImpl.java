@@ -131,7 +131,7 @@ public class DnsZoneResolutionServiceImpl implements DnsZoneResolutionService {
 			zoneInfo.setDomainName(domainName);
 			zoneInfo.setZoneApex(result.getApex());
 
-			TdmxZoneRecord zr = DnsUtils.parseTdmxZoneRecord(result.getRecords().get(0));
+			TdmxZoneRecord zr = DnsUtils.parseTdmxZoneRecord(result.getApex(), result.getRecords().get(0));
 			zoneInfo.setScsUrl(zr.getScsUrl());
 			zoneInfo.setZacFingerprint(zr.getZacFingerprint());
 			zoneInfo.setVersion(zr.getVersion());

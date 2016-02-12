@@ -21,16 +21,14 @@ package org.tdmx.client.cli.zone;
 import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
-import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "dns:check", description = "Checks the validity of the zone's DNS TXT record.")
-public class CheckDns implements CommandExecutable {
+@Cli(name = "dns:lookup", description = "Lookup the domain's TDMX zone information DNS")
+public class LookupDns implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,8 +38,8 @@ public class CheckDns implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
-	private String zacPassword;
+	@Parameter(name = "domain", required = true, description = "the domain name.")
+	private String domain;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -53,28 +51,12 @@ public class CheckDns implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
-
-		if (zd.getScsUrl() == null) {
-			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
-			return;
-		}
-
-		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
-		String zacFingerprint = zac.getPublicCert().getFingerprint();
-
-		out.println(
-				"The following line contains the expected DNS TXT record contents for the zone " + zd.getZoneApex());
-
-		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
-		out.println(DnsUtils.formatDnsTxtRecord(zr));
-
-		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(zd.getZoneApex());
+		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
-			out.println("DNS TXT record not found for zone " + zd.getZoneApex());
+			out.println("DNS TXT record not found for domain " + domain);
 			return;
 		}
-		out.println("Found");
+		out.println("Found TDMX zone info at " + domainInfo.getZoneApex());
 		out.println(DnsUtils.formatDnsTxtRecord(domainInfo));
 	}
 

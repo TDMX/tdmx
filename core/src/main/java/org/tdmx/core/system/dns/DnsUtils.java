@@ -75,11 +75,13 @@ public class DnsUtils {
 	}
 
 	public static class TdmxZoneRecord {
+		private final String zoneApex;
 		private final int version;
 		private final String zacFingerprint;
 		private final URL scsUrl;
 
-		public TdmxZoneRecord(int version, String zacFingerprint, URL scsUrl) {
+		public TdmxZoneRecord(String zoneApex, int version, String zacFingerprint, URL scsUrl) {
+			this.zoneApex = zoneApex;
 			this.version = version;
 			this.zacFingerprint = zacFingerprint;
 			this.scsUrl = scsUrl;
@@ -95,6 +97,10 @@ public class DnsUtils {
 
 		public URL getScsUrl() {
 			return scsUrl;
+		}
+
+		public String getZoneApex() {
+			return zoneApex;
 		}
 
 		@Override
@@ -164,14 +170,16 @@ public class DnsUtils {
 	/**
 	 * Convert a TXT record to a structured TDMX information.
 	 * 
+	 * @param zoneApex
+	 *            the dns domain which has the TXT record.
 	 * @param textRecord
 	 * @return null if the TXT record does not match the TDMX zone record else the parsed fields.
 	 */
-	public static TdmxZoneRecord parseTdmxZoneRecord(String textRecord) {
+	public static TdmxZoneRecord parseTdmxZoneRecord(String zoneApex, String textRecord) {
 		Matcher m = TDMX_DNS_TXT_RECORD_PATTERN.matcher(textRecord);
 		if (m.matches()) {
 			try {
-				return new TdmxZoneRecord(Integer.valueOf(m.group(1)), m.group(2), new URL(m.group(3)));
+				return new TdmxZoneRecord(zoneApex, Integer.valueOf(m.group(1)), m.group(2), new URL(m.group(3)));
 			} catch (NumberFormatException | MalformedURLException e) {
 				return null;
 			}

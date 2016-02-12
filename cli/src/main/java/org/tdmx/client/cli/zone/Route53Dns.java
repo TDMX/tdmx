@@ -114,7 +114,7 @@ public class Route53Dns implements CommandExecutable {
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 		String zacFingerprint = zac.getPublicCert().getFingerprint();
 
-		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getVersion(), zacFingerprint, zd.getScsUrl());
+		TdmxZoneRecord zr = new TdmxZoneRecord(zd.getZoneApex(), zd.getVersion(), zacFingerprint, zd.getScsUrl());
 		String txtRecordValue = DnsUtils.formatDnsTxtRecord(zr);
 		out.println(txtRecordValue);
 

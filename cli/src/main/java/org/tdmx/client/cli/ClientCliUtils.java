@@ -671,7 +671,7 @@ public class ClientCliUtils {
 			if (rh == null) {
 				return null;
 			}
-			return DnsUtils.parseTdmxZoneRecord(rh.getRecords().get(0));
+			return DnsUtils.parseTdmxZoneRecord(rh.getApex(), rh.getRecords().get(0));
 		} catch (TextParseException e) {
 			throw new RuntimeException(e);
 		} catch (UnknownHostException e) {
