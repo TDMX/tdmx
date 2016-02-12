@@ -13,4 +13,11 @@
      </constructor-arg>
    </bean>
 
+	<bean id="adminContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
+     <constructor-arg>
+       <list>
+         <value>common-context.xml</value>
+       </list>
+     </constructor-arg>
+   </bean>
 </beans>

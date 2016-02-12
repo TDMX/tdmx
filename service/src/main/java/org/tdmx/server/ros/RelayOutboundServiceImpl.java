@@ -119,7 +119,8 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 					jes.executeJob(job);
 					job.getChannelContext().finishJob(job);
 				}
-
+			} catch (RuntimeException re) {
+				log.error("Relay failed.", re);
 			} finally {
 				loadValue.decrementAndGet();
 			}

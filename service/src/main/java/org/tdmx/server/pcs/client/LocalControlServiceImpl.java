@@ -328,6 +328,9 @@ public class LocalControlServiceImpl
 	}
 
 	private int consistentHashCode(String key) {
+		if (serverList == null || serverList.isEmpty()) {
+			return -1;
+		}
 		return key.hashCode() % serverList.size();
 	}
 
@@ -338,6 +341,9 @@ public class LocalControlServiceImpl
 	 * @return null if the PCS server is not connected to, otherwise the PCS server to which the key maps consistently.
 	 */
 	private LocalControlServiceClient consistentHashToServer(String key) {
+		if (serverList == null || serverList.isEmpty()) {
+			return null;
+		}
 		int serverNo = consistentHashCode(key);
 		PartitionControlServer server = serverList.get(serverNo);
 		LocalControlServiceClient localProxy = serverProxyMap.get(server);

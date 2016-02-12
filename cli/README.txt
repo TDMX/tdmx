@@ -182,5 +182,43 @@ ClientCLI> domainadmin:search zacPassword=changeme exec
          >-----END CERTIFICATE-----
 
 
-Step 15:
+Step 15: create an address
+
+ClientCLI> address:create localname=user2 domain=z2.tdmx.org password=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: e313744daf43e486e6e766ff230a39be
+         >Address [user2@z2.tdmx.org] successfully created.
+         
+Step 16: requst a channel authorization
+
+ClientCLI> channel:authorize from=user2@z2.tdmx.org to=usr1@z1.tdmx.org#service1 domain=z2.tdmx.org password=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: e313744daf43e486e6e766ff230a39be
+         >Authorization Channel [user2@z2.tdmx.org->usr1@z1.tdmx.org#service1] successful.
+
+confirm with 
+
+ClientCLI> channel:search domain=z2.tdmx.org password=changeme exec
+         >
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: e313744daf43e486e6e766ff230a39be
+         >Found 1 channels.
+         >Channel Info [Domain [z2.tdmx.org]
+         >Channel [Channel [user2@z2.tdmx.org->usr1@z1.tdmx.org#service1]]
+         >Current Authorization [Origin Permission [ALLOW Size=536870912 Signature [Administrator Signature [ Administrator Public Key=-----BEGIN CERTIFICATE-----
+         >MIIFazCCA1WgAwIBAgIBATALBgkqhkiG9w0BAQwwgYcxCzAJBgNVBAYTAkNIMQww
+         >...
+         >IR8MVtTbBst2nmqC7niFuW7gLuLWSL7RZRX75ydhZRkZo1VZEKcu/DOC1W0xAnQ=
+         >-----END CERTIFICATE-----
+         >
+         >SignatureValue [ Timestamp=12. Februar 2016 21:32:07 MEZ Algorithm=SHA_384_WITH_RSA Signature=9737e139e15af005cb503d071f3e1031da4e0994dffdc15fdfa567c5d404615a5950a9de2205f0e115965d39fb6b26140b4a837dd531f0aa424eb5a09d25756f8953e8eab0a85ffc46675496c38c6a25689c11b21743aacb90d861962e20ce77b18962924c59695ee17d186c517c9f7cb5406c40eb63f4a6456db215a6dd0631964244dade7f0b5663f8099f81a36097511e77c51c6e99505025373fdbca54c39f41021377f32d657307147574f62e0b4bfa7ffa89b7a0a27df08d8a55d259663c82ba7f4ef5491e2234315a6873320a81c590546fd2a19d131cd4211e76914578c4cc9b9be8372a32e6d17e20a89448f70c8227244c0e9667791a20992e0d5a]]]]
+         >No Destination Permission
+         >]
+         >Requested Authorization [No Origin Permission
+         >No Destination Permission
+         >]
+         >Processing State [Error [306] Unable to locate TDMX zone apex information for domain z1.tdmx.org in DNS. Status=FAILURE Timestamp=12. Februar 2016 21:32:07 MEZ]
+         >No Session
+         >FlowStatus [ RelayStatus=OPEN FlowStatus=OPEN UsedBytes=0]
+         >]
 

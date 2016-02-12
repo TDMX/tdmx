@@ -63,7 +63,10 @@ public class DnsZoneResolutionServiceImpl implements DnsZoneResolutionService {
 	public DnsDomainZone resolveDomain(String domainName) {
 
 		List<DnsResolverGroup> resolverGroups = dnsResolverGroupFactory.getDnsResolverGroups();
-
+		if (resolverGroups.isEmpty()) {
+			log.warn("No DNS resolver groups defined.");
+			return null;
+		}
 		List<DnsDomainZone> foundZoneInfos = new ArrayList<>();
 
 		for (DnsResolverGroup resolver : resolverGroups) {
@@ -153,7 +156,7 @@ public class DnsZoneResolutionServiceImpl implements DnsZoneResolutionService {
 				log.warn("No TXT records found for " + domainName);
 				return null;
 			}
-			if (result.getRecords().size() > 0) {
+			if (result.getRecords().size() > 1) {
 				log.warn("Multiple TXT records found for " + domainName);
 				return null;
 			}

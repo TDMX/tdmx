@@ -43,8 +43,11 @@ public class ServerAdminCLI {
 
 	public static void main(String[] args) {
 		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("applicationContext");
+		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("adminContext");
 		context = (ApplicationContext) beanFactoryReference.getFactory();
+
+		// TODO LATER: make a special PCS LocalClientService which accesses ALL PCS servers of ALL segments
+		// to do cache invalidation of Global data.
 
 		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
 
