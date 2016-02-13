@@ -58,6 +58,7 @@ import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
@@ -227,12 +228,38 @@ public class MDSImpl implements MDS {
 	}
 
 	@Override
-	public ReceiveResponse receive(Receive parameters) {
+	public ReceiveResponse receive(Receive recvRequest) {
 		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+		// TODO #95: validate waitTimeout postive < some maximum
+
+		// TODO #95: Handle the ack of previous received message and initiate relay back of DR
+		// caching the ROS address of the reverse channel
+
+		// TODO #95: note the setup session or tx context
+
+		boolean mustFetch = session.isFetchRequired();
+		if (mustFetch) {
+			// fetch next batch of messages
+			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, batchSize));
+			criteria.getDestination().setDomainName(session.getDomain().getDomainName());
+			criteria.getDestination().setLocalName(session.getDestinationAddress().getLocalName());
+			criteria.getDestination().setServiceName(session.getService().getServiceName());
+			criteria.setAcknowledged(false);
+			criteria.setProcessingStatus(ProcessingStatus.NONE);
+			List<ChannelMessage> pendingMsgs = channelService.search(session.getZone(), criteria);
+			session.addPendingMessages(pendingMsgs);
+			// TODO #95: queue per destination user serialNr.
+		}
 
 		// TODO #95: get ready message
-		ChannelMessage msg = null;
-		Msg m = d2a.mapChannelMessage(msg, null); // TODO get 1st chunk
+		ChannelMessage msg = session.getNextPendingMessage(recvRequest.getWaitTimeout() * 1000);
+		// TODO #95: we can update the signature date, saying it's "sent" received (but not actually signed)
+		// so it would not be polled again.
+
+		Msg m = null;
+		if (msg != null) {
+			m = d2a.mapChannelMessage(msg, null); // TODO #95: get 1st chunk
+		}
 
 		// TODO #93: on msg acknowledge/commit
 		// acknowledge the message, possibly opening the relay flow control

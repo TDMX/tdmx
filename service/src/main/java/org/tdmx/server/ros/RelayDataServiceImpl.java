@@ -221,7 +221,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 		try {
 			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
 			criteria.setChannel(channel);
-			criteria.setReceived(false);
+			criteria.setAcknowledged(false);
 			criteria.setProcessingStatus(ProcessingStatus.PENDING);
 			return channelService.search(z, criteria);
 		} finally {
@@ -239,7 +239,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 		try {
 			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
 			criteria.setChannel(channel);
-			criteria.setReceived(true);
+			criteria.setAcknowledged(true);
 			criteria.setProcessingStatus(ProcessingStatus.PENDING);
 			return channelService.search(z, criteria);
 		} finally {

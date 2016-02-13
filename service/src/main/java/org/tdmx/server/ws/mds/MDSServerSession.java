@@ -18,10 +18,14 @@
  */
 package org.tdmx.server.ws.mds;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -38,6 +42,16 @@ public class MDSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final long pollIntervalMs = 60000;
+
+	// indicates that messages related to this destination have been relayed in.
+	private boolean dirty = true;
+	// the last time that we fetched pending messages from the DB. We use this to stop looking too often
+	// for pending messages on the DB if no new messages has been received.
+	private long lastFetchTimestamp = 0;
+
+	// internal
+	private final Queue<ChannelMessage> fetchedMessages = new ConcurrentLinkedDeque<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -56,10 +70,70 @@ public class MDSServerSession extends WebServiceSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Determine if a fetch is required. Only call with a thread which is prepared to fetch the messages if the return
+	 * is true.
+	 * 
+	 * @return if messages should be fetched from the DB.
+	 */
+	public synchronized boolean isFetchRequired() {
+		// TODO #95: consider only fetching when there are no outstanding ACKs or tx
+
+		if (fetchedMessages.poll() == null
+				&& (dirty == true || lastFetchTimestamp + pollIntervalMs < System.currentTimeMillis())) {
+			lastFetchTimestamp = System.currentTimeMillis();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param maxWaitDurationMs
+	 * @return
+	 */
+	public ChannelMessage getNextPendingMessage(long maxWaitDurationMs) {
+		long waitUntilTimestamp = System.currentTimeMillis() + maxWaitDurationMs;
+
+		ChannelMessage result = null;
+		do {
+			result = fetchedMessages.poll();
+			if (result == null) {
+				synchronized (fetchedMessages) {
+					long waitForMs = waitUntilTimestamp - System.currentTimeMillis();
+					if (waitForMs > 0) {
+						try {
+							fetchedMessages.wait(waitForMs);
+						} catch (InterruptedException e) {
+							return null;
+						}
+					}
+				}
+			}
+		} while (result == null && System.currentTimeMillis() < waitUntilTimestamp);
+		return result;
+	}
+
+	/**
+	 * Adds newly fetched messages to the pending message list and informs any thread's caught in
+	 * {@link #getNextPendingMessage(long)} to wake up and take one.
+	 * 
+	 * @param messages
+	 */
+	public void addPendingMessages(List<ChannelMessage> messages) {
+		if (!messages.isEmpty()) {
+			fetchedMessages.addAll(messages);
+			synchronized (fetchedMessages) {
+				fetchedMessages.notifyAll();
+			}
+		}
+	}
+
 	@Override
 	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
-		// TODO #93: MDS receives MSG from MRS
-		return false;
+		// MDS receives MSG from MRS
+		dirty = true;
+		return true;
 	}
 
 	public AccountZone getAccountZone() {
@@ -113,5 +187,17 @@ public class MDSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
+	public long getLastFetchTimestamp() {
+		return lastFetchTimestamp;
+	}
+
+	public void setLastFetchTimestamp(long lastFetchTimestamp) {
+		this.lastFetchTimestamp = lastFetchTimestamp;
+	}
 
 }

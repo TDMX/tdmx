@@ -47,7 +47,10 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 	 */
 	private Channel channel;
 
-	private Boolean received;
+	/**
+	 * Whether the receiver has acknowledged receipt.
+	 */
+	private Boolean acknowledged;
 
 	/**
 	 * Origin side, processingStatus relates to relaying out the message or delivery of the receipt depending on whether
@@ -107,14 +110,6 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 		this.channel = channel;
 	}
 
-	public Boolean getReceived() {
-		return received;
-	}
-
-	public void setReceived(Boolean received) {
-		this.received = received;
-	}
-
 	public ProcessingStatus getProcessingStatus() {
 		return processingStatus;
 	}
@@ -137,6 +132,14 @@ public class ChannelMessageSearchCriteria extends ChannelSearchCriteria {
 
 	public void setDestinationSerialNr(Integer destinationSerialNr) {
 		this.destinationSerialNr = destinationSerialNr;
+	}
+
+	public Boolean getAcknowledged() {
+		return acknowledged;
+	}
+
+	public void setAcknowledged(Boolean acknowledged) {
+		this.acknowledged = acknowledged;
 	}
 
 }

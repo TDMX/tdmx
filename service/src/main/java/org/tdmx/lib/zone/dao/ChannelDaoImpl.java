@@ -311,8 +311,8 @@ public class ChannelDaoImpl implements ChannelDao {
 		if (StringUtils.hasText(criteria.getMsgId())) {
 			where = where.and(channelMessage.msgId.eq(criteria.getMsgId()));
 		}
-		if (criteria.getReceived() != null) {
-			if (Boolean.TRUE == criteria.getReceived()) {
+		if (criteria.getAcknowledged() != null) {
+			if (Boolean.TRUE == criteria.getAcknowledged()) {
 				where = where.and(channelMessage.receipt.signatureDate.isNotNull());
 			} else {
 				where = where.and(channelMessage.receipt.signatureDate.isNull());

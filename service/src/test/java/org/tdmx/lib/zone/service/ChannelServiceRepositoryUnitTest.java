@@ -167,7 +167,7 @@ public class ChannelServiceRepositoryUnitTest {
 
 		ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, 999));
 		criteria.setChannel(ca.getChannel());
-		criteria.setReceived(false);
+		criteria.setAcknowledged(false);
 		criteria.setProcessingStatus(ProcessingStatus.PENDING);
 
 		List<ChannelMessage> messages = channelService.search(zone, criteria);
@@ -182,7 +182,7 @@ public class ChannelServiceRepositoryUnitTest {
 
 		ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, 999));
 		criteria.setChannel(ca.getChannel());
-		criteria.setReceived(true);
+		criteria.setAcknowledged(true);
 		criteria.setProcessingStatus(ProcessingStatus.PENDING);
 
 		List<ChannelMessage> messages = channelService.search(zone, criteria);
