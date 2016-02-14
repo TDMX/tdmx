@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
@@ -135,7 +134,7 @@ public class SCSImpl implements SCS, Manageable {
 
 		// service not yet started :(
 		if (segment == null) {
-			setError(ErrorCode.MissingSegment, response);
+			ErrorCode.setError(ErrorCode.MissingSegment, response);
 			return response;
 		}
 
@@ -149,12 +148,12 @@ public class SCSImpl implements SCS, Manageable {
 
 		DomainZoneApexInfo destZoneApexInfo = domainZoneResolutionService.resolveDomain(cd.getDomainName());
 		if (destZoneApexInfo == null) {
-			setError(ErrorCode.DnsZoneApexMissing, response, cd.getDomainName());
+			ErrorCode.setError(ErrorCode.DnsZoneApexMissing, response, cd.getDomainName());
 			return response;
 		}
 		DomainZoneApexInfo originZoneApexInfo = domainZoneResolutionService.resolveDomain(co.getDomainName());
 		if (originZoneApexInfo == null) {
-			setError(ErrorCode.DnsZoneApexMissing, response, co.getDomainName());
+			ErrorCode.setError(ErrorCode.DnsZoneApexMissing, response, co.getDomainName());
 			return response;
 		}
 
@@ -166,7 +165,7 @@ public class SCSImpl implements SCS, Manageable {
 			// if the origin's DNS information points to our own scsHostname, then the client certificate's name must
 			// match the destination domain's scsHostname
 			if (!serviceProviderName.equals(destZoneApexInfo.getScsUrl().getHost())) {
-				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+				ErrorCode.setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 				return response;
 			}
 			zoneApex = originZoneApexInfo.getZoneApex();
@@ -174,7 +173,7 @@ public class SCSImpl implements SCS, Manageable {
 			localName = co.getLocalName();
 		} else if (segment.getScsUrl().equals(destZoneApexInfo.getScsUrl().toExternalForm())) {
 			if (!serviceProviderName.equals(originZoneApexInfo.getScsUrl().getHost())) {
-				setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+				ErrorCode.setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 				return response;
 			}
 			zoneApex = destZoneApexInfo.getZoneApex();
@@ -182,12 +181,12 @@ public class SCSImpl implements SCS, Manageable {
 			localName = cd.getLocalName();
 			serviceName = cd.getServiceName();
 		} else {
-			setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
+			ErrorCode.setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 			return response;
 		}
 		AccountZone az = accountZoneService.findByZoneApex(zoneApex);
 		if (az == null) {
-			setError(ErrorCode.ZoneNotFound, response);
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
@@ -215,7 +214,7 @@ public class SCSImpl implements SCS, Manageable {
 		}
 
 		if (ep == null) {
-			setError(ErrorCode.NoSessionCapacity, response);
+			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
 		}
 
@@ -247,7 +246,7 @@ public class SCSImpl implements SCS, Manageable {
 
 		String serviceName = parameters.getServicename();
 		if (!StringUtils.hasText(serviceName)) {
-			setError(ErrorCode.MissingServiceName, response);
+			ErrorCode.setError(ErrorCode.MissingServiceName, response);
 			return response;
 		}
 
@@ -270,7 +269,7 @@ public class SCSImpl implements SCS, Manageable {
 
 		WebServiceSessionEndpoint ep = sessionAllocationService.associateMDSSession(az, existingCred, service);
 		if (ep == null) {
-			setError(ErrorCode.NoSessionCapacity, response);
+			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
 		}
 
@@ -308,7 +307,7 @@ public class SCSImpl implements SCS, Manageable {
 
 		WebServiceSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, existingCred);
 		if (ep == null) {
-			setError(ErrorCode.NoSessionCapacity, response);
+			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
 		}
 
@@ -345,7 +344,7 @@ public class SCSImpl implements SCS, Manageable {
 
 		WebServiceSessionEndpoint ep = sessionAllocationService.associateZASSession(az, existingCred);
 		if (ep == null) {
-			setError(ErrorCode.NoSessionCapacity, response);
+			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
 		}
 
@@ -385,26 +384,10 @@ public class SCSImpl implements SCS, Manageable {
 		return session;
 	}
 
-	private void setError(ErrorCode ec, Acknowledge ack, Object... params) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription(params));
-		ack.setError(error);
-		ack.setSuccess(false);
-	}
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
-	}
-
 	private AccountZone getAccountZone(String zoneApex, Acknowledge ack) {
 		AccountZone az = accountZoneService.findByZoneApex(zoneApex);
 		if (az == null) {
-			setError(ErrorCode.ZoneNotFound, ack);
+			ErrorCode.setError(ErrorCode.ZoneNotFound, ack);
 			return null;
 		}
 		return az;
@@ -413,11 +396,11 @@ public class SCSImpl implements SCS, Manageable {
 	private PKIXCertificate checkUserAuthorized(Acknowledge ack) {
 		PKIXCertificate user = authenticatedClientService.getAuthenticatedClient();
 		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
+			ErrorCode.setError(ErrorCode.MissingCredentials, ack);
 			return null;
 		}
 		if (!user.isTdmxUserCertificate()) {
-			setError(ErrorCode.NonUserAccess, ack);
+			ErrorCode.setError(ErrorCode.NonUserAccess, ack);
 			return null;
 		}
 		return user;
@@ -426,11 +409,11 @@ public class SCSImpl implements SCS, Manageable {
 	private PKIXCertificate checkZACorDACAuthorized(Acknowledge ack) {
 		PKIXCertificate user = authenticatedClientService.getAuthenticatedClient();
 		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
+			ErrorCode.setError(ErrorCode.MissingCredentials, ack);
 			return null;
 		}
 		if (!user.isTdmxZoneAdminCertificate() && !user.isTdmxDomainAdminCertificate()) {
-			setError(ErrorCode.NonAdministratorAccess, ack);
+			ErrorCode.setError(ErrorCode.NonAdministratorAccess, ack);
 			return null;
 		}
 		return user;
@@ -439,11 +422,11 @@ public class SCSImpl implements SCS, Manageable {
 	private PKIXCertificate checkNonTDMXClientAuthenticated(Acknowledge ack) {
 		PKIXCertificate user = authenticatedClientService.getAuthenticatedClient();
 		if (user == null) {
-			setError(ErrorCode.MissingCredentials, ack);
+			ErrorCode.setError(ErrorCode.MissingCredentials, ack);
 			return null;
 		}
 		if (user.isTdmxUserCertificate() || user.isTdmxDomainAdminCertificate() || user.isTdmxZoneAdminCertificate()) {
-			setError(ErrorCode.NonPKIXAccess, ack);
+			ErrorCode.setError(ErrorCode.NonPKIXAccess, ack);
 			return null;
 		}
 		return user;
@@ -455,28 +438,28 @@ public class SCSImpl implements SCS, Manageable {
 		try {
 			AgentCredential existingUser = credentialService.findByFingerprint(cert.getFingerprint());
 			if (existingUser == null) {
-				setError(ErrorCode.UserCredentialNotFound, ack);
+				ErrorCode.setError(ErrorCode.UserCredentialNotFound, ack);
 				return null;
 			}
 			if (AgentCredentialStatus.ACTIVE != existingUser.getCredentialStatus()) {
-				setError(ErrorCode.SuspendedAccess, ack);
+				ErrorCode.setError(ErrorCode.SuspendedAccess, ack);
 				return null;
 			}
 			// paranoia checks - in case the fingerprint matches some other cert by mistake
 			if (!existingUser.getZone().getZoneApex().equals(cert.getTdmxZoneInfo().getZoneRoot())) {
-				setError(ErrorCode.InvalidUserCredentials, ack);
+				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
 				return null;
 			}
 			// paranoia checks - in case the fingerprint matches some other cert by mistake
 			if (existingUser.getDomain() != null
 					&& !existingUser.getDomain().getDomainName().equals(cert.getTdmxDomainName())) {
-				setError(ErrorCode.InvalidUserCredentials, ack);
+				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
 				return null;
 			}
 			// paranoia checks - in case the fingerprint matches some other cert by mistake
 			if (existingUser.getAddress() != null
 					&& !existingUser.getAddress().getLocalName().equals(cert.getTdmxUserName())) {
-				setError(ErrorCode.InvalidUserCredentials, ack);
+				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
 				return null;
 			}
 			return existingUser;
@@ -491,7 +474,7 @@ public class SCSImpl implements SCS, Manageable {
 		try {
 			Service service = serviceService.findByName(domain, serviceName);
 			if (service == null) {
-				setError(ErrorCode.ServiceNotFound, ack);
+				ErrorCode.setError(ErrorCode.ServiceNotFound, ack);
 				return null;
 			}
 			return service;
@@ -505,7 +488,7 @@ public class SCSImpl implements SCS, Manageable {
 		try {
 			Zone zone = zoneService.findByZoneApex(az.getZoneApex());
 			if (zone == null) {
-				setError(ErrorCode.ZoneNotFound, ack);
+				ErrorCode.setError(ErrorCode.ZoneNotFound, ack);
 				return null;
 			}
 			return zone;
@@ -519,7 +502,7 @@ public class SCSImpl implements SCS, Manageable {
 		try {
 			Domain domain = domainService.findByName(zone, domainName);
 			if (domain == null) {
-				setError(ErrorCode.DomainNotFound, ack);
+				ErrorCode.setError(ErrorCode.DomainNotFound, ack);
 				return null;
 			}
 			return domain;

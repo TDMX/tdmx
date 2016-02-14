@@ -109,9 +109,9 @@
 			<xs:documentation>A one phase commit.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="txtimeout" type="xs:dateTime">
+	<xs:element name="txtimeout" type="xs:unsignedShort">
 		<xs:annotation>
-			<xs:documentation>A transaction timeout.</xs:documentation>
+			<xs:documentation>The transaction timeout in seconds.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="xid" type="txid">

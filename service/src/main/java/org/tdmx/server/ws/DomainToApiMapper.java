@@ -215,7 +215,7 @@ public class DomainToApiMapper {
 		return d;
 	}
 
-	public Msg mapChannelMessage(org.tdmx.lib.zone.domain.ChannelMessage msg, org.tdmx.lib.message.domain.Chunk chunk) {
+	public Msg mapChannelMessage(org.tdmx.lib.zone.domain.ChannelMessage msg) {
 		if (msg == null) {
 			return null;
 		}
@@ -239,8 +239,6 @@ public class DomainToApiMapper {
 		p.setPlaintextLength(msg.getPlaintextLength());
 		p.setMACofMACs(msg.getMacOfMacs());
 		m.setPayload(p);
-
-		m.setChunk(mapChunk(chunk));
 
 		return m;
 	}

@@ -76,7 +76,7 @@
 	<!-- ********************************************* -->
 	<xs:complexType name="receiveRequestType">
 		<xs:annotation>
-			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
+			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an autoacknowledging session.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="common:Request">
@@ -85,7 +85,7 @@
 						<xs:element ref="tx:transaction"/>
 						<xs:element ref="msg:session"/>
 					</xs:choice>
-					<xs:element ref="msg:waitTimeout"/>
+					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -124,6 +124,24 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="acknowledgeRequestType">
+		<xs:annotation>
+			<xs:documentation>acknowledge receipt of a message on the calling agent's destination, in the context of a non auto-acknowledging session. Use the acknowledge in the receive operation for more efficiency.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="tx:xid"/>
+					<xs:element ref="msg:dr"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="acknowledgeResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
+		</xs:complexContent>
+	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--    REQUEST AND RESPONSE ELEMENTS                                              -->
 	<!--                                               -->
@@ -146,4 +164,6 @@
 	<xs:element name="receiveResponse" type="receiveResponseType"/>
 	<xs:element name="download" type="downloadRequestType"/>
 	<xs:element name="downloadResponse" type="downloadResponseType"/>
+	<xs:element name="acknowledge" type="acknowledgeRequestType"/>
+	<xs:element name="acknowledgeResponse" type="acknowledgeResponseType"/>
 </xs:schema>

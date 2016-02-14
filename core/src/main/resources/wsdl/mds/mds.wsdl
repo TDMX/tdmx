@@ -47,6 +47,12 @@
 	<wsdl:message name="downloadResponse">
 		<wsdl:part name="parameters" element="mds:downloadResponse"/>
 	</wsdl:message>
+	<wsdl:message name="acknowledgeRequest">
+		<wsdl:part name="parameters" element="mds:acknowledge"/>
+	</wsdl:message>
+	<wsdl:message name="acknowledgeResponse">
+		<wsdl:part name="parameters" element="mds:acknowledgeResponse"/>
+	</wsdl:message>
 	<wsdl:message name="prepareRequest">
 		<wsdl:part name="parameters" element="tx:prepare"/>
 	</wsdl:message>
@@ -115,6 +121,13 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:downloadRequest"/>
 			<wsdl:output message="tns:downloadResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="acknowledge">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:acknowledgeRequest"/>
+			<wsdl:output message="tns:acknowledgeResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="prepare">
 			<wsdl:documentation>
@@ -192,6 +205,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="download">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/download"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="acknowledge">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mds-definition/acknowledge"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

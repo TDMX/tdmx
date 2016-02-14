@@ -1,5 +1,8 @@
 package org.tdmx.server.ws;
 
+import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.core.api.v01.common.Error;
+
 public enum ErrorCode {
 	// authorization errors
 	MissingCredentials(403, "Missing Credentials."),
@@ -98,6 +101,7 @@ public enum ErrorCode {
 	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
 	InvalidMsgId(500, "Message ID invalid."),
+	InvalidTimeout(500, "Timeout invalid. Value must be >= 0 and <= %d"),
 	InvalidChannelOrigin(500, "Channel Origin invalid."),
 	InvalidChannelDestination(500, "Channel Origin invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
@@ -174,4 +178,21 @@ public enum ErrorCode {
 	public String getErrorDescription(Object... params) {
 		return String.format(errorDescription, params);
 	}
+
+	public static void setError(ErrorCode ec, Acknowledge ack, Object... params) {
+		Error error = new Error();
+		error.setCode(ec.getErrorCode());
+		error.setDescription(ec.getErrorDescription(params));
+		ack.setError(error);
+		ack.setSuccess(false);
+	}
+
+	public static void setError(ErrorCode ec, Acknowledge ack) {
+		Error error = new Error();
+		error.setCode(ec.getErrorCode());
+		error.setDescription(ec.getErrorDescription());
+		ack.setError(error);
+		ack.setSuccess(false);
+	}
+
 }

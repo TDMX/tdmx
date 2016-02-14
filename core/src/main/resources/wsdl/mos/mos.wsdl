@@ -41,6 +41,12 @@
 	<wsdl:message name="receiptResponse">
 		<wsdl:part name="parameters" element="mos:receiptResponse"/>
 	</wsdl:message>
+	<wsdl:message name="acknowledgeRequest">
+		<wsdl:part name="parameters" element="mos:acknowledge"/>
+	</wsdl:message>
+	<wsdl:message name="acknowledgeResponse">
+		<wsdl:part name="parameters" element="mos:acknowledgeResponse"/>
+	</wsdl:message>
 	<wsdl:message name="submitRequest">
 		<wsdl:part name="parameters" element="mos:submit"/>
 	</wsdl:message>
@@ -114,6 +120,13 @@
 			</wsdl:documentation>
 			<wsdl:input message="tns:receiptRequest"/>
 			<wsdl:output message="tns:receiptResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="acknowledge">
+			<wsdl:documentation>
+				Bla Bla
+			</wsdl:documentation>
+			<wsdl:input message="tns:acknowledgeRequest"/>
+			<wsdl:output message="tns:acknowledgeResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="submit">
 			<wsdl:documentation>
@@ -196,6 +209,15 @@
 		</wsdl:operation>
 		<wsdl:operation name="receipt">
 			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/receipt"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="acknowledge">
+			<soap:operation soapAction="urn:tdmx:api:v1.0:sp:mos-definition/acknowledge"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

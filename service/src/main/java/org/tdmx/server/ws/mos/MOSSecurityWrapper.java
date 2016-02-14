@@ -20,6 +20,8 @@ package org.tdmx.server.ws.mos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.api.v01.mos.Acknowledge;
+import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetChannel;
@@ -210,6 +212,22 @@ public class MOSSecurityWrapper implements MOS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.receipt(parameters);
+
+		} finally {
+			getAuthorizationService().clearAuthorizedSession();
+			getPartitionIdService().clearPartitionId();
+		}
+	}
+
+	@Override
+	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
+		MOSServerSession session = securityManager.getSession(parameters.getSessionId());
+		authorizationService.setAuthorizedSession(session);
+		try {
+			AccountZone az = session.getAccountZone();
+			partitionIdService.setPartitionId(az.getZonePartitionId());
+
+			return delegate.acknowledge(parameters);
 
 		} finally {
 			getAuthorizationService().clearAuthorizedSession();

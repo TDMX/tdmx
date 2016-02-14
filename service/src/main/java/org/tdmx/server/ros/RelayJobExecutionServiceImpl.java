@@ -140,7 +140,8 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 
 					Relay relayCA = new Relay();
 					relayCA.setSessionId(sh.getMrsSessionId());
-					relayCA.setMsg(d2a.mapChannelMessage(msg, null)); // TODO #93: get chunks
+					relayCA.setMsg(d2a.mapChannelMessage(msg));
+					// TODO #93: get chunk and map into message
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayCA);
 						if (rr.isSuccess()) {

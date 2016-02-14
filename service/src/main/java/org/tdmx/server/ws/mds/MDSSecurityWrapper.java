@@ -20,6 +20,8 @@ package org.tdmx.server.ws.mds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.api.v01.mds.Acknowledge;
+import org.tdmx.core.api.v01.mds.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
@@ -128,6 +130,22 @@ public class MDSSecurityWrapper implements MDS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.receive(parameters);
+
+		} finally {
+			getAuthorizationService().clearAuthorizedSession();
+			getPartitionIdService().clearPartitionId();
+		}
+	}
+
+	@Override
+	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
+		MDSServerSession session = securityManager.getSession(parameters.getSessionId());
+		authorizationService.setAuthorizedSession(session);
+		try {
+			AccountZone az = session.getAccountZone();
+			partitionIdService.setPartitionId(az.getZonePartitionId());
+
+			return delegate.acknowledge(parameters);
 
 		} finally {
 			getAuthorizationService().clearAuthorizedSession();

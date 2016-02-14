@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.mos.Acknowledge;
+import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetChannel;
@@ -201,15 +201,15 @@ public class MOSImpl implements MOS {
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
 		if (!SignatureUtils.checkMsgId(header, header.getUsersignature().getSignaturevalue().getTimestamp())) {
-			setError(ErrorCode.InvalidMsgId, response);
+			ErrorCode.setError(ErrorCode.InvalidMsgId, response);
 			return response;
 		}
 		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
-			setError(ErrorCode.InvalidSignatureMessagePayload, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessagePayload, response);
 			return response;
 		}
 		if (!SignatureUtils.checkHeaderSignature(header)) {
-			setError(ErrorCode.InvalidSignatureMessageHeader, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessageHeader, response);
 			return response;
 		}
 
@@ -222,12 +222,12 @@ public class MOSImpl implements MOS {
 				header.getUsersignature().getUserIdentity().getDomaincertificate(),
 				header.getUsersignature().getUserIdentity().getRootcertificate());
 		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
 		// check origin cert is same as msg channel origin cert.
 		if (!srcUc.getFingerprint().equals(authorizedUser.getFingerprint())) {
-			setError(ErrorCode.InvalidMessageSource, response);
+			ErrorCode.setError(ErrorCode.InvalidMessageSource, response);
 			return response;
 		}
 		m.setOriginSerialNr(1); // FIXME
@@ -235,7 +235,7 @@ public class MOSImpl implements MOS {
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
 		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
 		m.setDestinationSerialNr(1); // FIXME
@@ -248,13 +248,13 @@ public class MOSImpl implements MOS {
 		if (!srcUc.getDomainName().equals(cn.getOrigin().getDomainName())
 				|| !srcUc.getAddressName().equals(cn.getOrigin().getLocalName())) {
 			// check sender cert matches origin of channel sending on.
-			setError(ErrorCode.InvalidChannelOrigin, response);
+			ErrorCode.setError(ErrorCode.InvalidChannelOrigin, response);
 			return response;
 		}
 		if (!dstUc.getDomainName().equals(cn.getDestination().getDomainName())
 				|| !dstUc.getAddressName().equals(cn.getDestination().getLocalName())) {
 			// header channel dest matches the "to" User
-			setError(ErrorCode.InvalidChannelDestination, response);
+			ErrorCode.setError(ErrorCode.InvalidChannelDestination, response);
 			return response;
 		}
 
@@ -271,7 +271,7 @@ public class MOSImpl implements MOS {
 
 			List<Channel> channels = channelService.search(zone, sc);
 			if (channels.isEmpty()) {
-				setError(ErrorCode.ChannelNotFound, response);
+				ErrorCode.setError(ErrorCode.ChannelNotFound, response);
 				return response;
 			}
 			Channel channel = channels.get(0);
@@ -281,7 +281,7 @@ public class MOSImpl implements MOS {
 		m.setChannel(cch.getChannel());
 		SubmitMessageResultHolder result = channelService.preSubmitMessage(zone, m);
 		if (result.status != null) {
-			setError(mapSubmitOperationStatus(result.status), response);
+			ErrorCode.setError(mapSubmitOperationStatus(result.status), response);
 			return response;
 		}
 
@@ -318,7 +318,7 @@ public class MOSImpl implements MOS {
 
 		String continuationId = parameters.getContinuation();
 		if (!StringUtils.hasText(continuationId)) {
-			setError(ErrorCode.MissingChunkContinuationId, response);
+			ErrorCode.setError(ErrorCode.MissingChunkContinuationId, response);
 			return response;
 		}
 
@@ -337,12 +337,12 @@ public class MOSImpl implements MOS {
 
 		MessageContextHolder mch = session.getMessage(parameters.getChunk().getMsgId());
 		if (mch == null) {
-			setError(ErrorCode.MessageNotFound, response);
+			ErrorCode.setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
 		// calculate the continuationId for the chunk and check that it matches the continuationId
 		if (!continuationId.equals(mch.getContinuationId(c.getPos()))) {
-			setError(ErrorCode.InvalidChunkContinuationId, response);
+			ErrorCode.setError(ErrorCode.InvalidChunkContinuationId, response);
 			return response;
 		}
 
@@ -430,6 +430,12 @@ public class MOSImpl implements MOS {
 		return null;
 	}
 
+	@Override
+	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -437,14 +443,6 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
-	}
 
 	private ErrorCode mapSubmitOperationStatus(SubmitMessageOperationStatus status) {
 		switch (status) {

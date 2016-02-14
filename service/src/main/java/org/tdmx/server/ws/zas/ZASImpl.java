@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Channel;
@@ -183,7 +182,7 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		final Domain existingDomain = getDomainService().findByName(zone, domainName);
 		if (existingDomain != null) {
-			setError(ErrorCode.DomainExists, response);
+			ErrorCode.setError(ErrorCode.DomainExists, response);
 			return response;
 		}
 
@@ -213,7 +212,7 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		final Domain domain = getDomainService().findByName(zone, domainName);
 		if (domain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
@@ -223,7 +222,7 @@ public class ZASImpl implements ZAS {
 		dcSc.setType(AgentCredentialType.DAC);
 		final List<AgentCredential> credentials = getCredentialService().search(zone, dcSc);
 		if (!credentials.isEmpty()) {
-			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
+			ErrorCode.setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
 		}
 
@@ -232,7 +231,7 @@ public class ZASImpl implements ZAS {
 		sac.setDomainName(domain.getDomainName());
 		final List<org.tdmx.lib.zone.domain.Address> addresses = getAddressService().search(zone, sac);
 		if (!addresses.isEmpty()) {
-			setError(ErrorCode.AddressesExist, response);
+			ErrorCode.setError(ErrorCode.AddressesExist, response);
 			return response;
 		}
 
@@ -241,7 +240,7 @@ public class ZASImpl implements ZAS {
 		ssc.setDomain(domain);
 		final List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone, ssc);
 		if (!services.isEmpty()) {
-			setError(ErrorCode.ServicesExist, response);
+			ErrorCode.setError(ErrorCode.ServicesExist, response);
 			return response;
 		}
 
@@ -265,7 +264,7 @@ public class ZASImpl implements ZAS {
 		// make sure client stipulates a domain which is within the zone.
 		if (StringUtils.hasText(parameters.getFilter().getDomain())) {
 			if (!StringUtils.isSuffix(parameters.getFilter().getDomain(), zone.getZoneApex())) {
-				setError(ErrorCode.OutOfZoneAccess, response);
+				ErrorCode.setError(ErrorCode.OutOfZoneAccess, response);
 				return response;
 			}
 			criteria.setDomainName(parameters.getFilter().getDomain());
@@ -303,7 +302,7 @@ public class ZASImpl implements ZAS {
 					userIdentity.getUsercertificate(), userIdentity.getDomaincertificate(),
 					userIdentity.getRootcertificate());
 			if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-				setError(ErrorCode.InvalidUserCredentials, response);
+				ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 				return response;
 			}
 			// we check that the provided domain is the DAC's domain.
@@ -366,7 +365,7 @@ public class ZASImpl implements ZAS {
 			final AgentCredentialDescriptor dac = credentialFactory
 					.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 			if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
-				setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+				ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 				return response;
 			}
 			if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
@@ -421,7 +420,7 @@ public class ZASImpl implements ZAS {
 		final AgentCredentialDescriptor uc = credentialFactory.createAgentCredential(userIdentity.getUsercertificate(),
 				userIdentity.getDomaincertificate(), userIdentity.getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
 		// we check that the provided domain is the DAC's domain.
@@ -432,7 +431,7 @@ public class ZASImpl implements ZAS {
 		// check that the UC credential exists
 		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
+			ErrorCode.setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
 		}
 		if (parameters.getStatus() != null) {
@@ -475,7 +474,7 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		Domain domain = getDomainService().findByName(zone, domainName);
 		if (domain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
@@ -483,7 +482,7 @@ public class ZASImpl implements ZAS {
 		final org.tdmx.lib.zone.domain.Address existingAddress = getAddressService().findByName(domain,
 				parameters.getAddress().getLocalname());
 		if (existingAddress != null) {
-			setError(ErrorCode.AddressExists, response);
+			ErrorCode.setError(ErrorCode.AddressExists, response);
 			return response;
 		}
 
@@ -521,14 +520,14 @@ public class ZASImpl implements ZAS {
 
 		final Domain existingDomain = getDomainService().findByName(zone, domainName);
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		final ChannelAuthorization existingCA = channelService.findByChannel(zone, existingDomain,
 				a2d.mapChannelOrigin(channel.getOrigin()), a2d.mapChannelDestination(channel.getDestination()));
 		if (existingCA == null) {
-			setError(ErrorCode.ChannelAuthorizationNotFound, response);
+			ErrorCode.setError(ErrorCode.ChannelAuthorizationNotFound, response);
 			return response;
 		}
 		// deleting the Channel will cascade to automatically delete all ChannelFlowMessages
@@ -555,7 +554,7 @@ public class ZASImpl implements ZAS {
 				parameters.getUserIdentity().getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(),
 				parameters.getUserIdentity().getRootcertificate());
 		if (uc == null || AgentCredentialType.UC != uc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
 		if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
@@ -565,7 +564,7 @@ public class ZASImpl implements ZAS {
 		// check that the UC credential exists
 		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred == null) {
-			setError(ErrorCode.UserCredentialNotFound, response);
+			ErrorCode.setError(ErrorCode.UserCredentialNotFound, response);
 			return response;
 		}
 
@@ -635,28 +634,28 @@ public class ZASImpl implements ZAS {
 		final AgentCredentialDescriptor dac = credentialFactory
 				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
 			return response;
 		}
 		if (!credentialValidator.isValid(dac)) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 
 		// check if the domain exists already
 		final Domain existingDomain = getDomainService().findByName(zone, dac.getDomainName());
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
 		// check that the DAC credential doesn't already exist
 		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred != null) {
-			setError(ErrorCode.DomainAdministratorCredentialsExist, response);
+			ErrorCode.setError(ErrorCode.DomainAdministratorCredentialsExist, response);
 			return response;
 		}
 
@@ -696,14 +695,14 @@ public class ZASImpl implements ZAS {
 
 		final Domain existingDomain = getDomainService().findByName(zone, parameters.getService().getDomain());
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 		// lookup existing service exists
 		final org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingDomain,
 				parameters.getService().getServicename());
 		if (existingService == null) {
-			setError(ErrorCode.ServiceNotFound, response);
+			ErrorCode.setError(ErrorCode.ServiceNotFound, response);
 			return response;
 		}
 
@@ -713,7 +712,7 @@ public class ZASImpl implements ZAS {
 		sc.getDestination().setServiceName(existingService.getServiceName());
 		final List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
 		if (!channels.isEmpty()) {
-			setError(ErrorCode.ChannelAuthorizationExist, response);
+			ErrorCode.setError(ErrorCode.ChannelAuthorizationExist, response);
 			return response;
 		}
 
@@ -804,20 +803,20 @@ public class ZASImpl implements ZAS {
 		acSc.setType(AgentCredentialType.UC);
 		final List<AgentCredential> ucs = getCredentialService().search(zone, acSc);
 		if (!ucs.isEmpty()) {
-			setError(ErrorCode.UserCredentialsExist, response);
+			ErrorCode.setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}
 
 		final Domain domain = getDomainService().findByName(zone, parameters.getAddress().getDomain());
 		if (domain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 		// dont allow creation if we find the address exists already
 		final org.tdmx.lib.zone.domain.Address existingAddress = getAddressService().findByName(domain,
 				address.getLocalname());
 		if (existingAddress == null) {
-			setError(ErrorCode.AddressNotFound, response);
+			ErrorCode.setError(ErrorCode.AddressNotFound, response);
 			return response;
 		}
 
@@ -863,7 +862,7 @@ public class ZASImpl implements ZAS {
 		final AgentCredentialDescriptor dac = credentialFactory
 				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
@@ -873,7 +872,7 @@ public class ZASImpl implements ZAS {
 		// check that the DAC credential exists
 		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred == null) {
-			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
 		}
 		if (parameters.getStatus() != null) {
@@ -906,7 +905,7 @@ public class ZASImpl implements ZAS {
 		final String domainName = parameters.getDomain();
 		if (!StringUtils.hasText(domainName)) {
 			// must have a domain
-			setError(ErrorCode.MissingDomain, response);
+			ErrorCode.setError(ErrorCode.MissingDomain, response);
 			return response;
 		}
 		if (checkDomainBoundDomainAuthorization(domainName, authorizedDomainName, zone, response) == null) {
@@ -925,24 +924,24 @@ public class ZASImpl implements ZAS {
 		}
 		// check the signature of the current ca is ok
 		if (!SignatureUtils.checkChannelAuthorizationSignature(c, ca)) {
-			setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureChannelAuthorization, response);
 			return response;
 		}
 		final AgentCredentialDescriptor signingDAC = credentialFactory.createAgentCredential(
 				ca.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate(),
 				ca.getAdministratorsignature().getAdministratorIdentity().getRootcertificate());
 		if (signingDAC == null) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 		if (!domainName.equals(signingDAC.getDomainName())) {
-			setError(ErrorCode.ChannelAuthorizationSignerDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelAuthorizationSignerDomainMismatch, response);
 			return response;
 		}
 
 		// check that the channel origin or channel destination matches the ca's domain
 		if (!(domainName.equals(c.getOrigin().getDomain()) || domainName.equals(c.getDestination().getDomain()))) {
-			setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelAuthorizationDomainMismatch, response);
 			return response;
 		}
 		// note if the domain matches both send and recv then we validate both
@@ -952,11 +951,11 @@ public class ZASImpl implements ZAS {
 			// ok
 
 			if (ca.getOriginPermission() == null) {
-				setError(ErrorCode.MissingEndpointPermission, response);
+				ErrorCode.setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
 			if (!SignatureUtils.checkEndpointPermissionSignature(c, ca.getOriginPermission())) {
-				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
+				ErrorCode.setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
 			final AgentCredentialDescriptor permissionDAC = credentialFactory.createAgentCredential(
@@ -965,12 +964,12 @@ public class ZASImpl implements ZAS {
 					ca.getOriginPermission().getAdministratorsignature().getAdministratorIdentity()
 							.getRootcertificate());
 			if (permissionDAC == null) {
-				setError(ErrorCode.InvalidOriginPermissionAdministratorCredentials, response);
+				ErrorCode.setError(ErrorCode.InvalidOriginPermissionAdministratorCredentials, response);
 				return response;
 			}
 			// check that the signer of the permission's domain matches the origin's domain
 			if (!domainName.equals(permissionDAC.getDomainName())) {
-				setError(ErrorCode.OriginPermissionSignerDomainMismatch, response);
+				ErrorCode.setError(ErrorCode.OriginPermissionSignerDomainMismatch, response);
 				return response;
 			}
 		}
@@ -980,11 +979,11 @@ public class ZASImpl implements ZAS {
 			// signature is ok
 
 			if (ca.getDestinationPermission() == null) {
-				setError(ErrorCode.MissingEndpointPermission, response);
+				ErrorCode.setError(ErrorCode.MissingEndpointPermission, response);
 				return response;
 			}
 			if (!SignatureUtils.checkEndpointPermissionSignature(c, ca.getDestinationPermission())) {
-				setError(ErrorCode.InvalidSignatureEndpointPermission, response);
+				ErrorCode.setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 				return response;
 			}
 			final AgentCredentialDescriptor permissionDAC = credentialFactory.createAgentCredential(
@@ -993,19 +992,19 @@ public class ZASImpl implements ZAS {
 					ca.getDestinationPermission().getAdministratorsignature().getAdministratorIdentity()
 							.getRootcertificate());
 			if (permissionDAC == null) {
-				setError(ErrorCode.InvalidDestinationPermissionAdministratorCredentials, response);
+				ErrorCode.setError(ErrorCode.InvalidDestinationPermissionAdministratorCredentials, response);
 				return response;
 			}
 			// check that the signer of the permission's domain matches the origin's domain
 			if (!domainName.equals(permissionDAC.getDomainName())) {
-				setError(ErrorCode.DestinationPermissionSignerDomainMismatch, response);
+				ErrorCode.setError(ErrorCode.DestinationPermissionSignerDomainMismatch, response);
 				return response;
 			}
 		}
 
 		final Domain existingDomain = getDomainService().findByName(zone, domainName);
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
@@ -1015,7 +1014,7 @@ public class ZASImpl implements ZAS {
 				a2d.mapChannelOrigin(c.getOrigin()), a2d.mapChannelDestination(c.getDestination()),
 				a2d.mapChannelAuthorization(ca));
 		if (operationStatus.status != null) {
-			setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
+			ErrorCode.setError(mapSetAuthorizationOperationStatus(operationStatus.status), response);
 			return response;
 		}
 		if (operationStatus.channelAuthorization != null) {
@@ -1057,7 +1056,7 @@ public class ZASImpl implements ZAS {
 				parameters.getUserIdentity().getUsercertificate(), parameters.getUserIdentity().getDomaincertificate(),
 				parameters.getUserIdentity().getRootcertificate());
 		if (uc == null) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
 		if (checkDomainBoundDomainAuthorization(uc.getDomainName(), authorizedDomainName, zone, response) == null) {
@@ -1067,7 +1066,7 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		final Domain existingDomain = getDomainService().findByName(zone, uc.getDomainName());
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
@@ -1075,14 +1074,14 @@ public class ZASImpl implements ZAS {
 		final org.tdmx.lib.zone.domain.Address address = getAddressService().findByName(existingDomain,
 				uc.getAddressName());
 		if (address == null) {
-			setError(ErrorCode.AddressNotFound, response);
+			ErrorCode.setError(ErrorCode.AddressNotFound, response);
 			return response;
 		}
 
 		// check that the UC credential doesn't already exist
 		final AgentCredential existingCred = credentialService.findByFingerprint(uc.getFingerprint());
 		if (existingCred != null) {
-			setError(ErrorCode.UserCredentialsExist, response);
+			ErrorCode.setError(ErrorCode.UserCredentialsExist, response);
 			return response;
 		}
 
@@ -1123,7 +1122,7 @@ public class ZASImpl implements ZAS {
 		// check if the domain exists already
 		final Domain existingDomain = getDomainService().findByName(zone, service.getDomain());
 		if (existingDomain == null) {
-			setError(ErrorCode.DomainNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
@@ -1131,7 +1130,7 @@ public class ZASImpl implements ZAS {
 		final org.tdmx.lib.zone.domain.Service existingService = getServiceService().findByName(existingDomain,
 				service.getServicename());
 		if (existingService != null) {
-			setError(ErrorCode.ServiceExists, response);
+			ErrorCode.setError(ErrorCode.ServiceExists, response);
 			return response;
 		}
 
@@ -1164,7 +1163,7 @@ public class ZASImpl implements ZAS {
 		final AgentCredentialDescriptor dac = credentialFactory
 				.createAgentCredential(dacIdentity.getDomaincertificate(), dacIdentity.getRootcertificate());
 		if (dac == null || AgentCredentialType.DAC != dac.getCredentialType()) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return response;
 		}
 		if (checkZoneBoundDomainAuthorization(dac.getDomainName(), zone, response) == null) {
@@ -1174,7 +1173,7 @@ public class ZASImpl implements ZAS {
 		// check that the DAC credential exists
 		final AgentCredential existingCred = credentialService.findByFingerprint(dac.getFingerprint());
 		if (existingCred == null) {
-			setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
+			ErrorCode.setError(ErrorCode.DomainAdministratorCredentialNotFound, response);
 			return response;
 		}
 
@@ -1334,10 +1333,10 @@ public class ZASImpl implements ZAS {
 
 	private boolean checkDomain(String domain, Acknowledge ack) {
 		if (!StringUtils.hasText(domain)) {
-			setError(ErrorCode.DomainNotSpecified, ack);
+			ErrorCode.setError(ErrorCode.DomainNotSpecified, ack);
 			return false;
 		} else if (!StringUtils.isLowerCase(domain)) {
-			setError(ErrorCode.NotNormalizedDomain, ack);
+			ErrorCode.setError(ErrorCode.NotNormalizedDomain, ack);
 			return false;
 		}
 		return true;
@@ -1348,7 +1347,7 @@ public class ZASImpl implements ZAS {
 			return null;
 		}
 		if (!StringUtils.isSuffix(inputDomainName, authorizedZone.getZoneApex())) {
-			setError(ErrorCode.OutOfZoneAccess, ack);
+			ErrorCode.setError(ErrorCode.OutOfZoneAccess, ack);
 			return null;
 		}
 		return inputDomainName;
@@ -1363,7 +1362,7 @@ public class ZASImpl implements ZAS {
 
 		// authorizedDomainName is null if ALL domains (within the Zone) are authorized
 		if (StringUtils.hasText(authorizedDomainName) && !domainName.equals(authorizedDomainName)) {
-			setError(ErrorCode.OutOfDomainAccess, ack);
+			ErrorCode.setError(ErrorCode.OutOfDomainAccess, ack);
 			return null;
 		}
 		return domainName;
@@ -1372,7 +1371,7 @@ public class ZASImpl implements ZAS {
 	private ZASServerSession getZACSession(Acknowledge ack) {
 		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
 		if (!session.isZAC()) {
-			setError(ErrorCode.NonAdministratorAccess, ack);
+			ErrorCode.setError(ErrorCode.NonAdministratorAccess, ack);
 			return null;
 		}
 		return session;
@@ -1385,18 +1384,10 @@ public class ZASImpl implements ZAS {
 	private ZASServerSession getDACSession(Acknowledge ack) {
 		ZASServerSession session = authorizedSessionService.getAuthorizedSession();
 		if (!session.isDAC()) {
-			setError(ErrorCode.NonAdministratorAccess, ack);
+			ErrorCode.setError(ErrorCode.NonAdministratorAccess, ack);
 			return null;
 		}
 		return session;
-	}
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
 	}
 
 	private ErrorCode mapSetAuthorizationOperationStatus(SetAuthorizationOperationStatus status) {

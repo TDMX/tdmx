@@ -75,7 +75,7 @@
 	</xs:complexType>
 	<xs:complexType name="receiptRequestType">
 		<xs:annotation>
-			<xs:documentation>receive a DeliveryReport either in the context of a transaction, or an autoacknowledging session. If a sessionencryption policy is provided, this policy superceeds any existing policy and is transferred to the sender.</xs:documentation>
+			<xs:documentation>receive a DeliveryReport either in the context of a transaction, or an autoacknowledging session.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="common:Request">
@@ -84,7 +84,7 @@
 						<xs:element ref="tx:transaction"/>
 						<xs:element ref="msg:session"/>
 					</xs:choice>
-					<xs:element ref="msg:waitTimeout"/>
+					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -99,6 +99,24 @@
 					</xs:sequence>
 				</xs:choice>
 			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="acknowledgeRequestType">
+		<xs:annotation>
+			<xs:documentation>acknowledge receipt of a DeliveryReport, in the context of a non auto-acknowledging session. Use the acknowledge in the receipt operation for more efficiency.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="common:Request">
+				<xs:sequence>
+					<xs:element ref="tx:xid"/>
+					<xs:element ref="msg:msgId"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="acknowledgeResponseType">
+		<xs:complexContent>
+			<xs:extension base="common:ContinuedAcknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<!-- ********************************************* -->
@@ -147,6 +165,8 @@
 	<xs:element name="getChannelResponse" type="getChannelResponseType"/>
 	<xs:element name="receipt" type="receiptRequestType"/>
 	<xs:element name="receiptResponse" type="receiptResponseType"/>
+	<xs:element name="acknowledge" type="acknowledgeRequestType"/>
+	<xs:element name="acknowledgeResponse" type="acknowledgeResponseType"/>
 	<xs:element name="submit" type="submitRequestType"/>
 	<xs:element name="submitResponse" type="submitResponseType"/>
 	<xs:element name="upload" type="uploadRequestType"/>

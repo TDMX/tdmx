@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.mds.Acknowledge;
+import org.tdmx.core.api.v01.mds.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
@@ -113,6 +113,7 @@ public class MDSImpl implements MDS {
 	private final ApiValidator validator = new ApiValidator();
 
 	private int batchSize = 100;
+	private int maxWaitTimeoutSec = 300;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -168,13 +169,13 @@ public class MDSImpl implements MDS {
 		PKIXCertificate uc = CertificateIOUtils
 				.safeDecodeX509(ds.getUsersignature().getUserIdentity().getUsercertificate());
 		if (uc == null || !authorizedUser.isIdentical(uc)) {
-			setError(ErrorCode.InvalidSignerDestinationSession, response);
+			ErrorCode.setError(ErrorCode.InvalidSignerDestinationSession, response);
 			return response;
 		}
 
 		// check that the FTS signature is ok for the targetagent.
 		if (!SignatureUtils.checkDestinationSessionSignature(service.getServiceName(), ds)) {
-			setError(ErrorCode.InvalidSignatureDestinationSession, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return response;
 		}
 
@@ -229,15 +230,29 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public ReceiveResponse receive(Receive recvRequest) {
-		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
-		// TODO #95: validate waitTimeout postive < some maximum
+		ReceiveResponse response = new ReceiveResponse();
 
-		// TODO #95: Handle the ack of previous received message and initiate relay back of DR
-		// caching the ROS address of the reverse channel
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
+
+		// validate waitTimeout(sec) postive < some maximum
+		if (recvRequest.getWaitTimeoutSec() < 0 || recvRequest.getWaitTimeoutSec() > maxWaitTimeoutSec) {
+			ErrorCode.setError(ErrorCode.InvalidTimeout, response, maxWaitTimeoutSec);
+			return response;
+		}
+
+		long txTimeoutTimestamp = 0L;
+		if (recvRequest.getSession() != null) {
+			// TODO #95: Handle the ack of previous received message and initiate relay back of DR
+			// caching the ROS address of the reverse channel
+
+		}
 
 		// TODO #95: note the setup session or tx context
 
-		boolean mustFetch = session.isFetchRequired();
+		boolean mustFetch = rcv.isFetchRequired();
 		if (mustFetch) {
 			// fetch next batch of messages
 			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, batchSize));
@@ -247,19 +262,20 @@ public class MDSImpl implements MDS {
 			criteria.setAcknowledged(false);
 			criteria.setProcessingStatus(ProcessingStatus.NONE);
 			List<ChannelMessage> pendingMsgs = channelService.search(session.getZone(), criteria);
-			session.addPendingMessages(pendingMsgs);
-			// TODO #95: queue per destination user serialNr.
+			rcv.addPendingMessages(pendingMsgs, pendingMsgs.size() == batchSize);
 		}
 
-		// TODO #95: get ready message
-		ChannelMessage msg = session.getNextPendingMessage(recvRequest.getWaitTimeout() * 1000);
-		// TODO #95: we can update the signature date, saying it's "sent" received (but not actually signed)
-		// so it would not be polled again.
-
-		Msg m = null;
-		if (msg != null) {
-			m = d2a.mapChannelMessage(msg, null); // TODO #95: get 1st chunk
+		// get any ready message, waiting if none available.
+		MessageContext msgCtx = rcv.getNextPendingMessage(recvRequest.getWaitTimeoutSec() * 1000);
+		if (msgCtx == null) {
+			// no message available even after waiting.
+			response.setSuccess(true);
+			return response;
 		}
+
+		ChannelMessage msg = msgCtx.getMsg();
+		Msg m = d2a.mapChannelMessage(msg);
+		// TODO #95: get 1st chunk and map it into msg
 
 		// TODO #93: on msg acknowledge/commit
 		// acknowledge the message, possibly opening the relay flow control
@@ -274,9 +290,17 @@ public class MDSImpl implements MDS {
 			}
 		}
 
-		ReceiveResponse response = new ReceiveResponse();
 		response.setMsg(m);
+		response.setRetryCount(msgCtx.getNumDeliveries());
+		response.setSuccess(true);
+		response.setContinuation(""); // TODO #95: chunks
 		return response;
+	}
+
+	@Override
+	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
+		// TODO #95: handle acknowledge
+		return null;
 	}
 
 	@Override
@@ -345,14 +369,6 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -452,6 +468,14 @@ public class MDSImpl implements MDS {
 
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	public int getMaxWaitTimeoutSec() {
+		return maxWaitTimeoutSec;
+	}
+
+	public void setMaxWaitTimeoutSec(int maxWaitTimeoutSec) {
+		this.maxWaitTimeoutSec = maxWaitTimeoutSec;
 	}
 
 }

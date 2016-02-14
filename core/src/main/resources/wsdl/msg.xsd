@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- edited with XMLSpy v2006 U (http://www.altova.com) by Peter (- privat -) -->
-<xs:schema xmlns="urn:tdmx:api:v1.0:sp:msg" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema xmlns="urn:tdmx:api:v1.0:sp:msg" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:tdmx:api:v1.0:sp:common" xmlns:tx="urn:tdmx:api:v1.0:sp:tx" targetNamespace="urn:tdmx:api:v1.0:sp:msg" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:import namespace="urn:tdmx:api:v1.0:sp:common" schemaLocation="common.xsd"/>
+	<xs:import namespace="urn:tdmx:api:v1.0:sp:tx" schemaLocation="tx.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Message related types for TDMX ServiceProvider API</xs:documentation>
 	</xs:annotation>
+	<!-- ********************************************* -->
+	<!--           DESTINATION TYPES              -->
+	<!-- ********************************************* -->
+	<xs:complexType name="NonTransactionalSession">
+		<xs:sequence>
+			<xs:element ref="tx:xid"/>
+			<xs:element ref="tx:txtimeout"/>
+			<xs:element ref="dr" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="session" type="NonTransactionalSession"/>
+	<xs:element name="waitTimeoutSec" type="xs:unsignedShort">
+		<xs:annotation>
+			<xs:documentation>the maximum time which the call will block in seconds at the ServiceProvider waiting for messages ready to deliver.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="retryCount" type="xs:unsignedShort">
+		<xs:annotation>
+			<xs:documentation>the number of times the delivery was retried due to rollback.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<!-- ********************************************* -->
 	<!--           TYPES            -->
 	<!-- ********************************************* -->
@@ -481,43 +503,6 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="permission" type="EndpointPermission"/>
-	<!-- ********************************************* -->
-	<!--           DESTINATION TYPES              -->
-	<!-- ********************************************* -->
-	<xs:complexType name="NonTransactionalSession">
-		<xs:sequence>
-			<xs:element ref="sessionid"/>
-			<xs:element name="timeout" type="xs:dateTime">
-				<xs:annotation>
-					<xs:documentation>the time after which unacknowledged previously received messages are freed to be delivered again.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element ref="receiptsignature" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:simpleType name="sessionId">
-		<xs:restriction base="common:text"/>
-	</xs:simpleType>
-	<xs:element name="sessionid" type="sessionId">
-		<xs:annotation>
-			<xs:documentation>Session Identifier.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="session" type="NonTransactionalSession">
-		<xs:annotation>
-			<xs:documentation>A receiver which does not use distributed transactionality uses an auto acknowledging session. If it is not the first call of the session, the delivery receipt of the previously received message must be provided. A delivery receipt can be provided also separately without risking receiving a new message if the timeout is -1.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="waitTimeout" type="xs:unsignedShort">
-		<xs:annotation>
-			<xs:documentation>the maximum time which the call will block in seconds at the ServiceProvider waiting for messages ready to deliver.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="retryCount" type="xs:unsignedShort">
-		<xs:annotation>
-			<xs:documentation>the number of times the delivery was retried due to rollback.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
 	<!-- ********************************************* -->
 	<!--           MESSAGING TYPES              -->
 	<!-- ********************************************* -->

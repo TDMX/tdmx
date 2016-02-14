@@ -21,8 +21,6 @@ package org.tdmx.server.ws.mrs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
@@ -122,7 +120,7 @@ public class MRSImpl implements MRS {
 			// TODO #93: relay in FC-open, notify ROS of FC change
 		} else {
 			// none of the above - equals missing data.
-			setError(ErrorCode.MissingRelayPayload, response);
+			ErrorCode.setError(ErrorCode.MissingRelayPayload, response);
 		}
 		return response;
 	}
@@ -156,7 +154,7 @@ public class MRSImpl implements MRS {
 		}
 
 		if (!SignatureUtils.checkEndpointPermissionSignature(channel, auth)) {
-			setError(ErrorCode.InvalidSignatureEndpointPermission, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureEndpointPermission, response);
 			return;
 		}
 		// the signature of the Authorization needs checking.
@@ -165,11 +163,11 @@ public class MRSImpl implements MRS {
 		AgentCredentialDescriptor dac = credentialFactory
 				.createAgentCredential(otherPerm.getSignature().getCertificateChain());
 		if (dac == null || dac.getCredentialType() != AgentCredentialType.DAC) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return;
 		}
 		if (!credentialValidator.isValid(dac)) {
-			setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidDomainAdministratorCredentials, response);
 			return;
 		}
 
@@ -205,7 +203,7 @@ public class MRSImpl implements MRS {
 		org.tdmx.core.api.v01.msg.Channel channel = d2a.mapChannel(sessionChannel);
 
 		if (!SignatureUtils.checkDestinationSessionSignature(channel.getDestination().getServicename(), ds)) {
-			setError(ErrorCode.InvalidSignatureDestinationSession, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureDestinationSession, response);
 			return;
 		}
 
@@ -214,11 +212,11 @@ public class MRSImpl implements MRS {
 				ds.getUsersignature().getUserIdentity().getDomaincertificate(),
 				ds.getUsersignature().getUserIdentity().getRootcertificate());
 		if (uc == null || uc.getCredentialType() != AgentCredentialType.UC) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
 		if (!credentialValidator.isValid(uc)) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
 		DestinationSession cds = a2d.mapDestinationSession(ds);
@@ -243,15 +241,15 @@ public class MRSImpl implements MRS {
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
 		if (!SignatureUtils.checkMsgId(header, header.getUsersignature().getSignaturevalue().getTimestamp())) {
-			setError(ErrorCode.InvalidMsgId, response);
+			ErrorCode.setError(ErrorCode.InvalidMsgId, response);
 			return;
 		}
 		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
-			setError(ErrorCode.InvalidSignatureMessagePayload, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessagePayload, response);
 			return;
 		}
 		if (!SignatureUtils.checkHeaderSignature(header)) {
-			setError(ErrorCode.InvalidSignatureMessageHeader, response);
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessageHeader, response);
 			return;
 		}
 
@@ -263,16 +261,16 @@ public class MRSImpl implements MRS {
 				header.getUsersignature().getUserIdentity().getDomaincertificate(),
 				header.getUsersignature().getUserIdentity().getRootcertificate());
 		if (srcUc == null || AgentCredentialType.UC != srcUc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
 		// check srcUser's domain matches the origin's domain of the channel
 		if (!msg.getHeader().getChannel().getOrigin().getDomain().equals(srcUc.getDomainName())) {
-			setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
 			return;
 		}
 		if (!msg.getHeader().getChannel().getOrigin().getLocalname().equals(srcUc.getAddressName())) {
-			setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
 			return;
 		}
 		m.setOriginSerialNr(1); // FIXME
@@ -280,16 +278,16 @@ public class MRSImpl implements MRS {
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
 		if (dstUc == null || AgentCredentialType.UC != dstUc.getCredentialType()) {
-			setError(ErrorCode.InvalidUserCredentials, response);
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return;
 		}
 		// check destUser's domain matches the destination's domain of the channel
 		if (!msg.getHeader().getChannel().getDestination().getDomain().equals(dstUc.getDomainName())) {
-			setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
 		if (!msg.getHeader().getChannel().getDestination().getLocalname().equals(dstUc.getAddressName())) {
-			setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
+			ErrorCode.setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
 		m.setDestinationSerialNr(1); // FIXME
@@ -303,7 +301,7 @@ public class MRSImpl implements MRS {
 		if (result.status != null) {
 			// provide the flowquota's relaystate back to the caller in the relay response.
 			response.setRelayStatus(Flowcontrolstatus.CLOSED);
-			setError(mapSubmitOperationStatus(result.status), response);
+			ErrorCode.setError(mapSubmitOperationStatus(result.status), response);
 			return;
 		}
 
@@ -321,14 +319,6 @@ public class MRSImpl implements MRS {
 		// TODO #96: keep the tosAddress, sessionId in the session for later use.
 
 		response.setSuccess(true);
-	}
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
 	}
 
 	private ErrorCode mapSubmitOperationStatus(SubmitMessageOperationStatus status) {
