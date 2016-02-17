@@ -9,7 +9,7 @@
 	<xs:complexType name="TransactionSpecification">
 		<xs:sequence>
 			<xs:element ref="xid"/>
-			<xs:element ref="txtimeout" minOccurs="0"/>
+			<xs:element ref="txtimeout"/>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- ********************************************* -->

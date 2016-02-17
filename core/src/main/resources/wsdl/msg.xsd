@@ -10,13 +10,15 @@
 	<!--           DESTINATION TYPES              -->
 	<!-- ********************************************* -->
 	<xs:complexType name="NonTransactionalSession">
-		<xs:sequence>
-			<xs:element ref="tx:xid"/>
-			<xs:element ref="tx:txtimeout"/>
-			<xs:element ref="dr" minOccurs="0"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="tx:TransactionSpecification">
+				<xs:sequence>
+					<xs:element ref="dr" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
-	<xs:element name="session" type="NonTransactionalSession"/>
+	<xs:element name="nonTransaction" type="NonTransactionalSession"/>
 	<xs:element name="waitTimeoutSec" type="xs:unsignedShort">
 		<xs:annotation>
 			<xs:documentation>the maximum time which the call will block in seconds at the ServiceProvider waiting for messages ready to deliver.</xs:documentation>

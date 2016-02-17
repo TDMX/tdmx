@@ -53,7 +53,7 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
-import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -192,8 +192,8 @@ public class MOSImpl implements MOS {
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
 			return response;
 		}
-		// TODO LATER: validate Tx fields present if provided
-		Transaction tx = parameters.getTransaction();
+		// TODO #100: validate Tx fields present if provided
+		TransactionSpecification tx = parameters.getTransaction();
 
 		// TODO #70: check chunk's mac
 
@@ -466,7 +466,7 @@ public class MOSImpl implements MOS {
 				if (!retry.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 							rs.getErrorCode().getErrorMessage());
-					// TODO channelService.updateStatusMessage(result.message.getId(), error);
+					// TODO #93: channelService.updateStatusMessage(result.message.getId(), error);
 				} else {
 					// cache the potentially changed ROS address
 					cch.setRosTcpAddress(retry.getRosTcpAddress());
@@ -474,7 +474,7 @@ public class MOSImpl implements MOS {
 			} else {
 				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 						rs.getErrorCode().getErrorMessage());
-				// TODO channelService.updateStatusMessage(result.message.getId(), error);
+				// TODO #93: channelService.updateStatusMessage(result.message.getId(), error);
 
 			}
 

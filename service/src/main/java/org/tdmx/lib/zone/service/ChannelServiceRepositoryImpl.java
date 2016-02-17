@@ -32,6 +32,7 @@ import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.DestinationDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
+import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -420,11 +421,27 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg) {
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt) {
 		// TODO #93 lock quota, reduce buffer, set status if crossing low limit
+		ChannelMessage existingMsg = getChannelDao().loadChannelMessageByMessageId(msg.getId());
+		if (existingMsg != null) {
+			existingMsg.setReceipt(receipt);
+
+			// if it's same domain we don't need to relay back the DR
+			if (!msg.getChannel().isSameDomain()) {
+				existingMsg.setProcessingState(ProcessingState.pending());
+			}
+		}
+
+		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+
+		// we can fall below the low mark but and if we do then the flow control is opened.
+		boolean openedRelayFC = quota.reduceBufferOnReceive(msg.getPayloadLength());
+
 		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
-		result.flowQuota = null;
-		result.status = ReceiveMessageOperationStatus.FLOW_CONTROL_OPENED;
+		result.flowQuota = quota;
+		result.flowControlOpened = openedRelayFC;
+		result.msg = existingMsg;
 		return result;
 	}
 

@@ -160,6 +160,23 @@ public class FlowQuota implements Serializable {
 		}
 	}
 
+	/**
+	 * Adapt flow control to the bytes which are incoming over the relay.
+	 * 
+	 * @return true if the FC status changes from closed to open.
+	 * @param payloadSizeBytes
+	 */
+	public boolean reduceBufferOnReceive(long payloadSizeBytes) {
+		FlowControlStatus oldFC = getFlowStatus();
+		setUsedBytes(getUsedBytes().subtract(BigInteger.valueOf(payloadSizeBytes)));
+		if (getUsedBytes().subtract(getLimit().getLowMarkBytes()).compareTo(BigInteger.ZERO) < 0) {
+			// quota below low limit, open relay
+			setFlowStatus(FlowControlStatus.OPEN);
+			setRelayStatus(FlowControlStatus.OPEN);
+		}
+		return FlowControlStatus.CLOSED == oldFC && FlowControlStatus.OPEN == getFlowStatus();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

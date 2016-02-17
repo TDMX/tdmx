@@ -175,6 +175,7 @@
 		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
+		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="batchSize" value="100"/>
 	</bean>
 	

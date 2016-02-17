@@ -32,14 +32,18 @@ import org.tdmx.core.api.v01.msg.ChannelEndpoint;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Msgreference;
+import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.msg.UserSignature;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ApiValidator {
@@ -285,6 +289,74 @@ public class ApiValidator {
 			return null;
 		}
 		return msg;
+	}
+
+	public NonTransaction checkNonTransaction(NonTransaction acknowledge, Acknowledge ack) {
+		if (acknowledge == null) {
+			setError(ErrorCode.MissingReceiveNonTransaction, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(acknowledge.getXid())) {
+			setError(ErrorCode.MissingTransactionId, ack);
+			return null;
+		}
+		if (acknowledge.getTxtimeout() < 0) {
+			setError(ErrorCode.InvalidTransactionTimeout, ack);
+			return null;
+		}
+		// the DR is optional - if its provided we check it
+		if (acknowledge.getDr() != null) {
+			if (checkDeliveryReport(acknowledge.getDr(), ack) == null) {
+				return null;
+			}
+		}
+		return acknowledge;
+	}
+
+	public TransactionSpecification checkTransaction(TransactionSpecification tx, Acknowledge ack) {
+		if (tx == null) {
+			setError(ErrorCode.MissingReceiveTransaction, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(tx.getXid())) {
+			setError(ErrorCode.MissingTransactionId, ack);
+			return null;
+		}
+		if (tx.getTxtimeout() < 0) {
+			setError(ErrorCode.InvalidTransactionTimeout, ack);
+			return null;
+		}
+		return tx;
+	}
+
+	public Dr checkDeliveryReport(Dr dr, Acknowledge ack) {
+		if (dr == null) {
+			setError(ErrorCode.MissingDeliveryReport, ack);
+			return null;
+		}
+		if (checkMsgreference(dr.getMsgreference(), ack) == null) {
+			return null;
+		}
+		if (checkUsersignature(dr.getReceiptsignature(), ack) == null) {
+			return null;
+		}
+		return dr;
+	}
+
+	public Msgreference checkMsgreference(Msgreference ref, Acknowledge ack) {
+		if (ref == null) {
+			setError(ErrorCode.MissingMessageReference, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(ref.getMsgId())) {
+			setError(ErrorCode.MissingMessageReferenceMsgId, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(ref.getSignature())) {
+			setError(ErrorCode.MissingMessageReferenceSignature, ack);
+			return null;
+		}
+		return ref;
 	}
 
 	public Chunk checkChunk(Chunk chunk, Acknowledge ack) {

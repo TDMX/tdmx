@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
@@ -41,6 +42,7 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
@@ -51,10 +53,14 @@ import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
+import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -68,7 +74,6 @@ import org.tdmx.lib.zone.service.AgentCredentialFactory;
 import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.ChannelService.ReceiveMessageOperationStatus;
 import org.tdmx.lib.zone.service.ChannelService.ReceiveMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
@@ -107,6 +112,8 @@ public class MDSImpl implements MDS {
 	private AgentCredentialFactory credentialFactory;
 	private AgentCredentialService credentialService;
 	private AgentCredentialValidator credentialValidator;
+
+	private ChunkService chunkService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -243,14 +250,97 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		long txTimeoutTimestamp = 0L;
-		if (recvRequest.getSession() != null) {
+		TransactionSpecification tx = null;
+		if (recvRequest.getTransaction() != null) {
+			// TODO #101: validate tx
+			tx = validator.checkTransaction(recvRequest.getTransaction(), response);
+			if (tx == null) {
+				return response;
+			}
+			if (recvRequest.getNonTransaction() != null) {
+				ErrorCode.setError(ErrorCode.InvalidReceiveAcknowledgeMode, response);
+				return response;
+			}
+		} else if (recvRequest.getNonTransaction() != null) {
+			// validate NonTransaction info from api
+			NonTransaction ack = validator.checkNonTransaction(recvRequest.getNonTransaction(), response);
+			if (ack == null) {
+				return response;
+			}
+			tx = ack;
+
 			// TODO #95: Handle the ack of previous received message and initiate relay back of DR
 			// caching the ROS address of the reverse channel
+			MessageContext ctx = rcv.endTransaction(tx);
+			if (ctx != null && ack.getDr() == null) {
+				// error not acknowledging previously received msg
+				ErrorCode.setError(ErrorCode.InvalidNonTransactionalAcknowledge, response, tx.getXid(), ctx.getMsgId());
+				return response;
+			} else if (ctx == null && ack.getDr() != null) {
+				// no current message in the session - cannot have a DeliveryReport
+				ErrorCode.setError(ErrorCode.InvalidDeliveryReportNoReceive, response, tx.getXid(), ctx.getMsgId());
+				return response;
+			} else if (ctx != null && ack.getDr() != null) {
+				// check that the ack of the msg in the dr matches the ctx.
+				if (!ack.getDr().getMsgreference().getMsgId().equals(ctx.getMsgId())) {
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReportMsgIdMismatch, response, tx.getXid(),
+							ctx.getMsgId(), ack.getDr().getMsgreference().getMsgId());
+					return response;
+				}
+				if (!ack.getDr().getMsgreference().getSignature().equals(ctx.getMsg().getSignature().getValue())) {
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReportSignatureMismatch, response, tx.getXid(),
+							ctx.getMsgId());
+					return response;
+				}
+				// extref is optional but must be replied exactly as received
+				if (StringUtils.hasText(ack.getDr().getMsgreference().getExternalReference())) {
+					if (!ack.getDr().getMsgreference().getExternalReference()
+							.equals(ctx.getMsg().getExternalReference())) {
+						ErrorCode.setError(ErrorCode.InvalidDeliveryReportExtRefMismatch, response, tx.getXid(),
+								ctx.getMsgId());
+						return response;
+					}
+				} else if (StringUtils.hasText(ctx.getMsg().getExternalReference())) {
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReportExtRefMismatch, response, tx.getXid(),
+							ctx.getMsgId());
+					return response;
+				}
+				// TODO #95: check signature - receiver
 
+				AgentSignature receipt = a2d.mapUserSignature(ack.getDr().getReceiptsignature());
+
+				// acknowledge the message, possibly opening the relay flow control
+				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
+						ctx.getMsg(), receipt);
+				// TODO #93: cache the ROS address in the receiver context and retry on failre
+				if (ackStatus.flowControlOpened) {
+					RelayStatus rs = relayClientService.relayChannelFlowControl(null, session.getAccountZone(),
+							session.getZone(), session.getDomain(), ctx.getMsg().getChannel(), ackStatus.flowQuota);
+					if (!rs.isSuccess()) {
+						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
+								rs.getErrorCode().getErrorMessage());
+						channelService.updateStatusFlowQuota(ackStatus.flowQuota.getId(), error);
+					}
+				}
+				if (ProcessingStatus.PENDING == ackStatus.msg.getProcessingState().getStatus()) {
+					// relay DR back to origin
+					RelayStatus rs = relayClientService.relayChannelMessage(null, session.getAccountZone(),
+							session.getZone(), session.getDomain(), ctx.getMsg().getChannel(), ctx.getMsg());
+					if (!rs.isSuccess()) {
+						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
+								rs.getErrorCode().getErrorMessage());
+						channelService.updateStatusMessage(ctx.getMsg().getId(), error);
+					}
+				}
+
+			} else {
+				log.debug("No current message and no DR for " + tx.getXid());
+			}
+		} else {
+			// must be tx or non tx not neither
+			ErrorCode.setError(ErrorCode.MissingReceiveAcknowledgeMode, response);
+			return response;
 		}
-
-		// TODO #95: note the setup session or tx context
 
 		boolean mustFetch = rcv.isFetchRequired();
 		if (mustFetch) {
@@ -266,7 +356,7 @@ public class MDSImpl implements MDS {
 		}
 
 		// get any ready message, waiting if none available.
-		MessageContext msgCtx = rcv.getNextPendingMessage(recvRequest.getWaitTimeoutSec() * 1000);
+		MessageContext msgCtx = rcv.getNextPendingMessage(recvRequest.getWaitTimeoutSec() * 1000, tx);
 		if (msgCtx == null) {
 			// no message available even after waiting.
 			response.setSuccess(true);
@@ -275,20 +365,10 @@ public class MDSImpl implements MDS {
 
 		ChannelMessage msg = msgCtx.getMsg();
 		Msg m = d2a.mapChannelMessage(msg);
-		// TODO #95: get 1st chunk and map it into msg
 
-		// TODO #93: on msg acknowledge/commit
-		// acknowledge the message, possibly opening the relay flow control
-		ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(), msg);
-		if (ackStatus.status == ReceiveMessageOperationStatus.FLOW_CONTROL_OPENED) {
-			RelayStatus rs = relayClientService.relayChannelFlowControl(null, session.getAccountZone(),
-					session.getZone(), session.getDomain(), msg.getChannel(), ackStatus.flowQuota);
-			if (!rs.isSuccess()) {
-				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
-						rs.getErrorCode().getErrorMessage());
-				channelService.updateStatusFlowQuota(ackStatus.flowQuota.getId(), error);
-			}
-		}
+		// get 1st chunk and map it into msg
+		Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
+		m.setChunk(d2a.mapChunk(chunk));
 
 		response.setMsg(m);
 		response.setRetryCount(msgCtx.getNumDeliveries());
@@ -476,6 +556,14 @@ public class MDSImpl implements MDS {
 
 	public void setMaxWaitTimeoutSec(int maxWaitTimeoutSec) {
 		this.maxWaitTimeoutSec = maxWaitTimeoutSec;
+	}
+
+	public ChunkService getChunkService() {
+		return chunkService;
+	}
+
+	public void setChunkService(ChunkService chunkService) {
+		this.chunkService = chunkService;
 	}
 
 }

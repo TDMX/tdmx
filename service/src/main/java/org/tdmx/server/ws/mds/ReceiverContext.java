@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 public class ReceiverContext {
@@ -45,6 +46,9 @@ public class ReceiverContext {
 
 	// map of msgId->MessageContext of messages which have been delivered but not yet acknowledged
 	private Map<String, MessageContext> unackedMessageMap = new HashMap<>();
+
+	// map of txId->TransactionContext of current transactions.
+	private Map<String, TransactionContext> transactionMap = new HashMap<>();
 
 	// indicates that messages related to this destination have been relayed in since the last fetch.
 	private boolean dirty = true;
@@ -87,7 +91,7 @@ public class ReceiverContext {
 			lastFetchTimestamp = System.currentTimeMillis();
 			dirty = false;
 
-			// recycle any unacknowledged messages which have timed-out
+			// recycle any unacknowledged messages in transactions which have timed-out
 			recycleMessagesAfterSessionTimeout();
 			return true;
 		}
@@ -99,7 +103,7 @@ public class ReceiverContext {
 	 * @param maxWaitDurationMs
 	 * @return
 	 */
-	public MessageContext getNextPendingMessage(long maxWaitDurationMs) {
+	public MessageContext getNextPendingMessage(long maxWaitDurationMs, TransactionSpecification txSpec) {
 		long waitUntilTimestamp = System.currentTimeMillis() + maxWaitDurationMs;
 
 		MessageContext result = null;
@@ -119,11 +123,38 @@ public class ReceiverContext {
 			}
 		} while (result == null && System.currentTimeMillis() < waitUntilTimestamp);
 
-		if (result != null && unackedMessageMap.containsKey(result.getMsgId())) {
-			log.warn("Ignoring message fetched which is unacknowledged " + result.getMsgId());
-			result = null;
+		if (result != null) {
+			if (unackedMessageMap.containsKey(result.getMsgId())) {
+				log.warn("Ignoring message fetched which is unacknowledged " + result.getMsgId());
+				result = null;
+			} else {
+				log.debug("Associating tx " + txSpec.getXid() + " with msg " + result.getMsgId());
+
+				TransactionContext tx = new TransactionContext(txSpec.getXid());
+
+				tx.setCurrentMessage(result);
+				tx.setTxTimeoutTimestamp(System.currentTimeMillis() + txSpec.getTxtimeout() * 1000);
+				transactionMap.put(tx.getTxId(), tx);
+				unackedMessageMap.put(result.getMsgId(), result);
+			}
 		}
 		return result;
+	}
+
+	/**
+	 * Remove the transaction and associated message.
+	 * 
+	 * @param txId
+	 * @return the message previously associated with the transaction.
+	 */
+	public MessageContext endTransaction(TransactionSpecification txSpec) {
+		TransactionContext tx = transactionMap.remove(txSpec.getXid());
+		if (tx != null) {
+			MessageContext msg = tx.getCurrentMessage();
+			unackedMessageMap.remove(msg.getMsgId());
+			return msg;
+		}
+		return null;
 	}
 
 	/**
@@ -182,6 +213,8 @@ public class ReceiverContext {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 	private void recycleMessagesAfterSessionTimeout() {
+		// TODO transactionMap
+
 		List<String> timeoutMsgIds = new ArrayList<>();
 		long now = System.currentTimeMillis();
 		for (MessageContext ctx : unackedMessageMap.values()) {

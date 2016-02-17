@@ -69,12 +69,22 @@ public enum ErrorCode {
 	MissingChunkData(500, "Chunk data missing."),
 	MissingChunkMac(500, "Chunk MAC missing."),
 	MissingChunkContinuationId(500, "Chunk continuationId missing."),
+	MissingTransactionId(500, "Missing transaction xid."),
+	InvalidTransactionTimeout(500, "Invalid transaction timeout."),
+	MissingReceiveTransaction(500, "Missing receive transaction."),
+	MissingDeliveryReport(500, "Missing delivery report."),
+	MissingMessageReference(500, "Missing message reference."),
+	MissingMessageReferenceMsgId(500, "Missing message reference msgId."),
+	MissingMessageReferenceSignature(500, "Missing message reference signature value."),
+	MissingReceiveNonTransaction(500, "Missing receive non transaction."),
 	InvalidMessageSource(500, "Message source invalid."),
 	InvalidChunkPos(500, "Chunk pos invalid."),
 	InvalidChunkSizeFactor(500, "Chunk size factor invalid."),
 	InvalidPayloadLength(500, "Payload length invalid."),
 	InvalidPlaintextLength(500, "Payload plaintext length invalid."),
 	InvalidChunkContinuationId(500, "Chunk continuationId invalid."),
+	InvalidReceiveTransaction(500, "Invalid receive transaction."),
+	InvalidReceiveNonTransaction(500, "Invalid receive non transaction."),
 
 	MissingChannelDestinationService(500, "ChannelDestination Service missing."),
 	MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),
@@ -102,6 +112,25 @@ public enum ErrorCode {
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
 	InvalidMsgId(500, "Message ID invalid."),
 	InvalidTimeout(500, "Timeout invalid. Value must be >= 0 and <= %d"),
+	InvalidReceiveAcknowledgeMode(
+			500,
+			"Invalid receive. Either use transactional receiving or a non transactional session, not both."),
+	InvalidNonTransactionalAcknowledge(500, "Non transactional session %s did not acknowledge receipt of message %s."),
+	InvalidDeliveryReportNoReceive(
+			500,
+			"Non transactional session %s acknowledged receipt of message %s which id did not receive."),
+	MissingReceiveAcknowledgeMode(
+			500,
+			"Invalid receive. Either use transactional receiving or a non transactional session."),
+	InvalidDeliveryReportMsgIdMismatch(
+			500,
+			"Non transactional session %s acknowledged receipt of message %s but expected message %s."),
+	InvalidDeliveryReportSignatureMismatch(
+			500,
+			"Non transactional session %s acknowledged receipt of message %s but provided wrong signature."),
+	InvalidDeliveryReportExtRefMismatch(
+			500,
+			"Non transactional session %s acknowledged receipt of message %s but provided wrong external reference."),
 	InvalidChannelOrigin(500, "Channel Origin invalid."),
 	InvalidChannelDestination(500, "Channel Origin invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),

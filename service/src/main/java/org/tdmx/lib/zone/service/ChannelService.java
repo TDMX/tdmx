@@ -24,6 +24,7 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -325,14 +326,10 @@ public interface ChannelService {
 	 */
 	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus);
 
-	public enum ReceiveMessageOperationStatus {
-		FLOW_CONTROL_OPENED,
-		CHANNEL_CLOSED,
-	}
-
 	public class ReceiveMessageResultHolder {
-		public ReceiveMessageOperationStatus status;
+		public boolean flowControlOpened;
 		public FlowQuota flowQuota;
+		public ChannelMessage msg;
 	}
 
 	/**
@@ -341,10 +338,10 @@ public interface ChannelService {
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
-	 * 
-	 *            TODO #95: include DR
+	 * @param receipt
+	 *            the delivery report.
 	 */
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg);
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.

@@ -82,7 +82,7 @@
 				<xs:sequence>
 					<xs:choice>
 						<xs:element ref="tx:transaction"/>
-						<xs:element ref="msg:session"/>
+						<xs:element ref="msg:nonTransaction"/>
 					</xs:choice>
 					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
