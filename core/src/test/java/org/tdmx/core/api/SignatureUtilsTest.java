@@ -34,7 +34,9 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Grant;
+import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.CalendarUtils;
 
@@ -90,4 +92,30 @@ public class SignatureUtilsTest {
 	// TODO payload signature check
 
 	// TODO header signature check
+
+	@Test
+	public void test_DeliveryReportSignature_UC() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+		PKIXCredential uc = CertificateFacade.createUC(dac, 1);
+
+		Msgreference mr = new Msgreference();
+		mr.setExternalReference("ExtRef" + System.currentTimeMillis());
+		mr.setMsgId("msgID" + System.currentTimeMillis());
+		mr.setSignature("msg signature");
+
+		Dr dr = new Dr();
+		dr.setMsgreference(mr);
+
+		SignatureUtils.createDeliveryReceiptSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(), dr);
+
+		// now the DR is setup.
+
+		assertNotNull(dr.getReceiptsignature().getSignaturevalue().getSignature());
+		assertNotNull(dr.getReceiptsignature().getSignaturevalue().getTimestamp());
+		assertNotNull(dr.getReceiptsignature().getSignaturevalue().getSignatureAlgorithm());
+
+		boolean signatureOk = SignatureUtils.checkDeliveryReceiptSignature(dr);
+		assertTrue(signatureOk);
+	}
 }
