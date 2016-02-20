@@ -331,7 +331,7 @@ public class ApiValidator {
 
 	public Dr checkDeliveryReport(Dr dr, Acknowledge ack) {
 		if (dr == null) {
-			setError(ErrorCode.MissingDeliveryReport, ack);
+			setError(ErrorCode.MissingDeliveryReceipt, ack);
 			return null;
 		}
 		if (checkMsgreference(dr.getMsgreference(), ack) == null) {

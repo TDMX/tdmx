@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -35,6 +36,8 @@ public class ReceiverContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+
+	// TODO #95: cache ros endpoints per channel
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -92,7 +95,7 @@ public class ReceiverContext {
 			dirty = false;
 
 			// recycle any unacknowledged messages in transactions which have timed-out
-			recycleMessagesAfterSessionTimeout();
+			recycleMessagesAfterTransactionTimeout();
 			return true;
 		}
 		return false;
@@ -212,22 +215,26 @@ public class ReceiverContext {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private void recycleMessagesAfterSessionTimeout() {
-		// TODO transactionMap
-
-		List<String> timeoutMsgIds = new ArrayList<>();
+	private void recycleMessagesAfterTransactionTimeout() {
+		// find the open transactions which have reached their timeout time.
 		long now = System.currentTimeMillis();
-		for (MessageContext ctx : unackedMessageMap.values()) {
-			if (ctx.getRedeliverAfterTimestamp() < now) {
-				timeoutMsgIds.add(ctx.getMsgId());
+		List<String> timeoutTxIds = new ArrayList<>();
+		for (Entry<String, TransactionContext> txEntry : transactionMap.entrySet()) {
+			if (txEntry.getValue().getTxTimeoutTimestamp() < now) {
+				timeoutTxIds.add(txEntry.getKey());
 			}
 		}
-		for (String msgId : timeoutMsgIds) {
-			MessageContext ctx = unackedMessageMap.remove(msgId);
-			if (ctx != null) {
+		// timeout the transaction and recycle the message
+		for (String txId : timeoutTxIds) {
+			log.info("Transaction timeout " + txId);
+			TransactionContext txCtx = transactionMap.remove(txId);
+			if (txCtx != null) {
+
+				MessageContext txMsg = txCtx.getCurrentMessage();
+				unackedMessageMap.remove(txMsg.getMsgId());
 				// increment the number of deliveries for the message being recycled.
-				ctx.setNumDeliveries(ctx.getNumDeliveries() + 1);
-				fetchedMessages.add(ctx);
+				txMsg.setNumDeliveries(txMsg.getNumDeliveries() + 1);
+				fetchedMessages.add(txMsg);
 			}
 		}
 	}

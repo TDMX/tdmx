@@ -209,7 +209,7 @@ public class MDSImpl implements MDS {
 
 				if (ProcessingStatus.PENDING == updatedChannel.getProcessingState().getStatus()) {
 					// relay "pending" channel destination sessions back to origin
-					// TODO LATER: we could think about caching the ROS addresses per channel known to the destination
+					// TODO #95: caching the ROS addresses per channel known to the destination
 
 					RelayStatus rs = relayClientService.relayChannelDestinationSession(null, session.getAccountZone(),
 							zone, session.getDomain(), updatedChannel);
@@ -227,12 +227,6 @@ public class MDSImpl implements MDS {
 
 		response.setSuccess(true);
 		return response;
-	}
-
-	@Override
-	public DownloadResponse download(Download parameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -278,17 +272,17 @@ public class MDSImpl implements MDS {
 				return response;
 			} else if (ctx == null && ack.getDr() != null) {
 				// no current message in the session - cannot have a DeliveryReport
-				ErrorCode.setError(ErrorCode.InvalidDeliveryReportNoReceive, response, tx.getXid(), ctx.getMsgId());
+				ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptNoReceive, response, tx.getXid(), ctx.getMsgId());
 				return response;
 			} else if (ctx != null && ack.getDr() != null) {
 				// check that the ack of the msg in the dr matches the ctx.
 				if (!ack.getDr().getMsgreference().getMsgId().equals(ctx.getMsgId())) {
-					ErrorCode.setError(ErrorCode.InvalidDeliveryReportMsgIdMismatch, response, tx.getXid(),
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptMsgIdMismatch, response, tx.getXid(),
 							ctx.getMsgId(), ack.getDr().getMsgreference().getMsgId());
 					return response;
 				}
 				if (!ack.getDr().getMsgreference().getSignature().equals(ctx.getMsg().getSignature().getValue())) {
-					ErrorCode.setError(ErrorCode.InvalidDeliveryReportSignatureMismatch, response, tx.getXid(),
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptSignatureMismatch, response, tx.getXid(),
 							ctx.getMsgId());
 					return response;
 				}
@@ -296,18 +290,29 @@ public class MDSImpl implements MDS {
 				if (StringUtils.hasText(ack.getDr().getMsgreference().getExternalReference())) {
 					if (!ack.getDr().getMsgreference().getExternalReference()
 							.equals(ctx.getMsg().getExternalReference())) {
-						ErrorCode.setError(ErrorCode.InvalidDeliveryReportExtRefMismatch, response, tx.getXid(),
+						ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptExtRefMismatch, response, tx.getXid(),
 								ctx.getMsgId());
 						return response;
 					}
 				} else if (StringUtils.hasText(ctx.getMsg().getExternalReference())) {
-					ErrorCode.setError(ErrorCode.InvalidDeliveryReportExtRefMismatch, response, tx.getXid(),
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptExtRefMismatch, response, tx.getXid(),
 							ctx.getMsgId());
 					return response;
 				}
-				// TODO #95: check signature - receiver
 
 				AgentSignature receipt = a2d.mapUserSignature(ack.getDr().getReceiptsignature());
+				// check that the DR signer is the same as the receiver UC
+				if (!receipt.getCertificateChainPem()
+						.equals(ctx.getMsg().getDeliveryReport().getReceiverSignature().getCertificateChainPem())) {
+					ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptSignerMismatch, response);
+					return response;
+
+				}
+				// check signature
+				if (!SignatureUtils.checkDeliveryReceiptSignature(ack.getDr())) {
+					ErrorCode.setError(ErrorCode.InvalidSignatureDeliveryReceipt, response);
+					return response;
+				}
 
 				// acknowledge the message, possibly opening the relay flow control
 				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
@@ -375,6 +380,12 @@ public class MDSImpl implements MDS {
 		response.setSuccess(true);
 		response.setContinuation(""); // TODO #95: chunks
 		return response;
+	}
+
+	@Override
+	public DownloadResponse download(Download parameters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

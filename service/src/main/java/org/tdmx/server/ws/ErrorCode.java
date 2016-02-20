@@ -72,7 +72,7 @@ public enum ErrorCode {
 	MissingTransactionId(500, "Missing transaction xid."),
 	InvalidTransactionTimeout(500, "Invalid transaction timeout."),
 	MissingReceiveTransaction(500, "Missing receive transaction."),
-	MissingDeliveryReport(500, "Missing delivery report."),
+	MissingDeliveryReceipt(500, "Missing delivery receipt."),
 	MissingMessageReference(500, "Missing message reference."),
 	MissingMessageReferenceMsgId(500, "Missing message reference msgId."),
 	MissingMessageReferenceSignature(500, "Missing message reference signature value."),
@@ -110,27 +110,31 @@ public enum ErrorCode {
 	InvalidSignerDestinationSession(500, "DestinationSession signature not signed by authenticated client."),
 	InvalidSignatureMessagePayload(500, "Message Payload signature invalid."),
 	InvalidSignatureMessageHeader(500, "Message Header signature invalid."),
+	InvalidSignatureDeliveryReceipt(500, "DeliveryReceipt signature invalid."),
 	InvalidMsgId(500, "Message ID invalid."),
 	InvalidTimeout(500, "Timeout invalid. Value must be >= 0 and <= %d"),
 	InvalidReceiveAcknowledgeMode(
 			500,
 			"Invalid receive. Either use transactional receiving or a non transactional session, not both."),
 	InvalidNonTransactionalAcknowledge(500, "Non transactional session %s did not acknowledge receipt of message %s."),
-	InvalidDeliveryReportNoReceive(
+	InvalidDeliveryReceiptNoReceive(
 			500,
 			"Non transactional session %s acknowledged receipt of message %s which id did not receive."),
 	MissingReceiveAcknowledgeMode(
 			500,
 			"Invalid receive. Either use transactional receiving or a non transactional session."),
-	InvalidDeliveryReportMsgIdMismatch(
+	InvalidDeliveryReceiptMsgIdMismatch(
 			500,
 			"Non transactional session %s acknowledged receipt of message %s but expected message %s."),
-	InvalidDeliveryReportSignatureMismatch(
+	InvalidDeliveryReceiptSignatureMismatch(
 			500,
 			"Non transactional session %s acknowledged receipt of message %s but provided wrong signature."),
-	InvalidDeliveryReportExtRefMismatch(
+	InvalidDeliveryReceiptExtRefMismatch(
 			500,
 			"Non transactional session %s acknowledged receipt of message %s but provided wrong external reference."),
+	InvalidDeliveryReceiptSignerMismatch(
+			500,
+			"The signer of the delivery receipt must be the same as the message recipient."),
 	InvalidChannelOrigin(500, "Channel Origin invalid."),
 	InvalidChannelDestination(500, "Channel Origin invalid."),
 	MissingPermissionEndpointPermission(500, "EndpointPermission permission missing."),
