@@ -18,6 +18,7 @@
 	<bean id="rs.SAS" class="org.tdmx.server.rs.sas.SASImpl" >
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository" />
 		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository" />
+		<property name="sslCertificateService" ref="tdmx.lib.control.TrustedSslCertificateRepository" />
 		<property name="partitionService" ref="tdmx.lib.control.DatabasePartitionRepository" />
 		<property name="partitionControlService" ref="tdmx.lib.control.PartitionControlServerRepository" />
 		<property name="accountService" ref="tdmx.lib.control.AccountRepository" />

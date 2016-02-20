@@ -46,6 +46,7 @@ import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.lib.control.domain.TrustedSslCertificate;
 import org.tdmx.lib.control.job.JobFactory;
 import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
@@ -55,6 +56,7 @@ import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.DnsResolverGroupService;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.lib.control.service.SegmentService;
+import org.tdmx.lib.control.service.TrustedSslCertificateService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
 import org.tdmx.server.rs.exception.FieldValidationError;
@@ -65,6 +67,7 @@ import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
+import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
@@ -77,6 +80,7 @@ public class SASImpl implements SAS {
 	public static enum PARAM {
 		SID("sId"),
 		SEGMENT("segment"),
+		SSLCERTIFICATE("sslcertificate"),
 		PARTITION("partition"),
 		PARTITIONCONTROLSERVER("pcs"),
 		DNSRESOLVERGROUP("dnsResolverGroup"),
@@ -88,7 +92,8 @@ public class SASImpl implements SAS {
 		ZID("zId"),
 		ZCID("zcId"),
 		DRGID("drgId"),
-		PCSID("pcsId"),;
+		PCSID("pcsId"),
+		TCID("tcId"),;
 
 		private PARAM(String n) {
 			this.n = n;
@@ -110,6 +115,7 @@ public class SASImpl implements SAS {
 
 	private UniqueIdService accountIdService;
 	private SegmentService segmentService;
+	private TrustedSslCertificateService sslCertificateService;
 	private DatabasePartitionService partitionService;
 	private DnsResolverGroupService dnsResolverGroupService;
 	private PartitionControlServerService partitionControlService;
@@ -137,20 +143,20 @@ public class SASImpl implements SAS {
 		validatePresent(DnsResolverGroupResource.FIELD.GROUPNAME, g.getGroupName());
 		validateNotEmpty(DnsResolverGroupResource.FIELD.IPADDRESSLIST, g.getIpAddresses());
 
-		DnsResolverGroup storedGroup = getDnsResolverGroupService().findByName(g.getGroupName());
+		DnsResolverGroup storedGroup = dnsResolverGroupService.findByName(g.getGroupName());
 		validateNotExists(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup);
 
 		log.info("Creating DnsResolverGroup " + g.getGroupName());
-		getDnsResolverGroupService().createOrUpdate(g);
+		dnsResolverGroupService.createOrUpdate(g);
 
 		// the ID is only created on commit of the createOrUpdate above
-		storedGroup = getDnsResolverGroupService().findByName(g.getGroupName());
+		storedGroup = dnsResolverGroupService.findByName(g.getGroupName());
 		return DnsResolverGroupResource.mapTo(storedGroup);
 	}
 
 	@Override
 	public List<DnsResolverGroupResource> searchDnsResolverGroup(Integer pageNo, Integer pageSize, String groupName) {
-		List<DnsResolverGroup> groups = getDnsResolverGroupService().findAll();
+		List<DnsResolverGroup> groups = dnsResolverGroupService.findAll();
 
 		List<DnsResolverGroupResource> result = new ArrayList<>();
 		for (DnsResolverGroup g : groups) {
@@ -164,7 +170,7 @@ public class SASImpl implements SAS {
 	@Override
 	public DnsResolverGroupResource getDnsResolverGroup(Long drgId) {
 		validatePresent(PARAM.DRGID, drgId);
-		return DnsResolverGroupResource.mapTo(getDnsResolverGroupService().findById(drgId));
+		return DnsResolverGroupResource.mapTo(dnsResolverGroupService.findById(drgId));
 	}
 
 	@Override
@@ -177,12 +183,12 @@ public class SASImpl implements SAS {
 		validatePresent(DnsResolverGroupResource.FIELD.GROUPNAME, updatedGroup.getGroupName());
 		validateNotEmpty(DnsResolverGroupResource.FIELD.IPADDRESSLIST, updatedGroup.getIpAddresses());
 
-		DnsResolverGroup storedGroup = getDnsResolverGroupService().findById(drgId);
+		DnsResolverGroup storedGroup = dnsResolverGroupService.findById(drgId);
 		validateExists(DnsResolverGroupResource.FIELD.ID, storedGroup);
 		validateEquals(DnsResolverGroupResource.FIELD.GROUPNAME, storedGroup.getGroupName(),
 				dnsResolverGroup.getGroupName());
 
-		getDnsResolverGroupService().createOrUpdate(updatedGroup);
+		dnsResolverGroupService.createOrUpdate(updatedGroup);
 		return DnsResolverGroupResource.mapTo(updatedGroup);
 	}
 
@@ -190,10 +196,10 @@ public class SASImpl implements SAS {
 	public Response deleteDnsResolverGroup(Long drgId) {
 		validatePresent(PARAM.DRGID, drgId);
 
-		DnsResolverGroup group = getDnsResolverGroupService().findById(drgId);
+		DnsResolverGroup group = dnsResolverGroupService.findById(drgId);
 		validateExists(DnsResolverGroupResource.FIELD.ID, group);
 
-		getDnsResolverGroupService().delete(group);
+		dnsResolverGroupService.delete(group);
 		return Response.ok().build();
 	}
 
@@ -205,20 +211,20 @@ public class SASImpl implements SAS {
 		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
 
-		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		Segment storedSegment = segmentService.findBySegment(s.getSegmentName());
 		validateNotExists(SegmentResource.FIELD.SEGMENT, storedSegment);
 
 		log.info("Creating segment " + s.getSegmentName());
-		getSegmentService().createOrUpdate(s);
+		segmentService.createOrUpdate(s);
 
 		// the ID is only created on commit of the createOrUpdate above
-		storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		storedSegment = segmentService.findBySegment(s.getSegmentName());
 		return SegmentResource.mapFrom(storedSegment);
 	}
 
 	@Override
 	public List<SegmentResource> searchSegment(Integer pageNo, Integer pageSize, String segment) {
-		List<Segment> segments = getSegmentService().findAll();
+		List<Segment> segments = segmentService.findAll();
 
 		List<SegmentResource> result = new ArrayList<>();
 		for (Segment s : segments) {
@@ -236,7 +242,7 @@ public class SASImpl implements SAS {
 	@Override
 	public SegmentResource getSegment(Long sId) {
 		validatePresent(PARAM.SID, sId);
-		return SegmentResource.mapFrom(getSegmentService().findById(sId));
+		return SegmentResource.mapFrom(segmentService.findById(sId));
 	}
 
 	@Override
@@ -249,10 +255,10 @@ public class SASImpl implements SAS {
 		validatePresent(SegmentResource.FIELD.SEGMENT, s.getSegmentName());
 		validatePresent(SegmentResource.FIELD.SCS_URL, s.getScsUrl());
 
-		Segment storedSegment = getSegmentService().findBySegment(s.getSegmentName());
+		Segment storedSegment = segmentService.findBySegment(s.getSegmentName());
 		validateExists(SegmentResource.FIELD.SEGMENT, storedSegment);
 
-		getSegmentService().createOrUpdate(s);
+		segmentService.createOrUpdate(s);
 		return SegmentResource.mapFrom(s);
 	}
 
@@ -260,22 +266,91 @@ public class SASImpl implements SAS {
 	public Response deleteSegment(Long sId) {
 		validatePresent(PARAM.SID, sId);
 
-		Segment segment = getSegmentService().findById(sId);
+		Segment segment = segmentService.findById(sId);
 		validateExists(SegmentResource.FIELD.ID, segment);
 
 		// cannot delete segment if there are PCSs defined in it.
-		List<PartitionControlServer> pcss = getPartitionControlService().findBySegment(segment.getSegmentName());
+		List<PartitionControlServer> pcss = partitionControlService.findBySegment(segment.getSegmentName());
 		validateEmpty(PARAM.PARTITIONCONTROLSERVER, pcss);
 
 		// cannot delete segment if there are DatabasePartitions defined in it.
-		List<DatabasePartition> dbs = getPartitionService().findAll();
+		List<DatabasePartition> dbs = partitionService.findAll();
 		for (DatabasePartition d : dbs) {
 			if (segment.getSegmentName().equals(d.getSegment())) {
 				validateEmpty(PARAM.PARTITION, dbs);
 			}
 		}
 
-		getSegmentService().delete(segment);
+		segmentService.delete(segment);
+		return Response.ok().build();
+	}
+
+	@Override
+	public SSLCertificateResource createSSLCertificate(SSLCertificateResource sslcertificate) {
+		validatePresent(PARAM.SSLCERTIFICATE, sslcertificate);
+		TrustedSslCertificate s = SSLCertificateResource.mapTo(sslcertificate);
+		validateNotPresent(SSLCertificateResource.FIELD.ID, s.getId());
+		validatePresent(SSLCertificateResource.FIELD.PEM, s.getCertificatePem());
+		validatePresent(SSLCertificateResource.FIELD.TRUST, s.getTrustStatus());
+
+		TrustedSslCertificate storedCertificate = sslCertificateService.findByFingerprint(s.getFingerprint());
+		validateNotExists(SSLCertificateResource.FIELD.FINGERPRINT, storedCertificate);
+
+		log.info("Creating SslCertificate " + s.getFingerprint());
+		sslCertificateService.createOrUpdate(s);
+
+		return SSLCertificateResource.mapFrom(storedCertificate);
+	}
+
+	@Override
+	public List<SSLCertificateResource> searchSSLCertificate(Integer pageNo, Integer pageSize, String contains) {
+		List<TrustedSslCertificate> certs = sslCertificateService.findAll();
+
+		List<SSLCertificateResource> result = new ArrayList<>();
+		for (TrustedSslCertificate s : certs) {
+			boolean match = true;
+			if (StringUtils.hasText(contains) && !s.getDescription().toUpperCase().contains(contains.toUpperCase())) {
+				match = false;
+			}
+			if (match) {
+				result.add(SSLCertificateResource.mapFrom(s));
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public SSLCertificateResource getSSLCertificate(Long tcId) {
+		validatePresent(PARAM.TCID, tcId);
+		return SSLCertificateResource.mapFrom(sslCertificateService.findById(tcId));
+	}
+
+	@Override
+	public SSLCertificateResource updateSSLCertificate(Long tcId, SSLCertificateResource sslcertificate) {
+		validatePresent(PARAM.SSLCERTIFICATE, sslcertificate);
+		validateEquals(PARAM.TCID, tcId, sslcertificate.getId());
+
+		TrustedSslCertificate s = SSLCertificateResource.mapTo(sslcertificate);
+		validatePresent(SSLCertificateResource.FIELD.ID, s.getId());
+		validatePresent(SSLCertificateResource.FIELD.PEM, s.getCertificatePem());
+		validatePresent(SSLCertificateResource.FIELD.TRUST, s.getTrustStatus());
+		validatePresent(SSLCertificateResource.FIELD.FINGERPRINT, s.getFingerprint());
+
+		TrustedSslCertificate storedCertificate = sslCertificateService.findByFingerprint(s.getFingerprint());
+		validateExists(SSLCertificateResource.FIELD.FINGERPRINT, storedCertificate);
+
+		sslCertificateService.createOrUpdate(s);
+		return SSLCertificateResource.mapFrom(s);
+	}
+
+	@Override
+	public Response deleteSSLCertificate(Long tcId) {
+		validatePresent(PARAM.TCID, tcId);
+
+		TrustedSslCertificate certificate = sslCertificateService.findById(tcId);
+		validateExists(SSLCertificateResource.FIELD.ID, certificate);
+
+		sslCertificateService.delete(certificate);
 		return Response.ok().build();
 	}
 
@@ -289,25 +364,24 @@ public class SASImpl implements SAS {
 		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
 		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
 
-		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		Segment storedSegment = segmentService.findBySegment(p.getSegment());
 		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 
-		PartitionControlServer storedServer = getPartitionControlService().findByIpEndpoint(p.getIpAddress(),
-				p.getPort());
+		PartitionControlServer storedServer = partitionControlService.findByIpEndpoint(p.getIpAddress(), p.getPort());
 		validateNotExists(PartitionControlServerResource.FIELD.IPADDRESS, storedServer);
 
 		log.info("Creating partition control server " + p.getIpAddress() + ":" + p.getPort());
-		getPartitionControlService().createOrUpdate(p);
+		partitionControlService.createOrUpdate(p);
 
 		// the ID is only created on commit of the createOrUpdate above
-		storedServer = getPartitionControlService().findById(p.getId());
+		storedServer = partitionControlService.findById(p.getId());
 		return PartitionControlServerResource.mapFrom(storedServer);
 	}
 
 	@Override
 	public List<PartitionControlServerResource> searchPartitionControlServer(Integer pageNo, Integer pageSize,
 			String segment, Integer modulo, String ipaddress, Integer port) {
-		List<PartitionControlServer> pcss = getPartitionControlService().findAll();
+		List<PartitionControlServer> pcss = partitionControlService.findAll();
 
 		List<PartitionControlServerResource> result = new ArrayList<>();
 		for (PartitionControlServer p : pcss) {
@@ -336,7 +410,7 @@ public class SASImpl implements SAS {
 	public PartitionControlServerResource getPartitionControlServer(Long pcsId) {
 		validatePresent(PARAM.PCSID, pcsId);
 
-		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		PartitionControlServer storedServer = partitionControlService.findById(pcsId);
 		return PartitionControlServerResource.mapFrom(storedServer);
 	}
 
@@ -346,7 +420,7 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.PARTITIONCONTROLSERVER, pcs);
 		validateEquals(PARAM.PCSID, pcsId, pcs.getId());
 
-		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		PartitionControlServer storedServer = partitionControlService.findById(pcsId);
 		validateExists(PartitionControlServerResource.FIELD.ID, storedServer);
 
 		PartitionControlServer p = PartitionControlServerResource.mapTo(pcs);
@@ -356,15 +430,15 @@ public class SASImpl implements SAS {
 		validatePresent(PartitionControlServerResource.FIELD.PORT, p.getPort());
 		validatePresent(PartitionControlServerResource.FIELD.MODULO, p.getServerModulo());
 
-		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		Segment storedSegment = segmentService.findBySegment(p.getSegment());
 		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 		if (!storedServer.getIpAddress().equals(p.getIpAddress()) || storedServer.getPort() != p.getPort()) {
 			// change of IP endpoint still needs to be unique
-			PartitionControlServer other = getPartitionControlService().findByIpEndpoint(p.getIpAddress(), p.getPort());
+			PartitionControlServer other = partitionControlService.findByIpEndpoint(p.getIpAddress(), p.getPort());
 			validateNotExists(PartitionControlServerResource.FIELD.IPADDRESS, other);
 		}
 		log.info("Updating partition control server " + p.getIpAddress() + ":" + p.getPort());
-		getPartitionControlService().createOrUpdate(p);
+		partitionControlService.createOrUpdate(p);
 
 		return PartitionControlServerResource.mapFrom(p);
 	}
@@ -373,10 +447,10 @@ public class SASImpl implements SAS {
 	public Response deletePartitionControlServer(Long pcsId) {
 		validatePresent(PARAM.PCSID, pcsId);
 
-		PartitionControlServer storedServer = getPartitionControlService().findById(pcsId);
+		PartitionControlServer storedServer = partitionControlService.findById(pcsId);
 		validateExists(PartitionControlServerResource.FIELD.ID, storedServer);
 
-		getPartitionControlService().delete(storedServer);
+		partitionControlService.delete(storedServer);
 		return Response.ok().build();
 	}
 
@@ -389,17 +463,17 @@ public class SASImpl implements SAS {
 		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
 
-		Segment storedSegment = getSegmentService().findBySegment(p.getSegment());
+		Segment storedSegment = segmentService.findBySegment(p.getSegment());
 		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 
-		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		DatabasePartition storedPartition = partitionService.findByPartitionId(p.getPartitionId());
 		validateNotExists(DatabasePartitionResource.FIELD.PARTITION_ID, storedPartition);
 
 		log.info("Creating database partition " + p.getPartitionId());
-		getPartitionService().createOrUpdate(p);
+		partitionService.createOrUpdate(p);
 
 		// the ID is only created on commit of the createOrUpdate above
-		storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		storedPartition = partitionService.findByPartitionId(p.getPartitionId());
 		return DatabasePartitionResource.mapFrom(storedPartition);
 	}
 
@@ -413,9 +487,9 @@ public class SASImpl implements SAS {
 		sc.setPartitionId(partitionId);
 		sc.setSegment(segment);
 		sc.setDbType(databaseType);
-		
+
 		List<DatabasePartitionResource> result = new ArrayList<>();
-		for (DatabasePartition p : getPartitionService().search(sc)) {
+		for (DatabasePartition p : partitionService.search(sc)) {
 			result.add(DatabasePartitionResource.mapFrom(p));
 		}
 
@@ -426,7 +500,7 @@ public class SASImpl implements SAS {
 	public DatabasePartitionResource getDatabasePartition(Long pId) {
 		validatePresent(PARAM.PID, pId);
 
-		DatabasePartition storedPartition = getPartitionService().findById(pId);
+		DatabasePartition storedPartition = partitionService.findById(pId);
 		return DatabasePartitionResource.mapFrom(storedPartition);
 	}
 
@@ -441,7 +515,7 @@ public class SASImpl implements SAS {
 		validatePresent(DatabasePartitionResource.FIELD.SEGMENT, p.getSegment());
 		validatePresent(DatabasePartitionResource.FIELD.DB_TYPE, p.getDbType());
 
-		DatabasePartition storedPartition = getPartitionService().findByPartitionId(p.getPartitionId());
+		DatabasePartition storedPartition = partitionService.findByPartitionId(p.getPartitionId());
 		validateExists(DatabasePartitionResource.FIELD.PARTITION_ID, storedPartition);
 
 		// immutable SEGMENT, DB_TYPE
@@ -460,7 +534,7 @@ public class SASImpl implements SAS {
 			validatePresent(DatabasePartitionResource.FIELD.PASSWORD, storedPartition.getPassword());
 		}
 
-		getPartitionService().createOrUpdate(p);
+		partitionService.createOrUpdate(p);
 
 		// TODO #88 cache invalidation partitions
 
@@ -471,16 +545,16 @@ public class SASImpl implements SAS {
 	public Response deleteDatabasePartition(Long pId) {
 		validatePresent(PARAM.PID, pId);
 
-		DatabasePartition storedPartition = getPartitionService().findById(pId);
+		DatabasePartition storedPartition = partitionService.findById(pId);
 		validateExists(DatabasePartitionResource.FIELD.ID, storedPartition);
 
 		// check if there are any accountzones on this partition
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(0, 1));
 		sc.setZonePartitionId(storedPartition.getPartitionId());
-		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		List<AccountZone> accountzones = accountZoneService.search(sc);
 		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
 
-		getPartitionService().delete(storedPartition);
+		partitionService.delete(storedPartition);
 		return Response.ok().build();
 	}
 
@@ -491,13 +565,13 @@ public class SASImpl implements SAS {
 		validateNotPresent(AccountResource.FIELD.ID, a.getId());
 		validateNotPresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
 
-		a.setAccountId(getAccountIdService().getNextId());
+		a.setAccountId(accountIdService.getNextId());
 
 		log.info("Creating accountId " + a.getAccountId() + " for " + a.getEmail());
-		getAccountService().createOrUpdate(a);
+		accountService.createOrUpdate(a);
 
 		// the ID is only created on commit of the createOrUpdate above
-		Account storedAccount = getAccountService().findByAccountId(a.getAccountId());
+		Account storedAccount = accountService.findByAccountId(a.getAccountId());
 		return AccountResource.mapFrom(storedAccount);
 	}
 
@@ -506,7 +580,7 @@ public class SASImpl implements SAS {
 		AccountSearchCriteria sc = new AccountSearchCriteria(getPageSpecifier(pageNo, pageSize));
 		sc.setEmail(email);
 		sc.setAccountId(accountId);
-		List<Account> accounts = getAccountService().search(sc);
+		List<Account> accounts = accountService.search(sc);
 
 		List<AccountResource> result = new ArrayList<>();
 		for (Account a : accounts) {
@@ -518,7 +592,7 @@ public class SASImpl implements SAS {
 	@Override
 	public AccountResource getAccount(Long aId) {
 		validatePresent(PARAM.AID, aId);
-		return AccountResource.mapFrom(getAccountService().findById(aId));
+		return AccountResource.mapFrom(accountService.findById(aId));
 	}
 
 	@Override
@@ -529,22 +603,22 @@ public class SASImpl implements SAS {
 		Account a = AccountResource.mapTo(account);
 		validatePresent(AccountResource.FIELD.ID, a.getId());
 		validatePresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
-		getAccountService().createOrUpdate(a);
+		accountService.createOrUpdate(a);
 		return AccountResource.mapFrom(a);
 	}
 
 	@Override
 	public Response deleteAccount(Long aId) {
 		validatePresent(PARAM.AID, aId);
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 
 		// check that no accountzones exist for the account
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(0, 1));
 		sc.setAccountId(a.getAccountId());
-		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		List<AccountZone> accountzones = accountZoneService.search(sc);
 		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
 
-		getAccountService().delete(a);
+		accountService.delete(a);
 		return Response.ok().build();
 	}
 
@@ -556,7 +630,7 @@ public class SASImpl implements SAS {
 		AccountZone az = AccountZoneResource.mapTo(accountZone);
 
 		// check that the account exists and accountId same
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validatePresent(PARAM.ACCOUNT, a);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
@@ -565,18 +639,18 @@ public class SASImpl implements SAS {
 		validateNotPresent(AccountZoneResource.FIELD.ID, az.getId());
 
 		validatePresent(AccountZoneResource.FIELD.SEGMENT, az.getSegment());
-		Segment storedSegment = getSegmentService().findBySegment(az.getSegment());
+		Segment storedSegment = segmentService.findBySegment(az.getSegment());
 		validateExists(AccountZoneResource.FIELD.SEGMENT, storedSegment);
 
 		validateNotPresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
-		String partitionId = getZonePartitionService().getZonePartitionId(a.getAccountId(), az.getZoneApex(),
+		String partitionId = zonePartitionService.getZonePartitionId(a.getAccountId(), az.getZoneApex(),
 				az.getSegment());
 		az.setZonePartitionId(partitionId);
 		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
 		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
-		getAccountZoneService().createOrUpdate(az);
+		accountZoneService.createOrUpdate(az);
 
 		// schedule the job to install the Zone in the ZoneDB partition.
 		ZoneInstallTask installTask = new ZoneInstallTask();
@@ -587,7 +661,7 @@ public class SASImpl implements SAS {
 
 		az.setJobId(j.getId());
 
-		getAccountZoneService().createOrUpdate(az);
+		accountZoneService.createOrUpdate(az);
 		return AccountZoneResource.mapFrom(az);
 	}
 
@@ -595,13 +669,13 @@ public class SASImpl implements SAS {
 	public List<AccountZoneResource> searchAccountZone(Integer pageNo, Integer pageSize, Long aId, String zoneApex) {
 		validatePresent(PARAM.AID, aId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validatePresent(PARAM.ACCOUNT, a);
 
 		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(pageNo, pageSize));
 		sc.setZoneApex(zoneApex);
 		sc.setAccountId(a.getAccountId());
-		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		List<AccountZone> accountzones = accountZoneService.search(sc);
 
 		List<AccountZoneResource> result = new ArrayList<>();
 		for (AccountZone az : accountzones) {
@@ -622,7 +696,7 @@ public class SASImpl implements SAS {
 			sc.setStatus(AccountZoneStatus.valueOf(status));
 		}
 
-		List<AccountZone> accountzones = getAccountZoneService().search(sc);
+		List<AccountZone> accountzones = accountZoneService.search(sc);
 
 		List<AccountZoneResource> result = new ArrayList<>();
 		for (AccountZone az : accountzones) {
@@ -636,9 +710,9 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		if (a != null) {
-			AccountZone az = getAccountZoneService().findById(zId);
+			AccountZone az = accountZoneService.findById(zId);
 			if (az != null && a.getAccountId().equals(az.getAccountId())) {
 				return AccountZoneResource.mapFrom(az);
 			}
@@ -653,9 +727,9 @@ public class SASImpl implements SAS {
 		validateEquals(PARAM.ZID, zId, accountZone.getId());
 		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		// the accountzone must belong to the account
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
@@ -679,9 +753,9 @@ public class SASImpl implements SAS {
 	public Response deleteAccountZone(Long aId, Long zId) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 
 		// the accountZone must actually relate to the account!
@@ -692,10 +766,10 @@ public class SASImpl implements SAS {
 				getPageSpecifier(0, 1));
 		sc.setAccountId(az.getAccountId());
 		sc.setZoneApex(az.getZoneApex());
-		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+		List<AccountZoneAdministrationCredential> accountzones = accountZoneCredentialService.search(sc);
 		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
 
-		getAccountZoneService().delete(az);
+		accountZoneService.delete(az);
 
 		return Response.ok().build();
 	}
@@ -706,9 +780,9 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
@@ -732,7 +806,7 @@ public class SASImpl implements SAS {
 		azc.setCredentialStatus(controlCredential.getCredentialStatus());
 
 		log.info("Creating AccountZoneAdministrationCredential " + zac);
-		getAccountZoneCredentialService().createOrUpdate(azc);
+		accountZoneCredentialService.createOrUpdate(azc);
 
 		if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == azc.getCredentialStatus()) {
 
@@ -745,7 +819,7 @@ public class SASImpl implements SAS {
 			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
 
 			azc.setJobId(j.getId());
-			getAccountZoneCredentialService().createOrUpdate(azc);
+			accountZoneCredentialService.createOrUpdate(azc);
 
 		}
 		return AccountZoneAdministrationCredentialResource.mapFrom(azc);
@@ -757,9 +831,9 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
@@ -768,7 +842,7 @@ public class SASImpl implements SAS {
 				getPageSpecifier(pageNo, pageSize));
 		sc.setAccountId(az.getAccountId());
 		sc.setZoneApex(az.getZoneApex());
-		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+		List<AccountZoneAdministrationCredential> accountzones = accountZoneCredentialService.search(sc);
 
 		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
 		for (AccountZoneAdministrationCredential azc : accountzones) {
@@ -790,7 +864,7 @@ public class SASImpl implements SAS {
 		if (StringUtils.hasText(status)) {
 			sc.setStatus(AccountZoneAdministrationCredentialStatus.valueOf(status));
 		}
-		List<AccountZoneAdministrationCredential> accountzones = getAccountZoneCredentialService().search(sc);
+		List<AccountZoneAdministrationCredential> accountzones = accountZoneCredentialService.search(sc);
 
 		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
 		for (AccountZoneAdministrationCredential azc : accountzones) {
@@ -806,12 +880,12 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZID, zId);
 		validatePresent(PARAM.ZCID, zcId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
-		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
@@ -828,12 +902,12 @@ public class SASImpl implements SAS {
 		validateEnum(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
 				AccountZoneAdministrationCredentialStatus.class, zac.getStatus());
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
-		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
@@ -858,7 +932,7 @@ public class SASImpl implements SAS {
 				// if not already installed, then we can immediately remove.
 				updatedAzc.setCredentialStatus(AccountZoneAdministrationCredentialStatus.DEINSTALLED);
 			}
-			getAccountZoneCredentialService().createOrUpdate(updatedAzc);
+			accountZoneCredentialService.createOrUpdate(updatedAzc);
 		} else if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == updatedAzc.getCredentialStatus()) {
 			validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
 					AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST, updatedAzc.getCredentialStatus());
@@ -871,7 +945,7 @@ public class SASImpl implements SAS {
 			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
 
 			updatedAzc.setJobId(j.getId());
-			getAccountZoneCredentialService().createOrUpdate(updatedAzc);
+			accountZoneCredentialService.createOrUpdate(updatedAzc);
 
 		}
 		return AccountZoneAdministrationCredentialResource.mapFrom(updatedAzc);
@@ -883,19 +957,19 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ZID, zId);
 		validatePresent(PARAM.ZCID, zcId);
 
-		Account a = getAccountService().findById(aId);
+		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
-		AccountZone az = getAccountZoneService().findById(zId);
+		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
-		AccountZoneAdministrationCredential azc = getAccountZoneCredentialService().findById(zcId);
+		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
 				AccountZoneAdministrationCredentialStatus.DEINSTALLED, azc.getCredentialStatus());
 
-		getAccountZoneCredentialService().delete(azc);
+		accountZoneCredentialService.delete(azc);
 		return Response.ok().build();
 	}
 
@@ -1034,6 +1108,14 @@ public class SASImpl implements SAS {
 
 	public void setSegmentService(SegmentService segmentService) {
 		this.segmentService = segmentService;
+	}
+
+	public TrustedSslCertificateService getSslCertificateService() {
+		return sslCertificateService;
+	}
+
+	public void setSslCertificateService(TrustedSslCertificateService sslCertificateService) {
+		this.sslCertificateService = sslCertificateService;
 	}
 
 	public PartitionControlServerService getPartitionControlService() {

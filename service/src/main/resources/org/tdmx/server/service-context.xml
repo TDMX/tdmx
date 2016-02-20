@@ -38,12 +38,17 @@
 		<property name="dnsCacheValiditySeconds" value="86400"/> <!-- 24hrs -->
 	</bean>
 
+	<bean id="tdmx.server.TrustedSslCertificateTrustManager" class="org.tdmx.server.runtime.TrustedSslCertificateTrustManagerImpl">
+		<property name="trustedCertificateService" ref="tdmx.lib.control.TrustedSslCertificateRepository"/>
+	</bean>
+
 	<bean id="tdmx.server.CacheInvalidationEventDelegater" class="org.tdmx.server.pcs.CacheInvalidationEventDelegater">
 		<property name="sizeLimit" value="10"/>
 		<property name="cacheInvalidationListeners">
 			<list value-type="org.tdmx.server.pcs.CacheInvalidationListener">
 	            <ref bean="tdmx.server.DnsResolverGroupCache"/>
 	            <ref bean="tdmx.server.control.DatabasePartitionCache"/>
+	            <ref bean="tdmx.server.TrustedSslCertificateTrustManager"/>
 	        </list>
 		</property>
 	</bean>

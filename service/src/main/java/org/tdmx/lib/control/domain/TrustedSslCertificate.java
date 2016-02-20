@@ -37,9 +37,10 @@ import javax.persistence.Transient;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
- * A
+ * A trusted or distrusted SSL root certificate.
  * 
  * @author Peter Klauser
  * 
@@ -98,16 +99,6 @@ public class TrustedSslCertificate implements Serializable {
 	public TrustedSslCertificate() {
 	}
 
-	public TrustedSslCertificate(String pem) {
-		certificatePem = pem;
-
-		setCertificate(getCertificate());
-	}
-
-	public TrustedSslCertificate(PKIXCertificate cert) {
-		setCertificate(cert);
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
@@ -124,6 +115,15 @@ public class TrustedSslCertificate implements Serializable {
 			certificate = certificateChain != null && certificateChain.length == 1 ? certificateChain[0] : null;
 		}
 		return certificate;
+	}
+
+	public void setCertificate(PKIXCertificate cert) {
+		certificate = cert;
+		certificatePem = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { cert });
+		fingerprint = cert.getFingerprint();
+		validFrom = cert.getNotBefore().getTime();
+		validTo = cert.getNotAfter().getTime();
+		description = StringUtils.truncateToMaxLen(cert.toString(), MAX_DESCRIPTION_LEN);
 	}
 
 	@Override
@@ -146,15 +146,6 @@ public class TrustedSslCertificate implements Serializable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void setCertificate(PKIXCertificate cert) {
-		certificate = cert;
-		certificatePem = CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { cert });
-		fingerprint = cert.getFingerprint();
-		validFrom = cert.getNotBefore().getTime();
-		validTo = cert.getNotAfter().getTime();
-		description = cert.toString();
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -36,6 +36,7 @@ import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
+import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
 @Path("/sas")
@@ -96,6 +97,30 @@ public interface SAS {
 	@DELETE
 	@Path("/segments/{sid}")
 	Response deleteSegment(@PathParam("sid") Long sId);
+
+	/*
+	 * RESTFUL service for SSLCertificate
+	 */
+	@POST
+	@Path("/sslcertificates")
+	SSLCertificateResource createSSLCertificate(SSLCertificateResource sslcertificate);
+
+	@GET
+	@Path("/sslcertificates")
+	List<SSLCertificateResource> searchSSLCertificate(@QueryParam("pageNumber") Integer pageNo,
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("contains") String contains);
+
+	@GET
+	@Path("/sslcertificates/{tcId}")
+	SSLCertificateResource getSSLCertificate(@PathParam("tcId") Long tcId);
+
+	@PUT
+	@Path("/sslcertificates/{tcId}")
+	SSLCertificateResource updateSSLCertificate(@PathParam("tcId") Long tcId, SSLCertificateResource sslcertificate);
+
+	@DELETE
+	@Path("/sslcertificates/{tcId}")
+	Response deleteSSLCertificate(@PathParam("tcId") Long tcId);
 
 	/*
 	 * RESTFUL service for PartitionControlServers

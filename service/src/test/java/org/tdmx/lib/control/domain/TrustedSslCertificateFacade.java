@@ -19,14 +19,16 @@
 package org.tdmx.lib.control.domain;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.FileUtils;
 
 public class TrustedSslCertificateFacade {
 
 	public static TrustedSslCertificate getDerCertificate(String filename, TrustStatus status) throws Exception {
 		byte[] cer = FileUtils.getFileContents(filename);
-		String pem = CertificateIOUtils.safeX509certsToPem(cer);
-		TrustedSslCertificate tc = new TrustedSslCertificate(pem);
+		PKIXCertificate cert = CertificateIOUtils.safeDecodeX509(cer);
+		TrustedSslCertificate tc = new TrustedSslCertificate();
+		tc.setCertificate(cert);
 		tc.setTrustStatus(status);
 		return tc;
 	}
