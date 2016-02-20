@@ -132,6 +132,14 @@
 	</bean>
 	
 
+	<bean id="tdmx.lib.control.dao.TrustedSslCertificateDao" class="org.tdmx.lib.control.dao.TrustedSslCertificateDaoImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.TrustedSslCertificateRepository" class="org.tdmx.lib.control.service.TrustedSslCertificateRepositoryImpl">
+		<property name="certificateDao"	ref="tdmx.lib.control.dao.TrustedSslCertificateDao" />
+	</bean>
+	
+
 	<bean id="tdmx.lib.control.dao.DnsDomainZoneDao" class="org.tdmx.lib.control.dao.DnsDomainZoneDaoImpl">
 	</bean>
 

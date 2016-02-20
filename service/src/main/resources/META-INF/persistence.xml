@@ -17,6 +17,7 @@
 		<class>org.tdmx.lib.control.domain.ControlJob</class>
 		<class>org.tdmx.lib.control.domain.DnsResolverGroup</class>
 		<class>org.tdmx.lib.control.domain.DnsDomainZone</class>
+		<class>org.tdmx.lib.control.domain.TrustedSslCertificate</class>
 		<class>org.tdmx.lib.control.domain.Segment</class>
 		<class>org.tdmx.lib.control.domain.Account</class>
 		<class>org.tdmx.lib.control.domain.AccountZone</class>
