@@ -175,6 +175,14 @@ public class TrustedSslCertificate implements Serializable {
 		this.trustStatus = trustStatus;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
 	public Date getValidFrom() {
 		return validFrom;
 	}

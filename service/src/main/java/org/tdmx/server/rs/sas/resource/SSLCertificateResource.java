@@ -40,6 +40,7 @@ public class SSLCertificateResource {
 		ID("id"),
 		PEM("pem"),
 		TRUST("trust"),
+		COMMENT("comment"),
 		FINGERPRINT("fingerprint"),
 		VALIDFROM("validFrom"),
 		VALIDTO("validTo"),
@@ -58,9 +59,11 @@ public class SSLCertificateResource {
 	}
 
 	private Long id;
-	private String fingerprint; // R/O
 	private String pem;
 	private String trust;
+	private String comment;
+
+	private String fingerprint; // R/O
 	private Date validFrom; // R/O
 	private Date validTo; // R/O
 	private String description; // R/O
@@ -71,6 +74,7 @@ public class SSLCertificateResource {
 		buf.append("; ").append(id);
 		buf.append("; ").append(pem);
 		buf.append("; ").append(trust);
+		buf.append("; ").append(comment);
 		buf.append("; ").append(fingerprint);
 		buf.append("; ").append(description);
 		return buf.toString();
@@ -80,28 +84,30 @@ public class SSLCertificateResource {
 		if (cert == null) {
 			return null;
 		}
-		TrustedSslCertificate s = new TrustedSslCertificate();
-		s.setId(cert.getId());
-		s.setTrustStatus(EnumUtils.mapTo(TrustStatus.class, cert.getTrust()));
+		TrustedSslCertificate c = new TrustedSslCertificate();
+		c.setId(cert.getId());
+		c.setTrustStatus(EnumUtils.mapTo(TrustStatus.class, cert.getTrust()));
+		c.setComment(cert.getComment());
 
 		PKIXCertificate[] certs = CertificateIOUtils.safePemToX509certs(cert.getPem());
-		s.setCertificate(certs[0]);
-		return s;
+		c.setCertificate(certs[0]);
+		return c;
 	}
 
 	public static SSLCertificateResource mapFrom(TrustedSslCertificate cert) {
 		if (cert == null) {
 			return null;
 		}
-		SSLCertificateResource a = new SSLCertificateResource();
-		a.setId(cert.getId());
-		a.setTrust(EnumUtils.mapToString(cert.getTrustStatus()));
-		a.setPem(cert.getCertificatePem());
-		a.setDescription(cert.getDescription());
-		a.setValidFrom(cert.getValidFrom());
-		a.setValidTo(cert.getValidTo());
-		a.setFingerprint(cert.getFingerprint());
-		return a;
+		SSLCertificateResource c = new SSLCertificateResource();
+		c.setId(cert.getId());
+		c.setTrust(EnumUtils.mapToString(cert.getTrustStatus()));
+		c.setComment(cert.getComment());
+		c.setPem(cert.getCertificatePem());
+		c.setDescription(cert.getDescription());
+		c.setValidFrom(cert.getValidFrom());
+		c.setValidTo(cert.getValidTo());
+		c.setFingerprint(cert.getFingerprint());
+		return c;
 	}
 
 	public Long getId() {
@@ -134,6 +140,14 @@ public class SSLCertificateResource {
 
 	public void setTrust(String trust) {
 		this.trust = trust;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	public String getFingerprint() {

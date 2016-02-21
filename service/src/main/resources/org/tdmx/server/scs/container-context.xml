@@ -34,9 +34,7 @@
 		<property name="keyStorePassword" value="${scs.keyStorePassword}"/>
 		<property name="keyStoreAlias" value="${scs.keyStoreAlias}"/>
 		<property name="keyStoreType" value="${scs.keyStoreType}"/>
-		<property name="trustStoreFile" value="${scs.trustStoreFile}"/>
-		<property name="trustStorePassword" value="${scs.trustStorePassword}"/>
-		<property name="trustStoreType" value="${scs.trustStoreType}"/>
+		<property name="trustManager" ref="tdmx.server.TrustedSslCertificateTrustManager"/>
 		
 		<property name="agentAuthorizationFilter" ref="scs.authorizationFilter"/>
 		

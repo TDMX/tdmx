@@ -27,6 +27,12 @@
 				<value>org.tdmx.server.cli.segment.DeleteSegment</value>
 				<value>org.tdmx.server.cli.segment.SearchSegment</value>
 
+				<value>org.tdmx.server.cli.ssl.LoadTruststoreSSLCertificate</value>
+				<value>org.tdmx.server.cli.ssl.LoadSSLCertificate</value>
+				<value>org.tdmx.server.cli.ssl.ModifySSLCertificate</value>
+				<value>org.tdmx.server.cli.ssl.SearchSSLCertificate</value>
+				<value>org.tdmx.server.cli.ssl.DeleteSSLCertificate</value>
+
 				<value>org.tdmx.server.cli.partition.CreatePartitionControlServer</value>
 				<value>org.tdmx.server.cli.partition.ModifyPartitionControlServer</value>
 				<value>org.tdmx.server.cli.partition.DeletePartitionControlServer</value>
@@ -63,6 +69,12 @@
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="ssltruststore:load" value="tdmx.server.cli.cmd.LoadTruststoreSSLCertificate"/>
+				<entry key="sslcertificate:load" value="tdmx.server.cli.cmd.LoadSSLCertificate"/>
+				<entry key="sslcertificate:modify" value="tdmx.server.cli.cmd.ModifySSLCertificate"/>
+				<entry key="sslcertificate:search" value="tdmx.server.cli.cmd.SearchSSLCertificate"/>
+				<entry key="sslcertificate:delete" value="tdmx.server.cli.cmd.DeleteSSLCertificate"/>
+				
 				<entry key="segment:create" value="tdmx.server.cli.cmd.CreateSegment"/>
 				<entry key="segment:modify" value="tdmx.server.cli.cmd.ModifySegment"/>
 				<entry key="segment:delete" value="tdmx.server.cli.cmd.DeleteSegment"/>
@@ -118,6 +130,17 @@
 		<property name="sas" ref="rs.SAS"/>
 	</bean>
 
+	<bean id="tdmx.server.cli.cmd.LoadSSLCertificate" class="org.tdmx.server.cli.ssl.LoadSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.LoadTruststoreSSLCertificate" class="org.tdmx.server.cli.ssl.LoadTruststoreSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ModifySSLCertificate" class="org.tdmx.server.cli.ssl.ModifySSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.SearchSSLCertificate" class="org.tdmx.server.cli.ssl.SearchSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.DeleteSSLCertificate" class="org.tdmx.server.cli.ssl.DeleteSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	
 	<bean id="tdmx.server.cli.cmd.CreateSegment" class="org.tdmx.server.cli.segment.CreateSegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.ModifySegment" class="org.tdmx.server.cli.segment.ModifySegment" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

@@ -108,6 +108,45 @@ public class KeyStoreUtils {
 		}
 	}
 
+	/**
+	 * Return trusted CA certs of the keystore provided.
+	 * 
+	 * @param keystoreContents
+	 *            the keystore contents.
+	 * @param storeType
+	 *            the keystore type.
+	 * @param storePassword
+	 *            the keystore passphrase.
+	 * @param alias
+	 *            the certificate alias
+	 * @return the trusted CA cert with the alias.
+	 * @throws CryptoCertificateException
+	 */
+	public static PKIXCertificate getTrustedCertificate(byte[] keystoreContents, String storeType, String storePassword,
+			String alias) throws CryptoCertificateException {
+		try {
+			KeyStore store = loadKeyStore(keystoreContents, storeType, storePassword);
+
+			if (store.isCertificateEntry(alias)) {
+				Certificate c = store.getCertificate(alias);
+				if (c instanceof X509Certificate) {
+					return new PKIXCertificate((X509Certificate) c);
+				}
+			}
+			return null;
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
+		} catch (KeyStoreException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
+		} catch (CertificateException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		} catch (NoSuchProviderException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_PROVIDER, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
+		}
+	}
+
 	public static KeyStore createTrustStore(PKIXCertificate[] trustedCerts, String storeType)
 			throws CryptoCertificateException {
 		try {

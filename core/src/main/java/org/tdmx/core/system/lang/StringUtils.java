@@ -45,6 +45,13 @@ public class StringUtils {
 		return text != null && text.length() > 0;
 	}
 
+	public static boolean containsIgnoreCase(String whole, String part) {
+		if (hasText(whole) && hasText(part)) {
+			return whole.toUpperCase().contains(part.toUpperCase());
+		}
+		return false;
+	}
+
 	public static String truncateToMaxLen(String input, int len) {
 		if (input != null && input.length() > 0) {
 			if (input.length() > len) {

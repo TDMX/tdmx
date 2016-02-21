@@ -72,9 +72,6 @@ public class RsServerContainer implements ServerContainer {
 	private String keystorePassword;
 	private String keystoreType;
 	private String keyStoreAlias;
-	private String trustStoreFile;
-	private String trustStoreType;
-	private String trustStorePassword;
 
 	private int connectionIdleTimeoutSec;
 
@@ -106,9 +103,6 @@ public class RsServerContainer implements ServerContainer {
 		sslCF.setKeyStorePath(keystorePath);
 		sslCF.setKeyStorePassword(keystorePassword);
 		sslCF.setCertAlias(keyStoreAlias);
-		sslCF.setTrustStorePath(trustStoreFile);
-		sslCF.setTrustStoreType(trustStoreType);
-		sslCF.setTrustStorePassword(trustStorePassword);
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an
@@ -292,30 +286,6 @@ public class RsServerContainer implements ServerContainer {
 
 	public void setKeyStoreAlias(String keyStoreAlias) {
 		this.keyStoreAlias = keyStoreAlias;
-	}
-
-	public String getTrustStoreFile() {
-		return trustStoreFile;
-	}
-
-	public void setTrustStoreFile(String trustStoreFile) {
-		this.trustStoreFile = trustStoreFile;
-	}
-
-	public String getTrustStoreType() {
-		return trustStoreType;
-	}
-
-	public void setTrustStoreType(String trustStoreType) {
-		this.trustStoreType = trustStoreType;
-	}
-
-	public String getTrustStorePassword() {
-		return trustStorePassword;
-	}
-
-	public void setTrustStorePassword(String trustStorePassword) {
-		this.trustStorePassword = trustStorePassword;
 	}
 
 	public int getConnectionIdleTimeoutSec() {

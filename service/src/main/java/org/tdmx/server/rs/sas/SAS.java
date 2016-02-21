@@ -108,7 +108,8 @@ public interface SAS {
 	@GET
 	@Path("/sslcertificates")
 	List<SSLCertificateResource> searchSSLCertificate(@QueryParam("pageNumber") Integer pageNo,
-			@QueryParam("pageSize") Integer pageSize, @QueryParam("contains") String contains);
+			@QueryParam("pageSize") Integer pageSize, @QueryParam("fingerprint") String fingerprint,
+			@QueryParam("contains") String contains);
 
 	@GET
 	@Path("/sslcertificates/{tcId}")

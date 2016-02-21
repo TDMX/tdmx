@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -110,6 +111,24 @@ public class TrustedSslCertificateRepositoryUnitTest {
 		TrustedSslCertificate intCer2 = service.findByFingerprint(intermediateFingerprint);
 		assertNotNull(intCer2);
 		assertEquals(TrustStatus.DISTRUSTED, intCer2.getTrustStatus());
+	}
+
+	@Test
+	public void testModifyIllegal() throws Exception {
+		TrustedSslCertificate intCer = service.findByFingerprint(intermediateFingerprint);
+		assertNotNull(intCer);
+
+		TrustedSslCertificate rootCer = service.findByFingerprint(rootFingerprint);
+		assertNotNull(rootCer);
+
+		intCer.setCertificate(rootCer.getCertificate());
+		try {
+			service.createOrUpdate(intCer);
+			fail();
+		} catch (IllegalStateException e) {
+			// Ok
+		}
+
 	}
 
 	@Test

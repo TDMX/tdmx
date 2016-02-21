@@ -38,7 +38,7 @@
 		<property name="dnsCacheValiditySeconds" value="86400"/> <!-- 24hrs -->
 	</bean>
 
-	<bean id="tdmx.server.TrustedSslCertificateTrustManager" class="org.tdmx.server.runtime.TrustedSslCertificateTrustManagerImpl">
+	<bean id="tdmx.server.TrustedSslCertificateTrustManager" class="org.tdmx.server.runtime.TrustedSslCertificateTrustManagerImpl" init-method="init">
 		<property name="trustedCertificateService" ref="tdmx.lib.control.TrustedSslCertificateRepository"/>
 	</bean>
 

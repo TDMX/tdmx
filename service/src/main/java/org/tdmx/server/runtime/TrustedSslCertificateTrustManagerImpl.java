@@ -60,7 +60,7 @@ public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, 
 	// internal
 	private Map<ByteBuffer, PKIXCertificate> distrustedCerts;
 	private X509TrustManager delegateTrustManager = null;
-	
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -79,33 +79,34 @@ public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, 
 
 	public void init() {
 		loadCerts();
+		if (delegateTrustManager == null) {
+			throw new IllegalStateException("Unable to initialize trustManager");
+		}
 	}
-	
+
 	@Override
 	public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-		checkDistrusted( chain );
-		if ( delegateTrustManager != null ) { 
+		checkDistrusted(chain);
+		if (delegateTrustManager != null) {
 			delegateTrustManager.checkClientTrusted(chain, authType);
 		} else {
 			log.warn("No delegateTrustManager.");
 		}
 	}
 
-
 	@Override
 	public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-		checkDistrusted( chain );
-		if ( delegateTrustManager != null ) { 
+		checkDistrusted(chain);
+		if (delegateTrustManager != null) {
 			delegateTrustManager.checkServerTrusted(chain, authType);
 		} else {
 			log.warn("No delegateTrustManager.");
 		}
 	}
 
-
 	@Override
 	public X509Certificate[] getAcceptedIssuers() {
-		if ( delegateTrustManager != null ) { 
+		if (delegateTrustManager != null) {
 			return delegateTrustManager.getAcceptedIssuers();
 		} else {
 			log.warn("No delegateTrustManager.");
@@ -121,45 +122,51 @@ public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, 
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 	private void checkDistrusted(X509Certificate[] chain) throws CertificateException {
-		for( X509Certificate cert : chain ) {
+		if (distrustedCerts == null) {
+			log.warn("Uninitialized?");
+			return;
+		}
+		for (X509Certificate cert : chain) {
 			PKIXCertificate badCert = distrustedCerts.get(ByteBuffer.wrap(cert.getEncoded()));
-			if ( badCert != null ) {
-				throw new CertificateException("Use of untrusted certificate [" + badCert.getSubject()+ "]");
+			if (badCert != null) {
+				throw new CertificateException("Use of untrusted certificate [" + badCert.getSubject() + "]");
 			}
 		}
 	}
-	
+
 	private synchronized void loadCerts() {
-			List<TrustedSslCertificate> allCerts = trustedCertificateService.findAll();
-			
-			Map<ByteBuffer,PKIXCertificate> distrusted = new HashMap<>();
-			List<PKIXCertificate> trusted = new ArrayList<>();
-			
-			for( TrustedSslCertificate cert : allCerts ) {
-				if ( TrustStatus.DISTRUSTED == cert.getTrustStatus() ) {
-					distrusted.put(ByteBuffer.wrap(cert.getCertificate().getX509Encoded()),cert.getCertificate());
-				} else if ( TrustStatus.TRUSTED == cert.getTrustStatus() ) {
-					trusted.add(cert.getCertificate());
+		List<TrustedSslCertificate> allCerts = trustedCertificateService.findAll();
+
+		Map<ByteBuffer, PKIXCertificate> distrusted = new HashMap<>();
+		List<PKIXCertificate> trusted = new ArrayList<>();
+
+		for (TrustedSslCertificate cert : allCerts) {
+			if (TrustStatus.DISTRUSTED == cert.getTrustStatus()) {
+				distrusted.put(ByteBuffer.wrap(cert.getCertificate().getX509Encoded()), cert.getCertificate());
+			} else if (TrustStatus.TRUSTED == cert.getTrustStatus()) {
+				trusted.add(cert.getCertificate());
+			}
+		}
+
+		distrustedCerts = distrusted;
+		try {
+			KeyStore trustStore = KeyStoreUtils.createTrustStore(trusted.toArray(new PKIXCertificate[0]), "jks");
+
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			tmf.init(trustStore);
+
+			TrustManager[] tms = tmf.getTrustManagers();
+			for (int i = 0; tms != null && i < tms.length; i++) {
+				if (tms[i] instanceof X509TrustManager) {
+					delegateTrustManager = (X509TrustManager) tms[i];
+					break;
 				}
 			}
-			
-			distrustedCerts = distrusted;
-			try {
-				KeyStore keyStore = KeyStoreUtils.createTrustStore(trusted.toArray(new PKIXCertificate[0]), "jks");
-				TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-				tmf.init(keyStore);
-				TrustManager[] tms = tmf.getTrustManagers();
-				for (int i = 0; tms != null && i < tms.length; i++) {
-					if (tms[i] instanceof X509TrustManager) {
-						delegateTrustManager = (X509TrustManager) tms[i];
-						break;
-					}
-				}
-			} catch (KeyStoreException | NoSuchAlgorithmException e) {
-				log.warn("Unable to initialize TrustManager.", e);
-			} catch (CryptoCertificateException e) {
-				log.warn("Unable to initialize KeyStore for use by TrustManager.", e);
-			}
+		} catch (KeyStoreException | NoSuchAlgorithmException e) {
+			log.warn("Unable to initialize TrustManager.", e);
+		} catch (CryptoCertificateException e) {
+			log.warn("Unable to initialize KeyStore for use by TrustManager.", e);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -173,6 +180,5 @@ public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, 
 	public void setTrustedCertificateService(TrustedSslCertificateService trustedCertificateService) {
 		this.trustedCertificateService = trustedCertificateService;
 	}
-
 
 }

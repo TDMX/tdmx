@@ -19,6 +19,8 @@
 
 package org.tdmx.lib.control.service;
 
+import static org.tdmx.core.system.lang.AssertionUtils.assertSame;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -131,30 +133,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	/**
-	 * @throws IllegalStateException
-	 *             if try to change immutable fields.
-	 */
-	private void assertSame(String field, Object target, Object actual) {
-		if (target != null) {
-			if (!target.equals(actual)) {
-				throw new IllegalStateException("Field is immutable, and cannot be changed or removed." + field);
-			}
-		} else if (actual != null) {
-			throw new IllegalStateException("Field is immutable, and cannot be set." + field);
-		}
-	}
-
-	/**
-	 * @throws IllegalStateException
-	 *             if try to change immutable fields.
-	 */
-	private void assertSame(String field, int target, int actual) {
-		if (target != actual) {
-			throw new IllegalStateException("Field is immutable, and cannot be changed. " + field);
-		}
-	}
 
 	private void notifyPartitionsChanged() {
 		if (cacheInvalidationNotifier != null) {

@@ -299,17 +299,22 @@ public class SASImpl implements SAS {
 		log.info("Creating SslCertificate " + s.getFingerprint());
 		sslCertificateService.createOrUpdate(s);
 
-		return SSLCertificateResource.mapFrom(storedCertificate);
+		return SSLCertificateResource.mapFrom(s);
 	}
 
 	@Override
-	public List<SSLCertificateResource> searchSSLCertificate(Integer pageNo, Integer pageSize, String contains) {
+	public List<SSLCertificateResource> searchSSLCertificate(Integer pageNo, Integer pageSize, String fingerprint,
+			String contains) {
 		List<TrustedSslCertificate> certs = sslCertificateService.findAll();
 
 		List<SSLCertificateResource> result = new ArrayList<>();
 		for (TrustedSslCertificate s : certs) {
 			boolean match = true;
-			if (StringUtils.hasText(contains) && !s.getDescription().toUpperCase().contains(contains.toUpperCase())) {
+			if (StringUtils.hasText(fingerprint) && !fingerprint.equals(s.getFingerprint())) {
+				match = false;
+			}
+			if (StringUtils.hasText(contains) && !StringUtils.containsIgnoreCase(s.getDescription(), contains)
+					&& !StringUtils.containsIgnoreCase(s.getComment(), contains)) {
 				match = false;
 			}
 			if (match) {
@@ -535,8 +540,6 @@ public class SASImpl implements SAS {
 		}
 
 		partitionService.createOrUpdate(p);
-
-		// TODO #88 cache invalidation partitions
 
 		return DatabasePartitionResource.mapFrom(p);
 	}

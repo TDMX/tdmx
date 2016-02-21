@@ -19,6 +19,8 @@
 
 package org.tdmx.lib.control.service;
 
+import static org.tdmx.core.system.lang.AssertionUtils.assertSame;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -61,6 +63,13 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 		if (trustStoreEntry.getId() != null) {
 			TrustedSslCertificate storedEntry = getCertificateDao().loadById(trustStoreEntry.getId());
 			if (storedEntry != null) {
+				// derived fields cannot change
+				assertSame("certificatePem", storedEntry.getCertificatePem(), trustStoreEntry.getCertificatePem());
+				assertSame("fingerprint", storedEntry.getFingerprint(), trustStoreEntry.getFingerprint());
+				assertSame("description", storedEntry.getDescription(), trustStoreEntry.getDescription());
+				assertSame("validFrom", storedEntry.getValidFrom(), trustStoreEntry.getValidFrom());
+				assertSame("validTo", storedEntry.getValidTo(), trustStoreEntry.getValidTo());
+
 				getCertificateDao().merge(trustStoreEntry);
 			} else {
 				log.warn("Unable to find TrustedSslCertificate with id " + trustStoreEntry.getId());

@@ -97,9 +97,7 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 	private String keyStoreType;
 	private String keyStorePassword;
 	private String keyStoreAlias;
-	private String trustStoreFile; // TODO LATER: eventually from DB!
-	private String trustStoreType;
-	private String trustStorePassword;
+	private X509TrustManager trustManager;
 
 	private Filter agentAuthorizationFilter;
 
@@ -145,9 +143,9 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		sslCF.setKeyStorePath(keyStoreFile);
 		sslCF.setKeyStorePassword(keyStorePassword);
 		sslCF.setCertAlias(keyStoreAlias);
-		sslCF.setTrustStorePath(trustStoreFile);
-		sslCF.setTrustStoreType(trustStoreType);
-		sslCF.setTrustStorePassword(trustStorePassword);
+		sslCF.setTrustStorePath(keyStoreFile); // bogus - overwritten on start ssl
+		sslCF.setTrustStoreType(keyStoreType); // bogus - overwritten on start ssl
+		sslCF.setTrustStorePassword(keyStorePassword); // bogus - overwritten on start ssl
 
 		// HTTPS Configuration
 		// A new HttpConfiguration object is needed for the next connector and you can pass the old one as an
@@ -277,10 +275,9 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		@Override
 		protected TrustManager[] getTrustManagers(KeyStore trustStore, Collection<? extends CRL> crls)
 				throws Exception {
-			TrustManager[] managers = super.getTrustManagers(trustStore, crls);
-			TrustManager[] wrap = new TrustManager[managers.length];
-			for (int i = 0; i < managers.length; i++) {
-				final TrustManager tm = managers[i];
+			TrustManager[] wrap = new TrustManager[] { trustManager };
+			for (int i = 0; i < wrap.length; i++) {
+				final TrustManager tm = wrap[i];
 				if (tm instanceof X509TrustManager) {
 					final X509TrustManager xt = (X509TrustManager) tm;
 
@@ -436,28 +433,12 @@ public class SCSWebServiceServerContainer implements ServerContainer {
 		this.keyStoreAlias = keyStoreAlias;
 	}
 
-	public String getTrustStoreFile() {
-		return trustStoreFile;
+	public X509TrustManager getTrustManager() {
+		return trustManager;
 	}
 
-	public void setTrustStoreFile(String trustStoreFile) {
-		this.trustStoreFile = trustStoreFile;
-	}
-
-	public String getTrustStoreType() {
-		return trustStoreType;
-	}
-
-	public void setTrustStoreType(String trustStoreType) {
-		this.trustStoreType = trustStoreType;
-	}
-
-	public String getTrustStorePassword() {
-		return trustStorePassword;
-	}
-
-	public void setTrustStorePassword(String trustStorePassword) {
-		this.trustStorePassword = trustStorePassword;
+	public void setTrustManager(X509TrustManager trustManager) {
+		this.trustManager = trustManager;
 	}
 
 	public Filter getAgentAuthorizationFilter() {
