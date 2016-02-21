@@ -89,7 +89,6 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	private String keyStorePassword;
 	private String keyStoreAlias;
 
-	// TODO #93: wire up trustManager
 	private X509TrustManager trustManager;
 	private DomainZoneResolutionService domainZoneResolver;
 

@@ -55,8 +55,6 @@ public class ChannelAuthorization implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	// TODO CA#ProcessingState: update after successful/failed relay of its changed state
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelAuthorizationIdGen")
 	@TableGenerator(name = "ChannelAuthorizationIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelauthObjectId", valueColumnName = "value", allocationSize = 10)
