@@ -331,10 +331,6 @@ public class MOSImpl implements MOS {
 
 		Chunk c = a2d.mapChunk(parameters.getChunk());
 
-		// create originating ChannelMessage using the flowchannel's src and trg fingerprints to locate the
-		// ChannelFlowOrigin to attach to.
-		Zone zone = session.getZone();
-
 		MessageContextHolder mch = session.getMessage(parameters.getChunk().getMsgId());
 		if (mch == null) {
 			ErrorCode.setError(ErrorCode.MessageNotFound, response);
@@ -466,7 +462,7 @@ public class MOSImpl implements MOS {
 				if (!retry.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 							rs.getErrorCode().getErrorMessage());
-					// TODO #93: channelService.updateStatusMessage(result.message.getId(), error);
+					channelService.updateStatusMessage(msg.getId(), error);
 				} else {
 					// cache the potentially changed ROS address
 					cch.setRosTcpAddress(retry.getRosTcpAddress());
@@ -474,8 +470,7 @@ public class MOSImpl implements MOS {
 			} else {
 				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 						rs.getErrorCode().getErrorMessage());
-				// TODO #93: channelService.updateStatusMessage(result.message.getId(), error);
-
+				channelService.updateStatusMessage(msg.getId(), error);
 			}
 
 		} else {

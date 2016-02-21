@@ -33,6 +33,7 @@
 	<bean id="ros.RelayJobExecutionService" class="org.tdmx.server.ros.RelayJobExecutionServiceImpl" >
 		<property name="relayDataService" ref="ros.RelayDataService"/>
 		<property name="relayConnectionProvider" ref="ros.RelayConnectionProvider"/>
+		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 	</bean>
 	
 	<bean id="ros.RelayOutboundService" class="org.tdmx.server.ros.RelayOutboundServiceImpl" >

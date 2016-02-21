@@ -29,6 +29,8 @@ import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
+import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.EndpointPermission;
@@ -58,6 +60,11 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 	 * Provides all data from the DB for the ROS.
 	 */
 	private RelayDataService relayDataService;
+
+	/**
+	 * The service providing chunk data.
+	 */
+	private ChunkService chunkService;
 
 	/**
 	 * Provides the MRS web service client and the remove MRS sessionId.
@@ -126,6 +133,16 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 			return;
 		}
 
+		// get the 1st Chunk
+		Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
+		if (chunk == null) {
+			ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
+					ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), 0));
+			relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
+					ctx.getChannel(), job.getObjectId(), error);
+			return;
+		}
+
 		// relay the MSG
 		if (msg.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Both) {
@@ -141,7 +158,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					Relay relayCA = new Relay();
 					relayCA.setSessionId(sh.getMrsSessionId());
 					relayCA.setMsg(d2a.mapChannelMessage(msg));
-					// TODO #93: get chunk and map into message
+					relayCA.setChunk(d2a.mapChunk(chunk));
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayCA);
 						if (rr.isSuccess()) {
@@ -488,6 +505,14 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 
 	public void setRelayConnectionProvider(RelayConnectionProvider relayConnectionProvider) {
 		this.relayConnectionProvider = relayConnectionProvider;
+	}
+
+	public ChunkService getChunkService() {
+		return chunkService;
+	}
+
+	public void setChunkService(ChunkService chunkService) {
+		this.chunkService = chunkService;
 	}
 
 }
