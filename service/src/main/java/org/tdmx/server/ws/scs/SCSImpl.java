@@ -204,13 +204,13 @@ public class SCSImpl implements SCS, Manageable {
 
 		WebServiceSessionEndpoint ep = null;
 		if (existingChannelAuth != null) {
-			ep = sessionAllocationService.associateMRSSession(az, sp, existingChannelAuth.getChannel());
+			ep = sessionAllocationService.associateMRSSession(az, zone, sp, existingChannelAuth.getChannel());
 		} else {
 			TemporaryChannel tempChannel = channelService.findByTemporaryChannel(zone, domain, co, cd);
 			if (tempChannel == null) {
 				tempChannel = createTemporaryChannel(az, domain, co, cd);
 			}
-			ep = sessionAllocationService.associateMRSSession(az, sp, tempChannel);
+			ep = sessionAllocationService.associateMRSSession(az, zone, sp, tempChannel);
 		}
 
 		if (ep == null) {
@@ -257,6 +257,11 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
+		Zone zone = getZone(az, response);
+		if (zone == null) {
+			return response;
+		}
+
 		AgentCredential existingCred = getAgentCredential(az, user, response);
 		if (existingCred == null) {
 			return response;
@@ -267,7 +272,7 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
-		WebServiceSessionEndpoint ep = sessionAllocationService.associateMDSSession(az, existingCred, service);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateMDSSession(az, zone, existingCred, service);
 		if (ep == null) {
 			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
@@ -300,12 +305,17 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
+		Zone zone = getZone(az, response);
+		if (zone == null) {
+			return response;
+		}
+
 		AgentCredential existingCred = getAgentCredential(az, user, response);
 		if (existingCred == null) {
 			return response;
 		}
 
-		WebServiceSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, existingCred);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateMOSSession(az, zone, existingCred);
 		if (ep == null) {
 			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;
@@ -337,12 +347,17 @@ public class SCSImpl implements SCS, Manageable {
 			return response;
 		}
 
+		Zone zone = getZone(az, response);
+		if (zone == null) {
+			return response;
+		}
+
 		AgentCredential existingCred = getAgentCredential(az, admin, response);
 		if (existingCred == null) {
 			return response;
 		}
 
-		WebServiceSessionEndpoint ep = sessionAllocationService.associateZASSession(az, existingCred);
+		WebServiceSessionEndpoint ep = sessionAllocationService.associateZASSession(az, zone, existingCred);
 		if (ep == null) {
 			ErrorCode.setError(ErrorCode.NoSessionCapacity, response);
 			return response;

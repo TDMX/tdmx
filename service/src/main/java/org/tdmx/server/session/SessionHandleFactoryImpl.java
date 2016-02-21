@@ -29,6 +29,7 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -53,10 +54,10 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public SessionHandle createMOSSessionHandle(AccountZone az, AgentCredential agent) {
+	public SessionHandle createMOSSessionHandle(AccountZone az, Zone zone, AgentCredential agent) {
 		Map<AttributeId, Long> attributes = new HashMap<>();
 		attributes.put(AttributeId.AccountZoneId, az.getId());
-		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
+		attributes.put(AttributeId.ZoneId, zone.getId());
 		attributes.put(AttributeId.DomainId, agent.getDomain().getId());
 		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 
@@ -67,10 +68,10 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 	}
 
 	@Override
-	public SessionHandle createMDSSessionHandle(AccountZone az, AgentCredential agent, Service service) {
+	public SessionHandle createMDSSessionHandle(AccountZone az, Zone zone, AgentCredential agent, Service service) {
 		Map<AttributeId, Long> attributes = new HashMap<>();
 		attributes.put(AttributeId.AccountZoneId, az.getId());
-		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
+		attributes.put(AttributeId.ZoneId, zone.getId());
 		attributes.put(AttributeId.DomainId, agent.getDomain().getId());
 		attributes.put(AttributeId.AddressId, agent.getAddress().getId());
 		attributes.put(AttributeId.ServiceId, service.getId());
@@ -83,7 +84,7 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 	}
 
 	@Override
-	public SessionHandle createZASSessionHandle(AccountZone az, AgentCredential agent) {
+	public SessionHandle createZASSessionHandle(AccountZone az, Zone zone, AgentCredential agent) {
 		Map<AttributeId, Long> attributes = new HashMap<>();
 		attributes.put(AttributeId.AccountZoneId, az.getId());
 		attributes.put(AttributeId.ZoneId, agent.getZone().getId());
@@ -99,10 +100,11 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 	}
 
 	@Override
-	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, TemporaryChannel channel) {
+	public SessionHandle createMRSSessionHandle(AccountZone az, Zone zone, PKIXCertificate client,
+			TemporaryChannel channel) {
 		Map<AttributeId, Long> attributes = new HashMap<>();
 		attributes.put(AttributeId.AccountZoneId, az.getId());
-		attributes.put(AttributeId.ZoneId, channel.getDomain().getZone().getId());
+		attributes.put(AttributeId.ZoneId, zone.getId());
 		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
 		attributes.put(AttributeId.TemporaryChannelId, channel.getId());
 
@@ -114,10 +116,10 @@ public class SessionHandleFactoryImpl implements SessionHandleFactory {
 	}
 
 	@Override
-	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, Channel channel) {
+	public SessionHandle createMRSSessionHandle(AccountZone az, Zone zone, PKIXCertificate client, Channel channel) {
 		Map<AttributeId, Long> attributes = new HashMap<>();
 		attributes.put(AttributeId.AccountZoneId, az.getId());
-		attributes.put(AttributeId.ZoneId, channel.getDomain().getZone().getId());
+		attributes.put(AttributeId.ZoneId, zone.getId());
 		attributes.put(AttributeId.DomainId, channel.getDomain().getId());
 		attributes.put(AttributeId.ChannelId, channel.getId());
 

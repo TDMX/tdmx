@@ -26,6 +26,7 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 
@@ -52,37 +53,39 @@ public class ServerSessionAllocationServiceImpl implements ServerSessionAllocati
 	// -------------------------------------------------------------------------
 
 	@Override
-	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, AgentCredential agent, Service service) {
-		SessionHandle handle = handleFactory.createMDSSessionHandle(az, agent, service);
+	public WebServiceSessionEndpoint associateMDSSession(AccountZone az, Zone zone, AgentCredential agent,
+			Service service) {
+		SessionHandle handle = handleFactory.createMDSSessionHandle(az, zone, agent, service);
 
 		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
-	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, AgentCredential agent) {
-		SessionHandle handle = handleFactory.createMOSSessionHandle(az, agent);
+	public WebServiceSessionEndpoint associateMOSSession(AccountZone az, Zone zone, AgentCredential agent) {
+		SessionHandle handle = handleFactory.createMOSSessionHandle(az, zone, agent);
 
 		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
-	public WebServiceSessionEndpoint associateZASSession(AccountZone az, AgentCredential agent) {
-		SessionHandle handle = handleFactory.createZASSessionHandle(az, agent);
+	public WebServiceSessionEndpoint associateZASSession(AccountZone az, Zone zone, AgentCredential agent) {
+		SessionHandle handle = handleFactory.createZASSessionHandle(az, zone, agent);
 
 		return sessionControlService.associateApiSession(handle, agent.getPublicCertificate());
 	}
 
 	@Override
-	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client,
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, Zone zone, PKIXCertificate client,
 			TemporaryChannel tempChannel) {
-		SessionHandle handle = handleFactory.createMRSSessionHandle(az, client, tempChannel);
+		SessionHandle handle = handleFactory.createMRSSessionHandle(az, zone, client, tempChannel);
 
 		return sessionControlService.associateApiSession(handle, client);
 	}
 
 	@Override
-	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, PKIXCertificate client, Channel channel) {
-		SessionHandle handle = handleFactory.createMRSSessionHandle(az, client, channel);
+	public WebServiceSessionEndpoint associateMRSSession(AccountZone az, Zone zone, PKIXCertificate client,
+			Channel channel) {
+		SessionHandle handle = handleFactory.createMRSSessionHandle(az, zone, client, channel);
 
 		return sessionControlService.associateApiSession(handle, client);
 	}

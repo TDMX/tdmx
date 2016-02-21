@@ -24,24 +24,26 @@ import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.SessionHandle;
 
 /**
- * The SessionHandleFactory creates SessionHandles which the SessionControlService uses. It is an intermediary between the
- * ServerSessionAllocationService and the SessionControlService.
+ * The SessionHandleFactory creates SessionHandles which the SessionControlService uses. It is an intermediary between
+ * the ServerSessionAllocationService and the SessionControlService.
  * 
  * @author Peter
  *
  */
 public interface SessionHandleFactory {
 
-	public SessionHandle createMOSSessionHandle(AccountZone az, AgentCredential agent);
+	public SessionHandle createMOSSessionHandle(AccountZone az, Zone zone, AgentCredential agent);
 
-	public SessionHandle createMDSSessionHandle(AccountZone az, AgentCredential agent, Service service);
+	public SessionHandle createMDSSessionHandle(AccountZone az, Zone zone, AgentCredential agent, Service service);
 
-	public SessionHandle createZASSessionHandle(AccountZone az, AgentCredential agent);
+	public SessionHandle createZASSessionHandle(AccountZone az, Zone zone, AgentCredential agent);
 
-	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, Channel channel);
+	public SessionHandle createMRSSessionHandle(AccountZone az, Zone zone, PKIXCertificate client, Channel channel);
 
-	public SessionHandle createMRSSessionHandle(AccountZone az, PKIXCertificate client, TemporaryChannel channel);
+	public SessionHandle createMRSSessionHandle(AccountZone az, Zone zone, PKIXCertificate client,
+			TemporaryChannel channel);
 }
