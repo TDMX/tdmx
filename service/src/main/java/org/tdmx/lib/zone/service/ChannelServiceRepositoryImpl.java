@@ -218,7 +218,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 		// persist the new ca
 		if (newChannel) {
-			getChannelDao().persist(existingChannel);
+			channelDao.persist(existingChannel);
 		}
 
 		resultHolder.channelAuthorization = existingCA;
@@ -294,16 +294,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (channel.getId() != null) {
 			log.warn("Unable to persist Channel with id " + channel.getId());
 		} else {
-			getChannelDao().persist(channel);
+			channelDao.persist(channel);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(Channel channel) {
-		Channel storedChannel = getChannelDao().loadById(channel.getId(), false, false);
+		Channel storedChannel = channelDao.loadById(channel.getId(), false, false);
 		if (storedChannel != null) {
-			getChannelDao().delete(storedChannel);
+			channelDao.delete(storedChannel);
 		} else {
 			log.warn("Unable to find Channel to delete with id " + channel.getId());
 		}
@@ -312,15 +312,15 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void create(TemporaryChannel channel) {
-		getChannelDao().persist(channel);
+		channelDao.persist(channel);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(TemporaryChannel tempChannel) {
-		TemporaryChannel storedTempChannel = getChannelDao().loadByTempId(tempChannel.getId());
+		TemporaryChannel storedTempChannel = channelDao.loadByTempId(tempChannel.getId());
 		if (storedTempChannel != null) {
-			getChannelDao().delete(storedTempChannel);
+			channelDao.delete(storedTempChannel);
 		} else {
 			log.warn("Unable to find TemporaryChannel to delete with id " + tempChannel.getId());
 		}
@@ -332,16 +332,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (message.getId() != null) {
 			log.warn("Unable to persist ChannelMessage with id " + message.getId());
 		} else {
-			getChannelDao().persist(message);
+			channelDao.persist(message);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(ChannelMessage message) {
-		ChannelMessage storedMessage = getChannelDao().loadChannelMessageByMessageId(message.getId());
+		ChannelMessage storedMessage = channelDao.loadChannelMessageByMessageId(message.getId());
 		if (storedMessage != null) {
-			getChannelDao().delete(storedMessage);
+			channelDao.delete(storedMessage);
 		} else {
 			log.warn("Unable to find ChannelMessage to delete with id " + message.getId());
 		}
@@ -350,19 +350,19 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
+		return channelDao.search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
+		return channelDao.search(zone, criteria);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria) {
-		return getChannelDao().search(zone, criteria);
+		return channelDao.search(zone, criteria);
 	}
 
 	@Override
@@ -371,7 +371,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to send out.
 			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
@@ -393,7 +393,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
 		// get and lock quota and check we can send
-		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to receive
 			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
@@ -413,17 +413,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
-		// TODO #93: get and lock quota, reduce unsent buffer on origin side
-		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
-		// update other side's relay status
-		quota.setRelayStatus(relayStatus);
-
+		// get and lock quota, reduce unsent buffer on origin side
+		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
+		// update other side's relay status too
+		quota.reduceBufferOnRelay(msg.getPayloadLength(), relayStatus);
 	}
 
 	@Override
 	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt) {
-		// TODO #93 lock quota, reduce buffer, set status if crossing low limit
-		ChannelMessage existingMsg = getChannelDao().loadChannelMessageByMessageId(msg.getId());
+		// lock quota, reduce undelivered buffer, set status if crossing low limit
+		ChannelMessage existingMsg = channelDao.loadChannelMessageByMessageId(msg.getId());
 		if (existingMsg != null) {
 			existingMsg.setReceipt(receipt);
 
@@ -433,7 +432,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 		}
 
-		FlowQuota quota = getChannelDao().lock(msg.getChannel().getQuota().getId());
+		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 
 		// we can fall below the low mark but and if we do then the flow control is opened.
 		boolean openedRelayFC = quota.reduceBufferOnReceive(msg.getPayloadLength());
@@ -479,7 +478,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		criteria.getDestination().setLocalName(dest.getLocalName());
 		criteria.getDestination().setDomainName(dest.getDomainName());
 		criteria.getDestination().setServiceName(dest.getServiceName());
-		List<Channel> auths = getChannelDao().search(zone, criteria);
+		List<Channel> auths = channelDao.search(zone, criteria);
 
 		return auths.isEmpty() ? null : auths.get(0).getAuthorization();
 	}
@@ -519,7 +518,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		criteria.getDestination().setLocalName(dest.getLocalName());
 		criteria.getDestination().setDomainName(dest.getDomainName());
 		criteria.getDestination().setServiceName(dest.getServiceName());
-		List<TemporaryChannel> tempChannels = getChannelDao().search(zone, criteria);
+		List<TemporaryChannel> tempChannels = channelDao.search(zone, criteria);
 
 		return tempChannels.isEmpty() ? null : tempChannels.get(0);
 	}
@@ -527,41 +526,37 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public Channel findById(Long id, boolean includeFlowQuota, boolean includeAuth) {
-		return getChannelDao().loadById(id, includeFlowQuota, includeAuth);
+		return channelDao.loadById(id, includeFlowQuota, includeAuth);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public TemporaryChannel findByTempChannelId(Long tempChannelId) {
-		return getChannelDao().loadByTempId(tempChannelId);
+		return channelDao.loadByTempId(tempChannelId);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public ChannelMessage findByMessageId(Long msgId) {
-		return getChannelDao().loadChannelMessageByMessageId(msgId);
+		return channelDao.loadChannelMessageByMessageId(msgId);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateStatusDestinationSession(Long channelId, ProcessingState newState) {
-		Channel c = getChannelDao().loadById(channelId, false, false);
-		// TODO #93: make dao update
-		c.setProcessingState(newState);
+		channelDao.updateChannelDestinationSessionProcessingState(channelId, newState);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateStatusChannelAuthorization(Long channelId, ProcessingState newState) {
-		Channel c = getChannelDao().loadById(channelId, false, true);
-		// TODO #93: make dao update
-		c.getAuthorization().setProcessingState(newState);
+		channelDao.updateChannelAuthorizationProcessingState(channelId, newState);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState) {
-		FlowQuota fc = getChannelDao().lock(quotaId);
+		FlowQuota fc = channelDao.lock(quotaId);
 		fc.setProcessingState(newState);
 		return fc;
 	}
@@ -569,7 +564,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateStatusMessage(Long msgId, ProcessingState newState) {
-		getChannelDao().updateChannelMessageProcessingState(msgId, newState);
+		channelDao.updateChannelMessageProcessingState(msgId, newState);
 	}
 
 	// -------------------------------------------------------------------------

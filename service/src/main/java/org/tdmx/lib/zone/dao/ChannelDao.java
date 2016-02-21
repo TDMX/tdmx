@@ -49,6 +49,10 @@ public interface ChannelDao {
 
 	public void updateChannelMessageProcessingState(Long msgId, ProcessingState ps);
 
+	public void updateChannelDestinationSessionProcessingState(Long channelId, ProcessingState ps);
+
+	public void updateChannelAuthorizationProcessingState(Long channelId, ProcessingState ps);
+
 	public void delete(Channel value);
 
 	public void delete(TemporaryChannel value);

@@ -44,6 +44,7 @@ import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
 import com.mysema.query.QueryModifiers;
+import com.mysema.query.jpa.JPASubQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.jpa.impl.JPAUpdateClause;
 import com.mysema.query.types.expr.BooleanExpression;
@@ -267,6 +268,37 @@ public class ChannelDaoImpl implements ChannelDao {
 				.set(channelMessage.processingState.timestamp, ps.getTimestamp())
 				.set(channelMessage.processingState.errorCode, ps.getErrorCode())
 				.set(channelMessage.processingState.errorMessage, ps.getErrorMessage());
+		update.execute();
+	}
+
+	@Override
+	public void updateChannelAuthorizationProcessingState(Long channelId, ProcessingState ps) {
+		if (channelId == null) {
+			throw new IllegalArgumentException("missing channelId");
+		}
+		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesn't work - try later.
+		JPAUpdateClause update = new JPAUpdateClause(em, channelAuthorization);
+
+		update.set(channelAuthorization.processingState.status, ps.getStatus())
+				.set(channelAuthorization.processingState.timestamp, ps.getTimestamp())
+				.set(channelAuthorization.processingState.errorCode, ps.getErrorCode())
+				.set(channelAuthorization.processingState.errorMessage, ps.getErrorMessage())
+				.where(channelAuthorization.id.eq(new JPASubQuery().from(channel).where(channel.id.eq(channelId))
+						.unique(channel.authorization.id)));
+		update.execute();
+	}
+
+	@Override
+	public void updateChannelDestinationSessionProcessingState(Long channelId, ProcessingState ps) {
+		if (channelId == null) {
+			throw new IllegalArgumentException("missing channelId");
+		}
+		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesn't work - try later.
+		JPAUpdateClause update = new JPAUpdateClause(em, channel).where(channel.id.eq(channelId))
+				.set(channel.processingState.status, ps.getStatus())
+				.set(channel.processingState.timestamp, ps.getTimestamp())
+				.set(channel.processingState.errorCode, ps.getErrorCode())
+				.set(channel.processingState.errorMessage, ps.getErrorMessage());
 		update.execute();
 	}
 
