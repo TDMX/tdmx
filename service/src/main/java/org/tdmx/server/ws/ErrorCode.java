@@ -10,6 +10,7 @@ public enum ErrorCode {
 	NonUserAccess(403, "Non User access."),
 	NonPKIXAccess(403, "Non PKIX access."),
 	NonDnsAuthorizedPKIXAccess(403, "PKIX access of client not authorized by TDMX info in DNS."),
+	RelayNotAllowedOnSameSCS(403, "Relay access not allowed when SCS URL is same for origin and destination."),
 	SuspendedAccess(403, "Suspended access."),
 	OutOfZoneAccess(403, "ZAC only authorized on own subdomains."),
 	OutOfDomainAccess(403, "DAC only authorized on own domain."),

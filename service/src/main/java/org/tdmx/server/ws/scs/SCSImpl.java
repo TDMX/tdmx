@@ -161,7 +161,12 @@ public class SCSImpl implements SCS, Manageable {
 		String domainName = null;
 		String localName = null;
 		String serviceName = null;
-		if (segment.getScsUrl().equals(originZoneApexInfo.getScsUrl().toExternalForm())) {
+		if (segment.getScsUrl().equals(originZoneApexInfo.getScsUrl().toExternalForm())
+				&& segment.getScsUrl().equals(destZoneApexInfo.getScsUrl().toExternalForm())) {
+			ErrorCode.setError(ErrorCode.RelayNotAllowedOnSameSCS, response);
+			return response;
+
+		} else if (segment.getScsUrl().equals(originZoneApexInfo.getScsUrl().toExternalForm())) {
 			// if the origin's DNS information points to our own scsHostname, then the client certificate's name must
 			// match the destination domain's scsHostname
 			if (!serviceProviderName.equals(destZoneApexInfo.getScsUrl().getHost())) {
