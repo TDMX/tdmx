@@ -97,6 +97,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// internal
 	private ClientKeyManagerFactoryImpl kmf;
 	private SCS scsClient;
+	private String segmentScsUrl;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -105,6 +106,12 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void setSegmentScsUrl(String segmentScsUrl) {
+		// we give a shortcut MRS when relaying "within" our own segment.
+		this.segmentScsUrl = segmentScsUrl;
+	}
 
 	public void init() {
 		String errorMsg = "Unable to load client keystore " + keyStoreFile;
@@ -174,10 +181,29 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 					ErrorCode.DnsZoneApexMissing.getErrorDescription(otherDomain));
 		}
 		String url = apexInfo.getScsUrl().toString();
-		if (log.isDebugEnabled()) {
-			log.debug("Resolved SCS url of " + otherDomain + " to be " + url);
-		}
 
+		if (segmentScsUrl.equalsIgnoreCase(url)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Shortcut (same segment) relay.");
+			}
+			return null;// TODO #93: shortcut
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Resolved SCS url of " + otherDomain + " to be " + url);
+			}
+			return getRelayClient(url, channel);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	private MRSSessionHolder getRelayClient(String url, Channel channel) {
 		// set the URL on a per request basis.
 		Client proxy = ClientProxy.getClient(scsClient);
 		proxy.getRequestContext().put(Message.ENDPOINT_ADDRESS, url);

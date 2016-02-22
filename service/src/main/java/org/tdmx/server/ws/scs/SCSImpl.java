@@ -36,11 +36,9 @@ import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.Session;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.control.domain.Segment;
-import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
@@ -50,17 +48,9 @@ import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.lib.zone.service.AddressService;
-import org.tdmx.lib.zone.service.AgentCredentialFactory;
-import org.tdmx.lib.zone.service.AgentCredentialService;
-import org.tdmx.lib.zone.service.AgentCredentialValidator;
-import org.tdmx.lib.zone.service.ChannelService;
-import org.tdmx.lib.zone.service.DestinationService;
-import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.ServiceService;
-import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.runtime.DomainZoneResolutionService;
 import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.scs.SessionDataService;
 import org.tdmx.server.session.ServerSessionAllocationService;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.ApiToDomainMapper;
@@ -83,21 +73,10 @@ public class SCSImpl implements SCS, Manageable {
 	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private DomainZoneResolutionService domainZoneResolutionService;
-	private AccountZoneService accountZoneService;
-	private ThreadLocalPartitionIdProvider partitionIdProvider;
 
 	private ServerSessionAllocationService sessionAllocationService;
 
-	private ZoneService zoneService;
-	private DomainService domainService;
-	private AddressService addressService;
-	private ServiceService serviceService;
-	private ChannelService channelService;
-	private DestinationService destinationService;
-
-	private AgentCredentialFactory credentialFactory;
-	private AgentCredentialService credentialService;
-	private AgentCredentialValidator credentialValidator;
+	private SessionDataService sessionDataService;
 
 	private final ApiValidator validator = new ApiValidator();
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
@@ -189,31 +168,34 @@ public class SCSImpl implements SCS, Manageable {
 			ErrorCode.setError(ErrorCode.NonDnsAuthorizedPKIXAccess, response);
 			return response;
 		}
-		AccountZone az = accountZoneService.findByZoneApex(zoneApex);
+		AccountZone az = sessionDataService.getAccountZone(zoneApex);
 		if (az == null) {
 			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		Zone zone = getZone(az, response);
+		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		Domain domain = getDomain(az, zone, domainName, response);
+		Domain domain = sessionDataService.getDomain(az, zone, domainName);
 		if (domain == null) {
+			ErrorCode.setError(ErrorCode.DomainNotFound, response);
 			return response;
 		}
 
-		ChannelAuthorization existingChannelAuth = channelService.findByChannel(zone, domain, co, cd);
+		ChannelAuthorization existingChannelAuth = sessionDataService.findChannelAuthorization(az, zone, domain, co,
+				cd);
 
 		WebServiceSessionEndpoint ep = null;
 		if (existingChannelAuth != null) {
 			ep = sessionAllocationService.associateMRSSession(az, zone, sp, existingChannelAuth.getChannel());
 		} else {
-			TemporaryChannel tempChannel = channelService.findByTemporaryChannel(zone, domain, co, cd);
+			TemporaryChannel tempChannel = sessionDataService.findTemporaryChannel(az, zone, domain, co, cd);
 			if (tempChannel == null) {
-				tempChannel = createTemporaryChannel(az, domain, co, cd);
+				tempChannel = sessionDataService.createTemporaryChannel(az, domain, co, cd);
 			}
 			ep = sessionAllocationService.associateMRSSession(az, zone, sp, tempChannel);
 		}
@@ -257,23 +239,30 @@ public class SCSImpl implements SCS, Manageable {
 
 		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
 
-		AccountZone az = getAccountZone(zoneApex, response);
+		AccountZone az = sessionDataService.getAccountZone(zoneApex);
 		if (az == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		Zone zone = getZone(az, response);
+		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		AgentCredential existingCred = getAgentCredential(az, user, response);
+		AgentCredential existingCred = sessionDataService.getAgentCredential(az, user);
 		if (existingCred == null) {
+			ErrorCode.setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+		if (checkCredential(existingCred, user, response) == null) {
 			return response;
 		}
 
-		Service service = getService(az, existingCred.getDomain(), serviceName, response);
+		Service service = sessionDataService.getService(az, existingCred.getDomain(), serviceName);
 		if (service == null) {
+			ErrorCode.setError(ErrorCode.ServiceNotFound, response);
 			return response;
 		}
 
@@ -305,18 +294,24 @@ public class SCSImpl implements SCS, Manageable {
 
 		String zoneApex = user.getTdmxZoneInfo().getZoneRoot();
 
-		AccountZone az = getAccountZone(zoneApex, response);
+		AccountZone az = sessionDataService.getAccountZone(zoneApex);
 		if (az == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		Zone zone = getZone(az, response);
+		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		AgentCredential existingCred = getAgentCredential(az, user, response);
+		AgentCredential existingCred = sessionDataService.getAgentCredential(az, user);
 		if (existingCred == null) {
+			ErrorCode.setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+		if (checkCredential(existingCred, user, response) == null) {
 			return response;
 		}
 
@@ -347,18 +342,24 @@ public class SCSImpl implements SCS, Manageable {
 		}
 		String zoneApex = admin.getTdmxZoneInfo().getZoneRoot();
 
-		AccountZone az = getAccountZone(zoneApex, response);
+		AccountZone az = sessionDataService.getAccountZone(zoneApex);
 		if (az == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		Zone zone = getZone(az, response);
+		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
+			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
 
-		AgentCredential existingCred = getAgentCredential(az, admin, response);
+		AgentCredential existingCred = sessionDataService.getAgentCredential(az, admin);
 		if (existingCred == null) {
+			ErrorCode.setError(ErrorCode.UserCredentialNotFound, response);
+			return response;
+		}
+		if (checkCredential(existingCred, admin, response) == null) {
 			return response;
 		}
 
@@ -404,13 +405,29 @@ public class SCSImpl implements SCS, Manageable {
 		return session;
 	}
 
-	private AccountZone getAccountZone(String zoneApex, Acknowledge ack) {
-		AccountZone az = accountZoneService.findByZoneApex(zoneApex);
-		if (az == null) {
-			ErrorCode.setError(ErrorCode.ZoneNotFound, ack);
+	private AgentCredential checkCredential(AgentCredential existingUser, PKIXCertificate cert, Acknowledge ack) {
+		if (AgentCredentialStatus.ACTIVE != existingUser.getCredentialStatus()) {
+			ErrorCode.setError(ErrorCode.SuspendedAccess, ack);
 			return null;
 		}
-		return az;
+		// paranoia checks - in case the fingerprint matches some other cert by mistake
+		if (!existingUser.getZone().getZoneApex().equals(cert.getTdmxZoneInfo().getZoneRoot())) {
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
+			return null;
+		}
+		// paranoia checks - in case the fingerprint matches some other cert by mistake
+		if (existingUser.getDomain() != null
+				&& !existingUser.getDomain().getDomainName().equals(cert.getTdmxDomainName())) {
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
+			return null;
+		}
+		// paranoia checks - in case the fingerprint matches some other cert by mistake
+		if (existingUser.getAddress() != null
+				&& !existingUser.getAddress().getLocalName().equals(cert.getTdmxUserName())) {
+			ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
+			return null;
+		}
+		return existingUser;
 	}
 
 	private PKIXCertificate checkUserAuthorized(Acknowledge ack) {
@@ -452,99 +469,6 @@ public class SCSImpl implements SCS, Manageable {
 		return user;
 	}
 
-	private AgentCredential getAgentCredential(AccountZone az, PKIXCertificate cert, Acknowledge ack) {
-		// check the credential used exists and is active.
-		partitionIdProvider.setPartitionId(az.getZonePartitionId());
-		try {
-			AgentCredential existingUser = credentialService.findByFingerprint(cert.getFingerprint());
-			if (existingUser == null) {
-				ErrorCode.setError(ErrorCode.UserCredentialNotFound, ack);
-				return null;
-			}
-			if (AgentCredentialStatus.ACTIVE != existingUser.getCredentialStatus()) {
-				ErrorCode.setError(ErrorCode.SuspendedAccess, ack);
-				return null;
-			}
-			// paranoia checks - in case the fingerprint matches some other cert by mistake
-			if (!existingUser.getZone().getZoneApex().equals(cert.getTdmxZoneInfo().getZoneRoot())) {
-				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
-				return null;
-			}
-			// paranoia checks - in case the fingerprint matches some other cert by mistake
-			if (existingUser.getDomain() != null
-					&& !existingUser.getDomain().getDomainName().equals(cert.getTdmxDomainName())) {
-				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
-				return null;
-			}
-			// paranoia checks - in case the fingerprint matches some other cert by mistake
-			if (existingUser.getAddress() != null
-					&& !existingUser.getAddress().getLocalName().equals(cert.getTdmxUserName())) {
-				ErrorCode.setError(ErrorCode.InvalidUserCredentials, ack);
-				return null;
-			}
-			return existingUser;
-		} finally {
-			partitionIdProvider.clearPartitionId();
-		}
-	}
-
-	private Service getService(AccountZone az, Domain domain, String serviceName, Acknowledge ack) {
-		// check the credential used exists and is active.
-		partitionIdProvider.setPartitionId(az.getZonePartitionId());
-		try {
-			Service service = serviceService.findByName(domain, serviceName);
-			if (service == null) {
-				ErrorCode.setError(ErrorCode.ServiceNotFound, ack);
-				return null;
-			}
-			return service;
-		} finally {
-			partitionIdProvider.clearPartitionId();
-		}
-	}
-
-	private Zone getZone(AccountZone az, Acknowledge ack) {
-		partitionIdProvider.setPartitionId(az.getZonePartitionId());
-		try {
-			Zone zone = zoneService.findByZoneApex(az.getZoneApex());
-			if (zone == null) {
-				ErrorCode.setError(ErrorCode.ZoneNotFound, ack);
-				return null;
-			}
-			return zone;
-		} finally {
-			partitionIdProvider.clearPartitionId();
-		}
-	}
-
-	private Domain getDomain(AccountZone az, Zone zone, String domainName, Acknowledge ack) {
-		partitionIdProvider.setPartitionId(az.getZonePartitionId());
-		try {
-			Domain domain = domainService.findByName(zone, domainName);
-			if (domain == null) {
-				ErrorCode.setError(ErrorCode.DomainNotFound, ack);
-				return null;
-			}
-			return domain;
-		} finally {
-			partitionIdProvider.clearPartitionId();
-		}
-	}
-
-	private TemporaryChannel createTemporaryChannel(AccountZone az, Domain domain, ChannelOrigin co,
-			ChannelDestination cd) {
-		partitionIdProvider.setPartitionId(az.getZonePartitionId());
-		TemporaryChannel tc = new TemporaryChannel(domain, co, cd);
-		try {
-			// we create a TemporaryChannel
-			channelService.create(tc);
-
-		} finally {
-			partitionIdProvider.clearPartitionId();
-		}
-		return tc;
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -573,20 +497,12 @@ public class SCSImpl implements SCS, Manageable {
 		this.sessionAllocationService = sessionAllocationService;
 	}
 
-	public ThreadLocalPartitionIdProvider getPartitionIdProvider() {
-		return partitionIdProvider;
+	public SessionDataService getSessionDataService() {
+		return sessionDataService;
 	}
 
-	public void setPartitionIdProvider(ThreadLocalPartitionIdProvider partitionIdProvider) {
-		this.partitionIdProvider = partitionIdProvider;
-	}
-
-	public AccountZoneService getAccountZoneService() {
-		return accountZoneService;
-	}
-
-	public void setAccountZoneService(AccountZoneService accountZoneService) {
-		this.accountZoneService = accountZoneService;
+	public void setSessionDataService(SessionDataService sessionDataService) {
+		this.sessionDataService = sessionDataService;
 	}
 
 	public DomainZoneResolutionService getDomainZoneResolutionService() {
@@ -595,78 +511,6 @@ public class SCSImpl implements SCS, Manageable {
 
 	public void setDomainZoneResolutionService(DomainZoneResolutionService domainZoneResolutionService) {
 		this.domainZoneResolutionService = domainZoneResolutionService;
-	}
-
-	public ZoneService getZoneService() {
-		return zoneService;
-	}
-
-	public void setZoneService(ZoneService zoneService) {
-		this.zoneService = zoneService;
-	}
-
-	public DomainService getDomainService() {
-		return domainService;
-	}
-
-	public void setDomainService(DomainService domainService) {
-		this.domainService = domainService;
-	}
-
-	public AddressService getAddressService() {
-		return addressService;
-	}
-
-	public void setAddressService(AddressService addressService) {
-		this.addressService = addressService;
-	}
-
-	public ServiceService getServiceService() {
-		return serviceService;
-	}
-
-	public void setServiceService(ServiceService serviceService) {
-		this.serviceService = serviceService;
-	}
-
-	public ChannelService getChannelService() {
-		return channelService;
-	}
-
-	public void setChannelService(ChannelService channelService) {
-		this.channelService = channelService;
-	}
-
-	public DestinationService getDestinationService() {
-		return destinationService;
-	}
-
-	public void setDestinationService(DestinationService destinationService) {
-		this.destinationService = destinationService;
-	}
-
-	public AgentCredentialFactory getCredentialFactory() {
-		return credentialFactory;
-	}
-
-	public void setCredentialFactory(AgentCredentialFactory credentialFactory) {
-		this.credentialFactory = credentialFactory;
-	}
-
-	public AgentCredentialService getCredentialService() {
-		return credentialService;
-	}
-
-	public void setCredentialService(AgentCredentialService credentialService) {
-		this.credentialService = credentialService;
-	}
-
-	public AgentCredentialValidator getCredentialValidator() {
-		return credentialValidator;
-	}
-
-	public void setCredentialValidator(AgentCredentialValidator credentialValidator) {
-		this.credentialValidator = credentialValidator;
 	}
 
 }

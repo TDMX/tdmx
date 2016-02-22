@@ -132,7 +132,7 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void start() {
+	public void start(String segmentScsUrl) {
 		log.info("Starting RelayOutboundService.");
 		// we start with an emtpy context map.
 		contextMap.clear();

@@ -158,7 +158,7 @@ public class RelayControlServiceClientConnector
 		rosTcpEndpoint = RpcAddressUtils.getRosAddress(serverHostname, localPort);
 
 		// start the relay outbound service
-		relayOutboundService.start();
+		relayOutboundService.start(segment.getScsUrl());
 
 		this.segment = segment;
 		try {

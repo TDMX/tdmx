@@ -29,11 +29,21 @@ import org.tdmx.lib.zone.domain.Channel;
 public interface RelayConnectionProvider {
 
 	/**
+	 * Set the segment's SCS URL to allow detection of own segment relay shortcut.
+	 * 
+	 * @param segmentScsUrl
+	 */
+	public void setSegmentScsUrl(String segmentScsUrl);
+
+	/**
 	 * Lookup an MRS Endpoint for the channel from the remote SCS ( determined by the other party's DNS ).
 	 * 
 	 * @param channel
 	 * @param direction
 	 *            BOTH not allowed.
+	 * @param segmentScsUrl
+	 *            the URL of the ROS's segment to decide whether we have same segment relaying in which case we provide
+	 *            a shortcut relay.
 	 * @return the information of success or failure.
 	 */
 	public MRSSessionHolder getMRS(Channel channel, RelayDirection direction);

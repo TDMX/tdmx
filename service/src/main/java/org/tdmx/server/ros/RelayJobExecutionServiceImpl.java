@@ -109,6 +109,12 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 		}
 	}
 
+	@Override
+	public void setSegmentScsUrl(String segmentScsUrl) {
+		// the connection provider gives a shortcut MRS when relaying "within" our own segment.
+		relayConnectionProvider.setSegmentScsUrl(segmentScsUrl);
+	}
+
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------

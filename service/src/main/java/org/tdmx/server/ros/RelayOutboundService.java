@@ -33,8 +33,11 @@ public interface RelayOutboundService {
 
 	/**
 	 * Start the relay service.
+	 * 
+	 * @param segmentScsUrl
+	 *            the segment's own SCS URL so we can differentiate shortcut relaying.
 	 */
-	public void start();
+	public void start(String segmentScsUrl);
 
 	/**
 	 * Stop relaying and release any resources held by the service.

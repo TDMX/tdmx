@@ -27,6 +27,13 @@ package org.tdmx.server.ros;
 public interface RelayJobExecutionService {
 
 	/**
+	 * Set the segment's SCS URL to allow detection of own segment relay shortcut.
+	 * 
+	 * @param segmentScsUrl
+	 */
+	public void setSegmentScsUrl(String segmentScsUrl);
+
+	/**
 	 * Execute the job.
 	 * 
 	 * Results of job are stored in the job.
