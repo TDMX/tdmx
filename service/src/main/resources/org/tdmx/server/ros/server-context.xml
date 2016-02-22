@@ -28,6 +28,7 @@
 		<property name="keyStoreAlias" value="${ros.keyStoreAlias}"/>
 		<property name="trustManager" ref="tdmx.server.TrustedSslCertificateTrustManager"/>
 		<property name="domainZoneResolver" ref="tdmx.server.DomainZoneResolutionService"/>
+		<property name="sessionDataService" ref="scs.SessionDataService"/>
 	</bean>
 
 	<bean id="ros.RelayJobExecutionService" class="org.tdmx.server.ros.RelayJobExecutionServiceImpl" >

@@ -50,6 +50,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.server.runtime.DomainZoneResolutionService;
+import org.tdmx.server.scs.SessionDataService;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 
@@ -91,6 +92,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 	private X509TrustManager trustManager;
 	private DomainZoneResolutionService domainZoneResolver;
+	private SessionDataService sessionDataService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
@@ -186,7 +188,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Shortcut (same segment) relay.");
 			}
-			return null;// TODO #93: shortcut
+			return null;// TODO #93: getShortcutRelayClient() sessionDataService
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Resolved SCS url of " + otherDomain + " to be " + url);
@@ -276,6 +278,14 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 	public void setDomainZoneResolver(DomainZoneResolutionService domainZoneResolver) {
 		this.domainZoneResolver = domainZoneResolver;
+	}
+
+	public SessionDataService getSessionDataService() {
+		return sessionDataService;
+	}
+
+	public void setSessionDataService(SessionDataService sessionDataService) {
+		this.sessionDataService = sessionDataService;
 	}
 
 	public X509TrustManager getTrustManager() {

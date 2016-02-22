@@ -23,6 +23,7 @@
 	<bean id="scs.SessionDataService" class="org.tdmx.server.scs.SessionDataServiceImpl">
 		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
 		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="credentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
 		
 		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
 		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
