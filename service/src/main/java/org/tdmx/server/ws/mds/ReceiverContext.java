@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 public class ReceiverContext {
@@ -46,6 +47,9 @@ public class ReceiverContext {
 
 	// if we don't get any messages transferred in "fast" then we still poll the DB every 5min.
 	private static final long safetyPollIntervalMs = 300000;
+
+	// map of channelId->rosTcpAddress last known good configuration for each channel
+	private Map<Long, String> rosTcpAddressChannelMap = new HashMap<>();
 
 	// map of msgId->MessageContext of messages which have been delivered but not yet acknowledged
 	private Map<String, MessageContext> unackedMessageMap = new HashMap<>();
@@ -81,6 +85,39 @@ public class ReceiverContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Set a known good rosTcpAddress for the channel.
+	 * 
+	 * @param channel
+	 * @param rosTcpAddress
+	 */
+	public void setRosTcpAddress(Channel channel, String rosTcpAddress) {
+		if (rosTcpAddress == null) {
+			rosTcpAddressChannelMap.remove(channel.getId());
+		} else {
+			rosTcpAddressChannelMap.put(channel.getId(), rosTcpAddress);
+		}
+	}
+
+	/**
+	 * Clear any rosTcpAddress for the channel.
+	 * 
+	 * @param channel
+	 */
+	public void clearRosTcpAddress(Channel channel) {
+		rosTcpAddressChannelMap.remove(channel.getId());
+	}
+
+	/**
+	 * Get a channel's last known working rosTcpAddress.
+	 * 
+	 * @param channel
+	 * @return a channel's last known working rosTcpAddress.
+	 */
+	public String getRosTcpAddress(Channel channel) {
+		return rosTcpAddressChannelMap.get(channel.getId());
+	}
 
 	/**
 	 * Determine if a fetch is required. Only call with a thread which is prepared to fetch the messages if the return

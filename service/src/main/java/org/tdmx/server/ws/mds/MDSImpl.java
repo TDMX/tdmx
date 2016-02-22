@@ -67,6 +67,7 @@ import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -159,6 +160,7 @@ public class MDSImpl implements MDS {
 	public SetDestinationSessionResponse setDestinationSession(SetDestinationSession parameters) {
 		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
 		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
 
 		SetDestinationSessionResponse response = new SetDestinationSessionResponse();
 
@@ -209,15 +211,8 @@ public class MDSImpl implements MDS {
 
 				if (ProcessingStatus.PENDING == updatedChannel.getProcessingState().getStatus()) {
 					// relay "pending" channel destination sessions back to origin
-					// TODO #95: caching the ROS addresses per channel known to the destination
-
-					RelayStatus rs = relayClientService.relayChannelDestinationSession(null, session.getAccountZone(),
-							zone, session.getDomain(), updatedChannel);
-					if (!rs.isSuccess()) {
-						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
-								rs.getErrorCode().getErrorMessage());
-						channelService.updateStatusDestinationSession(updatedChannel.getId(), error);
-					}
+					// caching the ROS addresses per channel known to the destination
+					relayCDSWithRetry(session, rcv, updatedChannel);
 				}
 			}
 			if (channels.isEmpty()) {
@@ -263,7 +258,7 @@ public class MDSImpl implements MDS {
 			}
 			tx = ack;
 
-			// TODO #95: Handle the ack of previous received message and initiate relay back of DR
+			// Handle the acknowledge of previous received message and initiate relay back of DR
 			// caching the ROS address of the reverse channel
 			MessageContext ctx = rcv.endTransaction(tx);
 			if (ctx != null && ack.getDr() == null) {
@@ -272,7 +267,8 @@ public class MDSImpl implements MDS {
 				return response;
 			} else if (ctx == null && ack.getDr() != null) {
 				// no current message in the session - cannot have a DeliveryReport
-				ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptNoReceive, response, tx.getXid(), ctx.getMsgId());
+				ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptNoReceive, response, tx.getXid(),
+						ack.getDr().getMsgreference().getMsgId());
 				return response;
 			} else if (ctx != null && ack.getDr() != null) {
 				// check that the ack of the msg in the dr matches the ctx.
@@ -317,25 +313,13 @@ public class MDSImpl implements MDS {
 				// acknowledge the message, possibly opening the relay flow control
 				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
 						ctx.getMsg(), receipt);
-				// TODO #93: cache the ROS address in the receiver context and retry on failre
 				if (ackStatus.flowControlOpened) {
-					RelayStatus rs = relayClientService.relayChannelFlowControl(null, session.getAccountZone(),
-							session.getZone(), session.getDomain(), ctx.getMsg().getChannel(), ackStatus.flowQuota);
-					if (!rs.isSuccess()) {
-						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
-								rs.getErrorCode().getErrorMessage());
-						channelService.updateStatusFlowQuota(ackStatus.flowQuota.getId(), error);
-					}
+					// relay opened FC back to origin
+					relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 				}
 				if (ProcessingStatus.PENDING == ackStatus.msg.getProcessingState().getStatus()) {
 					// relay DR back to origin
-					RelayStatus rs = relayClientService.relayChannelMessage(null, session.getAccountZone(),
-							session.getZone(), session.getDomain(), ctx.getMsg().getChannel(), ctx.getMsg());
-					if (!rs.isSuccess()) {
-						ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_INITIATION,
-								rs.getErrorCode().getErrorMessage());
-						channelService.updateStatusMessage(ctx.getMsg().getId(), error);
-					}
+					relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg());
 				}
 
 			} else {
@@ -460,6 +444,99 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void relayCDSWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel) {
+		// relay to the last known good ros for the channel.
+		RelayStatus rs = relayClientService.relayChannelDestinationSession(rc.getRosTcpAddress(channel),
+				session.getAccountZone(), session.getZone(), session.getDomain(), channel);
+		if (!rs.isSuccess()) {
+			if (rs.getErrorCode().isRetryable()) {
+				RelayStatus retry = relayClientService.relayChannelDestinationSession(null /* get new MRS session */,
+						session.getAccountZone(), session.getZone(), session.getDomain(), channel);
+				if (!retry.isSuccess()) {
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+							rs.getErrorCode().getErrorMessage());
+					channelService.updateStatusDestinationSession(channel.getId(), error);
+					// remove any cached ros address since not working
+					rc.clearRosTcpAddress(channel);
+				} else {
+					// cache the potentially changed ROS address
+					rc.setRosTcpAddress(channel, retry.getRosTcpAddress());
+				}
+			} else {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+						rs.getErrorCode().getErrorMessage());
+				channelService.updateStatusDestinationSession(channel.getId(), error);
+				// remove any cached ros address since not working
+				rc.clearRosTcpAddress(channel);
+			}
+		} else {
+			// cache the working ROS address
+			rc.setRosTcpAddress(channel, rs.getRosTcpAddress());
+		}
+	}
+
+	private void relayFCWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel, FlowQuota fc) {
+		// relay to the last known good ros for the channel.
+		RelayStatus rs = relayClientService.relayChannelFlowControl(rc.getRosTcpAddress(channel),
+				session.getAccountZone(), session.getZone(), session.getDomain(), channel, fc);
+		if (!rs.isSuccess()) {
+			if (rs.getErrorCode().isRetryable()) {
+				RelayStatus retry = relayClientService.relayChannelFlowControl(null /* get new MRS session */,
+						session.getAccountZone(), session.getZone(), session.getDomain(), channel, fc);
+				if (!retry.isSuccess()) {
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+							rs.getErrorCode().getErrorMessage());
+					channelService.updateStatusFlowQuota(fc.getId(), error);
+					// remove any cached ros address since not working
+					rc.clearRosTcpAddress(channel);
+				} else {
+					// cache the potentially changed ROS address
+					rc.setRosTcpAddress(channel, retry.getRosTcpAddress());
+				}
+			} else {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+						rs.getErrorCode().getErrorMessage());
+				channelService.updateStatusFlowQuota(fc.getId(), error);
+				// remove any cached ros address since not working
+				rc.clearRosTcpAddress(channel);
+			}
+		} else {
+			// cache the working ROS address
+			rc.setRosTcpAddress(channel, rs.getRosTcpAddress());
+		}
+	}
+
+	private void relayMsgWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel, ChannelMessage msg) {
+		// relay to the last known good ros for the channel.
+		RelayStatus rs = relayClientService.relayChannelMessage(rc.getRosTcpAddress(channel), session.getAccountZone(),
+				session.getZone(), session.getDomain(), channel, msg);
+		if (!rs.isSuccess()) {
+			if (rs.getErrorCode().isRetryable()) {
+				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new MRS session */,
+						session.getAccountZone(), session.getZone(), session.getDomain(), channel, msg);
+				if (!retry.isSuccess()) {
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+							rs.getErrorCode().getErrorMessage());
+					channelService.updateStatusMessage(msg.getId(), error);
+					// remove any cached ros address since not working
+					rc.clearRosTcpAddress(channel);
+				} else {
+					// cache the potentially changed ROS address
+					rc.setRosTcpAddress(channel, retry.getRosTcpAddress());
+				}
+			} else {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+						rs.getErrorCode().getErrorMessage());
+				channelService.updateStatusMessage(msg.getId(), error);
+				// remove any cached ros address since not working
+				rc.clearRosTcpAddress(channel);
+			}
+		} else {
+			// cache the working ROS address
+			rc.setRosTcpAddress(channel, rs.getRosTcpAddress());
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
