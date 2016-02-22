@@ -123,9 +123,6 @@ public class MOSImpl implements MOS {
 
 	private int batchSize = 100;
 
-	// TODO LATER: idea - keep an atomic integer of "msg"count being sent and make this a part of the factor for MOS
-	// load
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -192,8 +189,11 @@ public class MOSImpl implements MOS {
 		if (validator.checkMessage(parameters.getMsg(), response) == null) {
 			return response;
 		}
-		// TODO #100: validate Tx fields present if provided
+
 		TransactionSpecification tx = parameters.getTransaction();
+		if (validator.checkTransaction(tx, response) == null) {
+			return response;
+		}
 
 		// TODO #70: check chunk's mac
 
