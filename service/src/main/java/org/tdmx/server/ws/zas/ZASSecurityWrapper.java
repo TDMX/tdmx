@@ -116,8 +116,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchDomain(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -132,8 +132,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchUser(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -148,8 +148,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createDomain(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -164,8 +164,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchAdministrator(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -180,8 +180,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchDestination(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -196,8 +196,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.modifyUser(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -212,8 +212,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchIpZone(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -228,8 +228,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createAddress(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -244,8 +244,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteChannelAuthorization(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -260,8 +260,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.incident(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -276,8 +276,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createIpZone(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -292,8 +292,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteIpZone(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -308,8 +308,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteDomain(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -324,8 +324,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.report(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -340,8 +340,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteUser(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -356,8 +356,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.modifyIpZone(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -372,8 +372,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchAddress(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -388,8 +388,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createAdministrator(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -404,8 +404,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteService(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -420,8 +420,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchChannel(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -436,8 +436,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.searchService(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -452,8 +452,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteAddress(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -468,8 +468,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.modifyAdministrator(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -484,8 +484,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.setChannelAuthorization(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -500,8 +500,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createUser(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -516,8 +516,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.createService(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -532,8 +532,8 @@ public class ZASSecurityWrapper implements ZAS {
 			return delegate.deleteAdministrator(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 

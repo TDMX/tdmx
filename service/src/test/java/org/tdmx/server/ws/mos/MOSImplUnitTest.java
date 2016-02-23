@@ -57,6 +57,7 @@ import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -263,6 +264,10 @@ public class MOSImplUnitTest {
 
 		Submit req = new Submit();
 		req.setSessionId(UC_SESSION_ID);
+		TransactionSpecification tx = new TransactionSpecification();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
 
 		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName());
 		// TODO setup msg, create signatures

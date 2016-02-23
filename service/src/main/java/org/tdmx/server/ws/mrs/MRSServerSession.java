@@ -79,6 +79,16 @@ public class MRSServerSession extends WebServiceSession {
 		return getAttribute(TEMP_CHANNEL);
 	}
 
+	// needs to be public since shortcut ROSConnectionProvider set this
+	public void setChannel(Channel c) {
+		setAttribute(CHANNEL, c);
+	}
+
+	// needs to be public since shortcut ROSConnectionProvider set this
+	public void setTemporaryChannel(TemporaryChannel c) {
+		setAttribute(TEMP_CHANNEL, c);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -95,13 +105,6 @@ public class MRSServerSession extends WebServiceSession {
 		setAttribute(DOMAIN, d);
 	}
 
-	void setChannel(Channel c) {
-		setAttribute(CHANNEL, c);
-	}
-
-	void setTemporaryChannel(TemporaryChannel c) {
-		setAttribute(TEMP_CHANNEL, c);
-	}
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------

@@ -86,8 +86,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.commit(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -102,8 +102,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.rollback(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -118,8 +118,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.forget(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -134,8 +134,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.prepare(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -150,8 +150,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.recover(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -166,8 +166,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.getAddress(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -182,8 +182,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.submit(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -198,8 +198,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.upload(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -214,8 +214,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.receipt(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -230,8 +230,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.acknowledge(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -246,8 +246,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.getChannel(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -262,8 +262,8 @@ public class MOSSecurityWrapper implements MOS {
 			return delegate.listChannel(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 

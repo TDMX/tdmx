@@ -224,7 +224,6 @@
 		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
 		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
-		<property name="batchSize" value="100"/>
 		<property name="transferService" ref="tos.client.TransferObjectService"/>
 		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
 	</bean>

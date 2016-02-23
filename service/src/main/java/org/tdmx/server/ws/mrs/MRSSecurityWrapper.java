@@ -64,8 +64,8 @@ public class MRSSecurityWrapper implements MRS {
 			return delegate.relay(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 
 	}

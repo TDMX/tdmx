@@ -28,6 +28,11 @@
 		<property name="keyStoreAlias" value="${ros.keyStoreAlias}"/>
 		<property name="trustManager" ref="tdmx.server.TrustedSslCertificateTrustManager"/>
 		<property name="domainZoneResolver" ref="tdmx.server.DomainZoneResolutionService"/>
+		
+		<property name="shortcutSessionService" ref="ws.MRS.AuthorizedSessionService"/>
+		<property name="shortcutMrs" ref="ws.MRS.Implementation"/>
+		<property name="partitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+				
 		<property name="sessionDataService" ref="scs.SessionDataService"/>
 	</bean>
 

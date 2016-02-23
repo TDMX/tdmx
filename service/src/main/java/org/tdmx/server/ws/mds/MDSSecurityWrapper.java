@@ -84,8 +84,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.getDestinationSession(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -100,8 +100,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.setDestinationSession(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -116,8 +116,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.download(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -132,8 +132,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.receive(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -148,8 +148,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.acknowledge(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -164,8 +164,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.listChannel(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -180,8 +180,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.prepare(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -196,8 +196,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.forget(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -212,8 +212,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.rollback(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -228,8 +228,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.commit(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 
@@ -244,8 +244,8 @@ public class MDSSecurityWrapper implements MDS {
 			return delegate.recover(parameters);
 
 		} finally {
-			getAuthorizationService().clearAuthorizedSession();
-			getPartitionIdService().clearPartitionId();
+			authorizationService.clearAuthorizedSession();
+			partitionIdService.clearPartitionId();
 		}
 	}
 

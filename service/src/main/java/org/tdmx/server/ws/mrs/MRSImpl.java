@@ -89,8 +89,6 @@ public class MRSImpl implements MRS {
 	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 	private final ApiValidator validator = new ApiValidator();
 
-	private int batchSize = 100;
-
 	private TransferClientService transferService;
 	private RelayClientService relayClientService;
 
@@ -414,14 +412,6 @@ public class MRSImpl implements MRS {
 
 	public void setChunkService(ChunkService chunkService) {
 		this.chunkService = chunkService;
-	}
-
-	public int getBatchSize() {
-		return batchSize;
-	}
-
-	public void setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
 	}
 
 	public TransferClientService getTransferService() {

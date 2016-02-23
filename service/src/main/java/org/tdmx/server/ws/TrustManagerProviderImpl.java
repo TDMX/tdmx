@@ -59,7 +59,7 @@ public class TrustManagerProviderImpl implements TrustManagerProvider {
 				try {
 					PKIXCertificate[] certs = CertificateIOUtils.convert(chain);
 					boolean anyTrusted = false;
-					for (WebServiceSessionTrustManager tm : getServerSessionTrustManagers()) {
+					for (WebServiceSessionTrustManager tm : serverSessionTrustManagers) {
 						if (tm.isTrusted(certs[0])) {
 							anyTrusted = true;
 							break;

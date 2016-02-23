@@ -40,6 +40,8 @@ import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.v01.mrs.Relay;
+import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.GetMRSSession;
@@ -47,12 +49,20 @@ import org.tdmx.core.api.v01.scs.GetMRSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.DomainZoneApexInfo;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
+import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.TemporaryChannel;
+import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.runtime.DomainZoneResolutionService;
 import org.tdmx.server.scs.SessionDataService;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
+import org.tdmx.server.ws.mrs.MRSServerSession;
+import org.tdmx.server.ws.security.service.AuthorizedSessionService;
 
 /**
  * Relay Connection Provider
@@ -93,6 +103,9 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	private X509TrustManager trustManager;
 	private DomainZoneResolutionService domainZoneResolver;
 	private SessionDataService sessionDataService;
+	private AuthorizedSessionService<MRSServerSession> shortcutSessionService;
+	private MRS shortcutMrs;
+	private ThreadLocalPartitionIdProvider partitionIdService;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
@@ -188,7 +201,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Shortcut (same segment) relay.");
 			}
-			return null;// TODO #93: getShortcutRelayClient() sessionDataService
+			return getShortcutRelayClient(apexInfo.getZoneApex(), otherDomain, channel);
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Resolved SCS url of " + otherDomain + " to be " + url);
@@ -204,6 +217,67 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private MRSSessionHolder getShortcutRelayClient(String otherZoneApex, String otherDomain, Channel channel) {
+		// equivalent of SCS#getMRSSession
+		AccountZone az = sessionDataService.getAccountZone(otherZoneApex);
+		if (az == null) {
+			return MRSSessionHolder.error(ErrorCode.ZoneNotFound.getErrorCode(),
+					ErrorCode.ZoneNotFound.getErrorDescription());
+		}
+
+		Zone zone = sessionDataService.getZone(az);
+		if (zone == null) {
+			return MRSSessionHolder.error(ErrorCode.ZoneNotFound.getErrorCode(),
+					ErrorCode.ZoneNotFound.getErrorDescription());
+		}
+
+		Domain domain = sessionDataService.getDomain(az, zone, otherDomain);
+		if (domain == null) {
+			return MRSSessionHolder.error(ErrorCode.DomainNotFound.getErrorCode(),
+					ErrorCode.DomainNotFound.getErrorDescription());
+		}
+
+		final String sessionId = "shortcut:" + channel.getChannelName().getChannelKey(otherDomain);
+		final MRSServerSession session = new MRSServerSession(sessionId, az, zone, domain);
+		;
+
+		ChannelAuthorization existingChannelAuth = sessionDataService.findChannelAuthorization(az, zone, domain,
+				channel.getOrigin(), channel.getDestination());
+
+		if (existingChannelAuth != null) {
+			session.setChannel(existingChannelAuth.getChannel());
+		} else {
+			TemporaryChannel tempChannel = sessionDataService.findTemporaryChannel(az, zone, domain,
+					channel.getOrigin(), channel.getDestination());
+			if (tempChannel == null) {
+				tempChannel = sessionDataService.createTemporaryChannel(az, domain, channel.getOrigin(),
+						channel.getDestination());
+			}
+			session.setTemporaryChannel(tempChannel);
+		}
+
+		final MRS wrappingMrs = new MRS() {
+
+			@Override
+			public RelayResponse relay(Relay parameters) {
+				shortcutSessionService.setAuthorizedSession(session);
+				try {
+					AccountZone az = session.getAccountZone();
+					partitionIdService.setPartitionId(az.getZonePartitionId());
+
+					return shortcutMrs.relay(parameters);
+
+				} finally {
+					shortcutSessionService.clearAuthorizedSession();
+					partitionIdService.clearPartitionId();
+				}
+			}
+		};
+
+		MRSSessionHolder sh = MRSSessionHolder.success(wrappingMrs, sessionId);
+		return sh;
+	}
 
 	private MRSSessionHolder getRelayClient(String url, Channel channel) {
 		// set the URL on a per request basis.
@@ -284,8 +358,32 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		return sessionDataService;
 	}
 
+	public ThreadLocalPartitionIdProvider getPartitionIdService() {
+		return partitionIdService;
+	}
+
+	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
+		this.partitionIdService = partitionIdService;
+	}
+
 	public void setSessionDataService(SessionDataService sessionDataService) {
 		this.sessionDataService = sessionDataService;
+	}
+
+	public AuthorizedSessionService<MRSServerSession> getShortcutSessionService() {
+		return shortcutSessionService;
+	}
+
+	public void setShortcutSessionService(AuthorizedSessionService<MRSServerSession> shortcutSessionService) {
+		this.shortcutSessionService = shortcutSessionService;
+	}
+
+	public MRS getShortcutMrs() {
+		return shortcutMrs;
+	}
+
+	public void setShortcutMrs(MRS shortcutMrs) {
+		this.shortcutMrs = shortcutMrs;
 	}
 
 	public X509TrustManager getTrustManager() {
