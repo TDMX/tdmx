@@ -137,9 +137,13 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		// we start with an emtpy context map.
 		contextMap.clear();
 
+		// propagate our own SCS URL to the relay connection provider so it can identify same segment relaying
+		jobExecutionService.setSegmentScsUrl(segmentScsUrl);
+
 		// like cachedThreadPoolRunner but with bounded max.
 		jobRunner = new ThreadPoolExecutor(coreRelayThreads, maxRelayThreads, 60L, TimeUnit.SECONDS,
 				new SynchronousQueue<Runnable>(), new NamedThreadFactory("RelayJobRunner"));
+
 	}
 
 	@Override

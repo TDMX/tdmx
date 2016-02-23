@@ -310,13 +310,13 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						try {
 							RelayResponse rr = sh.getMrs().relay(relayCA);
 							if (rr.isSuccess()) {
-								relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+								relayDataService.updateChannelAuthorizationProcessingState(ctx.getAccountZone(),
 										ctx.getZone(), ctx.getDomain(), job.getObjectId(), ProcessingState.none());
 
 							} else {
 								ProcessingState error = ProcessingState.error(rr.getError().getCode(),
 										rr.getError().getDescription());
-								relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+								relayDataService.updateChannelAuthorizationProcessingState(ctx.getAccountZone(),
 										ctx.getZone(), ctx.getDomain(), job.getObjectId(), error);
 							}
 						} catch (WebServiceException wse) {
@@ -330,7 +330,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 									ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
 									ErrorCode.RelayChannelAuthorizationFault.getErrorDescription(errorInfo));
 
-							relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+							relayDataService.updateChannelAuthorizationProcessingState(ctx.getAccountZone(),
 									ctx.getZone(), ctx.getDomain(), job.getObjectId(), error);
 
 						}
@@ -441,13 +441,13 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayCDS);
 						if (rr.isSuccess()) {
-							relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+							relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(),
 									ctx.getZone(), ctx.getDomain(), job.getObjectId(), ProcessingState.none());
 
 						} else {
 							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
 									rr.getError().getDescription());
-							relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
+							relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(),
 									ctx.getZone(), ctx.getDomain(), job.getObjectId(), error);
 						}
 					} catch (WebServiceException wse) {
@@ -461,21 +461,21 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 								ErrorCode.RelayFlowControlOpenFault.getErrorCode(),
 								ErrorCode.RelayFlowControlOpenFault.getErrorDescription(errorInfo));
 
-						relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(),
-								ctx.getZone(), ctx.getDomain(), job.getObjectId(), error);
+						relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(), ctx.getZone(),
+								ctx.getDomain(), job.getObjectId(), error);
 
 					}
 				} else {
 					// update FC processing state to error of the MRS session holder error
 					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
-					relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+					relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(), ctx.getZone(),
 							ctx.getDomain(), c.getQuota().getId(), error);
 				}
 			} else {
 				// it is an error to want to relay the FC-open from origin to destination
 				ProcessingState error = ProcessingState.error(ErrorCode.RelayFlowControlForwards.getErrorCode(),
 						ErrorCode.RelayFlowControlForwards.getErrorDescription());
-				relayDataService.updateChannelDestinationSessionProcessingState(ctx.getAccountZone(), ctx.getZone(),
+				relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(), ctx.getZone(),
 						ctx.getDomain(), c.getQuota().getId(), error);
 			}
 

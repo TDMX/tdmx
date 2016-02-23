@@ -105,7 +105,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 	private SessionDataService sessionDataService;
 	private AuthorizedSessionService<MRSServerSession> shortcutSessionService;
 	private MRS shortcutMrs;
-	private ThreadLocalPartitionIdProvider partitionIdService;
+	private ThreadLocalPartitionIdProvider partitionIdProvider;
 
 	private final DomainToApiMapper d2a = new DomainToApiMapper();
 
@@ -240,7 +240,6 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		final String sessionId = "shortcut:" + channel.getChannelName().getChannelKey(otherDomain);
 		final MRSServerSession session = new MRSServerSession(sessionId, az, zone, domain);
-		;
 
 		ChannelAuthorization existingChannelAuth = sessionDataService.findChannelAuthorization(az, zone, domain,
 				channel.getOrigin(), channel.getDestination());
@@ -264,13 +263,13 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 				shortcutSessionService.setAuthorizedSession(session);
 				try {
 					AccountZone az = session.getAccountZone();
-					partitionIdService.setPartitionId(az.getZonePartitionId());
+					partitionIdProvider.setPartitionId(az.getZonePartitionId());
 
 					return shortcutMrs.relay(parameters);
 
 				} finally {
 					shortcutSessionService.clearAuthorizedSession();
-					partitionIdService.clearPartitionId();
+					partitionIdProvider.clearPartitionId();
 				}
 			}
 		};
@@ -358,12 +357,12 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		return sessionDataService;
 	}
 
-	public ThreadLocalPartitionIdProvider getPartitionIdService() {
-		return partitionIdService;
+	public ThreadLocalPartitionIdProvider getPartitionIdProvider() {
+		return partitionIdProvider;
 	}
 
-	public void setPartitionIdService(ThreadLocalPartitionIdProvider partitionIdService) {
-		this.partitionIdService = partitionIdService;
+	public void setPartitionIdProvider(ThreadLocalPartitionIdProvider partitionIdService) {
+		this.partitionIdProvider = partitionIdService;
 	}
 
 	public void setSessionDataService(SessionDataService sessionDataService) {
