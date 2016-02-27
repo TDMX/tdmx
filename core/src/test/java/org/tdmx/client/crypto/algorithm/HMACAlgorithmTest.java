@@ -44,7 +44,7 @@ public class HMACAlgorithmTest {
 	@Test
 	public void testHmac() throws Exception {
 		String ks = "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b";
-		byte[] key = ByteArray.fromHex(ks.toCharArray());
+		byte[] key = ByteArray.fromHex(ks);
 		assertEquals(20, key.length);
 
 		String dataS = "Hi There";
@@ -58,8 +58,7 @@ public class HMACAlgorithmTest {
 
 		hMac = HMACAlgorithm.HMAC_SHA_384.hmac(data, key);
 		hexHmac = ByteArray.asHex(hMac);
-		assertEquals(
-				"afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59cfaea9ea9076ede7f4af152e8b2fa9cb6",
+		assertEquals("afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59cfaea9ea9076ede7f4af152e8b2fa9cb6",
 				hexHmac);
 
 		hMac = HMACAlgorithm.HMAC_SHA_512.hmac(data, key);

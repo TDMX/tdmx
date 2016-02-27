@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.user;
+package org.tdmx.client.cli.domain;
 
 import java.io.File;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class CreateUserCredentials implements CommandExecutable {
 		req.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		req.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
 
-		int serial = ClientCliUtils.getUCMaxSerialNumber(domainName, localName);
+		int serial = ClientCliUtils.getUCMaxSerialNumber(domainName, localName) + 1;
 		if (serialNumber != null) {
 			if (serialNumber < serial) {
 				throw new IllegalArgumentException("serialNumber must be greater or equal to " + serial);
@@ -130,6 +130,7 @@ public class CreateUserCredentials implements CommandExecutable {
 					publicCertificate.getTdmxDomainName(), publicCertificate.getCommonName(), serial), pc, ".tmp");
 
 			// output the public key to the console
+			out.println("fingerprint=" + publicCertificate.getFingerprint());
 			out.println("certificate="
 					+ CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { publicCertificate }));
 			out.println("serialNumber=" + serial);

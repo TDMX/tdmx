@@ -53,10 +53,10 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 	@Parameter(name = "domain", required = true, description = "the domain name.")
 	private String domain;
 
-	@Parameter(name = "serial", defaultValueText = "<greatest existing DAC serial>+1", description = "the domain administrator's certificate serialNumber.")
+	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>+1", description = "the domain administrator's certificate serialNumber.")
 	private Integer serialNumber;
 
-	@Parameter(name = "password", required = true, description = "the domain administrator's keystore password.")
+	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
 	private String password;
 
 	@Parameter(name = "validityInYears", defaultValue = "2", description = "the validity of the domain administrator's credential in years.")

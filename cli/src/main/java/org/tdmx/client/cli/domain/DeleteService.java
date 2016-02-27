@@ -51,10 +51,10 @@ public class DeleteService implements CommandExecutable {
 	@Parameter(name = "domain", required = true, description = "the domain name.")
 	private String domain;
 
-	@Parameter(name = "serial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate serialNumber.")
-	private Integer serialNumber;
+	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate dacSerialNumber.")
+	private Integer dacSerialNumber;
 
-	@Parameter(name = "password", required = true, description = "the domain administrator's keystore password.")
+	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
 	private String dacPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
@@ -78,10 +78,14 @@ public class DeleteService implements CommandExecutable {
 		out.println("Domain info: " + domainInfo);
 
 		// get the DAC keystore
-		if (serialNumber == null) {
-			serialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
+		if (dacSerialNumber == null) {
+			dacSerialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
 		}
-		PKIXCredential dac = ClientCliUtils.getDAC(domain, serialNumber, dacPassword);
+		PKIXCredential dac = ClientCliUtils.getDAC(domain, dacSerialNumber, dacPassword);
+
+		// -------------------------------------------------------------------------
+		// GET ZAS SESSION
+		// -------------------------------------------------------------------------
 
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
 		SCS scs = ClientCliUtils.createSCSClient(dac, domainInfo.getScsUrl(), scsPublicCertificate);

@@ -54,7 +54,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,9 +120,7 @@ public class StringEncrypter {
 
 			// Encrypt
 			byte[] enc = ecipher.doFinal(utf8);
-
-			// Encode bytes to base64 to get a string
-			return new String(Base64.encodeBase64(enc), "UTF8");
+			return java.util.Base64.getEncoder().encodeToString(enc);
 
 		} catch (UnsupportedEncodingException e) {
 			log.warn("Encrypt Exception:", e);
@@ -146,7 +143,7 @@ public class StringEncrypter {
 		log.info("decrypt [" + str + "]");
 		try {
 			// Decode base64 to get bytes
-			byte[] dec = Base64.decodeBase64(str.getBytes("UTF8"));
+			byte[] dec = java.util.Base64.getDecoder().decode(str);
 
 			// Decrypt
 			byte[] utf8 = dcipher.doFinal(dec);

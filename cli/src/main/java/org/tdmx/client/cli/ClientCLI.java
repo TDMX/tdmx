@@ -21,12 +21,15 @@ package org.tdmx.client.cli;
 import java.io.InputStreamReader;
 
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.ActivateUserCredentials;
 import org.tdmx.client.cli.domain.AuthorizeChannel;
 import org.tdmx.client.cli.domain.CreateAddress;
 import org.tdmx.client.cli.domain.CreateDomain;
 import org.tdmx.client.cli.domain.CreateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.CreateService;
+import org.tdmx.client.cli.domain.CreateUserCredentials;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.DeactivateUserCredentials;
 import org.tdmx.client.cli.domain.DeleteAddress;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.DeleteService;
@@ -35,7 +38,9 @@ import org.tdmx.client.cli.domain.SearchChannel;
 import org.tdmx.client.cli.domain.SearchDomain;
 import org.tdmx.client.cli.domain.SearchDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SearchService;
+import org.tdmx.client.cli.domain.SearchUserCredentials;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
+import org.tdmx.client.cli.domain.SuspendUserCredentials;
 import org.tdmx.client.cli.trust.AddDistrust;
 import org.tdmx.client.cli.trust.AddTrust;
 import org.tdmx.client.cli.trust.CollectUntrust;
@@ -45,8 +50,6 @@ import org.tdmx.client.cli.trust.DeleteUntrust;
 import org.tdmx.client.cli.trust.SearchDistrust;
 import org.tdmx.client.cli.trust.SearchTrust;
 import org.tdmx.client.cli.trust.SearchUntrust;
-import org.tdmx.client.cli.user.CreateUserCredentials;
-import org.tdmx.client.cli.zone.LookupDns;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
@@ -55,6 +58,7 @@ import org.tdmx.client.cli.zone.DescribeDns;
 import org.tdmx.client.cli.zone.DescribeZone;
 import org.tdmx.client.cli.zone.DescribeZoneAdministratorCredentials;
 import org.tdmx.client.cli.zone.DownloadScs;
+import org.tdmx.client.cli.zone.LookupDns;
 import org.tdmx.client.cli.zone.ModifyZone;
 import org.tdmx.client.cli.zone.Route53Dns;
 import org.tdmx.core.cli.CliParser;
@@ -96,7 +100,7 @@ public class ClientCLI {
 			SearchTrust.class, DeleteTrust.class, AddTrust.class,
 			SearchDistrust.class, DeleteDistrust.class, AddDistrust.class,
 			AuthorizeChannel.class, SearchChannel.class,
-			CreateUserCredentials.class, };
+			SearchUserCredentials.class, CreateUserCredentials.class, ActivateUserCredentials.class, SuspendUserCredentials.class, DeactivateUserCredentials.class};
 	//@formatter:on
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

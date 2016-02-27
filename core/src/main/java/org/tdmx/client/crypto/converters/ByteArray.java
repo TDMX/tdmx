@@ -18,9 +18,8 @@
  */
 package org.tdmx.client.crypto.converters;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.encoders.Hex;
 
 public class ByteArray {
 
@@ -91,14 +90,11 @@ public class ByteArray {
 	}
 
 	public static String asHex(byte[] b) {
-		return new String(Hex.encodeHex(b));
+
+		return Hex.toHexString(b);
 	}
 
-	public static byte[] fromHex(char[] h) {
-		try {
-			return Hex.decodeHex(h);
-		} catch (DecoderException e) {
-			throw new RuntimeException(e);
-		}
+	public static byte[] fromHex(String h) {
+		return Hex.decode(h);
 	}
 }

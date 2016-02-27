@@ -20,13 +20,13 @@ package org.tdmx.client.cli.domain;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.common.Page;
-import org.tdmx.core.api.v01.msg.AdministratorFilter;
-import org.tdmx.core.api.v01.msg.AdministratorIdentity;
+import org.tdmx.core.api.v01.msg.User;
+import org.tdmx.core.api.v01.msg.UserFilter;
 import org.tdmx.core.api.v01.scs.GetZASSession;
 import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -36,8 +36,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "domainadmin:deactivate", description = "deactivates (removes) the domain administrator credential at the service provider. The keystore filename is <domain>-<dacSerialNumber>.dac, with the public certificate in the file <domain>-<dacSerialNumber>.dac.crt.")
-public class DeactivateDomainAdministratorCredentials implements CommandExecutable {
+@Cli(name = "user:search", description = "searches for user credentials in a domain at the service provider.")
+public class SearchUserCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,17 +47,26 @@ public class DeactivateDomainAdministratorCredentials implements CommandExecutab
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	@Parameter(name = "localname", description = "the optional local name.")
+	private String localName;
+
 	@Parameter(name = "domain", required = true, description = "the domain name.")
 	private String domain;
 
-	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate dacSerialNumber.")
-	private Integer dacSerialNumber;
+	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate serialNumber.")
+	private Integer serialNumber;
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
-	private String zacPassword;
+	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
+	private String dacPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
+
+	@Parameter(name = "pageNumber", defaultValue = "0", description = "the result page number.")
+	private int pageNumber;
+
+	@Parameter(name = "pageSize", defaultValue = "10", description = "the result page size.")
+	private int pageSize;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -69,46 +78,25 @@ public class DeactivateDomainAdministratorCredentials implements CommandExecutab
 
 	@Override
 	public void run(PrintStream out) {
-		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
-
-		if (zd.getScsUrl() == null) {
-			out.println("Missing SCS URL. Use modify:zone to set the SessionControlServer's URL.");
-			return;
-		}
-
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("No TDMX DNS TXT record found for " + domain);
 			return;
 		}
 		out.println("Domain info: " + domainInfo);
-		if (!zd.getScsUrl().equals(domainInfo.getScsUrl())) {
-			out.println("SCS url mismatch DNS=" + domainInfo.getScsUrl() + " local zone descriptor " + zd.getScsUrl());
-			return;
-		}
 
-		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
-
-		if (dacSerialNumber == null) {
-			dacSerialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
-			if (dacSerialNumber <= 0) {
-				out.println("Unable to find max dacSerialNumber for DACs of " + domain);
-				return;
-			}
+		// get the DAC keystore
+		if (serialNumber == null) {
+			serialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
 		}
-		PKIXCertificate dac = ClientCliUtils.getDACPublicKey(domain, dacSerialNumber);
-		if (dac == null) {
-			out.println("Unable to locate DAC public certificate for domain " + domain + " and dacSerialNumber "
-					+ dacSerialNumber);
-			return;
-		}
+		PKIXCredential dac = ClientCliUtils.getDAC(domain, serialNumber, dacPassword);
 
 		// -------------------------------------------------------------------------
 		// GET ZAS SESSION
 		// -------------------------------------------------------------------------
 
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
-		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);
+		SCS scs = ClientCliUtils.createSCSClient(dac, domainInfo.getScsUrl(), scsPublicCertificate);
 
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
@@ -119,46 +107,35 @@ public class DeactivateDomainAdministratorCredentials implements CommandExecutab
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
 
-		ZAS zas = ClientCliUtils.createZASClient(zac, sessionResponse.getEndpoint());
+		ZAS zas = ClientCliUtils.createZASClient(dac, sessionResponse.getEndpoint());
 
 		// -------------------------------------------------------------------------
 		// CLI FUNCTION
 		// -------------------------------------------------------------------------
 
-		AdministratorIdentity id = new AdministratorIdentity();
-		id.setDomaincertificate(dac.getX509Encoded());
-		id.setRootcertificate(zac.getZoneRootPublicCert().getX509Encoded());
-
-		org.tdmx.core.api.v01.zas.SearchAdministrator searchAdminRequest = new org.tdmx.core.api.v01.zas.SearchAdministrator();
+		org.tdmx.core.api.v01.zas.SearchUser searchUserRequest = new org.tdmx.core.api.v01.zas.SearchUser();
 		Page p = new Page();
-		p.setNumber(0);
-		p.setSize(1);
-		searchAdminRequest.setPage(p);
-		AdministratorFilter df = new AdministratorFilter();
-		df.setAdministratorIdentity(id);
-		searchAdminRequest.setFilter(df);
-		searchAdminRequest.setSessionId(sessionResponse.getSession().getSessionId());
+		p.setNumber(pageNumber);
+		p.setSize(pageSize);
+		searchUserRequest.setPage(p);
+		UserFilter filter = new UserFilter();
+		filter.setDomain(domain);
+		filter.setLocalname(localName);
+		searchUserRequest.setFilter(filter);
+		searchUserRequest.setSessionId(sessionResponse.getSession().getSessionId());
 
-		org.tdmx.core.api.v01.zas.SearchAdministratorResponse searchAdminResponse = zas
-				.searchAdministrator(searchAdminRequest);
-		if (searchAdminResponse.isSuccess() && !searchAdminResponse.getAdministrators().isEmpty()) {
-
-			org.tdmx.core.api.v01.zas.DeleteAdministrator deleteAdminRequest = new org.tdmx.core.api.v01.zas.DeleteAdministrator();
-			deleteAdminRequest.setAdministratorIdentity(id);
-			deleteAdminRequest.setSessionId(sessionResponse.getSession().getSessionId());
-
-			org.tdmx.core.api.v01.zas.DeleteAdministratorResponse deleteAdminResponse = zas
-					.deleteAdministrator(deleteAdminRequest);
-			if (deleteAdminResponse.isSuccess()) {
-				out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
-						+ " deactivated (removed from service provider).");
-			} else {
-				ClientCliUtils.logError(out, deleteAdminResponse.getError());
+		org.tdmx.core.api.v01.zas.SearchUserResponse searchUserResponse = zas.searchUser(searchUserRequest);
+		if (searchUserResponse.isSuccess()) {
+			out.println("Found " + searchUserResponse.getUsers().size() + " users.");
+			for (User user : searchUserResponse.getUsers()) {
+				out.println(ClientCliLoggingUtils.toString(user));
+			}
+			if (searchUserResponse.getUsers().size() == pageSize) {
+				out.println(ClientCliLoggingUtils.truncatedMessage());
 			}
 
 		} else {
-			out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
-					+ " was not found.");
+			ClientCliUtils.logError(out, searchUserResponse.getError());
 		}
 	}
 

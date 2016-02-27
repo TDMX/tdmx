@@ -222,3 +222,34 @@ ClientCLI> channel:search domain=z2.tdmx.org password=changeme exec
          >FlowStatus [ RelayStatus=OPEN FlowStatus=OPEN UsedBytes=0]
          >]
 
+
+Step 17: create a user
+
+ClientCLI> user:create username=user2@z2.tdmx.org password=changeme dacPassword=changeme exec
+         >
+         >certificate=-----BEGIN CERTIFICATE-----
+         >MIIDxTCCAq+gAwIBAgIBATALBgkqhkiG9w0BAQwwZjELMAkGA1UEBhMCQ0gxDDAK
+         >..
+         >773CWUSFHemllIjIDXqRmpjIMNUx9xs5uXKia7pWwcTJN6nphxnevg01vuHWNdpL
+         >Lj2yw2yHmrPC
+         >-----END CERTIFICATE-----
+         >
+         >serialNumber=1
+
+         
+Step 18: activate a user
+
+ClientCLI> user:activate username=user2@z2.tdmx.org dacPassword=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: de923b313f9830403fff92e813ead629
+         >User user2@z2.tdmx.org with fingerprint 5850202af86e54b03ca75205fe4769068adb72fe3ffbf28668b6e4a5aaf429e9 activated.
+
+confirm with
+ClientCLI> user:search dacPassword=changeme domain=z2.tdmx.org exec
+         >Found 1 users.
+         >User[ user2 SerialNumber=1 Fingerprint=5850202af86e54b03ca75205fe4769068adb72fe3ffbf28668b6e4a5aaf429e9 Status=ACTIVE User Public Key=-----BEGIN CERTIFICATE-----
+         >MIIDxTCCAq+gAwIBAgIBATALBgkqhkiG9w0BAQwwZjELMAkGA1UEBhMCQ0gxDDAK
+         >773CWUSFHemllIjIDXqRmpjIMNUx9xs5uXKia7pWwcTJN6nphxnevg01vuHWNdpL
+         >Lj2yw2yHmrPC
+         >-----END CERTIFICATE-----
+

@@ -81,6 +81,10 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
+		// -------------------------------------------------------------------------
+		// GET ZAS SESSION
+		// -------------------------------------------------------------------------
+
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
 		SCS scs = ClientCliUtils.createSCSClient(zac, zd.getScsUrl(), scsPublicCertificate);
 

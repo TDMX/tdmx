@@ -35,9 +35,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import org.tdmx.client.adapter.ClientCredentialProvider;
 import org.tdmx.client.adapter.ClientKeyManagerFactoryImpl;
 import org.tdmx.client.adapter.DelegatingTrustedCertificateProvider;
@@ -592,14 +589,16 @@ public class ClientCliUtils {
 	// -------------------------------------------------------------------------
 
 	public static boolean isValidUserName(String username) {
-		boolean result = true;
-		try {
-			InternetAddress emailAddr = new InternetAddress(username);
-			emailAddr.validate();
-		} catch (AddressException ex) {
-			result = false;
+		// only one '@' to separate the localName from the domainName.
+		if (StringUtils.hasText(username) && username.indexOf("@") > 0
+				&& username.indexOf("@") == username.lastIndexOf("@") && username.indexOf("@") < username.length()) {
+			String domainName = splitDomainName(username);
+			// the domain name part is lowercase
+			if (domainName.toLowerCase().equals(domainName)) {
+				return true;
+			}
 		}
-		return result;
+		return false;
 	}
 
 	public static void createDomainDirectory(String domainName) {
@@ -652,6 +651,19 @@ public class ClientCliUtils {
 
 	public static String createUCPublicCertificateFilename(String domain, String localName, int serialNumber) {
 		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
+	}
+
+	public static PKIXCertificate getUCPublicKey(String domain, String localName, int serialNumber) {
+		String ucFilename = createUCPublicCertificateFilename(domain, localName, serialNumber);
+		try {
+			byte[] pkixCert = FileUtils.getFileContents(ucFilename);
+			if (pkixCert == null) {
+				throw new IllegalStateException("Unable to read UC public key from " + ucFilename);
+			}
+			return CertificateIOUtils.safeDecodeX509(pkixCert);
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to read UC public credential. " + e.getMessage(), e);
+		}
 	}
 
 	// -------------------------------------------------------------------------

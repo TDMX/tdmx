@@ -83,6 +83,10 @@ public class CreateDomain implements CommandExecutable {
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
+		// -------------------------------------------------------------------------
+		// GET ZAS SESSION
+		// -------------------------------------------------------------------------
+
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
 		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);
 

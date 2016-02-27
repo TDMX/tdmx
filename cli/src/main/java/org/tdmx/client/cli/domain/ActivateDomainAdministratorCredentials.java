@@ -37,7 +37,7 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "domainadmin:activate", description = "activates the domain administrator credential at the service provider. The keystore filename is <domain>-<serialNumber>.dac, with the public certificate in the file <domain>-<serialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
+@Cli(name = "domainadmin:activate", description = "activates the domain administrator credential at the service provider. The keystore filename is <domain>-<dacSerialNumber>.dac, with the public certificate in the file <domain>-<dacSerialNumber>.dac.crt.", note = "There may be many DACs for each domain, differentiated by their serialNumbers. The ZAC keystore file needs to be present in the working directory.")
 public class ActivateDomainAdministratorCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -51,8 +51,8 @@ public class ActivateDomainAdministratorCredentials implements CommandExecutable
 	@Parameter(name = "domain", required = true, description = "the domain name.")
 	private String domain;
 
-	@Parameter(name = "serial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate serialNumber.")
-	private Integer serialNumber;
+	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate dacSerialNumber.")
+	private Integer dacSerialNumber;
 
 	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
@@ -90,19 +90,23 @@ public class ActivateDomainAdministratorCredentials implements CommandExecutable
 
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
-		if (serialNumber == null) {
-			serialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
-			if (serialNumber <= 0) {
-				out.println("Unable to find max serialNumber for DACs of " + domain);
+		if (dacSerialNumber == null) {
+			dacSerialNumber = ClientCliUtils.getDACMaxSerialNumber(domain);
+			if (dacSerialNumber <= 0) {
+				out.println("Unable to find max dacSerialNumber for DACs of " + domain);
 				return;
 			}
 		}
-		PKIXCertificate dac = ClientCliUtils.getDACPublicKey(domain, serialNumber);
+		PKIXCertificate dac = ClientCliUtils.getDACPublicKey(domain, dacSerialNumber);
 		if (dac == null) {
-			out.println("Unable to locate DAC public certificate for domain " + domain + " and serialNumber "
-					+ serialNumber);
+			out.println("Unable to locate DAC public certificate for domain " + domain + " and dacSerialNumber "
+					+ dacSerialNumber);
 			return;
 		}
+
+		// -------------------------------------------------------------------------
+		// GET ZAS SESSION
+		// -------------------------------------------------------------------------
 
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
 		SCS scs = ClientCliUtils.createSCSClient(zac, domainInfo.getScsUrl(), scsPublicCertificate);

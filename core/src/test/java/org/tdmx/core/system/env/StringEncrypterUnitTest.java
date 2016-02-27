@@ -72,8 +72,10 @@ public class StringEncrypterUnitTest {
 
 	@Test
 	public void testDecrypt() throws Exception {
-		assertEquals("secret", devEncrypter.decrypt("sKU8zbk9jHc=="));
-		assertNull(devEncrypter.decrypt("sKU8zabk9jHc=")); // corrupted "secret"
+		String s = devEncrypter.encrypt("secret");
+		assertEquals("secret", devEncrypter.decrypt("sKU8zbk9jHc="));
+
+		assertNull(devEncrypter.decrypt("a" + s)); // corrupted "secret"
 	}
 
 	/**

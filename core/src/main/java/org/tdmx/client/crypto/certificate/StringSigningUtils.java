@@ -70,7 +70,7 @@ public class StringSigningUtils {
 
 			signature.update(StringToUtf8.toBytes(valueToSign));
 
-			byte[] signatureBytes = ByteArray.fromHex(signatureAsHex.toCharArray());
+			byte[] signatureBytes = ByteArray.fromHex(signatureAsHex);
 			return signature.verify(signatureBytes);
 		} catch (Exception e) {
 			log.warn("Signature validation failed.", e);

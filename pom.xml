@@ -244,7 +244,6 @@
 		<java.source.version>1.8</java.source.version>
 		<jetty.server.version>9.3.6.v20151106</jetty.server.version>
 		<cxf.version>3.1.4</cxf.version>
-		<mail-api.version>1.5.4</mail-api.version>
 		<hibernate.version>3.6.10.Final</hibernate.version>
 		<protobuf-java-version>2.6.1</protobuf-java-version>
 		<protobuf-pro-version>3.3.4</protobuf-pro-version>
@@ -257,7 +256,6 @@
 		<wicket.version>6.11.0</wicket.version>
 		<wicket.bootstrap.version>0.8.4</wicket.bootstrap.version>
 		<slf4j.version>1.6.4</slf4j.version>
-		<commons-codec.version>1.4</commons-codec.version>
 		<commons-dbcp.version>1.4</commons-dbcp.version>
 		<logback.version>1.0.13</logback.version>
 		<junit.version>4.8.2</junit.version>
@@ -265,6 +263,7 @@
 		<mysql.version>5.1.18</mysql.version>
 		<hsqldb.version>2.3.3</hsqldb.version>
 		<sonar.host.url>http://localhost:9000</sonar.host.url>
+		<jacoco-maven-plugin-version>0.7.5.201505241946</jacoco-maven-plugin-version>
 	</properties>
 	
 	
