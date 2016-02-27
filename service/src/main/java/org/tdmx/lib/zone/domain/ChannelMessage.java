@@ -247,6 +247,15 @@ public class ChannelMessage implements Serializable {
 		return dr;
 	}
 
+	/**
+	 * Return the number of Chunks = ( payloadSize / chunkSize ) + 1
+	 * 
+	 * @return the number of Chunks = ( payloadSize / chunkSize ) + 1
+	 */
+	public int getNumberOfChunks() {
+		return (int) (1 + (payloadLength / chunkSize));
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

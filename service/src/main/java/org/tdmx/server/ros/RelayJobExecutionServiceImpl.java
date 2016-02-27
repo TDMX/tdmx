@@ -139,16 +139,6 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 			return;
 		}
 
-		// get the 1st Chunk
-		Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
-		if (chunk == null) {
-			ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
-					ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), 0));
-			relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
-					ctx.getChannel(), job.getObjectId(), error);
-			return;
-		}
-
 		// relay the MSG
 		if (msg.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Both) {
@@ -161,12 +151,25 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						log.debug("Relay MSG " + ctx.getChannelKey());
 					}
 
-					Relay relayCA = new Relay();
-					relayCA.setSessionId(sh.getMrsSessionId());
-					relayCA.setMsg(d2a.mapChannelMessage(msg));
-					relayCA.setChunk(d2a.mapChunk(chunk));
+					Relay relayMsg = new Relay();
+					relayMsg.setSessionId(sh.getMrsSessionId());
+					relayMsg.setMsg(d2a.mapChannelMessage(msg));
+
+					// get the 1st Chunk if we aren't short circuiting the relay
+					if (!sh.isSameSegment()) {
+						Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
+						if (chunk == null) {
+							ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
+									ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), 0));
+							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+							return;
+						}
+						relayMsg.setChunk(d2a.mapChunk(chunk));
+					}
+
 					try {
-						RelayResponse rr = sh.getMrs().relay(relayCA);
+						RelayResponse rr = sh.getMrs().relay(relayMsg);
 						if (rr.isSuccess()) {
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
@@ -197,6 +200,8 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
 
 					}
+					// TODO #93: relay chunks sequentially with max 1 retry each
+
 				} else {
 					// update MSG processing state to error of the MRS session holder error
 					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());

@@ -240,6 +240,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		final String sessionId = "shortcut:" + channel.getChannelName().getChannelKey(otherDomain);
 		final MRSServerSession session = new MRSServerSession(sessionId, az, zone, domain);
+		session.setShortcutSession();
 
 		ChannelAuthorization existingChannelAuth = sessionDataService.findChannelAuthorization(az, zone, domain,
 				channel.getOrigin(), channel.getDestination());
@@ -274,7 +275,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 			}
 		};
 
-		MRSSessionHolder sh = MRSSessionHolder.success(wrappingMrs, sessionId);
+		MRSSessionHolder sh = MRSSessionHolder.success(wrappingMrs, sessionId, true);
 		return sh;
 	}
 
@@ -328,7 +329,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 		try {
 			mrsClient = mrsFactory.createClient();
 
-			return MRSSessionHolder.success(mrsClient, sessionResponse.getSession().getSessionId());
+			return MRSSessionHolder.success(mrsClient, sessionResponse.getSession().getSessionId(), false);
 		} catch (WebServiceException wse) {
 			// runtime error handling
 			if (log.isDebugEnabled()) {

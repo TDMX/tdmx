@@ -30,7 +30,6 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
-import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -250,8 +249,6 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.InvalidSignatureMessageHeader, response);
 			return;
 		}
-
-		Chunk c = a2d.mapChunk(msg.getChunk());
 		ChannelMessage m = a2d.mapMessage(msg);
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(
@@ -271,7 +268,7 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
 			return;
 		}
-		m.setOriginSerialNr(1); // FIXME
+		m.setOriginSerialNr(srcUc.getSerialNumber());
 
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
@@ -288,7 +285,7 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
-		m.setDestinationSerialNr(1); // FIXME
+		m.setDestinationSerialNr(dstUc.getSerialNumber());
 
 		Zone zone = session.getZone();
 		Channel channel = session.getChannel();
@@ -303,18 +300,49 @@ public class MRSImpl implements MRS {
 			return;
 		}
 
-		// persist Chunk via ChunkService
-		chunkService.createOrUpdate(c);
+		// the chunks are not transferred for shortcut relaying.
+		if (!session.isShortcutSession()) {
+			MessageRelayContext mrc = new MessageRelayContext(m);
 
-		// persist the message itself.
-		m.setProcessingState(ProcessingState.pending());
-		channelService.create(m);
+			session.addMessage(mrc);
 
-		// attempt to "fast" transfer the MSG to the MDS responsible for the channel's destination.
-		// TODO #96: keep track of when last tried to lookup any sessionId
-		TransferStatus ts = transferService.transferMDS(null, null, session.getAccountZone(), zone, session.getDomain(),
-				channel, m);
-		// TODO #96: keep the tosAddress, sessionId in the session for later use.
+			Chunk c = a2d.mapChunk(msg.getChunk());
+			// TODO #93: validate chunk MAC - error chunk MAC
+
+			if (mrc.setChunkReceived(c.getPos(), c.getMac())) {
+				// persist Chunk via ChunkService
+				chunkService.createOrUpdate(c);
+
+				// TODO factor this into common function for chunk
+				if (mrc.isComplete()) {
+					session.removeMessage(mrc);
+					if (!mrc.isCorrect()) {
+						// TODO #93: remove all previously received chunks
+						// TODO #93: channelService.abortRelayInMessage(zone, m);
+					} else {
+						// persist the message itself only after all chunks are received, on receipt of last chunk
+						channelService.create(m);
+
+						// TODO #93: transfer to MDS (see below)
+					}
+				}
+			} else {
+				// Error chunkproblem sequence problem, relaying side forced to restart
+				session.removeMessage(mrc);
+				// TODO #93: remove all previously received chunks
+				// TODO #93: channelService.abortRelayInMessage(zone, m);
+			}
+
+		} else {
+			// persist the message itself. ProcessingState is "none".
+			channelService.create(m);
+
+			// attempt to "fast" transfer the MSG to the MDS responsible for the channel's destination.
+			// TODO #96: keep track of when last tried to lookup any sessionId
+			TransferStatus ts = transferService.transferMDS(null, null, session.getAccountZone(), zone,
+					session.getDomain(), channel, m);
+			// TODO #96: keep the tosAddress, sessionId in the session for later use.
+		}
 
 		response.setSuccess(true);
 	}

@@ -18,7 +18,11 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
@@ -38,6 +42,8 @@ public class MRSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	protected static final String SHORTCUT = "SHORTCUT";
+	protected static final String MESSAGE_MAP = "MESSAGE_MAP";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -89,9 +95,48 @@ public class MRSServerSession extends WebServiceSession {
 		setAttribute(TEMP_CHANNEL, c);
 	}
 
+	public void setShortcutSession() {
+		setAttribute(SHORTCUT, Boolean.TRUE);
+	}
+
+	public boolean isShortcutSession() {
+		return Boolean.TRUE == getAttribute(SHORTCUT);
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
+
+	void addMessage(MessageRelayContext msg) {
+		Map<String, MessageRelayContext> msgMap = getMessageMap();
+		msgMap.put(msg.getMsgId(), msg);
+	}
+
+	void removeMessage(MessageRelayContext msg) {
+		Map<String, MessageRelayContext> msgMap = getMessageMap();
+		msgMap.remove(msg.getMsgId());
+	}
+
+	List<String> getTimeoutMessageIds() {
+		List<String> result = new ArrayList<>();
+
+		Map<String, MessageRelayContext> msgMap = getMessageMap();
+		for (Entry<String, MessageRelayContext> msgEntry : msgMap.entrySet()) {
+			if (msgEntry.getValue().isIdle()) {
+				result.add(msgEntry.getKey());
+			}
+		}
+		return result;
+	}
+
+	Map<String, MessageRelayContext> getMessageMap() {
+		Map<String, MessageRelayContext> msgs = getAttribute(MESSAGE_MAP);
+		if (msgs == null) {
+			msgs = new HashMap<String, MessageRelayContext>();
+			setAttribute(MESSAGE_MAP, msgs);
+		}
+		return msgs;
+	}
 
 	void setAccountZone(AccountZone az) {
 		setAttribute(ACCOUNT_ZONE, az);

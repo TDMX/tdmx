@@ -38,24 +38,27 @@ public class MRSSessionHolder {
 	private final String mrsSessionId;
 	private final Integer errorCode;
 	private final String errorMessage;
+	private final boolean sameSegment;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	private MRSSessionHolder(MRS mrs, String mrsSessionId, Integer errorCode, String errorMessage) {
+	private MRSSessionHolder(MRS mrs, String mrsSessionId, Integer errorCode, String errorMessage,
+			boolean sameSegment) {
 		this.mrs = mrs;
 		this.mrsSessionId = mrsSessionId;
 		this.errorCode = errorCode;
 		this.errorMessage = errorMessage;
+		this.sameSegment = sameSegment;
 	}
 
 	public static MRSSessionHolder error(int errorCode, String errorMessage) {
-		return new MRSSessionHolder(null, null, errorCode, errorMessage);
+		return new MRSSessionHolder(null, null, errorCode, errorMessage, false);
 	}
 
-	public static MRSSessionHolder success(MRS mrs, String sessionId) {
-		return new MRSSessionHolder(mrs, sessionId, null, null);
+	public static MRSSessionHolder success(MRS mrs, String sessionId, boolean sameSegment) {
+		return new MRSSessionHolder(mrs, sessionId, null, null, sameSegment);
 	}
 
 	// -------------------------------------------------------------------------
@@ -64,6 +67,10 @@ public class MRSSessionHolder {
 
 	public boolean isValid() {
 		return errorCode == null;
+	}
+
+	public boolean isSameSegment() {
+		return sameSegment;
 	}
 
 	public MRS getMrs() {
