@@ -52,6 +52,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
+import org.tdmx.client.crypto.scheme.CryptoScheme;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -119,55 +120,97 @@ public class ClientCliUtils {
 	// PUBLIC METHODS - Representations
 	// -------------------------------------------------------------------------
 
+	public static String getUsername(String domain, String localName) {
+		return localName + "@" + domain.toLowerCase();
+	}
+
+	public static String getDestination(String domain, String localName, String serviceName) {
+		return localName + "@" + domain.toLowerCase() + "#" + serviceName;
+	}
+
+	public static boolean isValidUserName(String username) {
+		String localName = getLocalName(username);
+		String domainName = getDomainName(username);
+		String serviceName = getServiceName(username);
+
+		return StringUtils.hasText(localName) && StringUtils.hasText(domainName) && !StringUtils.hasText(serviceName);
+	}
+
+	public static void checkValidUserName(String username) {
+		if (!isValidUserName(username)) {
+			throw new IllegalStateException("Username " + username + " is not valid, like <localName>@<domainName>.");
+		}
+	}
+
+	public static boolean isValidDestination(String destination) {
+		String localName = getLocalName(destination);
+		String domainName = getDomainName(destination);
+		String serviceName = getServiceName(destination);
+
+		return StringUtils.hasText(localName) && StringUtils.hasText(domainName) && StringUtils.hasText(serviceName);
+	}
+
+	public static void checkValidDestination(String destination) {
+		if (!isValidDestination(destination)) {
+			throw new IllegalStateException(
+					"Destination " + destination + " is not valid, like <localName>@<domainName>#<serviceName>.");
+		}
+	}
+
 	/**
-	 * Return the localName part of an address.
+	 * Return the localName part of an address or destination.
 	 * 
-	 * @param fullyQualifiedAddress
+	 * @param fullyQualifiedName
 	 *            localname@domainName#serviceName
 	 * @return the localName part of an address.
 	 */
-	public static String getAddressLocalName(String fullyQualifiedAddress) {
-		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
-			return nullIfEmpty(fullyQualifiedAddress.substring(0, fullyQualifiedAddress.lastIndexOf("@")));
+	public static String getLocalName(String fullyQualifiedName) {
+		if (!StringUtils.hasText(fullyQualifiedName)) {
+			return null;
 		}
-		return nullIfEmpty(fullyQualifiedAddress);
+		String usernamePart = fullyQualifiedName;
+		if (fullyQualifiedName != null && fullyQualifiedName.indexOf("@") != -1
+				&& fullyQualifiedName.indexOf("@") == fullyQualifiedName.lastIndexOf("@")) {
+			usernamePart = StringUtils
+					.nullIfEmpty(fullyQualifiedName.substring(0, fullyQualifiedName.lastIndexOf("@")));
+		}
+		if (usernamePart.indexOf("#") != -1) {
+			return null;
+		}
+		if (usernamePart.indexOf("@") != -1) {
+			return null;
+		}
+		return StringUtils.nullIfEmpty(fullyQualifiedName);
 	}
 
 	/**
-	 * Return the domainName part of an address.
+	 * Return the domainName part of an address or destination address.
 	 * 
-	 * @param fullyQualifiedAddress
+	 * @param fullyQualifiedName
 	 *            localname@domainName#serviceName
 	 * @return the domainName part of an address, or null if there is none.
 	 */
-	public static String getAddressDomainName(String fullyQualifiedAddress) {
-		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("@") != -1) {
-			String domainName = fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("@") + 1);
+	public static String getDomainName(String fullyQualifiedName) {
+		if (fullyQualifiedName != null && fullyQualifiedName.indexOf("@") != -1) {
+			String domainName = fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf("@") + 1);
 			if (domainName.indexOf("#") != -1) {
-				return nullIfEmpty(domainName.substring(0, domainName.lastIndexOf("#")));
+				return StringUtils.nullIfEmpty(domainName.substring(0, domainName.lastIndexOf("#")));
 			}
-			return nullIfEmpty(domainName);
+			return StringUtils.nullIfEmpty(domainName);
 		}
 		return null;
 	}
 
 	/**
-	 * Return the domainName part of an address.
+	 * Return the serviceName part of a destination address.
 	 * 
-	 * @param fullyQualifiedAddress
+	 * @param fullyQualifiedName
 	 *            localname@domainName#serviceName
-	 * @return the serviceName part of an address, or null if there is none.
+	 * @return the serviceName part of a destination address, or null if there is none.
 	 */
-	public static String getAddressServiceName(String fullyQualifiedAddress) {
-		if (fullyQualifiedAddress != null && fullyQualifiedAddress.indexOf("#") != -1) {
-			return nullIfEmpty(fullyQualifiedAddress.substring(fullyQualifiedAddress.lastIndexOf("#") + 1));
-		}
-		return null;
-	}
-
-	public static String nullIfEmpty(String str) {
-		if (StringUtils.hasText(str)) {
-			return str;
+	public static String getServiceName(String fullyQualifiedName) {
+		if (fullyQualifiedName != null && fullyQualifiedName.indexOf("#") != -1) {
+			return StringUtils.nullIfEmpty(fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf("#") + 1));
 		}
 		return null;
 	}
@@ -588,19 +631,6 @@ public class ClientCliUtils {
 	// PUBLIC METHODS - UC
 	// -------------------------------------------------------------------------
 
-	public static boolean isValidUserName(String username) {
-		// only one '@' to separate the localName from the domainName.
-		if (StringUtils.hasText(username) && username.indexOf("@") > 0
-				&& username.indexOf("@") == username.lastIndexOf("@") && username.indexOf("@") < username.length()) {
-			String domainName = splitDomainName(username);
-			// the domain name part is lowercase
-			if (domainName.toLowerCase().equals(domainName)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public static void createDomainDirectory(String domainName) {
 		File domainDir = new File(domainName);
 		if (domainDir.exists()) {
@@ -614,22 +644,8 @@ public class ClientCliUtils {
 		}
 	}
 
-	public static void checkValidUserName(String username) {
-		if (!isValidUserName(username)) {
-			throw new IllegalStateException("Username " + username + " is not valid (email address).");
-		}
-	}
-
-	public static String splitDomainName(String username) {
-		return username.substring(username.indexOf("@") + 1, username.length());
-	}
-
-	public static String splitLocalName(String username) {
-		return username.substring(0, username.indexOf("@"));
-	}
-
 	public static int getUCMaxSerialNumber(String domainName, String localName) {
-		List<File> ucFiles = FileUtils.getFilesMatchingPattern("./" + domainName, "^" + localName + "-.*.uc.crt$");
+		List<File> ucFiles = FileUtils.getFilesMatchingPattern(".", "^" + localName + "@" + domainName + "-.*.uc.crt$");
 		int maxSerial = 0;
 		Pattern ucCertPattern = Pattern.compile("^" + localName + "-(\\d+).*.uc.crt$");
 		for (File ucCert : ucFiles) {
@@ -645,16 +661,16 @@ public class ClientCliUtils {
 		return maxSerial;
 	}
 
-	public static String createUCKeystoreFilename(String domain, String localName, int serialNumber) {
-		return domain + "/" + localName + "-" + serialNumber + ".uc";
+	public static String getUCKeystoreFilename(String domain, String localName, int serialNumber) {
+		return getUsername(domain, localName) + "-" + serialNumber + ".uc";
 	}
 
-	public static String createUCPublicCertificateFilename(String domain, String localName, int serialNumber) {
-		return domain + "/" + localName + "-" + serialNumber + ".uc.crt";
+	public static String getUCPublicCertificateFilename(String domain, String localName, int serialNumber) {
+		return getUsername(domain, localName) + "-" + serialNumber + ".uc.crt";
 	}
 
 	public static PKIXCertificate getUCPublicKey(String domain, String localName, int serialNumber) {
-		String ucFilename = createUCPublicCertificateFilename(domain, localName, serialNumber);
+		String ucFilename = getUCPublicCertificateFilename(domain, localName, serialNumber);
 		try {
 			byte[] pkixCert = FileUtils.getFileContents(ucFilename);
 			if (pkixCert == null) {
@@ -664,6 +680,182 @@ public class ClientCliUtils {
 		} catch (IOException e) {
 			throw new IllegalStateException("Unable to read UC public credential. " + e.getMessage(), e);
 		}
+	}
+
+	public static String getSessionKeystoreFilename(String destination) {
+		return destination + ".sks";
+	}
+
+	public static String getReceiveDescriptorFilename(String destination) {
+		return destination + ".rcv";
+	}
+
+	public static boolean receiveDescriptorExists(String destination) {
+		List<File> destFiles = FileUtils.getFilesMatchingPattern(".", getReceiveDescriptorFilename(destination));
+		return !destFiles.isEmpty();
+	}
+
+	public static void checkReceiveDescriptorExists(String destination) {
+		if (!receiveDescriptorExists(destination)) {
+			throw new IllegalStateException("Receive descriptor file " + getReceiveDescriptorFilename(destination)
+					+ " not found. Use receive:configure command to set one up for each destination.");
+		}
+	}
+
+	public static void checkReceiveDescriptorNotExists(String destination) {
+		if (receiveDescriptorExists(destination)) {
+			throw new IllegalStateException(
+					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " exists.");
+		}
+	}
+
+	public static void deleteReceiveDescriptor(String destination) {
+		checkReceiveDescriptorExists(destination);
+		try {
+			FileUtils.deleteFile(getReceiveDescriptorFilename(destination));
+		} catch (IOException e) {
+			throw new IllegalStateException(
+					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " cannot be deleted.", e);
+		}
+	}
+
+	public static ReceiveDescriptor loadReceiveDescriptor(String destination) {
+		checkReceiveDescriptorExists(destination);
+		Properties p = new Properties();
+		try (FileInputStream fis = new FileInputStream(getReceiveDescriptorFilename(destination))) {
+			p.load(fis);
+		} catch (IOException e) {
+			throw new IllegalStateException(
+					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " cannot be loaded.", e);
+		}
+		String dataDir = p.getProperty(ReceiveDescriptor.DATADIR);
+		if (!StringUtils.hasText(dataDir)) {
+			throw new IllegalStateException("Receive descriptor file missing property " + ReceiveDescriptor.DATADIR);
+		}
+		String passphrase = p.getProperty(ReceiveDescriptor.ENCRYPTION_PASSPHRASE);
+		if (!StringUtils.hasText(passphrase)) {
+			throw new IllegalStateException(
+					"Receive descriptor file missing property " + ReceiveDescriptor.ENCRYPTION_PASSPHRASE);
+		}
+		String encScheme = p.getProperty(ReceiveDescriptor.ENCRYPTION_SCHEME);
+		if (!StringUtils.hasText(encScheme)) {
+			throw new IllegalStateException(
+					"Receive descriptor file missing property " + ReceiveDescriptor.ENCRYPTION_SCHEME);
+		}
+		CryptoScheme es = CryptoScheme.fromName(encScheme);
+		if (es == null) {
+			throw new IllegalStateException("Illegal property " + ReceiveDescriptor.ENCRYPTION_SCHEME);
+		}
+
+		String sessionDuration = p.getProperty(ReceiveDescriptor.SESSION_DURATION_HOURS);
+		if (!StringUtils.hasText(sessionDuration)) {
+			throw new IllegalStateException(
+					"Receive descriptor file missing property " + ReceiveDescriptor.SESSION_DURATION_HOURS);
+		}
+		int sd = 0;
+		try {
+			sd = Integer.parseInt(sessionDuration);
+		} catch (NumberFormatException nfe) {
+			throw new IllegalStateException("Invalid property " + ReceiveDescriptor.SESSION_DURATION_HOURS, nfe);
+		}
+		String sessionRetention = p.getProperty(ReceiveDescriptor.SESSION_RETENTION_DAYS);
+		if (!StringUtils.hasText(sessionRetention)) {
+			throw new IllegalStateException(
+					"Receive descriptor file missing property " + ReceiveDescriptor.SESSION_RETENTION_DAYS);
+		}
+		int sr = 0;
+		try {
+			sr = Integer.parseInt(sessionRetention);
+		} catch (NumberFormatException nfe) {
+			throw new IllegalStateException("Invalid property " + ReceiveDescriptor.SESSION_RETENTION_DAYS, nfe);
+		}
+
+		ReceiveDescriptor rd = new ReceiveDescriptor();
+		rd.setDataDirectory(dataDir);
+		rd.setPassphrase(passphrase);
+		rd.setEncryptionScheme(es);
+		rd.setSessionDurationInHours(sd);
+		rd.setSessionRetentionInDays(sr);
+		return rd;
+	}
+
+	public static void storeReceiveDescriptor(ReceiveDescriptor zd, String destination) {
+		Properties p = new Properties();
+		p.setProperty(ReceiveDescriptor.DATADIR, zd.getDataDirectory());
+		p.setProperty(ReceiveDescriptor.SESSION_DURATION_HOURS, String.format("%d", zd.getSessionDurationInHours()));
+		p.setProperty(ReceiveDescriptor.SESSION_RETENTION_DAYS, String.format("%d", zd.getSessionRetentionInDays()));
+		p.setProperty(ReceiveDescriptor.ENCRYPTION_SCHEME, zd.getEncryptionScheme().getName());
+		p.setProperty(ReceiveDescriptor.ENCRYPTION_PASSPHRASE, zd.getPassphrase());
+
+		try (FileWriter fw = new FileWriter(getReceiveDescriptorFilename(destination))) {
+			p.store(fw, "This is a ReceiveDescriptor file produced by the receive:configure CLI command. Do not edit.");
+
+		} catch (IOException e) {
+			throw new IllegalStateException(
+					"Unable to save Receive descriptor file " + getReceiveDescriptorFilename(destination), e);
+		}
+	}
+
+	public static class ReceiveDescriptor {
+		public static String DATADIR = "data.directory";
+		public static String SESSION_DURATION_HOURS = "session.duration.hours";
+		public static String SESSION_RETENTION_DAYS = "session.retention.days";
+		public static String ENCRYPTION_SCHEME = "encryption.scheme";
+		public static String ENCRYPTION_PASSPHRASE = "encryption.passphrase";
+
+		private String dataDirectory;
+
+		private CryptoScheme encryptionScheme;
+
+		private String passphrase;
+
+		private int sessionDurationInHours;
+
+		private int sessionRetentionInDays;
+
+		public ReceiveDescriptor() {
+		}
+
+		public String getDataDirectory() {
+			return dataDirectory;
+		}
+
+		public void setDataDirectory(String dataDirectory) {
+			this.dataDirectory = dataDirectory;
+		}
+
+		public int getSessionDurationInHours() {
+			return sessionDurationInHours;
+		}
+
+		public void setSessionDurationInHours(int sessionDurationInHours) {
+			this.sessionDurationInHours = sessionDurationInHours;
+		}
+
+		public int getSessionRetentionInDays() {
+			return sessionRetentionInDays;
+		}
+
+		public void setSessionRetentionInDays(int sessionRetentionInDays) {
+			this.sessionRetentionInDays = sessionRetentionInDays;
+		}
+
+		public CryptoScheme getEncryptionScheme() {
+			return encryptionScheme;
+		}
+
+		public void setEncryptionScheme(CryptoScheme encryptionScheme) {
+			this.encryptionScheme = encryptionScheme;
+		}
+
+		public String getPassphrase() {
+			return passphrase;
+		}
+
+		public void setPassphrase(String passphrase) {
+			this.passphrase = passphrase;
+		}
+
 	}
 
 	// -------------------------------------------------------------------------

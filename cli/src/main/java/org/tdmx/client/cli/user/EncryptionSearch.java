@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.zone;
+package org.tdmx.client.cli.user;
 
 import java.io.PrintStream;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
+import org.tdmx.client.crypto.scheme.CryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
-import org.tdmx.core.system.lang.NetUtils;
+import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "zone:create", description = "creates a zone descriptor file, zone.tdmx in the working directory", note = "The zone and TDMX version are immutable.")
-public class CreateZone implements CommandExecutable {
+@Cli(name = "encryption:search", description = "searches for known encryption scheme names.")
+public class EncryptionSearch implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,14 +37,8 @@ public class CreateZone implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "zone", required = true, description = "the zone apex.")
-	private String zone;
-
-	@Parameter(name = "scsUrl", description = "the SessionControlService API of the zone's service provider.")
-	private String scsUrl;
-
-	@Parameter(name = "version", defaultValue = "1", description = "the TDMX version of the zone.")
-	private int version;
+	@Parameter(name = "text", description = "text contained in the name - pf, rsa, aes, ecdh, twofish, serpent.")
+	private String text;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -58,17 +50,25 @@ public class CreateZone implements CommandExecutable {
 
 	@Override
 	public void run(PrintStream out) {
-		ClientCliUtils.checkZoneDescriptorNotExists();
 
-		ZoneDescriptor zd = new ZoneDescriptor(zone, version);
-		if (NetUtils.isValidUrl(scsUrl)) {
-			zd.setScsUrl(NetUtils.getURL(scsUrl));
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+		int matches = 0;
+		int total = 0;
+		for (CryptoScheme es : CryptoScheme.values()) {
+			total++;
+			String schemeName = es.getName();
+			boolean match = true;
+			if (StringUtils.hasText(text) && !StringUtils.containsIgnoreCase(schemeName, text)) {
+				match = false;
+			}
+			if (match) {
+				matches++;
+				out.println(schemeName);
+			}
 		}
-
-		ClientCliUtils.storeZoneDescriptor(zd);
-
-		out.println("zone descriptor file " + ClientCliUtils.ZONE_DESCRIPTOR + " was created.");
-		out.println(ClientCliLoggingUtils.toString(zd));
+		out.println("Matched " + matches + "/" + total + " encryption schemes.");
 	}
 
 	// -------------------------------------------------------------------------

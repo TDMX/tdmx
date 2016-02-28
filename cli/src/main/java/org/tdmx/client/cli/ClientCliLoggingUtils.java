@@ -21,6 +21,7 @@ package org.tdmx.client.cli;
 import java.text.DateFormat;
 import java.util.Calendar;
 
+import org.tdmx.client.cli.ClientCliUtils.ReceiveDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -59,6 +60,16 @@ public class ClientCliLoggingUtils {
 
 	public static String toString(org.tdmx.core.api.v01.common.Error error) {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
+	}
+
+	public static String toString(ReceiveDescriptor rd) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("dataDir=").append(rd.getDataDirectory()).append(LINEFEED);
+		sb.append("encryptionScheme=").append(rd.getEncryptionScheme().getName()).append(LINEFEED);
+		sb.append("sharedPassphrase=").append(rd.getPassphrase()).append(LINEFEED);
+		sb.append("sessionDurationInHours=").append(rd.getSessionDurationInHours()).append(LINEFEED);
+		sb.append("sessionRetentionInDays=").append(rd.getSessionRetentionInDays()).append(LINEFEED);
+		return sb.toString();
 	}
 
 	public static String toString(ZoneDescriptor zd) {

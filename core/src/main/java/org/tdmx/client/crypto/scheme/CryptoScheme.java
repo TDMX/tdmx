@@ -92,7 +92,7 @@ public enum CryptoScheme {
 	PF_ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256plusAES256("pf_ecdh384-serpent256+rsa/twofish256+aes256"),
 	PF_ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256plusSERPENT256("pf_ecdh384-serpent256+rsa/twofish256+serpent256"),
 	PF_ECDH384_SERPENT256plusRSA_SLASH_SERPENT256plusAES256("pf_ecdh384-serpent256+rsa/serpent256+aes256"),
-	PF_ECDH384_SERPENT256plusRSA_SLASH_SERPENT256plusTWOFISH256("pf_ecdh384-serpent256+rsa/serpent256+twofish256"), ;
+	PF_ECDH384_SERPENT256plusRSA_SLASH_SERPENT256plusTWOFISH256("pf_ecdh384-serpent256+rsa/serpent256+twofish256"),;
 
 	private String name;
 
@@ -103,4 +103,21 @@ public enum CryptoScheme {
 	public String getName() {
 		return this.name;
 	}
+
+	/**
+	 * Returns a CryptoScheme enum corresponding to the given name.
+	 *
+	 * @param name
+	 *            The name of the CryptoScheme
+	 * @return CryptoScheme enum representing the given name.
+	 */
+	public static CryptoScheme fromName(String esName) {
+		for (CryptoScheme es : CryptoScheme.values()) {
+			if (esName.equals(es.getName())) {
+				return es;
+			}
+		}
+		return null;
+	}
+
 }

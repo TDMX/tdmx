@@ -18,14 +18,10 @@
  */
 package org.tdmx.client.cli.domain;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
@@ -81,8 +77,8 @@ public class CreateUserCredentials implements CommandExecutable {
 	@Override
 	public void run(PrintStream out) {
 		ClientCliUtils.checkValidUserName(username);
-		String domainName = ClientCliUtils.splitDomainName(username);
-		String localName = ClientCliUtils.splitLocalName(username);
+		String domainName = ClientCliUtils.getDomainName(username);
+		String localName = ClientCliUtils.getLocalName(username);
 
 		ClientCliUtils.createDomainDirectory(domainName);
 
@@ -121,12 +117,12 @@ public class CreateUserCredentials implements CommandExecutable {
 
 			// save the keystore protected with the password
 			byte[] ks = KeyStoreUtils.saveKeyStore(uc, ClientCliUtils.KEYSTORE_TYPE, password, ClientCliUtils.ALIAS_UC);
-			FileUtils.storeFileContents(ClientCliUtils.createUCKeystoreFilename(publicCertificate.getTdmxDomainName(),
+			FileUtils.storeFileContents(ClientCliUtils.getUCKeystoreFilename(publicCertificate.getTdmxDomainName(),
 					publicCertificate.getCommonName(), serial), ks, ".tmp");
 
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
-			FileUtils.storeFileContents(ClientCliUtils.createUCPublicCertificateFilename(
+			FileUtils.storeFileContents(ClientCliUtils.getUCPublicCertificateFilename(
 					publicCertificate.getTdmxDomainName(), publicCertificate.getCommonName(), serial), pc, ".tmp");
 
 			// output the public key to the console
@@ -147,58 +143,6 @@ public class CreateUserCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private int getNextSerialNumber(String domainName) {
-		List<File> dacFiles = FileUtils.getFilesMatchingPattern(".", "^" + domainName + "-.*.dac.crt$");
-		int maxSerial = 0;
-		Pattern dacCertPattern = Pattern.compile("^" + domainName + "-(\\d+).*.dac.crt$");
-		for (File dacCert : dacFiles) {
-			Matcher m = dacCertPattern.matcher(dacCert.getName());
-			if (m.matches()) {
-				String serialString = m.group(1);
-				int serial = Integer.parseInt(serialString);
-				if (serial > maxSerial) {
-					maxSerial = serial;
-				}
-			}
-		}
-		return maxSerial + 1;
-	}
-
-	private PKIXCredential getZAC(String zacPassword) {
-		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", ".*.zac");
-		if (zacFiles.isEmpty()) {
-			throw new IllegalStateException(
-					"No ZAC file exists. Expected filename <zone>.zac in the working directory.");
-		}
-		if (zacFiles.size() != 1) {
-			throw new IllegalStateException(
-					"Found more than one ZAC keystore file. Expected only one filename <zone>.zac in the working directory.");
-		}
-
-		byte[] zacContents;
-		try {
-			zacContents = FileUtils.getFileContents(zacFiles.get(0).getPath());
-		} catch (IOException e) {
-			throw new IllegalStateException(
-					"Unable to read ZAC keystore file " + zacFiles.get(0).getPath() + ". " + e.getMessage(), e);
-		}
-		PKIXCredential zac;
-		try {
-			zac = KeyStoreUtils.getPrivateCredential(zacContents, "jks", zacPassword, "zac");
-		} catch (CryptoCertificateException e) {
-			throw new IllegalStateException("Unable to access ZAC credential. " + e.getMessage(), e);
-		}
-		return zac;
-	}
-
-	private String createKeystoreFilename(String domain, int serialNumber) {
-		return domain + "-" + serialNumber + ".dac";
-	}
-
-	private String createPublicCertificateFilename(String domain, int serialNumber) {
-		return domain + "-" + serialNumber + ".dac.crt";
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

@@ -128,11 +128,11 @@ public class AuthorizeChannel implements CommandExecutable {
 		// -------------------------------------------------------------------------
 		// Validation
 		// -------------------------------------------------------------------------
-		String fromLocalName = ClientCliUtils.getAddressLocalName(from);
-		String fromDomain = ClientCliUtils.getAddressDomainName(from);
-		String toLocalName = ClientCliUtils.getAddressLocalName(to);
-		String toDomain = ClientCliUtils.getAddressDomainName(to);
-		String toService = ClientCliUtils.getAddressServiceName(to);
+		String fromLocalName = ClientCliUtils.getLocalName(from);
+		String fromDomain = ClientCliUtils.getDomainName(from);
+		String toLocalName = ClientCliUtils.getLocalName(to);
+		String toDomain = ClientCliUtils.getDomainName(to);
+		String toService = ClientCliUtils.getServiceName(to);
 		boolean isOrigin = fromDomain.equals(domain);
 		boolean isDestination = toDomain.equals(domain);
 		if (!isOrigin && !isDestination) {

@@ -253,3 +253,25 @@ ClientCLI> user:search dacPassword=changeme domain=z2.tdmx.org exec
          >Lj2yw2yHmrPC
          >-----END CERTIFICATE-----
 
+Step 19: create a service to receive from
+
+ClientCLI>service:create service=service1 domain=z2.tdmx.org dacPassword=changeme exec
+         >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
+         >ZAS sessionId: de923b313f9830403fff92e813ead629
+         >Service [z2.tdmx.org#service1] successfully created.
+
+confirm with
+
+ClientCLI> service:search dacPassword=changeme domain=z2.tdmx.org exec
+
+
+Step 20: setup a receiver configuration
+
+ClientCLI> receive:configure destination=user2@z2.tdmx.org#service1 exec
+         >receive descriptor file user2@z2.tdmx.org#service1.rcv was created.
+         >dataDir=.
+         >encryptionScheme=pf_ecdh384-aes256/aes256
+         >sharedPassphrase=user2@z2.tdmx.org#service1[pf_ecdh384-aes256/aes256]
+         >sessionDurationInHours=24
+         >sessionRetentionInDays=2
+

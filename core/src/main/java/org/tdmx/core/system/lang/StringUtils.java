@@ -45,6 +45,13 @@ public class StringUtils {
 		return text != null && text.length() > 0;
 	}
 
+	public static String nullIfEmpty(String str) {
+		if (hasText(str)) {
+			return str;
+		}
+		return null;
+	}
+
 	public static boolean containsIgnoreCase(String whole, String part) {
 		if (hasText(whole) && hasText(part)) {
 			return whole.toUpperCase().contains(part.toUpperCase());

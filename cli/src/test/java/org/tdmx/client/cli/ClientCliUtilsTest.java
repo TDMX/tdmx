@@ -37,25 +37,25 @@ public class ClientCliUtilsTest {
 	@Test
 	public void test_getAddressLocalName() {
 
-		assertEquals("abc", ClientCliUtils.getAddressLocalName("abc@dom"));
-		assertEquals("abc", ClientCliUtils.getAddressLocalName("abc@dom#svc"));
+		assertEquals("abc", ClientCliUtils.getLocalName("abc@dom"));
+		assertEquals("abc", ClientCliUtils.getLocalName("abc@dom#svc"));
 	}
 
 	@Test
 	public void test_getAddressDomainName() {
 
-		assertNull(ClientCliUtils.getAddressDomainName("localnameonly"));
-		assertEquals("dom", ClientCliUtils.getAddressDomainName("abc@dom"));
-		assertEquals("dom", ClientCliUtils.getAddressDomainName("abc@dom#svc"));
+		assertNull(ClientCliUtils.getDomainName("localnameonly"));
+		assertEquals("dom", ClientCliUtils.getDomainName("abc@dom"));
+		assertEquals("dom", ClientCliUtils.getDomainName("abc@dom#svc"));
 
 	}
 
 	@Test
 	public void test_getAddressServiceName() {
 
-		assertNull(ClientCliUtils.getAddressServiceName("localnameonly"));
-		assertNull(ClientCliUtils.getAddressServiceName("abc@dom"));
-		assertEquals("svc", ClientCliUtils.getAddressServiceName("abc@dom#svc"));
+		assertNull(ClientCliUtils.getServiceName("localnameonly"));
+		assertNull(ClientCliUtils.getServiceName("abc@dom"));
+		assertEquals("svc", ClientCliUtils.getServiceName("abc@dom#svc"));
 
 	}
 }

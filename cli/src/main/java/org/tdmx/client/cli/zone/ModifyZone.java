@@ -20,6 +20,7 @@ package org.tdmx.client.cli.zone;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.core.cli.annotation.Cli;
@@ -61,8 +62,8 @@ public class ModifyZone implements CommandExecutable {
 
 		ClientCliUtils.storeZoneDescriptor(zd);
 
-		out.println("zone=" + zd.getZoneApex());
-		out.println("scsUrl=" + scsUrl);
+		out.println("zone descriptor file " + ClientCliUtils.ZONE_DESCRIPTOR + " was modified.");
+		out.println(ClientCliLoggingUtils.toString(zd));
 	}
 
 	// -------------------------------------------------------------------------

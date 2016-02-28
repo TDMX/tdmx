@@ -72,8 +72,8 @@ public class DeactivateUserCredentials implements CommandExecutable {
 	@Override
 	public void run(PrintStream out) {
 		ClientCliUtils.checkValidUserName(username);
-		String domainName = ClientCliUtils.splitDomainName(username);
-		String localName = ClientCliUtils.splitLocalName(username);
+		String domainName = ClientCliUtils.getDomainName(username);
+		String localName = ClientCliUtils.getLocalName(username);
 
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domainName);
 		if (domainInfo == null) {

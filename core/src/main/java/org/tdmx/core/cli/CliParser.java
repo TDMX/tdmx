@@ -211,6 +211,9 @@ public class CliParser {
 		for (ParameterDescriptor param : parameters) {
 			String paramSet = cmd.getParameter(param.getName()) != null ? cmd.getParameter(param.getName()).getValue()
 					: param.getDefaultValue();
+			if (!StringUtils.hasText(paramSet) && StringUtils.hasText(param.getDefaultValueText())) {
+				paramSet = param.getDefaultValueText();
+			}
 			if (!StringUtils.hasText(paramSet) && param.isRequired()) {
 				paramSet = "MISSING!";
 			}
