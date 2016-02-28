@@ -21,7 +21,7 @@ package org.tdmx.client.cli;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-import org.tdmx.client.cli.ClientCliUtils.ReceiveDescriptor;
+import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -62,7 +62,7 @@ public class ClientCliLoggingUtils {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
 	}
 
-	public static String toString(ReceiveDescriptor rd) {
+	public static String toString(DestinationDescriptor rd) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("dataDir=").append(rd.getDataDirectory()).append(LINEFEED);
 		sb.append("encryptionScheme=").append(rd.getEncryptionScheme().getName()).append(LINEFEED);

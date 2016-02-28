@@ -106,13 +106,13 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 			byte[] ks = KeyStoreUtils.saveKeyStore(dac, ClientCliUtils.KEYSTORE_TYPE, password,
 					ClientCliUtils.ALIAS_DAC);
 			FileUtils.storeFileContents(
-					ClientCliUtils.createDACKeystoreFilename(publicCertificate.getTdmxDomainName(), serial), ks,
+					ClientCliUtils.getDACKeystoreFilename(publicCertificate.getTdmxDomainName(), serial), ks,
 					".tmp");
 
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
 			FileUtils.storeFileContents(
-					ClientCliUtils.createDACPublicCertificateFilename(publicCertificate.getTdmxDomainName(), serial),
+					ClientCliUtils.getDACPublicCertificateFilename(publicCertificate.getTdmxDomainName(), serial),
 					pc, ".tmp");
 
 			// output the public key to the console

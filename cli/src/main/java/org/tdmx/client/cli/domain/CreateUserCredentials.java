@@ -39,7 +39,7 @@ import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
 
-@Cli(name = "user:create", description = "creates credentials of a user (UC) in a keystore. The keystore filename is <domain>/<localname>-<serialNumber>.uc, with the public certificate in the file <domain>/<localname>-<serialNumber>.dac.crt.", note = "There may be many UCs for each user, differentiated by their increasing serialNumbers. The DAC keystore file needs to be present in the working directory.")
+@Cli(name = "user:create", description = "creates credentials of a user (UC) in a keystore. The keystore filename is <domain>/<localname>-<userSerial>.uc, with the public certificate in the file <domain>/<localname>-<serialNumber>.dac.crt.", note = "There may be many UCs for each user, differentiated by their increasing serialNumbers. The DAC keystore file needs to be present in the working directory.")
 public class CreateUserCredentials implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
@@ -53,10 +53,10 @@ public class CreateUserCredentials implements CommandExecutable {
 	@Parameter(name = "username", required = true, description = "the user's local name. Format: <localname>@<domain>")
 	private String username;
 
-	@Parameter(name = "serial", defaultValueText = "<greatest existing UC serial>+1", description = "the user credential's certificate serialNumber.")
+	@Parameter(name = "userSerial", defaultValueText = "<greatest existing UC serial>+1", description = "the user credential's certificate serialNumber.")
 	private Integer serialNumber;
-	@Parameter(name = "password", required = true, description = "the user credential's keystore password.")
-	private String password;
+	@Parameter(name = "userPassword", required = true, description = "the user credential's keystore password.")
+	private String userPassword;
 
 	@Parameter(name = "validityInDays", defaultValue = "365", description = "the validity of the user's credential in days.")
 	private int validityInDays;
@@ -116,7 +116,8 @@ public class CreateUserCredentials implements CommandExecutable {
 			PKIXCertificate publicCertificate = uc.getPublicCert();
 
 			// save the keystore protected with the password
-			byte[] ks = KeyStoreUtils.saveKeyStore(uc, ClientCliUtils.KEYSTORE_TYPE, password, ClientCliUtils.ALIAS_UC);
+			byte[] ks = KeyStoreUtils.saveKeyStore(uc, ClientCliUtils.KEYSTORE_TYPE, userPassword,
+					ClientCliUtils.ALIAS_UC);
 			FileUtils.storeFileContents(ClientCliUtils.getUCKeystoreFilename(publicCertificate.getTdmxDomainName(),
 					publicCertificate.getCommonName(), serial), ks, ".tmp");
 

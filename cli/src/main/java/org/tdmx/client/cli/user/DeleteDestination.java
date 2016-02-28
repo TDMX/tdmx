@@ -25,8 +25,8 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
-@Cli(name = "receive:delete", description = "deletes the receiver configuration for a destination.")
-public class DeleteReceive implements CommandExecutable {
+@Cli(name = "destination:delete", description = "deletes the destination's configuration.")
+public class DeleteDestination implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -51,13 +51,13 @@ public class DeleteReceive implements CommandExecutable {
 	public void run(PrintStream out) {
 		ClientCliUtils.checkValidDestination(destination);
 
-		if (ClientCliUtils.receiveDescriptorExists(destination)) {
-			ClientCliUtils.deleteReceiveDescriptor(destination);
+		if (ClientCliUtils.destinationDescriptorExists(destination)) {
+			ClientCliUtils.deleteDestinationDescriptor(destination);
 
-			out.println("receive descriptor file " + ClientCliUtils.getReceiveDescriptorFilename(destination)
+			out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination)
 					+ " was deleted.");
 		} else {
-			out.println("receive descriptor file " + ClientCliUtils.getReceiveDescriptorFilename(destination)
+			out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination)
 					+ " does not exist.");
 		}
 

@@ -50,8 +50,8 @@ import org.tdmx.client.cli.trust.DeleteUntrust;
 import org.tdmx.client.cli.trust.SearchDistrust;
 import org.tdmx.client.cli.trust.SearchTrust;
 import org.tdmx.client.cli.trust.SearchUntrust;
-import org.tdmx.client.cli.user.ConfigureReceive;
-import org.tdmx.client.cli.user.DeleteReceive;
+import org.tdmx.client.cli.user.ConfigureDestination;
+import org.tdmx.client.cli.user.DeleteDestination;
 import org.tdmx.client.cli.user.EncryptionSearch;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
@@ -104,7 +104,7 @@ public class ClientCLI {
 			SearchDistrust.class, DeleteDistrust.class, AddDistrust.class,
 			AuthorizeChannel.class, SearchChannel.class,
 			SearchUserCredentials.class, CreateUserCredentials.class, ActivateUserCredentials.class, SuspendUserCredentials.class, DeactivateUserCredentials.class,
-			ConfigureReceive.class, DeleteReceive.class,
+			ConfigureDestination.class, DeleteDestination.class,
 			EncryptionSearch.class };
 	//@formatter:on
 	// -------------------------------------------------------------------------

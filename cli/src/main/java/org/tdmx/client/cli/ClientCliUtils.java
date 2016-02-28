@@ -53,6 +53,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.client.crypto.scheme.CryptoScheme;
+import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -564,7 +565,7 @@ public class ClientCliUtils {
 	// -------------------------------------------------------------------------
 
 	public static PKIXCredential getDAC(String domain, int serialNumber, String dacPassword) {
-		String filename = createDACKeystoreFilename(domain, serialNumber);
+		String filename = getDACKeystoreFilename(domain, serialNumber);
 
 		File dacFile = new File(filename);
 
@@ -619,11 +620,11 @@ public class ClientCliUtils {
 		return null;
 	}
 
-	public static String createDACKeystoreFilename(String domain, int serialNumber) {
+	public static String getDACKeystoreFilename(String domain, int serialNumber) {
 		return domain + "-" + serialNumber + ".dac";
 	}
 
-	public static String createDACPublicCertificateFilename(String domain, int serialNumber) {
+	public static String getDACPublicCertificateFilename(String domain, int serialNumber) {
 		return domain + "-" + serialNumber + ".dac.crt";
 	}
 
@@ -682,95 +683,122 @@ public class ClientCliUtils {
 		}
 	}
 
+	public static PKIXCredential getUC(String domain, String localName, int serialNumber, String password) {
+		String filename = getUCKeystoreFilename(domain, localName, serialNumber);
+
+		File ucFile = new File(filename);
+
+		if (!ucFile.exists()) {
+			throw new IllegalStateException(
+					"No User keystore file exists. Expected filename " + filename + " in the working directory.");
+		}
+
+		byte[] ucContents;
+		try {
+			ucContents = FileUtils.getFileContents(ucFile.getPath());
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to read User keystore file " + filename + ". " + e.getMessage(), e);
+		}
+		PKIXCredential uc;
+		try {
+			uc = KeyStoreUtils.getPrivateCredential(ucContents, KEYSTORE_TYPE, password, ALIAS_UC);
+		} catch (CryptoCertificateException e) {
+			throw new IllegalStateException("Unable to access User credential. " + e.getMessage(), e);
+		}
+		return uc;
+	}
+
 	public static String getSessionKeystoreFilename(String destination) {
 		return destination + ".sks";
 	}
 
-	public static String getReceiveDescriptorFilename(String destination) {
-		return destination + ".rcv";
+	public static String getDestinationDescriptorFilename(String destination) {
+		return destination + ".dst";
 	}
 
-	public static boolean receiveDescriptorExists(String destination) {
-		List<File> destFiles = FileUtils.getFilesMatchingPattern(".", getReceiveDescriptorFilename(destination));
+	public static boolean destinationDescriptorExists(String destination) {
+		List<File> destFiles = FileUtils.getFilesMatchingPattern(".", getDestinationDescriptorFilename(destination));
 		return !destFiles.isEmpty();
 	}
 
-	public static void checkReceiveDescriptorExists(String destination) {
-		if (!receiveDescriptorExists(destination)) {
-			throw new IllegalStateException("Receive descriptor file " + getReceiveDescriptorFilename(destination)
-					+ " not found. Use receive:configure command to set one up for each destination.");
-		}
-	}
-
-	public static void checkReceiveDescriptorNotExists(String destination) {
-		if (receiveDescriptorExists(destination)) {
+	public static void checkDestinationDescriptorExists(String destination) {
+		if (!destinationDescriptorExists(destination)) {
 			throw new IllegalStateException(
-					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " exists.");
+					"Destination descriptor file " + getDestinationDescriptorFilename(destination)
+							+ " not found. Use destination:configure command to set one up for each destination.");
 		}
 	}
 
-	public static void deleteReceiveDescriptor(String destination) {
-		checkReceiveDescriptorExists(destination);
+	public static void checkDestinationDescriptorNotExists(String destination) {
+		if (destinationDescriptorExists(destination)) {
+			throw new IllegalStateException(
+					"Destination descriptor file " + getDestinationDescriptorFilename(destination) + " exists.");
+		}
+	}
+
+	public static void deleteDestinationDescriptor(String destination) {
+		checkDestinationDescriptorExists(destination);
 		try {
-			FileUtils.deleteFile(getReceiveDescriptorFilename(destination));
+			FileUtils.deleteFile(getDestinationDescriptorFilename(destination));
 		} catch (IOException e) {
-			throw new IllegalStateException(
-					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " cannot be deleted.", e);
+			throw new IllegalStateException("Destination descriptor file "
+					+ getDestinationDescriptorFilename(destination) + " cannot be deleted.", e);
 		}
 	}
 
-	public static ReceiveDescriptor loadReceiveDescriptor(String destination) {
-		checkReceiveDescriptorExists(destination);
+	public static DestinationDescriptor loadDestinationDescriptor(String destination) {
+		checkDestinationDescriptorExists(destination);
 		Properties p = new Properties();
-		try (FileInputStream fis = new FileInputStream(getReceiveDescriptorFilename(destination))) {
+		try (FileInputStream fis = new FileInputStream(getDestinationDescriptorFilename(destination))) {
 			p.load(fis);
 		} catch (IOException e) {
-			throw new IllegalStateException(
-					"Receive descriptor file " + getReceiveDescriptorFilename(destination) + " cannot be loaded.", e);
+			throw new IllegalStateException("Destination descriptor file "
+					+ getDestinationDescriptorFilename(destination) + " cannot be loaded.", e);
 		}
-		String dataDir = p.getProperty(ReceiveDescriptor.DATADIR);
+		String dataDir = p.getProperty(DestinationDescriptor.DATADIR);
 		if (!StringUtils.hasText(dataDir)) {
-			throw new IllegalStateException("Receive descriptor file missing property " + ReceiveDescriptor.DATADIR);
+			throw new IllegalStateException(
+					"Destination descriptor file missing property " + DestinationDescriptor.DATADIR);
 		}
-		String passphrase = p.getProperty(ReceiveDescriptor.ENCRYPTION_PASSPHRASE);
+		String passphrase = p.getProperty(DestinationDescriptor.ENCRYPTION_PASSPHRASE);
 		if (!StringUtils.hasText(passphrase)) {
 			throw new IllegalStateException(
-					"Receive descriptor file missing property " + ReceiveDescriptor.ENCRYPTION_PASSPHRASE);
+					"Destination descriptor file missing property " + DestinationDescriptor.ENCRYPTION_PASSPHRASE);
 		}
-		String encScheme = p.getProperty(ReceiveDescriptor.ENCRYPTION_SCHEME);
+		String encScheme = p.getProperty(DestinationDescriptor.ENCRYPTION_SCHEME);
 		if (!StringUtils.hasText(encScheme)) {
 			throw new IllegalStateException(
-					"Receive descriptor file missing property " + ReceiveDescriptor.ENCRYPTION_SCHEME);
+					"Destination descriptor file missing property " + DestinationDescriptor.ENCRYPTION_SCHEME);
 		}
 		CryptoScheme es = CryptoScheme.fromName(encScheme);
 		if (es == null) {
-			throw new IllegalStateException("Illegal property " + ReceiveDescriptor.ENCRYPTION_SCHEME);
+			throw new IllegalStateException("Illegal property " + DestinationDescriptor.ENCRYPTION_SCHEME);
 		}
 
-		String sessionDuration = p.getProperty(ReceiveDescriptor.SESSION_DURATION_HOURS);
+		String sessionDuration = p.getProperty(DestinationDescriptor.SESSION_DURATION_HOURS);
 		if (!StringUtils.hasText(sessionDuration)) {
 			throw new IllegalStateException(
-					"Receive descriptor file missing property " + ReceiveDescriptor.SESSION_DURATION_HOURS);
+					"Destination descriptor file missing property " + DestinationDescriptor.SESSION_DURATION_HOURS);
 		}
 		int sd = 0;
 		try {
 			sd = Integer.parseInt(sessionDuration);
 		} catch (NumberFormatException nfe) {
-			throw new IllegalStateException("Invalid property " + ReceiveDescriptor.SESSION_DURATION_HOURS, nfe);
+			throw new IllegalStateException("Invalid property " + DestinationDescriptor.SESSION_DURATION_HOURS, nfe);
 		}
-		String sessionRetention = p.getProperty(ReceiveDescriptor.SESSION_RETENTION_DAYS);
+		String sessionRetention = p.getProperty(DestinationDescriptor.SESSION_RETENTION_DAYS);
 		if (!StringUtils.hasText(sessionRetention)) {
 			throw new IllegalStateException(
-					"Receive descriptor file missing property " + ReceiveDescriptor.SESSION_RETENTION_DAYS);
+					"Destination descriptor file missing property " + DestinationDescriptor.SESSION_RETENTION_DAYS);
 		}
 		int sr = 0;
 		try {
 			sr = Integer.parseInt(sessionRetention);
 		} catch (NumberFormatException nfe) {
-			throw new IllegalStateException("Invalid property " + ReceiveDescriptor.SESSION_RETENTION_DAYS, nfe);
+			throw new IllegalStateException("Invalid property " + DestinationDescriptor.SESSION_RETENTION_DAYS, nfe);
 		}
 
-		ReceiveDescriptor rd = new ReceiveDescriptor();
+		DestinationDescriptor rd = new DestinationDescriptor();
 		rd.setDataDirectory(dataDir);
 		rd.setPassphrase(passphrase);
 		rd.setEncryptionScheme(es);
@@ -779,24 +807,27 @@ public class ClientCliUtils {
 		return rd;
 	}
 
-	public static void storeReceiveDescriptor(ReceiveDescriptor zd, String destination) {
+	public static void storeDestinationDescriptor(DestinationDescriptor zd, String destination) {
 		Properties p = new Properties();
-		p.setProperty(ReceiveDescriptor.DATADIR, zd.getDataDirectory());
-		p.setProperty(ReceiveDescriptor.SESSION_DURATION_HOURS, String.format("%d", zd.getSessionDurationInHours()));
-		p.setProperty(ReceiveDescriptor.SESSION_RETENTION_DAYS, String.format("%d", zd.getSessionRetentionInDays()));
-		p.setProperty(ReceiveDescriptor.ENCRYPTION_SCHEME, zd.getEncryptionScheme().getName());
-		p.setProperty(ReceiveDescriptor.ENCRYPTION_PASSPHRASE, zd.getPassphrase());
+		p.setProperty(DestinationDescriptor.DATADIR, zd.getDataDirectory());
+		p.setProperty(DestinationDescriptor.SESSION_DURATION_HOURS,
+				String.format("%d", zd.getSessionDurationInHours()));
+		p.setProperty(DestinationDescriptor.SESSION_RETENTION_DAYS,
+				String.format("%d", zd.getSessionRetentionInDays()));
+		p.setProperty(DestinationDescriptor.ENCRYPTION_SCHEME, zd.getEncryptionScheme().getName());
+		p.setProperty(DestinationDescriptor.ENCRYPTION_PASSPHRASE, zd.getPassphrase());
 
-		try (FileWriter fw = new FileWriter(getReceiveDescriptorFilename(destination))) {
-			p.store(fw, "This is a ReceiveDescriptor file produced by the receive:configure CLI command. Do not edit.");
+		try (FileWriter fw = new FileWriter(getDestinationDescriptorFilename(destination))) {
+			p.store(fw,
+					"This is a destination descriptor file produced by the receive:configure CLI command. Do not edit.");
 
 		} catch (IOException e) {
 			throw new IllegalStateException(
-					"Unable to save Receive descriptor file " + getReceiveDescriptorFilename(destination), e);
+					"Unable to save destination descriptor file " + getDestinationDescriptorFilename(destination), e);
 		}
 	}
 
-	public static class ReceiveDescriptor {
+	public static class DestinationDescriptor {
 		public static String DATADIR = "data.directory";
 		public static String SESSION_DURATION_HOURS = "session.duration.hours";
 		public static String SESSION_RETENTION_DAYS = "session.retention.days";
@@ -813,7 +844,7 @@ public class ClientCliUtils {
 
 		private int sessionRetentionInDays;
 
-		public ReceiveDescriptor() {
+		public DestinationDescriptor() {
 		}
 
 		public String getDataDirectory() {
@@ -992,6 +1023,40 @@ public class ClientCliUtils {
 		factory.setEnabledCipherSuites(STRONG_CIPHERS);
 
 		ZAS client = factory.createClient();
+		return client;
+	}
+
+	public static MDS createMDSClient(PKIXCredential uc, Endpoint endpoint) {
+		ClientCredentialProvider cp = new ClientCredentialProvider() {
+
+			@Override
+			public PKIXCredential getCredential() {
+				return uc;
+			}
+
+		};
+		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
+		kmf.setCredentialProvider(cp);
+
+		PKIXCertificate serverCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(serverCert);
+		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
+		stfm.setCertificateProvider(tcp);
+
+		SoapClientFactory<MDS> factory = new SoapClientFactory<>();
+		factory.setUrl(endpoint.getUrl());
+		factory.setConnectionTimeoutMillis(10000);
+		factory.setKeepAlive(true);
+		factory.setClazz(MDS.class);
+		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
+		factory.setDisableCNCheck(false);
+		factory.setKeyManagerFactory(kmf);
+		factory.setTrustManagerFactory(stfm);
+		factory.setTlsProtocolVersion(TLS_VERSION);
+
+		factory.setEnabledCipherSuites(STRONG_CIPHERS);
+
+		MDS client = factory.createClient();
 		return client;
 	}
 

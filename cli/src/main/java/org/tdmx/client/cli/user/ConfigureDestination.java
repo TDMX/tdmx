@@ -22,15 +22,15 @@ import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.ReceiveDescriptor;
+import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.crypto.scheme.CryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
-@Cli(name = "receive:configure", description = "configures how a destination user receives from a service.", note = "Unset parameters will remain unchanged.")
-public class ConfigureReceive implements CommandExecutable {
+@Cli(name = "destination:configure", description = "configures how a destination user receives from a service.", note = "Unset parameters will remain unchanged.")
+public class ConfigureDestination implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -79,11 +79,11 @@ public class ConfigureReceive implements CommandExecutable {
 		ClientCliUtils.checkValidDestination(destination);
 
 		boolean created = false;
-		ReceiveDescriptor rd = null;
-		if (ClientCliUtils.receiveDescriptorExists(destination)) {
-			rd = ClientCliUtils.loadReceiveDescriptor(destination);
+		DestinationDescriptor rd = null;
+		if (ClientCliUtils.destinationDescriptorExists(destination)) {
+			rd = ClientCliUtils.loadDestinationDescriptor(destination);
 		} else {
-			rd = new ReceiveDescriptor();
+			rd = new DestinationDescriptor();
 
 			if (!StringUtils.hasText(encryptionScheme)) {
 				encryptionScheme = DEFAULT_SCHEME;
@@ -132,9 +132,9 @@ public class ConfigureReceive implements CommandExecutable {
 			rd.setSessionRetentionInDays(retentionInDays);
 		}
 
-		ClientCliUtils.storeReceiveDescriptor(rd, destination);
+		ClientCliUtils.storeDestinationDescriptor(rd, destination);
 
-		out.println("receive descriptor file " + ClientCliUtils.getReceiveDescriptorFilename(destination) + " was "
+		out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination) + " was "
 				+ (created ? "created." : "modified."));
 		out.println(ClientCliLoggingUtils.toString(rd));
 

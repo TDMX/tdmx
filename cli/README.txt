@@ -155,7 +155,7 @@ ClientCLI> domain:search zacPassword=changeme exec
 
 Step 13: create a domain administrator
 
-ClientCLI> domainadmin:create domain=z2.tdmx.org password=changeme zacPassword=changeme exec
+ClientCLI> domainadmin:create domain=z2.tdmx.org dacPassword=changeme zacPassword=changeme exec
          >certificate=-----BEGIN CERTIFICATE-----
          >MIIFazCCA1WgAwIBAgIBATALBgkqhkiG9w0BAQwwgYcxCzAJBgNVBAYTAkNIMQww
          >..
@@ -184,21 +184,21 @@ ClientCLI> domainadmin:search zacPassword=changeme exec
 
 Step 15: create an address
 
-ClientCLI> address:create localname=user2 domain=z2.tdmx.org password=changeme exec
+ClientCLI> address:create localname=user2 domain=z2.tdmx.org dacPassword=changeme exec
          >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
          >ZAS sessionId: e313744daf43e486e6e766ff230a39be
          >Address [user2@z2.tdmx.org] successfully created.
          
 Step 16: request a channel authorization
 
-ClientCLI> channel:authorize from=user2@z2.tdmx.org to=user1@z1.tdmx.org#service1 domain=z2.tdmx.org password=changeme exec
+ClientCLI> channel:authorize from=user2@z2.tdmx.org to=user1@z1.tdmx.org#service1 domain=z2.tdmx.org dacPassword=changeme exec
          >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
          >ZAS sessionId: e313744daf43e486e6e766ff230a39be
          >Authorization Channel [user2@z2.tdmx.org->usr1@z1.tdmx.org#service1] successful.
 
 confirm with 
 
-ClientCLI> channel:search domain=z2.tdmx.org password=changeme exec
+ClientCLI> channel:search domain=z2.tdmx.org dacPassword=changeme exec
          >
          >Domain info: tdmx version=1 zac=4f36bc2fd2b58e40e7556edbf6534b2eaa236b7c6b1131515fd9cd36118dd42c scs=https://segment1.scs.tdmx.org:8444/scs/v1.0/scs
          >ZAS sessionId: e313744daf43e486e6e766ff230a39be
@@ -225,7 +225,7 @@ ClientCLI> channel:search domain=z2.tdmx.org password=changeme exec
 
 Step 17: create a user
 
-ClientCLI> user:create username=user2@z2.tdmx.org password=changeme dacPassword=changeme exec
+ClientCLI> user:create username=user2@z2.tdmx.org userPassword=changeme dacPassword=changeme exec
          >
          >certificate=-----BEGIN CERTIFICATE-----
          >MIIDxTCCAq+gAwIBAgIBATALBgkqhkiG9w0BAQwwZjELMAkGA1UEBhMCQ0gxDDAK
