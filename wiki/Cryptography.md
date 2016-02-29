@@ -36,10 +36,10 @@ Where
 - K-a - originator’s (Alice) signing private asymmetric key.
 - K-B - destination’s (Bob) signing public asymmetric key, know at origin (via relay of UserCredentials).
 - K-b - destination’s (Bob) signing private asymmetric key
-- A-B - destination (Bob) public key agreement key, known at origin (via relay of FlowTargetSession), aka the sessionKey.
+- A-B - destination (Bob) public key agreement key, known at origin (via relay of DestinationSession), aka the sessionKey.
 - A-b - destination (Bob) private key agreement key. 
 - E - is the bulk encrypted data
-- L - is a “label”, or encryption-context, which is information that the destination’s decryption scheme uses to decrypt the encrypted-data together with the known key material of the destination K-B, K-b, S-B, S-b and K-A.
+- L - is a “label”, or encryption-context, which is information that the destination’s decryption scheme uses to decrypt the encrypted-data together with the known key material of the destination K-B, K-b, A-B, A-b and K-A.
 
 Assumptions
 
