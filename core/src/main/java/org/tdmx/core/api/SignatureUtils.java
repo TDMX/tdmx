@@ -228,7 +228,7 @@ public class SignatureUtils {
 	}
 
 	public static void createDestinationSessionSignature(PKIXCredential credential, SignatureAlgorithm alg,
-			Date signatureDate, String serviceName, Destinationsession ft) {
+			Date signatureDate, String serviceName, Destinationsession ds) {
 
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
@@ -242,20 +242,20 @@ public class SignatureUtils {
 		UserSignature signature = new UserSignature();
 		signature.setUserIdentity(id);
 		signature.setSignaturevalue(sig);
-		ft.setUsersignature(signature);
+		ds.setUsersignature(signature);
 
-		String valueToSign = getValueToSign(serviceName, ft);
+		String valueToSign = getValueToSign(serviceName, ds);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSign));
 	}
 
-	public static boolean checkDestinationSessionSignature(String serviceName, Destinationsession fts) {
+	public static boolean checkDestinationSessionSignature(String serviceName, Destinationsession ds) {
 		PKIXCertificate publicCert = CertificateIOUtils
-				.safeDecodeX509(fts.getUsersignature().getUserIdentity().getUsercertificate());
+				.safeDecodeX509(ds.getUsersignature().getUserIdentity().getUsercertificate());
 		SignatureAlgorithm alg = SignatureAlgorithm
-				.getByAlgorithmName(fts.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
+				.getByAlgorithmName(ds.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
 
-		return CalendarUtils.isInPast(fts.getUsersignature().getSignaturevalue().getTimestamp())
-				&& checkDestinationSessionSignature(publicCert, alg, serviceName, fts);
+		return CalendarUtils.isInPast(ds.getUsersignature().getSignaturevalue().getTimestamp())
+				&& checkDestinationSessionSignature(publicCert, alg, serviceName, ds);
 	}
 
 	public static String createContinuationId(int chunkPos, byte[] entropy, String msgId, int len) {

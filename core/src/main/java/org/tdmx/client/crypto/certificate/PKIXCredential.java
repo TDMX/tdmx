@@ -18,6 +18,7 @@
  */
 package org.tdmx.client.crypto.certificate;
 
+import java.security.KeyPair;
 import java.security.PrivateKey;
 
 public class PKIXCredential {
@@ -76,6 +77,15 @@ public class PKIXCredential {
 	public PKIXCertificate getZoneRootPublicCert() {
 		return certificateChain != null && certificateChain.length > 2 ? certificateChain[2]
 				: certificateChain.length > 1 ? certificateChain[1] : certificateChain[0];
+	}
+
+	/**
+	 * Get the KeyPair corresponding to this credential's PublicKey and PrivateKey.
+	 * 
+	 * @return the KeyPair corresponding to this credential's PublicKey and PrivateKey.
+	 */
+	public KeyPair getKeyPair() {
+		return new KeyPair(getPublicCert().getCertificate().getPublicKey(), getPrivateKey());
 	}
 
 	// -------------------------------------------------------------------------

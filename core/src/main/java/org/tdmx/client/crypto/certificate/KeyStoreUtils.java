@@ -34,10 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,95 +206,6 @@ public class KeyStoreUtils {
 				certChain[i] = credential.getCertificateChain()[i].getCertificate();
 			}
 			keystore.setKeyEntry(alias, credential.getPrivateKey(), storePassword.toCharArray(), certChain);
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			keystore.store(baos, storePassword.toCharArray());
-			return baos.toByteArray();
-		} catch (KeyStoreException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
-		} catch (CertificateException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
-		} catch (IOException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
-		}
-
-	}
-
-	/**
-	 * Read the KeyStore and give the resulting map of alias to private credential.
-	 * 
-	 * NOTE: All private keys are protected with the same password as the keystore itself.
-	 * 
-	 * @param keystoreContents
-	 * @param storeType
-	 * @param storePassword
-	 * @return the map of alias to private credential.
-	 * @throws CryptoCertificateException
-	 */
-	public static Map<String, PKIXCredential> getPrivateCredentials(byte[] keystoreContents, String storeType,
-			String storePassword) throws CryptoCertificateException {
-		Map<String, PKIXCredential> result = new HashMap<String, PKIXCredential>();
-		try {
-			KeyStore store = loadKeyStore(keystoreContents, storeType, storePassword);
-
-			Enumeration<String> aliases = store.aliases();
-			while (aliases.hasMoreElements()) {
-				String alias = aliases.nextElement();
-				PrivateKeyEntry pke = (PrivateKeyEntry) store.getEntry(alias,
-						new KeyStore.PasswordProtection(storePassword.toCharArray()));
-
-				PrivateKey key = pke.getPrivateKey();
-
-				X509Certificate[] certChain = (X509Certificate[]) pke.getCertificateChain();
-				PKIXCertificate[] certs = new PKIXCertificate[certChain.length];
-				for (int i = 0; i < certChain.length; i++) {
-					certs[i] = new PKIXCertificate(certChain[i]);
-				}
-				PKIXCredential cred = new PKIXCredential(certs, key);
-				result.put(alias, cred);
-			}
-
-			return result;
-		} catch (NoSuchAlgorithmException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
-		} catch (UnrecoverableEntryException | KeyStoreException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
-		} catch (CertificateException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
-		} catch (NoSuchProviderException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_PROVIDER, e);
-		} catch (IOException e) {
-			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
-		}
-	}
-
-	/**
-	 * Store the set of private keys under their aliases in the KeyStore.
-	 * 
-	 * @param credentials
-	 * @param storeType
-	 * @param storePassword
-	 * @return
-	 * @throws CryptoCertificateException
-	 */
-	public static byte[] saveKeyStore(Map<String, PKIXCredential> credentials, String storeType, String storePassword)
-			throws CryptoCertificateException {
-
-		try {
-			KeyStore keystore = KeyStore.getInstance(storeType);
-			keystore.load(null, storePassword.toCharArray());
-
-			for (Entry<String, PKIXCredential> entry : credentials.entrySet()) {
-				X509Certificate[] certChain = new X509Certificate[entry.getValue().getCertificateChain().length];
-				for (int i = 0; i < certChain.length; i++) {
-					certChain[i] = entry.getValue().getCertificateChain()[i].getCertificate();
-				}
-				keystore.setKeyEntry(entry.getKey(), entry.getValue().getPrivateKey(), storePassword.toCharArray(),
-						certChain);
-
-			}
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			keystore.store(baos, storePassword.toCharArray());
