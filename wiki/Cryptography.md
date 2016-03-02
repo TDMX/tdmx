@@ -69,7 +69,7 @@ The following are examples of concrete schemes.
 
 ####ecdh384:rsa/aes256 (previously rsa/pf_rsa_ecdh384-aes256)
 
-The simplest scheme providing PFS. This scheme is similar to ECIES hybrid encryption scheme without any a-priori shared secret information. The difference with the standard ECIES encryption scheme is that the MAC is not produced using a symmetric key derived from the agreement secret, but by a RSA digital signature of the originator.This proves that the originator did infact produce the ciphertext. This provides [non naivety and protection against surreptitious forwarding](http://world.std.com/~dtd/sign_encrypt/sign_encrypt7.html). Since the RSA signature which has a fixed length, the message encryption context "L" has a fixed length, so that including the label length in the MAC is not useful unless the length of L is not checked before decryption.
+The simplest scheme providing PFS. This scheme is similar to ECIES hybrid encryption scheme without any a-priori shared secret information. The difference with the standard ECIES encryption scheme is that the MAC is not produced using a symmetric key derived from the agreement secret, but by a RSA digital signature of the originator.This proves that the originator did infact produce the ciphertext. This provides [non naivety and protection against surreptitious forwarding](http://world.std.com/~dtd/sign_encrypt/sign_encrypt7.html). 
 
 A randomly generated message key (RS) and Diffie-Hellmann agreed secret are combined to produce the payload encryption key. This scheme requires a 384bit AES key (256bit encryption key + 128bit IV) for payload encryption.   
 
@@ -82,13 +82,13 @@ A randomly generated message key (RS) and Diffie-Hellmann agreed secret are comb
     
     SKk-aes || IVk-aes := SHA384(A-B||S||RS)  
     
-    E := AES256/CTR(SKe-aes,IVe-aes,
-    	ZLib-compress(M||Sign(K-a,M||long-byte-len(M)))
-    
     L := long-byte-len(M) 
     RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
       where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer.
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
+    
+    E := AES256/CTR(SKe-aes,IVe-aes,
+    	ZLib-compress(M||Sign(K-a,M||long-byte-len(M)||long-byte-len(L)))
     }
     
 The encrypted data E is the compressed message and signature symmetrically encrypted with the derived secret key. The encryption-context is encrypted with the destination user’s RSA public 2048bit key. The encryption context L is the concatenation of the message plaintext length with the unique public agreement key of the originator. This scheme “hides” the senders messageKey, by encrypting it with K-B. Only the destination can decrypt the messageKey and message length the destination’s private key K-b. The length of the plaintext message is known outside the encrypted data so that suitable buffer space can be made available at decryption time and bound the decompression.
@@ -100,7 +100,7 @@ The encrypted data E is the compressed message and signature symmetrically encry
     
     L := long-byte-len(M) 
     RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
-
+    
     RS || A-A := RSA/ECB/OAEPWithSHA1AndMGF1Padding-decrypt( K-b, L )
     
     ECDH key agreement (A-b,A-A) => shared secret S
@@ -110,10 +110,10 @@ The encrypted data E is the compressed message and signature symmetrically encry
     M || Sign(K-a,M) := AES256/CTR-decrypt(SKe-aes,IVe-aes,
     ZLib-decompress(byte-len(M),E)))
       where decompression fails if invalid stream or if decompressed length > long-byte-len(M) or stream ends before long-byte-len(M) bytes are decompressed.
-    verify(K-A, M, Sign(K-a,M)) and fail if signature incorrect.
+    verify(K-A, M, Sign(K-a,M||long-byte-len(M)||long-byte-len(L))) and fail if signature incorrect.
     }
 
-The length of L should be checked to be (8 + 256) bytes before decryption.
+
 
 ####ecdh384:aes256+rsa/aes256
 
