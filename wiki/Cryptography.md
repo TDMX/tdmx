@@ -138,7 +138,7 @@ This scheme passes the secret keys used to decrypt the message payload to the de
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
     }
 
-The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key. The encryption context has a variable length, so that the length is included in the MAC/Signature of the message.
+The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key.
 
     decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
     {
