@@ -118,6 +118,7 @@ The length of L should be checked to be (8 + 256) bytes before decryption.
 ####ecdh384:aes256+rsa/aes256
 
 This scheme passes the secret keys used to decrypt the message payload to the destination in encrypted form in the encryption-context. 
+
     encryption( M, PF, (K-A,K-a), K-B, A-B ) -> E, L
     {
     validate A-B must be a 384bit X.509 encoded EC sessionKey.
@@ -136,6 +137,7 @@ This scheme passes the secret keys used to decrypt the message payload to the de
       where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer, and short-byte-len is a single byte representing the length of A-A in bytes.
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
     }
+
 The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key. The encryption context has a variable length, so that the length is included in the MAC/Signature of the message.
 
     decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
