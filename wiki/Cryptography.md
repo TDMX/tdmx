@@ -84,33 +84,31 @@ A randomly generated message key (RS) and Diffie-Hellmann agreed secret are comb
     
     E := AES256/CTR(SKe-aes,IVe-aes,
     	ZLib-compress(M||Sign(K-a,M||long-byte-len(M)))
-    L := long-byte-len(M) 
-    
-    RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
+    	
+    L := long-byte-len(M) || RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
       where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer.
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
-    
     }
     
 The encrypted data E is the compressed message and signature symmetrically encrypted with the derived secret key. The encryption-context is encrypted with the destination user’s RSA public 2048bit key. The encryption context L is the concatenation of the message plaintext length with the unique public agreement key of the originator. This scheme “hides” the senders messageKey, by encrypting it with K-B. Only the destination can decrypt the messageKey and message length the destination’s private key K-b. The length of the plaintext message is known outside the encrypted data so that suitable buffer space can be made available at decryption time and bound the decompression.
 
-    
+
     decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
     {
     E := AES256/CTR(SKe-aes,IVe-aes,
     	ZLib-compress(M||Sign(K-a,M||long-byte-len(M))
     
-    L := long-byte-len(M) 
-    RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
+    L := long-byte-len(M) || RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
     
-    RS || A-A := RSA/ECB/OAEPWithSHA1AndMGF1Padding-decrypt( K-b, L )
+    RS || A-A := RSA/ECB/OAEPWithSHA1AndMGF1Padding-decrypt( K-b, L[8..] )
+    (decrypt the message context except the message length prefix)
     
     ECDH key agreement (A-b,A-A) => shared secret S
     
     SKk-aes || IVk-aes := SHA384(A-B||S||RS) 
     
     M || Sign(K-a,M) := AES256/CTR-decrypt(SKe-aes,IVe-aes,
-    ZLib-decompress(byte-len(M),E)))
+    ZLib-decompress(long-byte-len(M),E)))
       where decompression fails if invalid stream or if decompressed length > long-byte-len(M) or stream ends before long-byte-len(M) bytes are decompressed.
     verify(K-A, M, Sign(K-a,M||long-byte-len(M))) and fail if signature incorrect.
     }
@@ -140,7 +138,7 @@ This scheme passes the secret keys used to decrypt the message payload to the de
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
     }
 
-The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key. The encryption context has a variable length, so that the length is included in the MAC/Signature of the message.
+The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key.
 
     decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
     {
@@ -157,7 +155,7 @@ The encrypted data E is the compressed message and signature symmetrically encry
     SKe || IVe := AES256/CTR-decrypt(SKk,IVk, AES256/CTR(SKk,IVk, SKe || IVe ))
     M || Sign(K-a,M) := AES256/CTR-decrypt(SKe,IVe,ZLib-decompress(byte-len(M),E))
       where decompression fails if invalid stream or if decompressed length > byte-len(M) or stream ends before byte-len(M) bytes are decompressed.
-    verify(K-A, M, Sign(K-a,M||long-byte-len(M)||long-byte-len(L))) and fail if signature incorrect.
+    verify(K-A, M, Sign(K-a,M||long-byte-len(M))) and fail if signature incorrect.
     }
 
 The RSA/ECB/OAEPWithSHA1AndMGF1Padding encryption with a 2048bit keylength can encrypt up to 214bytes of random secret key material. In this particular scheme, there key material SKk, IVk is 48bytes long. This basic encryption-context encryption scheme can be used to support cascades of the payload encryption algorithms with independent secret keys.
