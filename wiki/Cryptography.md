@@ -13,13 +13,16 @@ Secure Hash Algorithm 2 (SHA-384) — message digest
 ###Crypto Scheme
 TDMX defines a paired encryption and decryption *scheme*. The originator of a message uses the encryption scheme to encrypt a confidential and tamper proof message for the destination user. The destination user uses the decryption scheme to decrypt the message which can be shown to have originated from the originator and is untampered.
 
-The scheme allows for a multitude of possible concrete implementations, which include existing well known and/or standardized hybrid integrated encryption schemes like [PGP](http://tools.ietf.org/html/rfc4880) and [ECIES-KEM](http://www.shoup.net/papers/iso-2_1.pdf), or [ECIES](http://en.wikipedia.org/wiki/IEEE_P1363).
+The scheme allows for a multitude of possible concrete implementations, which include existing well known and/or standardized hybrid integrated encryption schemes like [PGP](http://tools.ietf.org/html/rfc4880) and [ECIES-KEM](http://www.shoup.net/papers/iso-2_1.pdf), or [ECIES](http://en.wikipedia.org/wiki/IEEE_P1363). The scheme could be extended to incorporate cascading more than two symmetric encryption algorithms - but this is not currently persued further because cipher cascades have questionable benefit. It is preferred to allow choice of symmetric algorithm and flexible key size.
  
 The scheme used for each message is determined by the destination user and stated in it’s destination session information. This information is shared with all users along authorized channels, so it is not possible for a destination to use different schemes for different senders. If a sender is not able or willing to send using the destination’s scheme then the sender MAY decide not send. The destination “interprets” the received message according to the scheme which the destination stated. This means that if a sender does not respect or fully comply to the scheme, the message will not successfully be interpreted, and result in a message delivery failure.
 
 The crypto scheme is transparent to the ServiceProvider - which is not involved in the cryptography at all. It is a legitimate use-case that two clients implement and use a private crypto scheme using private algorithms bilaterally. This transparency frees ServiceProviders from licensing of cryptographic algorithms and techniques. For instance Elliptic Curve (EC) may require licensing to patent holder [Certicom Inc](http://en.wikipedia.org/wiki/ECC_patents), or exception via [NSA FIPS-140-2](http://www.nsa.gov/business/programs/elliptic_curve.shtml) in the U.S.A. RSA algorithm is patent free since [expiry in 2000](http://www.rsa.com/rsalabs/node.asp?id=2322). Standard algorithms like AES and SHA are patent free standards. DiffieHellmann patent has also [expired](http://www.rsa.com/rsalabs/node.asp?id=2326).
 
 The TDMX version defines the user certificate type - which may have a relation on the possibilities of the crypto scheme. For instance in version 1, user certificates MUST be RSA 2048 bit certificates, which allow the usage of RSA encryption within the encryption scheme.
+
+
+
 
 ####Abstract Crypto Scheme Definition
 The “abstract” crypto scheme primitives are as follows
@@ -66,7 +69,9 @@ The following are examples of concrete schemes.
 
 ####ecdh384:rsa/aes256 (previously rsa/pf_rsa_ecdh384-aes256)
 
-A simple scheme providing PFS. This scheme is similar to ECIES hybrid encryption scheme without any a-priori shared secret information. This scheme requires a 384bit AES key for payload encryption. The rsa-secret (RS) and Diffie-Hellmann agreed secret are combined to produce the payload encryption key.  
+The simplest scheme providing PFS. This scheme is similar to ECIES hybrid encryption scheme without any a-priori shared secret information. The difference with the standard ECIES encryption scheme is that the MAC is not produced using a symmetric key derived from the agreement secret, but by a RSA digital signature of the originator.This proves that the originator did infact produce the ciphertext. This provides [non naivety and protection against surreptitious forwarding](http://world.std.com/~dtd/sign_encrypt/sign_encrypt7.html). Since the RSA signature which has a fixed length, the message encryption context "L" has a fixed length, so that including the label length in the MAC is not useful unless the length of L is not checked before decryption.
+
+A randomly generated message key (RS) and Diffie-Hellmann agreed secret are combined to produce the payload encryption key. This scheme requires a 384bit AES key (256bit encryption key + 128bit IV) for payload encryption.   
 
     encryption( M, (K-A,K-a), K-B, A-B ) -> E, L
     {
@@ -108,69 +113,11 @@ The encrypted data E is the compressed message and signature symmetrically encry
     verify(K-A, M, Sign(K-a,M)) and fail if signature incorrect.
     }
 
-
-####ecdh384:rsa/aes256+twofish256
-
-This scheme requires 2\*384bit shared secret key material for payload encryption. The rsa-secret(RS) and Diffie-Hellmann agreed secret are combined slightly differently than the ecdh384+rsa/aes256 scheme which produces 1\*384bit shared secrets.
-
-    encryption( M, (K-A,K-a), K-B, A-B ) -> E, L
-    {
-    validate A-B must be a 384bit X.509 encoded EC sessionKey.
-    EC key generate (A-A,A-a), an EC keypair on secp384r1
-    ECDH key agreement (A-a,A-B) => shared secret S
-    
-    ECS := SHA384(A-B||S) 
-    RS := PRNG(384bit)
-    
-    CSKM := bytewise interleave ECS + RS in that order
-    
-    SKk-aes || IVk-aes := first 384 bits of CSKM 
-    SKk-twofish || IVk-twofish := second 384s bit of CSKM 
-    
-    E := AES256/CTR(SKe-aes,IVe-aes,
-       Twofish256/CTR(SKe-twofish, IVe-twofish
-    		ZLib-compress(M||Sign(K-a,M||long-byte-len(M)))
-    
-    L := long-byte-len(M) 
-    RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
-      where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer.
-      A-A is a X.509 encoded EC public key - aka the sender’s messageKey
-    }
-    
-    
-    decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
-    {
-    E := AES256/CTR(SKe-aes,IVe-aes,
-       Twofish256/CTR(SKe-twofish, IVe-twofish
-    		ZLib-compress(M||Sign(K-a,M||long-byte-len(M)))
-    
-    L := long-byte-len(M) 
-    RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, RS || A-A )
-    
-    RS || A-A := RSA/ECB/OAEPWithSHA1AndMGF1Padding-decrypt( K-b, L )
-    
-    ECDH key agreement (A-b,A-A) => shared secret S
-    ECS := SHA384(A-B||S) 
-    
-    CSKM := bytewise interleave ECS + RS in that order
-    
-    SKk-aes || IVk-aes := first 384 bits of CSKM 
-    SKk-twofish || IVk-twofish := second 384s bit of CSKM 
-    
-    M || Sign(K-a,M) := AES256/CTR-decrypt(SKe-aes,IVe-aes,
-    	Twofish256/CTR-decrypt(SKe-twofish,IVe-twofish,
-    ZLib-decompress(byte-len(M),E)))
-      where decompression fails if invalid stream or if decompressed length > long-byte-len(M) or stream ends before long-byte-len(M) bytes are decompressed.
-    verify(K-A, M, Sign(K-a,M)) and fail if signature incorrect.
-    }
-
-This scheme could be extended to support more than 2 symmetric ciphers for the payload encryption by RSA encrypting more secret key material into the encryption-context, but this is not considered worthwhile since the overall security is probably not improved - since the key encryption is unchanged.
-
+The length of L should be checked to be (8 + 256) bytes before decryption.
 
 ####ecdh384:aes256+rsa/aes256
 
 This scheme passes the secret keys used to decrypt the message payload to the destination in encrypted form in the encryption-context. 
-
     encryption( M, PF, (K-A,K-a), K-B, A-B ) -> E, L
     {
     validate A-B must be a 384bit X.509 encoded EC sessionKey.
@@ -181,7 +128,7 @@ This scheme passes the secret keys used to decrypt the message payload to the de
       IVk is a 128bit initialization vector for the AES encryption
     SKe := PRNG(256bit)
     IVe := PRNG(128bit)
-    E := AES256/CTR(SKe,IVe,ZLib-compress(M||Sign(K-a,M||long-byte-len(M))))
+    E := AES256/CTR(SKe,IVe,ZLib-compress(M||Sign(K-a,M||long-byte-len(M)||long-byte-len(L))))
     L := long-byte-len(M) || short-byte-len(A-A) || A-A || 
     		AES256/CTR(SKk,IVk, 
     			RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, 
@@ -189,11 +136,11 @@ This scheme passes the secret keys used to decrypt the message payload to the de
       where long-byte-len(M) is the length of M in bytes represented as 8-byte fixed length big-endian integer, and short-byte-len is a single byte representing the length of A-A in bytes.
       A-A is a X.509 encoded EC public key - aka the sender’s messageKey
     }
-The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key.
+The encrypted data E is the compressed message and signature symmetrically encrypted with a randomly generated encryption-key. The encryption-key is encrypted with the derived secret key in the encryption context. The encryption key is additionally encrypted with the destinations public RSA signature key. The encryption context has a variable length, so that the length is included in the MAC/Signature of the message.
 
     decryption( (K-B, K-b), (A-B, A-b), K-A, E, L ) -> M
     {
-    E := AES256/CTR(SKe,IVe,ZLib-compress(M||Sign(K-a,M||long-byte-len(M))))
+    E := AES256/CTR(SKe,IVe,ZLib-compress(M||Sign(K-a,M||long-byte-len(M)||long-byte-len(L))))
     L := long-byte-len(M) || short-byte-len(A-A) || A-A || 
     		AES256/CTR(SKk,IVk, 
     			RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B, 
@@ -205,35 +152,19 @@ The encrypted data E is the compressed message and signature symmetrically encry
     SKe || IVe := AES256/CTR-decrypt(SKk,IVk, AES256/CTR(SKk,IVk, SKe || IVe ))
     M || Sign(K-a,M) := AES256/CTR-decrypt(SKe,IVe,ZLib-decompress(byte-len(M),E))
       where decompression fails if invalid stream or if decompressed length > byte-len(M) or stream ends before byte-len(M) bytes are decompressed.
-    verify(K-A, M, Sign(K-a,M)) and fail if signature incorrect.
+    verify(K-A, M, Sign(K-a,M||long-byte-len(M)||long-byte-len(L))) and fail if signature incorrect.
     }
 
 The RSA/ECB/OAEPWithSHA1AndMGF1Padding encryption with a 2048bit keylength can encrypt up to 214bytes of random secret key material. In this particular scheme, there key material SKk, IVk is 48bytes long. This basic encryption-context encryption scheme can be used to support cascades of the payload encryption algorithms with independent secret keys.
 
-####ecdh384:aes256+rsa/aes256+twofish256
-
-Is a extension of pf_ecdh384-aes256+rsa where there are more than 1 encryption keys.
-
-    E := AES256/CTR(SKe-aes,IVe-aes,
-       		Twofish256/CTR(SKe-twofish, IVe-twofish,
-       			ZLib-compress(M||Sign(K-a,M||long-byte-len(M))))
-    
-    L := long-byte-len(M) || short-byte-len(A-A) || A-A || 
-			AES256/CTR(SKk,IVk, 
-				RSA/ECB/OAEPWithSHA1AndMGF1Padding-encrypt( K-B,
-					SKe-aes || IVe-aes || 
-					SKe-twofish || IVe-twofish ))
-    
-The combined encryption keys have a length of (32+16)\*2= 96 bytes. The scheme could be extended to incorporate cascading more than two symmetric encryption algorithms ( since the RSA encryption has space ) - but this is not considered further because the two cipher cascade is considered sufficient for the very paranoid, and the fact that the key protection is unchanged regardless of how many symmetric algorithms are cascaded for the payload.
 
 ###Crypto Scheme Support Matrix
 
 The TDMX version 1 MUST support:
 
 **ecdh384:rsa/aes256**
+
 **ecdh384:aes256+rsa/aes256**
 
-Any serpent or twofish replacement of aes or as a cascade is optional.
-
-In the schemes which support cascaded ciphers, the same cipher algorithm may not be used twice in the cascade. This is because the cipher cascade is intended to guard against cipher weaknesses, where duplication doesn’t help - and might even be catastrophic.
+Any serpent or twofish replacement of aes stronger key support is optional.
 
