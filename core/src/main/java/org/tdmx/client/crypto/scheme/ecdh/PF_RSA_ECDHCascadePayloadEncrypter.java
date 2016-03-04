@@ -107,7 +107,7 @@ public class PF_RSA_ECDHCascadePayloadEncrypter implements Encrypter {
 		this.innerPayloadCipher = innerPayloadCipher;
 		this.outerPayloadCipher = outerPayloadCipher;
 
-		this.sessionKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(encodedSessionKey);
+		this.sessionKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedPublicKey(encodedSessionKey);
 		this.messageKey = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(messageKey, sessionKey);

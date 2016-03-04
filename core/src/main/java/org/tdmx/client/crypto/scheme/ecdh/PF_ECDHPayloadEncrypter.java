@@ -93,7 +93,7 @@ public class PF_ECDHPayloadEncrypter implements Encrypter {
 
 		this.payloadCipher = payloadCipher;
 
-		this.sessionKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(encodedSessionKey);
+		this.sessionKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedPublicKey(encodedSessionKey);
 		this.messageKey = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(messageKey, sessionKey);

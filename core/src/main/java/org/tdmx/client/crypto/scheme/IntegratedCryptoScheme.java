@@ -18,28 +18,36 @@
  */
 package org.tdmx.client.crypto.scheme;
 
+import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
+
 public enum IntegratedCryptoScheme {
 
-	ECDH384_RSA_SLASH_AES256("ecdh384:rsa/aes256"),
-	ECDH384_RSA_SLASH_TWOFISH256("ecdh384:rsa/twofish256"),
-	ECDH384_RSA_SLASH_SERPENT256("ecdh384:rsa/serpent256"),
+	ECDH384_RSA_SLASH_AES256("ecdh384:rsa/aes256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_RSA_SLASH_TWOFISH256("ecdh384:rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_RSA_SLASH_SERPENT256("ecdh384:rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
 
-	ECDH384_AES256plusRSA_SLASH_AES256("ecdh384:aes256+rsa/aes256"),
-	ECDH384_AES256plusRSA_SLASH_TWOFISH256("ecdh384:aes256+rsa/twofish256"),
-	ECDH384_AES256plusRSA_SLASH_SERPENT256("ecdh384:aes256+rsa/serpent256"),
+	ECDH384_AES256plusRSA_SLASH_AES256("ecdh384:aes256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_AES256plusRSA_SLASH_TWOFISH256("ecdh384:aes256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_AES256plusRSA_SLASH_SERPENT256("ecdh384:aes256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
 
-	ECDH384_TWOFISH256plusRSA_SLASH_AES256("ecdh384:twofish256+rsa/aes256"),
-	ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256("ecdh384:twofish256+rsa/twofish256"),
-	ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256("ecdh384:twofish256+rsa/serpent256"),
+	ECDH384_TWOFISH256plusRSA_SLASH_AES256("ecdh384:twofish256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256("ecdh384:twofish256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256("ecdh384:twofish256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
 
-	ECDH384_SERPENT256plusRSA_SLASH_AES256("ecdh384:serpent256+rsa/aes256"),
-	ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256("ecdh384:serpent256+rsa/twofish256"),
-	ECDH384_SERPENT256plusRSA_SLASH_SERPENT256("ecdh384:serpent256+rsa/serpent256");
+	ECDH384_SERPENT256plusRSA_SLASH_AES256("ecdh384:serpent256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256("ecdh384:serpent256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_SERPENT256plusRSA_SLASH_SERPENT256("ecdh384:serpent256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384);
 
-	private String name;
+	private final String name;
+	private final KeyAgreementAlgorithm sessionKeyAlgorithm;
 
-	private IntegratedCryptoScheme(String name) {
+	public KeyAgreementAlgorithm getSessionKeyAlgorithm() {
+		return sessionKeyAlgorithm;
+	}
+
+	private IntegratedCryptoScheme(String name, KeyAgreementAlgorithm sessionKeyAlgorithm) {
 		this.name = name;
+		this.sessionKeyAlgorithm = sessionKeyAlgorithm;
 	}
 
 	public String getName() {

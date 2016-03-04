@@ -107,7 +107,7 @@ public class PF_ECDHPayloadDecrypter implements Decrypter {
 			messageKeyBytes = rsa.decrypt(ownSigningKey.getPrivate(), messageKeyBytes);
 		}
 
-		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(messageKeyBytes);
+		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedPublicKey(messageKeyBytes);
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(sessionKey, messageKey);
 
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(sessionKey.getPublic());

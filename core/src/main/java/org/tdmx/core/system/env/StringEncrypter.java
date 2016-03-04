@@ -69,20 +69,33 @@ public class StringEncrypter {
 	private SecretKey key;
 	AlgorithmParameterSpec paramSpec;
 
+	// 8-bytes Salt
+	private static final byte[] DEFAULT_SALT = { (byte) 0xA4, (byte) 0x9B, (byte) 0xC8, (byte) 0x72, (byte) 0x46,
+			(byte) 0x45, (byte) 0xE3, (byte) 0x93 };
+
 	private static final Logger log = LoggerFactory.getLogger(StringEncrypter.class);
 
 	/**
 	 * Constructor used to create this object. Responsible for setting and initializing this object's encrypter and
-	 * decrypter Cipher instances given a Pass Phrase and algorithm.
+	 * decrypter Cipher instances given a Pass Phrase and algorithm using a default SALT.
 	 * 
 	 * @param passPhrase
 	 *            Pass Phrase used to initialize both the encrypter and decrypter instances.
 	 */
 	public StringEncrypter(String passPhrase) {
+		this(DEFAULT_SALT, passPhrase);
+	}
 
-		// 8-bytes Salt
-		byte[] salt = { (byte) 0xA4, (byte) 0x9B, (byte) 0xC8, (byte) 0x72, (byte) 0x46, (byte) 0x45, (byte) 0xE3,
-				(byte) 0x93 };
+	/**
+	 * Constructor used to create this object. Responsible for setting and initializing this object's encrypter and
+	 * decrypter Cipher instances given a Pass Phrase and algorithm.
+	 * 
+	 * @param byte[]
+	 *            salt
+	 * @param passPhrase
+	 *            Pass Phrase used to initialize both the encrypter and decrypter instances.
+	 */
+	public StringEncrypter(byte[] salt, String passPhrase) {
 
 		// Iteration count
 		int iterationCount = 1024;

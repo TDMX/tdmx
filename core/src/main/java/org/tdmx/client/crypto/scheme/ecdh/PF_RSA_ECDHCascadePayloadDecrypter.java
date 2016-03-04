@@ -121,7 +121,7 @@ public class PF_RSA_ECDHCascadePayloadDecrypter implements Decrypter {
 
 		byte[] messageKeyBytes = ByteArray.subArray(plaintextContextBytes, 48, plaintextContextBytes.length - 48);
 
-		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(messageKeyBytes);
+		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedPublicKey(messageKeyBytes);
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(sessionKey, messageKey);
 
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(sessionKey.getPublic());

@@ -25,9 +25,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +51,7 @@ import org.tdmx.client.adapter.SslProbeService;
 import org.tdmx.client.adapter.SslProbeService.ConnectionTestResult;
 import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.adapter.TrustedServerCertificateProvider;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
@@ -52,15 +59,20 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtils;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
-import org.tdmx.client.crypto.scheme.CryptoScheme;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.system.dns.DnsUtils;
 import org.tdmx.core.system.dns.DnsUtils.DnsResultHolder;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
+import org.tdmx.core.system.env.StringEncrypter;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.NetUtils;
 import org.tdmx.core.system.lang.StringUtils;
@@ -741,7 +753,7 @@ public class ClientCliUtils {
 		String dataDir = getMandatoryStringProperty(p, DestinationDescriptor.DATADIR, filename);
 		String salt = getMandatoryStringProperty(p, DestinationDescriptor.SALT, filename);
 		String encScheme = getMandatoryStringProperty(p, DestinationDescriptor.ENCRYPTION_SCHEME, filename);
-		CryptoScheme es = CryptoScheme.fromName(encScheme);
+		IntegratedCryptoScheme es = IntegratedCryptoScheme.fromName(encScheme);
 		if (es == null) {
 			throw new IllegalStateException("Illegal property " + DestinationDescriptor.ENCRYPTION_SCHEME);
 		}
@@ -777,20 +789,189 @@ public class ClientCliUtils {
 		}
 	}
 
+	public static class UnencryptedSessionKey {
+		private static final String DATE_FORMAT = "yyyyMMddHHmmss";
+
+		private final String encryptionContextId;
+		private final IntegratedCryptoScheme scheme;
+		private final KeyPair sessionKeyPair;
+		private final Date validFrom;
+
+		public UnencryptedSessionKey(IntegratedCryptoScheme scheme, KeyPair sessionKeyPair, Date validFrom) {
+			this.scheme = scheme;
+			this.sessionKeyPair = sessionKeyPair;
+			this.validFrom = validFrom;
+			this.encryptionContextId = new SimpleDateFormat(DATE_FORMAT).format(validFrom);
+		}
+
+		public static UnencryptedSessionKey decrypt(String encryptedContext, byte[] salt, String password) {
+			StringEncrypter dec = new StringEncrypter(salt, password);
+			String unencrypted = dec.decrypt(encryptedContext);
+			if (!StringUtils.hasText(unencrypted)) {
+				return null;
+			}
+			try {
+				List<String> params = StringUtils.convertCsvToStringList(unencrypted);
+				Date validFrom = new SimpleDateFormat(DATE_FORMAT).parse(params.get(0));
+				IntegratedCryptoScheme ies = IntegratedCryptoScheme.fromName(params.get(1));
+				PublicKey publicKey = ies.getSessionKeyAlgorithm()
+						.decodeX509EncodedPublicKey(ByteArray.fromHex(params.get(2)));
+				PrivateKey privateKey = ies.getSessionKeyAlgorithm()
+						.decodeX509EncodedPrivateKey(ByteArray.fromHex(params.get(3)));
+
+				UnencryptedSessionKey sk = new UnencryptedSessionKey(ies, new KeyPair(publicKey, privateKey),
+						validFrom);
+				return sk;
+			} catch (ParseException | CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		public Destinationsession getNewDestinationSession(PKIXCredential uc, String serviceName) {
+			Destinationsession ds = new Destinationsession();
+			ds.setEncryptionContextId(encryptionContextId);
+			ds.setScheme(scheme.getName());
+			try {
+				ds.setSessionKey(scheme.getSessionKeyAlgorithm().encodeX509PublicKey(sessionKeyPair.getPublic()));
+			} catch (CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+
+			SignatureUtils.createDestinationSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, validFrom, serviceName,
+					ds);
+
+			return ds;
+		}
+
+		/**
+		 * Has the session validity expired?
+		 * 
+		 * @param hours
+		 * @return
+		 */
+		public boolean isValidityExpired(int hours) {
+			if (validFrom.getTime() + (hours * 3600 * 1000) /* ms in hour */ < System.currentTimeMillis()) {
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Has the session retention expired?
+		 * 
+		 * @param days
+		 * @return
+		 */
+		public boolean isRetentionExpired(int days) {
+			if (validFrom.getTime() + (days * 24 * 3600 * 1000) /* ms in day */ < System.currentTimeMillis()) {
+				return true;
+			}
+			return false;
+		}
+
+		public int getSignerSerial() {
+			try {
+				PKIXCertificate cert = CertificateIOUtils.decodeX509(sessionKeyPair.getPublic().getEncoded());
+				return cert.getSerialNumber();
+			} catch (CryptoCertificateException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		public String getEncryptionContextId() {
+			return encryptionContextId;
+		}
+
+		public IntegratedCryptoScheme getScheme() {
+			return scheme;
+		}
+
+		public KeyPair getSessionKeyPair() {
+			return sessionKeyPair;
+		}
+
+		public Date getValidFrom() {
+			return validFrom;
+		}
+
+		public String toEncryptedString(byte[] salt, String password) {
+			StringEncrypter enc = new StringEncrypter(salt, password);
+			return enc.encrypt(toString());
+		}
+
+		@Override
+		public String toString() {
+			List<String> params = new ArrayList<>();
+			params.add(encryptionContextId);
+			params.add(scheme.getName());
+			params.add(ByteArray.asHex(getEncodedPublicKey()));
+			params.add(ByteArray.asHex(getEncodedPrivateKey()));
+			return StringUtils.convertStringListToCsv(params);
+		}
+
+		public byte[] getEncodedPublicKey() {
+			try {
+				return scheme.getSessionKeyAlgorithm().encodeX509PublicKey(sessionKeyPair.getPublic());
+			} catch (CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		public byte[] getEncodedPrivateKey() {
+			try {
+				return scheme.getSessionKeyAlgorithm().encodeX509PrivateKey(sessionKeyPair.getPrivate());
+			} catch (CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
 	public static class DestinationDescriptor {
-		public static String DATADIR = "data.directory";
-		public static String SESSION_DURATION_HOURS = "session.duration.hours";
-		public static String SESSION_RETENTION_DAYS = "session.retention.days";
-		public static String ENCRYPTION_SCHEME = "encryption.scheme";
+		public static String DATADIR = "directory";
+		public static String SESSION_DURATION_HOURS = "duration.hours";
+		public static String SESSION_RETENTION_DAYS = "retention.days";
+		public static String ENCRYPTION_SCHEME = "scheme";
 		public static String SALT = "salt";
 
 		private String dataDirectory;
-		private CryptoScheme encryptionScheme;
-		private String salt; // Hex 8 byte used for a
+		private IntegratedCryptoScheme encryptionScheme;
+		private String salt; // Hex 8 byte used to salt the encryption of the sessionKeys with the user's keystore
+								// password.
 		private int sessionDurationInHours;
 		private int sessionRetentionInDays;
 
+		private List<UnencryptedSessionKey> sessionKeys;
+
 		public DestinationDescriptor() {
+		}
+
+		public UnencryptedSessionKey createNewSessionKey() {
+			Date validFromNow = new Date();
+			try {
+				UnencryptedSessionKey sk = new UnencryptedSessionKey(encryptionScheme,
+						encryptionScheme.getSessionKeyAlgorithm().generateNewKeyPair(), validFromNow);
+				return sk;
+			} catch (CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		/**
+		 * Find the SessionKey matching the Destinationsession's encryptionContextId.
+		 * 
+		 * @param ds
+		 * @return null if not found.
+		 */
+		public UnencryptedSessionKey getSessionKey(Destinationsession ds) {
+			if (sessionKeys == null) {
+				return null;
+			}
+			for (UnencryptedSessionKey sk : sessionKeys) {
+				if (sk.getEncryptionContextId().equals(ds.getEncryptionContextId())) {
+					return sk;
+				}
+			}
+			return null;
 		}
 
 		public String getDataDirectory() {
@@ -817,11 +998,11 @@ public class ClientCliUtils {
 			this.sessionRetentionInDays = sessionRetentionInDays;
 		}
 
-		public CryptoScheme getEncryptionScheme() {
+		public IntegratedCryptoScheme getEncryptionScheme() {
 			return encryptionScheme;
 		}
 
-		public void setEncryptionScheme(CryptoScheme encryptionScheme) {
+		public void setEncryptionScheme(IntegratedCryptoScheme encryptionScheme) {
 			this.encryptionScheme = encryptionScheme;
 		}
 
@@ -831,6 +1012,14 @@ public class ClientCliUtils {
 
 		public void setSalt(String salt) {
 			this.salt = salt;
+		}
+
+		public List<UnencryptedSessionKey> getSessionKeys() {
+			return sessionKeys;
+		}
+
+		public void setSessionKeys(List<UnencryptedSessionKey> sessionKeys) {
+			this.sessionKeys = sessionKeys;
 		}
 
 	}

@@ -24,6 +24,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.EncodedKeySpec;
@@ -90,7 +91,7 @@ public enum KeyAgreementAlgorithm {
 		}
 	}
 
-	public PublicKey decodeX509EncodedKey(byte[] publicKeyBytes) throws CryptoException {
+	public PublicKey decodeX509EncodedPublicKey(byte[] publicKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(keyAlgorithm);
 			EncodedKeySpec eks = new X509EncodedKeySpec(publicKeyBytes);
@@ -103,11 +104,31 @@ public enum KeyAgreementAlgorithm {
 		}
 	}
 
+	public PrivateKey decodeX509EncodedPrivateKey(byte[] privateKeyBytes) throws CryptoException {
+		try {
+			KeyFactory kf = KeyFactory.getInstance(keyAlgorithm);
+			EncodedKeySpec eks = new X509EncodedKeySpec(privateKeyBytes);
+			PrivateKey privateKey = kf.generatePrivate(eks);
+			return privateKey;
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING, e);
+		} catch (InvalidKeySpecException e) {
+			throw new CryptoException(CryptoResultCode.ERROR_KA_PUBLIC_KEY_SPEC_INVALID, e);
+		}
+	}
+
 	public byte[] encodeX509PublicKey(PublicKey publicKey) throws CryptoException {
 		if (!"X.509".equals(publicKey.getFormat())) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return publicKey.getEncoded();
+	}
+
+	public byte[] encodeX509PrivateKey(PrivateKey privateKey) throws CryptoException {
+		if (!"X.509".equals(privateKey.getFormat())) {
+			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
+		}
+		return privateKey.getEncoded();
 	}
 
 	public int getKeyLength() {

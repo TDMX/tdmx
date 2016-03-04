@@ -110,7 +110,7 @@ public class PF_ECDHContextCascadeDecrypter implements Decrypter {
 
 		byte[] encryptedKeyBytes = ByteArray.subArray(encryptionContext, 9 + lengthSessionKey);
 
-		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedKey(messageKeyBytes);
+		PublicKey messageKey = KeyAgreementAlgorithm.ECDH384.decodeX509EncodedPublicKey(messageKeyBytes);
 		byte[] sharedSecret = KeyAgreementAlgorithm.ECDH384.agreeKey(sessionKey, messageKey);
 
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(sessionKey.getPublic());

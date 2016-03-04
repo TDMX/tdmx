@@ -19,18 +19,16 @@
 package org.tdmx.client.cli.user;
 
 import java.io.PrintStream;
-import java.security.PublicKey;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
-import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
-import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
+import org.tdmx.core.api.v01.mds.SetDestinationSession;
+import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
@@ -103,7 +101,12 @@ public class PollReceive implements CommandExecutable {
 		}
 		PKIXCredential uc = ClientCliUtils.getUC(domain, localName, ucSerial, userPassword);
 
-		DestinationDescriptor dd = ClientCliUtils.loadDestinationDescriptor(destination);
+		DestinationDescriptor dd = null;
+		if (ClientCliUtils.destinationDescriptorExists(destination)) {
+			dd = ClientCliUtils.loadDestinationDescriptor(destination);
+		} else {
+			// TODO #95 initialize DD
+		}
 
 		// -------------------------------------------------------------------------
 		// GET MDS SESSION
@@ -133,14 +136,51 @@ public class PollReceive implements CommandExecutable {
 		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
 		if (!destRes.isSuccess()) {
 			out.println("Unable to get current destination session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliUtils.logError(out, destRes.getError());
 			return;
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();
 
+		boolean uploadNewDs = false;
 		if (ds == null) {
 			out.println("No current destination session - initialization");
+			uploadNewDs = true;
+		} else {
+			// there is a foreign DS
+			UnencryptedSessionKey sk = dd.getSessionKey(ds);
+
+			if (sk == null) {
+				out.println("Current destination session unknow - initialization if our serialnumber more recent.");
+
+				uploadNewDs = true;
+			} else if (sk.getSignerSerial() > uc.getPublicCert().getSerialNumber()) {
+				out.println("Current destination session defined by more recent user - standing down.");
+			} else if (sk.isValidityExpired(dd.getSessionDurationInHours())) {
+				out.println("Current destination session expired - renew.");
+				uploadNewDs = true;
+			}
 		}
+
+		if (uploadNewDs) {
+			UnencryptedSessionKey sk = dd.createNewSessionKey();
+
+			ds = sk.getNewDestinationSession(uc, service);
+			// if we change the DD we must store it immediately.
+			ClientCliUtils.storeDestinationDescriptor(dd, destination);
+
+			// upload new session to ServiceProvider.
+			SetDestinationSession setDestReq = new SetDestinationSession();
+			setDestReq.setSessionId(sessionResponse.getSession().getSessionId());
+
+			SetDestinationSessionResponse setDestRes = mds.setDestinationSession(setDestReq);
+			if (!setDestRes.isSuccess()) {
+				out.println("Unable to set new current destination session.");
+				ClientCliUtils.logError(out, setDestRes.getError());
+				return;
+			}
+		}
+
+		// TODO #95 do receive!
 	}
 
 	// -------------------------------------------------------------------------
@@ -151,26 +191,6 @@ public class PollReceive implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Creates a new DestinationSession and updates the session store
-	 * 
-	 * @param dd
-	 * @param sessions
-	 * @return
-	 */
-	private Destinationsession createDestinationSession(DestinationDescriptor dd, String serviceName,
-			PublicKey agreementKey, PKIXCredential uc) {
-		Destinationsession ds = new Destinationsession();
-		// TODO
-		final Date dsDate = new Date();
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-		ds.setEncryptionContextId(sdf.format(dsDate));
-		ds.setScheme(dd.getEncryptionScheme().getName());
-		ds.setSessionKey(new byte[] { 1, 2, 3 });
-
-		SignatureUtils.createDestinationSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, dsDate, serviceName, ds);
-		return ds;
-	}
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------

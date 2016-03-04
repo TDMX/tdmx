@@ -20,7 +20,7 @@ package org.tdmx.client.cli.user;
 
 import java.io.PrintStream;
 
-import org.tdmx.client.crypto.scheme.CryptoScheme;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
@@ -37,7 +37,7 @@ public class EncryptionSearch implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "text", description = "text contained in the name - pf, rsa, aes, ecdh, twofish, serpent.")
+	@Parameter(name = "text", description = "text contained in the name - rsa, aes, ecdh, twofish, serpent.")
 	private String text;
 
 	// -------------------------------------------------------------------------
@@ -56,7 +56,7 @@ public class EncryptionSearch implements CommandExecutable {
 		// -------------------------------------------------------------------------
 		int matches = 0;
 		int total = 0;
-		for (CryptoScheme es : CryptoScheme.values()) {
+		for (IntegratedCryptoScheme es : IntegratedCryptoScheme.values()) {
 			total++;
 			String schemeName = es.getName();
 			boolean match = true;

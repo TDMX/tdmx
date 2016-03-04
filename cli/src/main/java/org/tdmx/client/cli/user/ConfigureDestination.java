@@ -23,7 +23,7 @@ import java.io.PrintStream;
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
-import org.tdmx.client.crypto.scheme.CryptoScheme;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
@@ -38,6 +38,7 @@ public class ConfigureDestination implements CommandExecutable {
 
 	private static final String DEFAULT_SCHEME = "pf_ecdh384-aes256/aes256";
 	private static final String DEFAULT_SESSION_DURATION_HOURS = "24";
+	private static final String DEFAULT_SESSION_RETENTION_DAYS = "2";
 
 	// TODO <user>-<service>.sks file is a session keystore with the sessionStorePassword protection
 	// where the alias is the encryptedContextId , the public X509 certificate contains the public agreement key, and
@@ -57,7 +58,10 @@ public class ConfigureDestination implements CommandExecutable {
 	private String dataDirectory;
 
 	@Parameter(name = "sessionDurationInHours", defaultValueText = DEFAULT_SESSION_DURATION_HOURS, description = "the duration of the destination sessions validity in hours.")
-	private Integer durationInHours;
+	private Integer durationSessionInHours;
+
+	@Parameter(name = "sessionRetentionInDays", defaultValueText = DEFAULT_SESSION_RETENTION_DAYS, description = "the duration of the session retention in days.")
+	private Integer durationRetentionDays;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -84,8 +88,11 @@ public class ConfigureDestination implements CommandExecutable {
 			if (!StringUtils.hasText(dataDirectory)) {
 				dataDirectory = ".";
 			}
-			if (durationInHours == null) {
-				durationInHours = Integer.valueOf(DEFAULT_SESSION_DURATION_HOURS);
+			if (durationSessionInHours == null) {
+				durationSessionInHours = Integer.valueOf(DEFAULT_SESSION_DURATION_HOURS);
+			}
+			if (durationRetentionDays == null) {
+				durationRetentionDays = Integer.valueOf(DEFAULT_SESSION_RETENTION_DAYS);
 			}
 			created = true;
 		}
@@ -95,7 +102,7 @@ public class ConfigureDestination implements CommandExecutable {
 		// -------------------------------------------------------------------------
 
 		if (StringUtils.hasText(encryptionScheme)) {
-			CryptoScheme es = CryptoScheme.fromName(encryptionScheme);
+			IntegratedCryptoScheme es = IntegratedCryptoScheme.fromName(encryptionScheme);
 			if (es == null) {
 				out.println("Invalid encryptionScheme. Use encryption:search to determine a valid scheme name.");
 				return;
@@ -107,8 +114,11 @@ public class ConfigureDestination implements CommandExecutable {
 			rd.setDataDirectory(dataDirectory);
 		}
 
-		if (durationInHours != null) {
-			rd.setSessionDurationInHours(durationInHours);
+		if (durationSessionInHours != null) {
+			rd.setSessionDurationInHours(durationSessionInHours);
+		}
+		if (durationRetentionDays != null) {
+			rd.setSessionRetentionInDays(durationSessionInHours);
 		}
 
 		ClientCliUtils.storeDestinationDescriptor(rd, destination);
