@@ -181,7 +181,7 @@ public class ClientCliUtils {
 		if (usernamePart.indexOf("@") != -1) {
 			return null;
 		}
-		return StringUtils.nullIfEmpty(fullyQualifiedName);
+		return StringUtils.nullIfEmpty(usernamePart);
 	}
 
 	/**
@@ -255,25 +255,10 @@ public class ClientCliUtils {
 		} catch (IOException e) {
 			throw new IllegalStateException("Zone descriptor file " + ZONE_DESCRIPTOR + " cannot be loaded.", e);
 		}
-		String zoneApex = p.getProperty(ZoneDescriptor.ZONE_APEX_PROPERTY);
-		if (!StringUtils.hasText(zoneApex)) {
-			throw new IllegalStateException(
-					"Zone descriptor file missing property " + ZoneDescriptor.ZONE_APEX_PROPERTY);
-		}
-		String version = p.getProperty(ZoneDescriptor.TDMX_VERSION_PROPERTY);
-		if (!StringUtils.hasText(version)) {
-			throw new IllegalStateException(
-					"Zone descriptor file missing property " + ZoneDescriptor.TDMX_VERSION_PROPERTY);
-		}
+		String zoneApex = getMandatoryStringProperty(p, ZoneDescriptor.ZONE_APEX_PROPERTY, ZONE_DESCRIPTOR);
+		int version = getMandatoryIntProperty(p, ZoneDescriptor.TDMX_VERSION_PROPERTY, ZONE_DESCRIPTOR);
 
-		int v = 0;
-		try {
-			v = Integer.parseInt(version);
-		} catch (NumberFormatException nfe) {
-			throw new IllegalStateException("Invalid TDMX version property " + ZoneDescriptor.ZONE_APEX_PROPERTY, nfe);
-		}
-
-		ZoneDescriptor zd = new ZoneDescriptor(zoneApex, v);
+		ZoneDescriptor zd = new ZoneDescriptor(zoneApex, version);
 
 		String scsUrl = p.getProperty(ZoneDescriptor.SCS_URL_PROPERTY);
 		zd.setScsUrl(NetUtils.getURL(scsUrl));
@@ -708,10 +693,6 @@ public class ClientCliUtils {
 		return uc;
 	}
 
-	public static String getSessionKeystoreFilename(String destination) {
-		return destination + ".sks";
-	}
-
 	public static String getDestinationDescriptorFilename(String destination) {
 		return destination + ".dst";
 	}
@@ -748,59 +729,28 @@ public class ClientCliUtils {
 
 	public static DestinationDescriptor loadDestinationDescriptor(String destination) {
 		checkDestinationDescriptorExists(destination);
+		String filename = getDestinationDescriptorFilename(destination);
+
 		Properties p = new Properties();
-		try (FileInputStream fis = new FileInputStream(getDestinationDescriptorFilename(destination))) {
+		try (FileInputStream fis = new FileInputStream(filename)) {
 			p.load(fis);
 		} catch (IOException e) {
 			throw new IllegalStateException("Destination descriptor file "
 					+ getDestinationDescriptorFilename(destination) + " cannot be loaded.", e);
 		}
-		String dataDir = p.getProperty(DestinationDescriptor.DATADIR);
-		if (!StringUtils.hasText(dataDir)) {
-			throw new IllegalStateException(
-					"Destination descriptor file missing property " + DestinationDescriptor.DATADIR);
-		}
-		String passphrase = p.getProperty(DestinationDescriptor.ENCRYPTION_PASSPHRASE);
-		if (!StringUtils.hasText(passphrase)) {
-			throw new IllegalStateException(
-					"Destination descriptor file missing property " + DestinationDescriptor.ENCRYPTION_PASSPHRASE);
-		}
-		String encScheme = p.getProperty(DestinationDescriptor.ENCRYPTION_SCHEME);
-		if (!StringUtils.hasText(encScheme)) {
-			throw new IllegalStateException(
-					"Destination descriptor file missing property " + DestinationDescriptor.ENCRYPTION_SCHEME);
-		}
+		String dataDir = getMandatoryStringProperty(p, DestinationDescriptor.DATADIR, filename);
+		String salt = getMandatoryStringProperty(p, DestinationDescriptor.SALT, filename);
+		String encScheme = getMandatoryStringProperty(p, DestinationDescriptor.ENCRYPTION_SCHEME, filename);
 		CryptoScheme es = CryptoScheme.fromName(encScheme);
 		if (es == null) {
 			throw new IllegalStateException("Illegal property " + DestinationDescriptor.ENCRYPTION_SCHEME);
 		}
-
-		String sessionDuration = p.getProperty(DestinationDescriptor.SESSION_DURATION_HOURS);
-		if (!StringUtils.hasText(sessionDuration)) {
-			throw new IllegalStateException(
-					"Destination descriptor file missing property " + DestinationDescriptor.SESSION_DURATION_HOURS);
-		}
-		int sd = 0;
-		try {
-			sd = Integer.parseInt(sessionDuration);
-		} catch (NumberFormatException nfe) {
-			throw new IllegalStateException("Invalid property " + DestinationDescriptor.SESSION_DURATION_HOURS, nfe);
-		}
-		String sessionRetention = p.getProperty(DestinationDescriptor.SESSION_RETENTION_DAYS);
-		if (!StringUtils.hasText(sessionRetention)) {
-			throw new IllegalStateException(
-					"Destination descriptor file missing property " + DestinationDescriptor.SESSION_RETENTION_DAYS);
-		}
-		int sr = 0;
-		try {
-			sr = Integer.parseInt(sessionRetention);
-		} catch (NumberFormatException nfe) {
-			throw new IllegalStateException("Invalid property " + DestinationDescriptor.SESSION_RETENTION_DAYS, nfe);
-		}
+		int sd = getMandatoryIntProperty(p, DestinationDescriptor.SESSION_DURATION_HOURS, filename);
+		int sr = getMandatoryIntProperty(p, DestinationDescriptor.SESSION_RETENTION_DAYS, filename);
 
 		DestinationDescriptor rd = new DestinationDescriptor();
 		rd.setDataDirectory(dataDir);
-		rd.setPassphrase(passphrase);
+		rd.setSalt(salt);
 		rd.setEncryptionScheme(es);
 		rd.setSessionDurationInHours(sd);
 		rd.setSessionRetentionInDays(sr);
@@ -815,7 +765,7 @@ public class ClientCliUtils {
 		p.setProperty(DestinationDescriptor.SESSION_RETENTION_DAYS,
 				String.format("%d", zd.getSessionRetentionInDays()));
 		p.setProperty(DestinationDescriptor.ENCRYPTION_SCHEME, zd.getEncryptionScheme().getName());
-		p.setProperty(DestinationDescriptor.ENCRYPTION_PASSPHRASE, zd.getPassphrase());
+		p.setProperty(DestinationDescriptor.SALT, zd.getSalt());
 
 		try (FileWriter fw = new FileWriter(getDestinationDescriptorFilename(destination))) {
 			p.store(fw,
@@ -832,16 +782,12 @@ public class ClientCliUtils {
 		public static String SESSION_DURATION_HOURS = "session.duration.hours";
 		public static String SESSION_RETENTION_DAYS = "session.retention.days";
 		public static String ENCRYPTION_SCHEME = "encryption.scheme";
-		public static String ENCRYPTION_PASSPHRASE = "encryption.passphrase";
+		public static String SALT = "salt";
 
 		private String dataDirectory;
-
 		private CryptoScheme encryptionScheme;
-
-		private String passphrase;
-
+		private String salt; // Hex 8 byte used for a
 		private int sessionDurationInHours;
-
 		private int sessionRetentionInDays;
 
 		public DestinationDescriptor() {
@@ -879,12 +825,12 @@ public class ClientCliUtils {
 			this.encryptionScheme = encryptionScheme;
 		}
 
-		public String getPassphrase() {
-			return passphrase;
+		public String getSalt() {
+			return salt;
 		}
 
-		public void setPassphrase(String passphrase) {
-			this.passphrase = passphrase;
+		public void setSalt(String salt) {
+			this.salt = salt;
 		}
 
 	}
@@ -1096,4 +1042,28 @@ public class ClientCliUtils {
 	public static void logError(PrintStream out, org.tdmx.core.api.v01.common.Error error) {
 		out.println(ClientCliLoggingUtils.toString(error));
 	}
+
+	private static String getMandatoryStringProperty(Properties p, String name, String filename) {
+		String value = p.getProperty(name);
+		if (!StringUtils.hasText(value)) {
+			throw new IllegalStateException(filename + " missing property " + name);
+		}
+		return value;
+	}
+
+	private static int getMandatoryIntProperty(Properties p, String name, String filename) {
+		String value = p.getProperty(name);
+		if (!StringUtils.hasText(value)) {
+			throw new IllegalStateException(filename + " missing property " + name);
+		}
+		int v = 0;
+		try {
+			v = Integer.parseInt(value);
+		} catch (NumberFormatException nfe) {
+			throw new IllegalStateException(filename + " property " + name + " is not an integer.", nfe);
+		}
+
+		return v;
+	}
+
 }

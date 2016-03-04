@@ -19,12 +19,20 @@
 package org.tdmx.client.cli.user;
 
 import java.io.PrintStream;
+import java.security.PublicKey;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.mds.GetDestinationSession;
+import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -98,7 +106,7 @@ public class PollReceive implements CommandExecutable {
 		DestinationDescriptor dd = ClientCliUtils.loadDestinationDescriptor(destination);
 
 		// -------------------------------------------------------------------------
-		// GET ZAS SESSION
+		// GET MDS SESSION
 		// -------------------------------------------------------------------------
 
 		PKIXCertificate scsPublicCertificate = ClientCliUtils.loadSCSTrustedCertificate(scsTrustedCertFile);
@@ -119,6 +127,20 @@ public class PollReceive implements CommandExecutable {
 		// CLI FUNCTION
 		// -------------------------------------------------------------------------
 
+		GetDestinationSession destReq = new GetDestinationSession();
+		destReq.setSessionId(sessionResponse.getSession().getSessionId());
+
+		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
+		if (!destRes.isSuccess()) {
+			out.println("Unable to get current destination session.");
+			ClientCliUtils.logError(out, sessionResponse.getError());
+			return;
+		}
+		Destinationsession ds = destRes.getDestination().getDestinationsession();
+
+		if (ds == null) {
+			out.println("No current destination session - initialization");
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -129,6 +151,26 @@ public class PollReceive implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Creates a new DestinationSession and updates the session store
+	 * 
+	 * @param dd
+	 * @param sessions
+	 * @return
+	 */
+	private Destinationsession createDestinationSession(DestinationDescriptor dd, String serviceName,
+			PublicKey agreementKey, PKIXCredential uc) {
+		Destinationsession ds = new Destinationsession();
+		// TODO
+		final Date dsDate = new Date();
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		ds.setEncryptionContextId(sdf.format(dsDate));
+		ds.setScheme(dd.getEncryptionScheme().getName());
+		ds.setSessionKey(new byte[] { 1, 2, 3 });
+
+		SignatureUtils.createDestinationSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, dsDate, serviceName, ds);
+		return ds;
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------

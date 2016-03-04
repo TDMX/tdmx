@@ -38,7 +38,6 @@ public class ConfigureDestination implements CommandExecutable {
 
 	private static final String DEFAULT_SCHEME = "pf_ecdh384-aes256/aes256";
 	private static final String DEFAULT_SESSION_DURATION_HOURS = "24";
-	private static final String DEFAULT_SESSION_RETENTION_DAYS = "2";
 
 	// TODO <user>-<service>.sks file is a session keystore with the sessionStorePassword protection
 	// where the alias is the encryptedContextId , the public X509 certificate contains the public agreement key, and
@@ -54,17 +53,11 @@ public class ConfigureDestination implements CommandExecutable {
 	@Parameter(name = "encryptionScheme", defaultValue = DEFAULT_SCHEME, description = "the encryption scheme name. Use encryption:list to list out the known encryption schemes.")
 	private String encryptionScheme;
 
-	@Parameter(name = "sharedPassphrase", defaultValueText = "<localname>@<domain>#<service>[<encryptionScheme>]", description = "the (secret) passphrase shared by both the origin and destination.")
-	private String sharedPassphrase;
-
 	@Parameter(name = "dataDir", defaultValueText = "<current working directory>", description = "the directory in which received files are stored.")
 	private String dataDirectory;
 
 	@Parameter(name = "sessionDurationInHours", defaultValueText = DEFAULT_SESSION_DURATION_HOURS, description = "the duration of the destination sessions validity in hours.")
 	private Integer durationInHours;
-
-	@Parameter(name = "sessionRetentionInDays", defaultValueText = DEFAULT_SESSION_RETENTION_DAYS, description = "the duration for which destination sessions are remembered. Typically some multiple of the session duration.")
-	private Integer retentionInDays;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -88,17 +81,11 @@ public class ConfigureDestination implements CommandExecutable {
 			if (!StringUtils.hasText(encryptionScheme)) {
 				encryptionScheme = DEFAULT_SCHEME;
 			}
-			if (!StringUtils.hasText(sharedPassphrase)) {
-				sharedPassphrase = destination + "[" + encryptionScheme + "]";
-			}
 			if (!StringUtils.hasText(dataDirectory)) {
 				dataDirectory = ".";
 			}
 			if (durationInHours == null) {
 				durationInHours = Integer.valueOf(DEFAULT_SESSION_DURATION_HOURS);
-			}
-			if (retentionInDays == null) {
-				retentionInDays = Integer.valueOf(DEFAULT_SESSION_RETENTION_DAYS);
 			}
 			created = true;
 		}
@@ -116,10 +103,6 @@ public class ConfigureDestination implements CommandExecutable {
 			rd.setEncryptionScheme(es);
 		}
 
-		if (StringUtils.hasText(sharedPassphrase)) {
-			rd.setPassphrase(sharedPassphrase);
-		}
-
 		if (StringUtils.hasText(dataDirectory)) {
 			rd.setDataDirectory(dataDirectory);
 		}
@@ -128,14 +111,10 @@ public class ConfigureDestination implements CommandExecutable {
 			rd.setSessionDurationInHours(durationInHours);
 		}
 
-		if (retentionInDays != null) {
-			rd.setSessionRetentionInDays(retentionInDays);
-		}
-
 		ClientCliUtils.storeDestinationDescriptor(rd, destination);
 
-		out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination) + " was "
-				+ (created ? "created." : "modified."));
+		out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination)
+				+ " was " + (created ? "created." : "modified."));
 		out.println(ClientCliLoggingUtils.toString(rd));
 
 	}

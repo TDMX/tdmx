@@ -66,7 +66,7 @@ public class ClientCliLoggingUtils {
 		StringBuilder sb = new StringBuilder();
 		sb.append("dataDir=").append(rd.getDataDirectory()).append(LINEFEED);
 		sb.append("encryptionScheme=").append(rd.getEncryptionScheme().getName()).append(LINEFEED);
-		sb.append("sharedPassphrase=").append(rd.getPassphrase()).append(LINEFEED);
+		sb.append("salt=").append(rd.getSalt()).append(LINEFEED);
 		sb.append("sessionDurationInHours=").append(rd.getSessionDurationInHours()).append(LINEFEED);
 		sb.append("sessionRetentionInDays=").append(rd.getSessionRetentionInDays()).append(LINEFEED);
 		return sb.toString();
