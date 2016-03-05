@@ -98,6 +98,8 @@ import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
@@ -241,6 +243,15 @@ public class ZASImpl implements ZAS {
 		final List<org.tdmx.lib.zone.domain.Service> services = getServiceService().search(zone, ssc);
 		if (!services.isEmpty()) {
 			ErrorCode.setError(ErrorCode.ServicesExist, response);
+			return response;
+		}
+
+		// and no channels
+		final ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+		sc.setDomain(domain);
+		final List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, sc);
+		if (!channels.isEmpty()) {
+			ErrorCode.setError(ErrorCode.ChannelAuthorizationExist, response);
 			return response;
 		}
 
@@ -530,7 +541,23 @@ public class ZASImpl implements ZAS {
 			ErrorCode.setError(ErrorCode.ChannelAuthorizationNotFound, response);
 			return response;
 		}
-		// deleting the Channel will cascade to automatically delete all ChannelFlowMessages
+
+		// deleting all the channel's messages before deleting the channel itself.
+		boolean moreMessages = true;
+		while (moreMessages) {
+			final ChannelMessageSearchCriteria sc = new ChannelMessageSearchCriteria(
+					new PageSpecifier(0, getBatchSize()));
+			sc.setDomain(existingDomain);
+
+			final List<ChannelMessage> messages = channelService.search(zone, sc);
+			for (ChannelMessage m : messages) {
+				channelService.delete(m);
+			}
+			if (messages.isEmpty()) {
+				moreMessages = false;
+			}
+		}
+
 		channelService.delete(existingCA.getChannel());
 
 		response.setSuccess(true);
