@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
+import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -62,13 +63,27 @@ public class ClientCliLoggingUtils {
 		return "Error [" + error.getCode() + "] " + error.getDescription();
 	}
 
-	public static String toString(DestinationDescriptor rd) {
+	public static String toString(UnencryptedSessionKey usk) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("dataDir=").append(rd.getDataDirectory()).append(LINEFEED);
-		sb.append("encryptionScheme=").append(rd.getEncryptionScheme().getName()).append(LINEFEED);
-		sb.append("salt=").append(rd.getSalt()).append(LINEFEED);
-		sb.append("sessionDurationInHours=").append(rd.getSessionDurationInHours()).append(LINEFEED);
-		sb.append("sessionRetentionInDays=").append(rd.getSessionRetentionInDays()).append(LINEFEED);
+		sb.append("encryptionContextId=").append(usk.getEncryptionContextId());
+		sb.append(" scheme=").append(usk.getScheme());
+		sb.append(" validFrom=").append(usk.getValidFrom());
+		return sb.toString();
+	}
+
+	public static String toString(DestinationDescriptor dd) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("dataDir=").append(dd.getDataDirectory()).append(LINEFEED);
+		sb.append("encryptionScheme=").append(dd.getEncryptionScheme().getName()).append(LINEFEED);
+		sb.append("salt=").append(dd.getSalt()).append(LINEFEED);
+		sb.append("sessionDurationInHours=").append(dd.getSessionDurationInHours()).append(LINEFEED);
+		sb.append("sessionRetentionInDays=").append(dd.getSessionRetentionInDays()).append(LINEFEED);
+		for (UnencryptedSessionKey sk : dd.getSessionKeys()) {
+			sb.append("sessionKey ").append(toString(sk)).append(LINEFEED);
+		}
+		if (!dd.getEncryptedSessionKeys().isEmpty()) {
+			sb.append("encrypted keys ").append(dd.getEncryptedSessionKeys().size());
+		}
 		return sb.toString();
 	}
 

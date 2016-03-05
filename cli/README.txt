@@ -267,11 +267,11 @@ ClientCLI> service:search dacPassword=changeme domain=z2.tdmx.org exec
 
 Step 20: setup a receiver configuration
 
-ClientCLI> receive:configure destination=user2@z2.tdmx.org#service1 exec
-         >receive descriptor file user2@z2.tdmx.org#service1.rcv was created.
+ClientCLI> destination:configure destination=user2@z2.tdmx.org#service1 userPassword=changeme exec
+         >destination descriptor file user2@z2.tdmx.org#service1.dst was created.
          >dataDir=.
-         >encryptionScheme=pf_ecdh384-aes256/aes256
-         >sharedPassphrase=user2@z2.tdmx.org#service1[pf_ecdh384-aes256/aes256]
+         >encryptionScheme=ecdh384:rsa/aes256
+         >salt=b92970d9785c00f8f38cfdef3776df97
          >sessionDurationInHours=24
-         >sessionRetentionInDays=2
+         >sessionRetentionInDays=24
 

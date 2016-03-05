@@ -31,6 +31,7 @@ import org.tdmx.client.cli.domain.CreateUserCredentials;
 import org.tdmx.client.cli.domain.DeactivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.DeactivateUserCredentials;
 import org.tdmx.client.cli.domain.DeleteAddress;
+import org.tdmx.client.cli.domain.DeleteChannel;
 import org.tdmx.client.cli.domain.DeleteDomain;
 import org.tdmx.client.cli.domain.DeleteService;
 import org.tdmx.client.cli.domain.SearchAddress;
@@ -52,7 +53,9 @@ import org.tdmx.client.cli.trust.SearchTrust;
 import org.tdmx.client.cli.trust.SearchUntrust;
 import org.tdmx.client.cli.user.ConfigureDestination;
 import org.tdmx.client.cli.user.DeleteDestination;
+import org.tdmx.client.cli.user.DescribeDestination;
 import org.tdmx.client.cli.user.EncryptionSearch;
+import org.tdmx.client.cli.user.PollReceive;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
@@ -102,10 +105,12 @@ public class ClientCLI {
 			CollectUntrust.class, SearchUntrust.class, DeleteUntrust.class,
 			SearchTrust.class, DeleteTrust.class, AddTrust.class,
 			SearchDistrust.class, DeleteDistrust.class, AddDistrust.class,
-			AuthorizeChannel.class, SearchChannel.class,
+			AuthorizeChannel.class, SearchChannel.class, DeleteChannel.class,
 			SearchUserCredentials.class, CreateUserCredentials.class, ActivateUserCredentials.class, SuspendUserCredentials.class, DeactivateUserCredentials.class,
-			ConfigureDestination.class, DeleteDestination.class,
-			EncryptionSearch.class };
+			ConfigureDestination.class, DescribeDestination.class, DeleteDestination.class,
+			EncryptionSearch.class,
+			PollReceive.class,
+			};
 	//@formatter:on
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

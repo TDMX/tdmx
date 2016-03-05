@@ -20,6 +20,7 @@ package org.tdmx.client.cli.user;
 
 import java.io.PrintStream;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
@@ -28,8 +29,6 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
-import org.tdmx.core.api.v01.mds.SetDestinationSession;
-import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
@@ -40,8 +39,8 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
-@Cli(name = "receive:poll", description = "performs a single receive from a destination", note = "Configure a destination first with destination:configure before receive.")
-public class PollReceive implements CommandExecutable {
+@Cli(name = "destination:describe", description = "describes the destination configuration and sessions.")
+public class DescribeDestination implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -62,6 +61,7 @@ public class PollReceive implements CommandExecutable {
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -73,17 +73,9 @@ public class PollReceive implements CommandExecutable {
 	@Override
 	public void run(PrintStream out) {
 		ClientCliUtils.checkValidDestination(destination);
-
 		String domain = ClientCliUtils.getDomainName(destination);
 		String localName = ClientCliUtils.getLocalName(destination);
 		String service = ClientCliUtils.getServiceName(destination);
-
-		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
-		if (domainInfo == null) {
-			out.println("No TDMX DNS TXT record found for " + domain);
-			return;
-		}
-		out.println("Domain info: " + domainInfo);
 
 		// -------------------------------------------------------------------------
 		// GET RECEIVER CONTEXT
@@ -95,12 +87,25 @@ public class PollReceive implements CommandExecutable {
 		}
 		PKIXCredential uc = ClientCliUtils.getUC(domain, localName, ucSerial, userPassword);
 
+		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
+		if (domainInfo == null) {
+			out.println("No TDMX DNS TXT record found for " + domain);
+			return;
+		}
+		out.println("Domain info: " + domainInfo);
+
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
 		DestinationDescriptor dd = null;
 		if (ClientCliUtils.destinationDescriptorExists(destination)) {
 			dd = ClientCliUtils.loadDestinationDescriptor(destination, userPassword);
+			out.println("Destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination)
+					+ " exists.");
+			out.println(ClientCliLoggingUtils.toString(dd));
 		} else {
-			out.println("Destination not configured yet. Use destination:configure command to initialize it.");
-			return;
+			out.println("Destination not configured. Use destination:configure to configure the destination.");
 		}
 
 		// -------------------------------------------------------------------------
@@ -123,7 +128,7 @@ public class PollReceive implements CommandExecutable {
 		MDS mds = ClientCliUtils.createMDSClient(uc, sessionResponse.getEndpoint());
 
 		// -------------------------------------------------------------------------
-		// CLI FUNCTION
+		// CHECK SESSION at SERVICEPROVIDER
 		// -------------------------------------------------------------------------
 
 		GetDestinationSession destReq = new GetDestinationSession();
@@ -137,10 +142,8 @@ public class PollReceive implements CommandExecutable {
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();
 
-		boolean uploadNewDs = false;
 		if (ds == null) {
-			out.println("No current destination session - initialization");
-			uploadNewDs = true;
+			out.println("No current destination session - initialization required.");
 		} else {
 			UnencryptedSessionKey sk = dd.getSessionKey(ds);
 
@@ -150,43 +153,18 @@ public class PollReceive implements CommandExecutable {
 				PKIXCertificate otherUC = CertificateIOUtils
 						.safeDecodeX509(ds.getUsersignature().getUserIdentity().getUsercertificate());
 				if (uc.getPublicCert().getSerialNumber() >= otherUC.getSerialNumber()) {
-					out.println(
-							"Re-initialize destination session at service provider since our user is same or more recent.");
-					uploadNewDs = true;
+					out.println("Re-initialize destination session since our user is same or more recent.");
 				} else {
-					out.println(
-							"Our serialnumber is not uptodate - destination session at service provider not changed.");
+					out.println("Our serialnumber is not uptodate - destination session not changed.");
 				}
 
 			} else if (sk.getSignerSerial() > uc.getPublicCert().getSerialNumber()) {
 				out.println(
-						"Current destination session at service provider defined by more recent user - standing down.");
+						"Current destination session at service provider defined by more recent user - no change allowed.");
 			} else if (sk.isValidityExpired(dd.getSessionDurationInHours())) {
-				out.println("Current destination session at service provider expired - renew.");
-				uploadNewDs = true;
+				out.println("Current destination session at service provider expired - renewal required.");
 			}
 		}
-
-		if (uploadNewDs) {
-			UnencryptedSessionKey sk = dd.createNewSessionKey();
-
-			ds = sk.getNewDestinationSession(uc, service);
-			// if we change the DD we must store it immediately.
-			ClientCliUtils.storeDestinationDescriptor(dd, destination, userPassword);
-
-			// upload new session to ServiceProvider.
-			SetDestinationSession setDestReq = new SetDestinationSession();
-			setDestReq.setSessionId(sessionResponse.getSession().getSessionId());
-			setDestReq.setDestinationsession(ds);
-			SetDestinationSessionResponse setDestRes = mds.setDestinationSession(setDestReq);
-			if (!setDestRes.isSuccess()) {
-				out.println("Unable to set new current destination session.");
-				ClientCliUtils.logError(out, setDestRes.getError());
-				return;
-			}
-		}
-
-		// TODO #95 do receive!
 	}
 
 	// -------------------------------------------------------------------------

@@ -23,6 +23,8 @@ import java.io.PrintStream;
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
@@ -36,13 +38,9 @@ public class ConfigureDestination implements CommandExecutable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private static final String DEFAULT_SCHEME = "pf_ecdh384-aes256/aes256";
+	private static final String DEFAULT_SCHEME = "ecdh384:rsa/aes256";
 	private static final String DEFAULT_SESSION_DURATION_HOURS = "24";
 	private static final String DEFAULT_SESSION_RETENTION_DAYS = "2";
-
-	// TODO <user>-<service>.sks file is a session keystore with the sessionStorePassword protection
-	// where the alias is the encryptedContextId , the public X509 certificate contains the public agreement key, and
-	// the private key is the private part of the agreement key.
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -50,6 +48,12 @@ public class ConfigureDestination implements CommandExecutable {
 
 	@Parameter(name = "destination", required = true, description = "the destination address. Format: <localname>@<domain>#<service>")
 	private String destination;
+
+	@Parameter(name = "userSerial", defaultValueText = "<greatest existing User serial>", description = "the user's certificate serialNumber.")
+	private Integer userSerialNumber;
+
+	@Parameter(name = "userPassword", required = true, description = "the user's keystore password.")
+	private String userPassword;
 
 	@Parameter(name = "encryptionScheme", defaultValue = DEFAULT_SCHEME, description = "the encryption scheme name. Use encryption:list to list out the known encryption schemes.")
 	private String encryptionScheme;
@@ -74,13 +78,33 @@ public class ConfigureDestination implements CommandExecutable {
 	@Override
 	public void run(PrintStream out) {
 		ClientCliUtils.checkValidDestination(destination);
+		String domain = ClientCliUtils.getDomainName(destination);
+		String localName = ClientCliUtils.getLocalName(destination);
+
+		// -------------------------------------------------------------------------
+		// GET RECEIVER CONTEXT
+		// -------------------------------------------------------------------------
+
+		int ucSerial = ClientCliUtils.getUCMaxSerialNumber(domain, localName);
+		if (userSerialNumber != null) {
+			ucSerial = userSerialNumber;
+		}
+		// checks userPassword
+		ClientCliUtils.getUC(domain, localName, ucSerial, userPassword);
+
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
 
 		boolean created = false;
-		DestinationDescriptor rd = null;
+		DestinationDescriptor dd = null;
 		if (ClientCliUtils.destinationDescriptorExists(destination)) {
-			rd = ClientCliUtils.loadDestinationDescriptor(destination);
+			dd = ClientCliUtils.loadDestinationDescriptor(destination, userPassword);
 		} else {
-			rd = new DestinationDescriptor();
+			dd = new DestinationDescriptor();
+			// initialize the salt
+			byte[] salt = EntropySource.getRandomBytes(16);
+			dd.setSalt(ByteArray.asHex(salt));
 
 			if (!StringUtils.hasText(encryptionScheme)) {
 				encryptionScheme = DEFAULT_SCHEME;
@@ -97,35 +121,31 @@ public class ConfigureDestination implements CommandExecutable {
 			created = true;
 		}
 
-		// -------------------------------------------------------------------------
-		// CLI FUNCTION
-		// -------------------------------------------------------------------------
-
 		if (StringUtils.hasText(encryptionScheme)) {
 			IntegratedCryptoScheme es = IntegratedCryptoScheme.fromName(encryptionScheme);
 			if (es == null) {
 				out.println("Invalid encryptionScheme. Use encryption:search to determine a valid scheme name.");
 				return;
 			}
-			rd.setEncryptionScheme(es);
+			dd.setEncryptionScheme(es);
 		}
 
 		if (StringUtils.hasText(dataDirectory)) {
-			rd.setDataDirectory(dataDirectory);
+			dd.setDataDirectory(dataDirectory);
 		}
 
 		if (durationSessionInHours != null) {
-			rd.setSessionDurationInHours(durationSessionInHours);
+			dd.setSessionDurationInHours(durationSessionInHours);
 		}
 		if (durationRetentionDays != null) {
-			rd.setSessionRetentionInDays(durationSessionInHours);
+			dd.setSessionRetentionInDays(durationSessionInHours);
 		}
 
-		ClientCliUtils.storeDestinationDescriptor(rd, destination);
+		ClientCliUtils.storeDestinationDescriptor(dd, destination, userPassword);
 
 		out.println("destination descriptor file " + ClientCliUtils.getDestinationDescriptorFilename(destination)
 				+ " was " + (created ? "created." : "modified."));
-		out.println(ClientCliLoggingUtils.toString(rd));
+		out.println(ClientCliLoggingUtils.toString(dd));
 
 	}
 

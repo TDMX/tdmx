@@ -645,7 +645,7 @@ public class ClientCliUtils {
 	public static int getUCMaxSerialNumber(String domainName, String localName) {
 		List<File> ucFiles = FileUtils.getFilesMatchingPattern(".", "^" + localName + "@" + domainName + "-.*.uc.crt$");
 		int maxSerial = 0;
-		Pattern ucCertPattern = Pattern.compile("^" + localName + "-(\\d+).*.uc.crt$");
+		Pattern ucCertPattern = Pattern.compile("^" + localName + "@" + domainName + "-(\\d+).*.uc.crt$");
 		for (File ucCert : ucFiles) {
 			Matcher m = ucCertPattern.matcher(ucCert.getName());
 			if (m.matches()) {
@@ -739,7 +739,15 @@ public class ClientCliUtils {
 		}
 	}
 
-	public static DestinationDescriptor loadDestinationDescriptor(String destination) {
+	/**
+	 * Load the DestinationDescriptor file for the destination. We try to unencrypt each session key, but keep any which
+	 * we fail to decrypt because they belong to other users encrypted with other user's passwords.
+	 * 
+	 * @param destination
+	 * @param userPassword
+	 * @return
+	 */
+	public static DestinationDescriptor loadDestinationDescriptor(String destination, String userPassword) {
 		checkDestinationDescriptorExists(destination);
 		String filename = getDestinationDescriptorFilename(destination);
 
@@ -766,10 +774,26 @@ public class ClientCliUtils {
 		rd.setEncryptionScheme(es);
 		rd.setSessionDurationInHours(sd);
 		rd.setSessionRetentionInDays(sr);
+
+		// load session keys - decrypting the ones which have been encrypted with the same password as the user
+		// provided.
+		int idx = 1;
+		String sessionProperty = null;
+		while ((sessionProperty = p.getProperty("session[" + idx + "]")) != null) {
+			UnencryptedSessionKey usk = UnencryptedSessionKey.decrypt(sessionProperty, ByteArray.fromHex(salt),
+					userPassword);
+			if (usk != null) {
+				rd.getSessionKeys().add(usk);
+			} else {
+				rd.getEncryptedSessionKeys().add(sessionProperty);
+			}
+			idx++;
+		}
+
 		return rd;
 	}
 
-	public static void storeDestinationDescriptor(DestinationDescriptor zd, String destination) {
+	public static void storeDestinationDescriptor(DestinationDescriptor zd, String destination, String userPassword) {
 		Properties p = new Properties();
 		p.setProperty(DestinationDescriptor.DATADIR, zd.getDataDirectory());
 		p.setProperty(DestinationDescriptor.SESSION_DURATION_HOURS,
@@ -779,6 +803,19 @@ public class ClientCliUtils {
 		p.setProperty(DestinationDescriptor.ENCRYPTION_SCHEME, zd.getEncryptionScheme().getName());
 		p.setProperty(DestinationDescriptor.SALT, zd.getSalt());
 
+		// store sessionkeys, the ones we control and then the other's
+		int idx = 1;
+		for (UnencryptedSessionKey usk : zd.getSessionKeys()) {
+			p.setProperty(String.format(DestinationDescriptor.SESSION, idx),
+					usk.toEncryptedString(ByteArray.fromHex(zd.getSalt()), userPassword));
+			idx++;
+		}
+		for (String esk : zd.getEncryptedSessionKeys()) {
+			p.setProperty(String.format(DestinationDescriptor.SESSION, idx), esk);
+			idx++;
+		}
+
+		// dump to disk
 		try (FileWriter fw = new FileWriter(getDestinationDescriptorFilename(destination))) {
 			p.store(fw,
 					"This is a destination descriptor file produced by the receive:configure CLI command. Do not edit.");
@@ -932,6 +969,7 @@ public class ClientCliUtils {
 		public static String SESSION_RETENTION_DAYS = "retention.days";
 		public static String ENCRYPTION_SCHEME = "scheme";
 		public static String SALT = "salt";
+		public static String SESSION = "SESSION[%d]";
 
 		private String dataDirectory;
 		private IntegratedCryptoScheme encryptionScheme;
@@ -940,7 +978,8 @@ public class ClientCliUtils {
 		private int sessionDurationInHours;
 		private int sessionRetentionInDays;
 
-		private List<UnencryptedSessionKey> sessionKeys;
+		private List<UnencryptedSessionKey> sessionKeys = new ArrayList<>();
+		private List<String> encryptedSessionKeys = new ArrayList<>();
 
 		public DestinationDescriptor() {
 		}
@@ -1018,8 +1057,8 @@ public class ClientCliUtils {
 			return sessionKeys;
 		}
 
-		public void setSessionKeys(List<UnencryptedSessionKey> sessionKeys) {
-			this.sessionKeys = sessionKeys;
+		public List<String> getEncryptedSessionKeys() {
+			return encryptedSessionKeys;
 		}
 
 	}
