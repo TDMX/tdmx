@@ -691,7 +691,31 @@ public class ZASImpl implements ZAS {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
 
-		// TODO serialNumber > existing User creds serialNumber on the Address
+		// new serialNumber > all existing DAC's serialNumber on the domain
+		int maxExistingSerialNumber = 0;
+		boolean moreCreds = true;
+		for (int pageNo = 0; moreCreds; pageNo++) {
+			final AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomainName(dac.getDomainName());
+			sc.setType(AgentCredentialType.DAC);
+
+			final List<AgentCredential> creds = credentialService.search(zone, sc);
+			for (AgentCredential c : creds) {
+				final int serialNum = c.getPublicCertificate().getSerialNumber();
+				if (serialNum > maxExistingSerialNumber) {
+					maxExistingSerialNumber = serialNum;
+				}
+			}
+			if (creds.isEmpty()) {
+				moreCreds = false;
+			}
+		}
+		if (newCred.getPublicCertificate().getSerialNumber() <= maxExistingSerialNumber) {
+			ErrorCode.setError(ErrorCode.DomainAdministratorCredentialSerialIncreasing, response,
+					maxExistingSerialNumber);
+			return response;
+		}
 
 		// create the DAC
 		credentialService.createOrUpdate(newCred);
@@ -1117,7 +1141,31 @@ public class ZASImpl implements ZAS {
 			newCred.setCredentialStatus(AgentCredentialStatus.valueOf(parameters.getStatus().value()));
 		}
 
-		// TODO serialNumber > existing User creds serialNumber on the Address
+		// serialNumber > all existing User cred's serialNumber on the Address
+		int maxExistingSerialNumber = 0;
+		boolean moreCreds = true;
+		for (int pageNo = 0; moreCreds; pageNo++) {
+			final AgentCredentialSearchCriteria sc = new AgentCredentialSearchCriteria(
+					new PageSpecifier(pageNo, getBatchSize()));
+			sc.setDomainName(uc.getDomainName());
+			sc.setAddressName(uc.getAddressName());
+			sc.setType(AgentCredentialType.UC);
+
+			final List<AgentCredential> creds = credentialService.search(zone, sc);
+			for (AgentCredential c : creds) {
+				final int serialNum = c.getPublicCertificate().getSerialNumber();
+				if (serialNum > maxExistingSerialNumber) {
+					maxExistingSerialNumber = serialNum;
+				}
+			}
+			if (creds.isEmpty()) {
+				moreCreds = false;
+			}
+		}
+		if (newCred.getPublicCertificate().getSerialNumber() <= maxExistingSerialNumber) {
+			ErrorCode.setError(ErrorCode.UserCredentialSerialIncreasing, response, maxExistingSerialNumber);
+			return response;
+		}
 
 		// create the UC
 		credentialService.createOrUpdate(newCred);
