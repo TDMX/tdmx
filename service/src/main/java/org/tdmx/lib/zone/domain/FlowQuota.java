@@ -71,6 +71,8 @@ public class FlowQuota implements Serializable {
 	@Column(length = ChannelAuthorizationStatus.MAX_AUTH_STATUS_LEN, nullable = false)
 	private ChannelAuthorizationStatus authorizationStatus;
 
+	// TODO #49 : max size of individual messages from authorization
+
 	@Enumerated(EnumType.STRING)
 	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
 	private FlowControlStatus relayStatus;

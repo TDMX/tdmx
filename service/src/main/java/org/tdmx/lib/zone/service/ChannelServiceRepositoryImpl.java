@@ -369,6 +369,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
+		// TODO #49 : limit max size of message to authorized max
 
 		// get and lock quota and check we can send
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
@@ -392,6 +393,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg) {
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
+		// TODO #49 : limit max size of message to authorized max
+
 		// get and lock quota and check we can send
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {

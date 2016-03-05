@@ -230,7 +230,7 @@ public class MOSImpl implements MOS {
 			ErrorCode.setError(ErrorCode.InvalidMessageSource, response);
 			return response;
 		}
-		m.setOriginSerialNr(1); // FIXME
+		m.setOriginSerialNr(srcUc.getSerialNumber());
 
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
@@ -238,7 +238,7 @@ public class MOSImpl implements MOS {
 			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-		m.setDestinationSerialNr(1); // FIXME
+		m.setDestinationSerialNr(dstUc.getSerialNumber());
 
 		// create originating ChannelMessage
 		Zone zone = session.getZone();

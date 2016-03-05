@@ -25,16 +25,23 @@ import java.util.Date;
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.ChannelAuthorizationFilter;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
+import org.tdmx.core.api.v01.msg.ChannelDestinationFilter;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.ChannelEndpointFilter;
+import org.tdmx.core.api.v01.msg.Channelinfo;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Permission;
+import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
 import org.tdmx.core.api.v01.scs.GetZASSession;
 import org.tdmx.core.api.v01.scs.GetZASSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -128,6 +135,8 @@ public class AuthorizeChannel implements CommandExecutable {
 		// -------------------------------------------------------------------------
 		// Validation
 		// -------------------------------------------------------------------------
+		ClientCliUtils.checkValidUserName(from);
+		ClientCliUtils.checkValidDestination(to);
 		String fromLocalName = ClientCliUtils.getLocalName(from);
 		String fromDomain = ClientCliUtils.getDomainName(from);
 		String toLocalName = ClientCliUtils.getLocalName(to);
@@ -140,12 +149,6 @@ public class AuthorizeChannel implements CommandExecutable {
 			return;
 		}
 
-		// -------------------------------------------------------------------------
-		// CLI FUNCTION
-		// -------------------------------------------------------------------------
-		org.tdmx.core.api.v01.zas.SetChannelAuthorization setChannelAuthRequest = new org.tdmx.core.api.v01.zas.SetChannelAuthorization();
-		setChannelAuthRequest.setDomain(domain);
-
 		ChannelEndpoint origin = new ChannelEndpoint();
 		origin.setLocalname(fromLocalName);
 		origin.setDomain(fromDomain);
@@ -156,26 +159,151 @@ public class AuthorizeChannel implements CommandExecutable {
 		Channel c = new Channel();
 		c.setOrigin(origin);
 		c.setDestination(dest);
+
+		// -------------------------------------------------------------------------
+		// CLI FUNCTION
+		// -------------------------------------------------------------------------
+
+		// get the any current pending authorization to see if there is a pending authorization from the other party.
+		RequestedChannelAuthorization rca = null;
+		// we only create a new authorization if something has changed from before
+		Currentchannelauthorization ca = null;
+
+		org.tdmx.core.api.v01.zas.SearchChannel searchChannelRequest = new org.tdmx.core.api.v01.zas.SearchChannel();
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(1);
+		searchChannelRequest.setPage(p);
+
+		ChannelDestinationFilter cdf = new ChannelDestinationFilter();
+		cdf.setLocalname(toLocalName);
+		cdf.setDomain(toDomain);
+		cdf.setServicename(toService);
+
+		ChannelEndpointFilter cef = new ChannelEndpointFilter();
+		cef.setDomain(fromDomain);
+		cef.setLocalname(fromLocalName);
+
+		ChannelAuthorizationFilter caf = new ChannelAuthorizationFilter();
+		caf.setDomain(domain);
+		caf.setDestination(cdf);
+		caf.setOrigin(cef);
+		searchChannelRequest.setFilter(caf);
+		// we dont filter just unconfirmed because we also need to check if it's not a real change
+		// and keep the existing permissions just to change say the flowcontrol limits.
+		searchChannelRequest.setSessionId(sessionResponse.getSession().getSessionId());
+
+		org.tdmx.core.api.v01.zas.SearchChannelResponse searchChannelResponse = zas.searchChannel(searchChannelRequest);
+		if (searchChannelResponse.isSuccess()) {
+			if (!searchChannelResponse.getChannelinfos().isEmpty()) {
+				Channelinfo ci = searchChannelResponse.getChannelinfos().get(0);
+				rca = ci.getChannelauthorization().getUnconfirmed();
+				ca = ci.getChannelauthorization().getCurrent();
+			}
+		} else {
+			ClientCliUtils.logError(out, searchChannelResponse.getError());
+		}
+
+		if (rca != null) {
+			// TODO #87: we need to check if we "trust" the ZAC of the requested authorization
+			out.println("TODO check trust of " + ClientCliLoggingUtils.toString(rca));
+		}
+
+		// set the new authorization - confirming the requested, trusted other parties auth
+		org.tdmx.core.api.v01.zas.SetChannelAuthorization setChannelAuthRequest = new org.tdmx.core.api.v01.zas.SetChannelAuthorization();
+		setChannelAuthRequest.setDomain(domain);
 		setChannelAuthRequest.setChannel(c);
 
-		Currentchannelauthorization ca = new Currentchannelauthorization();
-		if (isOrigin) {
-			Permission originPermission = new Permission();
-			originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
-			originPermission.setPermission(Grant.ALLOW);
-			// sign the origination permission
-			SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
-					originPermission);
-			ca.setOriginPermission(originPermission);
-		}
-		if (isDestination) {
-			Permission destinationPermission = new Permission();
-			destinationPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
-			destinationPermission.setPermission(Grant.ALLOW);
-			// sign the destination permission
-			SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
-					destinationPermission);
-			ca.setDestinationPermission(destinationPermission);
+		// new current authorization
+		if (ca == null) {
+			ca = new Currentchannelauthorization();
+			if (isOrigin) {
+				Permission originPermission = new Permission();
+				originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
+				originPermission.setPermission(Grant.ALLOW);
+				// sign the origination permission
+				SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
+						originPermission);
+				ca.setOriginPermission(originPermission);
+
+				// take over the requested destination permission if there is one.
+				if (rca != null && rca.getDestinationPermission() != null) {
+					ca.setDestinationPermission(rca.getDestinationPermission());
+				}
+			}
+			if (isDestination) {
+				Permission destinationPermission = new Permission();
+				destinationPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
+				destinationPermission.setPermission(Grant.ALLOW);
+				// sign the destination permission
+				SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
+						destinationPermission);
+				ca.setDestinationPermission(destinationPermission);
+
+				// take over the requested origin permission if one is requested
+				if (rca != null && rca.getOriginPermission() != null) {
+					ca.setOriginPermission(rca.getOriginPermission());
+				}
+			}
+		} else {
+			// existing authorization
+			if (isOrigin) {
+				Permission originPermission = new Permission();
+				originPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
+				originPermission.setPermission(Grant.ALLOW);
+
+				PKIXCertificate originalSigner = CertificateIOUtils.safeDecodeX509(ca.getOriginPermission()
+						.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate());
+
+				// any significant change requiring re-signing the new permission
+				if (originalSigner == null || originalSigner.getSerialNumber() != dac.getPublicCert().getSerialNumber()
+						|| !originPermission.getMaxPlaintextSizeBytes()
+								.equals(ca.getOriginPermission().getMaxPlaintextSizeBytes())
+						|| originPermission.getPermission() != ca.getOriginPermission().getPermission()) {
+
+					// sign the replacement origination permission
+					SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
+							originPermission);
+					ca.setOriginPermission(originPermission);
+					out.println("Origin permission modified.");
+
+				} else {
+					out.println("Origin permission remains unchanged.");
+				}
+
+				// take over the requested destination permission if there is one.
+				if (rca != null && rca.getDestinationPermission() != null) {
+					ca.setDestinationPermission(rca.getDestinationPermission());
+					out.println("Confirming requested destination permission.");
+				}
+			}
+			if (isDestination) {
+				Permission destinationPermission = new Permission();
+				destinationPermission.setMaxPlaintextSizeBytes(BigInteger.valueOf(maxSizeMb * ClientCliUtils.MEGA));
+				destinationPermission.setPermission(Grant.ALLOW);
+				PKIXCertificate originalSigner = CertificateIOUtils.safeDecodeX509(ca.getDestinationPermission()
+						.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate());
+
+				// any significant change requiring re-signing the new permission
+				if (originalSigner == null || originalSigner.getSerialNumber() != dac.getPublicCert().getSerialNumber()
+						|| !destinationPermission.getMaxPlaintextSizeBytes()
+								.equals(ca.getOriginPermission().getMaxPlaintextSizeBytes())
+						|| destinationPermission.getPermission() != ca.getOriginPermission().getPermission()) {
+					// sign the replacement destination permission
+					SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_384_RSA, new Date(), c,
+							destinationPermission);
+					ca.setDestinationPermission(destinationPermission);
+					out.println("Destination permission modified.");
+				} else {
+					out.println("Destination permission remains unchanged.");
+				}
+				// take over the requested origin permission if one is requested
+				if (rca != null && rca.getOriginPermission() != null) {
+					ca.setOriginPermission(rca.getOriginPermission());
+					out.println("Confirming requested origin permission.");
+				}
+			}
+
 		}
 
 		Limit l = new Limit();
@@ -192,7 +320,6 @@ public class AuthorizeChannel implements CommandExecutable {
 				.setChannelAuthorization(setChannelAuthRequest);
 		if (setChannelAuthResponse.isSuccess()) {
 			out.println("Authorization " + ClientCliLoggingUtils.toString(c) + " successful.");
-
 		} else {
 			ClientCliUtils.logError(out, setChannelAuthResponse.getError());
 		}

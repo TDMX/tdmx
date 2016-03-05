@@ -286,6 +286,7 @@ public interface ChannelService {
 	public void delete(ChannelMessage message);
 
 	public enum SubmitMessageOperationStatus {
+		MESSAGE_TOO_LARGE, // TODO #49 limit size of messages being sent.
 		FLOW_CONTROL_CLOSED,
 		CHANNEL_CLOSED,
 	}

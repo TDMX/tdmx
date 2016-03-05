@@ -349,6 +349,7 @@ public class RelayControlServiceClientConnector
 		stats.setLoadValue(relayOutboundService.getCurrentLoad());
 
 		CreateSessionResponse.Builder response = CreateSessionResponse.newBuilder();
+		response.setSuccess(true);
 		response.setStatistic(stats);
 		return response.build();
 	}

@@ -89,6 +89,7 @@ public class AgentCredentialDescriptor {
 		builder.append(" ,zoneApex=").append(zoneApex);
 		builder.append(" ,domainName=").append(domainName);
 		builder.append(" ,addressName=").append(addressName);
+		builder.append(" ,serialNumber=").append(serialNumber);
 		builder.append("]");
 		return builder.toString();
 	}
