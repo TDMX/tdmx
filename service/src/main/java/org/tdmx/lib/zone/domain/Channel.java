@@ -19,7 +19,6 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -32,7 +31,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -119,10 +117,6 @@ public class Channel implements Serializable {
 	 */
 	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private ChannelAuthorization authorization;
-
-	// we don't make getters nor setters for CMs because there can be too many, but we do want cascade of deletions
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ChannelMessage> channelFlowMessages;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

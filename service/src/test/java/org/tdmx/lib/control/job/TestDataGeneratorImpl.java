@@ -57,6 +57,8 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
@@ -145,8 +147,8 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				zac = TestCredentialGenerator.createZAC(input.getZoneApex(), 10, i + 1);
 
 				// create the AccountZoneAdministrationCredential in ControlDB
-				AccountZoneAdministrationCredential zAC = createAccountZoneAdministrationCredential(result.getAccount()
-						.getAccountId(), zac);
+				AccountZoneAdministrationCredential zAC = createAccountZoneAdministrationCredential(
+						result.getAccount().getAccountId(), zac);
 
 				// create the AgentCredential for the ZAC in ZoneDB
 				AgentCredential zA = createAgentCredential(zone, null, null, zac);
@@ -241,10 +243,10 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				for (AddressHolder toAddressHolder : toDomain.getAddresses()) {
 					Address to = toAddressHolder.getAddress();
 
-					ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(), from.getDomain()
-							.getDomainName(), "SP");
-					ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(), to.getDomain()
-							.getDomainName(), service.getServiceName());
+					ChannelOrigin co = ZoneFacade.createChannelOrigin(from.getLocalName(),
+							from.getDomain().getDomainName(), "SP");
+					ChannelDestination cd = ZoneFacade.createChannelDestination(to.getLocalName(),
+							to.getDomain().getDomainName(), service.getServiceName());
 
 					Channel sendChannel = null;
 					Channel recvChannel = null;
@@ -312,6 +314,9 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		}
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
+
+			// delete Messages
+			deleteMessages(zone);
 
 			// delete FlowTargets, depends on AgentCredentials & Services
 			deleteDestinations(zone);
@@ -460,6 +465,21 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 				channelService.delete(c);
 			}
 			if (channels.isEmpty()) {
+				more = false;
+			}
+		}
+	}
+
+	private void deleteMessages(Zone zone) {
+		boolean more = true;
+		while (more) {
+			ChannelMessageSearchCriteria sc = new ChannelMessageSearchCriteria(new PageSpecifier(0, 999));
+
+			List<ChannelMessage> messages = channelService.search(zone, sc);
+			for (ChannelMessage m : messages) {
+				channelService.delete(m);
+			}
+			if (messages.isEmpty()) {
 				more = false;
 			}
 		}

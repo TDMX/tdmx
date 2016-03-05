@@ -306,7 +306,7 @@ public class DomainToApiMapper {
 			current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 			c.setCurrent(current);
 		}
-		if (ca.getReqRecvAuthorization() != null || ca.getSendAuthorization() != null) {
+		if (ca.getReqRecvAuthorization() != null || ca.getReqSendAuthorization() != null) {
 			RequestedChannelAuthorization unconfirmed = new RequestedChannelAuthorization();
 			unconfirmed.setOriginPermission(mapPermission(ca.getReqSendAuthorization()));
 			unconfirmed.setDestinationPermission(mapPermission(ca.getReqRecvAuthorization()));
