@@ -53,6 +53,7 @@ import org.tdmx.client.adapter.SystemDefaultTrustedCertificateProvider;
 import org.tdmx.client.adapter.TrustedServerCertificateProvider;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.KeyStoreUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -65,7 +66,9 @@ import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mos.ws.MOS;
+import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.scs.Endpoint;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
@@ -186,6 +189,9 @@ public class ClientCliUtils {
 				&& fullyQualifiedName.indexOf("@") == fullyQualifiedName.lastIndexOf("@")) {
 			usernamePart = StringUtils
 					.nullIfEmpty(fullyQualifiedName.substring(0, fullyQualifiedName.lastIndexOf("@")));
+		}
+		if (!StringUtils.hasText(usernamePart)) {
+			return null;
 		}
 		if (usernamePart.indexOf("#") != -1) {
 			return null;
@@ -1089,6 +1095,85 @@ public class ClientCliUtils {
 	}
 
 	// -------------------------------------------------------------------------
+	// PUBLIC METHODS - Signature
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Checks the PKIX certificate chain of a user certificate ( up to the zone root certificate ).
+	 * 
+	 * @param ui
+	 * @return
+	 */
+	public static PKIXCertificate[] getValidUserIdentity(UserIdentity ui) {
+		PKIXCertificate uc = CertificateIOUtils.safeDecodeX509(ui.getUsercertificate());
+		if (uc == null) {
+			throw new IllegalStateException("User certificate invalid.");
+		}
+		PKIXCertificate dac = CertificateIOUtils.safeDecodeX509(ui.getDomaincertificate());
+		if (dac == null) {
+			throw new IllegalStateException("Domain administrator certificate invalid.");
+		}
+		PKIXCertificate zac = CertificateIOUtils.safeDecodeX509(ui.getRootcertificate());
+		if (zac == null) {
+			throw new IllegalStateException("Zone root certificate invalid.");
+		}
+
+		try {
+			if (!CredentialUtils.isValidUserCertificate(zac, dac, uc)) {
+				throw new IllegalStateException("User certificate chain invalid.");
+			}
+		} catch (CryptoCertificateException e) {
+			throw new IllegalStateException("Problem checking User certificate chain.", e);
+		}
+
+		return new PKIXCertificate[] { uc, dac, zac };
+	}
+
+	/**
+	 * Checks the PKIX certificate chain of an administrator certificate ( up to the zone root certificate ).
+	 * 
+	 * @param ai
+	 * @return
+	 */
+	public static PKIXCertificate[] getValidAdministrator(AdministratorIdentity ai) {
+		PKIXCertificate adac = CertificateIOUtils.safeDecodeX509(ai.getDomaincertificate());
+		if (adac == null) {
+			throw new IllegalStateException("Domain administrator certificate invalid.");
+		}
+		PKIXCertificate azac = CertificateIOUtils.safeDecodeX509(ai.getRootcertificate());
+		if (azac == null) {
+			throw new IllegalStateException("Zone root certificate invalid.");
+		}
+
+		try {
+			if (!CredentialUtils.isValidDomainAdministratorCertificate(azac, adac)) {
+				throw new IllegalStateException("Administrator certificate chain invalid.");
+			}
+		} catch (CryptoCertificateException e) {
+			throw new IllegalStateException("Problem checking Administrator certificate chain.", e);
+		}
+		return new PKIXCertificate[] { adac, azac };
+	}
+
+	/**
+	 * Return true if the user and admin have the same TDMX zone root certificate.
+	 * 
+	 * @param user
+	 * @param admin
+	 * @return true if the user and admin have the same TDMX zone root certificate.
+	 */
+	public static boolean isSameRootCertificate(PKIXCertificate[] user, PKIXCertificate[] admin) {
+		PKIXCertificate userRoot = PKIXCertificate.getZoneRootPublicKey(user);
+		PKIXCertificate adminRoot = PKIXCertificate.getZoneRootPublicKey(admin);
+
+		if (userRoot != null && userRoot.isTdmxZoneAdminCertificate() && adminRoot != null
+				&& adminRoot.isTdmxZoneAdminCertificate()) {
+			return userRoot.isIdentical(adminRoot);
+		}
+		return false;
+	}
+
+	// -------------------------------------------------------------------------
 	// PUBLIC METHODS - API-s
 	// -------------------------------------------------------------------------
 
@@ -1234,7 +1319,7 @@ public class ClientCliUtils {
 		return client;
 	}
 
-	public static MOS createMOSClient(PKIXCredential uc, URL mosUrl, PKIXCertificate mosServerCert) {
+	public static MOS createMOSClient(PKIXCredential uc, Endpoint endpoint) {
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -1246,12 +1331,13 @@ public class ClientCliUtils {
 		ClientKeyManagerFactoryImpl kmf = new ClientKeyManagerFactoryImpl();
 		kmf.setCredentialProvider(cp);
 
-		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(mosServerCert);
+		PKIXCertificate serverCert = CertificateIOUtils.safeDecodeX509(endpoint.getTlsCertificate());
+		SingleTrustedCertificateProvider tcp = new SingleTrustedCertificateProvider(serverCert);
 		ServerTrustManagerFactoryImpl stfm = new ServerTrustManagerFactoryImpl();
 		stfm.setCertificateProvider(tcp);
 
 		SoapClientFactory<MOS> factory = new SoapClientFactory<>();
-		factory.setUrl(mosUrl.toString());
+		factory.setUrl(endpoint.getUrl());
 		factory.setConnectionTimeoutMillis(10000);
 		factory.setKeepAlive(true);
 		factory.setClazz(MOS.class);

@@ -56,6 +56,7 @@ import org.tdmx.client.cli.user.DeleteDestination;
 import org.tdmx.client.cli.user.DescribeDestination;
 import org.tdmx.client.cli.user.EncryptionSearch;
 import org.tdmx.client.cli.user.PollReceive;
+import org.tdmx.client.cli.user.SendFile;
 import org.tdmx.client.cli.zone.CheckScs;
 import org.tdmx.client.cli.zone.CreateZone;
 import org.tdmx.client.cli.zone.CreateZoneAdministratorCredentials;
@@ -110,6 +111,7 @@ public class ClientCLI {
 			ConfigureDestination.class, DescribeDestination.class, DeleteDestination.class,
 			EncryptionSearch.class,
 			PollReceive.class,
+			SendFile.class,
 			};
 	//@formatter:on
 	// -------------------------------------------------------------------------

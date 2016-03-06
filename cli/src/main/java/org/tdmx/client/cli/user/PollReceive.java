@@ -54,10 +54,10 @@ public class PollReceive implements CommandExecutable {
 	@Parameter(name = "destination", required = true, description = "the destination address. Format: <localname>@<domain>#<service>")
 	private String destination;
 
-	@Parameter(name = "userSerial", defaultValueText = "<greatest existing User serial>", description = "the user's certificate serialNumber.")
+	@Parameter(name = "userSerial", defaultValueText = "<greatest existing User serial>", description = "the destination user's certificate serialNumber.")
 	private Integer userSerialNumber;
 
-	@Parameter(name = "userPassword", required = true, description = "the user's keystore password.")
+	@Parameter(name = "userPassword", required = true, description = "the destination user's keystore password.")
 	private String userPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
@@ -184,9 +184,12 @@ public class PollReceive implements CommandExecutable {
 				ClientCliUtils.logError(out, setDestRes.getError());
 				return;
 			}
+			out.println("New session set at the service provider.");
 		}
 
 		// TODO #95 do receive!
+
+		// TODO #49 do send.
 	}
 
 	// -------------------------------------------------------------------------

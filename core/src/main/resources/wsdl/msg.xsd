@@ -279,7 +279,7 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="ChannelFlow">
+	<xs:complexType name="ChannelInfo">
 		<xs:sequence>
 			<xs:element ref="channelauthorization"/>
 			<xs:element name="status" type="FlowStatus">
@@ -465,7 +465,7 @@
 	</xs:element>
 	<xs:element name="ipzone" type="ipzonename"/>
 	<xs:element name="channel" type="Channel"/>
-	<xs:element name="channelinfo" type="ChannelFlow"/>
+	<xs:element name="channelinfo" type="ChannelInfo"/>
 	<xs:element name="destinationinfo" type="Destination"/>
 	<xs:element name="sessioninfo" type="ChannelDestinationSession"/>
 	<xs:element name="rootcertificate" type="x509certificate"/>

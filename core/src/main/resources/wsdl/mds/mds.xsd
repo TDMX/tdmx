@@ -76,7 +76,7 @@
 	<!-- ********************************************* -->
 	<xs:complexType name="receiveRequestType">
 		<xs:annotation>
-			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an autoacknowledging session.</xs:documentation>
+			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an auto-acknowledging session.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="common:Request">
@@ -154,7 +154,7 @@
 	<xs:element name="getDestinationSessionResponse" type="getDestinationSessionResponseType"/>
 	<xs:element name="setDestinationSession" type="setDestinationSessionRequestType">
 		<xs:annotation>
-			<xs:documentation>creates destination if it doesn't exist and then overwrites the session. Pre-requisite is that the service exists in the domain of the calling Agent. Creates or overwrites ChannelFlowSessions in all ChannelAuthorizations.</xs:documentation>
+			<xs:documentation>creates destination if it doesn't exist and then overwrites the session. Pre-requisite is that the service exists in the domain of the calling Agent.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="setDestinationSessionResponse" type="setDestinationSessionResponseType"/>
