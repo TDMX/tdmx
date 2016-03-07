@@ -40,4 +40,8 @@ public class CryptoException extends Exception {
 		return rc;
 	}
 
+	@Override
+	public String getMessage() {
+		return (rc != null) ? rc.name() : "Unknown";
+	}
 }

@@ -26,6 +26,7 @@ import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
@@ -141,7 +142,14 @@ public class PollReceive implements CommandExecutable {
 		if (ds == null) {
 			out.println("No current destination session - initialization");
 			uploadNewDs = true;
+		} else if (!SignatureUtils.checkDestinationSessionSignature(service, ds)) {
+			out.println("Current destination session signature invalid - replace.");
+			uploadNewDs = true;
 		} else {
+			PKIXCertificate[] toUserChain = ClientCliUtils
+					.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
+			PKIXCertificate signingUser = PKIXCertificate.getPublicKey(toUserChain);
+
 			UnencryptedSessionKey sk = dd.getSessionKey(ds);
 
 			if (sk == null) {
@@ -158,7 +166,7 @@ public class PollReceive implements CommandExecutable {
 							"Our serialnumber is not uptodate - destination session at service provider not changed.");
 				}
 
-			} else if (sk.getSignerSerial() > uc.getPublicCert().getSerialNumber()) {
+			} else if (signingUser.getSerialNumber() > uc.getPublicCert().getSerialNumber()) {
 				out.println(
 						"Current destination session at service provider defined by more recent user - standing down.");
 			} else if (sk.isValidityExpired(dd.getSessionDurationInHours())) {

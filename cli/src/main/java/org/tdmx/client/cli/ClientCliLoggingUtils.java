@@ -66,7 +66,7 @@ public class ClientCliLoggingUtils {
 	public static String toString(UnencryptedSessionKey usk) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("encryptionContextId=").append(usk.getEncryptionContextId());
-		sb.append(" scheme=").append(usk.getScheme());
+		sb.append(" scheme=").append(usk.getScheme().getName());
 		sb.append(" validFrom=").append(usk.getValidFrom());
 		return sb.toString();
 	}

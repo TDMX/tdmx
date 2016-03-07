@@ -27,6 +27,7 @@ import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
@@ -145,6 +146,14 @@ public class DescribeDestination implements CommandExecutable {
 		if (ds == null) {
 			out.println("No current destination session - initialization required.");
 		} else {
+			if (!SignatureUtils.checkDestinationSessionSignature(service, ds)) {
+				out.println("Destination session signature invalid.");
+				return;
+			}
+			PKIXCertificate[] signerUserChain = ClientCliUtils
+					.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
+			PKIXCertificate signerUser = PKIXCertificate.getPublicKey(signerUserChain);
+
 			UnencryptedSessionKey sk = dd.getSessionKey(ds);
 
 			if (sk == null) {
@@ -158,11 +167,13 @@ public class DescribeDestination implements CommandExecutable {
 					out.println("Our serialnumber is not uptodate - destination session not changed.");
 				}
 
-			} else if (sk.getSignerSerial() > uc.getPublicCert().getSerialNumber()) {
+			} else if (signerUser.getSerialNumber() > uc.getPublicCert().getSerialNumber()) {
 				out.println(
 						"Current destination session at service provider defined by more recent user - no change allowed.");
 			} else if (sk.isValidityExpired(dd.getSessionDurationInHours())) {
 				out.println("Current destination session at service provider expired - renewal required.");
+			} else {
+				out.println("SessionKey known and valid.");
 			}
 		}
 	}

@@ -785,7 +785,7 @@ public class ClientCliUtils {
 		// provided.
 		int idx = 1;
 		String sessionProperty = null;
-		while ((sessionProperty = p.getProperty("session[" + idx + "]")) != null) {
+		while ((sessionProperty = p.getProperty(String.format(DestinationDescriptor.SESSION, idx))) != null) {
 			UnencryptedSessionKey usk = UnencryptedSessionKey.decrypt(sessionProperty, ByteArray.fromHex(salt),
 					userPassword);
 			if (usk != null) {
@@ -912,15 +912,6 @@ public class ClientCliUtils {
 			return false;
 		}
 
-		public int getSignerSerial() {
-			try {
-				PKIXCertificate cert = CertificateIOUtils.decodeX509(sessionKeyPair.getPublic().getEncoded());
-				return cert.getSerialNumber();
-			} catch (CryptoCertificateException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-
 		public String getEncryptionContextId() {
 			return encryptionContextId;
 		}
@@ -990,11 +981,18 @@ public class ClientCliUtils {
 		public DestinationDescriptor() {
 		}
 
+		/**
+		 * Create a new unencrypted session key and add it to the destination's session keys.
+		 * 
+		 * @return the new session key.
+		 */
 		public UnencryptedSessionKey createNewSessionKey() {
 			Date validFromNow = new Date();
 			try {
 				UnencryptedSessionKey sk = new UnencryptedSessionKey(encryptionScheme,
 						encryptionScheme.getSessionKeyAlgorithm().generateNewKeyPair(), validFromNow);
+
+				sessionKeys.add(sk);
 				return sk;
 			} catch (CryptoException e) {
 				throw new IllegalStateException(e);

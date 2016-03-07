@@ -199,6 +199,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setLimit(auth.getLimit());
 		}
+		// set the signature of the CA
+		existingCA.setSignature(auth.getSignature());
 
 		// replicate the CA data into the flowQuota
 		existingChannel.getQuota().updateAuthorizationInfo();

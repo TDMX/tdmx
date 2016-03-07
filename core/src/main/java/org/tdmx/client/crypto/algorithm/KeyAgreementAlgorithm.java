@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.KeyAgreement;
@@ -39,19 +40,24 @@ import org.tdmx.client.crypto.scheme.CryptoResultCode;
 
 public enum KeyAgreementAlgorithm {
 
-	ECDH256(256, "EC", "ECDH", "secp256r1"),
-	ECDH384(384, "EC", "ECDH", "secp384r1");
+	ECDH256(256, "EC", "ECDH", "secp256r1", "X.509", "PKCS#8"),
+	ECDH384(384, "EC", "ECDH", "secp384r1", "X.509", "PKCS#8");
 
 	private int keyLength;
 	private String keyAlgorithm;
 	private String agreementAlgorithm;
 	private String parameter;
+	private String publicKeyFormat;
+	private String privateKeyFormat;
 
-	private KeyAgreementAlgorithm(int keyLength, String keyAlgorithm, String agreementAlgorithm, String parameter) {
+	private KeyAgreementAlgorithm(int keyLength, String keyAlgorithm, String agreementAlgorithm, String parameter,
+			String publicKeyFormat, String privateKeyFormat) {
 		this.keyLength = keyLength;
 		this.keyAlgorithm = keyAlgorithm;
 		this.agreementAlgorithm = agreementAlgorithm;
 		this.parameter = parameter;
+		this.publicKeyFormat = publicKeyFormat;
+		this.privateKeyFormat = privateKeyFormat;
 	}
 
 	public KeyPair generateNewKeyPair() throws CryptoException {
@@ -107,7 +113,7 @@ public enum KeyAgreementAlgorithm {
 	public PrivateKey decodeX509EncodedPrivateKey(byte[] privateKeyBytes) throws CryptoException {
 		try {
 			KeyFactory kf = KeyFactory.getInstance(keyAlgorithm);
-			EncodedKeySpec eks = new X509EncodedKeySpec(privateKeyBytes);
+			EncodedKeySpec eks = new PKCS8EncodedKeySpec(privateKeyBytes);
 			PrivateKey privateKey = kf.generatePrivate(eks);
 			return privateKey;
 		} catch (NoSuchAlgorithmException e) {
@@ -118,14 +124,14 @@ public enum KeyAgreementAlgorithm {
 	}
 
 	public byte[] encodeX509PublicKey(PublicKey publicKey) throws CryptoException {
-		if (!"X.509".equals(publicKey.getFormat())) {
+		if (!publicKeyFormat.equals(publicKey.getFormat())) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return publicKey.getEncoded();
 	}
 
 	public byte[] encodeX509PrivateKey(PrivateKey privateKey) throws CryptoException {
-		if (!"X.509".equals(privateKey.getFormat())) {
+		if (!privateKeyFormat.equals(privateKey.getFormat())) {
 			throw new CryptoException(CryptoResultCode.ERROR_ENCODED_KEY_FORMAT_INVALID);
 		}
 		return privateKey.getEncoded();

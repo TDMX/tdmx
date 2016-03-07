@@ -111,6 +111,9 @@ public class DeleteChannel implements CommandExecutable {
 		// -------------------------------------------------------------------------
 		// Validation
 		// -------------------------------------------------------------------------
+		ClientCliUtils.checkValidUserName(from);
+		ClientCliUtils.checkValidDestination(to);
+
 		String fromLocalName = ClientCliUtils.getLocalName(from);
 		String fromDomain = ClientCliUtils.getDomainName(from);
 		String toLocalName = ClientCliUtils.getLocalName(to);

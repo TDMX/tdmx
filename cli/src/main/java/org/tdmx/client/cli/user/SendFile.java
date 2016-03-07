@@ -171,7 +171,7 @@ public class SendFile implements CommandExecutable {
 			out.println("Sending not permitted. " + ClientCliLoggingUtils.toString(sendPermission));
 			return;
 		}
-
+		// .. send:file list from=user1@z1.tdmx.org to=user2@z2.tdmx.org#service1 userPassword=changeme exec
 		// check that the channel authorization we received is signed correctly and we trust the authorizer.
 		PKIXCertificate[] sendAuthorizer = ClientCliUtils
 				.getValidAdministrator(ci.getCurrent().getAdministratorsignature().getAdministratorIdentity());
@@ -194,11 +194,11 @@ public class SendFile implements CommandExecutable {
 		// check the recv permitter
 		Permission recvPermission = ci.getCurrent().getDestinationPermission();
 		if (recvPermission == null) {
-			out.println("Warning: No current receiver permission.");
+			out.println("Send prohibited due to lack of current receiver permission.");
 			return;
 		}
 		if (Grant.ALLOW != recvPermission.getPermission()) {
-			out.println("Destination receive not permitted. " + ClientCliLoggingUtils.toString(recvPermission));
+			out.println("Destination does not permit receive. " + ClientCliLoggingUtils.toString(recvPermission));
 			return;
 		}
 		// check that the channel authorization we received is signed correctly and we trust the authorizer.
@@ -224,11 +224,11 @@ public class SendFile implements CommandExecutable {
 			out.println("Destination session signature invalid.");
 			return;
 		}
-		PKIXCertificate[] toUser = ClientCliUtils.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
+		PKIXCertificate[] toUserChain = ClientCliUtils.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
 
 		// establish that we trust the "to" user by checking that it's zone root is the same as in the
 		// destination permission which "our" administrator has trusted enough to allow us to send to it
-		if (!ClientCliUtils.isSameRootCertificate(toUser, recvPermitter)) {
+		if (!ClientCliUtils.isSameRootCertificate(toUserChain, recvPermitter)) {
 			out.println("Warning: authorizer's root certificate not identical to sender's.");
 			TdmxZoneRecord destinationDomainInfo = ClientCliUtils.getSystemDnsInfo(destinationDomain);
 			if (destinationDomainInfo == null) {
@@ -236,7 +236,7 @@ public class SendFile implements CommandExecutable {
 				return;
 			}
 			out.println("Destination domain info: " + destinationDomainInfo);
-			PKIXCertificate toUserRoot = PKIXCertificate.getZoneRootPublicKey(toUser);
+			PKIXCertificate toUserRoot = PKIXCertificate.getZoneRootPublicKey(toUserChain);
 			if (!toUserRoot.getFingerprint().equals(destinationDomainInfo.getZacFingerprint())) {
 				out.println(
 						"Sending prohibited due to distrust of destination user. Note: any change of zone administrator certificate should be anchored in DNS.");
