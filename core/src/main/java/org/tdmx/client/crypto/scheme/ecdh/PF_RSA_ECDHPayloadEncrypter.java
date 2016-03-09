@@ -41,6 +41,7 @@ import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.stream.ChunkMacCalculatingOutputStream;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
 
@@ -83,13 +84,13 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 	private byte[] rs = null;
 
 	private FileBackedOutputStream fbos = null;
-	private SigningOutputStream sos = null;
+	private ChunkMacCalculatingOutputStream mcos = null;
 
 	private final StreamCipherAlgorithm payloadCipher;
 
 	public PF_RSA_ECDHPayloadEncrypter(KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] passphrase,
 			byte[] encodedSessionKey, TemporaryBufferFactory bufferFactory, StreamCipherAlgorithm payloadCipher)
-			throws CryptoException {
+					throws CryptoException {
 		this.bufferFactory = bufferFactory;
 
 		this.ownSigningKey = ownSigningKey;
@@ -105,8 +106,8 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 		byte[] passphraseSecret = DigestAlgorithm.SHA_384.kdf(passphrase);
 		this.rs = EntropySource.getRandomBytes(payloadCipher.getKeyLength() + payloadCipher.getIvLength());
 
-		byte[] kdf = DigestAlgorithm.SHA_384.kdf(ByteArray
-				.append(encodedSessionKey, sharedSecret, passphraseSecret, rs));
+		byte[] kdf = DigestAlgorithm.SHA_384
+				.kdf(ByteArray.append(encodedSessionKey, sharedSecret, passphraseSecret, rs));
 
 		byte[] aesKey = ByteArray.subArray(kdf, 0, payloadCipher.getKeyLength());
 		byte[] aesIv = ByteArray.subArray(kdf, payloadCipher.getKeyLength(), payloadCipher.getIvLength());
@@ -132,11 +133,13 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 		Cipher c = payloadCipher.getEncrypter(secretKey, secretIv);
 		CipherOutputStream cos = new CipherOutputStream(fbos, c);
 
-		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false),
-				512, false);
+		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512,
+				false);
 
-		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
-		return sos;
+		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
+				true, true, zos);
+		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize());
+		return mcos;
 	}
 
 	@Override
@@ -148,13 +151,14 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 			throw new IllegalStateException();
 		}
 		byte[] msgKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(messageKey.getPublic());
-		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
+		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
 
 		AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey(otherSigningKey);
 		byte[] encryptedContext = rsa.encrypt(otherSigningKey, ByteArray.append(rs, msgKey));
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, encryptedContext);
 
-		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, sos.getSize(), fbos.getSize());
+		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
+				mcos.getChunkSize(), mcos.getMacs());
 		return cc;
 	}
 

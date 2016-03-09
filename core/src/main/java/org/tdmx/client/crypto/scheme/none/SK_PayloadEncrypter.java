@@ -38,6 +38,7 @@ import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.CryptoResultCode;
 import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.stream.ChunkMacCalculatingOutputStream;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
 
@@ -72,7 +73,7 @@ public class SK_PayloadEncrypter implements Encrypter {
 	private final IvParameterSpec secretIv;
 
 	private FileBackedOutputStream fbos = null;
-	private SigningOutputStream sos = null;
+	private ChunkMacCalculatingOutputStream mcos = null;
 
 	private final StreamCipherAlgorithm payloadCipher;
 
@@ -112,11 +113,13 @@ public class SK_PayloadEncrypter implements Encrypter {
 		Cipher c = payloadCipher.getEncrypter(secretKey, secretIv);
 		CipherOutputStream cos = new CipherOutputStream(fbos, c);
 
-		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false),
-				512, false);
+		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512,
+				false);
 
-		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
-		return sos;
+		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
+				true, true, zos);
+		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize());
+		return mcos;
 	}
 
 	@Override
@@ -127,9 +130,10 @@ public class SK_PayloadEncrypter implements Encrypter {
 		if (!fbos.isClosed()) {
 			throw new IllegalStateException();
 		}
-		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
+		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
 
-		CryptoContext cc = new CryptoContext(fbos.getInputStream(), plaintextLengthBytes, sos.getSize(), fbos.getSize());
+		CryptoContext cc = new CryptoContext(fbos.getInputStream(), plaintextLengthBytes, mcos.getSize(),
+				fbos.getSize(), mcos.getChunkSize(), mcos.getMacs());
 		return cc;
 	}
 

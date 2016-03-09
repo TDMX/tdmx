@@ -19,20 +19,25 @@
 package org.tdmx.client.crypto.scheme;
 
 import java.io.InputStream;
+import java.util.List;
 
 public class CryptoContext {
 
-	public InputStream encryptedData;
-	public byte[] encryptionContext;
-	public long plaintextLength;
-	public long ciphertextLength;
+	public final InputStream encryptedData;
+	public final byte[] encryptionContext;
+	public final long plaintextLength;
+	public final long ciphertextLength;
+	public final long chunkSize;
+	public final List<byte[]> macList;
 
 	public CryptoContext(InputStream encryptedData, byte[] encryptionContext, long plaintextLength,
-			long ciphertextLength) {
+			long ciphertextLength, long chunkSize, List<byte[]> macs) {
 		this.encryptedData = encryptedData;
 		this.encryptionContext = encryptionContext;
 		this.plaintextLength = plaintextLength;
 		this.ciphertextLength = ciphertextLength;
+		this.chunkSize = chunkSize;
+		this.macList = macs;
 	}
 
 	/**
@@ -61,6 +66,14 @@ public class CryptoContext {
 	 */
 	public long getCiphertextLength() {
 		return ciphertextLength;
+	}
+
+	public long getChunkSize() {
+		return chunkSize;
+	}
+
+	public List<byte[]> getMacList() {
+		return macList;
 	}
 
 }

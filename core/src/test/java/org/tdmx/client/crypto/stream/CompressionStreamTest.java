@@ -44,7 +44,7 @@ public class CompressionStreamTest {
 
 	@Before
 	public void setup() {
-		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl(1, 1);
+		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl(100);
 		fbos = mgr.getOutputStream();
 	}
 
@@ -96,8 +96,8 @@ public class CompressionStreamTest {
 	@Test
 	public void testCompressDecompress_Zlib() throws IOException {
 
-		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, true),
-				512, false);
+		DeflaterOutputStream zos = new DeflaterOutputStream(fbos, new Deflater(Deflater.DEFAULT_COMPRESSION, true), 512,
+				false);
 
 		PrintWriter pw = new PrintWriter(zos);
 		int repeats = 10000;

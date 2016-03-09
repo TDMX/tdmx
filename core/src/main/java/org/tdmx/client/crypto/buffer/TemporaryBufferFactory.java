@@ -24,6 +24,5 @@ public interface TemporaryBufferFactory {
 
 	public FileBackedOutputStream getOutputStream();
 
-	// TODO getEncryptedOutputStream() - AES protected with one-time-key
-
+	public int getChunkSize();
 }

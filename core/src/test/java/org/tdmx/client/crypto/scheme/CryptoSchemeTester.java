@@ -46,7 +46,7 @@ public class CryptoSchemeTester {
 
 	private CryptoSchemeFactory ownFactory;
 	private CryptoSchemeFactory otherFactory;
-	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(1024, 1024);
+	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(33333);
 
 	@Before
 	public void setup() throws CryptoException {

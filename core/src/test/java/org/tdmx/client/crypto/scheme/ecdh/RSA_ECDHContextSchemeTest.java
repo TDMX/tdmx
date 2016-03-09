@@ -49,7 +49,7 @@ public class RSA_ECDHContextSchemeTest {
 
 	private IntegratedCryptoSchemeFactory ownFactory;
 	private IntegratedCryptoSchemeFactory otherFactory;
-	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(1024, 1024);
+	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(1024);
 
 	@Before
 	public void setup() throws CryptoException {

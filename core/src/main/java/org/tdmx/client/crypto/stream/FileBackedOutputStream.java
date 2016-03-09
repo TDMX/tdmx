@@ -27,9 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * A FileBackedOutputStream writes through to a File after maxSizeMemory bytes have been written to the underlying
- * output stream.
+ * A FileBackedOutputStream writes through to a File after chunkSize bytes have been written to the underlying output
+ * stream.
  * 
  * The number of bytes written to the underlying stream is returned with {@link #getSize()}
  * 
@@ -46,18 +49,20 @@ import java.io.OutputStream;
  */
 public class FileBackedOutputStream extends OutputStream {
 
+	private static final Logger log = LoggerFactory.getLogger(FileBackedOutputStream.class);
+
 	private OutputStream output;
 	private long size = 0;
-	private final int maxSizeMemory;
+	private final int chunkSize;
 	private boolean closed = false;
 	private ByteArrayOutputStream baos;
 	private File tmpFile;
 	private final File tmpDirectory;
 
-	public FileBackedOutputStream(int initialSize, int maxSizeMemory, File directory) {
-		this.baos = new ByteArrayOutputStream(Math.min(initialSize, maxSizeMemory));
+	public FileBackedOutputStream(int chunkSize, File directory) {
+		this.baos = new ByteArrayOutputStream(chunkSize);
 		this.output = baos;
-		this.maxSizeMemory = maxSizeMemory;
+		this.chunkSize = chunkSize;
 		this.tmpDirectory = directory;
 	}
 
@@ -91,7 +96,7 @@ public class FileBackedOutputStream extends OutputStream {
 	@Override
 	public void write(byte b[]) throws IOException {
 		size += b.length;
-		if (tmpFile == null && size > maxSizeMemory) {
+		if (tmpFile == null && size > chunkSize) {
 			replaceStorage();
 		}
 		output.write(b, 0, b.length);
@@ -100,7 +105,7 @@ public class FileBackedOutputStream extends OutputStream {
 	@Override
 	public void write(byte b[], int off, int len) throws IOException {
 		size += len;
-		if (tmpFile == null && size > maxSizeMemory) {
+		if (tmpFile == null && size > chunkSize) {
 			replaceStorage();
 		}
 		output.write(b, off, len);
@@ -122,13 +127,13 @@ public class FileBackedOutputStream extends OutputStream {
 			try {
 				close();
 			} catch (IOException e) {
-				// TODO warn but ignore
+				log.warn("Unable to close.", e);
 			}
 		}
 		baos = null;
 		if (tmpFile != null) {
 			if (!tmpFile.delete()) {
-				// TODO warn but ignore
+				log.warn("Unable to delete.");
 			}
 		}
 	}

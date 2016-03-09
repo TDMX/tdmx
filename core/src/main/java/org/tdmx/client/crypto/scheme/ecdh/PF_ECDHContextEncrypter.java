@@ -41,6 +41,7 @@ import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.stream.ChunkMacCalculatingOutputStream;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
 
@@ -85,7 +86,7 @@ public class PF_ECDHContextEncrypter implements Encrypter {
 	private final IvParameterSpec keyEncryptionIv;
 
 	private FileBackedOutputStream fbos = null;
-	private SigningOutputStream sos = null;
+	private ChunkMacCalculatingOutputStream mcos = null;
 
 	private final StreamCipherAlgorithm payloadCipher;
 	private final byte[] payloadSecretKey;
@@ -147,11 +148,13 @@ public class PF_ECDHContextEncrypter implements Encrypter {
 		Cipher c = payloadCipher.getEncrypter(payloadKey, payloadIv);
 		CipherOutputStream cos = new CipherOutputStream(fbos, c);
 
-		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false),
-				512, false);
+		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512,
+				false);
 
-		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
-		return sos;
+		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
+				true, true, zos);
+		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize());
+		return mcos;
 	}
 
 	@Override
@@ -164,7 +167,7 @@ public class PF_ECDHContextEncrypter implements Encrypter {
 		}
 		byte[] msgKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(messageKey.getPublic());
 		byte[] msgKeyLen = NumberToOctetString.intToByte(msgKey.length);
-		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
+		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
 		byte[] payloadKeyBytes = ByteArray.append(payloadSecretKey, payloadSecretIv);
 
 		if (rsaEnabled) {
@@ -174,7 +177,8 @@ public class PF_ECDHContextEncrypter implements Encrypter {
 		byte[] encryptedKey = keyEncryptionCipher.encrypt(keyEncryptionKey, keyEncryptionIv, payloadKeyBytes);
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, msgKeyLen, msgKey, encryptedKey);
 
-		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, sos.getSize(), fbos.getSize());
+		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
+				mcos.getChunkSize(), mcos.getMacs());
 		return cc;
 	}
 
