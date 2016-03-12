@@ -159,7 +159,7 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, encryptedContext);
 
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs());
+				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

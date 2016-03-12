@@ -173,7 +173,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, msgKeyLen, msgKey, encryptedKey);
 
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs());
+				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

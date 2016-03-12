@@ -29,15 +29,17 @@ public class CryptoContext {
 	public final long ciphertextLength;
 	public final long chunkSize;
 	public final List<byte[]> macList;
+	public final byte[] macOfMacs;
 
 	public CryptoContext(InputStream encryptedData, byte[] encryptionContext, long plaintextLength,
-			long ciphertextLength, long chunkSize, List<byte[]> macs) {
+			long ciphertextLength, long chunkSize, List<byte[]> macs, byte[] macOfMacs) {
 		this.encryptedData = encryptedData;
 		this.encryptionContext = encryptionContext;
 		this.plaintextLength = plaintextLength;
 		this.ciphertextLength = ciphertextLength;
 		this.chunkSize = chunkSize;
 		this.macList = macs;
+		this.macOfMacs = macOfMacs;
 	}
 
 	/**
@@ -74,6 +76,10 @@ public class CryptoContext {
 
 	public List<byte[]> getMacList() {
 		return macList;
+	}
+
+	public byte[] getMacOfMacs() {
+		return macOfMacs;
 	}
 
 }

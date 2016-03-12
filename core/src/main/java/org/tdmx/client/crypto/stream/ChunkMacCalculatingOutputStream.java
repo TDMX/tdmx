@@ -46,11 +46,13 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 	private int cachedSize = 0;
 	private final byte[] chunk;
 	private final List<byte[]> macs = new ArrayList<>();
+	private final MacOfMacCalculator macOfMacCalculator;
 
 	public ChunkMacCalculatingOutputStream(OutputStream delegate, int chunkSize, DigestAlgorithm digestAlgorithm) {
 		this.delegate = delegate;
 		this.digestAlgorithm = digestAlgorithm;
 		this.chunk = new byte[chunkSize];
+		this.macOfMacCalculator = new MacOfMacCalculator(digestAlgorithm);
 	}
 
 	@Override
@@ -102,6 +104,7 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 		try {
 			byte[] mac = digestAlgorithm.kdf(chunk, 0, cachedSize);
 			macs.add(mac);
+			macOfMacCalculator.addChunkMac(mac);
 		} catch (CryptoException e) {
 			throw new IllegalStateException(e);
 		}
@@ -122,4 +125,7 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 		return delegatedSize + cachedSize;
 	}
 
+	public byte[] getMacOfMacs() {
+		return macOfMacCalculator.getMacOfMacs();
+	}
 }

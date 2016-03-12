@@ -157,7 +157,7 @@ public class PF_ECDHPayloadEncrypter implements Encrypter {
 			encryptionContext = ByteArray.append(plaintextLengthBytes, msgKey);
 		}
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs());
+				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

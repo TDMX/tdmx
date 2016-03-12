@@ -140,7 +140,7 @@ public class PGP_PayloadEncrypter implements Encrypter {
 		byte[] encryptedMsgKey = rsa.encrypt(otherSigningKey, messageKey);
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, encryptedMsgKey);
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs());
+				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

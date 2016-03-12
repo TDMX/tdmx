@@ -134,7 +134,7 @@ public class SK_PayloadEncrypter implements Encrypter {
 		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
 
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), plaintextLengthBytes, mcos.getSize(),
-				fbos.getSize(), mcos.getChunkSize(), mcos.getMacs());
+				fbos.getSize(), mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

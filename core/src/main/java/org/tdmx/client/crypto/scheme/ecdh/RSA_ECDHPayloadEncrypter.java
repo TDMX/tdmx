@@ -158,7 +158,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 		// TODO assertion encryptionContext len is fixed to RSA key length in bytes.
 
 		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs());
+				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 
