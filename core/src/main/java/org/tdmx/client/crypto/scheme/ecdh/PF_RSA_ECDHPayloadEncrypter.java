@@ -138,7 +138,8 @@ public class PF_RSA_ECDHPayloadEncrypter implements Encrypter {
 
 		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
 				true, true, zos);
-		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize());
+		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize(),
+				bufferFactory.getChunkDigestAlgorithm());
 		return mcos;
 	}
 

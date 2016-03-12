@@ -44,7 +44,9 @@ public class CompressionStreamTest {
 
 	@Before
 	public void setup() {
-		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl(100);
+		TemporaryFileManagerImpl mgr = new TemporaryFileManagerImpl();
+		mgr.setChunkSize(100);
+
 		fbos = mgr.getOutputStream();
 	}
 

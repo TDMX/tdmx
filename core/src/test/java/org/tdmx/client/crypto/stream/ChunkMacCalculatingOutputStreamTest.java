@@ -45,17 +45,15 @@ public class ChunkMacCalculatingOutputStreamTest {
 	@Test
 	public void testChunkSizeBeforeFlush() throws IOException, CryptoException {
 
-		sut = new ChunkMacCalculatingOutputStream(delegate, 10);
+		sut = new ChunkMacCalculatingOutputStream(delegate, 10, DigestAlgorithm.SHA_256);
 		sut.write((int) 1);
 		assertEquals(1, sut.getSize());
 		assertEquals(0, sut.getMacs().size());
-
-		DigestAlgorithm.SHA_256.kdf(data);
 	}
 
 	@Test
 	public void testWriteBytes() throws IOException, CryptoException {
-		sut = new ChunkMacCalculatingOutputStream(delegate, 5);
+		sut = new ChunkMacCalculatingOutputStream(delegate, 5, DigestAlgorithm.SHA_256);
 		for (int i = 0; i < data.length; i++) {
 			sut.write(data[i]);
 		}
@@ -66,11 +64,13 @@ public class ChunkMacCalculatingOutputStreamTest {
 		assertArrayEquals(data, result);
 
 		assertEquals(2, sut.getMacs().size());
+		assertArrayEquals(DigestAlgorithm.SHA_256.kdf(new byte[] { 1, 2, 3, 4, 5 }), sut.getMacs().get(0));
+		assertArrayEquals(DigestAlgorithm.SHA_256.kdf(new byte[] { 6, 7, 8, 9, 0 }), sut.getMacs().get(1));
 	}
 
 	@Test
 	public void testWriteOneChunk() throws IOException, CryptoException {
-		sut = new ChunkMacCalculatingOutputStream(delegate, 10);
+		sut = new ChunkMacCalculatingOutputStream(delegate, 10, DigestAlgorithm.SHA_256);
 		sut.write(data);
 		sut.flush();
 		assertEquals(10, sut.getSize());
@@ -79,11 +79,12 @@ public class ChunkMacCalculatingOutputStreamTest {
 		assertArrayEquals(data, result);
 
 		assertEquals(1, sut.getMacs().size());
+		assertArrayEquals(DigestAlgorithm.SHA_256.kdf(data), sut.getMacs().get(0));
 	}
 
 	@Test
 	public void testWriteTwoChunks() throws IOException, CryptoException {
-		sut = new ChunkMacCalculatingOutputStream(delegate, 5);
+		sut = new ChunkMacCalculatingOutputStream(delegate, 5, DigestAlgorithm.SHA_256);
 		sut.write(data);
 		sut.flush();
 		assertEquals(10, sut.getSize());
@@ -92,5 +93,7 @@ public class ChunkMacCalculatingOutputStreamTest {
 		assertArrayEquals(data, result);
 
 		assertEquals(2, sut.getMacs().size());
+		assertArrayEquals(DigestAlgorithm.SHA_256.kdf(new byte[] { 1, 2, 3, 4, 5 }), sut.getMacs().get(0));
+		assertArrayEquals(DigestAlgorithm.SHA_256.kdf(new byte[] { 6, 7, 8, 9, 0 }), sut.getMacs().get(1));
 	}
 }

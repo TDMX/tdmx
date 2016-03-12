@@ -20,40 +20,50 @@ package org.tdmx.client.crypto.buffer;
 
 import java.io.File;
 
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 
 public class TemporaryFileManagerImpl implements TemporaryBufferFactory {
 
 	public static final int DEFAULT_CHUNK_SIZE = 1024 * 1024;
+	public static final DigestAlgorithm DEFAULT_CHUNK_MAC = DigestAlgorithm.SHA_256;
 
-	private int chunkSize;
-	private final File directory;
-
-	public TemporaryFileManagerImpl(int chunkSize) {
-		this(chunkSize, System.getProperty("java.io.tmpdir"));
-	}
+	private int chunkSize = DEFAULT_CHUNK_SIZE;
+	private DigestAlgorithm chunkDigestAlgorithm = DEFAULT_CHUNK_MAC;
+	private String tempDirectory = System.getProperty("java.io.tmpdir");
 
 	public TemporaryFileManagerImpl() {
-		this(DEFAULT_CHUNK_SIZE, System.getProperty("java.io.tmpdir"));
-	}
-
-	public TemporaryFileManagerImpl(int chunkSize, String directoryName) {
-		this.chunkSize = chunkSize;
-		this.directory = new File(directoryName);
-	}
-
-	public File getTempDirectory() {
-		return directory;
 	}
 
 	@Override
 	public FileBackedOutputStream getOutputStream() {
-		return new FileBackedOutputStream(chunkSize, directory);
+		return new FileBackedOutputStream(chunkSize, new File(tempDirectory));
 	}
 
 	@Override
 	public int getChunkSize() {
 		return chunkSize;
+	}
+
+	@Override
+	public DigestAlgorithm getChunkDigestAlgorithm() {
+		return chunkDigestAlgorithm;
+	}
+
+	public void setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+
+	public void setChunkDigestAlgorithm(DigestAlgorithm chunkDigestAlgorithm) {
+		this.chunkDigestAlgorithm = chunkDigestAlgorithm;
+	}
+
+	public void setTempDirectory(String tempDirectory) {
+		this.tempDirectory = tempDirectory;
+	}
+
+	public String getTempDirectory() {
+		return tempDirectory;
 	}
 
 }

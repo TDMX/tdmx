@@ -52,6 +52,13 @@ public enum DigestAlgorithm {
 
 	public byte[] kdf(byte[] input) throws CryptoException {
 		MessageDigest d = getMessageDigest();
-		return d.digest(input);
+		d.update(input);
+		return d.digest();
+	}
+
+	public byte[] kdf(byte[] input, int offset, int len) throws CryptoException {
+		MessageDigest d = getMessageDigest();
+		d.update(input, offset, len);
+		return d.digest();
 	}
 }

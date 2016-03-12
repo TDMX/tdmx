@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
-import org.tdmx.client.crypto.buffer.TemporaryBufferFactory;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
@@ -49,10 +48,13 @@ public class RSA_ECDHContextSchemeTest {
 
 	private IntegratedCryptoSchemeFactory ownFactory;
 	private IntegratedCryptoSchemeFactory otherFactory;
-	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(1024);
+	private TemporaryFileManagerImpl bufferFactory;
 
 	@Before
 	public void setup() throws CryptoException {
+		bufferFactory = new TemporaryFileManagerImpl();
+		bufferFactory.setChunkSize(1024);
+
 		KeyPair ownSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
 		KeyPair otherSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
 

@@ -23,6 +23,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
+import org.tdmx.client.crypto.scheme.CryptoException;
+
 /**
  * A wrapper of a FileBackedOutputStream which calculates individual chunk checksums and records them.
  * 
@@ -38,15 +41,15 @@ import java.util.List;
 public class ChunkMacCalculatingOutputStream extends OutputStream {
 
 	private final OutputStream delegate;
+	private final DigestAlgorithm digestAlgorithm;
 	private long delegatedSize = 0;
 	private int cachedSize = 0;
 	private final byte[] chunk;
 	private final List<byte[]> macs = new ArrayList<>();
 
-	// TODO do the MAC calculation of each chunk
-
-	public ChunkMacCalculatingOutputStream(OutputStream delegate, int chunkSize) {
+	public ChunkMacCalculatingOutputStream(OutputStream delegate, int chunkSize, DigestAlgorithm digestAlgorithm) {
 		this.delegate = delegate;
+		this.digestAlgorithm = digestAlgorithm;
 		this.chunk = new byte[chunkSize];
 	}
 
@@ -96,12 +99,15 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 	}
 
 	private void calculateMacAndFlush() throws IOException {
+		try {
+			byte[] mac = digestAlgorithm.kdf(chunk, 0, cachedSize);
+			macs.add(mac);
+		} catch (CryptoException e) {
+			throw new IllegalStateException(e);
+		}
 		delegate.write(chunk, 0, cachedSize);
 		delegatedSize += cachedSize;
 		cachedSize = 0;
-
-		// TODO
-		macs.add(new byte[0]);
 	}
 
 	public int getChunkSize() {

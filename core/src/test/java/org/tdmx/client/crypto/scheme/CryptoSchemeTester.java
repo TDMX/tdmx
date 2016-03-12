@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.JCAProviderInitializer;
 import org.tdmx.client.crypto.algorithm.AsymmetricEncryptionAlgorithm;
 import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
-import org.tdmx.client.crypto.buffer.TemporaryBufferFactory;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.TrustStoreCertificateIOUtilsTest;
 import org.tdmx.client.crypto.converters.ByteArray;
@@ -46,10 +45,12 @@ public class CryptoSchemeTester {
 
 	private CryptoSchemeFactory ownFactory;
 	private CryptoSchemeFactory otherFactory;
-	private final TemporaryBufferFactory bufferFactory = new TemporaryFileManagerImpl(33333);
+	private TemporaryFileManagerImpl bufferFactory;
 
 	@Before
 	public void setup() throws CryptoException {
+		bufferFactory = new TemporaryFileManagerImpl();
+		bufferFactory.setChunkSize(33333);
 		KeyPair ownSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
 		KeyPair otherSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
 
