@@ -42,6 +42,16 @@ public class CredentialUtilsTest {
 	}
 
 	@Test
+	public void testCreateInvalidZoneAdminCredentials() throws Exception {
+		Calendar from = CertificateFacade.getNowPlusYears(-2);
+		Calendar to = CertificateFacade.getNowPlusYears(-1);
+		ZoneAdministrationCredentialSpecifier req = CertificateFacade.createZACS(1, "zone.root", from, to);
+
+		PKIXCredential cred = CredentialUtils.createZoneAdministratorCredential(req);
+		assertFalse(CredentialUtils.isValidZoneAdministratorCertificate(cred.getPublicCert()));
+	}
+
+	@Test
 	public void testCreateZoneAdminCredentials() throws Exception {
 
 		Calendar now = CertificateFacade.getNow();
@@ -112,6 +122,22 @@ public class CredentialUtilsTest {
 	}
 
 	@Test
+	public void testCreateInvalidDomainAdminCert() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
+
+		Calendar from = CertificateFacade.getNowPlusYears(-2);
+		Calendar to = CertificateFacade.getNowPlusYears(-1);
+
+		DomainAdministrationCredentialSpecifier req = CertificateFacade.createDACS(zac, from, to);
+		req.setSerialNumber(100);
+
+		PKIXCredential cred = CredentialUtils.createDomainAdministratorCredential(req);
+
+		assertNotNull(cred);
+		assertFalse(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), cred.getPublicCert()));
+	}
+
+	@Test
 	public void testUserCert() throws Exception {
 		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
 		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
@@ -160,12 +186,28 @@ public class CredentialUtilsTest {
 		// default serialnum
 		assertEquals(1, uc.getPublicCert().getSerialNumber());
 
-		assertTrue(CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), uc.getPublicCert()));
+		assertTrue(
+				CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), uc.getPublicCert()));
 		assertTrue(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), dac.getPublicCert()));
 
-		assertFalse(CredentialUtils
-				.isValidUserCertificate(zac.getPublicCert(), uc.getPublicCert(), dac.getPublicCert()));
+		assertFalse(
+				CredentialUtils.isValidUserCertificate(zac.getPublicCert(), uc.getPublicCert(), dac.getPublicCert()));
 		assertFalse(CredentialUtils.isValidDomainAdministratorCertificate(zac.getPublicCert(), uc.getPublicCert()));
+	}
+
+	@Test
+	public void testInvalidUserCert() throws Exception {
+		PKIXCredential zac = CertificateFacade.createZAC("zone.root", 10);
+		PKIXCredential dac = CertificateFacade.createDAC(zac, 2);
+
+		UserCredentialSpecifier req = CertificateFacade.createUCS(dac, CertificateFacade.getNowPlusYears(-2),
+				CertificateFacade.getNowPlusYears(-1));
+		req.setSerialNumber(100);
+
+		PKIXCredential cred = CredentialUtils.createUserCredential(req);
+
+		assertFalse(
+				CredentialUtils.isValidUserCertificate(zac.getPublicCert(), dac.getPublicCert(), cred.getPublicCert()));
 	}
 
 	@Test
@@ -189,6 +231,21 @@ public class CredentialUtilsTest {
 		assertEquals(inetAddress.getHostAddress(), serverCred.getPublicCert().getCommonName());
 
 		assertTrue(CredentialUtils.isValidServerIpCertificate(serverCred.getPublicCert()));
+	}
+
+	@Test
+	public void testInvalidServerIpCert() throws Exception {
+		String ipAddress = "10.10.10.10";
+		Calendar from = CertificateFacade.getNowPlusYears(-2);
+		Calendar to = CertificateFacade.getNowPlusYears(-1);
+
+		ServerIpCredentialSpecifier spec = CertificateFacade.createServerIp(ipAddress, from, to);
+		PKIXCredential serverCred = CredentialUtils.createServerIpCredential(spec);
+
+		assertEquals(1, serverCred.getCertificateChain().length);
+		assertEquals(ipAddress, serverCred.getPublicCert().getCommonName());
+
+		assertFalse(CredentialUtils.isValidServerIpCertificate(serverCred.getPublicCert()));
 	}
 
 	@Test

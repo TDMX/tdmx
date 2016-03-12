@@ -36,7 +36,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.NameConstraints;
-import org.bouncycastle.asn1.x509.SubjectDirectoryAttributes;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -114,8 +113,9 @@ public class CredentialUtils {
 		}
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
-				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer,
+				BigInteger.valueOf(req.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(),
+				subject, publicKey);
 
 		try {
 			BasicConstraints cA = new BasicConstraints(1);
@@ -210,7 +210,7 @@ public class CredentialUtils {
 			GeneralName altName = new GeneralName(GeneralName.iPAddress, req.getIpAddress());
 			GeneralNames subjectAltName = new GeneralNames(altName);
 			certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
-			
+
 			ContentSigner signer = SignatureAlgorithm.getContentSigner(privateKey, req.getSignatureAlgorithm());
 			byte[] certBytes = certBuilder.build(signer).getEncoded();
 
@@ -266,8 +266,9 @@ public class CredentialUtils {
 		subjectBuilder.addRDN(BCStyle.CN, req.getDomainName());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = issuerPublicCert.getSubjectName();
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
-				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer,
+				BigInteger.valueOf(req.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(),
+				subject, publicKey);
 
 		try {
 			BasicConstraints cA = new BasicConstraints(0);
@@ -361,8 +362,9 @@ public class CredentialUtils {
 		subjectBuilder.addRDN(BCStyle.CN, req.getName());
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = issuerPublicCert.getSubjectName();
-		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, BigInteger.valueOf(req
-				.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(), subject, publicKey);
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer,
+				BigInteger.valueOf(req.getSerialNumber()), req.getNotBefore().getTime(), req.getNotAfter().getTime(),
+				subject, publicKey);
 
 		try {
 			JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
@@ -450,7 +452,6 @@ public class CredentialUtils {
 		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { zac }, "jks");
 		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { zac };
 		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
-		// TODO check that a ZAC which is not valid anymore will "fail"
 	}
 
 	public static boolean isValidServerIpCertificate(PKIXCertificate serverIp) throws CryptoCertificateException {
@@ -483,7 +484,6 @@ public class CredentialUtils {
 		KeyStore trustStore = KeyStoreUtils.createTrustStore(new PKIXCertificate[] { serverIp }, "jks");
 		PKIXCertificate[] publicCertChain = new PKIXCertificate[] { serverIp };
 		return CertificateIOUtils.pkixValidate(CertificateIOUtils.cast(publicCertChain), trustStore);
-		// TODO check that a ZAC which is not valid anymore will "fail"
 	}
 
 	// -------------------------------------------------------------------------
