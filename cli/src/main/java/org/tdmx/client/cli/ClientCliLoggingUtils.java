@@ -46,7 +46,7 @@ public class ClientCliLoggingUtils {
 	private static final String LINEFEED = System.getProperty("line.separator", "\n");
 	private static final String TAB = "\t";
 
-	// TODO better rep.
+	// TODO #105: better rep.
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
