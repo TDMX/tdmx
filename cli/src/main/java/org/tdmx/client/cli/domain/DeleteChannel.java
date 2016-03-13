@@ -47,8 +47,6 @@ public class DeleteChannel implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	// FIXME :Unknown column 'channelflo0_.destinationSerialNr' (rename channelFlowMessages to messages)
-
 	@Parameter(name = "from", required = true, description = "the address at the source endpoint of the channel.")
 	private String from;
 

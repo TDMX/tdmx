@@ -18,28 +18,83 @@
  */
 package org.tdmx.client.crypto.scheme;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.core.api.v01.msg.Chunk;
+
 public class CryptoContext {
 
-	public final InputStream encryptedData;
-	public final byte[] encryptionContext;
-	public final long plaintextLength;
-	public final long ciphertextLength;
-	public final long chunkSize;
-	public final List<byte[]> macList;
-	public final byte[] macOfMacs;
+	private final InputStream encryptedData;
+	private final byte[] encryptionContext;
+	private final long plaintextLength;
+	private final long ciphertextLength;
+	private final int chunkSize;
+	private final List<byte[]> macList;
+	private final byte[] macOfMacs;
 
 	public CryptoContext(InputStream encryptedData, byte[] encryptionContext, long plaintextLength,
-			long ciphertextLength, long chunkSize, List<byte[]> macs, byte[] macOfMacs) {
+			long ciphertextLength, int chunkSize, List<byte[]> macs, byte[] macOfMacs) {
 		this.encryptedData = encryptedData;
 		this.encryptionContext = encryptionContext;
 		this.plaintextLength = plaintextLength;
 		this.ciphertextLength = ciphertextLength;
 		this.chunkSize = chunkSize;
-		this.macList = macs;
 		this.macOfMacs = macOfMacs;
+		this.macList = macs;
+	}
+
+	public class ChunkSequentialReader implements AutoCloseable {
+		private int chunkNo = 0;
+
+		public ChunkSequentialReader() {
+		}
+
+		public Chunk getNextChunk() throws IOException {
+			Chunk c = new Chunk();
+			if (chunkNo >= macList.size()) {
+				return null;
+			} else if (chunkNo == macList.size() - 1) {
+				// last chunk is partial
+				int sizeLeft = (int) ciphertextLength % chunkSize;
+				byte[] buf = new byte[sizeLeft];
+				if (encryptedData.read(buf) != sizeLeft) {
+					throw new IOException("Incomplete read.");
+				}
+
+				c.setData(buf);
+				c.setPos(chunkNo);
+				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
+
+			} else {
+				byte[] buf = new byte[chunkSize];
+				if (encryptedData.read(buf) != chunkSize) {
+					throw new IOException("Incomplete read.");
+				}
+				c.setData(buf);
+				c.setPos(chunkNo);
+				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
+
+			}
+			chunkNo++;
+			return c;
+		}
+
+		@Override
+		public void close() throws IOException {
+			encryptedData.close();
+		}
+	}
+
+	/**
+	 * Once the ChunkSequentialReader has been iterated through, remember to use call {@link #close()}
+	 * 
+	 * @return get a iterator for the chunks.
+	 */
+	public ChunkSequentialReader getChunkReader() {
+		return new ChunkSequentialReader();
 	}
 
 	/**

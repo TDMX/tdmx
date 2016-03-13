@@ -28,6 +28,8 @@ public class TemporaryFileManagerImpl implements TemporaryBufferFactory {
 	public static final int DEFAULT_CHUNK_SIZE = 1024 * 1024;
 	public static final DigestAlgorithm DEFAULT_CHUNK_MAC = DigestAlgorithm.SHA_256;
 
+	// TODO #70: move chunk size and digest algorithm to IntegratedEncryptionScheme
+
 	private int chunkSize = DEFAULT_CHUNK_SIZE;
 	private DigestAlgorithm chunkDigestAlgorithm = DEFAULT_CHUNK_MAC;
 	private String tempDirectory = System.getProperty("java.io.tmpdir");

@@ -106,6 +106,7 @@ public class ChannelMessage implements Serializable {
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String encryptionContextId;
 
+	// TODO #106 remove
 	@Column(length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)
 	private String payloadSignature;
 

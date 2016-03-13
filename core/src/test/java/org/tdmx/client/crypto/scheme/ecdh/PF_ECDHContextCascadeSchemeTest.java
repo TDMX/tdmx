@@ -83,7 +83,7 @@ public class PF_ECDHContextCascadeSchemeTest {
 
 		CryptoContext result = e.getResult();
 		assertNotNull(result);
-		assertEquals(1, result.plaintextLength);
+		assertEquals(1, result.getPlaintextLength());
 		assertNotNull(result.getEncryptedData());
 		assertNotNull(result.getEncryptionContext());
 		assertNotNull(result.getCiphertextLength());

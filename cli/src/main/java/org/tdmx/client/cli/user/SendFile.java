@@ -18,21 +18,45 @@
  */
 package org.tdmx.client.cli.user;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
+import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.scheme.CryptoContext;
+import org.tdmx.client.crypto.scheme.CryptoContext.ChunkSequentialReader;
+import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoSchemeFactory;
+import org.tdmx.client.crypto.stream.StreamUtils;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Taskstatus;
 import org.tdmx.core.api.v01.mos.GetChannel;
 import org.tdmx.core.api.v01.mos.GetChannelResponse;
+import org.tdmx.core.api.v01.mos.Submit;
+import org.tdmx.core.api.v01.mos.SubmitResponse;
+import org.tdmx.core.api.v01.mos.Upload;
+import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.Channelauthorization;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Grant;
+import org.tdmx.core.api.v01.msg.Header;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.scs.GetMOSSession;
 import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
@@ -41,6 +65,7 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
+import org.tdmx.core.system.lang.CalendarUtils;
 
 @Cli(name = "send:file", description = "sends a single file to a destination")
 public class SendFile implements CommandExecutable {
@@ -224,6 +249,11 @@ public class SendFile implements CommandExecutable {
 			out.println("Destination session signature invalid.");
 			return;
 		}
+		IntegratedCryptoScheme scheme = IntegratedCryptoScheme.fromName(ds.getScheme());
+		if (scheme == null) {
+			out.println("Unknown encryption scheme " + ds.getScheme());
+			return;
+		}
 		PKIXCertificate[] toUserChain = ClientCliUtils.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
 
 		// establish that we trust the "to" user by checking that it's zone root is the same as in the
@@ -249,6 +279,106 @@ public class SendFile implements CommandExecutable {
 
 		out.println("now send...");
 		// TODO #49 do send.
+
+		Calendar now = CalendarUtils.getTimestamp(new Date());
+		Calendar ttl = CalendarUtils.getTimestamp(now.getTime());
+		ttl.add(Calendar.HOUR, 24); // TODO to parameter
+
+		String externalReference = "ext ref"; // TODO to parameter
+
+		TemporaryFileManagerImpl bufferManager = new TemporaryFileManagerImpl();
+		bufferManager.setChunkDigestAlgorithm(DigestAlgorithm.SHA_256);
+		bufferManager.setChunkSize(1000);
+
+		IntegratedCryptoSchemeFactory iecFactory = new IntegratedCryptoSchemeFactory(uc.getKeyPair(),
+				PKIXCertificate.getPublicKey(toUserChain).getCertificate().getPublicKey(), bufferManager);
+
+		// TODO get real content from a file.
+		try (ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] { 1, 2, 3 })) {
+
+			try {
+				Encrypter enc = iecFactory.getEncrypter(scheme, ds.getSessionKey());
+				try (OutputStream os = enc.getOutputStream()) {
+					StreamUtils.transfer(bais, os);
+				}
+				CryptoContext cc = enc.getResult();
+
+				Msg m = mapMsg(uc, now, cc, ci, ds, ttl, externalReference);
+
+				try (ChunkSequentialReader csr = cc.getChunkReader()) {
+					Chunk chunk = csr.getNextChunk();
+					m.setChunk(chunk);
+
+					Submit submitReq = new Submit();
+					submitReq.setSessionId(sessionResponse.getSession().getSessionId());
+					submitReq.setMsg(m);
+
+					SubmitResponse submitResponse = mos.submit(submitReq);
+					if (!submitResponse.isSuccess()) {
+						out.println("Message submission failed. ");
+						ClientCliUtils.logError(out, submitResponse.getError());
+					}
+
+					String continuationId = submitResponse.getContinuation();
+					while ((chunk = csr.getNextChunk()) != null) {
+						Upload upl = new Upload();
+						upl.setChunk(chunk);
+						upl.setContinuation(continuationId);
+						upl.setSessionId(sessionResponse.getSession().getSessionId());
+
+						UploadResponse uploadResponse = mos.upload(upl);
+						if (!uploadResponse.isSuccess()) {
+							out.println("Chunk submission failed. ");
+							ClientCliUtils.logError(out, submitResponse.getError());
+							return;
+						}
+						// get the next continuationId
+						continuationId = uploadResponse.getContinuation();
+					}
+				}
+
+			} catch (CryptoException e) {
+				throw new IllegalStateException(e);
+			}
+
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+
+	}
+
+	private Msg mapMsg(PKIXCredential from, Calendar now, CryptoContext cc, Channelauthorization ci,
+			Destinationsession ds, Calendar ttl, String externalReference) {
+		Msg m = new Msg();
+
+		Header hdr = new Header();
+		hdr.setChannel(ci.getChannel());
+		hdr.setEncryptionContextId(ds.getEncryptionContextId());
+		hdr.setExternalReference(externalReference);
+		hdr.setTo(ds.getUsersignature().getUserIdentity());
+		m.setHeader(hdr);
+
+		Payload p = new Payload();
+		p.setChunkSize(cc.getChunkSize());
+		p.setEncryptionContext(cc.getEncryptionContext());
+		p.setLength(cc.getCiphertextLength());
+		p.setMACofMACs(ByteArray.asHex(cc.getMacOfMacs()));
+		p.setPlaintextLength(cc.getPlaintextLength());
+		m.setPayload(p);
+
+		// set the hdr.payloadsignature TODO #106
+		SignatureUtils.createPayloadSignature(from, SignatureAlgorithm.SHA_256_RSA, p, hdr);
+		// set the hdr msgId
+		SignatureUtils.setMsgId(hdr, now);
+		// set the hdr usersignature
+		SignatureUtils.createHeaderSignature(from, SignatureAlgorithm.SHA_256_RSA, now, hdr);
+		return m;
+	}
+
+	private Chunk mapChunk(byte[] chunkData, int pos, byte[] mac) {
+		Chunk c = new Chunk();
+		// TODO
+		return c;
 	}
 
 	// -------------------------------------------------------------------------

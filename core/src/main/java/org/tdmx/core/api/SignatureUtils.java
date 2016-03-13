@@ -91,6 +91,7 @@ public class SignatureUtils {
 				valueToSignPayload, signatureHex);
 	}
 
+	// TODO #106 remove
 	public static void createPayloadSignature(PKIXCredential credential, SignatureAlgorithm alg, Payload payload,
 			Header header) {
 
@@ -147,7 +148,7 @@ public class SignatureUtils {
 		// sig is in the header
 	}
 
-	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Date signatureDate,
+	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Calendar signatureDate,
 			Header header) {
 		UserSignature us = new UserSignature();
 
@@ -157,7 +158,7 @@ public class SignatureUtils {
 		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
 
 		Signaturevalue sig = new Signaturevalue();
-		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
+		sig.setTimestamp(signatureDate);
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
 		us.setSignaturevalue(sig);
