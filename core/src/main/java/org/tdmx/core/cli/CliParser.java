@@ -84,6 +84,7 @@ public class CliParser {
 			case ERROR:
 				if (commandDescriptorFactory.getCommand(token) != null) {
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
+					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
@@ -94,13 +95,15 @@ public class CliParser {
 				}
 				break;
 			case INITIAL:
+				// TODO #103: set "pwd:" and "set:" parameter bindings
 				if (commandDescriptorFactory.getCommand(token) != null) {
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
+					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
 				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
-					// TODO separate "HELP" for all commands
+					// TODO #104 separate "HELP" for all commands
 					listCommands(out);
 				} else if (token.equalsIgnoreCase(PI_ABORT)) {
 					state = ParserState.INITIAL;
@@ -126,6 +129,7 @@ public class CliParser {
 					executeCmd(cmd, out, err);
 					// next command started
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
+					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (cmd.supportsOption(token)) {
 					cmd.addOption(new CommandOption(cmd.getDescriptor().getOption(token)));
