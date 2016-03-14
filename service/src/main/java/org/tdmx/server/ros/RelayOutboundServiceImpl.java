@@ -116,8 +116,11 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 			try {
 				RelayJobExecutionService jes = getJobExecutionService();
 				if (jes != null) {
-					jes.executeJob(job);
-					job.getChannelContext().finishJob(job);
+					try {
+						jes.executeJob(job);
+					} finally {
+						job.getChannelContext().finishJob(job);
+					}
 				}
 			} catch (RuntimeException re) {
 				log.error("Relay failed.", re);

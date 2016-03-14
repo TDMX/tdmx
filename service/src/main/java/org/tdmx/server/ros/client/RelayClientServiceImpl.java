@@ -328,7 +328,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 			attributes.put(AttributeId.FlowQuotaId, flow.getId());
 		}
 		if (msg != null) {
-			attributes.put(AttributeId.MessageId, flow.getId());
+			attributes.put(AttributeId.MessageId, msg.getId());
 		}
 
 		return relayControlService.assignRelayServer(channelKey, segment.getSegmentName(), attributes);

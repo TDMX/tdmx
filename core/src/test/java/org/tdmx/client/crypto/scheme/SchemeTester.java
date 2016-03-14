@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import org.tdmx.client.crypto.entropy.EntropySource;
-import org.tdmx.client.crypto.stream.StreamUtils;
+import org.tdmx.client.crypto.stream.StreamTestUtils;
 
 public class SchemeTester {
 
@@ -47,7 +47,7 @@ public class SchemeTester {
 		InputStream is = d.getInputStream(result.getEncryptedData(), result.getEncryptionContext());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(plaintext.length);
 		try {
-			StreamUtils.transfer(is, baos);
+			StreamTestUtils.transfer(is, baos);
 		} finally {
 			is.close();
 		}

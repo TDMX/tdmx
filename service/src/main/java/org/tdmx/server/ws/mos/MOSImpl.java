@@ -186,12 +186,12 @@ public class MOSImpl implements MOS {
 		SubmitResponse response = new SubmitResponse();
 
 		// validate Msg fields present ( payload, header and chunk )
-		if (validator.checkMessage(parameters.getMsg(), response) == null) {
+		if (validator.checkMessage(parameters.getMsg(), response, true) == null) {
 			return response;
 		}
 
 		TransactionSpecification tx = parameters.getTransaction();
-		if (validator.checkTransaction(tx, response) == null) {
+		if (tx != null && validator.checkTransaction(tx, response) == null) {
 			return response;
 		}
 
@@ -452,7 +452,7 @@ public class MOSImpl implements MOS {
 	}
 
 	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, ChannelMessage msg) {
-		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getChannelKey(), session.getAccountZone(),
+		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getRosTcpAddress(), session.getAccountZone(),
 				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), msg);
 		if (!rs.isSuccess()) {
 			if (rs.getErrorCode().isRetryable()) {

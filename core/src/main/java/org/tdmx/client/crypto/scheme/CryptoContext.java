@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.core.api.v01.msg.Chunk;
+import org.tdmx.core.system.lang.StreamUtils;
 
 public class CryptoContext {
 
@@ -52,31 +53,26 @@ public class CryptoContext {
 		public ChunkSequentialReader() {
 		}
 
-		public Chunk getNextChunk() throws IOException {
+		public Chunk getNextChunk(String msgId) throws IOException {
 			Chunk c = new Chunk();
+			c.setMsgId(msgId);
 			if (chunkNo >= macList.size()) {
 				return null;
 			} else if (chunkNo == macList.size() - 1) {
 				// last chunk is partial
 				int sizeLeft = (int) ciphertextLength % chunkSize;
 				byte[] buf = new byte[sizeLeft];
-				if (encryptedData.read(buf) != sizeLeft) {
-					throw new IOException("Incomplete read.");
-				}
-
+				StreamUtils.fill(encryptedData, buf, 0, sizeLeft);
 				c.setData(buf);
 				c.setPos(chunkNo);
 				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
 
 			} else {
 				byte[] buf = new byte[chunkSize];
-				if (encryptedData.read(buf) != chunkSize) {
-					throw new IOException("Incomplete read.");
-				}
+				StreamUtils.fill(encryptedData, buf, 0, chunkSize);
 				c.setData(buf);
 				c.setPos(chunkNo);
 				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
-
 			}
 			chunkNo++;
 			return c;

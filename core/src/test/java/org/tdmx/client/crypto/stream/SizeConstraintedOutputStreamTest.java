@@ -33,7 +33,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(1024, baos);
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		try {
 			scos.write(content);
 			fail();
@@ -47,7 +47,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2048, baos);
 
-		byte[] content = StreamUtils.createRndArray(1024);
+		byte[] content = StreamTestUtils.createRndArray(1024);
 		scos.write(content);
 		scos.close();
 
@@ -60,7 +60,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2048, baos);
 
-		byte[] content = StreamUtils.createRndArray(2028);
+		byte[] content = StreamTestUtils.createRndArray(2028);
 		scos.write(content);
 		scos.close();
 		assertArrayEquals(content, baos.toByteArray());
@@ -72,7 +72,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2048, baos);
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		scos.write(content, 0, content.length / 2);
 		scos.write(content, content.length / 2, content.length / 2);
 		scos.close();
@@ -85,7 +85,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(4096, baos);
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		for (int i = 0; i < content.length / 2; i++) {
 			scos.write(content, i * 2, 2);
 		}
@@ -98,7 +98,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2048, baos);
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		for (int i = 0; i < content.length / 2; i++) {
 			scos.write(content, i * 2, 2);
 		}
@@ -111,7 +111,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2047, baos); // -1
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		for (int i = 0; i < content.length / 2 - 1; i++) {
 			scos.write(content, i * 2, 2);
 		}
@@ -128,7 +128,7 @@ public class SizeConstraintedOutputStreamTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 		SizeConstrainedOutputStream scos = new SizeConstrainedOutputStream(2047, baos); // -1
 
-		byte[] content = StreamUtils.createRndArray(2048);
+		byte[] content = StreamTestUtils.createRndArray(2048);
 		for (int i = 0; i < content.length / 8 - 1; i++) {
 			scos.write(content, i * 8, 8);
 		}

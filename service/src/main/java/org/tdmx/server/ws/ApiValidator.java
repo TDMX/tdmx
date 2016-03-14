@@ -274,7 +274,7 @@ public class ApiValidator {
 		return dest;
 	}
 
-	public Msg checkMessage(Msg msg, Acknowledge ack) {
+	public Msg checkMessage(Msg msg, Acknowledge ack, boolean chunkRequired) {
 		if (msg == null) {
 			setError(ErrorCode.MissingMessage, ack);
 			return null;
@@ -285,7 +285,7 @@ public class ApiValidator {
 		if (checkPayload(msg.getPayload(), ack) == null) {
 			return null;
 		}
-		if (checkChunk(msg.getChunk(), ack) == null) {
+		if (chunkRequired && checkChunk(msg.getChunk(), ack) == null) {
 			return null;
 		}
 		return msg;

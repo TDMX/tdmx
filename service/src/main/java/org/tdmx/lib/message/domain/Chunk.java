@@ -58,6 +58,8 @@ public class Chunk implements Serializable {
 	@TableGenerator(name = "ChunkIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "chunkObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
+	// TODO #107 denormalize ttl from msg, non tx mysql engine for storage, partitioned datasource
+
 	// -------------------------------------------------------------------------
 	// HEADER FIELDS
 	// -------------------------------------------------------------------------

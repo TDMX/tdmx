@@ -232,7 +232,7 @@ public class MRSImpl implements MRS {
 		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		// check that the Message provided is complete
-		if (validator.checkMessage(msg, response) == null) {
+		if (validator.checkMessage(msg, response, !session.isShortcutSession()) == null) {
 			return;
 		}
 		Header header = msg.getHeader();

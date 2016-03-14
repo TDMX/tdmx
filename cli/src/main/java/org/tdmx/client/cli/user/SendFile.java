@@ -39,7 +39,6 @@ import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.Encrypter;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoSchemeFactory;
-import org.tdmx.client.crypto.stream.StreamUtils;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Taskstatus;
 import org.tdmx.core.api.v01.mos.GetChannel;
@@ -66,6 +65,7 @@ import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 import org.tdmx.core.system.lang.CalendarUtils;
+import org.tdmx.core.system.lang.StreamUtils;
 
 @Cli(name = "send:file", description = "sends a single file to a destination")
 public class SendFile implements CommandExecutable {
@@ -306,7 +306,7 @@ public class SendFile implements CommandExecutable {
 				Msg m = mapMsg(uc, now, cc, ci, ds, ttl, externalReference);
 
 				try (ChunkSequentialReader csr = cc.getChunkReader()) {
-					Chunk chunk = csr.getNextChunk();
+					Chunk chunk = csr.getNextChunk(m.getHeader().getMsgId());
 					m.setChunk(chunk);
 
 					Submit submitReq = new Submit();
@@ -320,7 +320,7 @@ public class SendFile implements CommandExecutable {
 					}
 
 					String continuationId = submitResponse.getContinuation();
-					while ((chunk = csr.getNextChunk()) != null) {
+					while ((chunk = csr.getNextChunk(m.getHeader().getMsgId())) != null) {
 						Upload upl = new Upload();
 						upl.setChunk(chunk);
 						upl.setContinuation(continuationId);
@@ -356,6 +356,7 @@ public class SendFile implements CommandExecutable {
 		hdr.setEncryptionContextId(ds.getEncryptionContextId());
 		hdr.setExternalReference(externalReference);
 		hdr.setTo(ds.getUsersignature().getUserIdentity());
+		hdr.setTtl(ttl);
 		m.setHeader(hdr);
 
 		Payload p = new Payload();
@@ -373,12 +374,6 @@ public class SendFile implements CommandExecutable {
 		// set the hdr usersignature
 		SignatureUtils.createHeaderSignature(from, SignatureAlgorithm.SHA_256_RSA, now, hdr);
 		return m;
-	}
-
-	private Chunk mapChunk(byte[] chunkData, int pos, byte[] mac) {
-		Chunk c = new Chunk();
-		// TODO
-		return c;
 	}
 
 	// -------------------------------------------------------------------------

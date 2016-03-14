@@ -59,9 +59,9 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
 					true, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
-			StreamUtils.writeArrayAsArray(sos, content, reps); // test
-			StreamUtils.signArray(check, content, reps); // check
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
+			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
+			StreamTestUtils.signArray(check, content, reps); // check
 
 			sos.close();
 			assertTrue(fbos.getSize() > reps * chunklen); // +signature length which for RSA is dep. on the RSA key
@@ -87,9 +87,9 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), false,
 					true, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
-			StreamUtils.writeArrayAsArray(sos, content, reps); // test
-			StreamUtils.signArray(check, content, reps); // check
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
+			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
+			StreamTestUtils.signArray(check, content, reps); // check
 
 			sos.close();
 			assertEquals(reps * chunklen, fbos.getSize());
@@ -114,9 +114,9 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), false,
 					false, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
-			StreamUtils.writeArrayAsArray(sos, content, reps); // test
-			StreamUtils.signArray(check, content, reps); // check
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
+			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
+			StreamTestUtils.signArray(check, content, reps); // check
 
 			sos.close();
 			assertEquals(reps * chunklen, fbos.getSize());
@@ -135,7 +135,7 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), false,
 					false, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			sos.write(content);
 
 			sos.close();
@@ -147,7 +147,7 @@ public class SigningStreamTest {
 			SignatureVerifyingInputStream svis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_1_RSA,
 					kp.getPublic(), contentLen, false, signatureValue, fbis);
 			byte[] buffer = new byte[content.length];
-			StreamUtils.readArrayAsArray(svis, buffer, content, 1);
+			StreamTestUtils.readArrayAsArray(svis, buffer, content, 1);
 			assertEquals(-1, svis.read());
 			svis.close();
 			assertTrue(svis.isSignatureValid());
@@ -167,7 +167,7 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
 					false, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			sos.write(content);
 
 			sos.close();
@@ -179,7 +179,7 @@ public class SigningStreamTest {
 			SignatureVerifyingInputStream svis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_1_RSA,
 					kp.getPublic(), contentLen, false, fbis);
 			byte[] buffer = new byte[content.length];
-			StreamUtils.readArrayAsArray(svis, buffer, content, 1);
+			StreamTestUtils.readArrayAsArray(svis, buffer, content, 1);
 			assertEquals(-1, svis.read());
 			svis.close();
 			assertTrue(svis.isSignatureValid());
@@ -199,7 +199,7 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
 					true, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			sos.write(content);
 
 			sos.close();
@@ -211,7 +211,7 @@ public class SigningStreamTest {
 			SignatureVerifyingInputStream svis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_1_RSA,
 					kp.getPublic(), contentLen, true, fbis);
 			byte[] buffer = new byte[content.length];
-			StreamUtils.readArrayAsArray(svis, buffer, content, 1);
+			StreamTestUtils.readArrayAsArray(svis, buffer, content, 1);
 			assertEquals(-1, svis.read());
 			svis.close();
 			assertTrue(svis.isSignatureValid());
@@ -231,8 +231,8 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), false,
 					false, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
-			StreamUtils.writeArrayAsArray(sos, content, reps); // test
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
+			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
 
 			sos.close();
 			assertEquals(reps * chunklen, fbos.getSize());
@@ -243,7 +243,7 @@ public class SigningStreamTest {
 			SignatureVerifyingInputStream svis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_1_RSA,
 					kp.getPublic(), contentLen, false, signatureValue, fbis);
 			byte[] buffer = new byte[content.length];
-			StreamUtils.readArrayAsArray(svis, buffer, content, reps);
+			StreamTestUtils.readArrayAsArray(svis, buffer, content, reps);
 			assertEquals(-1, svis.read());
 			svis.close();
 			assertTrue(svis.isSignatureValid());
@@ -264,8 +264,8 @@ public class SigningStreamTest {
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
 					true, fbos);
 
-			byte[] content = StreamUtils.createRndArray(chunklen);
-			StreamUtils.writeArrayAsArray(sos, content, reps); // test
+			byte[] content = StreamTestUtils.createRndArray(chunklen);
+			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
 
 			sos.close();
 			assertTrue(fbos.getSize() > reps * chunklen);
@@ -276,7 +276,7 @@ public class SigningStreamTest {
 			SignatureVerifyingInputStream svis = new SignatureVerifyingInputStream(SignatureAlgorithm.SHA_1_RSA,
 					kp.getPublic(), contentLen, true, fbis);
 			byte[] buffer = new byte[content.length];
-			StreamUtils.readArrayAsArray(svis, buffer, content, reps);
+			StreamTestUtils.readArrayAsArray(svis, buffer, content, reps);
 			assertEquals(-1, svis.read());
 			svis.close();
 			assertTrue(svis.isSignatureValid());

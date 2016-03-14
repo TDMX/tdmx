@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -143,7 +144,14 @@ public class RelayChannelContext {
 	// TODO #95 relay DR
 
 	public synchronized List<RelayJobContext> finishJob(RelayJobContext finishedJob) {
-		scheduledJobs.remove(finishedJob);
+		// remove the finished job from the scheduledJobs
+		Iterator<RelayJobContext> sj = scheduledJobs.iterator();
+		while (sj.hasNext()) {
+			if (sj.next() == finishedJob) {
+				sj.remove();
+				break;
+			}
+		}
 		handleFinish(finishedJob);
 		lastActivityTimestamp = System.currentTimeMillis();
 		return schedule(transition());
@@ -303,7 +311,14 @@ public class RelayChannelContext {
 	 * @return true if the job was removed from the pending queue.
 	 */
 	private boolean removePendingJob(RelayJobContext job) {
-		return queuedJobs.remove(job);
+		Iterator<RelayJobContext> rji = queuedJobs.iterator();
+		while (rji.hasNext()) {
+			if (rji.next() == job) {
+				rji.remove();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
