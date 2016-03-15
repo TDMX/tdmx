@@ -351,13 +351,18 @@ public class RelayChannelContext {
 	 * @param type
 	 * @param number
 	 *            the max number of jobs to remove.
+	 * @param result
+	 *            container for the removed jobs.
 	 */
 	private void removePendingJobs(RelayJobType type, int number, List<RelayJobContext> result) {
 		int i = 0;
-		for (RelayJobContext ctx : queuedJobs) {
-			if (type == ctx.getType() && i < number) {
+		Iterator<RelayJobContext> queuedIterator = queuedJobs.iterator();
+		while (queuedIterator.hasNext() && i < number) {
+			RelayJobContext ctx = queuedIterator.next();
+			if (type == ctx.getType()) {
 				i++;
 				result.add(ctx);
+				queuedIterator.remove();
 			}
 		}
 	}

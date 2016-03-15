@@ -292,6 +292,7 @@ public interface ChannelService {
 	}
 
 	public class SubmitMessageResultHolder {
+		public FlowQuota flowQuota;
 		public SubmitMessageOperationStatus status;
 	}
 

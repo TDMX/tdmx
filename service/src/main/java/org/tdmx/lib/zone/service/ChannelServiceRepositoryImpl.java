@@ -388,6 +388,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnSend(msg.getPayloadLength());
 
+		result.flowQuota = quota;
 		return result;
 	}
 
@@ -413,6 +414,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnRelay(msg.getPayloadLength());
 
+		result.flowQuota = quota;
 		return result;
 	}
 

@@ -173,7 +173,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						if (rr.isSuccess()) {
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
-							// rr can indicate flowcontrol "closed" by remote - so stop sending.
+							// rr can indicate flowcontrol "closed" by remote after transfer - so stop sending.
 							FlowControlStatus relayStatus = a2d.mapFlowControlStatus(rr.getRelayStatus());
 							job.setFlowStatus(relayStatus);
 							// decrease the channel quota's buffer and track the relay status.

@@ -123,12 +123,18 @@ public class TransferClientServiceImpl implements TransferClientService, Managea
 			FindApiSessionResponse pcsInfo = controlService.findApiSession(segment.getSegmentName(),
 					WebServiceApiName.MDS, sessionKey);
 			if (pcsInfo != null) {
-				tosTcpAddress = pcsInfo.getTosAddress();
-				sessionId = pcsInfo.getSessionId();
+				if (pcsInfo.hasSessionId()) {
+					sessionId = pcsInfo.getSessionId();
+				}
+				if (pcsInfo.hasTosAddress()) {
+					tosTcpAddress = pcsInfo.getTosAddress();
+				}
+			} else {
+				return TransferStatus.failure(ErrorCode.PCS_FAILURE);
 			}
 		}
 		if (tosTcpAddress == null || sessionId == null) {
-			return TransferStatus.failure(ErrorCode.PCS_FAILURE);
+			return TransferStatus.failure(ErrorCode.PCS_SESSION_NOT_FOUND);
 		}
 		TransferObjectServiceClient tosClient = getTransferClient(tosTcpAddress);
 		if (tosClient == null) {

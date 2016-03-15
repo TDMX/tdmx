@@ -33,6 +33,7 @@ public class TransferStatus {
 	public enum ErrorCode {
 		// non retryable errors
 		PCS_FAILURE(false, "Unable to communicate with the PCS."),
+		PCS_SESSION_NOT_FOUND(false, "PCS does not know the session key."),
 		TOS_CONNECTION_REFUSED(false, "Unable to connect to the TOS."),
 		TOS_RPC_CHANNEL_CLOSED(false, "Channel to TOS has closed."),
 		TOS_RPC_CALL_FAILURE(false, "TOS RPC call failure."),

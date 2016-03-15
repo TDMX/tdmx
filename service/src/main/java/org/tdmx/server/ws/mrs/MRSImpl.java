@@ -299,6 +299,10 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(mapSubmitOperationStatus(result.status), response);
 			return;
 		}
+		if (result.flowQuota != null) {
+			// if we are closed for relay after receiving the message tell the caller.
+			response.setRelayStatus(d2a.mapFlowControlStatus(result.flowQuota.getRelayStatus()));
+		}
 
 		// the chunks are not transferred for shortcut relaying.
 		if (!session.isShortcutSession()) {
