@@ -48,16 +48,16 @@ public class SigningStreamTest {
 	}
 
 	@Test
-	public void testPlainSign_ArrayWritesInclLength_OutputSignature() throws CryptoException, IOException,
-			SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+	public void testPlainSign_ArrayWritesInclLength_OutputSignature()
+			throws CryptoException, IOException, SignatureException {
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		Signature check = SignatureAlgorithm.SHA_1_RSA.getSignature(kp.getPrivate());
 
 		try {
 			int reps = 1024;
 			int chunklen = 2048;
-			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
-					true, fbos);
+			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true, true,
+					fbos);
 
 			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test
@@ -78,7 +78,7 @@ public class SigningStreamTest {
 
 	@Test
 	public void testPlainSign_ArrayWritesInclLength() throws CryptoException, IOException, SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		Signature check = SignatureAlgorithm.SHA_1_RSA.getSignature(kp.getPrivate());
 
 		try {
@@ -105,7 +105,7 @@ public class SigningStreamTest {
 
 	@Test
 	public void testPlainSign_ArrayWrites() throws CryptoException, IOException, SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		Signature check = SignatureAlgorithm.SHA_1_RSA.getSignature(kp.getPrivate());
 
 		try {
@@ -129,7 +129,7 @@ public class SigningStreamTest {
 
 	@Test
 	public void testPlainVerify_SingleArray() throws CryptoException, IOException, SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		try {
 			int chunklen = 2048;
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), false,
@@ -159,9 +159,9 @@ public class SigningStreamTest {
 	}
 
 	@Test
-	public void testPlainVerify_SingleArray_AppendedExclLength() throws CryptoException, IOException,
-			SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+	public void testPlainVerify_SingleArray_AppendedExclLength()
+			throws CryptoException, IOException, SignatureException {
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		try {
 			int chunklen = 2048;
 			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
@@ -191,13 +191,13 @@ public class SigningStreamTest {
 	}
 
 	@Test
-	public void testPlainVerify_SingleArray_AppendedInclLength() throws CryptoException, IOException,
-			SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+	public void testPlainVerify_SingleArray_AppendedInclLength()
+			throws CryptoException, IOException, SignatureException {
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		try {
 			int chunklen = 2048;
-			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
-					true, fbos);
+			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true, true,
+					fbos);
 
 			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			sos.write(content);
@@ -224,7 +224,7 @@ public class SigningStreamTest {
 
 	@Test
 	public void testPlainVerify_ArrayWrites() throws CryptoException, IOException, SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		try {
 			int reps = 1024;
 			int chunklen = 2048;
@@ -255,14 +255,14 @@ public class SigningStreamTest {
 	}
 
 	@Test
-	public void testPlainVerify_ArrayWrites_AppendedInclLength() throws CryptoException, IOException,
-			SignatureException {
-		FileBackedOutputStream fbos = factory.getOutputStream();
+	public void testPlainVerify_ArrayWrites_AppendedInclLength()
+			throws CryptoException, IOException, SignatureException {
+		FileBackedOutputStream fbos = factory.getOutputStream(1024);
 		try {
 			int reps = 1024;
 			int chunklen = 2048;
-			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true,
-					true, fbos);
+			SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_1_RSA, kp.getPrivate(), true, true,
+					fbos);
 
 			byte[] content = StreamTestUtils.createRndArray(chunklen);
 			StreamTestUtils.writeArrayAsArray(sos, content, reps); // test

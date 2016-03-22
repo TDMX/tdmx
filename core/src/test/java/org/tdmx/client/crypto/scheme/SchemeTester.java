@@ -31,11 +31,12 @@ import java.io.PrintWriter;
 
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.stream.StreamTestUtils;
+import org.tdmx.core.system.lang.StreamUtils;
 
 public class SchemeTester {
 
-	public static void testFixedSizeSmallTransfer(Encrypter e, Decrypter d, int length) throws CryptoException,
-			IOException {
+	public static void testFixedSizeSmallTransfer(Encrypter e, Decrypter d, int length)
+			throws CryptoException, IOException {
 		byte[] plaintext = EntropySource.getRandomBytes(length);
 
 		OutputStream os = e.getOutputStream();
@@ -58,7 +59,7 @@ public class SchemeTester {
 	public static void testLargeCompressable(Encrypter e, Decrypter d) throws CryptoException, IOException {
 		OutputStream os = e.getOutputStream();
 		PrintWriter pw = new PrintWriter(os);
-		int repeats = 10000000;
+		int repeats = 20000000;
 		for (int i = 0; i < repeats; i++) {
 			String contentLine = "NUM" + i + "\n";
 			pw.write(contentLine);
@@ -86,5 +87,20 @@ public class SchemeTester {
 		} finally {
 			is.close();
 		}
+	}
+
+	public static void testLargeUncompressable(Encrypter e, Decrypter d, byte[] data)
+			throws CryptoException, IOException {
+		OutputStream os = e.getOutputStream();
+		os.write(data);
+		os.close();
+
+		CryptoContext result = e.getResult();
+
+		InputStream is = d.getInputStream(result.getEncryptedData(), result.getEncryptionContext());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length);
+		StreamUtils.transfer(is, baos);
+
+		assertArrayEquals(data, baos.toByteArray());
 	}
 }

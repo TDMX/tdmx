@@ -19,10 +19,14 @@
 package org.tdmx.server.ws.mos;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mos.Acknowledge;
 import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
@@ -85,9 +89,10 @@ import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.mos.MOSServerSession.ChannelContextHolder;
-import org.tdmx.server.ws.mos.MOSServerSession.MessageContextHolder;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
+
+import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 public class MOSImpl implements MOS {
 
@@ -123,9 +128,24 @@ public class MOSImpl implements MOS {
 
 	private int batchSize = 100;
 
+	private ScheduledExecutorService txTimeoutScheduler = Executors.newScheduledThreadPool(1,
+			new RenamingThreadFactoryProxy("SenderTxTimeoutScheduler", Executors.defaultThreadFactory()));
+
+	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
+	private static final int DEFAULT_TX_TIMEOUT_SEC = 1800;
+
+	private int maxTransactionTimeoutSec = 3600 * 8; // 8hrs
+	private int minTransactionTimeoutSec = 60; // 60s
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	// TODO make sure the session LastUsedTimestamp is put to the end of the transaction timeout timestamp so we don't
+	// idle out
+	// sessions which the transaction can still be completed later.
+
+	// TODO independent executor and scheduler for eventual cleanup transaction timeout handling.
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -178,6 +198,17 @@ public class MOSImpl implements MOS {
 		return response;
 	}
 
+	private TransactionSpecification getNonTransactionSpecification() {
+		TransactionSpecification tx = new TransactionSpecification();
+		tx.setTxtimeout(DEFAULT_TX_TIMEOUT_SEC);
+		tx.setXid(NON_TX_SPEC_ID_PREFIX + ByteArray.asHex(EntropySource.getRandomBytes(16)));
+		return tx;
+	}
+
+	private boolean isNonTransactionSpecification(TransactionSpecification txSpec) {
+		return txSpec.getXid().startsWith(NON_TX_SPEC_ID_PREFIX);
+	}
+
 	@Override
 	public SubmitResponse submit(Submit parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
@@ -191,8 +222,12 @@ public class MOSImpl implements MOS {
 		}
 
 		TransactionSpecification tx = parameters.getTransaction();
-		if (tx != null && validator.checkTransaction(tx, response) == null) {
+		if (tx != null && validator.checkTransaction(tx, response, minTransactionTimeoutSec,
+				maxTransactionTimeoutSec) == null) {
 			return response;
+		}
+		if (tx == null) {
+			tx = getNonTransactionSpecification();
 		}
 
 		// TODO #70: check chunk's mac
@@ -200,16 +235,12 @@ public class MOSImpl implements MOS {
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
-		if (!SignatureUtils.checkMsgId(header, header.getUsersignature().getSignaturevalue().getTimestamp())) {
+		if (!SignatureUtils.checkMsgId(header, payload, header.getUsersignature().getSignaturevalue().getTimestamp())) {
 			ErrorCode.setError(ErrorCode.InvalidMsgId, response);
 			return response;
 		}
-		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
-			ErrorCode.setError(ErrorCode.InvalidSignatureMessagePayload, response);
-			return response;
-		}
-		if (!SignatureUtils.checkHeaderSignature(header)) {
-			ErrorCode.setError(ErrorCode.InvalidSignatureMessageHeader, response);
+		if (!SignatureUtils.checkMessageSignature(header, payload)) {
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessage, response);
 			return response;
 		}
 
@@ -278,7 +309,10 @@ public class MOSImpl implements MOS {
 			cch = session.addChannel(channelKey, channel);
 		}
 
-		m.setChannel(cch.getChannel());
+		Channel cachedChannel = cch.getChannel();
+		m.setChannel(cachedChannel);
+		// TODO #70 just check if the flow control is open on the channel
+		// TODO #70 ... checkSend / checkRelay / commitSend / commitRelay
 		SubmitMessageResultHolder result = channelService.preSubmitMessage(zone, m);
 		if (result.status != null) {
 			ErrorCode.setError(mapSubmitOperationStatus(result.status), response);
@@ -288,18 +322,22 @@ public class MOSImpl implements MOS {
 		// persist Chunk
 		chunkService.createOrUpdate(c);
 
-		// add the sent message to the session.
-		MessageContextHolder mch = session.addMessage(m);
+		// adds the tx to the session immediately.
+		SenderTransactionContext stc = session.getTransaction(tx);
 
 		// give the caller the continuationId for the next chunk
-		String continuationId = mch.getContinuationId(c.getPos() + 1);
+		String continuationId = stc.getContinuationId(c.getPos() + 1, m);
 		if (continuationId == null) {
-			// last chunk - what to do? TODO #70: last chunk y/n? transaction y/n?
-			try {
+			// last chunk - autocommit if we have no tx.
+			if (isNonTransactionSpecification(stc.getTxSpec())) {
 				m.setProcessingState(ProcessingState.pending());
+				// TODO #109 message state NEW
+				// TODO #70 - commit the flow's buffer increment for the single message.
 				channelService.create(m);
-			} finally {
-				session.removeMessage(m);
+				session.removeTransaction(tx);
+			} else {
+				// add message to tx to commit later.
+				stc.addMessage(m);
 			}
 
 			// give the message to the ROS to relay.
@@ -327,28 +365,45 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		// TODO #70: check chunk's mac
-
 		Chunk c = a2d.mapChunk(parameters.getChunk());
 
-		MessageContextHolder mch = session.getMessage(parameters.getChunk().getMsgId());
-		if (mch == null) {
+		SenderTransactionContext stc = session.getTransaction(parameters.getChunk().getMsgId());
+		if (stc == null) {
 			ErrorCode.setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
+		ChannelMessage m = stc.getMessage(parameters.getChunk().getMsgId());
 		// calculate the continuationId for the chunk and check that it matches the continuationId
-		if (!continuationId.equals(mch.getContinuationId(c.getPos()))) {
+		if (!continuationId.equals(stc.getContinuationId(c.getPos(), m))) {
 			ErrorCode.setError(ErrorCode.InvalidChunkContinuationId, response);
 			return response;
+		}
+		ChannelName cn = m.getChannel().getChannelName();
+		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
+		ChannelContextHolder cch = session.getChannel(channelKey);
+		if (cch == null) {
+			ErrorCode.setError(ErrorCode.ChannelNotFound, response);
+			return response;
+		}
+		// check chunk's mac
+		if (validator.checkChunkMac(parameters.getChunk(), cch.getChannel().getSession().getScheme(),
+				response) == null) {
+			return null;
 		}
 
 		chunkService.createOrUpdate(c);
 
 		// calculate the next continuationId
-		String nextContinuationId = mch.getContinuationId(c.getPos() + 1);
+		String nextContinuationId = stc.getContinuationId(c.getPos() + 1, m);
 		if (nextContinuationId == null) {
-			// this was the last chunk - what to do ? TODO #70: transaction y/n?
-			// when to delete the msg from the
+			// this was the last chunk
+			if (isNonTransactionSpecification(stc.getTxSpec())) {
+				// auto-commit
+				m.setProcessingState(ProcessingState.pending());
+				// TODO #109 message state NEW
+				channelService.create(m);
+				session.removeTransaction(stc.getTxSpec());
+			}
 
 		}
 		response.setContinuation(nextContinuationId);

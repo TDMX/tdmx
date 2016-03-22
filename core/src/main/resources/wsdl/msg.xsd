@@ -316,12 +316,12 @@
 	</xs:complexType>
 	<xs:complexType name="DestinationSession">
 		<xs:annotation>
-			<xs:documentation>destinationsession is signed by the flow's target user and contains { channel.destination.Address+DomainName+serviceName +  flowsessionId + sessionKey+validFrom+scheme  + signaturevalue.timestamp</xs:documentation>
+			<xs:documentation>destinationsession is signed by the channel's destination user and contains { channel.destination.Address+DomainName+serviceName +  flowsessionId + sessionKey+validFrom+scheme  + signaturevalue.timestamp</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="encryptionContextId"/>
-			<xs:element name="scheme" type="cryptoscheme"/>
-			<xs:element name="sessionKey" type="cryptosessionkey"/>
+			<xs:element ref="scheme"/>
+			<xs:element ref="sessionKey"/>
 			<xs:element ref="usersignature"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -489,6 +489,16 @@
 			<xs:documentation>the destination's encryption context.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="scheme" type="cryptoscheme">
+		<xs:annotation>
+			<xs:documentation>the name of the integrated encryption scheme dictated by the destination session.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="sessionKey" type="cryptosessionkey">
+		<xs:annotation>
+			<xs:documentation>the public agreement key used to bootstrap the integrated encryption scheme's secret key derivation.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="channelauthorization" type="ChannelAuthorization">
 		<xs:annotation>
 			<xs:documentation>a channel authorization.</xs:documentation>
@@ -505,17 +515,22 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="permission" type="EndpointPermission"/>
+	<xs:element name="limit" type="Limit">
+		<xs:annotation>
+			<xs:documentation>the channel buffer's limits for flow control. Flow control is activated ( CLOSED ) when there are more bytes in the buffer than highBytes. flow control is only deactivated ( OPEN ) when the level of the buffer drops below lowBytes.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="relayStatus" type="flowcontrolstatus">
+		<xs:annotation>
+			<xs:documentation>Whether relaying is allowed or not due to flow control. On the receiver side, this is equal to the flowStatus. On the sender side, this is the status of the receiving side.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<!-- ********************************************* -->
 	<!--           MESSAGING TYPES              -->
 	<!-- ********************************************* -->
 	<xs:complexType name="Header">
 		<xs:sequence>
 			<xs:element ref="msgId"/>
-			<xs:element name="ttl" type="xs:dateTime">
-				<xs:annotation>
-					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element ref="channel"/>
 			<xs:element name="to" type="UserIdentity">
 				<xs:annotation>
@@ -523,9 +538,14 @@
 				</xs:annotation>
 			</xs:element>
 			<xs:element ref="encryptionContextId"/>
-			<xs:element name="payloadSignature" type="signature">
+			<xs:element ref="scheme">
 				<xs:annotation>
-					<xs:documentation>the signature value of the Message's payload element fields, including a MACofMACs of all the chunks of the ciphertext. Note that there is a cryptographically secure digital signature of the message payload typically in the encryption scheme ( on the payload plaintext ). The payloadSignature issuer is the that of the header signature issuer.</xs:documentation>
+					<xs:documentation>the name of the integrated encryption scheme - determined by the destination session, dictates the chunk size and MAC digest algorithm</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ttl" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>timestamp after which message is assumed not delivered if no reply received, and shall not be delivered by the destination.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="externalReference" type="common:text" minOccurs="0">
@@ -538,19 +558,9 @@
 	</xs:complexType>
 	<xs:complexType name="Payload">
 		<xs:sequence>
-			<xs:element name="chunkSize" type="xs:unsignedInt">
-				<xs:annotation>
-					<xs:documentation>chunk size in bytes.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="length" type="xs:unsignedInt">
 				<xs:annotation>
 					<xs:documentation>the total bytes of the payload - ( encrypted, zipped ) - equal to the sum of all payload chunk lengths.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="encryptionContext" type="xs:base64Binary">
-				<xs:annotation>
-					<xs:documentation>supplementary data supplied by the encrypting crypto scheme. Used to facilitate the crypto scheme's decryption primitive.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="plaintextLength" type="xs:unsignedInt">
@@ -558,9 +568,14 @@
 					<xs:documentation>the size in bytes of the plaiintext ( decrypted, uncompressed ) - known in advance so as to allow safe decompression.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="encryptionContext" type="xs:base64Binary">
+				<xs:annotation>
+					<xs:documentation>supplementary data supplied by the encrypting crypto scheme. Used to facilitate the crypto scheme's decryption primitive.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="MACofMACs" type="messageauthenticationcode">
 				<xs:annotation>
-					<xs:documentation>SHA256 MAC of all chunk's MAC.</xs:documentation>
+					<xs:documentation>MAC of all chunk's MAC.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -612,19 +627,9 @@
 			<xs:element ref="receiptsignature"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:simpleType name="messagestatus">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="NEW"/>
-			<xs:enumeration value="SUBMITTED"/>
-			<xs:enumeration value="RELAYED"/>
-			<xs:enumeration value="DELIVERED"/>
-			<xs:enumeration value="FAILED"/>
-			<xs:enumeration value="DELETED"/>
-		</xs:restriction>
-	</xs:simpleType>
 	<xs:simpleType name="messageauthenticationcode">
 		<xs:annotation>
-			<xs:documentation>Message Authentication Code - SHA256</xs:documentation>
+			<xs:documentation>Message Authentication Code / Digest</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:maxLength value="64"/>
@@ -647,11 +652,7 @@
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="header" type="Header"/>
-	<xs:element name="msgId" type="messageId">
-		<xs:annotation>
-			<xs:documentation>the SHA-256 fingerprint of { timestamp+origin.Address + destination.Addressl+serviceName +payloadSignature }</xs:documentation>
-		</xs:annotation>
-	</xs:element>
+	<xs:element name="msgId" type="messageId"/>
 	<xs:element name="payload" type="Payload"/>
 	<xs:element name="chunk" type="Chunk">
 		<xs:annotation>
@@ -665,7 +666,7 @@
 	</xs:element>
 	<xs:element name="mac" type="messageauthenticationcode">
 		<xs:annotation>
-			<xs:documentation>A SHA-256 MAC of chunk data.</xs:documentation>
+			<xs:documentation>A digest (SHA) of data.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="chunkref" type="ChunkReference">
@@ -686,16 +687,6 @@
 	<xs:element name="dr" type="DeliveryReport">
 		<xs:annotation>
 			<xs:documentation>The message delivery report.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="limit" type="Limit">
-		<xs:annotation>
-			<xs:documentation>the channel buffer's limits for flow control. Flow control is activated ( CLOSED ) when there are more bytes in the buffer than highBytes. flow control is only deactivated ( OPEN ) when the level of the buffer drops below lowBytes.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="relayStatus" type="flowcontrolstatus">
-		<xs:annotation>
-			<xs:documentation>Whether relaying is allowed or not due to flow control. On the receiver side, this is equal to the flowStatus. On the sender side, this is the status of the receiving side.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 </xs:schema>

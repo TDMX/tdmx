@@ -21,6 +21,7 @@ package org.tdmx.server.ws;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.common.Page;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
@@ -84,7 +85,7 @@ public class ApiToDomainMapper {
 		md.setMsgId(msg.getHeader().getMsgId());
 		md.setTtlTimestamp(CalendarUtils.cast(msg.getHeader().getTtl()));
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
-		md.setPayloadSignature(msg.getHeader().getPayloadSignature());
+		md.setScheme(IntegratedCryptoScheme.fromName(msg.getHeader().getScheme()));
 		md.setExternalReference(msg.getHeader().getExternalReference());
 		// on submit of a message, we don't have the "receipt" signature parts, just the identity.
 		org.tdmx.core.api.v01.msg.UserSignature receipt = new org.tdmx.core.api.v01.msg.UserSignature();
@@ -92,7 +93,6 @@ public class ApiToDomainMapper {
 		md.setReceipt(mapUserSignature(receipt));
 		md.setSignature(mapUserSignature(msg.getHeader().getUsersignature()));
 
-		md.setChunkSize(msg.getPayload().getChunkSize());
 		md.setPayloadLength(msg.getPayload().getLength());
 		md.setEncryptionContext(msg.getPayload().getEncryptionContext());
 		md.setPlaintextLength(msg.getPayload().getPlaintextLength());
@@ -128,7 +128,7 @@ public class ApiToDomainMapper {
 		}
 		DestinationSession s = new DestinationSession();
 		s.setEncryptionContextId(ds.getEncryptionContextId());
-		s.setScheme(ds.getScheme());
+		s.setScheme(IntegratedCryptoScheme.fromName(ds.getScheme()));
 		s.setSessionKey(ds.getSessionKey());
 
 		s.setSignature(mapUserSignature(ds.getUsersignature()));

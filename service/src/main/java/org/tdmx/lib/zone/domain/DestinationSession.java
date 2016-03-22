@@ -23,6 +23,10 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 
 /**
  * A DestinationSession is an encryption public key information related to an Address'es Service.
@@ -48,8 +52,9 @@ public class DestinationSession implements Serializable {
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN)
 	private String encryptionContextId;
 
+	@Enumerated(EnumType.STRING)
 	@Column(length = DestinationSession.MAX_SCHEME_LEN)
-	private String scheme;
+	private IntegratedCryptoScheme scheme;
 
 	@Column(length = DestinationSession.MAX_SESSION_KEY_LEN)
 	private byte[] sessionKey;
@@ -111,11 +116,11 @@ public class DestinationSession implements Serializable {
 		this.sessionKey = sessionKey;
 	}
 
-	public String getScheme() {
+	public IntegratedCryptoScheme getScheme() {
 		return scheme;
 	}
 
-	public void setScheme(String scheme) {
+	public void setScheme(IntegratedCryptoScheme scheme) {
 		this.scheme = scheme;
 	}
 

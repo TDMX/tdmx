@@ -123,6 +123,9 @@ public class MDSImpl implements MDS {
 	private int batchSize = 100;
 	private int maxWaitTimeoutSec = 300;
 
+	private int maxTransactionTimeoutSec = 3600 * 8; // 8hrs
+	private int minTransactionTimeoutSec = 60; // 60s
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -242,7 +245,8 @@ public class MDSImpl implements MDS {
 		TransactionSpecification tx = null;
 		if (recvRequest.getTransaction() != null) {
 			// TODO #101: validate tx
-			tx = validator.checkTransaction(recvRequest.getTransaction(), response);
+			tx = validator.checkTransaction(recvRequest.getTransaction(), response, minTransactionTimeoutSec,
+					maxTransactionTimeoutSec);
 			if (tx == null) {
 				return response;
 			}

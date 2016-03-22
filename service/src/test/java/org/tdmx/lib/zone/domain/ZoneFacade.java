@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -79,8 +80,8 @@ public class ZoneFacade {
 	public static Destination createDestination(PKIXCredential userCred, Address address, Service service) {
 		DestinationSession ds = new DestinationSession();
 		ds.setEncryptionContextId("1");
-		ds.setScheme("encryptionscheme");
-		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME
+		ds.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1);
+		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME propper signature.
 
 		Destinationsession ads = d2a.mapDestinationSession(ds);
 		SignatureUtils.createDestinationSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
@@ -241,9 +242,8 @@ public class ZoneFacade {
 
 		cm.setEncryptionContext(new byte[] { 1, 2, 3, 4, 5 });
 		cm.setTtlTimestamp(new Date());
-		cm.setPayloadSignature("" + System.currentTimeMillis());
 		cm.setEncryptionContextId("" + System.currentTimeMillis());
-		cm.setChunkSize(100000);
+		cm.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1);
 		cm.setPayloadLength(100000000);
 		cm.setPlaintextLength(100000000);
 		cm.setMacOfMacs("MAC" + System.currentTimeMillis());

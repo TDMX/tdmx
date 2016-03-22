@@ -31,9 +31,11 @@ import org.tdmx.client.crypto.certificate.StringSigningUtils;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.converters.StringToUtf8;
 import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Dr;
@@ -67,50 +69,39 @@ public class SignatureUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public static boolean checkMsgId(Header header, Calendar sentTS) {
+	public static boolean checkMsgId(Header header, Payload payload, Calendar sentTS) {
 		return header != null && sentTS != null && header.getMsgId() != null
-				&& header.getMsgId().equals(calculateMsgId(header, sentTS));
+				&& header.getMsgId().equals(calculateMsgId(header, payload, sentTS));
 	}
 
-	public static void setMsgId(Header header, Calendar sentTS) {
-		if (header != null) {
-			header.setMsgId(calculateMsgId(header, sentTS));
+	public static void setMsgId(Header header, Payload payload, Calendar sentTS) {
+		if (header != null && payload != null && sentTS != null) {
+			header.setMsgId(calculateMsgId(header, payload, sentTS));
 		}
 	}
 
-	public static boolean checkPayloadSignature(Payload payload, Header header) {
+	public static boolean checkMessageSignature(Header header, Payload payload) {
 		PKIXCertificate signingPublicCert = CertificateIOUtils
 				.safeDecodeX509(header.getUsersignature().getUserIdentity().getUsercertificate());
 		SignatureAlgorithm alg = SignatureAlgorithm
 				.getByAlgorithmName(header.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
 
-		String valueToSignPayload = getValueToSign(payload);
-		String signatureHex = header.getPayloadSignature();
-
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg,
-				valueToSignPayload, signatureHex);
-	}
-
-	// TODO #106 remove
-	public static void createPayloadSignature(PKIXCredential credential, SignatureAlgorithm alg, Payload payload,
-			Header header) {
-
-		String valueToSignPayload = getValueToSign(payload);
-		header.setPayloadSignature(
-				StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignPayload));
-	}
-
-	public static boolean checkHeaderSignature(Header header) {
-		PKIXCertificate signingPublicCert = CertificateIOUtils
-				.safeDecodeX509(header.getUsersignature().getUserIdentity().getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm
-				.getByAlgorithmName(header.getUsersignature().getSignaturevalue().getSignatureAlgorithm().value());
-
-		String valueToSign = getValueToSign(header);
+		String valueToSign = getValueToSign(header, payload);
 		String signatureHex = header.getUsersignature().getSignaturevalue().getSignature();
 
 		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
 				signatureHex);
+	}
+
+	public static boolean checkChunkMac(Chunk chunk, IntegratedCryptoScheme ies) {
+		DigestAlgorithm da = ies.getChunkMACAlgorithm();
+		try {
+			byte[] mac = da.kdf(chunk.getData());
+			String macHex = ByteArray.asHex(mac);
+			return macHex.equalsIgnoreCase(chunk.getMac());
+		} catch (CryptoException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public static boolean checkDeliveryReceiptSignature(Dr dr) {
@@ -148,8 +139,8 @@ public class SignatureUtils {
 		// sig is in the header
 	}
 
-	public static void createHeaderSignature(PKIXCredential credential, SignatureAlgorithm alg, Calendar signatureDate,
-			Header header) {
+	public static void createMessageSignature(PKIXCredential credential, SignatureAlgorithm alg, Calendar signatureDate,
+			Header header, Payload payload) {
 		UserSignature us = new UserSignature();
 
 		UserIdentity id = new UserIdentity();
@@ -165,7 +156,7 @@ public class SignatureUtils {
 		us.setUserIdentity(id);
 		header.setUsersignature(us);
 
-		String valueToSignHeader = getValueToSign(header);
+		String valueToSignHeader = getValueToSign(header, payload);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
 		// sig is in the header
 	}
@@ -284,7 +275,7 @@ public class SignatureUtils {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private static String calculateMsgId(Header header, Calendar sentTS) {
+	private static String calculateMsgId(Header header, Payload payload, Calendar sentTS) {
 		StringBuffer sb = new StringBuffer();
 		// channel
 		sb.append(toValue(header.getChannel().getOrigin().getLocalname()));
@@ -295,7 +286,7 @@ public class SignatureUtils {
 		// timestamp
 		sb.append(toValue(sentTS));
 		// payload signature with sentTS makes the msgId value unique per payload
-		sb.append(toValue(header.getPayloadSignature()));
+		sb.append(toValue(payload.getMACofMACs()));
 		String valueToHash = sb.toString();
 
 		DigestAlgorithm alg = DigestAlgorithm.SHA_256;
@@ -308,18 +299,6 @@ public class SignatureUtils {
 		return ByteArray.asHex(hashedByes);
 	}
 
-	private static String getValueToSign(Payload payload) {
-		StringBuilder value = new StringBuilder();
-
-		value.append(toValue(payload.getChunkSize()));
-		value.append(toValue(payload.getLength()));
-		value.append(toValue(payload.getEncryptionContext()));
-		value.append(toValue(payload.getPlaintextLength()));
-		value.append(toValue(payload.getMACofMACs()));
-
-		return value.toString();
-	}
-
 	private static String getValueToSign(Dr dr) {
 		StringBuilder value = new StringBuilder();
 
@@ -329,7 +308,7 @@ public class SignatureUtils {
 		return value.toString();
 	}
 
-	private static String getValueToSign(Header header) {
+	private static String getValueToSign(Header header, Payload payload) {
 		StringBuilder value = new StringBuilder();
 
 		value.append(toValue(header.getMsgId()));
@@ -338,7 +317,12 @@ public class SignatureUtils {
 		appendValueToSign(value, header.getChannel());
 		appendValueToSign(value, header.getTo());
 		value.append(toValue(header.getEncryptionContextId()));
-		value.append(toValue(header.getPayloadSignature()));
+		value.append(toValue(header.getScheme()));
+
+		value.append(toValue(payload.getLength()));
+		value.append(toValue(payload.getEncryptionContext()));
+		value.append(toValue(payload.getPlaintextLength()));
+		value.append(toValue(payload.getMACofMACs()));
 		value.append(toValue(header.getExternalReference()));
 
 		return value.toString();

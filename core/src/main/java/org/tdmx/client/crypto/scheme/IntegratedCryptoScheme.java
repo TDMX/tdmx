@@ -18,40 +18,108 @@
  */
 package org.tdmx.client.crypto.scheme;
 
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.algorithm.KeyAgreementAlgorithm;
+import org.tdmx.core.system.lang.EnumUtils;
 
 public enum IntegratedCryptoScheme {
 
-	ECDH384_RSA_SLASH_AES256("ecdh384:rsa/aes256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_RSA_SLASH_TWOFISH256("ecdh384:rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_RSA_SLASH_SERPENT256("ecdh384:rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_RSA_SLASH_AES256__16MB_SHA1(
+			"ecdh384:rsa/aes256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1(
+			"ecdh384:rsa/twofish256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1(
+			"ecdh384:rsa/serpent256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
 
-	ECDH384_AES256plusRSA_SLASH_AES256("ecdh384:aes256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_AES256plusRSA_SLASH_TWOFISH256("ecdh384:aes256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_AES256plusRSA_SLASH_SERPENT256("ecdh384:aes256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1(
+			"ecdh384:aes256+rsa/aes256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1(
+			"ecdh384:aes256+rsa/twofish256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1(
+			"ecdh384:aes256+rsa/serpent256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
 
-	ECDH384_TWOFISH256plusRSA_SLASH_AES256("ecdh384:twofish256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256("ecdh384:twofish256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256("ecdh384:twofish256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384),
+	ECDH384_TWOFISH256plusRSA_SLASH_AES256__16MB_SHA1(
+			"ecdh384:twofish256+rsa/aes256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256__16MB_SHA1(
+			"ecdh384:twofish256+rsa/twofish256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256__16MB_SHA1(
+			"ecdh384:twofish256+rsa/serpent256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
 
-	ECDH384_SERPENT256plusRSA_SLASH_AES256("ecdh384:serpent256+rsa/aes256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256("ecdh384:serpent256+rsa/twofish256", KeyAgreementAlgorithm.ECDH384),
-	ECDH384_SERPENT256plusRSA_SLASH_SERPENT256("ecdh384:serpent256+rsa/serpent256", KeyAgreementAlgorithm.ECDH384);
+	ECDH384_SERPENT256plusRSA_SLASH_AES256__16MB_SHA1(
+			"ecdh384:serpent256+rsa/aes256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256__16MB_SHA1(
+			"ecdh384:serpent256+rsa/twofish256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1),
+	ECDH384_SERPENT256plusRSA_SLASH_SERPENT256__16MB_SHA1(
+			"ecdh384:serpent256+rsa/serpent256[16mbSHA1]",
+			KeyAgreementAlgorithm.ECDH384,
+			16 * EnumUtils.MB,
+			DigestAlgorithm.SHA_1);
 
 	private final String name;
 	private final KeyAgreementAlgorithm sessionKeyAlgorithm;
+	private final int chunkSize;
+	private final DigestAlgorithm chunkMACAlgorithm;
 
 	public KeyAgreementAlgorithm getSessionKeyAlgorithm() {
 		return sessionKeyAlgorithm;
 	}
 
-	private IntegratedCryptoScheme(String name, KeyAgreementAlgorithm sessionKeyAlgorithm) {
+	private IntegratedCryptoScheme(String name, KeyAgreementAlgorithm sessionKeyAlgorithm, int chunkSize,
+			DigestAlgorithm chunkDigest) {
 		this.name = name;
 		this.sessionKeyAlgorithm = sessionKeyAlgorithm;
+		this.chunkMACAlgorithm = chunkDigest;
+		this.chunkSize = chunkSize;
 	}
 
 	public String getName() {
 		return this.name;
+	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	public DigestAlgorithm getChunkMACAlgorithm() {
+		return chunkMACAlgorithm;
+	}
+
+	public int getChunkSize() {
+		return chunkSize;
 	}
 
 	/**
@@ -63,7 +131,7 @@ public enum IntegratedCryptoScheme {
 	 */
 	public static IntegratedCryptoScheme fromName(String esName) {
 		for (IntegratedCryptoScheme es : IntegratedCryptoScheme.values()) {
-			if (esName.equals(es.getName())) {
+			if (es.getName().equals(esName)) {
 				return es;
 			}
 		}

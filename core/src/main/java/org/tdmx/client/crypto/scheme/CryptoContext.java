@@ -28,21 +28,21 @@ import org.tdmx.core.system.lang.StreamUtils;
 
 public class CryptoContext {
 
+	private final IntegratedCryptoScheme scheme;
 	private final InputStream encryptedData;
 	private final byte[] encryptionContext;
 	private final long plaintextLength;
 	private final long ciphertextLength;
-	private final int chunkSize;
 	private final List<byte[]> macList;
 	private final byte[] macOfMacs;
 
-	public CryptoContext(InputStream encryptedData, byte[] encryptionContext, long plaintextLength,
-			long ciphertextLength, int chunkSize, List<byte[]> macs, byte[] macOfMacs) {
+	public CryptoContext(IntegratedCryptoScheme scheme, InputStream encryptedData, byte[] encryptionContext,
+			long plaintextLength, long ciphertextLength, List<byte[]> macs, byte[] macOfMacs) {
+		this.scheme = scheme;
 		this.encryptedData = encryptedData;
 		this.encryptionContext = encryptionContext;
 		this.plaintextLength = plaintextLength;
 		this.ciphertextLength = ciphertextLength;
-		this.chunkSize = chunkSize;
 		this.macOfMacs = macOfMacs;
 		this.macList = macs;
 	}
@@ -60,7 +60,7 @@ public class CryptoContext {
 				return null;
 			} else if (chunkNo == macList.size() - 1) {
 				// last chunk is partial
-				int sizeLeft = (int) ciphertextLength % chunkSize;
+				int sizeLeft = (int) ciphertextLength % scheme.getChunkSize();
 				byte[] buf = new byte[sizeLeft];
 				StreamUtils.fill(encryptedData, buf, 0, sizeLeft);
 				c.setData(buf);
@@ -68,8 +68,8 @@ public class CryptoContext {
 				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
 
 			} else {
-				byte[] buf = new byte[chunkSize];
-				StreamUtils.fill(encryptedData, buf, 0, chunkSize);
+				byte[] buf = new byte[scheme.getChunkSize()];
+				StreamUtils.fill(encryptedData, buf, 0, scheme.getChunkSize());
 				c.setData(buf);
 				c.setPos(chunkNo);
 				c.setMac(ByteArray.asHex(macList.get(chunkNo)));
@@ -93,36 +93,24 @@ public class CryptoContext {
 		return new ChunkSequentialReader();
 	}
 
-	/**
-	 * @return the encryptedData
-	 */
 	public InputStream getEncryptedData() {
 		return encryptedData;
 	}
 
-	/**
-	 * @return the encryptionContext
-	 */
 	public byte[] getEncryptionContext() {
 		return encryptionContext;
 	}
 
-	/**
-	 * @return the plaintextLength
-	 */
 	public long getPlaintextLength() {
 		return plaintextLength;
 	}
 
-	/**
-	 * @return the ciphertextLength
-	 */
 	public long getCiphertextLength() {
 		return ciphertextLength;
 	}
 
-	public long getChunkSize() {
-		return chunkSize;
+	public IntegratedCryptoScheme getScheme() {
+		return scheme;
 	}
 
 	public List<byte[]> getMacList() {

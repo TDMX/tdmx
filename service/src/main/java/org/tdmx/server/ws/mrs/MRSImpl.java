@@ -237,16 +237,12 @@ public class MRSImpl implements MRS {
 		}
 		Header header = msg.getHeader();
 		Payload payload = msg.getPayload();
-		if (!SignatureUtils.checkMsgId(header, header.getUsersignature().getSignaturevalue().getTimestamp())) {
+		if (!SignatureUtils.checkMsgId(header, payload, header.getUsersignature().getSignaturevalue().getTimestamp())) {
 			ErrorCode.setError(ErrorCode.InvalidMsgId, response);
 			return;
 		}
-		if (!SignatureUtils.checkPayloadSignature(payload, header)) {
-			ErrorCode.setError(ErrorCode.InvalidSignatureMessagePayload, response);
-			return;
-		}
-		if (!SignatureUtils.checkHeaderSignature(header)) {
-			ErrorCode.setError(ErrorCode.InvalidSignatureMessageHeader, response);
+		if (!SignatureUtils.checkMessageSignature(header, payload)) {
+			ErrorCode.setError(ErrorCode.InvalidSignatureMessage, response);
 			return;
 		}
 		ChannelMessage m = a2d.mapMessage(msg);

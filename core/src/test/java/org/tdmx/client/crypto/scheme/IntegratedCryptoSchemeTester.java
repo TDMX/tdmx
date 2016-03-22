@@ -47,7 +47,6 @@ public class IntegratedCryptoSchemeTester {
 	@Before
 	public void setup() throws CryptoException {
 		bufferFactory = new TemporaryFileManagerImpl();
-		bufferFactory.setChunkSize(33333);
 
 		KeyPair ownSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();
 		KeyPair otherSigningKeyPair = AsymmetricEncryptionAlgorithm.RSA2048.generateNewKeyPair();

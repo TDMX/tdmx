@@ -19,14 +19,13 @@
 package org.tdmx.server.ws.mos;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.tdmx.client.crypto.entropy.EntropySource;
-import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.tx.TransactionSpecification;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -50,8 +49,8 @@ public class MOSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	private static final String CHANNEL_MAP = "CHANNEL_MAP";
 
-	// Map[msgId]->MessageContextHolder
-	private static final String MESSAGE_MAP = "MESSAGE_MAP";
+	// Map[txId]->SenderTransactionContext
+	private static final String TX_MAP = "TX_MAP";
 
 	private static final int LEN_ENTROPY = 32;
 	private static final int LEN_CONTINUATION_ID = 8;
@@ -70,51 +69,9 @@ public class MOSServerSession extends WebServiceSession {
 		Map<String, ChannelContextHolder> ccm = new ConcurrentHashMap<>();
 		setAttribute(CHANNEL_MAP, ccm);
 
-		// pre-initiated context map for sending messages
-		Map<String, MessageContextHolder> mcm = new ConcurrentHashMap<>();
-		setAttribute(MESSAGE_MAP, mcm);
-	}
-
-	/**
-	 * A MessageContextHolder holds a message in a session for the duration of it's relevance to sending subsequent
-	 * chunks and committing or rolling back the transaction.
-	 * 
-	 * @author Peter
-	 * 
-	 */
-	public static class MessageContextHolder {
-		private final ChannelMessage msg;
-		private final byte[] entropy;
-
-		public MessageContextHolder(ChannelMessage msg) {
-			this.msg = msg;
-			this.entropy = EntropySource.getRandomBytes(LEN_ENTROPY);
-		}
-
-		public String getMsgId() {
-			return msg.getMsgId();
-		}
-
-		public ChannelMessage getChannelMessage() {
-			return msg;
-		}
-
-		/**
-		 * Create the continuationId for the chunkPos. The continuationId is a truncated Hash of the msgId, chunkPos and
-		 * the "secret" entropy which the client doesn't know so cannot create the continuationId themselves. This
-		 * forces the client to have to receive the continuationId from the server before sending the next chunk.
-		 * 
-		 * @param chunkPos
-		 * @return null if no chunk at the requested pos
-		 */
-		public String getContinuationId(int chunkPos) {
-			// if the chunk requested starts after the end of the payload then the previous chunk is the last
-			if ((msg.getChunkSize() * chunkPos) > msg.getPayloadLength()) {
-				return null;
-			}
-			return SignatureUtils.createContinuationId(chunkPos, entropy, msg.getMsgId(), LEN_CONTINUATION_ID);
-		}
-
+		// pre-initiated context map for transactions.
+		Map<String, SenderTransactionContext> mcm = new ConcurrentHashMap<>();
+		setAttribute(TX_MAP, mcm);
 	}
 
 	/**
@@ -191,23 +148,33 @@ public class MOSServerSession extends WebServiceSession {
 		return cch;
 	}
 
-	public MessageContextHolder addMessage(ChannelMessage msg) {
-		MessageContextHolder mch = new MessageContextHolder(msg);
-
-		Map<String, MessageContextHolder> mcm = getMessageMap();
-		mcm.put(mch.getMsgId(), mch);
-		return mch;
+	public SenderTransactionContext getTransaction(TransactionSpecification txSpec) {
+		SenderTransactionContext stc = getTransactionMap().get(txSpec.getXid());
+		if (stc == null) {
+			stc = new SenderTransactionContext(txSpec);
+			getTransactionMap().put(txSpec.getXid(), stc);
+		}
+		return stc;
 	}
 
-	public void removeMessage(ChannelMessage msg) {
-		Map<String, MessageContextHolder> mcm = getMessageMap();
-		mcm.remove(msg.getMsgId());
+	public void removeTransaction(TransactionSpecification txSpec) {
+		getTransactionMap().remove(txSpec.getXid());
 	}
 
-	public MessageContextHolder getMessage(String msgId) {
-		return getMessageMap().get(msgId);
+	/**
+	 * Return the transaction which contains the message or null if not found.
+	 * 
+	 * @param msgId
+	 * @return
+	 */
+	public SenderTransactionContext getTransaction(String msgId) {
+		for (Entry<String, SenderTransactionContext> entry : getTransactionMap().entrySet()) {
+			if (entry.getValue().getMessage(msgId) != null) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -232,8 +199,8 @@ public class MOSServerSession extends WebServiceSession {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private Map<String, MessageContextHolder> getMessageMap() {
-		return getAttribute(MESSAGE_MAP);
+	private Map<String, SenderTransactionContext> getTransactionMap() {
+		return getAttribute(TX_MAP);
 	}
 
 	private Map<String, ChannelContextHolder> getChannelMap() {

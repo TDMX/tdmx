@@ -18,15 +18,10 @@
  */
 package org.tdmx.client.crypto.buffer;
 
-import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 
 public interface TemporaryBufferFactory {
 
-	public FileBackedOutputStream getOutputStream();
-
-	public int getChunkSize();
-
-	public DigestAlgorithm getChunkDigestAlgorithm();
+	public FileBackedOutputStream getOutputStream(int memoryCapacity);
 
 }

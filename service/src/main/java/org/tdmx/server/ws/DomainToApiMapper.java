@@ -134,7 +134,7 @@ public class DomainToApiMapper {
 
 		f.setUsersignature(mapUserSignature(ds.getSignature()));
 		f.setEncryptionContextId(ds.getEncryptionContextId());
-		f.setScheme(ds.getScheme());
+		f.setScheme(ds.getScheme().getName());
 		f.setSessionKey(ds.getSessionKey());
 
 		return f;
@@ -225,15 +225,14 @@ public class DomainToApiMapper {
 		h.setMsgId(msg.getMsgId());
 		h.setChannel(mapChannel(msg.getChannel()));
 		h.setEncryptionContextId(msg.getEncryptionContextId());
+		h.setScheme(msg.getScheme().getName());
 		h.setExternalReference(msg.getExternalReference());
 		h.setTtl(CalendarUtils.cast(msg.getTtlTimestamp()));
-		h.setPayloadSignature(msg.getPayloadSignature());
 		h.setTo(mapUserIdentity(msg.getReceipt().getCertificateChain()));
 		h.setUsersignature(mapUserSignature(msg.getSignature()));
 		m.setHeader(h);
 
 		Payload p = new Payload();
-		p.setChunkSize(msg.getChunkSize());
 		p.setEncryptionContext(msg.getEncryptionContext());
 		p.setLength(msg.getPayloadLength());
 		p.setPlaintextLength(msg.getPlaintextLength());

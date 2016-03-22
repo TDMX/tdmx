@@ -38,7 +38,7 @@ public class ConfigureDestination implements CommandExecutable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private static final String DEFAULT_SCHEME = "ecdh384:rsa/aes256";
+	private static final String DEFAULT_SCHEME = "ecdh384:rsa/aes256[16mbSHA1]";
 	private static final String DEFAULT_SESSION_DURATION_HOURS = "24";
 	private static final String DEFAULT_SESSION_RETENTION_DAYS = "2";
 

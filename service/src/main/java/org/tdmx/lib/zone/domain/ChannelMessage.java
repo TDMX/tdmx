@@ -27,6 +27,8 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,6 +40,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -106,9 +109,9 @@ public class ChannelMessage implements Serializable {
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String encryptionContextId;
 
-	// TODO #106 remove
-	@Column(length = AgentSignature.MAX_SIGNATURE_LEN, nullable = false)
-	private String payloadSignature;
+	@Enumerated(EnumType.STRING)
+	@Column(length = DestinationSession.MAX_SCHEME_LEN, nullable = false)
+	private IntegratedCryptoScheme scheme;
 
 	@Embedded
 	@AttributeOverrides({
@@ -124,12 +127,6 @@ public class ChannelMessage implements Serializable {
 	// -------------------------------------------------------------------------
 	// PAYLOAD FIELDS
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Chunk size in Bytes
-	 */
-	@Column(nullable = false)
-	private long chunkSize;
 
 	/**
 	 * Total encrypted length = SUM length chunks
@@ -189,11 +186,10 @@ public class ChannelMessage implements Serializable {
 		this.ttlTimestamp = other.getTtlTimestamp();
 		this.receipt = other.getReceipt();
 		this.encryptionContextId = other.getEncryptionContextId();
-		this.payloadSignature = other.getPayloadSignature();
+		this.scheme = other.getScheme();
 		this.signature = other.getSignature();
 		this.externalReference = other.getExternalReference();
 		// payload fields
-		this.chunkSize = other.getChunkSize();
 		this.payloadLength = other.getPayloadLength();
 		this.encryptionContext = other.getEncryptionContext();
 		this.plaintextLength = other.getPlaintextLength();
@@ -222,6 +218,7 @@ public class ChannelMessage implements Serializable {
 		builder.append(id);
 		builder.append(" msgId=").append(msgId);
 		builder.append(" ttlTimestamp=").append(ttlTimestamp);
+		builder.append(" scheme=").append(scheme);
 		if (signature != null) {
 			builder.append(" sentAt=").append(signature.getSignatureDate());
 		}
@@ -254,7 +251,7 @@ public class ChannelMessage implements Serializable {
 	 * @return the number of Chunks = ( payloadSize / chunkSize ) + 1
 	 */
 	public int getNumberOfChunks() {
-		return (int) (1 + (payloadLength / chunkSize));
+		return (int) (1 + (payloadLength / scheme.getChunkSize()));
 	}
 
 	// -------------------------------------------------------------------------
@@ -293,12 +290,12 @@ public class ChannelMessage implements Serializable {
 		this.ttlTimestamp = ttlTimestamp;
 	}
 
-	public String getPayloadSignature() {
-		return payloadSignature;
+	public IntegratedCryptoScheme getScheme() {
+		return scheme;
 	}
 
-	public void setPayloadSignature(String payloadSignature) {
-		this.payloadSignature = payloadSignature;
+	public void setScheme(IntegratedCryptoScheme scheme) {
+		this.scheme = scheme;
 	}
 
 	public String getExternalReference() {
@@ -307,14 +304,6 @@ public class ChannelMessage implements Serializable {
 
 	public void setExternalReference(String externalReference) {
 		this.externalReference = externalReference;
-	}
-
-	public long getChunkSize() {
-		return chunkSize;
-	}
-
-	public void setChunkSize(long chunkSize) {
-		this.chunkSize = chunkSize;
 	}
 
 	public long getPayloadLength() {

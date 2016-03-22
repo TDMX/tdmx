@@ -62,44 +62,53 @@ public class IntegratedCryptoSchemeFactory {
 			throw new IllegalArgumentException();
 		}
 		switch (scheme) {
-		case ECDH384_RSA_SLASH_AES256:
-			return new RSA_ECDHPayloadEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_RSA_SLASH_AES256__16MB_SHA1:
+			return new RSA_ECDHPayloadEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, ownSigningKey,
+					otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Aes256_CTR);
+		case ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1:
+			return new RSA_ECDHPayloadEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1, ownSigningKey,
+					otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Twofish256_CTR);
+		case ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1:
+			return new RSA_ECDHPayloadEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1, ownSigningKey,
+					otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Serpent256_CTR);
+
+		case ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Aes256_CTR,
 					StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_RSA_SLASH_TWOFISH256:
-			return new RSA_ECDHPayloadEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Aes256_CTR,
 					StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_RSA_SLASH_SERPENT256:
-			return new RSA_ECDHPayloadEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory, StreamCipherAlgorithm.Aes256_CTR,
 					StreamCipherAlgorithm.Serpent256_CTR);
 
-		case ECDH384_AES256plusRSA_SLASH_AES256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
-					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_AES256plusRSA_SLASH_TWOFISH256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
-					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_AES256plusRSA_SLASH_SERPENT256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
-					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
-
-		case ECDH384_TWOFISH256plusRSA_SLASH_AES256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_TWOFISH256plusRSA_SLASH_AES256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_TWOFISH256plusRSA_SLASH_AES256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
 
-		case ECDH384_SERPENT256plusRSA_SLASH_AES256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_SERPENT256plusRSA_SLASH_AES256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_SERPENT256plusRSA_SLASH_AES256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_SERPENT256plusRSA_SLASH_SERPENT256:
-			return new RSA_ECDHContextEncrypter(ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
+		case ECDH384_SERPENT256plusRSA_SLASH_SERPENT256__16MB_SHA1:
+			return new RSA_ECDHContextEncrypter(IntegratedCryptoScheme.ECDH384_SERPENT256plusRSA_SLASH_SERPENT256__16MB_SHA1,
+					ownSigningKey, otherSigningKey, encodedSessionKey, bufferFactory,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
 		default:
 			throw new CryptoException(CryptoResultCode.UNKNOWN_CRYPTOSCHEME_NAME);
@@ -121,43 +130,43 @@ public class IntegratedCryptoSchemeFactory {
 			throw new IllegalArgumentException();
 		}
 		switch (scheme) {
-		case ECDH384_RSA_SLASH_AES256:
+		case ECDH384_RSA_SLASH_AES256__16MB_SHA1:
 			return new RSA_ECDHPayloadDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_RSA_SLASH_TWOFISH256:
+		case ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1:
 			return new RSA_ECDHPayloadDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_RSA_SLASH_SERPENT256:
+		case ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1:
 			return new RSA_ECDHPayloadDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Serpent256_CTR);
 
-		case ECDH384_AES256plusRSA_SLASH_AES256:
+		case ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_AES256plusRSA_SLASH_TWOFISH256:
+		case ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_AES256plusRSA_SLASH_SERPENT256:
+		case ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Aes256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
 
-		case ECDH384_TWOFISH256plusRSA_SLASH_AES256:
+		case ECDH384_TWOFISH256plusRSA_SLASH_AES256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256:
+		case ECDH384_TWOFISH256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256:
+		case ECDH384_TWOFISH256plusRSA_SLASH_SERPENT256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Twofish256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
 
-		case ECDH384_SERPENT256plusRSA_SLASH_AES256:
+		case ECDH384_SERPENT256plusRSA_SLASH_AES256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Aes256_CTR);
-		case ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256:
+		case ECDH384_SERPENT256plusRSA_SLASH_TWOFISH256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Twofish256_CTR);
-		case ECDH384_SERPENT256plusRSA_SLASH_SERPENT256:
+		case ECDH384_SERPENT256plusRSA_SLASH_SERPENT256__16MB_SHA1:
 			return new RSA_ECDHContextDecrypter(ownSigningKey, otherSigningKey, sessionKey,
 					StreamCipherAlgorithm.Serpent256_CTR, StreamCipherAlgorithm.Serpent256_CTR);
 

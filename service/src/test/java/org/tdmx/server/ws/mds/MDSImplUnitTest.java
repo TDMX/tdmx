@@ -42,6 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
@@ -220,7 +221,7 @@ public class MDSImplUnitTest {
 		Destinationsession ds = new Destinationsession();
 		ds.setEncryptionContextId("id1");
 		ds.setSessionKey(new byte[] { 1, 2, 3 });
-		ds.setScheme("scheme-name");
+		ds.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1.getName());
 
 		SignatureUtils.createDestinationSessionSignature(uc, SignatureAlgorithm.SHA_256_RSA, new Date(),
 				service.getServiceName(), ds);

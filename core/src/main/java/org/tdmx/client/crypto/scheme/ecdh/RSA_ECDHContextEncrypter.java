@@ -41,6 +41,7 @@ import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.client.crypto.stream.ChunkMacCalculatingOutputStream;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
@@ -72,8 +73,8 @@ import org.tdmx.client.crypto.stream.SigningOutputStream;
  */
 public class RSA_ECDHContextEncrypter implements Encrypter {
 
+	private final IntegratedCryptoScheme scheme;
 	private final TemporaryBufferFactory bufferFactory;
-
 	private final KeyPair ownSigningKey;
 	private final PublicKey otherSigningKey;
 	private final PublicKey sessionKey;
@@ -90,9 +91,10 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 	private final byte[] payloadSecretKey;
 	private final byte[] payloadSecretIv;
 
-	public RSA_ECDHContextEncrypter(KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] encodedSessionKey,
-			TemporaryBufferFactory bufferFactory, StreamCipherAlgorithm keyEncryptionCipher,
+	public RSA_ECDHContextEncrypter(IntegratedCryptoScheme scheme, KeyPair ownSigningKey, PublicKey otherSigningKey,
+			byte[] encodedSessionKey, TemporaryBufferFactory bufferFactory, StreamCipherAlgorithm keyEncryptionCipher,
 			StreamCipherAlgorithm payloadCipher) throws CryptoException {
+		this.scheme = scheme;
 		this.bufferFactory = bufferFactory;
 
 		this.ownSigningKey = ownSigningKey;
@@ -135,7 +137,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		if (fbos != null) {
 			throw new IllegalStateException();
 		}
-		fbos = bufferFactory.getOutputStream();
+		fbos = bufferFactory.getOutputStream(scheme.getChunkSize());
 
 		SecretKeySpec payloadKey = payloadCipher.convertKey(payloadSecretKey);
 		IvParameterSpec payloadIv = payloadCipher.convertIv(payloadSecretIv);
@@ -148,8 +150,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 
 		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
 				true, true, zos);
-		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize(),
-				bufferFactory.getChunkDigestAlgorithm());
+		mcos = new ChunkMacCalculatingOutputStream(sos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
 		return mcos;
 	}
 
@@ -172,8 +173,8 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		byte[] encryptedKey = keyEncryptionCipher.encrypt(keyEncryptionKey, keyEncryptionIv, payloadKeyBytes);
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, msgKeyLen, msgKey, encryptedKey);
 
-		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
+		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, mcos.getSize(),
+				fbos.getSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

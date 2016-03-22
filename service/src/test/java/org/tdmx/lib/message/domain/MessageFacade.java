@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
@@ -79,20 +80,19 @@ public class MessageFacade {
 		hdr.setTo(to);
 
 		hdr.setEncryptionContextId("TODO"); // TODO
+		hdr.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1.getName()); // TODO
 
 		Payload payload = new Payload();
 		payload.setLength(100);
 		payload.setPlaintextLength(1000);
 		payload.setEncryptionContext(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
-		payload.setChunkSize(2048); // TODO create payloadMACofMACs ( SHA256 ) #72
+		// TODO create payloadMACofMACs ( SHA256 ) #72
 		payload.setMACofMACs("TODO"); // TODO
 
-		SignatureUtils.createPayloadSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, payload, hdr);
-
 		// once we have the payload signature in the header, we can set the ID.
-		SignatureUtils.setMsgId(hdr, msgTs);
+		SignatureUtils.setMsgId(hdr, payload, msgTs);
 		// and sign the message header
-		SignatureUtils.createHeaderSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, msgTs, hdr);
+		SignatureUtils.createMessageSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, msgTs, hdr, payload);
 
 		// link the chunk to the message
 		Chunk chunk = createChunk(hdr.getMsgId(), 0);

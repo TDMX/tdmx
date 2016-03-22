@@ -27,7 +27,6 @@ import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -287,8 +286,6 @@ public class SendFile implements CommandExecutable {
 		String externalReference = "ext ref"; // TODO to parameter
 
 		TemporaryFileManagerImpl bufferManager = new TemporaryFileManagerImpl();
-		bufferManager.setChunkDigestAlgorithm(DigestAlgorithm.SHA_256);
-		bufferManager.setChunkSize(1000);
 
 		IntegratedCryptoSchemeFactory iecFactory = new IntegratedCryptoSchemeFactory(uc.getKeyPair(),
 				PKIXCertificate.getPublicKey(toUserChain).getCertificate().getPublicKey(), bufferManager);
@@ -354,25 +351,21 @@ public class SendFile implements CommandExecutable {
 		Header hdr = new Header();
 		hdr.setChannel(ci.getChannel());
 		hdr.setEncryptionContextId(ds.getEncryptionContextId());
+		hdr.setScheme(ds.getScheme());
 		hdr.setExternalReference(externalReference);
 		hdr.setTo(ds.getUsersignature().getUserIdentity());
 		hdr.setTtl(ttl);
 		m.setHeader(hdr);
 
 		Payload p = new Payload();
-		p.setChunkSize(cc.getChunkSize());
 		p.setEncryptionContext(cc.getEncryptionContext());
 		p.setLength(cc.getCiphertextLength());
 		p.setMACofMACs(ByteArray.asHex(cc.getMacOfMacs()));
 		p.setPlaintextLength(cc.getPlaintextLength());
 		m.setPayload(p);
 
-		// set the hdr.payloadsignature TODO #106
-		SignatureUtils.createPayloadSignature(from, SignatureAlgorithm.SHA_256_RSA, p, hdr);
-		// set the hdr msgId
-		SignatureUtils.setMsgId(hdr, now);
-		// set the hdr usersignature
-		SignatureUtils.createHeaderSignature(from, SignatureAlgorithm.SHA_256_RSA, now, hdr);
+		SignatureUtils.setMsgId(hdr, p, now);
+		SignatureUtils.createMessageSignature(from, SignatureAlgorithm.SHA_256_RSA, now, hdr, p);
 		return m;
 	}
 

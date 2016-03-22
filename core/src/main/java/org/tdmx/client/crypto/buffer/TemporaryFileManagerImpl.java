@@ -20,44 +20,18 @@ package org.tdmx.client.crypto.buffer;
 
 import java.io.File;
 
-import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 
 public class TemporaryFileManagerImpl implements TemporaryBufferFactory {
 
-	public static final int DEFAULT_CHUNK_SIZE = 1024 * 1024;
-	public static final DigestAlgorithm DEFAULT_CHUNK_MAC = DigestAlgorithm.SHA_256;
-
-	// TODO #70: move chunk size and digest algorithm to IntegratedEncryptionScheme
-
-	private int chunkSize = DEFAULT_CHUNK_SIZE;
-	private DigestAlgorithm chunkDigestAlgorithm = DEFAULT_CHUNK_MAC;
 	private String tempDirectory = System.getProperty("java.io.tmpdir");
 
 	public TemporaryFileManagerImpl() {
 	}
 
 	@Override
-	public FileBackedOutputStream getOutputStream() {
-		return new FileBackedOutputStream(chunkSize, new File(tempDirectory));
-	}
-
-	@Override
-	public int getChunkSize() {
-		return chunkSize;
-	}
-
-	@Override
-	public DigestAlgorithm getChunkDigestAlgorithm() {
-		return chunkDigestAlgorithm;
-	}
-
-	public void setChunkSize(int chunkSize) {
-		this.chunkSize = chunkSize;
-	}
-
-	public void setChunkDigestAlgorithm(DigestAlgorithm chunkDigestAlgorithm) {
-		this.chunkDigestAlgorithm = chunkDigestAlgorithm;
+	public FileBackedOutputStream getOutputStream(int memoryCapacity) {
+		return new FileBackedOutputStream(memoryCapacity, new File(tempDirectory));
 	}
 
 	public void setTempDirectory(String tempDirectory) {

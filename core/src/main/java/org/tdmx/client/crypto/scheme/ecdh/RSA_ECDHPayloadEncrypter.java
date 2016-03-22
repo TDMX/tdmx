@@ -41,6 +41,7 @@ import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.Encrypter;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.client.crypto.stream.ChunkMacCalculatingOutputStream;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.SigningOutputStream;
@@ -70,7 +71,7 @@ import org.tdmx.client.crypto.stream.SigningOutputStream;
  * 
  */
 public class RSA_ECDHPayloadEncrypter implements Encrypter {
-
+	private final IntegratedCryptoScheme scheme;
 	private final TemporaryBufferFactory bufferFactory;
 
 	private final KeyPair ownSigningKey;
@@ -87,8 +88,10 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 
 	private final StreamCipherAlgorithm payloadCipher;
 
-	public RSA_ECDHPayloadEncrypter(KeyPair ownSigningKey, PublicKey otherSigningKey, byte[] encodedSessionKey,
-			TemporaryBufferFactory bufferFactory, StreamCipherAlgorithm payloadCipher) throws CryptoException {
+	public RSA_ECDHPayloadEncrypter(IntegratedCryptoScheme scheme, KeyPair ownSigningKey, PublicKey otherSigningKey,
+			byte[] encodedSessionKey, TemporaryBufferFactory bufferFactory, StreamCipherAlgorithm payloadCipher)
+					throws CryptoException {
+		this.scheme = scheme;
 		this.bufferFactory = bufferFactory;
 
 		this.ownSigningKey = ownSigningKey;
@@ -125,7 +128,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 		if (fbos != null) {
 			throw new IllegalStateException();
 		}
-		fbos = bufferFactory.getOutputStream();
+		fbos = bufferFactory.getOutputStream(scheme.getChunkSize());
 		Cipher c = payloadCipher.getEncrypter(secretKey, secretIv);
 		CipherOutputStream cos = new CipherOutputStream(fbos, c);
 
@@ -134,8 +137,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 
 		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
 				true, true, zos);
-		mcos = new ChunkMacCalculatingOutputStream(sos, bufferFactory.getChunkSize(),
-				bufferFactory.getChunkDigestAlgorithm());
+		mcos = new ChunkMacCalculatingOutputStream(sos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
 		return mcos;
 	}
 
@@ -157,8 +159,8 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 
 		// TODO assertion encryptionContext len is fixed to RSA key length in bytes.
 
-		CryptoContext cc = new CryptoContext(fbos.getInputStream(), encryptionContext, mcos.getSize(), fbos.getSize(),
-				mcos.getChunkSize(), mcos.getMacs(), mcos.getMacOfMacs());
+		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, mcos.getSize(),
+				fbos.getSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
 

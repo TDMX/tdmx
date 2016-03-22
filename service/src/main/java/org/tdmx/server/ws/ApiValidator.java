@@ -20,8 +20,9 @@ package org.tdmx.server.ws;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.Address;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
@@ -67,22 +68,22 @@ public class ApiValidator {
 
 	public Destinationsession checkDestinationsession(Destinationsession fts, Acknowledge ack) {
 		if (fts == null) {
-			setError(ErrorCode.MissingDestinationSession, ack);
+			ErrorCode.setError(ErrorCode.MissingDestinationSession, ack);
 			return null;
 		}
 		if (checkUsersignature(fts.getUsersignature(), ack) == null) {
 			return null;
 		}
 		if (!StringUtils.hasText(fts.getEncryptionContextId())) {
-			setError(ErrorCode.MissingDestinationSessionEncryptionContextIdentifier, ack);
+			ErrorCode.setError(ErrorCode.MissingDestinationSessionEncryptionContextIdentifier, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(fts.getScheme())) {
-			setError(ErrorCode.MissingDestinationSessionScheme, ack);
+			ErrorCode.setError(ErrorCode.MissingDestinationSessionScheme, ack);
 			return null;
 		}
 		if (fts.getSessionKey() == null) {
-			setError(ErrorCode.MissingDestinationSessionSessionKey, ack);
+			ErrorCode.setError(ErrorCode.MissingDestinationSessionSessionKey, ack);
 			return null;
 		}
 		return fts;
@@ -90,7 +91,7 @@ public class ApiValidator {
 
 	public Currentchannelauthorization checkChannelauthorization(Currentchannelauthorization ca, Acknowledge ack) {
 		if (ca == null) {
-			setError(ErrorCode.MissingChannelAuthorization, ack);
+			ErrorCode.setError(ErrorCode.MissingChannelAuthorization, ack);
 			return null;
 		}
 		if (ca.getOriginPermission() != null && checkEndpointPermission(ca.getOriginPermission(), ack) == null) {
@@ -101,7 +102,7 @@ public class ApiValidator {
 			return null;
 		}
 		if (ca.getLimit() == null) {
-			setError(ErrorCode.MissingFlowControlLimit, ack);
+			ErrorCode.setError(ErrorCode.MissingFlowControlLimit, ack);
 			return null;
 		}
 		if (checkAdministratorsignature(ca.getAdministratorsignature(), ack) == null) {
@@ -112,18 +113,18 @@ public class ApiValidator {
 
 	public Permission checkEndpointPermission(Permission perm, Acknowledge ack) {
 		if (perm == null) {
-			setError(ErrorCode.MissingEndpointPermission, ack);
+			ErrorCode.setError(ErrorCode.MissingEndpointPermission, ack);
 			return null;
 		}
 		if (checkAdministratorsignature(perm.getAdministratorsignature(), ack) == null) {
 			return null;
 		}
 		if (perm.getMaxPlaintextSizeBytes() == null) {
-			setError(ErrorCode.MissingPlaintextSizeEndpointPermission, ack);
+			ErrorCode.setError(ErrorCode.MissingPlaintextSizeEndpointPermission, ack);
 			return null;
 		}
 		if (perm.getPermission() == null) {
-			setError(ErrorCode.MissingPermissionEndpointPermission, ack);
+			ErrorCode.setError(ErrorCode.MissingPermissionEndpointPermission, ack);
 			return null;
 		}
 		return perm;
@@ -131,7 +132,7 @@ public class ApiValidator {
 
 	public Administratorsignature checkAdministratorsignature(Administratorsignature signature, Acknowledge ack) {
 		if (signature == null) {
-			setError(ErrorCode.MissingAdministratorSignature, ack);
+			ErrorCode.setError(ErrorCode.MissingAdministratorSignature, ack);
 			return null;
 		}
 		if (checkAdministratorIdentity(signature.getAdministratorIdentity(), ack) == null) {
@@ -146,7 +147,7 @@ public class ApiValidator {
 
 	public UserSignature checkUsersignature(UserSignature signature, Acknowledge ack) {
 		if (signature == null) {
-			setError(ErrorCode.MissingUserSignature, ack);
+			ErrorCode.setError(ErrorCode.MissingUserSignature, ack);
 			return null;
 		}
 		if (checkUserIdentity(signature.getUserIdentity(), ack) == null) {
@@ -161,19 +162,19 @@ public class ApiValidator {
 
 	public Signaturevalue checkSignaturevalue(Signaturevalue sig, Acknowledge ack) {
 		if (sig == null) {
-			setError(ErrorCode.MissingSignatureValue, ack);
+			ErrorCode.setError(ErrorCode.MissingSignatureValue, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(sig.getSignature())) {
-			setError(ErrorCode.MissingSignature, ack);
+			ErrorCode.setError(ErrorCode.MissingSignature, ack);
 			return null;
 		}
 		if (sig.getSignatureAlgorithm() == null) {
-			setError(ErrorCode.MissingSignatureAlgorithm, ack);
+			ErrorCode.setError(ErrorCode.MissingSignatureAlgorithm, ack);
 			return null;
 		}
 		if (sig.getTimestamp() == null) {
-			setError(ErrorCode.MissingSignatureTimestamp, ack);
+			ErrorCode.setError(ErrorCode.MissingSignatureTimestamp, ack);
 			return null;
 		}
 		return sig;
@@ -181,15 +182,15 @@ public class ApiValidator {
 
 	public AdministratorIdentity checkAdministratorIdentity(AdministratorIdentity admin, Acknowledge ack) {
 		if (admin == null) {
-			setError(ErrorCode.MissingAdministratorIdentity, ack);
+			ErrorCode.setError(ErrorCode.MissingAdministratorIdentity, ack);
 			return null;
 		}
 		if (admin.getDomaincertificate() == null) {
-			setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
+			ErrorCode.setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
 			return null;
 		}
 		if (admin.getRootcertificate() == null) {
-			setError(ErrorCode.MissingZoneRootPublicKey, ack);
+			ErrorCode.setError(ErrorCode.MissingZoneRootPublicKey, ack);
 			return null;
 		}
 		return admin;
@@ -197,19 +198,19 @@ public class ApiValidator {
 
 	public UserIdentity checkUserIdentity(UserIdentity user, Acknowledge ack) {
 		if (user == null) {
-			setError(ErrorCode.MissingUserIdentity, ack);
+			ErrorCode.setError(ErrorCode.MissingUserIdentity, ack);
 			return null;
 		}
 		if (user.getUsercertificate() == null) {
-			setError(ErrorCode.MissingUserPublicKey, ack);
+			ErrorCode.setError(ErrorCode.MissingUserPublicKey, ack);
 			return null;
 		}
 		if (user.getDomaincertificate() == null) {
-			setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
+			ErrorCode.setError(ErrorCode.MissingDomainAdministratorPublicKey, ack);
 			return null;
 		}
 		if (user.getRootcertificate() == null) {
-			setError(ErrorCode.MissingZoneRootPublicKey, ack);
+			ErrorCode.setError(ErrorCode.MissingZoneRootPublicKey, ack);
 			return null;
 		}
 		return user;
@@ -217,15 +218,15 @@ public class ApiValidator {
 
 	public Address checkAddress(Address address, Acknowledge ack) {
 		if (address == null) {
-			setError(ErrorCode.MissingAddress, ack);
+			ErrorCode.setError(ErrorCode.MissingAddress, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(address.getDomain())) {
-			setError(ErrorCode.MissingDomain, ack);
+			ErrorCode.setError(ErrorCode.MissingDomain, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(address.getLocalname())) {
-			setError(ErrorCode.MissingLocalname, ack);
+			ErrorCode.setError(ErrorCode.MissingLocalname, ack);
 			return null;
 		}
 		return address;
@@ -233,15 +234,15 @@ public class ApiValidator {
 
 	public Service checkService(Service service, Acknowledge ack) {
 		if (service == null) {
-			setError(ErrorCode.MissingService, ack);
+			ErrorCode.setError(ErrorCode.MissingService, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(service.getDomain())) {
-			setError(ErrorCode.MissingDomain, ack);
+			ErrorCode.setError(ErrorCode.MissingDomain, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(service.getServicename())) {
-			setError(ErrorCode.MissingServiceName, ack);
+			ErrorCode.setError(ErrorCode.MissingServiceName, ack);
 			return null;
 		}
 		return service;
@@ -249,15 +250,15 @@ public class ApiValidator {
 
 	public ChannelEndpoint checkChannelEndpoint(ChannelEndpoint channelEndpoint, Acknowledge ack) {
 		if (channelEndpoint == null) {
-			setError(ErrorCode.MissingChannelEndpoint, ack);
+			ErrorCode.setError(ErrorCode.MissingChannelEndpoint, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(channelEndpoint.getDomain())) {
-			setError(ErrorCode.MissingChannelEndpointDomain, ack);
+			ErrorCode.setError(ErrorCode.MissingChannelEndpointDomain, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(channelEndpoint.getLocalname())) {
-			setError(ErrorCode.MissingChannelEndpointLocalname, ack);
+			ErrorCode.setError(ErrorCode.MissingChannelEndpointLocalname, ack);
 			return null;
 		}
 		return channelEndpoint;
@@ -268,7 +269,7 @@ public class ApiValidator {
 			return null;
 		}
 		if (!StringUtils.hasText(dest.getServicename())) {
-			setError(ErrorCode.MissingChannelDestinationService, ack);
+			ErrorCode.setError(ErrorCode.MissingChannelDestinationService, ack);
 			return null;
 		}
 		return dest;
@@ -276,7 +277,7 @@ public class ApiValidator {
 
 	public Msg checkMessage(Msg msg, Acknowledge ack, boolean chunkRequired) {
 		if (msg == null) {
-			setError(ErrorCode.MissingMessage, ack);
+			ErrorCode.setError(ErrorCode.MissingMessage, ack);
 			return null;
 		}
 		if (checkHeader(msg.getHeader(), ack) == null) {
@@ -293,15 +294,15 @@ public class ApiValidator {
 
 	public NonTransaction checkNonTransaction(NonTransaction acknowledge, Acknowledge ack) {
 		if (acknowledge == null) {
-			setError(ErrorCode.MissingReceiveNonTransaction, ack);
+			ErrorCode.setError(ErrorCode.MissingReceiveNonTransaction, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(acknowledge.getXid())) {
-			setError(ErrorCode.MissingTransactionId, ack);
+			ErrorCode.setError(ErrorCode.MissingTransactionId, ack);
 			return null;
 		}
 		if (acknowledge.getTxtimeout() < 0) {
-			setError(ErrorCode.InvalidTransactionTimeout, ack);
+			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack);
 			return null;
 		}
 		// the DR is optional - if its provided we check it
@@ -313,17 +314,18 @@ public class ApiValidator {
 		return acknowledge;
 	}
 
-	public TransactionSpecification checkTransaction(TransactionSpecification tx, Acknowledge ack) {
+	public TransactionSpecification checkTransaction(TransactionSpecification tx, Acknowledge ack, int minTxTimeoutSec,
+			int maxTxTimeoutSec) {
 		if (tx == null) {
-			setError(ErrorCode.MissingReceiveTransaction, ack);
+			ErrorCode.setError(ErrorCode.MissingReceiveTransaction, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(tx.getXid())) {
-			setError(ErrorCode.MissingTransactionId, ack);
+			ErrorCode.setError(ErrorCode.MissingTransactionId, ack);
 			return null;
 		}
-		if (tx.getTxtimeout() < 0) {
-			setError(ErrorCode.InvalidTransactionTimeout, ack);
+		if (tx.getTxtimeout() < minTxTimeoutSec || tx.getTxtimeout() > maxTxTimeoutSec) {
+			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack, minTxTimeoutSec, maxTxTimeoutSec);
 			return null;
 		}
 		return tx;
@@ -331,7 +333,7 @@ public class ApiValidator {
 
 	public Dr checkDeliveryReport(Dr dr, Acknowledge ack) {
 		if (dr == null) {
-			setError(ErrorCode.MissingDeliveryReceipt, ack);
+			ErrorCode.setError(ErrorCode.MissingDeliveryReceipt, ack);
 			return null;
 		}
 		if (checkMsgreference(dr.getMsgreference(), ack) == null) {
@@ -345,15 +347,15 @@ public class ApiValidator {
 
 	public Msgreference checkMsgreference(Msgreference ref, Acknowledge ack) {
 		if (ref == null) {
-			setError(ErrorCode.MissingMessageReference, ack);
+			ErrorCode.setError(ErrorCode.MissingMessageReference, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(ref.getMsgId())) {
-			setError(ErrorCode.MissingMessageReferenceMsgId, ack);
+			ErrorCode.setError(ErrorCode.MissingMessageReferenceMsgId, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(ref.getSignature())) {
-			setError(ErrorCode.MissingMessageReferenceSignature, ack);
+			ErrorCode.setError(ErrorCode.MissingMessageReferenceSignature, ack);
 			return null;
 		}
 		return ref;
@@ -361,31 +363,51 @@ public class ApiValidator {
 
 	public Chunk checkChunk(Chunk chunk, Acknowledge ack) {
 		if (chunk == null) {
-			setError(ErrorCode.MissingChunk, ack);
+			ErrorCode.setError(ErrorCode.MissingChunk, ack);
 			return null;
 		}
 		if (chunk.getData() == null) {
-			setError(ErrorCode.MissingChunkData, ack);
+			ErrorCode.setError(ErrorCode.MissingChunkData, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(chunk.getMsgId())) {
-			setError(ErrorCode.MissingChunkMsgId, ack);
+			ErrorCode.setError(ErrorCode.MissingChunkMsgId, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(chunk.getMac())) {
-			setError(ErrorCode.MissingChunkMac, ack);
+			ErrorCode.setError(ErrorCode.MissingChunkMac, ack);
 			return null;
 		}
 		if (chunk.getPos() < 0) {
-			setError(ErrorCode.InvalidChunkPos, ack);
+			ErrorCode.setError(ErrorCode.InvalidChunkPos, ack);
 			return null;
 		}
 		return chunk;
 	}
 
+	public Chunk checkChunkMac(Chunk c, IntegratedCryptoScheme scheme, Acknowledge ack) {
+		if (c == null) {
+			ErrorCode.setError(ErrorCode.MissingChunk, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(c.getMac())) {
+			ErrorCode.setError(ErrorCode.MissingChunkMac, ack);
+			return null;
+		}
+		if (SignatureUtils.checkChunkMac(c, scheme)) {
+			ErrorCode.setError(ErrorCode.InvalidChunkMac, ack);
+			return null;
+		}
+		return c;
+	}
+
 	public Header checkHeader(Header hdr, Acknowledge ack) {
 		if (hdr == null) {
-			setError(ErrorCode.MissingHeader, ack);
+			ErrorCode.setError(ErrorCode.MissingHeader, ack);
+			return null;
+		}
+		if (!StringUtils.hasText(hdr.getMsgId())) {
+			ErrorCode.setError(ErrorCode.MissingHeaderMsgId, ack);
 			return null;
 		}
 		if (checkChannel(hdr.getChannel(), ack) == null) {
@@ -395,26 +417,22 @@ public class ApiValidator {
 			return null;
 		}
 		if (hdr.getTo() == null) {
-			setError(ErrorCode.MissingHeaderTo, ack);
+			ErrorCode.setError(ErrorCode.MissingHeaderTo, ack);
 			return null;
 		}
 		if (checkUserIdentity(hdr.getTo(), ack) == null) {
 			return null;
 		}
 		if (hdr.getTtl() == null) {
-			setError(ErrorCode.MissingHeaderTTL, ack);
+			ErrorCode.setError(ErrorCode.MissingHeaderTTL, ack);
 			return null;
 		}
 		if (!StringUtils.hasText(hdr.getEncryptionContextId())) {
-			setError(ErrorCode.MissingHeaderEncryptionContextId, ack);
+			ErrorCode.setError(ErrorCode.MissingHeaderEncryptionContextId, ack);
 			return null;
 		}
-		if (!StringUtils.hasText(hdr.getMsgId())) {
-			setError(ErrorCode.MissingHeaderMsgId, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(hdr.getPayloadSignature())) {
-			setError(ErrorCode.MissingHeaderPayloadSignature, ack);
+		if (!StringUtils.hasText(hdr.getScheme())) {
+			ErrorCode.setError(ErrorCode.MissingHeaderScheme, ack);
 			return null;
 		}
 		return hdr;
@@ -422,28 +440,24 @@ public class ApiValidator {
 
 	public Payload checkPayload(Payload payload, Acknowledge ack) {
 		if (payload == null) {
-			setError(ErrorCode.MissingPayload, ack);
+			ErrorCode.setError(ErrorCode.MissingPayload, ack);
 			return null;
 		}
 
 		if (!StringUtils.hasText(payload.getMACofMACs())) {
-			setError(ErrorCode.MissingPayloadChunksMACofMACs, ack);
+			ErrorCode.setError(ErrorCode.MissingPayloadChunksMACofMACs, ack);
 			return null;
 		}
 		if (payload.getEncryptionContext() == null) {
-			setError(ErrorCode.MissingPayloadEncryptionContext, ack);
-			return null;
-		}
-		if (payload.getChunkSize() < 0) {
-			setError(ErrorCode.InvalidChunkSizeFactor, ack);
+			ErrorCode.setError(ErrorCode.MissingPayloadEncryptionContext, ack);
 			return null;
 		}
 		if (payload.getLength() < 0) {
-			setError(ErrorCode.InvalidPayloadLength, ack);
+			ErrorCode.setError(ErrorCode.InvalidPayloadLength, ack);
 			return null;
 		}
 		if (payload.getPlaintextLength() < 0) {
-			setError(ErrorCode.InvalidPlaintextLength, ack);
+			ErrorCode.setError(ErrorCode.InvalidPlaintextLength, ack);
 			return null;
 		}
 		return payload;
@@ -451,7 +465,7 @@ public class ApiValidator {
 
 	public Channel checkChannel(Channel channel, Acknowledge ack) {
 		if (channel == null) {
-			setError(ErrorCode.MissingChannel, ack);
+			ErrorCode.setError(ErrorCode.MissingChannel, ack);
 			return null;
 		}
 		if (checkChannelEndpoint(channel.getOrigin(), ack) == null) {
@@ -465,7 +479,7 @@ public class ApiValidator {
 
 	public Authorization checkAuthorization(Authorization auth, Acknowledge ack) {
 		if (auth == null) {
-			setError(ErrorCode.MissingAuthorization, ack);
+			ErrorCode.setError(ErrorCode.MissingAuthorization, ack);
 			return null;
 		}
 		if (checkChannel(auth, ack) == null) {
@@ -484,14 +498,6 @@ public class ApiValidator {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void setError(ErrorCode ec, Acknowledge ack) {
-		Error error = new Error();
-		error.setCode(ec.getErrorCode());
-		error.setDescription(ec.getErrorDescription());
-		ack.setError(error);
-		ack.setSuccess(false);
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
