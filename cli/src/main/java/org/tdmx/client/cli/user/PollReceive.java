@@ -26,13 +26,19 @@ import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
+import org.tdmx.core.api.v01.mds.Receive;
+import org.tdmx.core.api.v01.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
 import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -195,9 +201,37 @@ public class PollReceive implements CommandExecutable {
 			out.println("New session set at the service provider.");
 		}
 
-		// TODO #95 do receive!
+		// do receive of the message
+		String uniqTxId = ByteArray.asHex(EntropySource.getRandomBytes(16));
+		NonTransaction nonTx = new NonTransaction();
+		nonTx.setXid(uniqTxId);
+		nonTx.setTxtimeout(60);
 
-		// TODO #49 do send.
+		Receive receiveRequest = new Receive();
+		receiveRequest.setSessionId(sessionResponse.getSession().getSessionId());
+		receiveRequest.setNonTransaction(nonTx);
+		receiveRequest.setWaitTimeoutSec(60);
+
+		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
+		if (!receiveResponse.isSuccess()) {
+			out.println("Failed to receive.");
+			ClientCliUtils.logError(out, receiveResponse.getError());
+			return;
+		}
+
+		Msg msg = receiveResponse.getMsg();
+		if (msg != null) {
+			out.println("Received msgId=" + msg.getHeader().getMsgId());
+
+			// TODO #95 download the chunks
+
+			// TODO #95 decrypt the message
+
+			// TODO #95 ack
+
+		} else {
+			out.println("No message received.");
+		}
 	}
 
 	// -------------------------------------------------------------------------
