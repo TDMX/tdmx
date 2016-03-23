@@ -148,29 +148,28 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 				if (sh.isValid()) {
 					// use the MRS to relay the CA to the other side
 					if (log.isDebugEnabled()) {
-						log.debug("Relay MSG " + ctx.getChannelKey());
+						log.debug("Relay MSG " + msg.getMsgId() + " on " + ctx.getChannelKey());
 					}
 
 					Relay relayMsg = new Relay();
 					relayMsg.setSessionId(sh.getMrsSessionId());
 					relayMsg.setMsg(d2a.mapChannelMessage(msg));
 
-					// get the 1st Chunk if we aren't short circuiting the relay
-					if (!sh.isSameSegment()) {
-						Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
-						if (chunk == null) {
-							ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
-									ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), 0));
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
-							return;
-						}
-						relayMsg.setChunk(d2a.mapChunk(chunk));
-					}
-
+					ProcessingState error = null;
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayMsg);
-						if (rr.isSuccess()) {
+						if (!rr.isSuccess()) {
+							error = ProcessingState.error(rr.getError().getCode(), rr.getError().getDescription());
+						}
+						if (rr.isSuccess() && !sh.isSameSegment()) {
+							error = relayChunks(sh, msg);
+						}
+
+						if (error != null) {
+							// we have an error relaying the msg or the chunks
+							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+						} else {
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
 							// rr can indicate flowcontrol "closed" by remote after transfer - so stop sending.
@@ -179,11 +178,6 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 							// decrease the channel quota's buffer and track the relay status.
 							relayDataService.updatePostRelayChannelMessage(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), msg, relayStatus);
-						} else {
-							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
-									rr.getError().getDescription());
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
 						}
 					} catch (WebServiceException wse) {
 						// runtime error handling
@@ -192,15 +186,13 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						}
 						String errorInfo = StringUtils.getExceptionSummary(wse);
 						log.info("MRS relay MSG call to remote failed " + errorInfo);
-						ProcessingState error = ProcessingState.error(
-								ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
-								ErrorCode.RelayChannelAuthorizationFault.getErrorDescription(errorInfo));
+						error = ProcessingState.error(ErrorCode.RelayChannelMessageFault.getErrorCode(),
+								ErrorCode.RelayChannelMessageFault.getErrorDescription(errorInfo));
 
 						relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
 
 					}
-					// TODO #93: relay chunks sequentially with max 1 retry each
 
 				} else {
 					// update MSG processing state to error of the MRS session holder error
@@ -210,6 +202,57 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 				}
 			}
 		}
+	}
+
+	private ProcessingState relayChunks(MRSSessionHolder sh, ChannelMessage msg) {
+		for (int pos = 0; pos < msg.getNumberOfChunks(); pos++) {
+			// relay chunks sequentially with max 1 retry each
+			if (log.isDebugEnabled()) {
+				log.debug("Relay Chunk " + msg.getMsgId() + " pos " + pos);
+			}
+
+			Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), pos);
+			if (chunk == null) {
+				ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
+						ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), pos));
+				return error;
+			}
+
+			Relay relayMsg = new Relay();
+			relayMsg.setSessionId(sh.getMrsSessionId());
+
+			relayMsg.setChunk(d2a.mapChunk(chunk));
+
+			ProcessingState error = null;
+			int retries = 0;
+			do {
+				error = null;
+				try {
+					RelayResponse rr = sh.getMrs().relay(relayMsg);
+					if (!rr.isSuccess()) {
+						error = ProcessingState.error(rr.getError().getCode(), rr.getError().getDescription());
+
+					}
+				} catch (WebServiceException wse) {
+					// runtime error handling
+					if (log.isDebugEnabled()) {
+						log.debug("MRS call to relay Chunk failed.", wse);
+					}
+					String errorInfo = StringUtils.getExceptionSummary(wse);
+					log.info("MRS relay MSG call to remote failed " + errorInfo);
+					error = ProcessingState.error(ErrorCode.RelayMessageChunkFault.getErrorCode(),
+							ErrorCode.RelayMessageChunkFault.getErrorDescription(errorInfo));
+				}
+
+				retries++;
+			} while (error != null && retries < 2);
+
+			// error after 1 retry - leave
+			if (error != null) {
+				return error;
+			}
+		}
+		return null;
 	}
 
 	private void fetchReceiptData(RelayChannelContext ctx, RelayJobContext job) {

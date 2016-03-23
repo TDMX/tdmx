@@ -169,6 +169,8 @@ public enum ErrorCode {
 	RelayClientConstructionFailed(501, "MRS client construction failed. Reason=%s"),
 	RelayChannelAuthorizationFault(501, "Relay ChannelAuthorization to remote MRS failed. Reason=%s"),
 	RelayDestinationSessionFault(501, "Relay ChannelDestinationSession to remote MRS failed. Reason=%s"),
+	RelayChannelMessageFault(501, "Relay Message to remote MRS failed. Reason=%s"),
+	RelayMessageChunkFault(501, "Relay Chunk to remote MRS failed. Reason=%s"),
 	RelayFlowControlOpenFault(501, "Relay FlowControl open to remote MRS failed. Reason=%s"),
 	RelayGetSessionFault(501, "Relay setup call to remote SCS failed. Reason=%s"),
 	ChunkDataLost(501, "Chunk data lost for msgId=%s and pos=%d"),
