@@ -18,17 +18,29 @@
  */
 package org.tdmx.client.cli.user;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
+import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.client.crypto.scheme.CryptoException;
+import org.tdmx.client.crypto.scheme.Decrypter;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoSchemeFactory;
+import org.tdmx.client.crypto.stream.FileBackedOutputStream;
+import org.tdmx.client.crypto.stream.MacOfMacCalculator;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.mds.Download;
+import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.Receive;
@@ -36,6 +48,8 @@ import org.tdmx.core.api.v01.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
 import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.Chunk;
+import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.NonTransaction;
@@ -46,6 +60,8 @@ import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
+import org.tdmx.core.system.lang.StreamUtils;
+import org.tdmx.core.system.lang.StringUtils;
 
 @Cli(name = "receive:poll", description = "performs a single receive from a destination", note = "Configure a destination first with destination:configure before receive.")
 public class PollReceive implements CommandExecutable {
@@ -156,7 +172,7 @@ public class PollReceive implements CommandExecutable {
 					.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
 			PKIXCertificate signingUser = PKIXCertificate.getPublicKey(toUserChain);
 
-			UnencryptedSessionKey sk = dd.getSessionKey(ds);
+			UnencryptedSessionKey sk = dd.getSessionKey(ds.getEncryptionContextId());
 
 			if (sk == null) {
 				out.println("Current destination session at service provider unknow.");
@@ -214,7 +230,7 @@ public class PollReceive implements CommandExecutable {
 
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
 		if (!receiveResponse.isSuccess()) {
-			out.println("Failed to receive.");
+			out.println("Failed to receive Msg.");
 			ClientCliUtils.logError(out, receiveResponse.getError());
 			return;
 		}
@@ -222,10 +238,147 @@ public class PollReceive implements CommandExecutable {
 		Msg msg = receiveResponse.getMsg();
 		if (msg != null) {
 			out.println("Received msgId=" + msg.getHeader().getMsgId());
+			String continuationId = receiveResponse.getContinuation();
+			// check the messageId is ok
+			if (!SignatureUtils.checkMsgId(msg.getHeader(), msg.getPayload(),
+					msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp())) {
+				out.println("Corrupted msgId.");
+				// TODO NACK
+				return;
+			}
+			// check the message signature is ok
+			if (!SignatureUtils.checkMessageSignature(msg.getHeader(), msg.getPayload())) {
+				out.println("Msg signature invalid.");
+				// TODO NACK
+				return;
+			}
+			PKIXCertificate[] fromUserChain = ClientCliUtils
+					.getValidUserIdentity(msg.getHeader().getUsersignature().getUserIdentity());
 
-			// TODO #95 download the chunks
+			// TODO double check the channel from the fromUser is authorized
 
-			// TODO #95 decrypt the message
+			// TODO from user is trusted, ie. has the same root cert as the send permissions root cert
+
+			TemporaryFileManagerImpl bufferManager = new TemporaryFileManagerImpl();
+
+			IntegratedCryptoSchemeFactory iecFactory = new IntegratedCryptoSchemeFactory(uc.getKeyPair(),
+					PKIXCertificate.getPublicKey(fromUserChain).getCertificate().getPublicKey(), bufferManager);
+
+			// prepare to download decrypt
+			UnencryptedSessionKey sk = dd.getSessionKey(msg.getHeader().getEncryptionContextId());
+			if (sk == null) {
+				// we are unable to decrypt the message since we don't know the session key
+				out.println("unable to decrypt the message, session key unknown.");
+
+				// TODO NACK
+				return;
+			}
+			if (!sk.getScheme().getName().equals(msg.getHeader().getScheme())) {
+				out.println("Mismatch in encryption scheme.");
+				return;
+			}
+			FileBackedOutputStream fbos = bufferManager.getOutputStream(sk.getScheme().getChunkSize());
+			boolean chunksOk = true;
+			MacOfMacCalculator macOfMacCalculator = new MacOfMacCalculator(sk.getScheme().getChunkMACAlgorithm());
+
+			try {
+				// download the chunks, checking each mac, and appending the chunk to the temporary buffer
+				int numChunks = (int) (1 + (msg.getPayload().getLength() / sk.getScheme().getChunkSize()));
+
+				int pos = 0;
+				Chunk c = msg.getChunk();
+
+				do {
+					if (!SignatureUtils.checkChunkMac(c, sk.getScheme())) {
+						out.println("Chunk " + pos + " MAC invalid.");
+						chunksOk = false;
+					} else {
+						// write chunk data to the fbos
+						fbos.write(c.getData());
+						// add to mac to the MacOfMacs
+						macOfMacCalculator.addChunkMac(ByteArray.fromHex(c.getMac()));
+					}
+					pos++;
+
+					if (pos < numChunks && chunksOk) {
+						// fetch next chunk
+						ChunkReference cr = new ChunkReference();
+						cr.setMsgId(msg.getHeader().getMsgId());
+						cr.setPos(pos);
+
+						Download downloadRequest = new Download();
+						downloadRequest.setSessionId(sessionResponse.getSession().getSessionId());
+						downloadRequest.setContinuation(continuationId);
+						downloadRequest.setChunkref(cr);
+
+						DownloadResponse downloadResponse = mds.download(downloadRequest);
+						if (!downloadResponse.isSuccess()) {
+							out.println("Failed to receive Chunk.");
+							ClientCliUtils.logError(out, downloadResponse.getError());
+							chunksOk = false;
+						} else {
+							continuationId = downloadResponse.getContinuation();
+						}
+					}
+
+				} while (pos < numChunks && chunksOk);
+
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			} finally {
+				try {
+					fbos.close();
+				} catch (IOException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+
+			try {
+				// check mac of mac after last chunk fetched
+				if (chunksOk
+						&& !macOfMacCalculator.checkMacOfMacs(ByteArray.fromHex(msg.getPayload().getMACofMACs()))) {
+					out.println("MACofMAC invalid.");
+					chunksOk = false;
+				}
+				if (!chunksOk) {
+					// TODO NACK?
+					return;
+				}
+
+				// TODO #95 decrypt the message
+				boolean decryptedOk = true;
+				String filename = msg.getHeader().getExternalReference();
+				if (StringUtils.hasText(filename)) {
+					// TODO
+					filename = "" + System.currentTimeMillis();
+				}
+				try (FileOutputStream fos = new FileOutputStream(filename)) {
+					Decrypter dec = iecFactory.getDecrypter(sk.getScheme(), sk.getSessionKeyPair());
+					InputStream plainContent = dec.getInputStream(fbos.getInputStream(),
+							msg.getPayload().getEncryptionContext());
+
+					StreamUtils.transfer(plainContent, fos);
+
+				} catch (FileNotFoundException e) {
+					out.println("Output file " + filename + " not found.");
+					// TODO log cause, verbose
+					decryptedOk = false;
+				} catch (IOException e) {
+					out.println("Error writing file " + filename);
+					// TODO log cause, verbose
+					decryptedOk = false;
+				} catch (CryptoException e) {
+					out.println("Error decrypting to file " + filename);
+					// TODO log cause, verbose
+					decryptedOk = false;
+				}
+
+				if (decryptedOk) {
+					out.println("Sucessfully decrypted to " + filename);
+				}
+			} finally {
+				fbos.discard();
+			}
 
 			// TODO #95 ack
 

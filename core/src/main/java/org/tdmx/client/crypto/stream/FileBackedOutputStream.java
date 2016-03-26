@@ -36,10 +36,9 @@ import org.slf4j.LoggerFactory;
  * 
  * The number of bytes written to the underlying stream is returned with {@link #getSize()}
  * 
- * The File backing the OutputStream can be retrieved after closing with {@link #getStorage()} if there is one, else the
- * {@link #getMemory()} will return the underlying bytes from memory.
- * 
  * The caller should take care to call {@link #close()}.
+ * 
+ * The File backing the OutputStream can be retrieved after closing with {@link #getInputStream()}.
  * 
  * The caller should always call {@link #discard()}, especially if the {@link #getInputStream()} has not been called.
  * {@link #getInputStream()} converts the backing File into an InputStream and removes it from this OutputStream.

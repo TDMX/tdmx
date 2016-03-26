@@ -154,7 +154,7 @@ public class DescribeDestination implements CommandExecutable {
 					.getValidUserIdentity(ds.getUsersignature().getUserIdentity());
 			PKIXCertificate signerUser = PKIXCertificate.getPublicKey(signerUserChain);
 
-			UnencryptedSessionKey sk = dd.getSessionKey(ds);
+			UnencryptedSessionKey sk = dd.getSessionKey(ds.getEncryptionContextId());
 
 			if (sk == null) {
 				out.println("Current destination session at service provider unknow.");

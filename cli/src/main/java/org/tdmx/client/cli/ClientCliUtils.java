@@ -1002,15 +1002,15 @@ public class ClientCliUtils {
 		/**
 		 * Find the SessionKey matching the Destinationsession's encryptionContextId.
 		 * 
-		 * @param ds
+		 * @param encryptionContextId
 		 * @return null if not found.
 		 */
-		public UnencryptedSessionKey getSessionKey(Destinationsession ds) {
+		public UnencryptedSessionKey getSessionKey(String encryptionContextId) {
 			if (sessionKeys == null) {
 				return null;
 			}
 			for (UnencryptedSessionKey sk : sessionKeys) {
-				if (sk.getEncryptionContextId().equals(ds.getEncryptionContextId())) {
+				if (sk.getEncryptionContextId().equals(encryptionContextId)) {
 					return sk;
 				}
 			}

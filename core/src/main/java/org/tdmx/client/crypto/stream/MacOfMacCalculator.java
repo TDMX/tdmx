@@ -63,4 +63,8 @@ public class MacOfMacCalculator {
 		return macOfMacs;
 	}
 
+	public boolean checkMacOfMacs(byte[] checkMac) {
+		return ByteArray.equals(macOfMacs, checkMac);
+	}
+
 }
