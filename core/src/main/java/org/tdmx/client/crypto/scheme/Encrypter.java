@@ -22,7 +22,7 @@ import java.io.OutputStream;
 
 /**
  * Encryption is performed by calling {@link #getOutputStream()} and writing all plaintext to this stream. The output
- * stream must be flushed, then closed before calling {@link #getResult()}.
+ * stream closed before calling {@link #getResult()}.
  * 
  * An Encrypter can be used once only.
  * 

@@ -78,7 +78,6 @@ public class RSA_ECDHContextSchemeTest {
 
 		OutputStream os = e.getOutputStream();
 		os.write(101);
-		os.flush();
 		os.close();
 
 		CryptoContext result = e.getResult();
@@ -102,12 +101,12 @@ public class RSA_ECDHContextSchemeTest {
 
 		OutputStream os = e.getOutputStream();
 		os.write(p);
-		os.flush();
 		os.close();
 
 		CryptoContext result = e.getResult();
 
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
+				session);
 
 		InputStream is = d.getInputStream(result.getEncryptedData(), result.getEncryptionContext());
 		try {
@@ -129,7 +128,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
+				session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -145,7 +145,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
+				session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeUncompressable(e, d, data);
@@ -159,7 +160,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1, session);
+		Decrypter d = otherFactory
+				.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1, session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -173,7 +175,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1, session);
+		Decrypter d = otherFactory
+				.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1, session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -187,7 +190,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1,
+				session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -201,7 +205,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1, session);
+		Decrypter d = otherFactory
+				.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_TWOFISH256__16MB_SHA1, session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -215,7 +220,8 @@ public class RSA_ECDHContextSchemeTest {
 		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1,
 				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1, session);
+		Decrypter d = otherFactory
+				.getDecrypter(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_SERPENT256__16MB_SHA1, session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);

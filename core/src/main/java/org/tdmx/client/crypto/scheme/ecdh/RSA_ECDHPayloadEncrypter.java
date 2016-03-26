@@ -85,6 +85,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 
 	private FileBackedOutputStream fbos = null;
 	private ChunkMacCalculatingOutputStream mcos = null;
+	private SigningOutputStream sos = null;
 
 	private final StreamCipherAlgorithm payloadCipher;
 
@@ -129,16 +130,16 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 			throw new IllegalStateException();
 		}
 		fbos = bufferFactory.getOutputStream(scheme.getChunkSize());
+		mcos = new ChunkMacCalculatingOutputStream(fbos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
+
 		Cipher c = payloadCipher.getEncrypter(secretKey, secretIv);
-		CipherOutputStream cos = new CipherOutputStream(fbos, c);
+		CipherOutputStream cos = new CipherOutputStream(mcos, c);
 
 		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512,
 				false);
 
-		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
-				true, true, zos);
-		mcos = new ChunkMacCalculatingOutputStream(sos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
-		return mcos;
+		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
+		return sos;
 	}
 
 	@Override
@@ -150,7 +151,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 			throw new IllegalStateException();
 		}
 		byte[] msgKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(messageKey.getPublic());
-		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
+		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
 
 		AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey(otherSigningKey);
 		byte[] encryptedContext = rsa.encrypt(otherSigningKey, ByteArray.append(rs, msgKey));
@@ -159,7 +160,7 @@ public class RSA_ECDHPayloadEncrypter implements Encrypter {
 
 		// TODO assertion encryptionContext len is fixed to RSA key length in bytes.
 
-		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, mcos.getSize(),
+		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, sos.getSize(),
 				fbos.getSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}

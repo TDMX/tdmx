@@ -72,12 +72,12 @@ public class RSA_ECDHPayloadSchemeTest {
 		KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
 
 		OutputStream os = e.getOutputStream();
 		os.write(101);
-		os.flush();
 		os.close();
 
 		CryptoContext result = e.getResult();
@@ -93,14 +93,14 @@ public class RSA_ECDHPayloadSchemeTest {
 		KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
 
 		byte p = 101;
 
 		OutputStream os = e.getOutputStream();
 		os.write(p);
-		os.flush();
 		os.close();
 
 		CryptoContext result = e.getResult();
@@ -124,7 +124,8 @@ public class RSA_ECDHPayloadSchemeTest {
 		KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
 		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, session);
 		assertNotNull(d);
@@ -139,7 +140,8 @@ public class RSA_ECDHPayloadSchemeTest {
 
 		byte[] data = EntropySource.getRandomBytes(EnumUtils.MB * 32);
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
 		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_AES256__16MB_SHA1, session);
 		assertNotNull(d);
@@ -152,9 +154,11 @@ public class RSA_ECDHPayloadSchemeTest {
 		KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_TWOFISH256__16MB_SHA1,
+				session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);
@@ -165,9 +169,11 @@ public class RSA_ECDHPayloadSchemeTest {
 		KeyPair session = KeyAgreementAlgorithm.ECDH384.generateNewKeyPair();
 		byte[] encodedSessionKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(session.getPublic());
 
-		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1, encodedSessionKey);
+		Encrypter e = ownFactory.getEncrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1,
+				encodedSessionKey);
 		assertNotNull(e);
-		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1, session);
+		Decrypter d = otherFactory.getDecrypter(IntegratedCryptoScheme.ECDH384_RSA_SLASH_SERPENT256__16MB_SHA1,
+				session);
 		assertNotNull(d);
 
 		SchemeTester.testLargeCompressable(e, d);

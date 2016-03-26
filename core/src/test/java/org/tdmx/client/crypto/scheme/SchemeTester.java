@@ -64,7 +64,6 @@ public class SchemeTester {
 			String contentLine = "NUM" + i + "\n";
 			pw.write(contentLine);
 		}
-		pw.flush();
 		pw.close();
 
 		CryptoContext result = e.getResult();

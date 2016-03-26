@@ -59,7 +59,7 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 	public void write(int b) throws IOException {
 		chunk[cachedSize++] = (byte) b;
 		if (chunk.length - cachedSize <= 0) {
-			calculateMacAndFlush();
+			calculateMacAndWriteThrough();
 		}
 	}
 
@@ -81,26 +81,25 @@ public class ChunkMacCalculatingOutputStream extends OutputStream {
 			System.arraycopy(b, off, chunk, cachedSize, len);
 			cachedSize += len;
 			if (available == len) {
-				calculateMacAndFlush();
+				calculateMacAndWriteThrough();
 			}
 		}
 	}
 
 	@Override
 	public void flush() throws IOException {
-		if (cachedSize > 0) {
-			calculateMacAndFlush();
-		}
 		delegate.flush();
 	}
 
 	@Override
 	public void close() throws IOException {
-		flush();
+		if (cachedSize > 0) {
+			calculateMacAndWriteThrough();
+		}
 		delegate.close();
 	}
 
-	private void calculateMacAndFlush() throws IOException {
+	private void calculateMacAndWriteThrough() throws IOException {
 		try {
 			byte[] mac = digestAlgorithm.kdf(chunk, 0, cachedSize);
 			macs.add(mac);

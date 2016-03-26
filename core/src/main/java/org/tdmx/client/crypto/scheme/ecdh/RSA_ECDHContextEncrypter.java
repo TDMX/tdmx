@@ -86,6 +86,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 
 	private FileBackedOutputStream fbos = null;
 	private ChunkMacCalculatingOutputStream mcos = null;
+	private SigningOutputStream sos = null;
 
 	private final StreamCipherAlgorithm payloadCipher;
 	private final byte[] payloadSecretKey;
@@ -139,19 +140,19 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		}
 		fbos = bufferFactory.getOutputStream(scheme.getChunkSize());
 
+		mcos = new ChunkMacCalculatingOutputStream(fbos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
+
 		SecretKeySpec payloadKey = payloadCipher.convertKey(payloadSecretKey);
 		IvParameterSpec payloadIv = payloadCipher.convertIv(payloadSecretIv);
 
 		Cipher c = payloadCipher.getEncrypter(payloadKey, payloadIv);
-		CipherOutputStream cos = new CipherOutputStream(fbos, c);
+		CipherOutputStream cos = new CipherOutputStream(mcos, c);
 
 		DeflaterOutputStream zos = new DeflaterOutputStream(cos, new Deflater(Deflater.DEFAULT_COMPRESSION, false), 512,
 				false);
 
-		SigningOutputStream sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(),
-				true, true, zos);
-		mcos = new ChunkMacCalculatingOutputStream(sos, scheme.getChunkSize(), scheme.getChunkMACAlgorithm());
-		return mcos;
+		sos = new SigningOutputStream(SignatureAlgorithm.SHA_384_RSA, ownSigningKey.getPrivate(), true, true, zos);
+		return sos;
 	}
 
 	@Override
@@ -164,7 +165,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		}
 		byte[] msgKey = KeyAgreementAlgorithm.ECDH384.encodeX509PublicKey(messageKey.getPublic());
 		byte[] msgKeyLen = NumberToOctetString.intToByte(msgKey.length);
-		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(mcos.getSize());
+		byte[] plaintextLengthBytes = NumberToOctetString.longToBytes(sos.getSize());
 		byte[] payloadKeyBytes = ByteArray.append(payloadSecretKey, payloadSecretIv);
 
 		AsymmetricEncryptionAlgorithm rsa = AsymmetricEncryptionAlgorithm.getAlgorithmMatchingKey(otherSigningKey);
@@ -173,7 +174,7 @@ public class RSA_ECDHContextEncrypter implements Encrypter {
 		byte[] encryptedKey = keyEncryptionCipher.encrypt(keyEncryptionKey, keyEncryptionIv, payloadKeyBytes);
 		byte[] encryptionContext = ByteArray.append(plaintextLengthBytes, msgKeyLen, msgKey, encryptedKey);
 
-		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, mcos.getSize(),
+		CryptoContext cc = new CryptoContext(scheme, fbos.getInputStream(), encryptionContext, sos.getSize(),
 				fbos.getSize(), mcos.getMacs(), mcos.getMacOfMacs());
 		return cc;
 	}
