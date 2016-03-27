@@ -276,9 +276,6 @@ public class SendFile implements CommandExecutable {
 			}
 		}
 
-		out.println("now send...");
-		// TODO #49 do send.
-
 		Calendar now = CalendarUtils.getTimestamp(new Date());
 		Calendar ttl = CalendarUtils.getTimestamp(now.getTime());
 		ttl.add(Calendar.HOUR, 24); // TODO to parameter
@@ -315,6 +312,8 @@ public class SendFile implements CommandExecutable {
 						out.println("Message submission failed. ");
 						ClientCliUtils.logError(out, submitResponse.getError());
 					}
+					out.println("Message header uploaded successfully.");
+					out.println("Message chunk[0] uploaded successfully.");
 
 					String continuationId = submitResponse.getContinuation();
 					while ((chunk = csr.getNextChunk(m.getHeader().getMsgId())) != null) {
@@ -329,10 +328,12 @@ public class SendFile implements CommandExecutable {
 							ClientCliUtils.logError(out, submitResponse.getError());
 							return;
 						}
+						out.println("Message chunk[" + chunk.getPos() + "] uploaded successfully.");
 						// get the next continuationId
 						continuationId = uploadResponse.getContinuation();
 					}
 				}
+				out.println("Message sent successfully. MsgId=" + m.getHeader().getMsgId());
 
 			} catch (CryptoException e) {
 				throw new IllegalStateException(e);

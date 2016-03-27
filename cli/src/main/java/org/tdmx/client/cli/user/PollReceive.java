@@ -293,6 +293,7 @@ public class PollReceive implements CommandExecutable {
 						out.println("Chunk " + pos + " MAC invalid.");
 						chunksOk = false;
 					} else {
+						out.println("Chunk " + pos + " MAC valid.");
 						// write chunk data to the fbos
 						fbos.write(c.getData());
 						// add to mac to the MacOfMacs
