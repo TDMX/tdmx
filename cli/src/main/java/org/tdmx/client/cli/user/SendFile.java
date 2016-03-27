@@ -18,8 +18,10 @@
  */
 package org.tdmx.client.cli.user;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Calendar;
@@ -91,6 +93,13 @@ public class SendFile implements CommandExecutable {
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
+
+	@Parameter(name = "file", required = true, description = "the filename to transfer.")
+	private String file;
+
+	@Parameter(name = "ttlHours", defaultValue = "24", description = "the time to live in hours.")
+	private int ttlHours;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -115,6 +124,12 @@ public class SendFile implements CommandExecutable {
 			return;
 		}
 		out.println("Origin domain info: " + originDomainInfo);
+
+		File fileHandle = new File(file);
+		if (!fileHandle.exists()) {
+			out.println("File " + file + " not found.");
+			return;
+		}
 
 		// -------------------------------------------------------------------------
 		// GET RECEIVER CONTEXT
@@ -278,17 +293,14 @@ public class SendFile implements CommandExecutable {
 
 		Calendar now = CalendarUtils.getTimestamp(new Date());
 		Calendar ttl = CalendarUtils.getTimestamp(now.getTime());
-		ttl.add(Calendar.HOUR, 24); // TODO to parameter
-
-		String externalReference = "ext ref"; // TODO to parameter
+		ttl.add(Calendar.HOUR, ttlHours);
 
 		TemporaryFileManagerImpl bufferManager = new TemporaryFileManagerImpl();
 
 		IntegratedCryptoSchemeFactory iecFactory = new IntegratedCryptoSchemeFactory(uc.getKeyPair(),
 				PKIXCertificate.getPublicKey(toUserChain).getCertificate().getPublicKey(), bufferManager);
 
-		// TODO get real content from a file.
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] { 1, 2, 3 })) {
+		try (InputStream bais = new FileInputStream(fileHandle)) {
 
 			try {
 				Encrypter enc = iecFactory.getEncrypter(scheme, ds.getSessionKey());
@@ -297,7 +309,7 @@ public class SendFile implements CommandExecutable {
 				}
 				CryptoContext cc = enc.getResult();
 
-				Msg m = mapMsg(uc, now, cc, ci, ds, ttl, externalReference);
+				Msg m = mapMsg(uc, now, cc, ci, ds, ttl, file);
 
 				try (ChunkSequentialReader csr = cc.getChunkReader()) {
 					Chunk chunk = csr.getNextChunk(m.getHeader().getMsgId());

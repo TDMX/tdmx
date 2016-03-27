@@ -125,6 +125,11 @@ public class PollReceive implements CommandExecutable {
 			out.println("Destination not configured yet. Use destination:configure command to initialize it.");
 			return;
 		}
+		if (dd.containsOutdatedSessionKeys()) {
+			out.println("Purging session keys which have exceeded their retention time.");
+			dd.removeOutdatedSessionKeys();
+			ClientCliUtils.storeDestinationDescriptor(dd, destination, userPassword);
+		}
 
 		// -------------------------------------------------------------------------
 		// GET MDS SESSION

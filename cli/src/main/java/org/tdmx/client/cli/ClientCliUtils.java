@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -979,6 +980,32 @@ public class ClientCliUtils {
 		private List<String> encryptedSessionKeys = new ArrayList<>();
 
 		public DestinationDescriptor() {
+		}
+
+		/**
+		 * Returns true if we have session keys which have passed their retention validity date.
+		 * 
+		 * @return true if we have session keys which have passed their retention validity date.
+		 */
+		public boolean containsOutdatedSessionKeys() {
+			for (UnencryptedSessionKey sk : getSessionKeys()) {
+				if (sk.isRetentionExpired(sessionRetentionInDays)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Removes session keys which have outlived their retention validity.
+		 */
+		public void removeOutdatedSessionKeys() {
+			Iterator<UnencryptedSessionKey> it = getSessionKeys().iterator();
+			while (it.hasNext()) {
+				if (it.next().isRetentionExpired(sessionRetentionInDays)) {
+					it.remove();
+				}
+			}
 		}
 
 		/**

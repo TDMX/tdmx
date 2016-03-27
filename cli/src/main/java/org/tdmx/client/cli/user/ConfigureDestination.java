@@ -138,7 +138,12 @@ public class ConfigureDestination implements CommandExecutable {
 			dd.setSessionDurationInHours(durationSessionInHours);
 		}
 		if (durationRetentionDays != null) {
-			dd.setSessionRetentionInDays(durationSessionInHours);
+			dd.setSessionRetentionInDays(durationRetentionDays);
+		}
+
+		if (dd.containsOutdatedSessionKeys()) {
+			out.println("Purging session keys which have exceeded their retention time.");
+			dd.removeOutdatedSessionKeys();
 		}
 
 		ClientCliUtils.storeDestinationDescriptor(dd, destination, userPassword);
