@@ -224,6 +224,7 @@ public class ZoneFacade {
 		ChannelMessage cm = new ChannelMessage();
 		cm.setMsgId(msgId);
 		cm.setChannel(channel);
+		cm.setTxState(TransactionState.none());
 		cm.setProcessingState(ps);
 		cm.setOriginSerialNr(1);
 		cm.setDestinationSerialNr(1);

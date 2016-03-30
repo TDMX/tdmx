@@ -70,7 +70,6 @@ public class ChannelMessage implements Serializable {
 	public static final int MAX_MSGID_LEN = 64;
 	public static final int MAX_SHA256_MAC_LEN = 80;
 	public static final int MAX_EXTREF_LEN = 256;
-	public static final int MAX_CRCMANIFEST_LEN = 8000;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -160,9 +159,25 @@ public class ChannelMessage implements Serializable {
 
 	@Embedded
 	@AttributeOverrides({
+			@AttributeOverride(name = "status", column = @Column(name = "deliveryStatus", length = DeliveryStatus.MAX_DELIVERYSTATUS_LEN, nullable = false) ),
+			@AttributeOverride(name = "timestamp", column = @Column(name = "deliveryTimestamp", nullable = false) ),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "deliveryErrorCode") ),
+			@AttributeOverride(name = "errorMessage", column = @Column(name = "deliveryErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
+	private DeliveryState deliveryState = DeliveryState.ready();
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "txId", column = @Column(name = "txId", length = TransactionState.MAX_XA_TXID_LEN, nullable = true) ),
+			@AttributeOverride(name = "txTimeoutTimestamp", column = @Column(name = "txTimeoutTimestamp", nullable = true) ),
+			@AttributeOverride(name = "deliveryCount", column = @Column(name = "deliveryCount", nullable = false) ) })
+	private TransactionState txState = TransactionState.none();
+
+	// TODO #97: rename to "relayState"
+	@Embedded
+	@AttributeOverrides({
 			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
 			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
-			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
+			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode", nullable = true) ),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState = ProcessingState.none();
 
@@ -198,6 +213,8 @@ public class ChannelMessage implements Serializable {
 		this.processingState = other.getProcessingState();
 		this.originSerialNr = other.getOriginSerialNr();
 		this.destinationSerialNr = other.getDestinationSerialNr();
+		this.deliveryState = other.getDeliveryState();
+		this.txState = other.getTxState();
 	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -226,6 +243,8 @@ public class ChannelMessage implements Serializable {
 		if (receipt != null) {
 			builder.append(" receivedAt=").append(receipt.getSignatureDate());
 		}
+		builder.append(" deliveryState=").append(deliveryState);
+		builder.append(" txState=").append(txState);
 		builder.append(" processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
@@ -241,6 +260,7 @@ public class ChannelMessage implements Serializable {
 		dr.setMsgId(msgId);
 		dr.setReceiverSignature(receipt);
 		dr.setSenderSignature(signature);
+		// TODO #97: error
 		dr.setExternalReference(externalReference);
 		return dr;
 	}
@@ -360,6 +380,26 @@ public class ChannelMessage implements Serializable {
 
 	public void setMacOfMacs(String macOfMacs) {
 		this.macOfMacs = macOfMacs;
+	}
+
+	public DeliveryState getDeliveryState() {
+		return deliveryState;
+	}
+
+	public void setDeliveryState(DeliveryState deliveryState) {
+		this.deliveryState = deliveryState;
+	}
+
+	public TransactionState getTxState() {
+		if (txState == null) {
+			// needed because we don't have a mandatory field - and it's nulled by hibernate
+			txState = TransactionState.none();
+		}
+		return txState;
+	}
+
+	public void setTxState(TransactionState txState) {
+		this.txState = txState;
 	}
 
 	public ProcessingState getProcessingState() {

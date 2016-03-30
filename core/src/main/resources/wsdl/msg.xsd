@@ -622,9 +622,13 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="DeliveryReport">
+		<xs:annotation>
+			<xs:documentation>delivery failures are not signed ( ie. service provider failures, ttl timeouts etc ). On successful receipt, the message receiver signs the msgReference.</xs:documentation>
+		</xs:annotation>
 		<xs:sequence>
 			<xs:element ref="msgreference"/>
-			<xs:element ref="receiptsignature"/>
+			<xs:element ref="common:error" minOccurs="0"/>
+			<xs:element ref="receiptsignature" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="messageauthenticationcode">

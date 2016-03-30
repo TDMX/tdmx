@@ -170,6 +170,10 @@
 
     create table ChannelMessage (
         id bigint not null,
+        deliveryErrorCode integer,
+        deliveryErrorMessage varchar(2048),
+        deliveryStatus varchar(12) not null,
+        deliveryTimestamp timestamp not null,
         destinationSerialNr integer not null,
         encryptionContext longvarbinary not null,
         encryptionContextId varchar(256) not null,
@@ -193,6 +197,9 @@
         senderSignatureDate timestamp not null,
         senderSignature varchar(1024) not null,
         ttlTimestamp timestamp not null,
+        deliveryCount integer not null,
+        txId varchar(256),
+        txTimeoutTimestamp timestamp,
         channel_id bigint not null,
         primary key (id)
     );

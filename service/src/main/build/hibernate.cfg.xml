@@ -5,7 +5,7 @@
 
 <hibernate-configuration>
 <!-- Uncomment either MySQL or HSQL for target/hibernate3/sql/hibernate-schema.sql -->
-<!-- MySql--> 	
+<!-- MySql	
 	<session-factory>
 		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
 		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/control?autoReconnect=true</property>
@@ -13,8 +13,8 @@
 		<property name="hibernate.connection.password">control</property>
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 	</session-factory>
-
-<!-- HSQL update src/test/resources/zoneDBPartition-schema.sql 
+--> 
+<!-- HSQL update src/test/resources/zoneDBPartition-schema.sql -->
 	<session-factory>
 		<property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
 		<property name="hibernate.connection.url">jdbc:hsqldb:mem:control</property>
@@ -22,6 +22,6 @@
 		<property name="hibernate.connection.password"></property>
 		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
 	</session-factory>
--->
+
 
 </hibernate-configuration> 

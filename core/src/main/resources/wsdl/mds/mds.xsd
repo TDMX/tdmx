@@ -95,6 +95,9 @@
 			<xs:extension base="common:ContinuedAcknowledge">
 				<xs:choice minOccurs="0">
 					<xs:sequence>
+						<xs:annotation>
+							<xs:documentation>when we receive a message we are always told how many times before the message has been delivered ( due to transaction rollback ).</xs:documentation>
+						</xs:annotation>
 						<xs:element ref="msg:msg"/>
 						<xs:element ref="msg:retryCount"/>
 					</xs:sequence>
@@ -139,7 +142,7 @@
 	</xs:complexType>
 	<xs:complexType name="acknowledgeResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:ContinuedAcknowledge"/>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<!-- ********************************************* -->

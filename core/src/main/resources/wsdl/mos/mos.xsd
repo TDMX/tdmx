@@ -91,7 +91,7 @@
 	</xs:complexType>
 	<xs:complexType name="receiptResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:ContinuedAcknowledge">
+			<xs:extension base="common:Acknowledge">
 				<xs:choice minOccurs="0">
 					<xs:sequence>
 						<xs:element ref="msg:dr"/>
@@ -116,7 +116,7 @@
 	</xs:complexType>
 	<xs:complexType name="acknowledgeResponseType">
 		<xs:complexContent>
-			<xs:extension base="common:ContinuedAcknowledge"/>
+			<xs:extension base="common:Acknowledge"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<!-- ********************************************* -->
