@@ -187,14 +187,19 @@ public class ReceiverContext {
 	 * @param txId
 	 * @return the message previously associated with the transaction.
 	 */
-	public MessageContext endTransaction(TransactionSpecification txSpec) {
-		TransactionContext tx = transactionMap.remove(txSpec.getXid());
+	public MessageContext endTransaction(String txId) {
+		TransactionContext tx = transactionMap.remove(txId);
 		if (tx != null) {
 			MessageContext msg = tx.getCurrentMessage();
 			unackedMessageMap.remove(msg.getMsgId());
 			return msg;
 		}
 		return null;
+	}
+
+	public MessageContext getUnackedMessage(String msgId) {
+		MessageContext msgCtx = unackedMessageMap.get(msgId);
+		return msgCtx;
 	}
 
 	/**
@@ -230,19 +235,6 @@ public class ReceiverContext {
 	 */
 	public void setDirty() {
 		this.dirty = true;
-	}
-
-	/**
-	 * Acknowledge the msg referenced by the msgId.
-	 * 
-	 * @param msgId
-	 */
-	public void ackMessage(String msgId) {
-		MessageContext ctx = unackedMessageMap.remove(msgId);
-		if (ctx == null) {
-			log.warn("Acked unknown msgId " + msgId);
-			return;
-		}
 	}
 
 	// -------------------------------------------------------------------------
