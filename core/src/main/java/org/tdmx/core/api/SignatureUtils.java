@@ -32,6 +32,7 @@ import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.converters.StringToUtf8;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
+import org.tdmx.core.api.v01.common.Error;
 import org.tdmx.core.api.v01.msg.AdministratorIdentity;
 import org.tdmx.core.api.v01.msg.Administratorsignature;
 import org.tdmx.core.api.v01.msg.Channel;
@@ -136,7 +137,6 @@ public class SignatureUtils {
 
 		String valueToSignHeader = getValueToSign(dr);
 		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
-		// sig is in the header
 	}
 
 	public static void createMessageSignature(PKIXCredential credential, SignatureAlgorithm alg, Calendar signatureDate,
@@ -303,6 +303,9 @@ public class SignatureUtils {
 		StringBuilder value = new StringBuilder();
 
 		appendValueToSign(value, dr.getMsgreference());
+		if (dr.getError() != null) {
+			appendValueToSign(value, dr.getError());
+		}
 		value.append(toValue(dr.getReceiptsignature().getSignaturevalue().getTimestamp()));
 
 		return value.toString();
@@ -326,6 +329,11 @@ public class SignatureUtils {
 		value.append(toValue(header.getExternalReference()));
 
 		return value.toString();
+	}
+
+	private static void appendValueToSign(StringBuilder value, Error error) {
+		value.append(toValue(error.getCode()));
+		value.append(toValue(error.getDescription()));
 	}
 
 	private static void appendValueToSign(StringBuilder value, Msgreference mr) {

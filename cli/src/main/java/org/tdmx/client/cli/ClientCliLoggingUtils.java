@@ -18,6 +18,7 @@
  */
 package org.tdmx.client.cli;
 
+import java.io.PrintStream;
 import java.text.DateFormat;
 import java.util.Calendar;
 
@@ -58,6 +59,11 @@ public class ClientCliLoggingUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public static void logException(PrintStream out, String prefix, Exception error) {
+		out.println(prefix + ". Exception message [" + error.getMessage() + "]");
+		error.printStackTrace(out);
+	}
 
 	public static String toString(org.tdmx.core.api.v01.common.Error error) {
 		return "Error [" + error.getCode() + "] " + error.getDescription();

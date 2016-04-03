@@ -23,10 +23,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Date;
 
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
+import org.tdmx.client.cli.ClientErrorCode;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -39,6 +43,9 @@ import org.tdmx.client.crypto.scheme.IntegratedCryptoSchemeFactory;
 import org.tdmx.client.crypto.stream.FileBackedOutputStream;
 import org.tdmx.client.crypto.stream.MacOfMacCalculator;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.common.Error;
+import org.tdmx.core.api.v01.mds.Acknowledge;
+import org.tdmx.core.api.v01.mds.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mds.Download;
 import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
@@ -51,7 +58,9 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
@@ -248,13 +257,15 @@ public class PollReceive implements CommandExecutable {
 			if (!SignatureUtils.checkMsgId(msg.getHeader(), msg.getPayload(),
 					msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp())) {
 				out.println("Corrupted msgId.");
-				// TODO NACK
+				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageId), mds,
+						uniqTxId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			// check the message signature is ok
 			if (!SignatureUtils.checkMessageSignature(msg.getHeader(), msg.getPayload())) {
 				out.println("Msg signature invalid.");
-				// TODO NACK
+				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageSignature),
+						mds, uniqTxId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			PKIXCertificate[] fromUserChain = ClientCliUtils
@@ -275,11 +286,14 @@ public class PollReceive implements CommandExecutable {
 				// we are unable to decrypt the message since we don't know the session key
 				out.println("unable to decrypt the message, session key unknown.");
 
-				// TODO NACK
+				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveNoSessionKey), mds, uniqTxId,
+						sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			if (!sk.getScheme().getName().equals(msg.getHeader().getScheme())) {
 				out.println("Mismatch in encryption scheme.");
+				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageSchemeSessionMismatch), mds,
+						uniqTxId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			FileBackedOutputStream fbos = bufferManager.getOutputStream(sk.getScheme().getChunkSize());
@@ -347,16 +361,17 @@ public class PollReceive implements CommandExecutable {
 					chunksOk = false;
 				}
 				if (!chunksOk) {
-					// TODO NACK?
+					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidChunk), mds,
+							uniqTxId, sessionResponse.getSession().getSessionId(), out);
 					return;
 				}
 
-				// TODO #95 decrypt the message
+				// decrypt the message
 				boolean decryptedOk = true;
 				String filename = msg.getHeader().getExternalReference();
 				if (StringUtils.hasText(filename)) {
-					// TODO
-					filename = "" + System.currentTimeMillis();
+					filename = "TDMX-" + System.currentTimeMillis();
+					out.println("No external reference - so filename is defaulted to " + filename);
 				}
 				try (FileOutputStream fos = new FileOutputStream(filename)) {
 					Decrypter dec = iecFactory.getDecrypter(sk.getScheme(), sk.getSessionKeyPair());
@@ -366,27 +381,27 @@ public class PollReceive implements CommandExecutable {
 					StreamUtils.transfer(plainContent, fos);
 
 				} catch (FileNotFoundException e) {
-					out.println("Output file " + filename + " not found.");
-					// TODO log cause, verbose
+					ClientCliLoggingUtils.logException(out, "Output file " + filename + " not found.", e);
 					decryptedOk = false;
 				} catch (IOException e) {
-					out.println("Error writing file " + filename);
-					// TODO log cause, verbose
+					ClientCliLoggingUtils.logException(out, "Error writing file " + filename, e);
 					decryptedOk = false;
 				} catch (CryptoException e) {
-					out.println("Error decrypting to file " + filename);
-					// TODO log cause, verbose
+					ClientCliLoggingUtils.logException(out, "Error decrypting to file " + filename, e);
 					decryptedOk = false;
 				}
 
 				if (decryptedOk) {
 					out.println("Sucessfully decrypted to " + filename);
+					handleAcknowledge(uc, msg, null, mds, uniqTxId, sessionResponse.getSession().getSessionId(), out);
+				} else {
+					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageDecryptionFailure), mds,
+							uniqTxId, sessionResponse.getSession().getSessionId(), out);
+
 				}
 			} finally {
 				fbos.discard();
 			}
-
-			// TODO #95 ack
 
 		} else {
 			out.println("No message received.");
@@ -400,6 +415,30 @@ public class PollReceive implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void handleAcknowledge(PKIXCredential uc, Msg msg, Error error, MDS mds, String xid, String sessionId,
+			PrintStream out) {
+		Msgreference msgRef = new Msgreference();
+		msgRef.setExternalReference(msg.getHeader().getExternalReference());
+		msgRef.setMsgId(msg.getHeader().getMsgId());
+		msgRef.setSignature(msg.getHeader().getUsersignature().getSignaturevalue().getSignature());
+
+		Dr dr = new Dr();
+		dr.setError(error);
+		dr.setMsgreference(msgRef);
+
+		SignatureUtils.createDeliveryReceiptSignature(uc, SignatureAlgorithm.SHA_384_RSA, new Date(), dr);
+
+		Acknowledge ackRequest = new Acknowledge();
+		ackRequest.setXid(xid);
+		ackRequest.setSessionId(sessionId);
+		ackRequest.setDr(dr);
+		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
+		if (!ackResponse.isSuccess()) {
+			out.println("Failed to NACK receipt.");
+			ClientCliUtils.logError(out, ackResponse.getError());
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
