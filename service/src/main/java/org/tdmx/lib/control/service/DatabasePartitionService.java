@@ -33,8 +33,6 @@ import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
  */
 public interface DatabasePartitionService {
 
-	public static final String CACHE_KEY = "DatabasePartition";
-
 	public void createOrUpdate(DatabasePartition partition);
 
 	// a partition can only be deleted if it is not yet activated.
@@ -51,6 +49,6 @@ public interface DatabasePartitionService {
 	public DatabasePartition findByPartitionId(String partitionId);
 
 	public List<DatabasePartition> findAll();
-	
-	public List<DatabasePartition> search( DatabasePartitionSearchCriteria criteria );
+
+	public List<DatabasePartition> search(DatabasePartitionSearchCriteria criteria);
 }

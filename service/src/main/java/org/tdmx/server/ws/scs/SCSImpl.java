@@ -65,6 +65,9 @@ public class SCSImpl implements SCS, Manageable {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	// TODO #86 zone data cache based on EhCache
+	// (zoneApex->)AccountZone,(zoneApex+partitionId->)Zone,(zoneapex+fingerprint->)AgentCredential (ehCache)
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
@@ -244,6 +247,7 @@ public class SCSImpl implements SCS, Manageable {
 			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
+		// TODO #86 check the account zone is active.
 
 		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
@@ -299,6 +303,7 @@ public class SCSImpl implements SCS, Manageable {
 			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
+		// TODO #86 check the account zone is active.
 
 		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {
@@ -347,6 +352,7 @@ public class SCSImpl implements SCS, Manageable {
 			ErrorCode.setError(ErrorCode.ZoneNotFound, response);
 			return response;
 		}
+		// TODO #86 check the account zone is active.
 
 		Zone zone = sessionDataService.getZone(az);
 		if (zone == null) {

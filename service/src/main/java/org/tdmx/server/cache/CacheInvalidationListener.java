@@ -16,15 +16,23 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs;
+package org.tdmx.server.cache;
 
+/**
+ * A Listener for distributed CacheInvalidationMessage messages.
+ * 
+ * @author Peter
+ *
+ */
 public interface CacheInvalidationListener {
 
+	// TODO #88: server admin impl. connecting to one PCS of each segment
+
 	/**
-	 * Invalidate the cache entry with the key.
+	 * handle CacheInvalidationMessage event and passes on to CacheInvalidationListeners. Filter duplicate events.
 	 * 
-	 * @param key
+	 * @param instruction
 	 */
-	public void invalidateCache(String key);
+	public void invalidateCache(CacheInvalidationInstruction instruction);
 
 }

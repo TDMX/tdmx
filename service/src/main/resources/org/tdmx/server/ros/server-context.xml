@@ -69,6 +69,8 @@
 		<property name="tcpNoDelay" value="true"/>
 		<property name="shutdownTimeoutMs" value="${ros.pcs.shutdownTimeoutMs}"/>
 		<property name="partitionServerService" ref="tdmx.lib.control.PartitionControlServerRepository"/>
+		
+		<property name="cacheInvalidationListener" ref="tdmx.server.CacheInvalidationEventDelegater"/>
 	</bean>
 	
 	<!-- serves WS clients -->

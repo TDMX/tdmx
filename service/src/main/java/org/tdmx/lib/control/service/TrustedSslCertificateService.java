@@ -30,8 +30,6 @@ import org.tdmx.lib.control.domain.TrustedSslCertificate;
  */
 public interface TrustedSslCertificateService {
 
-	public static final String CACHE_KEY = "TrustStore";
-
 	public void createOrUpdate(TrustedSslCertificate trustStoreEntry);
 
 	public TrustedSslCertificate findById(Long id);

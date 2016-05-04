@@ -57,10 +57,6 @@
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>
 
-	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.mockito.Mockito" factory-method="mock"> 
-	    <constructor-arg value="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier" /> 
-	</bean>
-	
 	<bean id="test.data.generator"
 		class="org.tdmx.lib.control.job.TestDataGeneratorImpl">
 		

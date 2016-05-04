@@ -32,20 +32,23 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
-import org.tdmx.server.pcs.CacheInvalidationMessageListener;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
-import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.pcs.protobuf.Cache.CacheServiceProxy;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheResponse;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
-import com.google.protobuf.RpcCallback;
+import com.google.protobuf.BlockingService;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
@@ -63,12 +66,23 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+/**
+ * The PCC ( PartitionControlClient ) is multi-functional service connecting to the PCS server.
+ * 
+ * The CacheInvalidationListener sends the cache invalidation request to ONE PCS server, which then sends the request
+ * BACK to this server and all other PCS clients via reverse RPC.
+ * 
+ * @author Peter
+ *
+ */
 public class LocalControlServiceImpl
-		implements SessionControlService, RelayControlService, CacheInvalidationEventNotifier, Manageable {
+		implements SessionControlService, RelayControlService, CacheInvalidationListener, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+
+	// TODO #88: setup to handle inbound cache invalidation requests from the PCS
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -96,10 +110,11 @@ public class LocalControlServiceImpl
 	private Segment segment = null;
 
 	private PartitionControlServerService partitionServerService;
+
 	/**
-	 * Delegate for handling Broadcast events.
+	 * Delegate for handling inbound Broadcast events.
 	 */
-	private CacheInvalidationMessageListener cacheInvalidationListener;
+	private CacheInvalidationListener cacheInvalidationListener;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -110,16 +125,15 @@ public class LocalControlServiceImpl
 	// -------------------------------------------------------------------------
 
 	@Override
-	public boolean broadcastEvent(CacheInvalidationMessage cacheInvalidationMsg) {
+	public void invalidateCache(CacheInvalidationInstruction message) {
 		// if we are connected to any PCS at all, then taking one is enough.
 		// we use a hash distribution of the unique ID but we could do round-robin instead.
-		LocalControlServiceClient clientProxy = consistentHashToServer(cacheInvalidationMsg.getId());
+		LocalControlServiceClient clientProxy = consistentHashToServer(message.getId());
 		if (clientProxy != null) {
-			return clientProxy.broadcastEvent(cacheInvalidationMsg);
+			clientProxy.invalidateCache(message);
 		} else {
-			log.warn("No PCS client proxy found for " + consistentHashCode(cacheInvalidationMsg.getId()));
+			log.warn("No PCS client proxy found for " + consistentHashCode(message.getId()));
 		}
-		return false;
 	}
 
 	@Override
@@ -172,19 +186,6 @@ public class LocalControlServiceImpl
 			logger.setLogResponseProto(false);
 			clientFactory.setRpcLogger(logger);
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
-
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					if (parameter.getCacheInvalidation() != null) {
-						final CacheInvalidationMessageListener delegate = getCacheInvalidationListener();
-						if (delegate != null) {
-							delegate.handleBroadcast(parameter.getCacheInvalidation());
-						}
-					}
-				}
-
-			};
 			// Set up the event pipeline factory.
 			// setup a RPC event listener - it just logs what happens
 			RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
@@ -224,10 +225,6 @@ public class LocalControlServiceImpl
 				private void connection(RpcClientChannel clientChannel) {
 					PartitionControlServer pcs = getPartitionControlServer(clientChannel);
 					serverProxyMap.put(pcs, new LocalControlServiceClient(clientChannel));
-
-					// register ourselves to receive broadcast messages
-					clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-							serverBroadcastCallback);
 				}
 
 				private PartitionControlServer getPartitionControlServer(RpcClientChannel clientChannel) {
@@ -241,6 +238,25 @@ public class LocalControlServiceImpl
 			rpcEventNotifier.addEventListener(listener);
 			clientFactory.registerConnectionEventListener(rpcEventNotifier);
 
+			BlockingService cacheServiceProxy = CacheServiceProxy
+					.newReflectiveBlockingService(new CacheServiceProxy.BlockingInterface() {
+						@Override
+						public InvalidateCacheResponse invalidateCache(RpcController controller,
+								InvalidateCacheRequest request) throws ServiceException {
+							CacheInvalidationListener cil = cacheInvalidationListener;
+							if (cil != null) {
+								CacheInvalidationInstruction cii = CacheInvalidationInstruction
+										.newInstruction(request.getId(), request.getCacheName(), request.getKeyValue());
+								log.info("Handling inbound cache invalidation request " + cii);
+								cil.invalidateCache(cii);
+							}
+							InvalidateCacheResponse.Builder response = InvalidateCacheResponse.newBuilder();
+							return response.build();
+						}
+					});
+
+			clientFactory.getRpcServiceRegistry().registerService(cacheServiceProxy);
+
 			bootstrap = new Bootstrap();
 			EventLoopGroup workers = new NioEventLoopGroup(ioThreads, new NamedThreadFactory("PCS-client-workers"));
 
@@ -253,7 +269,7 @@ public class LocalControlServiceImpl
 			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
 
 			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
-			watchdog.setThreadName("SCS-PCS RpcClient Watchdog");
+			watchdog.setThreadName("PCC-PCS RpcClient Watchdog");
 			rpcEventNotifier.addEventListener(watchdog);
 			watchdog.start();
 
@@ -426,11 +442,11 @@ public class LocalControlServiceImpl
 		this.partitionServerService = partitionServerService;
 	}
 
-	public CacheInvalidationMessageListener getCacheInvalidationListener() {
+	public CacheInvalidationListener getCacheInvalidationListener() {
 		return cacheInvalidationListener;
 	}
 
-	public void setCacheInvalidationListener(CacheInvalidationMessageListener cacheInvalidationListener) {
+	public void setCacheInvalidationListener(CacheInvalidationListener cacheInvalidationListener) {
 		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 

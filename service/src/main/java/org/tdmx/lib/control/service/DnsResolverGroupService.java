@@ -30,8 +30,6 @@ import org.tdmx.lib.control.domain.DnsResolverGroup;
  */
 public interface DnsResolverGroupService {
 
-	public static final String CACHE_KEY = "DnsResolverGroup";
-
 	public void createOrUpdate(DnsResolverGroup dnsResolverGroup);
 
 	public void delete(DnsResolverGroup dnsResolverGroup);

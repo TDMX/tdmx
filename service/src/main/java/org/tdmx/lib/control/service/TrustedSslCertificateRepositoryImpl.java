@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.control.dao.TrustedSslCertificateDao;
 import org.tdmx.lib.control.domain.TrustedSslCertificate;
-import org.tdmx.server.pcs.CacheInvalidationNotifier;
 
 /**
  * A transactional service managing the TrustedSslCertificate information.
@@ -48,7 +47,6 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 	private static final Logger log = LoggerFactory.getLogger(TrustedSslCertificateRepositoryImpl.class);
 
 	private TrustedSslCertificateDao certificateDao;
-	private CacheInvalidationNotifier cacheInvalidationNotifier;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -77,7 +75,6 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 		} else {
 			getCertificateDao().persist(trustStoreEntry);
 		}
-		notifyTrustStoreChanged();
 	}
 
 	@Override
@@ -89,7 +86,6 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 		} else {
 			log.warn("Unable to find TrustedSslCertificate to delete with id " + trustStoreEntry.getId());
 		}
-		notifyTrustStoreChanged();
 	}
 
 	@Override
@@ -117,11 +113,6 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private void notifyTrustStoreChanged() {
-		if (cacheInvalidationNotifier != null) {
-			cacheInvalidationNotifier.cacheInvalidated(CACHE_KEY);
-		}
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
@@ -133,14 +124,6 @@ public class TrustedSslCertificateRepositoryImpl implements TrustedSslCertificat
 
 	public void setCertificateDao(TrustedSslCertificateDao certificateDao) {
 		this.certificateDao = certificateDao;
-	}
-
-	public CacheInvalidationNotifier getCacheInvalidationNotifier() {
-		return cacheInvalidationNotifier;
-	}
-
-	public void setCacheInvalidationNotifier(CacheInvalidationNotifier cacheInvalidationNotifier) {
-		this.cacheInvalidationNotifier = cacheInvalidationNotifier;
 	}
 
 }

@@ -38,6 +38,11 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.pcs.protobuf.Cache.CacheServiceProxy;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheResponse;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionRequest;
 import org.tdmx.server.pcs.protobuf.ROSClient.CreateSessionResponse;
@@ -111,6 +116,11 @@ public class RelayControlServiceClientConnector
 	private Segment segment = null;
 
 	private PartitionControlServerService partitionServerService;
+
+	/**
+	 * Delegate for handling inbound Broadcast events.
+	 */
+	private CacheInvalidationListener cacheInvalidationListener;
 
 	/**
 	 * The underlying relay service.
@@ -231,6 +241,26 @@ public class RelayControlServiceClientConnector
 			BlockingService controlServiceProxy = RelaySessionManagerProxy.newReflectiveBlockingService(this);
 			clientFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
 
+			// we implement a cache invalidation endpoint for the PCS to call.
+			BlockingService cacheServiceProxy = CacheServiceProxy
+					.newReflectiveBlockingService(new CacheServiceProxy.BlockingInterface() {
+						@Override
+						public InvalidateCacheResponse invalidateCache(RpcController controller,
+								InvalidateCacheRequest request) throws ServiceException {
+							CacheInvalidationListener cil = cacheInvalidationListener;
+							if (cil != null) {
+								CacheInvalidationInstruction cii = CacheInvalidationInstruction
+										.newInstruction(request.getId(), request.getCacheName(), request.getKeyValue());
+								log.info("Handling inbound cache invalidation request " + cii);
+								cil.invalidateCache(cii);
+							}
+							InvalidateCacheResponse.Builder response = InvalidateCacheResponse.newBuilder();
+							return response.build();
+						}
+					});
+
+			clientFactory.getRpcServiceRegistry().registerService(cacheServiceProxy);
+
 			bootstrap = new Bootstrap();
 			EventLoopGroup workers = new NioEventLoopGroup(ioThreads, new NamedThreadFactory("PCS-client-workers"));
 
@@ -243,7 +273,7 @@ public class RelayControlServiceClientConnector
 			bootstrap.option(ChannelOption.SO_RCVBUF, ioBufferSize);
 
 			RpcClientConnectionWatchdog watchdog = new RpcClientConnectionWatchdog(clientFactory, bootstrap);
-			watchdog.setThreadName("SCS-PCS RpcClient Watchdog");
+			watchdog.setThreadName("ROS-PCS RpcClient Watchdog");
 			rpcEventNotifier.addEventListener(watchdog);
 			watchdog.start();
 
@@ -530,6 +560,14 @@ public class RelayControlServiceClientConnector
 
 	public void setRelayOutboundService(RelayOutboundService relayOutboundService) {
 		this.relayOutboundService = relayOutboundService;
+	}
+
+	public CacheInvalidationListener getCacheInvalidationListener() {
+		return cacheInvalidationListener;
+	}
+
+	public void setCacheInvalidationListener(CacheInvalidationListener cacheInvalidationListener) {
+		this.cacheInvalidationListener = cacheInvalidationListener;
 	}
 
 }

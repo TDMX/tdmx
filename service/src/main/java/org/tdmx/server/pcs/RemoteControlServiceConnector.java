@@ -38,9 +38,9 @@ import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
-import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.BroadcastMessage;
-import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.pcs.protobuf.Cache.CacheServiceProxy;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheResponse;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionResponse;
@@ -65,7 +65,6 @@ import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
@@ -91,7 +90,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  *
  */
 public class RemoteControlServiceConnector
-		implements Manageable, CacheInvalidationMessageListener, ControlServiceProxy.BlockingInterface {
+		implements Manageable, CacheServiceProxy.BlockingInterface, ControlServiceProxy.BlockingInterface {
 
 	// TODO LATER: use SSL context for protobuf communications
 
@@ -197,40 +196,19 @@ public class RemoteControlServiceConnector
 		RpcConnectionEventNotifier rpcEventNotifier = new RpcConnectionEventNotifier();
 		RpcConnectionEventListener listener = new RpcConnectionEventListener() {
 
-			final RpcCallback<Broadcast.BroadcastMessage> serverBroadcastCallback = new RpcCallback<Broadcast.BroadcastMessage>() {
-
-				@Override
-				public void run(Broadcast.BroadcastMessage parameter) {
-					handleBroadcast(parameter);
-				}
-
-			};
-
-			private void registerOobCallback(RpcClientChannel clientChannel) {
-				clientChannel.setOobMessageCallback(Broadcast.BroadcastMessage.getDefaultInstance(),
-						serverBroadcastCallback);
-			}
-
-			private void clearOobCallback(RpcClientChannel clientChannel) {
-				clientChannel.setOobMessageCallback(null, null);
-			}
-
 			@Override
 			public void connectionReestablished(RpcClientChannel clientChannel) {
 				log.info("connectionReestablished " + clientChannel);
-				registerOobCallback(clientChannel);
 			}
 
 			@Override
 			public void connectionOpened(RpcClientChannel clientChannel) {
 				log.info("connectionOpened " + clientChannel);
-				registerOobCallback(clientChannel);
 			}
 
 			@Override
 			public void connectionLost(RpcClientChannel clientChannel) {
 				log.info("connectionLost " + clientChannel);
-				clearOobCallback(clientChannel);
 
 				// we unregister the WS server's services from the control service
 				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) clientChannel
@@ -253,15 +231,17 @@ public class RemoteControlServiceConnector
 			@Override
 			public void connectionChanged(RpcClientChannel clientChannel) {
 				log.info("connectionChanged " + clientChannel);
-				registerOobCallback(clientChannel);
 			}
 		};
 		rpcEventNotifier.setEventListener(listener);
 		serverFactory.registerConnectionEventListener(rpcEventNotifier);
 
-		// we give the server our Service
+		// we give the server our 2 Services
 		BlockingService controlServiceProxy = ControlServiceProxy.newReflectiveBlockingService(this);
 		serverFactory.getRpcServiceRegistry().registerService(controlServiceProxy);
+
+		BlockingService cacheServiceProxy = CacheServiceProxy.newReflectiveBlockingService(this);
+		serverFactory.getRpcServiceRegistry().registerService(cacheServiceProxy);
 
 		// Configure the server.
 		ServerBootstrap bootstrap = new ServerBootstrap();
@@ -286,32 +266,6 @@ public class RemoteControlServiceConnector
 		bootstrap.bind();
 
 		log.info("Serving " + serverInfo);
-	}
-
-	@Override
-	public void handleBroadcast(CacheInvalidationMessage message) {
-		if (message == null) {
-			return;
-		}
-
-		log.info("Received cache invalidation[" + message.getId() + ":" + message.getCacheKey() + "]");
-		if (serverFactory != null) {
-			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
-				// we only broadcast events to the only PCC, which is a prerequisite service for all services except PCS
-				// itself.
-				if (null == channel.getAttribute(ReverseRpcServerSessionController.SSM)
-						&& null == channel.getAttribute(ReverseRpcRelayOutboundServiceController.ROS)) {
-					if (log.isDebugEnabled()) {
-						log.debug("Relaying message " + message.getId() + " to " + channel.getPeerInfo());
-					}
-					channel.sendOobMessage(message);
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Not broadcasting to ROS/WS connection " + channel.getPeerInfo());
-					}
-				}
-			}
-		}
 	}
 
 	@Override
@@ -442,6 +396,21 @@ public class RemoteControlServiceConnector
 	}
 
 	@Override
+	public InvalidateCacheResponse invalidateCache(RpcController controller, InvalidateCacheRequest request)
+			throws ServiceException {
+		log.info("Received cache invalidation[" + request.getId() + ":" + request.getCacheName() + "]"); // TODO #88
+																											// objectId
+		if (serverFactory != null) {
+			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
+				// we only broadcast events to the only PCC, which is a prerequisite service for all services except PCS
+				// itself.
+				// TODO #88: delegate to each client channel
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void stop() {
 		if (shutdownHandler != null) {
 			Future<Boolean> shutdownResult = shutdownHandler.shutdownAwaiting(shutdownTimeoutMs);
@@ -465,15 +434,6 @@ public class RemoteControlServiceConnector
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-
-	private void handleBroadcast(BroadcastMessage message) {
-		if (message.getCacheInvalidation() != null) {
-			handleBroadcast(message.getCacheInvalidation());
-		} else {
-			log.warn("Unknown broadcast message " + message);
-			// relay messages are sent OOB from WS to ROS directly.
-		}
-	}
 
 	private void assertPcsServerRegistered(Segment segment, String ipAddress, int port) {
 		PartitionControlServer pcs = partitionServerService.findByIpEndpoint(ipAddress, port);

@@ -14,12 +14,6 @@
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
 
-	<bean id="tdmx.server.DelegatingCacheInvalidationNotifier" class="org.tdmx.server.pcs.DelegatingCacheInvalidationNotifier" init-method="init">
-	<!-- replaced with spring lookup in init()
-		<property name="broadcastEventNotifier" ref="ws.ServerSessionManager"/>
-	 -->
-	</bean>
-
 	<bean id="tdmx.server.DnsResolverGroupCache" class="org.tdmx.server.runtime.DnsResolverGroupFactoryImpl">
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository"/>
 	</bean>
@@ -42,7 +36,7 @@
 		<property name="trustedCertificateService" ref="tdmx.lib.control.TrustedSslCertificateRepository"/>
 	</bean>
 
-	<bean id="tdmx.server.CacheInvalidationEventDelegater" class="org.tdmx.server.pcs.CacheInvalidationEventDelegater">
+	<bean id="tdmx.server.CacheInvalidationEventDelegater" class="org.tdmx.server.cache.CacheInvalidationEventDelegater">
 		<property name="sizeLimit" value="10"/>
 		<property name="cacheInvalidationListeners">
 			<list value-type="org.tdmx.server.pcs.CacheInvalidationListener">

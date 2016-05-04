@@ -16,21 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.service;
+package org.tdmx.server.cache;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.server.cache.CacheInvalidationInstruction;
-import org.tdmx.server.cache.CacheInvalidationListener;
 import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
-public class DatabasePartitionCacheImpl implements DatabasePartitionCache, CacheInvalidationListener {
+/**
+ * A cache invalidation instruction as a value type. Identity based soley on ID field.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class CacheInvalidationInstruction {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -39,35 +37,80 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionCacheImpl.class);
 
-	private DatabasePartitionService databasePartitionService;
+	private final String id;
 
-	// internal
-	private Map<String, DatabasePartition> idMap;
+	private final CacheName name;
+
+	private final String key;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	private CacheInvalidationInstruction(String id, CacheName cacheName, String key) {
+		this.id = id;
+		this.name = cacheName;
+		this.key = key;
+	}
+
+	public static CacheInvalidationInstruction clearCache(CacheName cache) {
+		return new CacheInvalidationInstruction(UUID.randomUUID().toString(), cache, null);
+	}
+
+	public static CacheInvalidationInstruction clearCacheKey(CacheName cache, String key) {
+		return new CacheInvalidationInstruction(UUID.randomUUID().toString(), cache, key);
+	}
+
+	public static CacheInvalidationInstruction newInstruction(String id, CacheName cache, String key) {
+		return new CacheInvalidationInstruction(id, cache, key);
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(CacheInvalidationInstruction message) {
-		if (CacheName.DatabasePartition == message.getName()) {
-			log.debug("Invalidating cache.");
-			idMap = null;
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("CacheInvalidation [");
+		builder.append(" id=").append(id);
+		builder.append(" ").append(name);
+		if (key != null) {
+			builder.append(" key=").append(key);
 		}
+		builder.append("]");
+		return builder.toString();
 	}
 
 	@Override
-	public DatabasePartition findByPartitionId(String partitionId) {
-		if (idMap == null) {
-			fetchDatabasePartitions();
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
 		}
-		return idMap.get(partitionId);
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof CacheInvalidationInstruction)) {
+			return false;
+		}
+		CacheInvalidationInstruction other = (CacheInvalidationInstruction) obj;
+		if (id == null) {
+			if (other.id != null) {
+				return false;
+			}
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,30 +121,20 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private synchronized void fetchDatabasePartitions() {
-		if (idMap == null) {
-			List<DatabasePartition> list = getDatabasePartitionService().findAll();
-
-			Map<String, DatabasePartition> localIdMap = new HashMap<>();
-
-			for (DatabasePartition partition : list) {
-				localIdMap.put(partition.getPartitionId(), partition);
-			}
-
-			idMap = Collections.unmodifiableMap(localIdMap);
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public DatabasePartitionService getDatabasePartitionService() {
-		return databasePartitionService;
+	public String getId() {
+		return id;
 	}
 
-	public void setDatabasePartitionService(DatabasePartitionService databasePartitionService) {
-		this.databasePartitionService = databasePartitionService;
+	public CacheName getName() {
+		return name;
+	}
+
+	public String getKey() {
+		return key;
 	}
 
 }

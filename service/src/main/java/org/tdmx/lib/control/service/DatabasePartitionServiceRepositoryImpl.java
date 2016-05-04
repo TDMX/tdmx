@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.control.dao.DatabasePartitionDao;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
-import org.tdmx.server.pcs.CacheInvalidationNotifier;
 
 /**
  * A transactional service managing the DatabasePartition information.
@@ -49,7 +48,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	private static final Logger log = LoggerFactory.getLogger(DatabasePartitionServiceRepositoryImpl.class);
 
 	private DatabasePartitionDao databasePartitionDao;
-	private CacheInvalidationNotifier cacheInvalidationNotifier;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -87,7 +85,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		} else {
 			getDatabasePartitionDao().persist(partition);
 		}
-		notifyPartitionsChanged();
 	}
 
 	@Override
@@ -99,7 +96,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 		} else {
 			log.warn("Unable to find DatabasePartition to delete with id " + partition.getId());
 		}
-		notifyPartitionsChanged();
 	}
 
 	@Override
@@ -134,12 +130,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void notifyPartitionsChanged() {
-		if (cacheInvalidationNotifier != null) {
-			cacheInvalidationNotifier.cacheInvalidated(CACHE_KEY);
-		}
-	}
-
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -150,14 +140,6 @@ public class DatabasePartitionServiceRepositoryImpl implements DatabasePartition
 
 	public void setDatabasePartitionDao(DatabasePartitionDao databasePartitionDao) {
 		this.databasePartitionDao = databasePartitionDao;
-	}
-
-	public CacheInvalidationNotifier getCacheInvalidationNotifier() {
-		return cacheInvalidationNotifier;
-	}
-
-	public void setCacheInvalidationNotifier(CacheInvalidationNotifier cacheInvalidationNotifier) {
-		this.cacheInvalidationNotifier = cacheInvalidationNotifier;
 	}
 
 }

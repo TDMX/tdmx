@@ -30,6 +30,8 @@ import org.tdmx.lib.control.domain.DnsResolverGroup;
  */
 public interface DnsResolverGroupFactory {
 
+	public static final String CACHE_KEY = "DnsResolverGroup";
+
 	public List<DnsResolverGroup> getDnsResolverGroups();
 
 }

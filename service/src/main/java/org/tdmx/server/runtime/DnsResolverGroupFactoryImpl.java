@@ -26,7 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.service.DnsResolverGroupService;
-import org.tdmx.server.pcs.CacheInvalidationListener;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
 public class DnsResolverGroupFactoryImpl implements DnsResolverGroupFactory, CacheInvalidationListener {
 
@@ -53,9 +55,9 @@ public class DnsResolverGroupFactoryImpl implements DnsResolverGroupFactory, Cac
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(String key) {
-		if (DnsResolverGroupService.CACHE_KEY.equals(key)) {
-			log.debug("Invalidating cache " + key);
+	public void invalidateCache(CacheInvalidationInstruction message) {
+		if (CacheName.DnsResolverGroup == message.getName()) {
+			log.debug("Invalidating cache.");
 			cache = null;
 		}
 	}

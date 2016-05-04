@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs;
+package org.tdmx.server.cache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,19 +24,21 @@ import java.util.List;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.cache.CacheInvalidationEventDelegater;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
 /**
  * @author peter.klauser
  * 
  */
+
 public class CacheInvalidationEventDelegaterTest {
 
-	private CacheInvalidationMessage createCacheInvalidationMessage(String id, String payload) {
-		CacheInvalidationMessage.Builder b = CacheInvalidationMessage.newBuilder();
-		b.setId(id);
-		b.setCacheKey(payload);
-		return b.build();
+	private CacheInvalidationInstruction createCacheInvalidationMessage(CacheName cacheName) {
+		CacheInvalidationInstruction i = CacheInvalidationInstruction.clearCache(cacheName);
+		return i;
 	}
 
 	@Test
@@ -48,10 +50,10 @@ public class CacheInvalidationEventDelegaterTest {
 		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 
-		sut.handleBroadcast(createCacheInvalidationMessage("1", "payload-1"));
+		sut.invalidateCache(createCacheInvalidationMessage(CacheName.DatabasePartition));
 
 		// verify
-		Mockito.verify(mockListener, Mockito.times(1)).invalidateCache((String) Matchers.any());
+		Mockito.verify(mockListener, Mockito.times(1)).invalidateCache((CacheInvalidationInstruction) Matchers.any());
 	}
 
 	@Test
@@ -61,13 +63,14 @@ public class CacheInvalidationEventDelegaterTest {
 		listeners.add(mockListener);
 
 		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
+		CacheInvalidationInstruction same = createCacheInvalidationMessage(CacheName.DatabasePartition);
 		sut.setCacheInvalidationListeners(listeners);
 		for (int i = 0; i < 10; i++) {
-			sut.handleBroadcast(createCacheInvalidationMessage("1", "payload-1"));
+			sut.invalidateCache(same);
 		}
 
 		// verify
-		Mockito.verify(mockListener, Mockito.times(1)).invalidateCache((String) Matchers.any());
+		Mockito.verify(mockListener, Mockito.times(1)).invalidateCache((CacheInvalidationInstruction) Matchers.any());
 	}
 
 	@Test
@@ -78,13 +81,16 @@ public class CacheInvalidationEventDelegaterTest {
 
 		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
+		CacheInvalidationInstruction original = createCacheInvalidationMessage(CacheName.DatabasePartition);
+		CacheInvalidationInstruction next = original;
 		for (int i = 0; i <= 10; i++) {
-			sut.handleBroadcast(createCacheInvalidationMessage("" + i, "" + i + "-payload"));
+			sut.invalidateCache(next);
+			next = createCacheInvalidationMessage(CacheName.DatabasePartition);
 		}
 		// the 10th brings it to overflow and kickout the first 0
-		sut.handleBroadcast(createCacheInvalidationMessage("0", "payload-0"));
+		sut.invalidateCache(original);
 		// verify
-		Mockito.verify(mockListener, Mockito.times(12)).invalidateCache((String) Matchers.any());
+		Mockito.verify(mockListener, Mockito.times(12)).invalidateCache((CacheInvalidationInstruction) Matchers.any());
 	}
 
 	@Test
@@ -96,10 +102,10 @@ public class CacheInvalidationEventDelegaterTest {
 		CacheInvalidationEventDelegater sut = new CacheInvalidationEventDelegater();
 		sut.setCacheInvalidationListeners(listeners);
 		for (int i = 0; i < 100; i++) {
-			sut.handleBroadcast(createCacheInvalidationMessage("" + i, "payload-" + i));
+			sut.invalidateCache(createCacheInvalidationMessage(CacheName.DatabasePartition));
 		}
 
 		// verify
-		Mockito.verify(mockListener, Mockito.times(100)).invalidateCache((String) Matchers.any());
+		Mockito.verify(mockListener, Mockito.times(100)).invalidateCache((CacheInvalidationInstruction) Matchers.any());
 	}
 }

@@ -11106,10 +11106,6 @@ public final class PCSServer {
 
       /**
        * <code>rpc notifyRelaySessionsIdle(.NotifyRelaySessionIdleRequest) returns (.NotifyRelaySessionIdleResponse);</code>
-       *
-       * <pre>
-       * PCS-&gt;ROS
-       * </pre>
        */
       public abstract void notifyRelaySessionsIdle(
           com.google.protobuf.RpcController controller,
@@ -11365,10 +11361,6 @@ public final class PCSServer {
 
     /**
      * <code>rpc notifyRelaySessionsIdle(.NotifyRelaySessionIdleRequest) returns (.NotifyRelaySessionIdleResponse);</code>
-     *
-     * <pre>
-     * PCS-&gt;ROS
-     * </pre>
      */
     public abstract void notifyRelaySessionsIdle(
         com.google.protobuf.RpcController controller,

@@ -28,6 +28,8 @@ import org.tdmx.lib.control.domain.DatabasePartition;
  */
 public interface DatabasePartitionCache {
 
+	public static final String CACHE_KEY = "DatabasePartition";
+
 	/**
 	 * Find the DatabasePartition by partitionId.
 	 * 

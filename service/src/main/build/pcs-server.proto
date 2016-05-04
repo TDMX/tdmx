@@ -145,7 +145,6 @@ service ControlServiceProxy {
     rpc assignRelaySession(AssignRelaySessionRequest) returns (AssignRelaySessionResponse);
     // ROS->PCS
     rpc registerRelayServer(RegisterRelayServerRequest) returns (RegisterRelayServerResponse);
-    // PCS->ROS
     rpc notifyRelaySessionsIdle(NotifyRelaySessionIdleRequest) returns (NotifyRelaySessionIdleResponse);
 }
 

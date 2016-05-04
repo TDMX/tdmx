@@ -16,29 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.pcs;
+package org.tdmx.server.cache;
 
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.tdmx.server.pcs.protobuf.Broadcast;
 
 /**
- * The DelegatingCacheInvalidationNotifier attempts to use one of the registered BroadcastEventNotifers it knows to
- * handle the cache invalidation event.
- * 
- * This delegation is necessary because there are 2 PCS clients within the application context ( one SCS client, one WS
- * client ), and we don't want to send the same cache invalidation event twice to the PCS which distributes the events
- * to all attached clients.
+ * Removes duplicate CacheInvalidationMessages and notifies the registered listeners of them. Duplicate removal is
+ * required because the PCS issues invalidation events to WS and ROS servers which could be running in the same VM and
+ * each having separate connections to the PCS.
  * 
  * @author Peter
  *
  */
-public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNotifier, ApplicationContextAware {
+public class CacheInvalidationEventDelegater implements CacheInvalidationListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -47,45 +43,51 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(DelegatingCacheInvalidationNotifier.class);
+	private static final Logger log = LoggerFactory.getLogger(CacheInvalidationEventDelegater.class);
 
-	// internal
-	private CacheInvalidationEventNotifier cacheInvalidationEventNotifier;
-	private ApplicationContext ctx;
+	private Map<String, CacheInvalidationInstruction> eventMap = new HashMap<>();
+	private LinkedList<CacheInvalidationInstruction> lruList = new LinkedList<>();
+
+	private int sizeLimit = 10;
+
+	private List<CacheInvalidationListener> cacheInvalidationListeners;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public DelegatingCacheInvalidationNotifier() {
+	public CacheInvalidationEventDelegater() {
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void init() {
-		if (ctx == null) {
-			throw new IllegalStateException("No beanFactory.");
+	@Override
+	public void invalidateCache(CacheInvalidationInstruction event) {
+		String key = event.getId();
+
+		synchronized (eventMap) {
+			if (eventMap.containsKey(key)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Filtering duplicate event " + key);
+				}
+				return;
+			}
+			if (lruList.size() >= getSizeLimit()) {
+				// remove the last added entry from the linked list ( front )
+				CacheInvalidationInstruction oldestEvent = lruList.removeFirst();
+				String oldestKey = oldestEvent.getId();
+				eventMap.remove(oldestKey);
+			}
+			eventMap.put(key, event);
+			lruList.addLast(event);
 		}
-		cacheInvalidationEventNotifier = ctx.getBean(CacheInvalidationEventNotifier.class);
-	}
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.ctx = applicationContext;
-	}
-
-	@Override
-	public void cacheInvalidated(String key) {
-		Broadcast.CacheInvalidationMessage.Builder cim = Broadcast.CacheInvalidationMessage.newBuilder();
-		cim.setCacheKey(key);
-		cim.setId(UUID.randomUUID().toString());
-
-		Broadcast.CacheInvalidationMessage msg = cim.build();
-
-		boolean broadcastOk = cacheInvalidationEventNotifier.broadcastEvent(msg);
-		if (!broadcastOk) {
-			log.warn("Unable to broadcast cache invalidation for " + key);
+		// notify all cache invalidation listeners
+		if (cacheInvalidationListeners != null) {
+			for (CacheInvalidationListener cil : cacheInvalidationListeners) {
+				cil.invalidateCache(event);
+			}
 		}
 	}
 
@@ -100,5 +102,21 @@ public class DelegatingCacheInvalidationNotifier implements CacheInvalidationNot
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public int getSizeLimit() {
+		return sizeLimit;
+	}
+
+	public void setSizeLimit(int sizeLimit) {
+		this.sizeLimit = sizeLimit;
+	}
+
+	public List<CacheInvalidationListener> getCacheInvalidationListeners() {
+		return cacheInvalidationListeners;
+	}
+
+	public void setCacheInvalidationListeners(List<CacheInvalidationListener> cacheInvalidationListeners) {
+		this.cacheInvalidationListeners = cacheInvalidationListeners;
+	}
 
 }

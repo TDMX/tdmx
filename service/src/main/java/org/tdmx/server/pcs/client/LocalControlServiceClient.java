@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.server.pcs.CacheInvalidationEventNotifier;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
-import org.tdmx.server.pcs.protobuf.Broadcast;
-import org.tdmx.server.pcs.protobuf.Broadcast.CacheInvalidationMessage;
+import org.tdmx.server.pcs.protobuf.Cache.CacheServiceProxy;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
@@ -50,7 +50,7 @@ import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
 public class LocalControlServiceClient
-		implements SessionControlService, RelayControlService, CacheInvalidationEventNotifier {
+		implements SessionControlService, RelayControlService, CacheInvalidationListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -78,17 +78,27 @@ public class LocalControlServiceClient
 	// -------------------------------------------------------------------------
 
 	@Override
-	public boolean broadcastEvent(CacheInvalidationMessage msg) {
+	public void invalidateCache(CacheInvalidationInstruction instruction) {
 		if (!rpcClient.isClosed()) {
-			Broadcast.BroadcastMessage.Builder eventBuilder = Broadcast.BroadcastMessage.newBuilder();
-			eventBuilder.setCacheInvalidation(msg);
 
-			Broadcast.BroadcastMessage event = eventBuilder.build();
+			CacheServiceProxy.BlockingInterface blockingService = CacheServiceProxy.newBlockingStub(rpcClient);
+			final ClientRpcController controller = rpcClient.newRpcController();
+			controller.setTimeoutMs(0);
 
-			rpcClient.sendOobMessage(event);
-			return true;
+			org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest.Builder req = org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest
+					.newBuilder();
+			req.setId(instruction.getId());
+			req.setCacheName(instruction.getName());
+			if (instruction.getKey() != null) {
+				req.setKeyValue(instruction.getKey());
+			}
+			try {
+				blockingService.invalidateCache(controller, req.build());
+				log.info("Cache invalidated " + instruction);
+			} catch (ServiceException e) {
+				log.warn("invalidateCache call failed.", e);
+			}
 		}
-		return false;
 	}
 
 	@Override

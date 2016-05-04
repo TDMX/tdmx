@@ -42,13 +42,17 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.lib.control.domain.TrustStatus;
 import org.tdmx.lib.control.domain.TrustedSslCertificate;
 import org.tdmx.lib.control.service.TrustedSslCertificateService;
-import org.tdmx.server.pcs.CacheInvalidationListener;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
 public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, CacheInvalidationListener {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
+
+	public static final String CACHE_KEY = "TrustStore";
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -70,9 +74,9 @@ public class TrustedSslCertificateTrustManagerImpl implements X509TrustManager, 
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(String key) {
-		if (TrustedSslCertificateService.CACHE_KEY.equals(key)) {
-			log.debug("Invalidating cache " + key);
+	public void invalidateCache(CacheInvalidationInstruction message) {
+		if (CacheName.TrustStore == message.getName()) {
+			log.debug("Invalidating cache.");
 			loadCerts();
 		}
 	}
