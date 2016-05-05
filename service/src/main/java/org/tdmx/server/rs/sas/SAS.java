@@ -37,11 +37,24 @@ import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
+import org.tdmx.server.rs.sas.resource.SegmentCacheInvalidationStatusValue;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
 @Path("/sas")
 @Produces({ "application/json" })
 public interface SAS {
+
+	/*
+	 * RESTFUL service for cache invalidation
+	 */
+	@GET
+	@Path("/cache")
+	List<String> getCacheNames();
+
+	@POST
+	@Path("/cache/{cache}/invalidate")
+	List<SegmentCacheInvalidationStatusValue> invalidateCache(@QueryParam("cache") String cache,
+			@QueryParam("segment") String segment, @QueryParam("key") String key);
 
 	// TODO maxvalue (admin only)
 

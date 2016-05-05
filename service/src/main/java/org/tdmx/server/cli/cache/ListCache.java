@@ -16,18 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.server.cli.cache;
 
-import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.List;
 
-import org.springframework.beans.factory.access.BeanFactoryLocator;
-import org.springframework.beans.factory.access.BeanFactoryReference;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.tdmx.core.cli.CliParser;
-import org.tdmx.core.cli.InputStreamTokenizer;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.server.cli.cmd.AbstractCliCommand;
 
-public class ServerAdminCLI {
+@Cli(name = "cache:list", description = "lists all caches")
+public class ListCache extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,24 +34,6 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static ApplicationContext context;
-
-	private ServerAdminCLI() {
-	}
-
-	public static void main(String[] args) {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("adminContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
-
-		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
-
-		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
-				: new InputStreamTokenizer(new InputStreamReader(System.in));
-
-		clirunner.process(tokenizer, System.out, System.err);
-
-	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -62,6 +42,14 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void run(PrintStream out) {
+		List<String> segments = getSas().getCacheNames();
+		for (String seg : segments) {
+			out.println(seg);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

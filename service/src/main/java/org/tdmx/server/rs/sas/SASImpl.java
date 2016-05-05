@@ -20,6 +20,7 @@ package org.tdmx.server.rs.sas;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.BadRequestException;
@@ -31,6 +32,7 @@ import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -59,15 +61,20 @@ import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.TrustedSslCertificateService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
+import org.tdmx.server.cache.CacheInvalidationInstruction;
+import org.tdmx.server.cache.CacheInvalidationNotifier;
+import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
+import org.tdmx.server.rs.sas.resource.CacheInvalidationInstructionValue;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
+import org.tdmx.server.rs.sas.resource.SegmentCacheInvalidationStatusValue;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
@@ -126,6 +133,7 @@ public class SASImpl implements SAS {
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
 	private JobFactory jobFactory;
 	private JobScheduler jobScheduler;
+	private CacheInvalidationNotifier cacheInvalidater;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -134,6 +142,50 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public List<String> getCacheNames() {
+		List<String> allCacheNames = new ArrayList<>();
+		for (CacheName n : CacheName.values()) {
+			allCacheNames.add(EnumUtils.mapToString(n));
+		}
+		Collections.sort(allCacheNames);
+		return allCacheNames;
+	}
+
+	@Override
+	public List<SegmentCacheInvalidationStatusValue> invalidateCache(String cache, String segment, String key) {
+		// only cache name is mandatory.
+		validatePresent(CacheInvalidationInstructionValue.FIELD.CACHE, cache);
+		validateEnum(CacheInvalidationInstructionValue.FIELD.CACHE, CacheName.class, cache);
+		// missing segment means ALL segments
+		List<Segment> segments = new ArrayList<>();
+		if (StringUtils.hasText(segment)) {
+			// validate that the segment exists.
+			Segment s = segmentService.findBySegment(segment);
+			validateExists(SegmentResource.FIELD.SEGMENT, s);
+			segments.add(s);
+		} else {
+			segments = segmentService.findAll();
+		}
+		// key is only applicable for specific caches
+		List<SegmentCacheInvalidationStatusValue> result = new ArrayList<>();
+
+		CacheInvalidationInstructionValue v = new CacheInvalidationInstructionValue();
+		v.setId(CacheInvalidationInstruction.newID());
+		v.setCache(cache);
+		v.setKey(key);
+
+		CacheInvalidationInstruction inst = CacheInvalidationInstructionValue.mapTo(v);
+
+		for (Segment s : segments) {
+			ProcessingState ps = cacheInvalidater.invalidateCache(s, inst);
+			SegmentCacheInvalidationStatusValue r = SegmentCacheInvalidationStatusValue.mapFrom(s, inst, ps);
+			result.add(r);
+		}
+
+		return result;
+	}
 
 	@Override
 	public DnsResolverGroupResource createDnsResolverGroup(DnsResolverGroupResource dnsResolverGroup) {
@@ -1184,6 +1236,14 @@ public class SASImpl implements SAS {
 
 	public void setJobScheduler(JobScheduler jobScheduler) {
 		this.jobScheduler = jobScheduler;
+	}
+
+	public CacheInvalidationNotifier getCacheInvalidater() {
+		return cacheInvalidater;
+	}
+
+	public void setCacheInvalidater(CacheInvalidationNotifier cacheInvalidater) {
+		this.cacheInvalidater = cacheInvalidater;
 	}
 
 }

@@ -86,6 +86,16 @@ public class ProcessingState implements Serializable {
 		return e;
 	}
 
+	public static ProcessingState newProcessingState(ProcessingStatus status, Date timestamp, int errorCode,
+			String errorMsg) {
+		ProcessingState e = new ProcessingState();
+		e.setStatus(status);
+		e.setTimestamp(timestamp);
+		e.setErrorCode(errorCode);
+		e.setErrorMessage(errorMsg);
+		return e;
+	}
+
 	public static ProcessingState none() {
 		return new ProcessingState(ProcessingStatus.NONE);
 	}

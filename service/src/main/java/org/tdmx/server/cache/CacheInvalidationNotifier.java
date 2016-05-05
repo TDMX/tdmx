@@ -18,19 +18,24 @@
  */
 package org.tdmx.server.cache;
 
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.control.domain.Segment;
+
 /**
- * A Listener for distributed CacheInvalidationMessage messages.
+ * A notifier for distributed cache invalidation.
  * 
  * @author Peter
  *
  */
-public interface CacheInvalidationListener {
+public interface CacheInvalidationNotifier {
 
 	/**
-	 * handle CacheInvalidationMessage event and passes on to CacheInvalidationListeners. Filter duplicate events.
+	 * Notify a PCS server of the segment of a cache invalidation.
 	 * 
+	 * @param segment
 	 * @param instruction
+	 * @return the processing result
 	 */
-	public void invalidateCache(CacheInvalidationInstruction instruction);
+	public ProcessingState invalidateCache(Segment segment, CacheInvalidationInstruction instruction);
 
 }

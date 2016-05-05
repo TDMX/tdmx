@@ -54,12 +54,8 @@ public class CacheInvalidationInstruction {
 		this.key = key;
 	}
 
-	public static CacheInvalidationInstruction clearCache(CacheName cache) {
-		return new CacheInvalidationInstruction(UUID.randomUUID().toString(), cache, null);
-	}
-
-	public static CacheInvalidationInstruction clearCacheKey(CacheName cache, String key) {
-		return new CacheInvalidationInstruction(UUID.randomUUID().toString(), cache, key);
+	public static String newID() {
+		return UUID.randomUUID().toString();
 	}
 
 	public static CacheInvalidationInstruction newInstruction(String id, CacheName cache, String key) {

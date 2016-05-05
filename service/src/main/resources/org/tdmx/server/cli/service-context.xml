@@ -17,6 +17,8 @@
 	<bean id="tdmx.server.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
 		<constructor-arg>
 			<array>
+				<value>org.tdmx.server.cli.cache.ListCache</value>
+				
 				<value>org.tdmx.server.cli.dns.CreateDnsResolverGroup</value>
 				<value>org.tdmx.server.cli.dns.ModifyDnsResolverGroup</value>
 				<value>org.tdmx.server.cli.dns.DeleteDnsResolverGroup</value>
@@ -69,6 +71,8 @@
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="cache:list" value="tdmx.server.cli.cmd.ListCache"/>
+				
 				<entry key="ssltruststore:load" value="tdmx.server.cli.cmd.LoadTruststoreSSLCertificate"/>
 				<entry key="sslcertificate:load" value="tdmx.server.cli.cmd.LoadSSLCertificate"/>
 				<entry key="sslcertificate:modify" value="tdmx.server.cli.cmd.ModifySSLCertificate"/>
@@ -130,6 +134,9 @@
 		<property name="sas" ref="rs.SAS"/>
 	</bean>
 
+	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	
 	<bean id="tdmx.server.cli.cmd.LoadSSLCertificate" class="org.tdmx.server.cli.ssl.LoadSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.LoadTruststoreSSLCertificate" class="org.tdmx.server.cli.ssl.LoadTruststoreSSLCertificate" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

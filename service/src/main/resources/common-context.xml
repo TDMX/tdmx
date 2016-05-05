@@ -62,4 +62,7 @@
 	<import resource="classpath:/org/tdmx/server/ros/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ros/container-context.xml"/>
 
+	<!-- CACHE NOTIFICATION CONFIG -->
+	<import resource="classpath:/org/tdmx/server/cache/cache-context.xml"/>
+	
 </beans>

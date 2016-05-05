@@ -18,23 +18,23 @@
  */
 package org.tdmx.server.cache;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.server.runtime.Manageable;
+import org.tdmx.server.ws.ErrorCode;
 
 /**
- * Removes duplicate CacheInvalidationInstruction and notifies the registered listeners of them. Duplicate removal is
- * required because the PCS issues invalidation events to WS and ROS servers which could be running in the same VM and
- * each having separate connections to the PCS.
+ * Notifies each segment's PCS of a cache invalidation.
  * 
  * @author Peter
  *
  */
-public class CacheInvalidationEventDelegater implements CacheInvalidationListener {
+public class CacheInvalidationNotifierImpl implements CacheInvalidationNotifier {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -43,19 +43,16 @@ public class CacheInvalidationEventDelegater implements CacheInvalidationListene
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(CacheInvalidationEventDelegater.class);
+	private static final Logger log = LoggerFactory.getLogger(CacheInvalidationNotifierImpl.class);
 
-	private Map<String, CacheInvalidationInstruction> eventMap = new HashMap<>();
-	private LinkedList<CacheInvalidationInstruction> lruList = new LinkedList<>();
+	private Manageable pcsClient;
 
-	private int sizeLimit = 10;
-
-	private List<CacheInvalidationListener> cacheInvalidationListeners;
+	private CacheInvalidationListener pcsInformer;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public CacheInvalidationEventDelegater() {
+	public CacheInvalidationNotifierImpl() {
 	}
 
 	// -------------------------------------------------------------------------
@@ -63,32 +60,19 @@ public class CacheInvalidationEventDelegater implements CacheInvalidationListene
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(CacheInvalidationInstruction event) {
-		String key = event.getId();
+	public ProcessingState invalidateCache(Segment segment, CacheInvalidationInstruction event) {
 
-		synchronized (eventMap) {
-			if (eventMap.containsKey(key)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Filtering duplicate event " + key);
-				}
-				return;
-			}
-			if (lruList.size() >= getSizeLimit()) {
-				// remove the last added entry from the linked list ( front )
-				CacheInvalidationInstruction oldestEvent = lruList.removeFirst();
-				String oldestKey = oldestEvent.getId();
-				eventMap.remove(oldestKey);
-			}
-			eventMap.put(key, event);
-			lruList.addLast(event);
+		try {
+			informPCS(segment, event);
+		} catch (Exception e) {
+			log.warn("Unable to invalidate cache " + event + " on segment " + segment.getSegmentName(), e);
+			String errorInfo = StringUtils.getExceptionSummary(e);
+			ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
+					ErrorCode.CacheInvalidationFailed.getErrorDescription(event.getId(), event.getName(),
+							event.getKey(), errorInfo));
+			return error;
 		}
-
-		// notify all cache invalidation listeners
-		if (cacheInvalidationListeners != null) {
-			for (CacheInvalidationListener cil : cacheInvalidationListeners) {
-				cil.invalidateCache(event);
-			}
-		}
+		return ProcessingState.none();
 	}
 
 	// -------------------------------------------------------------------------
@@ -99,24 +83,37 @@ public class CacheInvalidationEventDelegater implements CacheInvalidationListene
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private synchronized void informPCS(Segment s, CacheInvalidationInstruction event) {
+		log.info("Notifying segment " + s.getSegmentName() + " of " + event);
+
+		try {
+			// connect the PCC to the segment
+			pcsClient.start(s, Collections.emptyList());
+
+			pcsInformer.invalidateCache(event);
+		} finally {
+			pcsClient.stop();
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public int getSizeLimit() {
-		return sizeLimit;
+	public Manageable getPcsClient() {
+		return pcsClient;
 	}
 
-	public void setSizeLimit(int sizeLimit) {
-		this.sizeLimit = sizeLimit;
+	public void setPcsClient(Manageable pcsClient) {
+		this.pcsClient = pcsClient;
 	}
 
-	public List<CacheInvalidationListener> getCacheInvalidationListeners() {
-		return cacheInvalidationListeners;
+	public CacheInvalidationListener getPcsInformer() {
+		return pcsInformer;
 	}
 
-	public void setCacheInvalidationListeners(List<CacheInvalidationListener> cacheInvalidationListeners) {
-		this.cacheInvalidationListeners = cacheInvalidationListeners;
+	public void setPcsInformer(CacheInvalidationListener pcsInformer) {
+		this.pcsInformer = pcsInformer;
 	}
 
 }

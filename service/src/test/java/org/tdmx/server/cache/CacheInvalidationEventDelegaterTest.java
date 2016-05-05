@@ -24,9 +24,6 @@ import java.util.List;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.tdmx.server.cache.CacheInvalidationEventDelegater;
-import org.tdmx.server.cache.CacheInvalidationInstruction;
-import org.tdmx.server.cache.CacheInvalidationListener;
 import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
 /**
@@ -37,7 +34,8 @@ import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 public class CacheInvalidationEventDelegaterTest {
 
 	private CacheInvalidationInstruction createCacheInvalidationMessage(CacheName cacheName) {
-		CacheInvalidationInstruction i = CacheInvalidationInstruction.clearCache(cacheName);
+		CacheInvalidationInstruction i = CacheInvalidationInstruction
+				.newInstruction(CacheInvalidationInstruction.newID(), cacheName, null);
 		return i;
 	}
 
