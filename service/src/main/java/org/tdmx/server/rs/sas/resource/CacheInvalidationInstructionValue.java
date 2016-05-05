@@ -53,7 +53,8 @@ public class CacheInvalidationInstructionValue {
 	private String cache;
 	private String key;
 
-	public String getCliRepresentation() {
+	@Override
+	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("CacheInvalidationInstruction");
 		buf.append("; ").append(id);

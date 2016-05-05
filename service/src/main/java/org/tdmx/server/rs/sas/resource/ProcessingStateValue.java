@@ -57,7 +57,8 @@ public class ProcessingStateValue {
 	private Integer errorCode;
 	private String errorMessage;
 
-	public String getCliRepresentation() {
+	@Override
+	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("ProcessingState");
 		buf.append("; ").append(status);

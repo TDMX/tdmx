@@ -16,6 +16,7 @@
 	<!-- JAX-RS server configuration goes here! -->
 
 	<bean id="rs.SAS" class="org.tdmx.server.rs.sas.SASImpl" >
+		<property name="cacheInvalidater" ref="tdmx.server.cache.cacheInvalidationNotifier"/>
 		<property name="dnsResolverGroupService" ref="tdmx.lib.control.DnsResolverGroupRepository" />
 		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository" />
 		<property name="sslCertificateService" ref="tdmx.lib.control.TrustedSslCertificateRepository" />
