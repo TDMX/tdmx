@@ -24,6 +24,9 @@
 	<bean id="tos.client.TransferObjectService" class="org.mockito.Mockito" factory-method="mock"> 
 	    <constructor-arg value="org.tdmx.server.tos.client.TransferClientService" /> 
 	</bean>
+	<bean id="tdmx.server.cache.cacheInvalidationNotifier" class="org.mockito.Mockito" factory-method="mock"> 
+	    <constructor-arg value="org.tdmx.server.cache.CacheInvalidationNotifier" /> 
+	</bean>
 
 	<!-- CONFIGURATION -->
 	<import resource="classpath:/org/tdmx/core/system/env/test-config-context.xml"/>

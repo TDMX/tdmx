@@ -26,6 +26,9 @@
 	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/job/container-context.xml"/>
 
+	<!-- CACHE NOTIFICATION CONFIG -->
+	<import resource="classpath:/org/tdmx/server/cache/cache-context.xml"/>
+
 	<!-- SERVER -->
 	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
@@ -62,7 +65,5 @@
 	<import resource="classpath:/org/tdmx/server/ros/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/ros/container-context.xml"/>
 
-	<!-- CACHE NOTIFICATION CONFIG -->
-	<import resource="classpath:/org/tdmx/server/cache/cache-context.xml"/>
 	
 </beans>
