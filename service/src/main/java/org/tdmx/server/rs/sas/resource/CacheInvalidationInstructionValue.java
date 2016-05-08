@@ -23,10 +23,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.server.cache.CacheInvalidationInstruction;
 import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 
+@CliRepresentation(name = "CacheInvalidationInstruction")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "cacheInvalidationInstruction")
 @XmlType(name = "CacheInvalidationInstruction")
@@ -49,8 +52,11 @@ public class CacheInvalidationInstructionValue {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private String id;
+	@CliAttribute(order = 1)
 	private String cache;
+	@CliAttribute(order = 2)
 	private String key;
 
 	@Override

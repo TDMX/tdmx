@@ -132,8 +132,12 @@
 		<property name="cliRunner" ref="tdmx.server.cli.ServerCliRunner"/>
 	</bean>
 
+	<bean id="tdmx.server.cli.Printer" class="org.tdmx.core.cli.display.ObjectPrettyPrinter">
+	</bean>
+	
 	<bean id="tdmx.server.cli.cmd.AbstractCommand" class="org.tdmx.server.cli.cmd.AbstractCliCommand" abstract="true">
 		<property name="sas" ref="rs.SAS"/>
+		<property name="printer" ref="tdmx.server.cli.Printer"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

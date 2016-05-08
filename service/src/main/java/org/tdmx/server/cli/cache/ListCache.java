@@ -47,7 +47,7 @@ public class ListCache extends AbstractCliCommand {
 	public void run(PrintStream out) {
 		List<String> segments = getSas().getCacheNames();
 		for (String seg : segments) {
-			out.println(seg);
+			getPrinter().output(out, seg);
 		}
 	}
 

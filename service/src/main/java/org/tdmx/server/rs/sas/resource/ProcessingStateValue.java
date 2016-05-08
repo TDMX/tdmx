@@ -25,10 +25,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.common.domain.ProcessingStatus;
 
+@CliRepresentation(name = "ProcessingState")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "ps")
 @XmlType(name = "ProcessingState")
@@ -52,9 +55,13 @@ public class ProcessingStateValue {
 		}
 	}
 
+	@CliAttribute(order = 0)
 	private String status;
+	@CliAttribute(order = 3, verbose = true)
 	private Date timestamp;
+	@CliAttribute(order = 1)
 	private Integer errorCode;
+	@CliAttribute(order = 2)
 	private String errorMessage;
 
 	@Override

@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.cli.cmd;
 
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.server.rs.sas.SAS;
 
@@ -34,6 +35,8 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	protected static final int SUCCESS = 200;
 
 	private SAS sas;
+
+	private CliPrinter printer;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,6 +64,14 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 
 	public void setSas(SAS sas) {
 		this.sas = sas;
+	}
+
+	public CliPrinter getPrinter() {
+		return printer;
+	}
+
+	public void setPrinter(CliPrinter printer) {
+		this.printer = printer;
 	}
 
 }

@@ -23,10 +23,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.cache.CacheInvalidationInstruction;
 
+@CliRepresentation(name = "SegmentCacheInvalidationStatus")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "cacheInvalidationStatus")
 @XmlType(name = "SegmentCacheInvalidationStatus")
@@ -49,18 +52,12 @@ public class SegmentCacheInvalidationStatusValue {
 		}
 	}
 
+	@CliAttribute(order = 0)
 	private SegmentReference segmentRef;
+	@CliAttribute(order = 1, verbose = true)
 	private CacheInvalidationInstructionValue instruction;
+	@CliAttribute(order = 2)
 	private ProcessingStateValue ps;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("SegmentCacheInvalidationStatus");
-		buf.append("; ").append(segmentRef);
-		buf.append("; ").append(instruction);
-		buf.append("; ").append(ps);
-		return buf.toString();
-	}
 
 	public static SegmentCacheInvalidationStatusValue mapFrom(Segment otherSeg,
 			CacheInvalidationInstruction otherInstruction, ProcessingState otherPS) {

@@ -55,7 +55,7 @@ public class InvalidateCache extends AbstractCliCommand {
 	public void run(PrintStream out) {
 		List<SegmentCacheInvalidationStatusValue> result = getSas().invalidateCache(cache, segment, null);
 		for (SegmentCacheInvalidationStatusValue r : result) {
-			out.println(r.getCliRepresentation());
+			getPrinter().output(out, r);
 		}
 	}
 

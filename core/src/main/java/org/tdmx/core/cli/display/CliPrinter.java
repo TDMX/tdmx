@@ -28,6 +28,6 @@ import java.io.PrintStream;
  */
 public interface CliPrinter {
 
-	public void output(PrintStream out, Object object, boolean verbose);
+	public void output(PrintStream out, Object object);
 
 }

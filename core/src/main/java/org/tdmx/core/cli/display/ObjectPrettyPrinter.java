@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.display.annotation.CliAttribute;
 import org.tdmx.core.cli.display.annotation.CliRepresentation;
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
  * Pretty-prints an instance of an object to the output.
@@ -59,8 +60,9 @@ public class ObjectPrettyPrinter implements CliPrinter {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void output(PrintStream out, Object object, boolean verbose) {
-		outputObject(out, object, 0, verbose);
+	public void output(PrintStream out, Object object) {
+		// TODO #105: verbose as thread local setting
+		outputObject(out, object, 0, true);
 	}
 
 	// -------------------------------------------------------------------------
@@ -71,14 +73,19 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		// TODO #105
 		CliRepresentation rep = getRepresentation(object);
 		if (rep != null) {
+			// specialized printing for annotated classes
+			out.println(getName(rep, object) + " {");
+
 			List<StringBuffer> lines = lineRepresentation(rep, object, indentation, verbose);
 			for (StringBuffer l : lines) {
 				out.println(l.toString());
 			}
-		} else {
-			log.debug("Not displaying " + object);
-		}
 
+			out.print(getIndentation(indentation));
+			out.println("}");
+		} else {
+			out.println(object);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -89,39 +96,37 @@ public class ObjectPrettyPrinter implements CliPrinter {
 			boolean verbose) {
 		List<StringBuffer> lines = new ArrayList<>();
 
-		// header
-		String name = rep.name();
-		StringBuffer line = getIndentation(indentation);
-		line.append(name).append(" ").append("{");
-		lines.add(line);
-
 		int childIndentation = indentation + 4;
-		for (CliAttributeHolder h : getAttributes(object)) {
-			// TODO #88 : skip if verbose and not verbose
+		for (CliAttributeHolder h : getAttributes(object, verbose)) {
 			CliRepresentation attrRep = getRepresentation(h.instanceValue);
 			if (attrRep != null) {
 				StringBuffer attributeHeaderLine = getIndentation(childIndentation);
-				attributeHeaderLine.append(h.annotation.name()).append(" : ");
+				attributeHeaderLine.append(h.attrName);
+				for (int i = 0; i < h.padding; i++) {
+					attributeHeaderLine.append(" ");
+				}
+				attributeHeaderLine.append(" : ").append(getName(attrRep, h.instanceValue)).append(" {");
+				lines.add(attributeHeaderLine);
+
 				List<StringBuffer> childLines = lineRepresentation(attrRep, h.instanceValue, childIndentation, verbose);
 				for (StringBuffer childLine : childLines) {
 					lines.add(childLine);
 				}
+
 				StringBuffer attributeFooterLine = getIndentation(childIndentation);
 				attributeFooterLine.append("}");
 				lines.add(attributeFooterLine);
 
 			} else {
 				StringBuffer attributeLine = getIndentation(childIndentation);
-				attributeLine.append(h.annotation.name()).append(" : ").append(h.instanceValue.toString());
+				attributeLine.append(h.attrName);
+				for (int i = 0; i < h.padding; i++) {
+					attributeLine.append(" ");
+				}
+				attributeLine.append(" : ").append(h.instanceValue.toString());
 				lines.add(attributeLine);
 			}
-
 		}
-
-		// footer
-		line = getIndentation(indentation);
-		line.append("}");
-		lines.add(line);
 		return lines;
 	}
 
@@ -133,9 +138,19 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		return buf;
 	}
 
+	private String getName(CliRepresentation rep, Object object) {
+		if (!StringUtils.hasText(rep.name())) {
+			return object.getClass().getSimpleName();
+		} else {
+			return rep.name();
+		}
+	}
+
 	private static class CliAttributeHolder {
+		String attrName;
 		CliAttribute annotation;
 		Object instanceValue;
+		int padding = 0;
 	}
 
 	private CliRepresentation getRepresentation(Object object) {
@@ -151,8 +166,10 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		return cliRepresentations[0];
 	}
 
-	private CliAttributeHolder[] getAttributes(Object object) {
+	private CliAttributeHolder[] getAttributes(Object object, boolean verbose) {
 		List<CliAttributeHolder> gatheredAttributes = new ArrayList<>();
+
+		int longestName = 0;
 
 		Class<?> clazz = object.getClass();
 		Field[] fields = clazz.getDeclaredFields();
@@ -168,6 +185,11 @@ public class ObjectPrettyPrinter implements CliPrinter {
 
 			CliAttributeHolder h = new CliAttributeHolder();
 			h.annotation = cliAttributes[0];
+			if (StringUtils.hasText(h.annotation.name())) {
+				h.attrName = h.annotation.name();
+			} else {
+				h.attrName = f.getName();
+			}
 			// get instance value via reflection
 			try {
 				f.setAccessible(true);
@@ -179,8 +201,19 @@ public class ObjectPrettyPrinter implements CliPrinter {
 			}
 			// we only want to print something if it's there.
 			if (h.instanceValue != null) {
-				gatheredAttributes.add(h);
+				// we print everything when verbose, otherwise only if the annotation is not verbose
+				if (verbose || !h.annotation.verbose()) {
+					// we keep track of longest name so that we can adjust the padding
+					if (h.attrName.length() > longestName) {
+						longestName = h.attrName.length();
+					}
+					gatheredAttributes.add(h);
+				}
 			}
+		}
+		// adjust the padding to the longest displayed attribute
+		for (CliAttributeHolder h : gatheredAttributes) {
+			h.padding = longestName - h.attrName.length();
 		}
 
 		// sort according to the CliAttribute order annotation.

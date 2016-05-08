@@ -33,9 +33,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CliAttribute {
 	/**
-	 * @return Attribute name.
+	 * @return Attribute name. Default is the field's name.
 	 */
-	String name();
+	String name() default "";
 
 	/**
 	 * 

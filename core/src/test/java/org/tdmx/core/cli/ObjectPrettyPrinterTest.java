@@ -45,21 +45,62 @@ public class ObjectPrettyPrinterTest {
 	}
 
 	@Test
-	public void testPrintVerbose() {
+	public void testPrint_SingleObject() {
 		MyObject o = new MyObject();
-		o.verboseField0 = "v0";
-		o.nonVerboseField1 = "nv1";
+		o.verboseStringField0 = "v0";
+		o.nonVerboseStringField1 = "nv1";
 
-		sut.output(System.out, o, true);
+		sut.output(System.out, o);
+	}
+
+	@Test
+	public void testPrint_MultiObject() {
+		MyObject o1 = new MyObject();
+		o1.verboseStringField0 = "o1_v0";
+		o1.nonVerboseStringField1 = "o1_nv1";
+		o1.nonVerboseStringField4 = "o1_nv4";
+
+		MyObject o2 = new MyObject();
+		o2.verboseStringField0 = "o2_v0";
+		o2.nonVerboseStringField1 = "o2_nv1";
+		o2.nonVerboseStringField4 = "o2_nv4";
+
+		o1.verboseField2 = o2;
+		o1.nonVerboseField3 = o2;
+
+		sut.output(System.out, o1);
+	}
+
+	@Test
+	public void testPrint_UndeclaredObject() {
+		MyUndeclaredObject o1 = new MyUndeclaredObject();
+		o1.stringField0 = "o1_nv0";
+
+		sut.output(System.out, o1);
+	}
+
+	@CliRepresentation()
+	private static class MyUndeclaredObject {
+		@CliAttribute(order = 0)
+		private String stringField0;
 	}
 
 	@CliRepresentation(name = "myrep")
 	private static class MyObject {
 
-		@CliAttribute(name = "-verboseField0", verbose = true, order = 0)
-		private String verboseField0;
+		@CliAttribute(name = "-verboseField0", verbose = true, order = 1)
+		private String verboseStringField0;
 
-		@CliAttribute(name = "-nonVerboseField1", verbose = false, order = 1)
-		private String nonVerboseField1;
+		@CliAttribute(name = "-nonVerboseField1", verbose = false, order = 0)
+		private String nonVerboseStringField1;
+
+		@CliAttribute(name = "-verboseField2", verbose = true, order = 2)
+		private MyObject verboseField2;
+
+		@CliAttribute(name = "-nonVerboseField3", verbose = false, order = 3)
+		private MyObject nonVerboseField3;
+
+		@CliAttribute(verbose = false, order = 4)
+		private String nonVerboseStringField4;
 	}
 }

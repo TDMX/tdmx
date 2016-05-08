@@ -33,8 +33,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CliRepresentation {
 	/**
-	 * @return Name of object type to display.
+	 * @return Name of object type to display. Default is the class' name.
 	 */
-	String name();
+	String name() default "";
 
 }
