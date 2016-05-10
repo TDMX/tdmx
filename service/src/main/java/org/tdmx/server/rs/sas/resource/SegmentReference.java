@@ -23,11 +23,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.tdmx.core.cli.display.annotation.CliAttribute;
-import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.control.domain.Segment;
 
-@CliRepresentation(name = "SegmentReference")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "segmentreference")
 @XmlType(name = "SegmentReference")
@@ -49,16 +46,12 @@ public class SegmentReference {
 		}
 	}
 
-	@CliAttribute(order = 0, verbose = true)
 	private Long id;
-	@CliAttribute(order = 1)
 	private String segmentName;
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Segment[").append(id).append("]->").append(segmentName);
-		return buf.toString();
+		return segmentName;
 	}
 
 	public static SegmentReference referenceFrom(Segment other) {

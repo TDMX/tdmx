@@ -88,7 +88,7 @@ public class ModifyAccountZone extends AbstractCliCommand {
 		azr.setAccessStatus(status);
 
 		AccountZoneResource newAzr = getSas().updateAccountZone(account.getId(), azr.getId(), azr);
-		out.println(newAzr.getCliRepresentation());
+		getPrinter().output(out, newAzr);
 	}
 
 	// -------------------------------------------------------------------------

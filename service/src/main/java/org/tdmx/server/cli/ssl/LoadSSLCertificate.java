@@ -110,11 +110,13 @@ public class LoadSSLCertificate extends AbstractCliCommand {
 		List<SSLCertificateResource> existingCerts = getSas().searchSSLCertificate(0, 1, cert.getFingerprint(), null);
 		if (existingCerts.isEmpty()) {
 			SSLCertificateResource newTc = getSas().createSSLCertificate(tc);
-			out.println("Added " + newTc.getCliRepresentation());
+			getPrinter().output(out, newTc);
+			out.println("Added");
 		} else {
 			tc.setId(existingCerts.get(0).getId());
 			SSLCertificateResource updatedTc = getSas().updateSSLCertificate(tc.getId(), tc);
-			out.println("Updated " + updatedTc.getCliRepresentation());
+			getPrinter().output(out, updatedTc);
+			out.println("Updated");
 		}
 	}
 

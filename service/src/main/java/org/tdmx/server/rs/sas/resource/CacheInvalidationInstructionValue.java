@@ -59,18 +59,6 @@ public class CacheInvalidationInstructionValue {
 	@CliAttribute(order = 2)
 	private String key;
 
-	@Override
-	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("CacheInvalidationInstruction");
-		buf.append("; ").append(id);
-		buf.append("; ").append(cache);
-		if (key != null) {
-			buf.append("; ").append(key);
-		}
-		return buf.toString();
-	}
-
 	public static CacheInvalidationInstructionValue mapFrom(CacheInvalidationInstruction other) {
 		if (other == null) {
 			return null;

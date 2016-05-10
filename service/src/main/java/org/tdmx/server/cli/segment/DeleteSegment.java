@@ -59,11 +59,11 @@ public class DeleteSegment extends AbstractCliCommand {
 		}
 		SegmentResource seg = segments.get(0);
 		Response response = getSas().deleteSegment(seg.getId());
-		out.print(seg.getCliRepresentation());
+		getPrinter().output(out, seg);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

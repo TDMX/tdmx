@@ -72,11 +72,11 @@ public class DeleteAccountZone extends AbstractCliCommand {
 		AccountZoneResource azr = accountZones.get(0);
 
 		Response response = getSas().deleteAccountZone(account.getId(), azr.getId());
-		out.print(azr.getCliRepresentation());
+		getPrinter().output(out, azr);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

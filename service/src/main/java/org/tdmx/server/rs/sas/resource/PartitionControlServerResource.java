@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 
+@CliRepresentation(name = "PartitionControlServer")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "partitionControlServer")
 @XmlType(name = "PartitionControlServer")
@@ -49,22 +52,16 @@ public class PartitionControlServerResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String segment;
+	@CliAttribute(order = 2)
 	private String ipaddress;
+	@CliAttribute(order = 3)
 	private int port;
+	@CliAttribute(order = 4)
 	private int modulo;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("PartitionControlServer");
-		buf.append("; ").append(id);
-		buf.append("; ").append(segment);
-		buf.append("; ").append(modulo);
-		buf.append("; ").append(ipaddress);
-		buf.append("; ").append(port);
-		return buf.toString();
-	}
 
 	public static PartitionControlServer mapTo(PartitionControlServerResource pcs) {
 		if (pcs == null) {

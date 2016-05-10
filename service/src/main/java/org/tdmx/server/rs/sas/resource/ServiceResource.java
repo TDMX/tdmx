@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.zone.domain.Service;
 
+@CliRepresentation(name = "Service")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "service")
 @XmlType(name = "Service")
@@ -33,8 +36,7 @@ public class ServiceResource {
 	public enum FIELD {
 		ID("id"),
 		DOMAINREF("domainRef"),
-		SERVICENAME("serviceName"),
-		;
+		SERVICENAME("serviceName"),;
 
 		private final String n;
 
@@ -48,18 +50,12 @@ public class ServiceResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private DomainReference domainRef;
+	@CliAttribute(order = 2)
 	private String serviceName;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Service");
-		buf.append("; ").append(id);
-		buf.append("; ").append(domainRef);
-		buf.append("; ").append(serviceName);
-		return buf.toString();
-	}
 
 	public static ServiceResource mapFrom(Service other) {
 		if (other == null) {
@@ -95,6 +91,5 @@ public class ServiceResource {
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
-
 
 }

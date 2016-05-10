@@ -60,7 +60,7 @@ public class SearchAccount extends AbstractCliCommand {
 			accounts = getSas().searchAccount(page++, PAGE_SIZE, email, accountId);
 
 			for (AccountResource account : accounts) {
-				out.println(account.getCliRepresentation());
+				getPrinter().output(out, account);
 				results++;
 			}
 		} while (accounts.size() == PAGE_SIZE);

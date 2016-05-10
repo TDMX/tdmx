@@ -61,8 +61,8 @@ public class SearchSSLCertificate extends AbstractCliCommand {
 		do {
 			certificates = getSas().searchSSLCertificate(page++, PAGE_SIZE, fingerprint, text);
 
-			for (SSLCertificateResource seg : certificates) {
-				out.println(seg.getCliRepresentation());
+			for (SSLCertificateResource cert : certificates) {
+				getPrinter().output(out, cert);
 				results++;
 			}
 		} while (certificates.size() == PAGE_SIZE);

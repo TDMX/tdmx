@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.control.domain.Account;
 
+@CliRepresentation(name = "Account")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "account")
 @XmlType(name = "Account")
@@ -49,22 +52,16 @@ public class AccountResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String accountId;
+	@CliAttribute(order = 2)
 	private String firstname;
+	@CliAttribute(order = 3)
 	private String lastname;
+	@CliAttribute(order = 4)
 	private String email;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Account");
-		buf.append("; ").append(id);
-		buf.append("; ").append(accountId);
-		buf.append("; ").append(email);
-		buf.append("; ").append(firstname);
-		buf.append("; ").append(lastname);
-		return buf.toString();
-	}
 
 	public static Account mapTo(AccountResource account) {
 		if (account == null) {

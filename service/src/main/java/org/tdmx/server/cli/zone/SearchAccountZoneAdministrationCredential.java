@@ -75,7 +75,7 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 					fingerprint, status);
 
 			for (AccountZoneAdministrationCredentialResource azac : accountZACs) {
-				out.println(azac.getCliRepresentation());
+				getPrinter().output(out, azac);
 				results++;
 			}
 		} while (accountZACs.size() == PAGE_SIZE);

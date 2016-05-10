@@ -23,10 +23,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 
+@CliRepresentation(name = "AccountZone")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "accountzone")
 @XmlType(name = "AccountZone")
@@ -53,26 +56,20 @@ public class AccountZoneResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String accountId;
+	@CliAttribute(order = 2)
 	private String zoneApex;
+	@CliAttribute(order = 3)
 	private String segment;
+	@CliAttribute(order = 4)
 	private String zonePartitionId;
+	@CliAttribute(order = 5)
 	private String accessStatus;
+	@CliAttribute(order = 6)
 	private Long jobId;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("AccountZone");
-		buf.append("; ").append(id);
-		buf.append("; ").append(accountId);
-		buf.append("; ").append(zoneApex);
-		buf.append("; ").append(segment);
-		buf.append("; ").append(zonePartitionId);
-		buf.append("; ").append(accessStatus);
-		buf.append("; ").append(jobId);
-		return buf.toString();
-	}
 
 	public static AccountZone mapTo(AccountZoneResource az) {
 		if (az == null) {

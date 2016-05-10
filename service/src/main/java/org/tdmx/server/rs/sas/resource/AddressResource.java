@@ -26,15 +26,14 @@ import javax.xml.bind.annotation.XmlType;
 import org.tdmx.lib.zone.domain.Address;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "service")
-@XmlType(name = "Service")
+@XmlRootElement(name = "address")
+@XmlType(name = "Address")
 public class AddressResource {
 
 	public enum FIELD {
 		ID("id"),
 		DOMAINREF("domainRef"),
-		LOCALNAME("localName"),
-		;
+		LOCALNAME("localName"),;
 
 		private final String n;
 

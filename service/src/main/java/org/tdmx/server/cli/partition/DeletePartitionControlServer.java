@@ -63,11 +63,11 @@ public class DeletePartitionControlServer extends AbstractCliCommand {
 
 		PartitionControlServerResource pcs = pcss.get(0);
 		Response response = getSas().deletePartitionControlServer(pcs.getId());
-		out.print(pcs.getCliRepresentation());
+		getPrinter().output(out, pcs);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

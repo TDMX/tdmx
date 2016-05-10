@@ -27,10 +27,13 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.TrustStatus;
 import org.tdmx.lib.control.domain.TrustedSslCertificate;
 
+@CliRepresentation(name = "SslCertificate")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "sslcertificate")
 @XmlType(name = "SslCertificate")
@@ -58,27 +61,23 @@ public class SSLCertificateResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 6, verbose = true)
 	private String pem;
+	@CliAttribute(order = 2)
 	private String trust;
+	@CliAttribute(order = 3)
 	private String comment;
 
+	@CliAttribute(order = 1)
 	private String fingerprint; // R/O
+	@CliAttribute(order = 3)
 	private Date validFrom; // R/O
+	@CliAttribute(order = 4)
 	private Date validTo; // R/O
+	@CliAttribute(order = 5, verbose = true)
 	private String description; // R/O
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("SslCertificate");
-		buf.append("; ").append(id);
-		buf.append("; ").append(pem);
-		buf.append("; ").append(trust);
-		buf.append("; ").append(comment);
-		buf.append("; ").append(fingerprint);
-		buf.append("; ").append(description);
-		return buf.toString();
-	}
 
 	public static TrustedSslCertificate mapTo(SSLCertificateResource cert) {
 		if (cert == null) {

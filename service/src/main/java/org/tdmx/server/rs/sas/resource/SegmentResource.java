@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.control.domain.Segment;
 
+@CliRepresentation(name = "Segment")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "segment")
 @XmlType(name = "Segment")
@@ -47,18 +50,12 @@ public class SegmentResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String segment;
+	@CliAttribute(order = 2)
 	private String scsUrl;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Segment");
-		buf.append("; ").append(id);
-		buf.append("; ").append(segment);
-		buf.append("; ").append(scsUrl);
-		return buf.toString();
-	}
 
 	public static Segment mapTo(SegmentResource segment) {
 		if (segment == null) {

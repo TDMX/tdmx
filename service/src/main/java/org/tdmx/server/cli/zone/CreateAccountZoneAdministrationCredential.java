@@ -117,8 +117,7 @@ public class CreateAccountZoneAdministrationCredential extends AbstractCliComman
 
 		AccountZoneAdministrationCredentialResource newZAC = getSas()
 				.createAccountZoneAdministrationCredential(account.getId(), azr.getId(), azcr);
-
-		out.println(newZAC.getCliRepresentation());
+		getPrinter().output(out, newZAC);
 	}
 
 	// -------------------------------------------------------------------------

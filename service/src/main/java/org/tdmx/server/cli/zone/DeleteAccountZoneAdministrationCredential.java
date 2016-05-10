@@ -84,11 +84,11 @@ public class DeleteAccountZoneAdministrationCredential extends AbstractCliComman
 
 		Response response = getSas().deleteAccountZoneAdministrationCredential(account.getId(), azr.getId(),
 				azac.getId());
-		out.print(azac.getCliRepresentation());
+		getPrinter().output(out, azac);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

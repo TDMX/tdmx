@@ -57,7 +57,7 @@ public class CreateSegment extends AbstractCliCommand {
 		seg.setScsUrl(scsUrl);
 
 		SegmentResource newSeg = getSas().createSegment(seg);
-		out.println(newSeg.getCliRepresentation());
+		getPrinter().output(out, newSeg);
 	}
 
 	// -------------------------------------------------------------------------

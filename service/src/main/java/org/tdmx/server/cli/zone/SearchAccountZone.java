@@ -75,7 +75,7 @@ public class SearchAccountZone extends AbstractCliCommand {
 					status);
 
 			for (AccountZoneResource az : accountZones) {
-				out.println(az.getCliRepresentation());
+				getPrinter().output(out, az);
 				results++;
 			}
 		} while (accountZones.size() == PAGE_SIZE);

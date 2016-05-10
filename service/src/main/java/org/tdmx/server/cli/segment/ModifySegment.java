@@ -64,7 +64,7 @@ public class ModifySegment extends AbstractCliCommand {
 		}
 
 		SegmentResource updatedSegment = getSas().updateSegment(seg.getId(), seg);
-		out.println(updatedSegment.getCliRepresentation());
+		getPrinter().output(out, updatedSegment);
 	}
 
 	// -------------------------------------------------------------------------

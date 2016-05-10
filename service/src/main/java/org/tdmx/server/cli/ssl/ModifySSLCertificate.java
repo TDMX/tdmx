@@ -69,7 +69,8 @@ public class ModifySSLCertificate extends AbstractCliCommand {
 		cert.setComment(comment);
 
 		SSLCertificateResource updatedCert = getSas().updateSSLCertificate(cert.getId(), cert);
-		out.println("Modified " + updatedCert.getCliRepresentation());
+		getPrinter().output(out, updatedCert);
+		out.println("Modified");
 	}
 
 	// -------------------------------------------------------------------------

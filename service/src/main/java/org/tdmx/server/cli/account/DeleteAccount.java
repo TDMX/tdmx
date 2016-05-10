@@ -59,11 +59,11 @@ public class DeleteAccount extends AbstractCliCommand {
 		}
 		AccountResource ar = accounts.get(0);
 		Response response = getSas().deleteAccount(ar.getId());
-		out.print(ar.getCliRepresentation());
+		getPrinter().output(out, ar);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

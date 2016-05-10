@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.zone.domain.Domain;
 
+@CliRepresentation(name = "Domain")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "domain")
 @XmlType(name = "Domain")
@@ -33,8 +36,7 @@ public class DomainResource {
 	public enum FIELD {
 		ID("id"),
 		ZONEREF("zoneRef"),
-		DOMAINNAME("domainName"),
-		;
+		DOMAINNAME("domainName"),;
 
 		private final String n;
 
@@ -48,18 +50,12 @@ public class DomainResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private ZoneReference zoneRef;
+	@CliAttribute(order = 2)
 	private String domainName;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Domain");
-		buf.append("; ").append(id);
-		buf.append("; ").append(zoneRef);
-		buf.append("; ").append(domainName);
-		return buf.toString();
-	}
 
 	public static DomainResource mapFrom(Domain other) {
 		if (other == null) {
@@ -95,6 +91,5 @@ public class DomainResource {
 	public void setDomainName(String domainName) {
 		this.domainName = domainName;
 	}
-
 
 }

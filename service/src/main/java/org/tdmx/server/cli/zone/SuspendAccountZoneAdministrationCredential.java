@@ -85,7 +85,7 @@ public class SuspendAccountZoneAdministrationCredential extends AbstractCliComma
 
 		AccountZoneAdministrationCredentialResource updatedZAC = getSas()
 				.updateAccountZoneAdministrationCredential(account.getId(), azr.getId(), azac.getId(), azac);
-		out.println(updatedZAC.getCliRepresentation());
+		getPrinter().output(out, updatedZAC);
 	}
 
 	// -------------------------------------------------------------------------

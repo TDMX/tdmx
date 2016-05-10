@@ -59,11 +59,11 @@ public class DeleteSSLCertificate extends AbstractCliCommand {
 		}
 		SSLCertificateResource cert = existingCerts.get(0);
 		Response response = getSas().deleteSSLCertificate(cert.getId());
-		out.print(cert.getCliRepresentation());
+		getPrinter().output(out, cert);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

@@ -81,7 +81,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 		azr.setAccessStatus(status);
 
 		AccountZoneResource newAzr = getSas().createAccountZone(account.getId(), azr);
-		out.println(newAzr.getCliRepresentation());
+		getPrinter().output(out, newAzr);
 	}
 
 	// -------------------------------------------------------------------------

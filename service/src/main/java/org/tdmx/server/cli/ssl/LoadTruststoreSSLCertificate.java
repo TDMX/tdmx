@@ -107,13 +107,15 @@ public class LoadTruststoreSSLCertificate extends AbstractCliCommand {
 					tc.setComment(comment);
 					tc.setPem(CertificateIOUtils.x509certsToPem(new PKIXCertificate[] { cert }));
 					SSLCertificateResource newTc = getSas().createSSLCertificate(tc);
-					out.println("Added " + newTc.getCliRepresentation());
+					getPrinter().output(out, newTc);
+					out.println("Added");
 				} else {
 					SSLCertificateResource tc = existingCerts.get(0);
 					tc.setTrust(EnumUtils.mapToString(distrust ? TrustStatus.DISTRUSTED : TrustStatus.TRUSTED));
 					tc.setComment(comment);
 					SSLCertificateResource updatedTc = getSas().updateSSLCertificate(tc.getId(), tc);
-					out.println("Modified " + updatedTc.getCliRepresentation());
+					getPrinter().output(out, updatedTc);
+					out.println("Modified");
 				}
 			}
 

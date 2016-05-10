@@ -23,10 +23,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
+@CliRepresentation(name = "AccountZoneCredential")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "accountzonecredential")
 @XmlType(name = "AccountZoneCredential")
@@ -53,26 +56,20 @@ public class AccountZoneAdministrationCredentialResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String accountId;
+	@CliAttribute(order = 2)
 	private String zoneApex;
+	@CliAttribute(order = 3)
 	private String fingerprint;
+	@CliAttribute(order = 6, verbose = true)
 	private String certificatePem;
+	@CliAttribute(order = 4)
 	private String status;
+	@CliAttribute(order = 5)
 	private Long jobId;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("AccountZoneAdministrationCredential");
-		buf.append("; ").append(id);
-		buf.append("; ").append(accountId);
-		buf.append("; ").append(zoneApex);
-		buf.append("; ").append(fingerprint);
-		buf.append("; ").append(status);
-		buf.append("; ").append(jobId);
-		buf.append("; ").append(certificatePem);
-		return buf.toString();
-	}
 
 	public static AccountZoneAdministrationCredential mapTo(AccountZoneAdministrationCredentialResource zac) {
 		if (zac == null) {

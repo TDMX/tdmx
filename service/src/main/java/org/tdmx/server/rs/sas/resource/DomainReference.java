@@ -32,8 +32,7 @@ public class DomainReference {
 
 	public enum FIELD {
 		ID("id"),
-		DOMAINNAME("domainName"),
-		;
+		DOMAINNAME("domainName"),;
 
 		private final String n;
 
@@ -52,9 +51,7 @@ public class DomainReference {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Domain[").append(id).append("]->").append(domainName);
-		return buf.toString();
+		return domainName;
 	}
 
 	public static DomainReference referenceFrom(Domain other) {
@@ -82,6 +79,5 @@ public class DomainReference {
 	public void setDomainName(String domainName) {
 		this.domainName = domainName;
 	}
-
 
 }

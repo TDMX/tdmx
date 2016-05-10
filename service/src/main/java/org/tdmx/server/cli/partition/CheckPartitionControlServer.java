@@ -57,7 +57,7 @@ public class CheckPartitionControlServer extends AbstractCliCommand {
 			pcss = getSas().searchPartitionControlServer(page++, PAGE_SIZE, segment, null, null, null);
 
 			for (PartitionControlServerResource pcs : pcss) {
-				out.println(pcs.getCliRepresentation());
+				getPrinter().output(out, pcs);
 				results++;
 			}
 		} while (pcss.size() == PAGE_SIZE);

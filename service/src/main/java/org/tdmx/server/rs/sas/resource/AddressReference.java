@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Service;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "addressreference")
@@ -35,8 +33,7 @@ public class AddressReference {
 	public enum FIELD {
 		ID("id"),
 		DOMAINREF("domainRef"),
-		LOCALNAME("localName"),
-		;
+		LOCALNAME("localName"),;
 
 		private final String n;
 
@@ -56,9 +53,7 @@ public class AddressReference {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Address[").append(id).append("]->").append(localName).append("@").append(domainRef.getDomainName());
-		return buf.toString();
+		return localName + "@" + domainRef.getDomainName();
 	}
 
 	public static AddressReference referenceFrom(Address other) {
@@ -71,7 +66,6 @@ public class AddressReference {
 		r.setLocalName(other.getLocalName());
 		return r;
 	}
-
 
 	public Long getId() {
 		return id;
@@ -96,6 +90,5 @@ public class AddressReference {
 	public void setLocalName(String localName) {
 		this.localName = localName;
 	}
-
 
 }

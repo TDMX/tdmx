@@ -57,7 +57,7 @@ public class SearchSegment extends AbstractCliCommand {
 			segments = getSas().searchSegment(page++, PAGE_SIZE, segment);
 
 			for (SegmentResource seg : segments) {
-				out.println(seg.getCliRepresentation());
+				getPrinter().output(out, seg);
 				results++;
 			}
 		} while (segments.size() == PAGE_SIZE);

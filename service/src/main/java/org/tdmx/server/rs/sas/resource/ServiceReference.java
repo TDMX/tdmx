@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -34,8 +33,7 @@ public class ServiceReference {
 	public enum FIELD {
 		ID("id"),
 		DOMAINREF("domainRef"),
-		SERVICENAME("serviceName"),
-		;
+		SERVICENAME("serviceName"),;
 
 		private final String n;
 
@@ -55,9 +53,7 @@ public class ServiceReference {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Service[").append(id).append("]->").append(domainRef.getDomainName()).append("#").append(serviceName);
-		return buf.toString();
+		return domainRef.getDomainName() + "#" + serviceName;
 	}
 
 	public static ServiceReference referenceFrom(Service other) {
@@ -70,7 +66,6 @@ public class ServiceReference {
 		r.setServiceName(other.getServiceName());
 		return r;
 	}
-
 
 	public Long getId() {
 		return id;
@@ -95,6 +90,5 @@ public class ServiceReference {
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
-
 
 }

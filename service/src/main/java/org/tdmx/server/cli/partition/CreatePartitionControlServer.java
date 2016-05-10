@@ -63,7 +63,7 @@ public class CreatePartitionControlServer extends AbstractCliCommand {
 		pcs.setModulo(modulo);
 
 		PartitionControlServerResource newPCS = getSas().createPartitionControlServer(pcs);
-		out.println(newPCS.getCliRepresentation());
+		getPrinter().output(out, newPCS);
 	}
 
 	// -------------------------------------------------------------------------

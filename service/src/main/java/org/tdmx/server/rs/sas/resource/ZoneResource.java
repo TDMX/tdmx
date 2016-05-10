@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.zone.domain.Zone;
 
+@CliRepresentation(name = "Zone")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "zone")
 @XmlType(name = "Zone")
@@ -33,8 +36,7 @@ public class ZoneResource {
 	public enum FIELD {
 		ID("id"),
 		ACCOUNTZONEID("accountZoneId"),
-		ZONEAPEX("zoneApex"),
-		;
+		ZONEAPEX("zoneApex"),;
 
 		private final String n;
 
@@ -48,18 +50,12 @@ public class ZoneResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 2)
 	private Long accountZoneId;
+	@CliAttribute(order = 1)
 	private String zoneApex;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Zone");
-		buf.append("; ").append(id);
-		buf.append("; ").append(accountZoneId);
-		buf.append("; ").append(zoneApex);
-		return buf.toString();
-	}
 
 	public static ZoneResource mapFrom(Zone other) {
 		if (other == null) {

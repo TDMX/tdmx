@@ -32,8 +32,7 @@ public class ZoneReference {
 
 	public enum FIELD {
 		ID("id"),
-		ZONEAPEX("zoneApex"),
-		;
+		ZONEAPEX("zoneApex"),;
 
 		private final String n;
 
@@ -52,9 +51,7 @@ public class ZoneReference {
 
 	@Override
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Zone[").append(id).append("]->").append(zoneApex);
-		return buf.toString();
+		return zoneApex;
 	}
 
 	public static ZoneReference referenceFrom(Zone other) {

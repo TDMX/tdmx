@@ -73,7 +73,7 @@ public class ModifyPartitionControlServer extends AbstractCliCommand {
 		}
 
 		PartitionControlServerResource newPCS = getSas().updatePartitionControlServer(pcs.getId(), pcs);
-		out.println(newPCS.getCliRepresentation());
+		getPrinter().output(out, newPCS);
 	}
 
 	// -------------------------------------------------------------------------
