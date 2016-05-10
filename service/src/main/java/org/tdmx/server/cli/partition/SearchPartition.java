@@ -61,7 +61,7 @@ public class SearchPartition extends AbstractCliCommand {
 			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, partitionId, dbType, segment);
 
 			for (DatabasePartitionResource partition : partitions) {
-				out.println(partition.getCliRepresentation());
+				getPrinter().output(out, partition);
 				results++;
 			}
 		} while (partitions.size() == PAGE_SIZE);

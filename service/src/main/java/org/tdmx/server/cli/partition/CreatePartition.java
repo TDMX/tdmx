@@ -74,7 +74,7 @@ public class CreatePartition extends AbstractCliCommand {
 		dbPartition.setPassword(password);
 
 		DatabasePartitionResource newDbPartition = getSas().createDatabasePartition(dbPartition);
-		out.println(newDbPartition.getCliRepresentation());
+		getPrinter().output(out, newDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

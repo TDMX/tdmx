@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.JaxbMarshaller;
 import org.tdmx.core.system.lang.StringUtils;
@@ -32,6 +34,7 @@ import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
 
+@CliRepresentation(name = "ControlJob")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "controlJob")
 @XmlType(name = "ControlJob")
@@ -60,30 +63,24 @@ public class ControlJobResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 2)
 	private Date scheduledTime;
+	@CliAttribute(order = 3)
 	private String status;
+	@CliAttribute(order = 1)
 	private String jobId;
+	@CliAttribute(order = 4)
 	private String type;
+	@CliAttribute(order = 5)
 	private Date startTimestamp;
+	@CliAttribute(order = 6)
 	private Date endTimestamp;
+	@CliAttribute(order = 7, verbose = true)
 	private String data;
+	@CliAttribute(order = 8)
 	private String exception;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("ControlJob");
-		buf.append("; ").append(id);
-		buf.append("; ").append(scheduledTime);
-		buf.append("; ").append(status);
-		buf.append("; ").append(jobId);
-		buf.append("; ").append(type);
-		buf.append("; ").append(startTimestamp);
-		buf.append("; ").append(endTimestamp);
-		buf.append("; ").append(data);
-		buf.append("; ").append(exception);
-		return buf.toString();
-	}
 
 	public static ControlJob mapTo(ControlJobResource controlJob) {
 		if (controlJob == null) {

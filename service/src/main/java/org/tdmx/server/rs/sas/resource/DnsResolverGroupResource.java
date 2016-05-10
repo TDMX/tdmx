@@ -23,9 +23,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.DnsResolverGroup;
 
+@CliRepresentation(name = "DnsResolverGroup")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "dnsResolverGroup")
 @XmlType(name = "DnsResolverGroup")
@@ -48,18 +51,12 @@ public class DnsResolverGroupResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String groupName;
+	@CliAttribute(order = 2)
 	private String ipAddressList;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("DnsResolverGroup");
-		buf.append("; ").append(id);
-		buf.append("; ").append(groupName);
-		buf.append("; ").append(ipAddressList);
-		return buf.toString();
-	}
 
 	public static DnsResolverGroup mapTo(DnsResolverGroupResource controlJob) {
 		if (controlJob == null) {

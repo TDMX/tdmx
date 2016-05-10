@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.lib.zone.domain.Address;
 
+@CliRepresentation(name = "Address")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "address")
 @XmlType(name = "Address")
@@ -47,18 +50,12 @@ public class AddressResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 2)
 	private DomainReference domainRef;
+	@CliAttribute(order = 1)
 	private String localName;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Address");
-		buf.append("; ").append(id);
-		buf.append("; ").append(localName);
-		buf.append("; ").append(domainRef);
-		return buf.toString();
-	}
 
 	public static AddressResource mapFrom(Address other) {
 		if (other == null) {

@@ -73,7 +73,7 @@ public class ActivatePartition extends AbstractCliCommand {
 		dbPartition.setActivationTimestamp(cal.getTime());
 
 		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
-		out.println(newDbPartition.getCliRepresentation());
+		getPrinter().output(out, newDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

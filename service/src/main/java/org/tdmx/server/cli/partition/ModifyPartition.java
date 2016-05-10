@@ -81,7 +81,7 @@ public class ModifyPartition extends AbstractCliCommand {
 		}
 
 		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
-		out.println(newDbPartition.getCliRepresentation());
+		getPrinter().output(out, newDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

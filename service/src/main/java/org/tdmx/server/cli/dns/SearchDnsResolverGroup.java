@@ -57,7 +57,7 @@ public class SearchDnsResolverGroup extends AbstractCliCommand {
 			groups = getSas().searchDnsResolverGroup(page++, PAGE_SIZE, name);
 
 			for (DnsResolverGroupResource group : groups) {
-				out.println(group.getCliRepresentation());
+				getPrinter().output(out, group);
 				results++;
 			}
 		} while (groups.size() == PAGE_SIZE);

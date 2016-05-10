@@ -60,11 +60,11 @@ public class DeleteDnsResolverGroup extends AbstractCliCommand {
 
 		DnsResolverGroupResource dnsGroup = dnsGroups.get(0);
 		Response response = getSas().deleteDnsResolverGroup(dnsGroup.getId());
-		out.print(dnsGroup.getCliRepresentation());
+		getPrinter().output(out, dnsGroup);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

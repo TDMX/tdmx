@@ -64,8 +64,8 @@ public class DeactivatePartition extends AbstractCliCommand {
 		}
 		dbPartition.setDeactivationTimestamp(new Date());
 
-		DatabasePartitionResource newDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
-		out.println(newDbPartition.getCliRepresentation());
+		DatabasePartitionResource existingDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
+		getPrinter().output(out, existingDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

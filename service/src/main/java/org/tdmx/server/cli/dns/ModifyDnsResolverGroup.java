@@ -62,7 +62,7 @@ public class ModifyDnsResolverGroup extends AbstractCliCommand {
 		dnsGroup.setIpAddressList(ipaddresses);
 
 		DnsResolverGroupResource newDnsResolverGroup = getSas().updateDnsResolverGroup(dnsGroup.getId(), dnsGroup);
-		out.println(newDnsResolverGroup.getCliRepresentation());
+		getPrinter().output(out, newDnsResolverGroup);
 	}
 
 	// -------------------------------------------------------------------------

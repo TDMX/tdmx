@@ -56,7 +56,7 @@ public class CreateDnsResolverGroup extends AbstractCliCommand {
 		dnsGroup.setIpAddressList(ipaddresses);
 
 		DnsResolverGroupResource newDnsGroup = getSas().createDnsResolverGroup(dnsGroup);
-		out.println(newDnsGroup.getCliRepresentation());
+		getPrinter().output(out, dnsGroup);
 	}
 
 	// -------------------------------------------------------------------------

@@ -25,10 +25,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.tdmx.core.cli.display.annotation.CliAttribute;
+import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
 
+@CliRepresentation(name = "DatabasePartition")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "partition")
 @XmlType(name = "DatabasePartition")
@@ -58,33 +61,26 @@ public class DatabasePartitionResource {
 		}
 	}
 
+	@CliAttribute(order = 0, verbose = true)
 	private Long id;
+	@CliAttribute(order = 1)
 	private String partitionId;
+	@CliAttribute(order = 2)
 	private String dbType;
+	@CliAttribute(order = 3)
 	private String segment;
+	@CliAttribute(order = 4)
 	private String url;
+	@CliAttribute(order = 5)
 	private String username;
+	@CliAttribute(order = 6)
 	private String password;
+	@CliAttribute(order = 7)
 	private int sizeFactor;
+	@CliAttribute(order = 8)
 	private Date activationTimestamp;
+	@CliAttribute(order = 9)
 	private Date deactivationTimestamp;
-
-	public String getCliRepresentation() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("DatabasePartition");
-		buf.append("; ").append(id);
-		buf.append("; ").append(partitionId);
-		buf.append("; ").append(dbType);
-		buf.append("; ").append(segment);
-		buf.append("; ").append(url);
-		buf.append("; ").append(username);
-		buf.append("; ").append(segment);
-		buf.append("; ").append("######");
-		buf.append("; ").append(sizeFactor);
-		buf.append("; ").append(activationTimestamp);
-		buf.append("; ").append(deactivationTimestamp);
-		return buf.toString();
-	}
 
 	public static DatabasePartition mapTo(DatabasePartitionResource partition) {
 		if (partition == null) {

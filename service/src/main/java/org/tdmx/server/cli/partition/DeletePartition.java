@@ -60,11 +60,11 @@ public class DeletePartition extends AbstractCliCommand {
 
 		DatabasePartitionResource dbPartition = dbPartitions.get(0);
 		Response response = getSas().deleteDatabasePartition(dbPartition.getId());
-		out.print(dbPartition.getCliRepresentation());
+		getPrinter().output(out, dbPartition);
 		if (response.getStatus() == SUCCESS) {
-			out.println(" Deleted.");
+			out.println("Deleted.");
 		} else {
-			out.println(" Not deleted. StatusCode=" + response.getStatus());
+			out.println("Not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 
