@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.segment;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
@@ -51,7 +51,7 @@ public class DeleteSegment extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
 		if (segments.size() != 1) {
 			out.println("Segment " + segment + " not found.");
@@ -59,7 +59,7 @@ public class DeleteSegment extends AbstractCliCommand {
 		}
 		SegmentResource seg = segments.get(0);
 		Response response = getSas().deleteSegment(seg.getId());
-		getPrinter().output(out, seg);
+		out.println(seg);
 		if (response.getStatus() == SUCCESS) {
 			out.println("Deleted.");
 		} else {

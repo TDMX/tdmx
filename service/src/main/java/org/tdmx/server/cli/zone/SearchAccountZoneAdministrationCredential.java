@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.zone;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
@@ -59,7 +59,7 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		if (StringUtils.hasText(status)
 				&& EnumUtils.mapTo(AccountZoneAdministrationCredentialStatus.class, status) == null) {
 			out.println("Status invalid " + status + ". Use one of "
@@ -75,7 +75,7 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 					fingerprint, status);
 
 			for (AccountZoneAdministrationCredentialResource azac : accountZACs) {
-				getPrinter().output(out, azac);
+				out.println(azac);
 				results++;
 			}
 		} while (accountZACs.size() == PAGE_SIZE);

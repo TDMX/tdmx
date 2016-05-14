@@ -18,12 +18,12 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.Date;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
@@ -50,7 +50,7 @@ public class DeactivatePartition extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
 		if (dbPartitions.isEmpty()) {
 			out.println("No DatabasePartition found with partitionId " + partitionId);
@@ -64,8 +64,9 @@ public class DeactivatePartition extends AbstractCliCommand {
 		}
 		dbPartition.setDeactivationTimestamp(new Date());
 
-		DatabasePartitionResource existingDbPartition = getSas().updateDatabasePartition(dbPartition.getId(), dbPartition);
-		getPrinter().output(out, existingDbPartition);
+		DatabasePartitionResource existingDbPartition = getSas().updateDatabasePartition(dbPartition.getId(),
+				dbPartition);
+		out.println(existingDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

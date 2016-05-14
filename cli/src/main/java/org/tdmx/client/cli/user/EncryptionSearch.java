@@ -18,11 +18,10 @@
  */
 package org.tdmx.client.cli.user;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -49,7 +48,7 @@ public class EncryptionSearch implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 
 		// -------------------------------------------------------------------------
 		// CLI FUNCTION

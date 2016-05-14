@@ -16,20 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.trust;
+package org.tdmx.core.cli;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
-import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
+import java.io.PrintStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.display.CliPrinter;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.core.cli.display.ObjectPrettyPrinter;
 
-@Cli(name = "untrust:search", description = "Search for certificates in the zone's untrusted certificate store file - untrusted.store")
-public class SearchUntrust implements CommandExecutable {
+public class CliPrinterFactoryImpl implements CliPrinterFactory {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,39 +34,35 @@ public class SearchUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(CliPrinterFactoryImpl.class);
 
-	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
-	private String fingerprint;
-	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
-	private String domain;
-	@Parameter(name = "text", description = "find any certificate which matches this text.")
-	private String text;
+	// internal
+	private boolean verbose = false;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public CliPrinterFactoryImpl() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(CliPrinter out) {
-		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
+	public CliPrinter getPrinter(PrintStream ps) {
+		return new ObjectPrettyPrinter(ps, verbose);
+	}
 
-		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
+	@Override
+	public boolean getVerbose() {
+		return verbose;
+	}
 
-		int numMatches = 0;
-		int totalEntries = 0;
-		for (TrustStoreEntry entry : untrusted.getCertificates()) {
-			totalEntries++;
-
-			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				out.println(ClientCliLoggingUtils.toString(entry));
-			}
-		}
-		out.println("Found " + numMatches + "/" + totalEntries + " untrusted certificates.");
-
+	@Override
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 
 	// -------------------------------------------------------------------------

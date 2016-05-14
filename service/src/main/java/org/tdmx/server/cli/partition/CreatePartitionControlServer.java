@@ -18,10 +18,9 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
@@ -55,7 +54,7 @@ public class CreatePartitionControlServer extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		PartitionControlServerResource pcs = new PartitionControlServerResource();
 		pcs.setSegment(segment);
 		pcs.setIpaddress(ipaddress);
@@ -63,7 +62,7 @@ public class CreatePartitionControlServer extends AbstractCliCommand {
 		pcs.setModulo(modulo);
 
 		PartitionControlServerResource newPCS = getSas().createPartitionControlServer(pcs);
-		getPrinter().output(out, newPCS);
+		out.println(newPCS);
 	}
 
 	// -------------------------------------------------------------------------

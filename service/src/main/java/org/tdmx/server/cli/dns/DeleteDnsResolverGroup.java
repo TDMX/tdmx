@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.dns;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 
@@ -51,7 +51,7 @@ public class DeleteDnsResolverGroup extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<DnsResolverGroupResource> dnsGroups = getSas().searchDnsResolverGroup(0, 1, name);
 		if (dnsGroups.isEmpty()) {
 			out.println("No DnsResolverGroup found with name " + name);
@@ -60,7 +60,7 @@ public class DeleteDnsResolverGroup extends AbstractCliCommand {
 
 		DnsResolverGroupResource dnsGroup = dnsGroups.get(0);
 		Response response = getSas().deleteDnsResolverGroup(dnsGroup.getId());
-		getPrinter().output(out, dnsGroup);
+		out.println(dnsGroup);
 		if (response.getStatus() == SUCCESS) {
 			out.println("Deleted.");
 		} else {

@@ -18,10 +18,9 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
@@ -62,7 +61,7 @@ public class CreatePartition extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		DatabasePartitionResource dbPartition = new DatabasePartitionResource();
 		dbPartition.setPartitionId(partitionId);
 		dbPartition.setDbType(dbType);
@@ -74,7 +73,7 @@ public class CreatePartition extends AbstractCliCommand {
 		dbPartition.setPassword(password);
 
 		DatabasePartitionResource newDbPartition = getSas().createDatabasePartition(dbPartition);
-		getPrinter().output(out, newDbPartition);
+		out.println(newDbPartition);
 	}
 
 	// -------------------------------------------------------------------------

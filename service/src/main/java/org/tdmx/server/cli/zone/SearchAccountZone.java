@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.zone;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
@@ -60,7 +60,7 @@ public class SearchAccountZone extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		if (StringUtils.hasText(status) && EnumUtils.mapTo(AccountZoneStatus.class, status) == null) {
 			out.println("Status invalid " + status + ". Use one of "
 					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
@@ -75,7 +75,7 @@ public class SearchAccountZone extends AbstractCliCommand {
 					status);
 
 			for (AccountZoneResource az : accountZones) {
-				getPrinter().output(out, az);
+				out.println(az);
 				results++;
 			}
 		} while (accountZones.size() == PAGE_SIZE);

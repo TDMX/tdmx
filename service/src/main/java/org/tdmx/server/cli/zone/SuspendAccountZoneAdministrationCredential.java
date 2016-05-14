@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.zone;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
@@ -58,7 +58,7 @@ public class SuspendAccountZoneAdministrationCredential extends AbstractCliComma
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.isEmpty()) {
 			out.println("Account " + accountId + " not found.");
@@ -85,7 +85,7 @@ public class SuspendAccountZoneAdministrationCredential extends AbstractCliComma
 
 		AccountZoneAdministrationCredentialResource updatedZAC = getSas()
 				.updateAccountZoneAdministrationCredential(account.getId(), azr.getId(), azac.getId(), azac);
-		getPrinter().output(out, updatedZAC);
+		out.println(updatedZAC);
 	}
 
 	// -------------------------------------------------------------------------

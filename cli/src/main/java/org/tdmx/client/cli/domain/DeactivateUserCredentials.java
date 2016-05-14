@@ -18,8 +18,7 @@
  */
 package org.tdmx.client.cli.domain;
 
-import java.io.PrintStream;
-
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
@@ -32,6 +31,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
@@ -70,7 +70,7 @@ public class DeactivateUserCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidUserName(username);
 		String domainName = ClientCliUtils.getDomainName(username);
 		String localName = ClientCliUtils.getLocalName(username);
@@ -110,7 +110,7 @@ public class DeactivateUserCredentials implements CommandExecutable {
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -147,7 +147,7 @@ public class DeactivateUserCredentials implements CommandExecutable {
 			if (deleteUserResponse.isSuccess()) {
 				out.println("User " + username + " with fingerprint " + userCertificate.getFingerprint() + " deleted.");
 			} else {
-				ClientCliUtils.logError(out, deleteUserResponse.getError());
+				ClientCliLoggingUtils.logError(out, deleteUserResponse.getError());
 			}
 
 		} else {

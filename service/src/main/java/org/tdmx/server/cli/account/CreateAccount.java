@@ -18,10 +18,9 @@
  */
 package org.tdmx.server.cli.account;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 
@@ -53,14 +52,14 @@ public class CreateAccount extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		AccountResource ar = new AccountResource();
 		ar.setEmail(email);
 		ar.setFirstname(firstName);
 		ar.setLastname(lastName);
 
 		AccountResource newAr = getSas().createAccount(ar);
-		getPrinter().output(out, newAr);
+		out.println(newAr);
 	}
 
 	// -------------------------------------------------------------------------

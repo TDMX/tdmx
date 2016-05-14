@@ -19,6 +19,8 @@
 package org.tdmx.client.cli;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Calendar;
 
@@ -28,6 +30,10 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
+import org.tdmx.core.cli.CliPrinterFactory;
+import org.tdmx.core.cli.display.CliPrinter;
+import org.tdmx.core.cli.display.ObjectPrettyPrinter;
+import org.tdmx.core.cli.display.PrintableObject;
 
 /**
  * Utilities for logging for Client CLI commands.
@@ -45,10 +51,8 @@ public class ClientCliLoggingUtils {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	private static final String LINEFEED = System.getProperty("line.separator", "\n");
-	private static final String TAB = "\t";
-
-	// TODO #105: better rep.
-
+	// the verbose state of the CLI output is held statically
+	private static boolean verbose = false;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -56,17 +60,46 @@ public class ClientCliLoggingUtils {
 	private ClientCliLoggingUtils() {
 	}
 
+	public static CliPrinterFactory getPrinterFactory() {
+		return new CliPrinterFactory() {
+
+			@Override
+			public boolean getVerbose() {
+				return ClientCliLoggingUtils.isVerbose();
+			}
+
+			@Override
+			public void setVerbose(boolean verbose) {
+				ClientCliLoggingUtils.setVerbose(verbose);
+			}
+
+			@Override
+			public CliPrinter getPrinter(PrintStream ps) {
+				return new ObjectPrettyPrinter(ps, ClientCliLoggingUtils.isVerbose());
+			}
+		};
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	public static void logException(PrintStream out, String prefix, Exception error) {
-		out.println(prefix + ". Exception message [" + error.getMessage() + "]");
-		error.printStackTrace(out);
+	public static void logException(CliPrinter out, String prefix, Exception error) {
+		out.println(prefix, ". Exception message [" + error.getMessage() + "]");
+		StringWriter sw = new StringWriter();
+		error.printStackTrace(new PrintWriter(sw));
+		out.println(sw.toString());
 	}
 
-	public static String toString(org.tdmx.core.api.v01.common.Error error) {
-		return "Error [" + error.getCode() + "] " + error.getDescription();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.common.Error error) {
+		return new PrintableObject("Error").add("code", error.getCode()).add("description", error.getDescription());
+	}
+
+	public static void logError(CliPrinter out, org.tdmx.core.api.v01.common.Error error) {
+		out.println(toLog(error));
+	}
+
+	public static void log(CliPrinter out, Object... objects) {
+		out.println(objects);
 	}
 
 	public static String toString(UnencryptedSessionKey usk) {
@@ -171,35 +204,22 @@ public class ClientCliLoggingUtils {
 				+ channel.getDestination().getServicename() + "]";
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.Channelinfo ci) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Channel Info [").append(toString(ci.getChannelauthorization())).append(LINEFEED);
-		if (ci.getSessioninfo() != null) {
-			buf.append("Session [").append(toString(ci.getSessioninfo())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No Session").append(LINEFEED);
-		}
-		buf.append("FlowStatus [").append(toString(ci.getStatus())).append("]").append(LINEFEED);
-		buf.append("]");
-		return buf.toString();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Channelinfo ci) {
+		PrintableObject result = new PrintableObject("ChannelInfo");
+		result.add("authorization", ci.getChannelauthorization());
+		result.add("session", ci.getSessioninfo() != null ? toLog(ci.getSessioninfo()) : "none");
+		result.add("flowstatus", toLog(ci.getStatus()));
+		return result;
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Domain [").append(ca.getDomain()).append("]").append(LINEFEED);
-		buf.append("Channel [").append(toString(ca.getChannel())).append("]").append(LINEFEED);
-		if (ca.getCurrent() != null) {
-			buf.append("Current Authorization [").append(toString(ca.getCurrent())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No Current Authorization").append(LINEFEED);
-		}
-		if (ca.getUnconfirmed() != null) {
-			buf.append("Requested Authorization [").append(toString(ca.getUnconfirmed())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No Requested Authorization").append(LINEFEED);
-		}
-		buf.append(toString(ca.getPs()));
-		return buf.toString();
+	public static PrintableObject toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
+		PrintableObject result = new PrintableObject("ChannelAuthorization");
+		result.add("domain", ca.getDomain());
+		result.add("channel", toString(ca.getChannel()));
+		result.add("current", ca.getCurrent() != null ? toString(ca.getCurrent()) : "none");
+		result.add("requested", ca.getUnconfirmed() != null ? toString(ca.getUnconfirmed()) : "none");
+		result.add("status", toLog(ca.getPs()));
+		return result;
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Currentchannelauthorization cca) {
@@ -290,58 +310,39 @@ public class ClientCliLoggingUtils {
 		return buf.toString();
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.Sessioninfo si) {
-		StringBuilder buf = new StringBuilder();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Sessioninfo si) {
+		PrintableObject result = new PrintableObject("Session");
 		if (si.getDestinationsession() != null) {
-			buf.append("Destination Session [").append(toString(si.getDestinationsession())).append("]");
+			result.add("destination", toLog(si.getDestinationsession()));
 		} else {
-			buf.append("No Destination Session");
+			result.add("destination", "none");
 		}
 		if (si.getPs() != null) {
-			buf.append("Processing Status [").append(toString(si.getPs())).append("]");
+			result.add("status", toLog(si.getPs()));
 		} else {
-			buf.append("No Processing Status");
+			result.add("destination", "none");
 		}
-		return buf.toString();
+		return result;
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.FlowStatus fs) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(" RelayStatus=").append(fs.getRelayStatus());
-		buf.append(" FlowStatus=").append(fs.getFlowStatus());
-		buf.append(" UsedBytes=").append(fs.getUsedBytes());
-		return buf.toString();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.FlowStatus fs) {
+		return new PrintableObject("FlowStatus").add("relayStatus", fs.getRelayStatus())
+				.add("flowstatus", fs.getFlowStatus()).add("usedbytes", fs.getUsedBytes());
 	}
 
 	public static String toString(org.tdmx.core.api.v01.msg.Limit li) {
 		return "High=" + li.getHighBytes() + " Low=" + li.getLowBytes();
 	}
 
-	public static String toString(org.tdmx.core.api.v01.msg.Destinationsession ds) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Destination Session [");
-		buf.append(" ContextId=").append(ds.getEncryptionContextId());
-		buf.append(" Scheme=").append(ds.getScheme());
-		buf.append(" SessionKey=").append(ds.getSessionKey());
-		buf.append(toString(ds.getUsersignature()));
-		buf.append("]");
-		return buf.toString();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Destinationsession ds) {
+		return new PrintableObject("DestinationSession").add("contextId", ds.getEncryptionContextId())
+				.add("scheme", ds.getScheme()).add("sessionKey", ds.getSessionKey())
+				.add("usersignature", ds.getUsersignature());
 	}
 
-	public static String toString(org.tdmx.core.api.v01.common.Ps ps) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Processing State [");
-		if (ps.getError() != null) {
-			buf.append(toString(ps.getError()));
-		}
-		if (ps.getStatus() != null) {
-			buf.append(" Status=").append(ps.getStatus());
-		}
-		if (ps.getTimestamp() != null) {
-			buf.append(" Timestamp=").append(toString(ps.getTimestamp()));
-		}
-		buf.append("]");
-		return buf.toString();
+	public static PrintableObject toLog(org.tdmx.core.api.v01.common.Ps ps) {
+		return new PrintableObject("ProcessingState").add("error", toLog(ps.getError())).add("status", ps.getStatus())
+				.add("timestamp", ps.getTimestamp());
 	}
 
 	public static String toString(Calendar cal) {
@@ -355,4 +356,13 @@ public class ClientCliLoggingUtils {
 	public static String truncatedMessage() {
 		return "More results may exist. Use the pageNumber and pageSize parameters to get the next page of results.";
 	}
+
+	public static boolean isVerbose() {
+		return verbose;
+	}
+
+	public static void setVerbose(boolean verbose) {
+		ClientCliLoggingUtils.verbose = verbose;
+	}
+
 }

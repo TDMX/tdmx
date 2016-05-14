@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.ssl;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
 
@@ -54,7 +54,7 @@ public class SearchSSLCertificate extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<SSLCertificateResource> certificates = null;
@@ -62,7 +62,7 @@ public class SearchSSLCertificate extends AbstractCliCommand {
 			certificates = getSas().searchSSLCertificate(page++, PAGE_SIZE, fingerprint, text);
 
 			for (SSLCertificateResource cert : certificates) {
-				getPrinter().output(out, cert);
+				out.println(cert);
 				results++;
 			}
 		} while (certificates.size() == PAGE_SIZE);

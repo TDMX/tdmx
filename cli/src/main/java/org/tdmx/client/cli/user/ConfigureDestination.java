@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.user;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
@@ -28,6 +26,7 @@ import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -76,7 +75,7 @@ public class ConfigureDestination implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidDestination(destination);
 		String domain = ClientCliUtils.getDomainName(destination);
 		String localName = ClientCliUtils.getLocalName(destination);

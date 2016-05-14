@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.domain;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
@@ -34,6 +32,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "domainadmin:search", description = "searches for domain administrator credentials at the service provider.")
@@ -71,7 +70,7 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 
 		if (zd.getScsUrl() == null) {
@@ -92,7 +91,7 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -124,7 +123,7 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 				out.println(ClientCliLoggingUtils.truncatedMessage());
 			}
 		} else {
-			ClientCliUtils.logError(out, searchAdminResponse.getError());
+			ClientCliLoggingUtils.logError(out, searchAdminResponse.getError());
 		}
 	}
 

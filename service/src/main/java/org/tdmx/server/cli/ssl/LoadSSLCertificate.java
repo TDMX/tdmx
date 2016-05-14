@@ -19,7 +19,6 @@
 package org.tdmx.server.cli.ssl;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -27,6 +26,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
@@ -69,7 +69,7 @@ public class LoadSSLCertificate extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		PKIXCertificate cert = null;
 		try {
 			if (StringUtils.hasText(x509File)) {
@@ -110,13 +110,13 @@ public class LoadSSLCertificate extends AbstractCliCommand {
 		List<SSLCertificateResource> existingCerts = getSas().searchSSLCertificate(0, 1, cert.getFingerprint(), null);
 		if (existingCerts.isEmpty()) {
 			SSLCertificateResource newTc = getSas().createSSLCertificate(tc);
-			getPrinter().output(out, newTc);
-			out.println("Added");
+			out.print(newTc);
+			out.println(" added");
 		} else {
 			tc.setId(existingCerts.get(0).getId());
 			SSLCertificateResource updatedTc = getSas().updateSSLCertificate(tc.getId(), tc);
-			getPrinter().output(out, updatedTc);
-			out.println("Updated");
+			out.print(updatedTc);
+			out.println(" updated");
 		}
 	}
 

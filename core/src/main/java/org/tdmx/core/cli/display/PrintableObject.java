@@ -16,20 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.trust;
+package org.tdmx.core.cli.display;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
-import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.display.CliPrinter;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import java.util.ArrayList;
+import java.util.List;
 
-@Cli(name = "untrust:search", description = "Search for certificates in the zone's untrusted certificate store file - untrusted.store")
-public class SearchUntrust implements CommandExecutable {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * An X-Bean style object which can be printed.
+ * 
+ * @author Peter
+ *
+ */
+public class PrintableObject {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,39 +39,36 @@ public class SearchUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(PrintableObject.class);
 
-	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
-	private String fingerprint;
-	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
-	private String domain;
-	@Parameter(name = "text", description = "find any certificate which matches this text.")
-	private String text;
+	private final List<PrintableAttributeValue> attributeValues = new ArrayList<>();
+	private final String name;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public PrintableObject(String name) {
+		this.name = name;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public void run(CliPrinter out) {
-		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
+	public PrintableObject add(String attributeName, Object attributeValue) {
+		PrintableAttributeValue v = new PrintableAttributeValue(attributeName, attributeValue);
+		v.setOrder(attributeValues.size());
+		attributeValues.add(v);
+		return this;
+	}
 
-		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
-
-		int numMatches = 0;
-		int totalEntries = 0;
-		for (TrustStoreEntry entry : untrusted.getCertificates()) {
-			totalEntries++;
-
-			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				out.println(ClientCliLoggingUtils.toString(entry));
-			}
-		}
-		out.println("Found " + numMatches + "/" + totalEntries + " untrusted certificates.");
-
+	public PrintableObject addVerbose(String attributeName, Object attributeValue) {
+		PrintableAttributeValue v = new PrintableAttributeValue(attributeName, attributeValue);
+		v.setOrder(attributeValues.size());
+		v.setVerbose(true);
+		attributeValues.add(v);
+		return this;
 	}
 
 	// -------------------------------------------------------------------------
@@ -84,5 +82,13 @@ public class SearchUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public List<PrintableAttributeValue> getAttributeValues() {
+		return attributeValues;
+	}
+
+	public String getName() {
+		return name;
+	}
 
 }

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.display.ObjectPrettyPrinter;
+import org.tdmx.core.cli.display.PrintableObject;
 import org.tdmx.core.cli.display.annotation.CliAttribute;
 import org.tdmx.core.cli.display.annotation.CliRepresentation;
 
@@ -36,7 +37,7 @@ public class ObjectPrettyPrinterTest {
 
 	@Before
 	public void setUp() {
-		sut = new ObjectPrettyPrinter();
+		sut = new ObjectPrettyPrinter(System.out, true);
 	}
 
 	@Test
@@ -45,12 +46,20 @@ public class ObjectPrettyPrinterTest {
 	}
 
 	@Test
+	public void testPrintAbleObject() {
+		PrintableObject o = new PrintableObject("po");
+		o.add("a1", "StringValue").add("a2", 100L);
+
+		sut.println(o);
+	}
+
+	@Test
 	public void testPrint_SingleObject() {
 		MyObject o = new MyObject();
 		o.verboseStringField0 = "v0";
 		o.nonVerboseStringField1 = "nv1";
 
-		sut.output(System.out, o);
+		sut.println(o);
 	}
 
 	@Test
@@ -68,7 +77,7 @@ public class ObjectPrettyPrinterTest {
 		o1.verboseField2 = o2;
 		o1.nonVerboseField3 = o2;
 
-		sut.output(System.out, o1);
+		sut.println(o1);
 	}
 
 	@Test
@@ -76,7 +85,7 @@ public class ObjectPrettyPrinterTest {
 		MyUndeclaredObject o1 = new MyUndeclaredObject();
 		o1.stringField0 = "o1_nv0";
 
-		sut.output(System.out, o1);
+		sut.println(o1);
 	}
 
 	@CliRepresentation()

@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.cache;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SegmentCacheInvalidationStatusValue;
 
@@ -52,10 +52,10 @@ public class InvalidateCache extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<SegmentCacheInvalidationStatusValue> result = getSas().invalidateCache(cache, segment, null);
 		for (SegmentCacheInvalidationStatusValue r : result) {
-			getPrinter().output(out, r);
+			out.println(r);
 		}
 	}
 

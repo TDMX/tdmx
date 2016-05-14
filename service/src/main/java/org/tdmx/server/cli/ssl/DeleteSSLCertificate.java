@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.ssl;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
 
@@ -51,7 +51,7 @@ public class DeleteSSLCertificate extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<SSLCertificateResource> existingCerts = getSas().searchSSLCertificate(0, 1, fingerprint, null);
 		if (existingCerts.size() != 1) {
 			out.println("SSL certificate " + fingerprint + " not found.");
@@ -59,11 +59,11 @@ public class DeleteSSLCertificate extends AbstractCliCommand {
 		}
 		SSLCertificateResource cert = existingCerts.get(0);
 		Response response = getSas().deleteSSLCertificate(cert.getId());
-		getPrinter().output(out, cert);
+		out.print(cert);
 		if (response.getStatus() == SUCCESS) {
-			out.println("Deleted.");
+			out.println(" deleted.");
 		} else {
-			out.println("Not deleted. StatusCode=" + response.getStatus());
+			out.println(" not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

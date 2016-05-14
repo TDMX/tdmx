@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.domain;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -35,6 +34,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -74,7 +74,7 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
 		Calendar today = CalendarUtils.getDate(new Date());
@@ -106,14 +106,13 @@ public class CreateDomainAdministratorCredentials implements CommandExecutable {
 			byte[] ks = KeyStoreUtils.saveKeyStore(dac, ClientCliUtils.KEYSTORE_TYPE, password,
 					ClientCliUtils.ALIAS_DAC);
 			FileUtils.storeFileContents(
-					ClientCliUtils.getDACKeystoreFilename(publicCertificate.getTdmxDomainName(), serial), ks,
-					".tmp");
+					ClientCliUtils.getDACKeystoreFilename(publicCertificate.getTdmxDomainName(), serial), ks, ".tmp");
 
 			// save the public key separately alongside the keystore
 			byte[] pc = publicCertificate.getX509Encoded();
 			FileUtils.storeFileContents(
-					ClientCliUtils.getDACPublicCertificateFilename(publicCertificate.getTdmxDomainName(), serial),
-					pc, ".tmp");
+					ClientCliUtils.getDACPublicCertificateFilename(publicCertificate.getTdmxDomainName(), serial), pc,
+					".tmp");
 
 			// output the public key to the console
 			out.println("certificate="

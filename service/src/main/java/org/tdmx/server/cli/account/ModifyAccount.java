@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.account;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 
@@ -56,7 +56,7 @@ public class ModifyAccount extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.size() != 1) {
 			out.println("Account " + accountId + " not found");
@@ -74,7 +74,7 @@ public class ModifyAccount extends AbstractCliCommand {
 		}
 
 		AccountResource updatedAr = getSas().updateAccount(ar.getId(), ar);
-		getPrinter().output(out, updatedAr);
+		out.println(updatedAr);
 	}
 
 	// -------------------------------------------------------------------------

@@ -18,12 +18,11 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "zone:describe", description = "Describe the zone - shows info from the zone descriptor file.")
@@ -46,7 +45,7 @@ public class DescribeZone implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 
 		out.println(ClientCliLoggingUtils.toString(zd));

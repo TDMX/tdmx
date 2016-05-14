@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.segment;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
@@ -49,7 +49,7 @@ public class SearchSegment extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<SegmentResource> segments = null;
@@ -57,7 +57,7 @@ public class SearchSegment extends AbstractCliCommand {
 			segments = getSas().searchSegment(page++, PAGE_SIZE, segment);
 
 			for (SegmentResource seg : segments) {
-				getPrinter().output(out, seg);
+				out.println(seg);
 				results++;
 			}
 		} while (segments.size() == PAGE_SIZE);

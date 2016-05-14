@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
@@ -49,7 +49,7 @@ public class CheckPartitionControlServer extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<PartitionControlServerResource> pcss = null;
@@ -57,7 +57,7 @@ public class CheckPartitionControlServer extends AbstractCliCommand {
 			pcss = getSas().searchPartitionControlServer(page++, PAGE_SIZE, segment, null, null, null);
 
 			for (PartitionControlServerResource pcs : pcss) {
-				getPrinter().output(out, pcs);
+				out.println(pcs);
 				results++;
 			}
 		} while (pcss.size() == PAGE_SIZE);

@@ -18,9 +18,9 @@
  */
 package org.tdmx.core.cli.runtime;
 
-import java.io.PrintStream;
+import org.tdmx.core.cli.display.CliPrinter;
 
 public interface CommandExecutable {
 
-	public void run(PrintStream out);
+	public void run(CliPrinter out);
 }

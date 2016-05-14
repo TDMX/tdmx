@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
@@ -51,7 +51,7 @@ public class DeletePartition extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<DatabasePartitionResource> dbPartitions = getSas().searchDatabasePartition(0, 1, partitionId, null, null);
 		if (dbPartitions.isEmpty()) {
 			out.println("No DatabasePartition found with partitionId " + partitionId);
@@ -60,7 +60,7 @@ public class DeletePartition extends AbstractCliCommand {
 
 		DatabasePartitionResource dbPartition = dbPartitions.get(0);
 		Response response = getSas().deleteDatabasePartition(dbPartition.getId());
-		getPrinter().output(out, dbPartition);
+		out.println(dbPartition);
 		if (response.getStatus() == SUCCESS) {
 			out.println("Deleted.");
 		} else {

@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -63,6 +62,7 @@ import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 import org.tdmx.core.system.lang.CalendarUtils;
@@ -109,7 +109,7 @@ public class SendFile implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidDestination(to);
 
 		ClientCliUtils.checkValidUserName(origin);
@@ -152,7 +152,7 @@ public class SendFile implements CommandExecutable {
 		GetMOSSessionResponse sessionResponse = scs.getMOSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get MOS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -174,7 +174,7 @@ public class SendFile implements CommandExecutable {
 		GetChannelResponse destRes = mos.getChannel(channelReq);
 		if (!destRes.isSuccess()) {
 			out.println("Unable to get channel information.");
-			ClientCliUtils.logError(out, destRes.getError());
+			ClientCliLoggingUtils.logError(out, destRes.getError());
 			return;
 		}
 
@@ -193,8 +193,8 @@ public class SendFile implements CommandExecutable {
 		if (Taskstatus.NONE != ci.getPs().getStatus()) {
 			// if the CA is not propagated yet or failed to propagate to the destination, we have a possible problem for
 			// the sender
-			out.println(
-					"Warning: channel authorization processing status " + ClientCliLoggingUtils.toString(ci.getPs()));
+			ClientCliLoggingUtils.log(out, "Warning: channel authorization processing status ",
+					ClientCliLoggingUtils.toLog(ci.getPs()));
 		}
 		if (ci.getCurrent() == null) {
 			out.println("No channel current authorization");
@@ -322,7 +322,7 @@ public class SendFile implements CommandExecutable {
 					SubmitResponse submitResponse = mos.submit(submitReq);
 					if (!submitResponse.isSuccess()) {
 						out.println("Message submission failed. ");
-						ClientCliUtils.logError(out, submitResponse.getError());
+						ClientCliLoggingUtils.logError(out, submitResponse.getError());
 					}
 					out.println("Message header uploaded successfully.");
 					out.println("Message chunk[0] uploaded successfully.");
@@ -337,7 +337,7 @@ public class SendFile implements CommandExecutable {
 						UploadResponse uploadResponse = mos.upload(upl);
 						if (!uploadResponse.isSuccess()) {
 							out.println("Chunk submission failed. ");
-							ClientCliUtils.logError(out, submitResponse.getError());
+							ClientCliLoggingUtils.logError(out, submitResponse.getError());
 							return;
 						}
 						out.println("Message chunk[" + chunk.getPos() + "] uploaded successfully.");

@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.zone;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -36,6 +35,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -81,7 +81,7 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 
 		ClientCliUtils.checkZACNotExists(zd.getZoneApex());

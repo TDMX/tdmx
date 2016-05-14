@@ -146,6 +146,7 @@ public class ClientCLI {
 		};
 		CliRunnerImpl runner = new CliRunnerImpl();
 		runner.setCommandExecutableFactory(commandExecutableFactory);
+		runner.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
 
 		CliParser cliparser = new CliParser();
 		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);

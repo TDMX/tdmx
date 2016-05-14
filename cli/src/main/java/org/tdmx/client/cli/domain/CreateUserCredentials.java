@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.domain;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -35,6 +34,7 @@ import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.UserCredentialSpecifier;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.FileUtils;
@@ -75,7 +75,7 @@ public class CreateUserCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidUserName(username);
 		String domainName = ClientCliUtils.getDomainName(username);
 		String localName = ClientCliUtils.getLocalName(username);

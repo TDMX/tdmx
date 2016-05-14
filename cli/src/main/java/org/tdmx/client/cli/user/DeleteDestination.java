@@ -18,11 +18,10 @@
  */
 package org.tdmx.client.cli.user;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "destination:delete", description = "deletes the destination's configuration.")
@@ -48,7 +47,7 @@ public class DeleteDestination implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidDestination(destination);
 
 		if (ClientCliUtils.destinationDescriptorExists(destination)) {

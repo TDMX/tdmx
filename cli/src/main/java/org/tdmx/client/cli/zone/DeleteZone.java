@@ -18,10 +18,9 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "zone:delete", description = "deletes the zone descriptor file.", note = "this command does not perform deprovisioning at the service provider.")
@@ -44,7 +43,7 @@ public class DeleteZone implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		if (ClientCliUtils.zoneDescriptorExists()) {
 			ClientCliUtils.deleteZoneDescriptor();
 

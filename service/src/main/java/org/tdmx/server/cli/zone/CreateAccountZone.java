@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.zone;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
@@ -60,7 +60,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.isEmpty()) {
 			out.println("Account " + accountId + " not found.");
@@ -81,7 +81,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 		azr.setAccessStatus(status);
 
 		AccountZoneResource newAzr = getSas().createAccountZone(account.getId(), azr);
-		getPrinter().output(out, newAzr);
+		out.println(newAzr);
 	}
 
 	// -------------------------------------------------------------------------

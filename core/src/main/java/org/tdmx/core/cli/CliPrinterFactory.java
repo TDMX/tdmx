@@ -16,18 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli.display;
+package org.tdmx.core.cli;
+
+import java.io.PrintStream;
+
+import org.tdmx.core.cli.display.CliPrinter;
 
 /**
- * Prints an instance of an object to the output.
+ * A factory providing the {@link CliPrinter} and giving the possibility to set the default value for verbosity.
  * 
  * @author Peter
  *
  */
-public interface CliPrinter {
+public interface CliPrinterFactory {
 
-	public void print(Object... object);
+	public boolean getVerbose();
 
-	public void println(Object... object);
+	public void setVerbose(boolean verbose);
+
+	public CliPrinter getPrinter(PrintStream ps);
 
 }

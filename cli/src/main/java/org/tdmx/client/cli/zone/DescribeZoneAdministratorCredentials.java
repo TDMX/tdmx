@@ -18,14 +18,13 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "zoneadmin:describe", description = "Describes the zone administrator certificate.", note = "Helps to copy-paste the certificate PEM into the service provider zone configuration tool.")
@@ -51,7 +50,7 @@ public class DescribeZoneAdministratorCredentials implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		PKIXCredential zac = ClientCliUtils.getZAC(zacPassword);
 
 		out.println(

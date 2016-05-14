@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.trust;
+package org.tdmx.core.cli.display;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.ClientCliUtils;
-import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
-import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.annotation.Parameter;
-import org.tdmx.core.cli.display.CliPrinter;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Cli(name = "untrust:search", description = "Search for certificates in the zone's untrusted certificate store file - untrusted.store")
-public class SearchUntrust implements CommandExecutable {
+/**
+ * An attribute of a printable object.
+ * 
+ * @author Peter
+ *
+ */
+public class PrintableAttributeValue {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -38,40 +36,25 @@ public class SearchUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(PrintableAttributeValue.class);
 
-	@Parameter(name = "fingerprint", description = "the SHA2 fingerprint of a certificate.")
-	private String fingerprint;
-	@Parameter(name = "domain", description = "find certificates which can be a parent to the domain.")
-	private String domain;
-	@Parameter(name = "text", description = "find any certificate which matches this text.")
-	private String text;
-
+	private final String attributeName;
+	private int order = 0;
+	private final Object instanceValue;
+	private int padding = 0;
+	private boolean verbose = false;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public PrintableAttributeValue(String attributeName, Object instanceValue) {
+		this.attributeName = attributeName;
+		this.instanceValue = instanceValue;
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-
-	@Override
-	public void run(CliPrinter out) {
-		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
-
-		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);
-
-		int numMatches = 0;
-		int totalEntries = 0;
-		for (TrustStoreEntry entry : untrusted.getCertificates()) {
-			totalEntries++;
-
-			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				out.println(ClientCliLoggingUtils.toString(entry));
-			}
-		}
-		out.println("Found " + numMatches + "/" + totalEntries + " untrusted certificates.");
-
-	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -84,5 +67,37 @@ public class SearchUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
+	public int getPadding() {
+		return padding;
+	}
+
+	public void setPadding(int padding) {
+		this.padding = padding;
+	}
+
+	public String getAttributeName() {
+		return attributeName;
+	}
+
+	public Object getInstanceValue() {
+		return instanceValue;
+	}
+
+	public boolean isVerbose() {
+		return verbose;
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
 
 }

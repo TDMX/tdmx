@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 
@@ -53,7 +53,7 @@ public class SearchPartition extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<DatabasePartitionResource> partitions = null;
@@ -61,7 +61,7 @@ public class SearchPartition extends AbstractCliCommand {
 			partitions = getSas().searchDatabasePartition(page++, PAGE_SIZE, partitionId, dbType, segment);
 
 			for (DatabasePartitionResource partition : partitions) {
-				getPrinter().output(out, partition);
+				out.println(partition);
 				results++;
 			}
 		} while (partitions.size() == PAGE_SIZE);

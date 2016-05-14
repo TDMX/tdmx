@@ -18,10 +18,9 @@
  */
 package org.tdmx.server.cli.segment;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
@@ -51,13 +50,13 @@ public class CreateSegment extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		SegmentResource seg = new SegmentResource();
 		seg.setSegment(segment);
 		seg.setScsUrl(scsUrl);
 
 		SegmentResource newSeg = getSas().createSegment(seg);
-		getPrinter().output(out, newSeg);
+		out.println(newSeg);
 	}
 
 	// -------------------------------------------------------------------------

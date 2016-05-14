@@ -19,7 +19,6 @@
 package org.tdmx.server.cli.ssl;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
@@ -76,7 +76,7 @@ public class LoadTruststoreSSLCertificate extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 
 		try {
 
@@ -107,14 +107,14 @@ public class LoadTruststoreSSLCertificate extends AbstractCliCommand {
 					tc.setComment(comment);
 					tc.setPem(CertificateIOUtils.x509certsToPem(new PKIXCertificate[] { cert }));
 					SSLCertificateResource newTc = getSas().createSSLCertificate(tc);
-					getPrinter().output(out, newTc);
+					out.println(newTc);
 					out.println("Added");
 				} else {
 					SSLCertificateResource tc = existingCerts.get(0);
 					tc.setTrust(EnumUtils.mapToString(distrust ? TrustStatus.DISTRUSTED : TrustStatus.TRUSTED));
 					tc.setComment(comment);
 					SSLCertificateResource updatedTc = getSas().updateSSLCertificate(tc.getId(), tc);
-					getPrinter().output(out, updatedTc);
+					out.println(updatedTc);
 					out.println("Modified");
 				}
 			}

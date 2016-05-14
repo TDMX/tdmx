@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.dns;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 
@@ -49,7 +49,7 @@ public class SearchDnsResolverGroup extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<DnsResolverGroupResource> groups = null;
@@ -57,7 +57,7 @@ public class SearchDnsResolverGroup extends AbstractCliCommand {
 			groups = getSas().searchDnsResolverGroup(page++, PAGE_SIZE, name);
 
 			for (DnsResolverGroupResource group : groups) {
-				getPrinter().output(out, group);
+				out.println(group);
 				results++;
 			}
 		} while (groups.size() == PAGE_SIZE);

@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.domain;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -33,6 +31,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
@@ -74,7 +73,7 @@ public class DeleteChannel implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("No TDMX DNS TXT record found for " + domain);
@@ -99,7 +98,7 @@ public class DeleteChannel implements CommandExecutable {
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -150,7 +149,7 @@ public class DeleteChannel implements CommandExecutable {
 			out.println("Authorization " + ClientCliLoggingUtils.toString(c) + " successfully deleted.");
 
 		} else {
-			ClientCliUtils.logError(out, setChannelAuthResponse.getError());
+			ClientCliLoggingUtils.logError(out, setChannelAuthResponse.getError());
 		}
 	}
 

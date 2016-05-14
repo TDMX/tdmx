@@ -22,6 +22,7 @@ import java.io.PrintStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.Command;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
@@ -42,6 +43,7 @@ public class CliRunnerImpl implements CliRunner {
 
 	// internal
 	private CommandExecutableFactory commandExecutableFactory;
+	private CliPrinterFactory cliPrinterFactory;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,7 +63,8 @@ public class CliRunnerImpl implements CliRunner {
 		check(cmd);
 		bind(cmd, exec);
 
-		exec.run(out);
+		CliPrinter cliPrinter = cliPrinterFactory.getPrinter(out);
+		exec.run(cliPrinter);
 	}
 
 	// -------------------------------------------------------------------------
@@ -129,6 +132,14 @@ public class CliRunnerImpl implements CliRunner {
 
 	public void setCommandExecutableFactory(CommandExecutableFactory commandExecutableFactory) {
 		this.commandExecutableFactory = commandExecutableFactory;
+	}
+
+	public CliPrinterFactory getCliPrinterFactory() {
+		return cliPrinterFactory;
+	}
+
+	public void setCliPrinterFactory(CliPrinterFactory cliPrinterFactory) {
+		this.cliPrinterFactory = cliPrinterFactory;
 	}
 
 }

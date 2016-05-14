@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
@@ -27,6 +25,7 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "trust:add", description = "Add untrusted certificates to the zone's trusted certificate store file - trusted.store")
@@ -62,7 +61,7 @@ public class AddTrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneTrustStore trusted = ClientCliUtils.loadTrustedCertificates();
 		ZoneTrustStore untrusted = ClientCliUtils.loadUntrustedCertificates();
 

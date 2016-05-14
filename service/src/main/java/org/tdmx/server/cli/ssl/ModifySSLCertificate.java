@@ -18,12 +18,12 @@
  */
 package org.tdmx.server.cli.ssl;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.TrustStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
@@ -58,7 +58,7 @@ public class ModifySSLCertificate extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<SSLCertificateResource> existingCerts = getSas().searchSSLCertificate(0, 1, fingerprint, null);
 		if (existingCerts.size() != 1) {
 			out.println("SSL certificate " + fingerprint + " not found.");
@@ -69,7 +69,7 @@ public class ModifySSLCertificate extends AbstractCliCommand {
 		cert.setComment(comment);
 
 		SSLCertificateResource updatedCert = getSas().updateSSLCertificate(cert.getId(), cert);
-		getPrinter().output(out, updatedCert);
+		out.println(updatedCert);
 		out.println("Modified");
 	}
 

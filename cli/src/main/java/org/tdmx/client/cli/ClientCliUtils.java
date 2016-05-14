@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
@@ -1376,10 +1375,6 @@ public class ClientCliUtils {
 
 		MOS client = factory.createClient();
 		return client;
-	}
-
-	public static void logError(PrintStream out, org.tdmx.core.api.v01.common.Error error) {
-		out.println(ClientCliLoggingUtils.toString(error));
 	}
 
 	private static String getMandatoryStringProperty(Properties p, String name, String filename) {

@@ -18,11 +18,10 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
@@ -50,7 +49,7 @@ public class LookupDns implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("DNS TXT record not found for domain " + domain);

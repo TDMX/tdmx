@@ -18,10 +18,10 @@
  */
 package org.tdmx.server.cli.cache;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 
 @Cli(name = "cache:list", description = "lists all caches")
@@ -44,10 +44,10 @@ public class ListCache extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<String> segments = getSas().getCacheNames();
 		for (String seg : segments) {
-			getPrinter().output(out, seg);
+			out.println(seg);
 		}
 	}
 

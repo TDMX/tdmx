@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
@@ -67,6 +66,7 @@ import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 import org.tdmx.core.system.lang.StreamUtils;
@@ -103,7 +103,7 @@ public class PollReceive implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidDestination(destination);
 
 		String domain = ClientCliUtils.getDomainName(destination);
@@ -152,7 +152,7 @@ public class PollReceive implements CommandExecutable {
 		GetMDSSessionResponse sessionResponse = scs.getMDSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get MDS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -169,7 +169,7 @@ public class PollReceive implements CommandExecutable {
 		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
 		if (!destRes.isSuccess()) {
 			out.println("Unable to get current destination session.");
-			ClientCliUtils.logError(out, destRes.getError());
+			ClientCliLoggingUtils.logError(out, destRes.getError());
 			return;
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();
@@ -225,7 +225,7 @@ public class PollReceive implements CommandExecutable {
 			SetDestinationSessionResponse setDestRes = mds.setDestinationSession(setDestReq);
 			if (!setDestRes.isSuccess()) {
 				out.println("Unable to set new current destination session.");
-				ClientCliUtils.logError(out, setDestRes.getError());
+				ClientCliLoggingUtils.logError(out, setDestRes.getError());
 				return;
 			}
 			out.println("New session set at the service provider.");
@@ -245,7 +245,7 @@ public class PollReceive implements CommandExecutable {
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
 		if (!receiveResponse.isSuccess()) {
 			out.println("Failed to receive Msg.");
-			ClientCliUtils.logError(out, receiveResponse.getError());
+			ClientCliLoggingUtils.logError(out, receiveResponse.getError());
 			return;
 		}
 
@@ -334,7 +334,7 @@ public class PollReceive implements CommandExecutable {
 						DownloadResponse downloadResponse = mds.download(downloadRequest);
 						if (!downloadResponse.isSuccess()) {
 							out.println("Failed to receive Chunk.");
-							ClientCliUtils.logError(out, downloadResponse.getError());
+							ClientCliLoggingUtils.logError(out, downloadResponse.getError());
 							chunksOk = false;
 						} else {
 							continuationId = downloadResponse.getContinuation();
@@ -417,7 +417,7 @@ public class PollReceive implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	private void handleAcknowledge(PKIXCredential uc, Msg msg, Error error, MDS mds, String xid, String sessionId,
-			PrintStream out) {
+			CliPrinter out) {
 		Msgreference msgRef = new Msgreference();
 		msgRef.setExternalReference(msg.getHeader().getExternalReference());
 		msgRef.setMsgId(msg.getHeader().getMsgId());
@@ -436,7 +436,7 @@ public class PollReceive implements CommandExecutable {
 		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
 		if (!ackResponse.isSuccess()) {
 			out.println("Failed to NACK receipt.");
-			ClientCliUtils.logError(out, ackResponse.getError());
+			ClientCliLoggingUtils.logError(out, ackResponse.getError());
 		}
 	}
 

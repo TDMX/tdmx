@@ -123,21 +123,23 @@
 		</property>
 	</bean>
 	
+	<bean id="tdmx.server.cli.PrinterFactory" class="org.tdmx.core.cli.CliPrinterFactoryImpl">
+	</bean>
+
 	<bean id="tdmx.server.cli.ServerCliRunner" class="org.tdmx.core.cli.CliRunnerImpl">
 		<property name="commandExecutableFactory" ref="tdmx.server.cli.ServerCommandExecutableFactory"/>
+		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
 	</bean>
 	
 	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliParser">
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
 		<property name="cliRunner" ref="tdmx.server.cli.ServerCliRunner"/>
 	</bean>
-
-	<bean id="tdmx.server.cli.Printer" class="org.tdmx.core.cli.display.ObjectPrettyPrinter">
-	</bean>
 	
+
+
 	<bean id="tdmx.server.cli.cmd.AbstractCommand" class="org.tdmx.server.cli.cmd.AbstractCliCommand" abstract="true">
 		<property name="sas" ref="rs.SAS"/>
-		<property name="printer" ref="tdmx.server.cli.Printer"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

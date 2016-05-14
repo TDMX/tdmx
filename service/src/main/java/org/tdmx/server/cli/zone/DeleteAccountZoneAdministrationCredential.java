@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.zone;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
@@ -59,7 +59,7 @@ public class DeleteAccountZoneAdministrationCredential extends AbstractCliComman
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.isEmpty()) {
 			out.println("Account " + accountId + " not found.");
@@ -84,11 +84,11 @@ public class DeleteAccountZoneAdministrationCredential extends AbstractCliComman
 
 		Response response = getSas().deleteAccountZoneAdministrationCredential(account.getId(), azr.getId(),
 				azac.getId());
-		getPrinter().output(out, azac);
+		out.print(azac);
 		if (response.getStatus() == SUCCESS) {
-			out.println("Deleted.");
+			out.println(" deleted.");
 		} else {
-			out.println("Not deleted. StatusCode=" + response.getStatus());
+			out.println(" not deleted. StatusCode=" + response.getStatus());
 		}
 	}
 

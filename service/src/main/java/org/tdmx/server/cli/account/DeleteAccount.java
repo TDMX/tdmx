@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.account;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 
@@ -51,7 +51,7 @@ public class DeleteAccount extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<AccountResource> accounts = getSas().searchAccount(0, 1, null, accountId);
 		if (accounts.size() != 1) {
 			out.println("Account " + accountId + " not found.");
@@ -59,7 +59,7 @@ public class DeleteAccount extends AbstractCliCommand {
 		}
 		AccountResource ar = accounts.get(0);
 		Response response = getSas().deleteAccount(ar.getId());
-		getPrinter().output(out, ar);
+		out.println(ar);
 		if (response.getStatus() == SUCCESS) {
 			out.println("Deleted.");
 		} else {

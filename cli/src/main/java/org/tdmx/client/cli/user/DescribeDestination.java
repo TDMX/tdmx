@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.user;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
@@ -37,6 +35,7 @@ import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
@@ -72,7 +71,7 @@ public class DescribeDestination implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ClientCliUtils.checkValidDestination(destination);
 		String domain = ClientCliUtils.getDomainName(destination);
 		String localName = ClientCliUtils.getLocalName(destination);
@@ -121,7 +120,7 @@ public class DescribeDestination implements CommandExecutable {
 		GetMDSSessionResponse sessionResponse = scs.getMDSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get MDS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -138,7 +137,7 @@ public class DescribeDestination implements CommandExecutable {
 		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
 		if (!destRes.isSuccess()) {
 			out.println("Unable to get current destination session.");
-			ClientCliUtils.logError(out, destRes.getError());
+			ClientCliLoggingUtils.logError(out, destRes.getError());
 			return;
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();

@@ -19,12 +19,12 @@
 package org.tdmx.server.cli.zone;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
@@ -67,7 +67,7 @@ public class CreateAccountZoneAdministrationCredential extends AbstractCliComman
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		String certificatePem = pemText;
 		try {
 			if (StringUtils.hasText(x509File)) {
@@ -117,7 +117,7 @@ public class CreateAccountZoneAdministrationCredential extends AbstractCliComman
 
 		AccountZoneAdministrationCredentialResource newZAC = getSas()
 				.createAccountZoneAdministrationCredential(account.getId(), azr.getId(), azcr);
-		getPrinter().output(out, newZAC);
+		out.println(newZAC);
 	}
 
 	// -------------------------------------------------------------------------

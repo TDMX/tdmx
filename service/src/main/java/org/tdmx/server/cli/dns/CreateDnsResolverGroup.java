@@ -18,10 +18,9 @@
  */
 package org.tdmx.server.cli.dns;
 
-import java.io.PrintStream;
-
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 
@@ -50,13 +49,13 @@ public class CreateDnsResolverGroup extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		DnsResolverGroupResource dnsGroup = new DnsResolverGroupResource();
 		dnsGroup.setGroupName(name);
 		dnsGroup.setIpAddressList(ipaddresses);
 
 		DnsResolverGroupResource newDnsGroup = getSas().createDnsResolverGroup(dnsGroup);
-		getPrinter().output(out, dnsGroup);
+		out.println(newDnsGroup);
 	}
 
 	// -------------------------------------------------------------------------

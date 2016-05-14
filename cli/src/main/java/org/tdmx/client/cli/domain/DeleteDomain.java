@@ -18,8 +18,7 @@
  */
 package org.tdmx.client.cli.domain;
 
-import java.io.PrintStream;
-
+import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -30,6 +29,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "domain:delete", description = "delete a domain at the service provider.", note = "a domain can only be deleted if all services, addresses and channels are deleted first.")
@@ -61,7 +61,7 @@ public class DeleteDomain implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 
 		if (zd.getScsUrl() == null) {
@@ -82,7 +82,7 @@ public class DeleteDomain implements CommandExecutable {
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -101,7 +101,7 @@ public class DeleteDomain implements CommandExecutable {
 		if (deleteDomainResponse.isSuccess()) {
 			out.println(domain + " deleted.");
 		} else {
-			ClientCliUtils.logError(out, deleteDomainResponse.getError());
+			ClientCliLoggingUtils.logError(out, deleteDomainResponse.getError());
 		}
 	}
 

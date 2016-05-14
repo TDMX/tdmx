@@ -18,8 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
@@ -27,6 +25,7 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
 @Cli(name = "distrust:search", description = "Search for certificates in the zone's distrusted certificate store file - distrusted.store")
@@ -56,7 +55,7 @@ public class SearchDistrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneTrustStore distrusted = ClientCliUtils.loadDistrustedCertificates();
 
 		TrustStoreEntrySearchCriteria criteria = new TrustStoreEntrySearchCriteria(fingerprint, domain, text);

@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
@@ -56,7 +56,7 @@ public class ModifyPartitionControlServer extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<PartitionControlServerResource> pcss = getSas().searchPartitionControlServer(0, 1, segment, modulo, null,
 				null);
 		if (pcss.isEmpty()) {
@@ -73,7 +73,7 @@ public class ModifyPartitionControlServer extends AbstractCliCommand {
 		}
 
 		PartitionControlServerResource newPCS = getSas().updatePartitionControlServer(pcs.getId(), pcs);
-		getPrinter().output(out, newPCS);
+		out.println(newPCS);
 	}
 
 	// -------------------------------------------------------------------------

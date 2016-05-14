@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.account;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 
@@ -52,7 +52,7 @@ public class SearchAccount extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		int results = 0;
 		int page = 0;
 		List<AccountResource> accounts = null;
@@ -60,7 +60,7 @@ public class SearchAccount extends AbstractCliCommand {
 			accounts = getSas().searchAccount(page++, PAGE_SIZE, email, accountId);
 
 			for (AccountResource account : accounts) {
-				getPrinter().output(out, account);
+				out.println(account);
 				results++;
 			}
 		} while (accounts.size() == PAGE_SIZE);

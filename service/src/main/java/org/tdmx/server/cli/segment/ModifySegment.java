@@ -18,11 +18,11 @@
  */
 package org.tdmx.server.cli.segment;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
 
@@ -52,7 +52,7 @@ public class ModifySegment extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<SegmentResource> segments = getSas().searchSegment(0, 1, segment);
 		if (segments.isEmpty()) {
 			out.println("Segment " + segment + " not found.");
@@ -64,7 +64,7 @@ public class ModifySegment extends AbstractCliCommand {
 		}
 
 		SegmentResource updatedSegment = getSas().updateSegment(seg.getId(), seg);
-		getPrinter().output(out, updatedSegment);
+		out.println(updatedSegment);
 	}
 
 	// -------------------------------------------------------------------------

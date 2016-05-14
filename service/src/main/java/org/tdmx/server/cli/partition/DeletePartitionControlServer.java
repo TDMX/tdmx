@@ -18,13 +18,13 @@
  */
 package org.tdmx.server.cli.partition;
 
-import java.io.PrintStream;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 
@@ -53,7 +53,7 @@ public class DeletePartitionControlServer extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		List<PartitionControlServerResource> pcss = getSas().searchPartitionControlServer(0, 1, segment, modulo, null,
 				null);
 		if (pcss.isEmpty()) {
@@ -63,7 +63,7 @@ public class DeletePartitionControlServer extends AbstractCliCommand {
 
 		PartitionControlServerResource pcs = pcss.get(0);
 		Response response = getSas().deletePartitionControlServer(pcs.getId());
-		getPrinter().output(out, pcs);
+		out.println(pcs);
 		if (response.getStatus() == SUCCESS) {
 			out.println("Deleted.");
 		} else {

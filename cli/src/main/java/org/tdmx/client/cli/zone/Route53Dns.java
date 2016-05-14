@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +26,7 @@ import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
@@ -86,7 +86,7 @@ public class Route53Dns implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		Regions r = null;
 		try {
 			r = Regions.fromName(awsRegion);

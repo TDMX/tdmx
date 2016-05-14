@@ -18,13 +18,12 @@
  */
 package org.tdmx.client.cli.zone;
 
-import java.io.PrintStream;
-
 import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.lang.NetUtils;
 
@@ -51,7 +50,7 @@ public class ModifyZone implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		ZoneDescriptor zd = ClientCliUtils.loadZoneDescriptor();
 		if (NetUtils.isValidUrl(scsUrl)) {
 			zd.setScsUrl(NetUtils.getURL(scsUrl));

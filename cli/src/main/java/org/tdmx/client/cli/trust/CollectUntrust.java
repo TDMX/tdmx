@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +40,7 @@ import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.system.dns.DnsUtils.TdmxZoneRecord;
 
@@ -77,7 +77,7 @@ public class CollectUntrust implements CommandExecutable {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(PrintStream out) {
+	public void run(CliPrinter out) {
 		TdmxZoneRecord domainInfo = ClientCliUtils.getSystemDnsInfo(domain);
 		if (domainInfo == null) {
 			out.println("No TDMX DNS TXT record found for " + domain);
@@ -102,7 +102,7 @@ public class CollectUntrust implements CommandExecutable {
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
 			out.println("Unable to get ZAS session.");
-			ClientCliUtils.logError(out, sessionResponse.getError());
+			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -143,30 +143,31 @@ public class CollectUntrust implements CommandExecutable {
 					PKIXCertificate cert = null;
 					// we extract the zone root cert from all the authorization signatures
 					if (channel.getChannelauthorization().getCurrent().getOriginPermission() != null) {
-						cert = processSigner(out, channel.getChannelauthorization().getCurrent().getOriginPermission()
+						cert = processSigner(channel.getChannelauthorization().getCurrent().getOriginPermission()
 								.getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getCurrent().getDestinationPermission() != null) {
-						cert = processSigner(out, channel.getChannelauthorization().getCurrent()
-								.getDestinationPermission().getAdministratorsignature());
+						cert = processSigner(channel.getChannelauthorization().getCurrent().getDestinationPermission()
+								.getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getUnconfirmed().getOriginPermission() != null) {
-						cert = processSigner(out, channel.getChannelauthorization().getUnconfirmed()
-								.getOriginPermission().getAdministratorsignature());
+						cert = processSigner(channel.getChannelauthorization().getUnconfirmed().getOriginPermission()
+								.getAdministratorsignature());
 					}
 					if (channel.getChannelauthorization().getUnconfirmed().getDestinationPermission() != null) {
-						cert = processSigner(out, channel.getChannelauthorization().getUnconfirmed()
+						cert = processSigner(channel.getChannelauthorization().getUnconfirmed()
 								.getDestinationPermission().getAdministratorsignature());
 					}
 					if (cert != null) {
 						authCertMap.put(cert.getFingerprint(), cert);
 					} else {
-						out.println("Unable to process certificate for " + ClientCliLoggingUtils.toString(channel));
+						ClientCliLoggingUtils.log(out, "Unable to process certificate for ",
+								ClientCliLoggingUtils.toLog(channel));
 					}
 				}
 				again = searchChannelResponse.getChannelinfos().size() == batchsize;
 			} else {
-				ClientCliUtils.logError(out, searchChannelResponse.getError());
+				ClientCliLoggingUtils.logError(out, searchChannelResponse.getError());
 				again = false;
 			}
 
@@ -207,7 +208,7 @@ public class CollectUntrust implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private PKIXCertificate processSigner(PrintStream out, Administratorsignature signer) {
+	private PKIXCertificate processSigner(Administratorsignature signer) {
 		if (signer == null || signer.getAdministratorIdentity() == null
 				|| signer.getAdministratorIdentity().getRootcertificate() == null) {
 			return null;
