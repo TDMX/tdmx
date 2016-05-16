@@ -113,9 +113,9 @@ public class DeleteService implements CommandExecutable {
 
 		org.tdmx.core.api.v01.zas.DeleteServiceResponse deleteServiceResponse = zas.deleteService(deleteServiceRequest);
 		if (deleteServiceResponse.isSuccess()) {
-			out.println(ClientCliLoggingUtils.toString(s) + " successfully deleted.");
+			out.println(s, " successfully deleted.");
 		} else {
-			out.println("Unable to delete " + ClientCliLoggingUtils.toString(s));
+			out.println("Unable to delete ", s);
 			ClientCliLoggingUtils.logError(out, deleteServiceResponse.getError());
 		}
 	}

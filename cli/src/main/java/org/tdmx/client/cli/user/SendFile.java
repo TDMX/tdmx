@@ -187,14 +187,12 @@ public class SendFile implements CommandExecutable {
 		if (ci.getUnconfirmed() != null) {
 			// if the destination's permission is changed but we haven't yet confirmed it we have potential conflicts if
 			// we send now.
-			out.println("Warning: channel has unconfirmed authorization. "
-					+ ClientCliLoggingUtils.toString(ci.getUnconfirmed()));
+			out.println("Warning: channel has unconfirmed authorization. ", ci.getUnconfirmed());
 		}
 		if (Taskstatus.NONE != ci.getPs().getStatus()) {
 			// if the CA is not propagated yet or failed to propagate to the destination, we have a possible problem for
 			// the sender
-			ClientCliLoggingUtils.log(out, "Warning: channel authorization processing status ",
-					ClientCliLoggingUtils.toLog(ci.getPs()));
+			ClientCliLoggingUtils.log(out, "Warning: channel authorization processing status ", ci.getPs());
 		}
 		if (ci.getCurrent() == null) {
 			out.println("No channel current authorization");
@@ -207,7 +205,7 @@ public class SendFile implements CommandExecutable {
 			return;
 		}
 		if (Grant.ALLOW != sendPermission.getPermission()) {
-			out.println("Sending not permitted. " + ClientCliLoggingUtils.toString(sendPermission));
+			out.println("Sending not permitted. ", sendPermission);
 			return;
 		}
 		// .. send:file list from=user1@z1.tdmx.org to=user2@z2.tdmx.org#service1 userPassword=changeme exec
@@ -237,7 +235,7 @@ public class SendFile implements CommandExecutable {
 			return;
 		}
 		if (Grant.ALLOW != recvPermission.getPermission()) {
-			out.println("Destination does not permit receive. " + ClientCliLoggingUtils.toString(recvPermission));
+			out.println("Destination does not permit receive. ", recvPermission);
 			return;
 		}
 		// check that the channel authorization we received is signed correctly and we trust the authorizer.

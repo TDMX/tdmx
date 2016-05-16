@@ -54,13 +54,15 @@ public class ObjectPrettyPrinter implements CliPrinter {
 
 	private final boolean verbose;
 	private final PrintStream out;
+	private final PrintableObjectMapper mapper;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public ObjectPrettyPrinter(PrintStream out, boolean verbose) {
+	public ObjectPrettyPrinter(PrintStream out, boolean verbose, PrintableObjectMapper mapper) {
 		this.verbose = verbose;
 		this.out = out;
+		this.mapper = mapper;
 	}
 
 	// -------------------------------------------------------------------------
@@ -87,23 +89,28 @@ public class ObjectPrettyPrinter implements CliPrinter {
 	// -------------------------------------------------------------------------
 
 	protected void outputObject(Object object, int indentation) {
-		PrintableObject rep = getRepresentation(object);
-		if (rep != null) {
-			// specialized printing for annotated classes
-			out.println(rep.getName() + " {");
 
-			List<StringBuffer> lines = lineRepresentation(rep, object, indentation);
-			for (StringBuffer l : lines) {
-				out.println(l.toString());
-			}
-
-			out.print(getIndentation(indentation));
-			out.print("}");
+		Object rep = getRepresentation(object);
+		if (rep instanceof PrintableObject) {
+			outputRepresentation(object, (PrintableObject) rep, indentation);
 		} else {
 			out.print(object);
 		}
 	}
 
+	protected void outputRepresentation(Object original, PrintableObject rep, int indentation) {
+		// specialized printing for annotated classes
+		out.println(rep.getName() + " {");
+
+		List<StringBuffer> lines = lineRepresentation(rep, original, indentation);
+		for (StringBuffer l : lines) {
+			out.println(l.toString());
+		}
+
+		out.print(getIndentation(indentation));
+		out.print("}");
+
+	}
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
@@ -113,17 +120,18 @@ public class ObjectPrettyPrinter implements CliPrinter {
 
 		int childIndentation = indentation + 4;
 		for (PrintableAttributeValue h : getAttributes(rep, object, verbose)) {
-			PrintableObject attrRep = getRepresentation(h.getInstanceValue());
-			if (attrRep != null) {
+			Object attrRep = getRepresentation(h.getInstanceValue());
+			if (attrRep instanceof PrintableObject) {
+				PrintableObject atrRep = (PrintableObject) attrRep;
 				StringBuffer attributeHeaderLine = getIndentation(childIndentation);
 				attributeHeaderLine.append(h.getAttributeName());
 				for (int i = 0; i < h.getPadding(); i++) {
 					attributeHeaderLine.append(" ");
 				}
-				attributeHeaderLine.append(" : ").append(attrRep.getName()).append(" {");
+				attributeHeaderLine.append(" : ").append(atrRep.getName()).append(" {");
 				lines.add(attributeHeaderLine);
 
-				List<StringBuffer> childLines = lineRepresentation(attrRep, h.getInstanceValue(), childIndentation);
+				List<StringBuffer> childLines = lineRepresentation(atrRep, h.getInstanceValue(), childIndentation);
 				for (StringBuffer childLine : childLines) {
 					lines.add(childLine);
 				}
@@ -138,7 +146,7 @@ public class ObjectPrettyPrinter implements CliPrinter {
 				for (int i = 0; i < h.getPadding(); i++) {
 					attributeLine.append(" ");
 				}
-				attributeLine.append(" : ").append(h.getInstanceValue().toString());
+				attributeLine.append(" : ").append(attrRep.toString());
 				lines.add(attributeLine);
 			}
 		}
@@ -153,24 +161,32 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		return buf;
 	}
 
-	private PrintableObject getRepresentation(Object object) {
-		if (object instanceof PrintableObject) {
-			return (PrintableObject) object;
+	private Object getRepresentation(Object object) {
+		if (object == null) {
+			return null;
 		}
+		if (mapper != null) {
+			Object mappedObject = mapper.map(object, verbose);
+			if (mappedObject != null) {
+				// print the mapped object instead
+				object = mappedObject;
+			}
+		}
+
+		if (object instanceof PrintableObject) {
+			return object;
+		}
+		// if might be a CliRepresentation, in which case we transform to a PrintableObject
 		Class<?> clazz = object.getClass();
 		CliRepresentation[] cliRepresentations = clazz.getAnnotationsByType(CliRepresentation.class);
-		if (cliRepresentations == null) {
-			return null;
-		}
-		if (cliRepresentations.length != 1) {
-			return null;
-		}
-
-		if (!StringUtils.hasText(cliRepresentations[0].name())) {
-			return new PrintableObject(object.getClass().getSimpleName());
+		if (cliRepresentations != null && cliRepresentations.length == 1) {
+			if (!StringUtils.hasText(cliRepresentations[0].name())) {
+				return new PrintableObject(object.getClass().getSimpleName());
+			}
+			return new PrintableObject(cliRepresentations[0].name());
 		}
 
-		return new PrintableObject(cliRepresentations[0].name());
+		return object;
 	}
 
 	private PrintableAttributeValue[] getAttributes(PrintableObject po, Object object, boolean verbose) {
@@ -179,7 +195,11 @@ public class ObjectPrettyPrinter implements CliPrinter {
 
 		gatheredAttributes = getAttributesViaReflection(object, verbose);
 		// add all attributes which the PO provide
-		gatheredAttributes.addAll(po.getAttributeValues());
+		for (PrintableAttributeValue pav : po.getAttributeValues()) {
+			if (pav.getInstanceValue() != null) {
+				gatheredAttributes.add(pav);
+			}
+		}
 
 		// strip verbose attributes if not verbose output
 		Iterator<PrintableAttributeValue> it = gatheredAttributes.iterator();

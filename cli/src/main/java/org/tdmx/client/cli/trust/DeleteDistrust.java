@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
@@ -75,7 +74,7 @@ public class DeleteDistrust implements CommandExecutable {
 			}
 		}
 		if (numMatches == 1) {
-			out.println("Removing " + ClientCliLoggingUtils.toString(matchingEntry));
+			out.println("Removing ", matchingEntry);
 			distrusted.remove(matchingEntry);
 			ClientCliUtils.saveDistrustedCertificates(distrusted);
 			out.println("Distrusted certificate removed.");

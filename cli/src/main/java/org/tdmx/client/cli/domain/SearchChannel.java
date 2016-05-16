@@ -157,7 +157,7 @@ public class SearchChannel implements CommandExecutable {
 		if (searchChannelResponse.isSuccess()) {
 			out.println("Found " + searchChannelResponse.getChannelinfos().size() + " channels.");
 			for (Channelinfo channel : searchChannelResponse.getChannelinfos()) {
-				ClientCliLoggingUtils.log(out, ClientCliLoggingUtils.toLog(channel));
+				out.println(channel);
 			}
 			if (searchChannelResponse.getChannelinfos().size() == pageSize) {
 				out.println(ClientCliLoggingUtils.truncatedMessage());

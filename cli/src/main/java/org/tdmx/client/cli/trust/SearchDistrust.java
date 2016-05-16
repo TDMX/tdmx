@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
@@ -66,7 +65,7 @@ public class SearchDistrust implements CommandExecutable {
 			totalEntries++;
 
 			if (!criteria.hasCriteria() || ClientCliUtils.matchesTrustedCertificate(entry, criteria)) {
-				out.println(ClientCliLoggingUtils.toString(entry));
+				out.println(entry);
 			}
 		}
 		out.println("Found " + numMatches + "/" + totalEntries + " distrusted certificates.");

@@ -206,7 +206,7 @@ public class AuthorizeChannel implements CommandExecutable {
 
 		if (rca != null) {
 			// TODO #87: we need to check if we "trust" the ZAC of the requested authorization
-			out.println("TODO check trust of " + ClientCliLoggingUtils.toString(rca));
+			out.println("TODO check trust of ", rca);
 		}
 
 		// set the new authorization - confirming the requested, trusted other parties auth
@@ -319,7 +319,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		org.tdmx.core.api.v01.zas.SetChannelAuthorizationResponse setChannelAuthResponse = zas
 				.setChannelAuthorization(setChannelAuthRequest);
 		if (setChannelAuthResponse.isSuccess()) {
-			out.println("Authorization " + ClientCliLoggingUtils.toString(c) + " successful.");
+			out.println("Authorization ", c, " successful.");
 		} else {
 			ClientCliLoggingUtils.logError(out, setChannelAuthResponse.getError());
 		}

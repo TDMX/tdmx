@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.display.ObjectPrettyPrinter;
+import org.tdmx.core.cli.display.PrintableObjectMapper;
 
 public class CliPrinterFactoryImpl implements CliPrinterFactory {
 
@@ -38,7 +39,7 @@ public class CliPrinterFactoryImpl implements CliPrinterFactory {
 
 	// internal
 	private boolean verbose = false;
-
+	private PrintableObjectMapper mapper;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -52,7 +53,7 @@ public class CliPrinterFactoryImpl implements CliPrinterFactory {
 
 	@Override
 	public CliPrinter getPrinter(PrintStream ps) {
-		return new ObjectPrettyPrinter(ps, verbose);
+		return new ObjectPrettyPrinter(ps, verbose, mapper);
 	}
 
 	@Override
@@ -76,5 +77,13 @@ public class CliPrinterFactoryImpl implements CliPrinterFactory {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public PrintableObjectMapper getMapper() {
+		return mapper;
+	}
+
+	public void setMapper(PrintableObjectMapper mapper) {
+		this.mapper = mapper;
+	}
 
 }

@@ -146,7 +146,7 @@ public class DeleteChannel implements CommandExecutable {
 		org.tdmx.core.api.v01.zas.DeleteChannelAuthorizationResponse setChannelAuthResponse = zas
 				.deleteChannelAuthorization(deleteChannelAuthRequest);
 		if (setChannelAuthResponse.isSuccess()) {
-			out.println("Authorization " + ClientCliLoggingUtils.toString(c) + " successfully deleted.");
+			out.println("Authorization ", c, " successfully deleted.");
 
 		} else {
 			ClientCliLoggingUtils.logError(out, setChannelAuthResponse.getError());

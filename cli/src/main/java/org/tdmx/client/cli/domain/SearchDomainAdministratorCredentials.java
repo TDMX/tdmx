@@ -117,7 +117,7 @@ public class SearchDomainAdministratorCredentials implements CommandExecutable {
 		if (searchAdminResponse.isSuccess()) {
 			out.println("Found " + searchAdminResponse.getAdministrators().size() + " domain administrators.");
 			for (Administrator admin : searchAdminResponse.getAdministrators()) {
-				out.println(ClientCliLoggingUtils.toString(admin));
+				out.println(admin);
 			}
 			if (searchAdminResponse.getAdministrators().size() == pageSize) {
 				out.println(ClientCliLoggingUtils.truncatedMessage());

@@ -161,8 +161,7 @@ public class CollectUntrust implements CommandExecutable {
 					if (cert != null) {
 						authCertMap.put(cert.getFingerprint(), cert);
 					} else {
-						ClientCliLoggingUtils.log(out, "Unable to process certificate for ",
-								ClientCliLoggingUtils.toLog(channel));
+						ClientCliLoggingUtils.log(out, "Unable to process certificate for ", channel);
 					}
 				}
 				again = searchChannelResponse.getChannelinfos().size() == batchsize;
@@ -186,7 +185,7 @@ public class CollectUntrust implements CommandExecutable {
 			}
 			if (!trusted.contains(cert) && !distrusted.contains(cert)) {
 				// add to untrusted store, friendly name and comment are not managed in the untrusted store.
-				out.println("Added untrusted certificate: " + ClientCliLoggingUtils.toString(cert));
+				out.println("Added untrusted certificate: ", cert);
 				TrustStoreEntry entry = new TrustStoreEntry(cert);
 				untrusted.add(entry);
 				changed = true;

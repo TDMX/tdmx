@@ -21,19 +21,16 @@ package org.tdmx.client.cli;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.util.Calendar;
 
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
-import org.tdmx.client.crypto.certificate.CertificateIOUtils;
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.client.crypto.certificate.TrustStoreEntry;
 import org.tdmx.core.cli.CliPrinterFactory;
 import org.tdmx.core.cli.display.CliPrinter;
+import org.tdmx.core.cli.display.CorePrintableObjectMapperImpl;
 import org.tdmx.core.cli.display.ObjectPrettyPrinter;
 import org.tdmx.core.cli.display.PrintableObject;
+import org.tdmx.core.cli.display.PrintableObjectMapper;
 
 /**
  * Utilities for logging for Client CLI commands.
@@ -75,7 +72,19 @@ public class ClientCliLoggingUtils {
 
 			@Override
 			public CliPrinter getPrinter(PrintStream ps) {
-				return new ObjectPrettyPrinter(ps, ClientCliLoggingUtils.isVerbose());
+				return new ObjectPrettyPrinter(ps, ClientCliLoggingUtils.isVerbose(), new PrintableObjectMapper() {
+
+					final PrintableObjectMapper coreMapper = new CorePrintableObjectMapperImpl();
+
+					@Override
+					public Object map(Object object, boolean verbose) {
+						Object coreMap = coreMapper.map(object, getVerbose());
+						if (coreMap != null) {
+							return coreMap;
+						}
+						return null;
+					}
+				});
 			}
 		};
 	}
@@ -132,225 +141,6 @@ public class ClientCliLoggingUtils {
 		sb.append("scsUrl=").append(zd.getScsUrl()).append(LINEFEED);
 		sb.append("version=").append(zd.getVersion()).append(LINEFEED);
 		return sb.toString();
-	}
-
-	public static String toString(TrustStoreEntry entry) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Friendly Name=").append(entry.getFriendlyName()).append(LINEFEED);
-		sb.append(entry.getCertificate()).append(LINEFEED);
-		sb.append(entry.getComment()).append(LINEFEED);
-		return sb.toString();
-	}
-
-	public static String toString(PKIXCertificate pk) {
-		StringBuilder sb = new StringBuilder();
-		if (pk.isTdmxZoneAdminCertificate()) {
-			sb.append("Zone Administrator[ ").append(pk.getTdmxZoneInfo().getZoneRoot());
-			sb.append(" Subject=" + pk.getSubject());
-			// TODO split
-		} else if (pk.isTdmxDomainAdminCertificate()) {
-			sb.append("Domain Administrator[ ").append(pk.getTdmxDomainName());
-
-		} else if (pk.isTdmxUserCertificate()) {
-			sb.append("User[ ").append(pk.getTdmxUserName());
-
-		} else {
-			sb.append("Non TDMX cert [");
-		}
-		sb.append(" SerialNumber=" + pk.getSerialNumber());
-		sb.append(" Fingerprint=").append(pk.getFingerprint());
-		sb.append(" PEM=").append(CertificateIOUtils.safeX509certsToPem(new PKIXCertificate[] { pk }));
-		sb.append("]");
-		return sb.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Administrator admin) {
-		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(admin.getAdministratorIdentity().getDomaincertificate());
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("Administrator[ ").append(pk.getTdmxDomainName());
-		sb.append(" SerialNumber=" + pk.getSerialNumber());
-		sb.append(" Fingerprint=").append(pk.getFingerprint());
-		sb.append(" Status=").append(admin.getStatus());
-		sb.append(toString(admin.getAdministratorIdentity()));
-		sb.append("]");
-		return sb.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.User u) {
-		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(u.getUserIdentity().getUsercertificate());
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("User[ ").append(pk.getCommonName());
-		sb.append(" SerialNumber=" + pk.getSerialNumber());
-		sb.append(" Fingerprint=").append(pk.getFingerprint());
-		sb.append(" Status=").append(u.getStatus());
-		sb.append(toString(u.getUserIdentity()));
-		sb.append("]");
-		return sb.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Service service) {
-		return "Service [" + service.getDomain() + "#" + service.getServicename() + "]";
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Address address) {
-		return "Address [" + address.getLocalname() + "@" + address.getDomain() + "]";
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Channel channel) {
-		return "Channel [" + channel.getOrigin().getLocalname() + "@" + channel.getOrigin().getDomain() + "->"
-				+ channel.getDestination().getLocalname() + "@" + channel.getDestination().getDomain() + "#"
-				+ channel.getDestination().getServicename() + "]";
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Channelinfo ci) {
-		PrintableObject result = new PrintableObject("ChannelInfo");
-		result.add("authorization", ci.getChannelauthorization());
-		result.add("session", ci.getSessioninfo() != null ? toLog(ci.getSessioninfo()) : "none");
-		result.add("flowstatus", toLog(ci.getStatus()));
-		return result;
-	}
-
-	public static PrintableObject toString(org.tdmx.core.api.v01.msg.Channelauthorization ca) {
-		PrintableObject result = new PrintableObject("ChannelAuthorization");
-		result.add("domain", ca.getDomain());
-		result.add("channel", toString(ca.getChannel()));
-		result.add("current", ca.getCurrent() != null ? toString(ca.getCurrent()) : "none");
-		result.add("requested", ca.getUnconfirmed() != null ? toString(ca.getUnconfirmed()) : "none");
-		result.add("status", toLog(ca.getPs()));
-		return result;
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Currentchannelauthorization cca) {
-		StringBuilder buf = new StringBuilder();
-		if (cca.getOriginPermission() != null) {
-			buf.append("Origin Permission [").append(toString(cca.getOriginPermission())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No Origin Permission").append(LINEFEED);
-		}
-		if (cca.getDestinationPermission() != null) {
-			buf.append("Destination Permission [").append(toString(cca.getDestinationPermission())).append("]")
-					.append(LINEFEED);
-		} else {
-			buf.append("No Destination Permission").append(LINEFEED);
-		}
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.RequestedChannelAuthorization rca) {
-		StringBuilder buf = new StringBuilder();
-		if (rca.getOriginPermission() != null) {
-			buf.append("Origin Permission [").append(toString(rca.getOriginPermission())).append("]").append(LINEFEED);
-		} else {
-			buf.append("No Origin Permission").append(LINEFEED);
-		}
-		if (rca.getDestinationPermission() != null) {
-			buf.append("Destination Permission[").append(toString(rca.getDestinationPermission())).append("]")
-					.append(LINEFEED);
-		} else {
-			buf.append("No Destination Permission").append(LINEFEED);
-		}
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Permission p) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(p.getPermission());
-		buf.append(" Size=").append(p.getMaxPlaintextSizeBytes());
-		buf.append(" Signature [").append(toString(p.getAdministratorsignature())).append("]");
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.UserIdentity u) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(" User Public Key=").append(CertificateIOUtils.safeX509certsToPem(u.getUsercertificate()))
-				.append(LINEFEED);
-		// buf.append(" Administrator Public
-		// Key=").append(CertificateIOUtils.safeX509certsToPem(u.getDomaincertificate())).append(LINEFEED);
-		// buf.append(" Zone Root Public
-		// Key=").append(CertificateIOUtils.safeX509certsToPem(u.getRootcertificate())).append(LINEFEED);
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.AdministratorIdentity a) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(" Administrator Public Key=").append(CertificateIOUtils.safeX509certsToPem(a.getDomaincertificate()))
-				.append(LINEFEED);
-		// buf.append(" Zone Root Public
-		// Key=").append(CertificateIOUtils.safeX509certsToPem(a.getRootcertificate())).append(LINEFEED);
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Signaturevalue sv) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(" SignatureValue [");
-		buf.append(" Timestamp=").append(toString(sv.getTimestamp()));
-		buf.append(" Algorithm=").append(sv.getSignatureAlgorithm());
-		buf.append(" Signature=").append(sv.getSignature());
-		buf.append("]");
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Administratorsignature sig) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("Administrator Signature [");
-		buf.append(toString(sig.getAdministratorIdentity()));
-		buf.append(toString(sig.getSignaturevalue()));
-		buf.append("]");
-		return buf.toString();
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.UserSignature sig) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("User Signature [");
-		buf.append(toString(sig.getUserIdentity()));
-		buf.append(toString(sig.getSignaturevalue()));
-		buf.append("]");
-		return buf.toString();
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Sessioninfo si) {
-		PrintableObject result = new PrintableObject("Session");
-		if (si.getDestinationsession() != null) {
-			result.add("destination", toLog(si.getDestinationsession()));
-		} else {
-			result.add("destination", "none");
-		}
-		if (si.getPs() != null) {
-			result.add("status", toLog(si.getPs()));
-		} else {
-			result.add("destination", "none");
-		}
-		return result;
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.FlowStatus fs) {
-		return new PrintableObject("FlowStatus").add("relayStatus", fs.getRelayStatus())
-				.add("flowstatus", fs.getFlowStatus()).add("usedbytes", fs.getUsedBytes());
-	}
-
-	public static String toString(org.tdmx.core.api.v01.msg.Limit li) {
-		return "High=" + li.getHighBytes() + " Low=" + li.getLowBytes();
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Destinationsession ds) {
-		return new PrintableObject("DestinationSession").add("contextId", ds.getEncryptionContextId())
-				.add("scheme", ds.getScheme()).add("sessionKey", ds.getSessionKey())
-				.add("usersignature", ds.getUsersignature());
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.common.Ps ps) {
-		return new PrintableObject("ProcessingState").add("error", toLog(ps.getError())).add("status", ps.getStatus())
-				.add("timestamp", ps.getTimestamp());
-	}
-
-	public static String toString(Calendar cal) {
-		if (cal == null) {
-			return null;
-		}
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
-		return df.format(cal.getTime());
 	}
 
 	public static String truncatedMessage() {

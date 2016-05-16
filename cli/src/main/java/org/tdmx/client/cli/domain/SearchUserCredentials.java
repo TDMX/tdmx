@@ -127,7 +127,7 @@ public class SearchUserCredentials implements CommandExecutable {
 		if (searchUserResponse.isSuccess()) {
 			out.println("Found " + searchUserResponse.getUsers().size() + " users.");
 			for (User user : searchUserResponse.getUsers()) {
-				out.println(ClientCliLoggingUtils.toString(user));
+				out.println(user);
 			}
 			if (searchUserResponse.getUsers().size() == pageSize) {
 				out.println(ClientCliLoggingUtils.truncatedMessage());

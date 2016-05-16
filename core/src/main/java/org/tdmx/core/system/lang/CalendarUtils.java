@@ -18,6 +18,7 @@
  */
 package org.tdmx.core.system.lang;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -141,4 +142,19 @@ public class CalendarUtils {
 		}
 		return null;
 	}
+
+	/**
+	 * Get the locale specific LONG format datetime of this Calendar.
+	 * 
+	 * @param cal
+	 * @return locale specific LONG format
+	 */
+	public static String toString(Calendar cal) {
+		if (cal == null) {
+			return null;
+		}
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+		return df.format(cal.getTime());
+	}
+
 }

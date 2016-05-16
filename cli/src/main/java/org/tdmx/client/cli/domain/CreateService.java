@@ -113,9 +113,9 @@ public class CreateService implements CommandExecutable {
 
 		org.tdmx.core.api.v01.zas.CreateServiceResponse createServiceResponse = zas.createService(createServiceRequest);
 		if (createServiceResponse.isSuccess()) {
-			out.println(ClientCliLoggingUtils.toString(s) + " successfully created.");
+			out.println(s, " successfully created.");
 		} else {
-			out.println("Unable to create " + ClientCliLoggingUtils.toString(s));
+			out.println("Unable to create ", s);
 			ClientCliLoggingUtils.logError(out, createServiceResponse.getError());
 		}
 	}

@@ -113,9 +113,9 @@ public class DeleteAddress implements CommandExecutable {
 
 		org.tdmx.core.api.v01.zas.DeleteAddressResponse deleteAddressResponse = zas.deleteAddress(deleteAddressRequest);
 		if (deleteAddressResponse.isSuccess()) {
-			out.println(ClientCliLoggingUtils.toString(a) + " successfully deleted.");
+			out.println(a, " successfully deleted.");
 		} else {
-			out.println("Unable to delete " + ClientCliLoggingUtils.toString(a));
+			out.println("Unable to delete ", a);
 			ClientCliLoggingUtils.logError(out, deleteAddressResponse.getError());
 		}
 	}

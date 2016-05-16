@@ -127,7 +127,7 @@ public class SearchAddress implements CommandExecutable {
 		if (searchAddressResponse.isSuccess()) {
 			out.println("Found " + searchAddressResponse.getAddresses().size() + " addresses.");
 			for (Address address : searchAddressResponse.getAddresses()) {
-				out.println(ClientCliLoggingUtils.toString(address));
+				out.println(address);
 			}
 			if (searchAddressResponse.getAddresses().size() == pageSize) {
 				out.println(ClientCliLoggingUtils.truncatedMessage());

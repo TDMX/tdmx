@@ -127,7 +127,7 @@ public class SearchService implements CommandExecutable {
 		if (searchServiceResponse.isSuccess()) {
 			out.println("Found " + searchServiceResponse.getServices().size() + " services.");
 			for (Service service : searchServiceResponse.getServices()) {
-				out.println(ClientCliLoggingUtils.toString(service));
+				out.println(service);
 			}
 			if (searchServiceResponse.getServices().size() == pageSize) {
 				out.println(ClientCliLoggingUtils.truncatedMessage());

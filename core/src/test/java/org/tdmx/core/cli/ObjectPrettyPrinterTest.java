@@ -37,7 +37,7 @@ public class ObjectPrettyPrinterTest {
 
 	@Before
 	public void setUp() {
-		sut = new ObjectPrettyPrinter(System.out, true);
+		sut = new ObjectPrettyPrinter(System.out, true, null);
 	}
 
 	@Test

@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.trust;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.TrustStoreEntrySearchCriteria;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
@@ -91,7 +90,7 @@ public class AddDistrust implements CommandExecutable {
 
 				ClientCliUtils.saveDistrustedCertificates(distrusted);
 
-				out.println("Added to distrust store " + ClientCliLoggingUtils.toString(newEntry));
+				out.println("Added to distrust store ", newEntry);
 			} else {
 				out.println("Already in distrust store.");
 			}

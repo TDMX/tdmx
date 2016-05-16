@@ -113,9 +113,9 @@ public class CreateAddress implements CommandExecutable {
 
 		org.tdmx.core.api.v01.zas.CreateAddressResponse createAddressResponse = zas.createAddress(createAddressRequest);
 		if (createAddressResponse.isSuccess()) {
-			out.println(ClientCliLoggingUtils.toString(a) + " successfully created.");
+			out.println(a, " successfully created.");
 		} else {
-			out.println("Unable to create " + ClientCliLoggingUtils.toString(a));
+			out.println("Unable to create ", a);
 			ClientCliLoggingUtils.logError(out, createAddressResponse.getError());
 		}
 	}
