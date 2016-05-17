@@ -56,4 +56,9 @@ public @interface Parameter {
 	 * @return True if parameter has to be specified.
 	 */
 	boolean required() default false;
+
+	/**
+	 * @return True if default parameter binding is not performed.
+	 */
+	boolean noDefault() default false;
 }

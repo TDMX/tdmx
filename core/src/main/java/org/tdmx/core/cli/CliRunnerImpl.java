@@ -44,7 +44,7 @@ public class CliRunnerImpl implements CliRunner {
 	// internal
 	private CommandExecutableFactory commandExecutableFactory;
 	private CliPrinterFactory cliPrinterFactory;
-
+	private DefaultParameterProvider defaultProvider;
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -60,6 +60,7 @@ public class CliRunnerImpl implements CliRunner {
 		if (exec == null) {
 			throw new IllegalArgumentException("Unknown executor for " + cmd.getDescriptor().getName());
 		}
+		complete(cmd);
 		check(cmd);
 		bind(cmd, exec);
 
@@ -81,19 +82,35 @@ public class CliRunnerImpl implements CliRunner {
 	 * 
 	 * @param cmd
 	 */
+	private void complete(Command cmd) {
+		for (ParameterDescriptor param : cmd.getDescriptor().getParameters()) {
+			// set the default values of any where the value is not yet set
+			if (cmd.getParameter(param.getName()) == null && defaultProvider.getDefault(param.getName()) != null) {
+				log.debug("Defaulting " + param.getName() + " from default provider.");
+				CommandParameter p = new CommandParameter(param, defaultProvider.getDefault(param.getName()));
+				cmd.addParameter(p);
+			}
+
+			// provide the default value to optional parameters where the value is not already set.
+			if (cmd.getParameter(param.getName()) == null && !param.isRequired()
+					&& StringUtils.hasText(param.getDefaultValue())) {
+				log.debug("Defaulting " + param.getName() + " from command definition.");
+				CommandParameter p = new CommandParameter(param, param.getDefaultValue());
+				cmd.addParameter(p);
+			}
+		}
+	}
+
+	/**
+	 * Check that all required parameters are set, and set any parameters which were not provided but we have a default
+	 * value.
+	 * 
+	 * @param cmd
+	 */
 	private void check(Command cmd) {
 		for (ParameterDescriptor param : cmd.getDescriptor().getParameters()) {
-			if (param.isRequired()) {
-				if (cmd.getParameter(param.getName()) == null) {
-					// TODO #103: set default parameters
-					throw new IllegalArgumentException("Missing required parameter " + param.getName());
-				}
-			} else if (StringUtils.hasText(param.getDefaultValue())) {
-				// not required but we have a default value
-				if (cmd.getParameter(param.getName()) == null) {
-					CommandParameter p = new CommandParameter(param, param.getDefaultValue());
-					cmd.addParameter(p);
-				}
+			if (param.isRequired() && cmd.getParameter(param.getName()) == null) {
+				throw new IllegalArgumentException("Missing required parameter " + param.getName());
 			}
 		}
 	}
@@ -141,6 +158,14 @@ public class CliRunnerImpl implements CliRunner {
 
 	public void setCliPrinterFactory(CliPrinterFactory cliPrinterFactory) {
 		this.cliPrinterFactory = cliPrinterFactory;
+	}
+
+	public DefaultParameterProvider getDefaultProvider() {
+		return defaultProvider;
+	}
+
+	public void setDefaultProvider(DefaultParameterProvider defaultProvider) {
+		this.defaultProvider = defaultProvider;
 	}
 
 }

@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.client.cli.env;
 
-import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.client.cli.ClientCliLoggingUtils;
+import org.tdmx.client.cli.StaticDefaultParameterProvider;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Option;
+import org.tdmx.core.cli.display.CliPrinter;
+import org.tdmx.core.cli.runtime.CommandExecutable;
 
-/**
- * The SearchCriteria for an Account.
- * 
- * @author Peter Klauser
- * 
- */
-public class AccountSearchCriteria {
+@Cli(name = "default:clear", description = "Clear the CLI's default parameters.")
+public class ClearDefault implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -36,26 +36,25 @@ public class AccountSearchCriteria {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private final PageSpecifier pageSpecifier;
-
-	private String accountId;
-	private String firstName;
-	private String lastName;
-	private String email;
+	@Option(name = "zacPassword", description = "the zone administrator's keystore password.")
+	private Boolean zacPassword;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public AccountSearchCriteria(PageSpecifier pageSpecifier) {
-		if (pageSpecifier == null) {
-			throw new IllegalArgumentException("Missing pageSpecifier");
-		}
-		this.pageSpecifier = pageSpecifier;
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void run(CliPrinter out) {
+		if (zacPassword != null) {
+			out.println("Clearing default for zacPassword.");
+			StaticDefaultParameterProvider.clearDefaultValue("zacPassword");
+		}
+		out.println(ClientCliLoggingUtils.commandExecuted());
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -68,40 +67,5 @@ public class AccountSearchCriteria {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public PageSpecifier getPageSpecifier() {
-		return pageSpecifier;
-	}
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
 
 }

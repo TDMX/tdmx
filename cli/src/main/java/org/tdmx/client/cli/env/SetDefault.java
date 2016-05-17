@@ -19,6 +19,7 @@
 package org.tdmx.client.cli.env;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
+import org.tdmx.client.cli.StaticDefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
@@ -40,7 +41,7 @@ public class SetDefault implements CommandExecutable {
 	@Option(name = "verbose", description = "sets the output verbosity.")
 	private Boolean verbose;
 
-	@Parameter(name = "zacPassword", description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", description = "the zone administrator's keystore password.", noDefault = true)
 	private String zacPassword;
 
 	// -------------------------------------------------------------------------
@@ -60,6 +61,7 @@ public class SetDefault implements CommandExecutable {
 		if (StringUtils.hasText(zacPassword)) {
 			out.println("Setting zacPassword.");
 			// TODO #103:
+			StaticDefaultParameterProvider.setDefaultValue("zacPassword", zacPassword);
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

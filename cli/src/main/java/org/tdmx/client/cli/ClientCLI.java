@@ -42,6 +42,7 @@ import org.tdmx.client.cli.domain.SearchService;
 import org.tdmx.client.cli.domain.SearchUserCredentials;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SuspendUserCredentials;
+import org.tdmx.client.cli.env.ClearDefault;
 import org.tdmx.client.cli.env.SetDefault;
 import org.tdmx.client.cli.env.ShowDefault;
 import org.tdmx.client.cli.trust.AddDistrust;
@@ -75,6 +76,7 @@ import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
 import org.tdmx.core.cli.CommandDescriptorFactory;
 import org.tdmx.core.cli.CommandDescriptorFactoryImpl;
+import org.tdmx.core.cli.DefaultParameterProvider;
 import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
@@ -97,7 +99,7 @@ public class ClientCLI {
 	//@formatter:off
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
-			SetDefault.class, ShowDefault.class,
+			SetDefault.class, ShowDefault.class, ClearDefault.class,
 			CreateZone.class, ModifyZone.class, DeleteZone.class, DescribeZone.class,
 			DescribeDns.class, Route53Dns.class, LookupDns.class,
 			CheckScs.class, DownloadScs.class,
@@ -129,6 +131,8 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 
 	public static void main(String[] args) {
+		final DefaultParameterProvider defaultProvider = StaticDefaultParameterProvider.getInstance();
+
 		final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
 
 		final CommandExecutableFactory commandExecutableFactory = new CommandExecutableFactory() {
@@ -150,9 +154,11 @@ public class ClientCLI {
 		CliRunnerImpl runner = new CliRunnerImpl();
 		runner.setCommandExecutableFactory(commandExecutableFactory);
 		runner.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
+		runner.setDefaultProvider(defaultProvider);
 
 		CliParser cliparser = new CliParser();
 		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
+		cliparser.setDefaultProvider(defaultProvider);
 		cliparser.setCliRunner(runner);
 
 		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)

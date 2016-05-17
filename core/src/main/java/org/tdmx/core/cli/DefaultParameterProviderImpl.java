@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.domain;
+package org.tdmx.core.cli;
 
-import org.tdmx.lib.common.domain.PageSpecifier;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * The SearchCriteria for an Account.
- * 
- * @author Peter Klauser
- * 
- */
-public class AccountSearchCriteria {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class DefaultParameterProviderImpl implements DefaultParameterProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,27 +33,36 @@ public class AccountSearchCriteria {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(DefaultParameterProviderImpl.class);
 
-	private final PageSpecifier pageSpecifier;
-
-	private String accountId;
-	private String firstName;
-	private String lastName;
-	private String email;
+	// internal
+	private Map<String, String> defaults = new HashMap<>();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public AccountSearchCriteria(PageSpecifier pageSpecifier) {
-		if (pageSpecifier == null) {
-			throw new IllegalArgumentException("Missing pageSpecifier");
-		}
-		this.pageSpecifier = pageSpecifier;
+
+	public DefaultParameterProviderImpl() {
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void setDefault(String parameterName, String parameterValue) {
+		defaults.put(parameterName, parameterValue);
+	}
+
+	@Override
+	public String getDefault(String parameterName) {
+		return defaults.get(parameterName);
+	}
+
+	@Override
+	public void clearDefault(String parameterName) {
+		defaults.remove(parameterName);
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -68,40 +75,5 @@ public class AccountSearchCriteria {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-	public PageSpecifier getPageSpecifier() {
-		return pageSpecifier;
-	}
-
-	public String getAccountId() {
-		return accountId;
-	}
-
-	public void setAccountId(String accountId) {
-		this.accountId = accountId;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
 
 }

@@ -19,6 +19,7 @@
 package org.tdmx.client.cli.env;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
+import org.tdmx.client.cli.StaticDefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
@@ -45,6 +46,13 @@ public class ShowDefault implements CommandExecutable {
 	@Override
 	public void run(CliPrinter out) {
 		out.println("verbose - option " + (ClientCliLoggingUtils.isVerbose() ? "set" : "not set"));
+
+		if (StaticDefaultParameterProvider.getDefaultValue("zacPassword") != null) {
+			out.println("zacPassword set");
+		} else {
+			out.println("zacPassword not set");
+		}
+
 	}
 
 	// -------------------------------------------------------------------------

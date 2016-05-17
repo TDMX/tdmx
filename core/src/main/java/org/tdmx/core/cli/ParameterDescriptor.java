@@ -78,6 +78,10 @@ public class ParameterDescriptor {
 		return parameter.required();
 	}
 
+	public boolean isNoDefault() {
+		return parameter.noDefault();
+	}
+
 	public void setValue(Object instance, String value) {
 		fieldAccessor.setValue(instance, value);
 	}

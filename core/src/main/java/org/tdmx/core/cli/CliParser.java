@@ -48,7 +48,7 @@ public class CliParser {
 	public static final String PI_QUIT = "quit";
 
 	private CommandDescriptorFactory commandDescriptorFactory;
-
+	private DefaultParameterProvider defaultProvider;
 	private CliRunner cliRunner;
 
 	// -------------------------------------------------------------------------
@@ -213,14 +213,17 @@ public class CliParser {
 	private void listParameters(Command cmd, PrintStream out) {
 		List<ParameterDescriptor> parameters = cmd.getDescriptor().getParameters();
 		for (ParameterDescriptor param : parameters) {
+			// explicit param value ELSE defaultParameter ELSE defaultParamValue
 			String paramSet = cmd.getParameter(param.getName()) != null ? cmd.getParameter(param.getName()).getValue()
-					: param.getDefaultValue();
+					: (!param.isNoDefault() && defaultProvider.getDefault(param.getName()) != null)
+							? defaultProvider.getDefault(param.getName()) + " (default)" : param.getDefaultValue();
 			if (!StringUtils.hasText(paramSet) && StringUtils.hasText(param.getDefaultValueText())) {
-				paramSet = param.getDefaultValueText();
+				paramSet = param.getDefaultValueText() + " (default)";
 			}
 			if (!StringUtils.hasText(paramSet) && param.isRequired()) {
 				paramSet = "MISSING!";
 			}
+			// TODO #105: mask pwds
 			logInfo(param.getName() + "=" + paramSet, out);
 		}
 		List<OptionDescriptor> options = cmd.getDescriptor().getOptions();
@@ -284,6 +287,14 @@ public class CliParser {
 
 	public void setCommandDescriptorFactory(CommandDescriptorFactory commandDescriptorFactory) {
 		this.commandDescriptorFactory = commandDescriptorFactory;
+	}
+
+	public DefaultParameterProvider getDefaultProvider() {
+		return defaultProvider;
+	}
+
+	public void setDefaultProvider(DefaultParameterProvider defaultProvider) {
+		this.defaultProvider = defaultProvider;
 	}
 
 	public CliRunner getCliRunner() {

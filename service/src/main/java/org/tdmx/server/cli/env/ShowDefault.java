@@ -19,6 +19,7 @@
 package org.tdmx.server.cli.env;
 
 import org.tdmx.core.cli.CliPrinterFactory;
+import org.tdmx.core.cli.DefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
@@ -35,7 +36,9 @@ public class ShowDefault extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	private CliPrinterFactory cliPrinterFactory;
+	private DefaultParameterProvider defaultProvider;
 
+	// TODO #105: zacPassword
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -67,6 +70,14 @@ public class ShowDefault extends AbstractCliCommand {
 
 	public void setCliPrinterFactory(CliPrinterFactory cliPrinterFactory) {
 		this.cliPrinterFactory = cliPrinterFactory;
+	}
+
+	public DefaultParameterProvider getDefaultProvider() {
+		return defaultProvider;
+	}
+
+	public void setDefaultProvider(DefaultParameterProvider defaultProvider) {
+		this.defaultProvider = defaultProvider;
 	}
 
 }

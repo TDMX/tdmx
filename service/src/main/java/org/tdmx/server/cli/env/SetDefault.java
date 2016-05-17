@@ -19,6 +19,7 @@
 package org.tdmx.server.cli.env;
 
 import org.tdmx.core.cli.CliPrinterFactory;
+import org.tdmx.core.cli.DefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -36,9 +37,12 @@ public class SetDefault extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	private CliPrinterFactory cliPrinterFactory;
+	private DefaultParameterProvider defaultProvider;
 
 	@Option(name = "verbose", description = "sets the output verbosity.")
 	private Boolean verbose;
+
+	// TODO #105: zacPassword
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -74,6 +78,14 @@ public class SetDefault extends AbstractCliCommand {
 
 	public void setCliPrinterFactory(CliPrinterFactory cliPrinterFactory) {
 		this.cliPrinterFactory = cliPrinterFactory;
+	}
+
+	public DefaultParameterProvider getDefaultProvider() {
+		return defaultProvider;
+	}
+
+	public void setDefaultProvider(DefaultParameterProvider defaultProvider) {
+		this.defaultProvider = defaultProvider;
 	}
 
 }

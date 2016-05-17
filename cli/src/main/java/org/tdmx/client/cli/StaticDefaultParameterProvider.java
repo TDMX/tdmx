@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.client.cli;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.tdmx.core.system.lang.JaxbMarshaller;
-import org.tdmx.lib.common.domain.Job;
-import org.tdmx.service.control.task.dao.TestTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.DefaultParameterProvider;
 
-public class TestJobConverterImpl implements JobConverter<TestTask> {
+public class StaticDefaultParameterProvider implements DefaultParameterProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,34 +34,52 @@ public class TestJobConverterImpl implements JobConverter<TestTask> {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(StaticDefaultParameterProvider.class);
 
-	private final JaxbMarshaller<TestTask> marshaller = new JaxbMarshaller<>(TestTask.class, new QName(
-			"urn:dao.task.control.service.tdmx.org", "test"));
+	// internal
+	private Map<String, String> defaults = new HashMap<>();
+
+	private static StaticDefaultParameterProvider singleton = new StaticDefaultParameterProvider();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	public TestJobConverterImpl() {
+	private StaticDefaultParameterProvider() {
 	}
 
+	public static StaticDefaultParameterProvider getInstance() {
+		return singleton;
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getType() {
-		return TestTask.class.getName();
+	public void setDefault(String parameterName, String parameterValue) {
+		defaults.put(parameterName, parameterValue);
 	}
 
 	@Override
-	public TestTask getData(Job job) throws JAXBException {
-		return marshaller.unmarshal(job.getData());
+	public String getDefault(String parameterName) {
+		return defaults.get(parameterName);
 	}
 
 	@Override
-	public void setData(Job job, TestTask jobData) throws JAXBException {
-		job.setData(marshaller.marshal(jobData));
+	public void clearDefault(String parameterName) {
+		defaults.remove(parameterName);
+	}
+
+	public static void setDefaultValue(String parameterName, String parameterValue) {
+		singleton.setDefault(parameterName, parameterValue);
+	}
+
+	public static String getDefaultValue(String parameterName) {
+		return singleton.getDefault(parameterName);
+	}
+
+	public static void clearDefaultValue(String parameterName) {
+		singleton.clearDefault(parameterName);
 	}
 
 	// -------------------------------------------------------------------------

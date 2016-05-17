@@ -30,4 +30,5 @@ public interface DefaultParameterProvider {
 
 	public String getDefault(String parameterName);
 
+	public void clearDefault(String parameterName);
 }

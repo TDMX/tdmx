@@ -132,13 +132,18 @@
 	<bean id="tdmx.server.cli.PrinterFactory" class="org.tdmx.core.cli.CliPrinterFactoryImpl">
 	</bean>
 
+	<bean id="tdmx.server.cli.DefaultProvider" class="org.tdmx.core.cli.DefaultParameterProviderImpl">
+	</bean>
+
 	<bean id="tdmx.server.cli.ServerCliRunner" class="org.tdmx.core.cli.CliRunnerImpl">
 		<property name="commandExecutableFactory" ref="tdmx.server.cli.ServerCommandExecutableFactory"/>
 		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
+		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 	</bean>
 	
 	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliParser">
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
+		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 		<property name="cliRunner" ref="tdmx.server.cli.ServerCliRunner"/>
 	</bean>
 	
@@ -150,9 +155,11 @@
 
 	<bean id="tdmx.server.cli.env.SetDefault" class="org.tdmx.server.cli.env.SetDefault" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
+		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 	</bean>
 	<bean id="tdmx.server.cli.env.ShowDefault" class="org.tdmx.server.cli.env.ShowDefault" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
+		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
