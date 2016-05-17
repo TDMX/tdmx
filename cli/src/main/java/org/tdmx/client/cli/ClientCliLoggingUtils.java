@@ -61,7 +61,7 @@ public class ClientCliLoggingUtils {
 		return new CliPrinterFactory() {
 
 			@Override
-			public boolean getVerbose() {
+			public boolean isVerbose() {
 				return ClientCliLoggingUtils.isVerbose();
 			}
 
@@ -78,7 +78,7 @@ public class ClientCliLoggingUtils {
 
 					@Override
 					public Object map(Object object, boolean verbose) {
-						Object coreMap = coreMapper.map(object, getVerbose());
+						Object coreMap = coreMapper.map(object, isVerbose());
 						if (coreMap != null) {
 							return coreMap;
 						}
@@ -145,6 +145,10 @@ public class ClientCliLoggingUtils {
 
 	public static String truncatedMessage() {
 		return "More results may exist. Use the pageNumber and pageSize parameters to get the next page of results.";
+	}
+
+	public static String commandExecuted() {
+		return "Execution completed.";
 	}
 
 	public static boolean isVerbose() {

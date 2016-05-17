@@ -42,6 +42,8 @@ import org.tdmx.client.cli.domain.SearchService;
 import org.tdmx.client.cli.domain.SearchUserCredentials;
 import org.tdmx.client.cli.domain.SuspendDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.SuspendUserCredentials;
+import org.tdmx.client.cli.env.SetDefault;
+import org.tdmx.client.cli.env.ShowDefault;
 import org.tdmx.client.cli.trust.AddDistrust;
 import org.tdmx.client.cli.trust.AddTrust;
 import org.tdmx.client.cli.trust.CollectUntrust;
@@ -95,6 +97,7 @@ public class ClientCLI {
 	//@formatter:off
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CommandExecutable>[] commandClasses = new Class[] { 
+			SetDefault.class, ShowDefault.class,
 			CreateZone.class, ModifyZone.class, DeleteZone.class, DescribeZone.class,
 			DescribeDns.class, Route53Dns.class, LookupDns.class,
 			CheckScs.class, DownloadScs.class,
@@ -112,7 +115,7 @@ public class ClientCLI {
 			EncryptionSearch.class,
 			PollReceive.class,
 			SendFile.class,
-			};
+	};
 	//@formatter:on
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

@@ -85,6 +85,7 @@ public class CliRunnerImpl implements CliRunner {
 		for (ParameterDescriptor param : cmd.getDescriptor().getParameters()) {
 			if (param.isRequired()) {
 				if (cmd.getParameter(param.getName()) == null) {
+					// TODO #103: set default parameters
 					throw new IllegalArgumentException("Missing required parameter " + param.getName());
 				}
 			} else if (StringUtils.hasText(param.getDefaultValue())) {

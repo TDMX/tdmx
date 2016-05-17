@@ -17,6 +17,9 @@
 	<bean id="tdmx.server.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
 		<constructor-arg>
 			<array>
+				<value>org.tdmx.server.cli.env.SetDefault</value>
+				<value>org.tdmx.server.cli.env.ShowDefault</value>
+				
 				<value>org.tdmx.server.cli.cache.ListCache</value>
 				<value>org.tdmx.server.cli.cache.InvalidateCache</value>
 				
@@ -72,6 +75,9 @@
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="default:set" value="tdmx.server.cli.env.SetDefault"/>
+				<entry key="default:show" value="tdmx.server.cli.env.ShowDefault"/>
+
 				<entry key="cache:list" value="tdmx.server.cli.cmd.ListCache"/>
 				<entry key="cache:invalidate" value="tdmx.server.cli.cmd.InvalidateCache"/>
 				
@@ -140,6 +146,13 @@
 
 	<bean id="tdmx.server.cli.cmd.AbstractCommand" class="org.tdmx.server.cli.cmd.AbstractCliCommand" abstract="true">
 		<property name="sas" ref="rs.SAS"/>
+	</bean>
+
+	<bean id="tdmx.server.cli.env.SetDefault" class="org.tdmx.server.cli.env.SetDefault" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
+	</bean>
+	<bean id="tdmx.server.cli.env.ShowDefault" class="org.tdmx.server.cli.env.ShowDefault" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">

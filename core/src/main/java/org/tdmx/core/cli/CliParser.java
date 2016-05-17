@@ -225,8 +225,8 @@ public class CliParser {
 		}
 		List<OptionDescriptor> options = cmd.getDescriptor().getOptions();
 		for (OptionDescriptor option : options) {
-			String optionSet = cmd.getOption(option.getName()) != null ? "Y" : "N";
-			logInfo(option.getName() + "=" + optionSet, out);
+			String optionSet = cmd.getOption(option.getName()) != null ? "set" : "not set";
+			logInfo(option.getName() + " -option " + optionSet, out);
 		}
 	}
 

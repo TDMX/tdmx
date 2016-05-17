@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
+package org.tdmx.server.cli.env;
 
-import java.io.PrintStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.CliPrinterFactory;
+import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.display.CliPrinter;
-import org.tdmx.core.cli.display.ObjectPrettyPrinter;
-import org.tdmx.core.cli.display.PrintableObjectMapper;
+import org.tdmx.server.cli.cmd.AbstractCliCommand;
 
-public class CliPrinterFactoryImpl implements CliPrinterFactory {
+@Cli(name = "default:show", description = "shows the default values.")
+public class ShowDefault extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -35,35 +33,20 @@ public class CliPrinterFactoryImpl implements CliPrinterFactory {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(CliPrinterFactoryImpl.class);
 
-	// internal
-	private boolean verbose = false;
-	private PrintableObjectMapper mapper;
+	private CliPrinterFactory cliPrinterFactory;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public CliPrinterFactoryImpl() {
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public CliPrinter getPrinter(PrintStream ps) {
-		return new ObjectPrettyPrinter(ps, verbose, mapper);
-	}
-
-	@Override
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	@Override
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
+	public void run(CliPrinter out) {
+		out.println("verbose - option " + (cliPrinterFactory.isVerbose() ? "set" : "not set"));
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,12 +61,12 @@ public class CliPrinterFactoryImpl implements CliPrinterFactory {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public PrintableObjectMapper getMapper() {
-		return mapper;
+	public CliPrinterFactory getCliPrinterFactory() {
+		return cliPrinterFactory;
 	}
 
-	public void setMapper(PrintableObjectMapper mapper) {
-		this.mapper = mapper;
+	public void setCliPrinterFactory(CliPrinterFactory cliPrinterFactory) {
+		this.cliPrinterFactory = cliPrinterFactory;
 	}
 
 }

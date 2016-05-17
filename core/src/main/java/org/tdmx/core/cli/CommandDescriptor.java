@@ -108,14 +108,15 @@ public class CommandDescriptor {
 	}
 
 	public void printUsage(PrintStream ps) {
-		ps.println(cli.name());
-		ps.println("\tdescription: " + cli.description());
+		ps.print(cli.name());
+		ps.print(" - " + cli.description());
 		if (StringUtils.hasText(cli.note())) {
-			ps.println("\tnote: " + cli.note());
+			ps.print(" (" + cli.note() + ")");
 		}
+		ps.println();
 		if (!options.isEmpty()) {
 			for (OptionDescriptor option : options) {
-				ps.print("\t" + option.getName() + " (option) " + option.getDescription());
+				ps.println("\t" + option.getName() + " (option) " + option.getDescription());
 			}
 		}
 		if (!parameters.isEmpty()) {

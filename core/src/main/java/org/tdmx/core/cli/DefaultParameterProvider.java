@@ -18,22 +18,16 @@
  */
 package org.tdmx.core.cli;
 
-import java.io.PrintStream;
-
-import org.tdmx.core.cli.display.CliPrinter;
-
 /**
- * A factory providing the {@link CliPrinter} and giving the possibility to set the default value for verbosity.
+ * A provider of default values.
  * 
  * @author Peter
  *
  */
-public interface CliPrinterFactory {
+public interface DefaultParameterProvider {
 
-	public boolean isVerbose();
+	public void setDefault(String parameterName, String parameterValue);
 
-	public void setVerbose(boolean verbose);
-
-	public CliPrinter getPrinter(PrintStream ps);
+	public String getDefault(String parameterName);
 
 }
