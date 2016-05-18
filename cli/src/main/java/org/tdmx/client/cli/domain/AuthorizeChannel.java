@@ -21,7 +21,6 @@ package org.tdmx.client.cli.domain;
 import java.math.BigInteger;
 import java.util.Date;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -124,8 +123,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -201,7 +199,7 @@ public class AuthorizeChannel implements CommandExecutable {
 				ca = ci.getChannelauthorization().getCurrent();
 			}
 		} else {
-			ClientCliLoggingUtils.logError(out, searchChannelResponse.getError());
+			out.println("Unable to search channels. ", searchChannelResponse.getError());
 		}
 
 		if (rca != null) {
@@ -321,7 +319,7 @@ public class AuthorizeChannel implements CommandExecutable {
 		if (setChannelAuthResponse.isSuccess()) {
 			out.println("Authorization ", c, " successful.");
 		} else {
-			ClientCliLoggingUtils.logError(out, setChannelAuthResponse.getError());
+			out.println("Authorization ", c, " failed.", setChannelAuthResponse.getError());
 		}
 	}
 

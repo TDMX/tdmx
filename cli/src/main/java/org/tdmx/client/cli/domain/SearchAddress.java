@@ -100,8 +100,7 @@ public class SearchAddress implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -134,7 +133,7 @@ public class SearchAddress implements CommandExecutable {
 			}
 
 		} else {
-			ClientCliLoggingUtils.logError(out, searchAddressResponse.getError());
+			out.println("Unable to search addresses. ", searchAddressResponse.getError());
 		}
 	}
 

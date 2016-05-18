@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.domain;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -114,8 +113,7 @@ public class SuspendDomainAdministratorCredentials implements CommandExecutable 
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -155,7 +153,7 @@ public class SuspendDomainAdministratorCredentials implements CommandExecutable 
 				out.println("Administrator for domain " + domain + " with fingerprint " + dac.getFingerprint()
 						+ " suspended.");
 			} else {
-				ClientCliLoggingUtils.logError(out, modifyAdminResponse.getError());
+				out.println("Unable to modify administrator for " + domain + ". ", modifyAdminResponse.getError());
 			}
 
 		} else {

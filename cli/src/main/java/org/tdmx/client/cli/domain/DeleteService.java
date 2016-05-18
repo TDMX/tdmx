@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.domain;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
@@ -92,8 +91,7 @@ public class DeleteService implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -115,8 +113,7 @@ public class DeleteService implements CommandExecutable {
 		if (deleteServiceResponse.isSuccess()) {
 			out.println(s, " successfully deleted.");
 		} else {
-			out.println("Unable to delete ", s);
-			ClientCliLoggingUtils.logError(out, deleteServiceResponse.getError());
+			out.println("Unable to delete ", s, ". ", deleteServiceResponse.getError());
 		}
 	}
 

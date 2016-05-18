@@ -18,11 +18,15 @@
  */
 package org.tdmx.core.cli;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.Command;
 import org.tdmx.core.cli.runtime.CommandOption;
 import org.tdmx.core.cli.runtime.CommandParameter;
@@ -48,6 +52,7 @@ public class CliParser {
 	public static final String PI_QUIT = "quit";
 
 	private CommandDescriptorFactory commandDescriptorFactory;
+	private CliPrinterFactory cliPrinterFactory;
 	private DefaultParameterProvider defaultProvider;
 	private CliRunner cliRunner;
 
@@ -84,21 +89,18 @@ public class CliParser {
 			case ERROR:
 				if (commandDescriptorFactory.getCommand(token) != null) {
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
-					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
 				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
 					listCommands(out);
 				} else {
-					logInfo("Ignore " + token, out);
+					getLog(out).println("Ignore " + token);
 				}
 				break;
 			case INITIAL:
-				// TODO #103: set "pwd:" and "set:" parameter bindings
 				if (commandDescriptorFactory.getCommand(token) != null) {
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
-					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
@@ -108,12 +110,12 @@ public class CliParser {
 				} else if (token.equalsIgnoreCase(PI_ABORT)) {
 					state = ParserState.INITIAL;
 				} else {
-					logInfo("Ignore " + token, out);
+					getLog(out).println("Ignore " + token);
 				}
 				break;
 			case CMD:
 				if (cmd == null) {
-					logError("No cmd.", err);
+					getLog(err).println("No cmd.");
 					state = ParserState.ERROR;
 				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_USAGE)) {
 					printHelp(cmd, out);
@@ -129,7 +131,6 @@ public class CliParser {
 					executeCmd(cmd, out, err);
 					// next command started
 					cmd = new Command(commandDescriptorFactory.getCommand(token));
-					// TODO #103 add bound variables to the command
 					state = ParserState.CMD;
 				} else if (cmd.supportsOption(token)) {
 					cmd.addOption(new CommandOption(cmd.getDescriptor().getOption(token)));
@@ -138,21 +139,22 @@ public class CliParser {
 					parameter = cmd.getDescriptor().getParameter(token);
 					state = ParserState.PARAMETER;
 				} else {
-					logError("Unknown parameter " + token + " for " + cmd.getDescriptor().getName(), err);
+					getLog(err).println("Unknown parameter " + token + " for " + cmd.getDescriptor().getName());
 				}
 				break;
 			case PARAMETER:
 				if (cmd == null) {
-					logError("No cmd.", err);
+					getLog(err).println("No cmd.");
 					state = ParserState.ERROR;
 				} else if (parameter == null) {
-					logError("No parameter.", err);
+					getLog(err).println("No parameter.");
 					state = ParserState.ERROR;
 				} else if (token.equalsIgnoreCase(PI_HELP)) {
 					printHelp(cmd, out);
 				} else if (token.equalsIgnoreCase(PI_LIST)) {
 					listParameters(cmd, out);
 				} else if (!"=".equals(token)) {
+					// options have no = separating the parameter name from value, just a parameter name
 					cmd.addParameter(new CommandParameter(parameter, token));
 					parameter = null;
 					state = ParserState.CMD;
@@ -162,11 +164,18 @@ public class CliParser {
 				break;
 			case VALUE:
 				if (cmd == null) {
-					logError("No cmd.", err);
+					getLog(err).println("No cmd.");
 					state = ParserState.ERROR;
 				} else if (parameter == null) {
-					logError("No parameter.", err);
+					getLog(err).println("No parameter.");
 					state = ParserState.ERROR;
+				} else if ("-".equals(token)) {
+					// parse hidden parameter value from console
+					String pwd = readHiddenInput(out, parameter);
+					cmd.addParameter(new CommandParameter(parameter, new String(pwd)));
+					parameter = null;
+					state = ParserState.CMD;
+
 				} else {
 					cmd.addParameter(new CommandParameter(parameter, token));
 					parameter = null;
@@ -174,13 +183,13 @@ public class CliParser {
 				}
 				break;
 			default:
-				logError("Unknown state " + state, err);
+				getLog(err).println("Unknown state " + state);
 				state = ParserState.ERROR;
 			}
 		}
 		if (cmd != null) {
 			if (parameter != null) {
-				logError("Incomplete parameter " + parameter, err);
+				getLog(err).println("Incomplete parameter " + parameter);
 			}
 			executeCmd(cmd, out, err);
 		}
@@ -195,6 +204,30 @@ public class CliParser {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private CliPrinter getLog(PrintStream ps) {
+		return cliPrinterFactory.getPrinter(ps);
+	}
+
+	private String readHiddenInput(PrintStream out, ParameterDescriptor parameter) {
+		String prompt = String.format("Enter value for %s: ", parameter.getName());
+		// convert the pwd into the parameter value instead of the -
+		if (System.console() != null) {
+			char[] pwd = System.console().readPassword(prompt);
+			return new String(pwd);
+		}
+		// no console so use Stdin instead
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		out.print(prompt);
+		try {
+			String pwd = reader.readLine();
+			return pwd;
+		} catch (IOException e) {
+			log.warn("Unable to read parameter value from non-console inputstream.", e);
+		}
+		return "-";
+
+	}
+
 	private void printUsage(PrintStream out) {
 		commandDescriptorFactory.printUsage(out);
 	}
@@ -206,7 +239,7 @@ public class CliParser {
 	private void listCommands(PrintStream out) {
 		List<String> cmdNames = commandDescriptorFactory.getCommandNames();
 		for (String cmd : cmdNames) {
-			logInfo(cmd, out);
+			getLog(out).println(cmd);
 		}
 	}
 
@@ -224,38 +257,12 @@ public class CliParser {
 				paramSet = "MISSING!";
 			}
 			// TODO #105: mask pwds
-			logInfo(param.getName() + "=" + paramSet, out);
+			getLog(out).println(param.getName() + "=" + paramSet);
 		}
 		List<OptionDescriptor> options = cmd.getDescriptor().getOptions();
 		for (OptionDescriptor option : options) {
 			String optionSet = cmd.getOption(option.getName()) != null ? "set" : "not set";
-			logInfo(option.getName() + " -option " + optionSet, out);
-		}
-	}
-
-	private void logInfo(String msg, PrintStream out) {
-		out.println(msg);
-	}
-
-	private void logError(String msg, PrintStream err) {
-		err.println("error=" + msg);
-	}
-
-	private void logError(Throwable t, PrintStream err) {
-
-		// TODO CommandExceptionHandler to log
-
-		String msg = t.getMessage();
-		if (!StringUtils.hasText(msg) && t.getCause() != null) {
-			msg = t.getCause().getMessage();
-		}
-
-		err.println("error=" + msg);
-		if (t.getCause() != null) {
-			err.println("cause=" + t.getCause().getMessage());
-			t.getCause().printStackTrace(err);
-		} else {
-			t.printStackTrace(err);
+			getLog(out).println(option.getName() + " -option " + optionSet);
 		}
 	}
 
@@ -264,7 +271,7 @@ public class CliParser {
 			try {
 				cliRunner.execute(cmd, out);
 			} catch (Throwable t) {
-				logError(t, err);
+				getLog(err).println(t);
 			}
 		}
 	}
@@ -287,6 +294,14 @@ public class CliParser {
 
 	public void setCommandDescriptorFactory(CommandDescriptorFactory commandDescriptorFactory) {
 		this.commandDescriptorFactory = commandDescriptorFactory;
+	}
+
+	public CliPrinterFactory getCliPrinterFactory() {
+		return cliPrinterFactory;
+	}
+
+	public void setCliPrinterFactory(CliPrinterFactory printerFactory) {
+		this.cliPrinterFactory = printerFactory;
 	}
 
 	public DefaultParameterProvider getDefaultProvider() {

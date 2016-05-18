@@ -143,6 +143,7 @@
 	
 	<bean id="tdmx.server.cli.ServerAdminCLI" class="org.tdmx.core.cli.CliParser">
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
+		<property name="cliPrinterFactory" ref="tdmx.server.cli.PrinterFactory"/>
 		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 		<property name="cliRunner" ref="tdmx.server.cli.ServerCliRunner"/>
 	</bean>

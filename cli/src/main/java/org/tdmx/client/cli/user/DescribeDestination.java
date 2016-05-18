@@ -119,8 +119,7 @@ public class DescribeDestination implements CommandExecutable {
 		sessionRequest.setServicename(service);
 		GetMDSSessionResponse sessionResponse = scs.getMDSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get MDS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get MDS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -136,8 +135,7 @@ public class DescribeDestination implements CommandExecutable {
 
 		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
 		if (!destRes.isSuccess()) {
-			out.println("Unable to get current destination session.");
-			ClientCliLoggingUtils.logError(out, destRes.getError());
+			out.println("Unable to get current destination session. ", destRes.getError());
 			return;
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();

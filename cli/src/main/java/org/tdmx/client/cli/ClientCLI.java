@@ -158,6 +158,7 @@ public class ClientCLI {
 
 		CliParser cliparser = new CliParser();
 		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
+		cliparser.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
 		cliparser.setDefaultProvider(defaultProvider);
 		cliparser.setCliRunner(runner);
 

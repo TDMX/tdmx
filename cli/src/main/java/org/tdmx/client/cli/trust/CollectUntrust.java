@@ -21,7 +21,6 @@ package org.tdmx.client.cli.trust;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneTrustStore;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -101,8 +100,7 @@ public class CollectUntrust implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -161,12 +159,12 @@ public class CollectUntrust implements CommandExecutable {
 					if (cert != null) {
 						authCertMap.put(cert.getFingerprint(), cert);
 					} else {
-						ClientCliLoggingUtils.log(out, "Unable to process certificate for ", channel);
+						out.println("Unable to process certificate for ", channel);
 					}
 				}
 				again = searchChannelResponse.getChannelinfos().size() == batchsize;
 			} else {
-				ClientCliLoggingUtils.logError(out, searchChannelResponse.getError());
+				out.println("Unable to search channels. ", searchChannelResponse.getError());
 				again = false;
 			}
 

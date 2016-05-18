@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
@@ -151,8 +150,7 @@ public class SendFile implements CommandExecutable {
 		GetMOSSession sessionRequest = new GetMOSSession();
 		GetMOSSessionResponse sessionResponse = scs.getMOSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get MOS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get MOS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -173,8 +171,7 @@ public class SendFile implements CommandExecutable {
 
 		GetChannelResponse destRes = mos.getChannel(channelReq);
 		if (!destRes.isSuccess()) {
-			out.println("Unable to get channel information.");
-			ClientCliLoggingUtils.logError(out, destRes.getError());
+			out.println("Unable to get channel information. ", destRes.getError());
 			return;
 		}
 
@@ -192,10 +189,10 @@ public class SendFile implements CommandExecutable {
 		if (Taskstatus.NONE != ci.getPs().getStatus()) {
 			// if the CA is not propagated yet or failed to propagate to the destination, we have a possible problem for
 			// the sender
-			ClientCliLoggingUtils.log(out, "Warning: channel authorization processing status ", ci.getPs());
+			out.println("Warning: channel authorization processing status. ", ci.getPs());
 		}
 		if (ci.getCurrent() == null) {
-			out.println("No channel current authorization");
+			out.println("No channel current authorization.");
 			return;
 		}
 		// check the send authorization
@@ -319,8 +316,7 @@ public class SendFile implements CommandExecutable {
 
 					SubmitResponse submitResponse = mos.submit(submitReq);
 					if (!submitResponse.isSuccess()) {
-						out.println("Message submission failed. ");
-						ClientCliLoggingUtils.logError(out, submitResponse.getError());
+						out.println("Message submission failed. ", submitResponse.getError());
 					}
 					out.println("Message header uploaded successfully.");
 					out.println("Message chunk[0] uploaded successfully.");
@@ -334,8 +330,7 @@ public class SendFile implements CommandExecutable {
 
 						UploadResponse uploadResponse = mos.upload(upl);
 						if (!uploadResponse.isSuccess()) {
-							out.println("Chunk submission failed. ");
-							ClientCliLoggingUtils.logError(out, submitResponse.getError());
+							out.println("Chunk submission failed. ", submitResponse.getError());
 							return;
 						}
 						out.println("Message chunk[" + chunk.getPos() + "] uploaded successfully.");

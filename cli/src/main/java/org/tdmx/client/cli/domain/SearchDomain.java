@@ -88,8 +88,7 @@ public class SearchDomain implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -121,7 +120,7 @@ public class SearchDomain implements CommandExecutable {
 			}
 
 		} else {
-			ClientCliLoggingUtils.logError(out, searchDomainResponse.getError());
+			out.println("Unable to search domains. ", searchDomainResponse.getError());
 		}
 	}
 

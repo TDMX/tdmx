@@ -36,9 +36,8 @@ public class ShowDefault extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	private CliPrinterFactory cliPrinterFactory;
-	private DefaultParameterProvider defaultProvider;
+	private DefaultParameterProvider defaultProvider; // currently unused.....
 
-	// TODO #105: zacPassword
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------

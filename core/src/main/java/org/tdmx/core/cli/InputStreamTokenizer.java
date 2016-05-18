@@ -25,9 +25,9 @@ import java.io.StringReader;
 /**
  * Parse a Character stream into a Token stream. {Token}*<-{char}*
  * 
- * Case 1 Token := '=' ( not excaped with preceeding \ )
+ * Case 1 Token := '=' ( not escaped with preceding \ )
  * 
- * Case 2 Token := '"' + WhitespaceText + '"' ( where " not excaped with preceeding \ )
+ * Case 2 Token := '"' + WhitespaceText + '"' ( where " not escaped with preceding \ )
  * 
  * Case 3 Token := NonWhitespaceText
  * 
@@ -104,7 +104,7 @@ public class InputStreamTokenizer {
 
 				} else {
 					// we are not in the middle of a quote, so = or " start quote or whitespace ends token
-					// if we have an unescaped equals we make this a token immediately
+					// if we have an un-escaped equals we make this a token immediately
 
 					if (ch == '\\' && prev != '\\') {
 						// consume the escaping character

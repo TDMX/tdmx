@@ -37,12 +37,10 @@ public class SetDefault extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	private CliPrinterFactory cliPrinterFactory;
-	private DefaultParameterProvider defaultProvider;
+	private DefaultParameterProvider defaultProvider; // not used yet...
 
 	@Option(name = "verbose", description = "sets the output verbosity.")
 	private Boolean verbose;
-
-	// TODO #105: zacPassword
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS

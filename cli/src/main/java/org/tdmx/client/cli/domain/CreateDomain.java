@@ -18,7 +18,6 @@
  */
 package org.tdmx.client.cli.domain;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.ZoneDescriptor;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -93,8 +92,7 @@ public class CreateDomain implements CommandExecutable {
 		GetZASSession sessionRequest = new GetZASSession();
 		GetZASSessionResponse sessionResponse = scs.getZASSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get ZAS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get ZAS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -113,8 +111,7 @@ public class CreateDomain implements CommandExecutable {
 		if (createDomainResponse.isSuccess()) {
 			out.println("Domain " + domain + " successfully created.");
 		} else {
-			out.println("Unable to create domain " + domain);
-			ClientCliLoggingUtils.logError(out, createDomainResponse.getError());
+			out.println("Unable to create domain " + domain + ". ", createDomainResponse.getError());
 		}
 	}
 

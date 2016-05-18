@@ -19,8 +19,6 @@
 package org.tdmx.client.cli;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
@@ -29,7 +27,6 @@ import org.tdmx.core.cli.CliPrinterFactory;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.display.CorePrintableObjectMapperImpl;
 import org.tdmx.core.cli.display.ObjectPrettyPrinter;
-import org.tdmx.core.cli.display.PrintableObject;
 import org.tdmx.core.cli.display.PrintableObjectMapper;
 
 /**
@@ -92,25 +89,6 @@ public class ClientCliLoggingUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
-	public static void logException(CliPrinter out, String prefix, Exception error) {
-		out.println(prefix, ". Exception message [" + error.getMessage() + "]");
-		StringWriter sw = new StringWriter();
-		error.printStackTrace(new PrintWriter(sw));
-		out.println(sw.toString());
-	}
-
-	public static PrintableObject toLog(org.tdmx.core.api.v01.common.Error error) {
-		return new PrintableObject("Error").add("code", error.getCode()).add("description", error.getDescription());
-	}
-
-	public static void logError(CliPrinter out, org.tdmx.core.api.v01.common.Error error) {
-		out.println(toLog(error));
-	}
-
-	public static void log(CliPrinter out, Object... objects) {
-		out.println(objects);
-	}
-
 	public static String toString(UnencryptedSessionKey usk) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("encryptionContextId=").append(usk.getEncryptionContextId());

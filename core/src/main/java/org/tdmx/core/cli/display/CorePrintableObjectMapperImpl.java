@@ -18,6 +18,8 @@
  */
 package org.tdmx.core.cli.display;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Calendar;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -54,7 +56,9 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 	// -------------------------------------------------------------------------
 	@Override
 	public Object map(Object object, boolean verbose) {
-		if (object instanceof org.tdmx.core.api.v01.common.Error) {
+		if (object instanceof Exception) {
+			return toLog((Exception) object);
+		} else if (object instanceof org.tdmx.core.api.v01.common.Error) {
 			return toLog((org.tdmx.core.api.v01.common.Error) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.User) {
 			return toLog((org.tdmx.core.api.v01.msg.User) object);
@@ -105,6 +109,16 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		}
 
 		return null;
+	}
+
+	public PrintableObject toLog(Exception e) {
+		PrintableObject result = new PrintableObject(e.getClass().getName());
+		result.add("message", e.getMessage());
+
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		result.addVerbose("stacktrace", sw.toString());
+		return result;
 	}
 
 	public PrintableObject toLog(org.tdmx.core.api.v01.common.Error error) {

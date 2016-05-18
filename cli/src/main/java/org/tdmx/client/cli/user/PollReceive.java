@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
-import org.tdmx.client.cli.ClientCliLoggingUtils;
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
@@ -151,8 +150,7 @@ public class PollReceive implements CommandExecutable {
 		sessionRequest.setServicename(service);
 		GetMDSSessionResponse sessionResponse = scs.getMDSSession(sessionRequest);
 		if (!sessionResponse.isSuccess()) {
-			out.println("Unable to get MDS session.");
-			ClientCliLoggingUtils.logError(out, sessionResponse.getError());
+			out.println("Unable to get MDS session. ", sessionResponse.getError());
 			return;
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
@@ -168,8 +166,7 @@ public class PollReceive implements CommandExecutable {
 
 		GetDestinationSessionResponse destRes = mds.getDestinationSession(destReq);
 		if (!destRes.isSuccess()) {
-			out.println("Unable to get current destination session.");
-			ClientCliLoggingUtils.logError(out, destRes.getError());
+			out.println("Unable to get current destination session. ", destRes.getError());
 			return;
 		}
 		Destinationsession ds = destRes.getDestination().getDestinationsession();
@@ -224,8 +221,7 @@ public class PollReceive implements CommandExecutable {
 			setDestReq.setDestinationsession(ds);
 			SetDestinationSessionResponse setDestRes = mds.setDestinationSession(setDestReq);
 			if (!setDestRes.isSuccess()) {
-				out.println("Unable to set new current destination session.");
-				ClientCliLoggingUtils.logError(out, setDestRes.getError());
+				out.println("Unable to set new current destination session. ", setDestRes.getError());
 				return;
 			}
 			out.println("New session set at the service provider.");
@@ -244,8 +240,7 @@ public class PollReceive implements CommandExecutable {
 
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
 		if (!receiveResponse.isSuccess()) {
-			out.println("Failed to receive Msg.");
-			ClientCliLoggingUtils.logError(out, receiveResponse.getError());
+			out.println("Failed to receive Msg. ", receiveResponse.getError());
 			return;
 		}
 
@@ -333,8 +328,7 @@ public class PollReceive implements CommandExecutable {
 
 						DownloadResponse downloadResponse = mds.download(downloadRequest);
 						if (!downloadResponse.isSuccess()) {
-							out.println("Failed to receive Chunk.");
-							ClientCliLoggingUtils.logError(out, downloadResponse.getError());
+							out.println("Failed to receive Chunk. ", downloadResponse.getError());
 							chunksOk = false;
 						} else {
 							continuationId = downloadResponse.getContinuation();
@@ -381,13 +375,13 @@ public class PollReceive implements CommandExecutable {
 					StreamUtils.transfer(plainContent, fos);
 
 				} catch (FileNotFoundException e) {
-					ClientCliLoggingUtils.logException(out, "Output file " + filename + " not found.", e);
+					out.println("Output file " + filename + " not found. ", e);
 					decryptedOk = false;
 				} catch (IOException e) {
-					ClientCliLoggingUtils.logException(out, "Error writing file " + filename, e);
+					out.println("Error writing file " + filename + ". ", e);
 					decryptedOk = false;
 				} catch (CryptoException e) {
-					ClientCliLoggingUtils.logException(out, "Error decrypting to file " + filename, e);
+					out.println("Error decrypting to file " + filename + ". ", e);
 					decryptedOk = false;
 				}
 
@@ -435,8 +429,7 @@ public class PollReceive implements CommandExecutable {
 		ackRequest.setDr(dr);
 		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
 		if (!ackResponse.isSuccess()) {
-			out.println("Failed to NACK receipt.");
-			ClientCliLoggingUtils.logError(out, ackResponse.getError());
+			out.println("Failed to NACK receipt. ", ackResponse.getError());
 		}
 	}
 
