@@ -22,6 +22,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -89,16 +91,16 @@ public class StringUtils {
 	}
 
 	public static String inputStreamAsString(InputStream stream, Charset cs) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(stream, cs));
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-
-		while ((line = br.readLine()) != null) {
-			sb.append(line).append("\n");
+		StringWriter sw = new StringWriter();
+		try (PrintWriter pw = new PrintWriter(sw)) {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, cs))) {
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					pw.println(line);
+				}
+			}
 		}
-
-		br.close();
-		return sb.toString();
+		return sw.toString();
 	}
 
 	/**

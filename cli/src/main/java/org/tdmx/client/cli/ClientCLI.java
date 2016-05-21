@@ -18,7 +18,10 @@ package org.tdmx.client.cli;
  * http://www.gnu.org/licenses/.
  */
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import org.tdmx.client.cli.domain.ActivateDomainAdministratorCredentials;
 import org.tdmx.client.cli.domain.ActivateUserCredentials;
@@ -80,6 +83,7 @@ import org.tdmx.core.cli.DefaultParameterProvider;
 import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
+import org.tdmx.core.system.lang.StringUtils;
 
 /**
  * A CLI for local client administration.
@@ -130,7 +134,7 @@ public class ClientCLI {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		final DefaultParameterProvider defaultProvider = StaticDefaultParameterProvider.getInstance();
 
 		final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
@@ -156,10 +160,15 @@ public class ClientCLI {
 		runner.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
 		runner.setDefaultProvider(defaultProvider);
 
+		// parse the help text for this CLI
+		InputStream helpContent = ClientCLI.class.getResourceAsStream("/clientAdminHelp.txt");
+		String helpText = StringUtils.inputStreamAsString(helpContent, Charset.forName("UTF-8"));
+
 		CliParser cliparser = new CliParser();
 		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
 		cliparser.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
 		cliparser.setDefaultProvider(defaultProvider);
+		cliparser.setHelp(helpText);
 		cliparser.setCliRunner(runner);
 
 		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)

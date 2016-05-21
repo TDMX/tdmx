@@ -1,0 +1,22 @@
+TDMX server administration CLI
+Copyright Peter Klauser 2016
+
+general command syntax:
+
+> command-name {parameter-name=parameter-value|option}* exec
+
+where: 
+
+exec - executes the command entered.
+
+multi-line parameter values can be entered if they are double-quoted. Double-quotes in a multi-line parameter value must be quoted with the backslash "\".  
+
+you can avoid entering passwords in plain text ( echoed to the console ) by entering the parameter value "-" (minus) for any parameter, and subsequently you will be asked to enter the value of the parameter in a masked fashion.
+
+additional special purpose commands
+
+> help - displays this information, or usage information about a partially entered command.
+> list - displays all available commands or the current parameter values of any partially entered command.
+> usage - displays a description of all available commands and their parameters, or usage information about a partially entered command. 
+> abort - discards a partially entered command without executing the command.
+> exit - exits the program without executing any partially entered command.

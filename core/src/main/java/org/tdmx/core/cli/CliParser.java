@@ -51,6 +51,7 @@ public class CliParser {
 	public static final String PI_EXIT = "exit";
 	public static final String PI_QUIT = "quit";
 
+	private String help = "help not set.";
 	private CommandDescriptorFactory commandDescriptorFactory;
 	private CliPrinterFactory cliPrinterFactory;
 	private DefaultParameterProvider defaultProvider;
@@ -104,8 +105,9 @@ public class CliParser {
 					state = ParserState.CMD;
 				} else if (token.equalsIgnoreCase(PI_USAGE)) {
 					printUsage(out);
-				} else if (token.equalsIgnoreCase(PI_HELP) || token.equalsIgnoreCase(PI_LIST)) {
-					// TODO #104 separate "HELP" for all commands
+				} else if (token.equalsIgnoreCase(PI_HELP)) {
+					printHelp(out);
+				} else if (token.equalsIgnoreCase(PI_LIST)) {
 					listCommands(out);
 				} else if (token.equalsIgnoreCase(PI_ABORT)) {
 					state = ParserState.INITIAL;
@@ -127,11 +129,6 @@ public class CliParser {
 					state = ParserState.INITIAL;
 				} else if (token.equalsIgnoreCase(PI_ABORT)) {
 					state = ParserState.INITIAL;
-				} else if (commandDescriptorFactory.getCommand(token) != null) {
-					executeCmd(cmd, out, err);
-					// next command started
-					cmd = new Command(commandDescriptorFactory.getCommand(token));
-					state = ParserState.CMD;
 				} else if (cmd.supportsOption(token)) {
 					cmd.addOption(new CommandOption(cmd.getDescriptor().getOption(token)));
 					state = ParserState.CMD;
@@ -232,6 +229,10 @@ public class CliParser {
 		commandDescriptorFactory.printUsage(out);
 	}
 
+	private void printHelp(PrintStream out) {
+		getLog(out).println(help);
+	}
+
 	private void printHelp(Command cmd, PrintStream out) {
 		cmd.getDescriptor().printUsage(out);
 	}
@@ -320,6 +321,14 @@ public class CliParser {
 
 	public void setCliRunner(CliRunner cliRunner) {
 		this.cliRunner = cliRunner;
+	}
+
+	public String getHelp() {
+		return help;
+	}
+
+	public void setHelp(String help) {
+		this.help = help;
 	}
 
 }
