@@ -39,7 +39,7 @@ public class CheckScs implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", required = true, masked = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 	@Parameter(name = "verbose", defaultValue = "false", description = "provide more detailed certificate information.")
 	private boolean verbose;

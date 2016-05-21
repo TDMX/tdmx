@@ -40,7 +40,7 @@ public class DownloadScs implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", required = true, masked = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 	@Parameter(name = "fingerprint", defaultValueText = "the root certificate's fingerprint", description = "the fingerprint of the certificate in the servers public certificate chain.")
 	private String fingerprint;

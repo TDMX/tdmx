@@ -125,6 +125,9 @@ public class CommandDescriptor {
 				if (parameter.isRequired()) {
 					ps.print(" (required)");
 				}
+				if (parameter.isMasked()) {
+					ps.print(" (confidential)");
+				}
 				if (StringUtils.hasText(parameter.getDefaultValue())) {
 					ps.print(" (" + parameter.getDefaultValue() + ")");
 				} else if (StringUtils.hasText(parameter.getDefaultValueText())) {

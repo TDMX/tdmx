@@ -53,7 +53,7 @@ public class SuspendDomainAdministratorCredentials implements CommandExecutable 
 	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate dacSerialNumber.")
 	private Integer dacSerialNumber;
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", required = true, masked = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")

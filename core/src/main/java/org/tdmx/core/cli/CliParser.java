@@ -246,17 +246,19 @@ public class CliParser {
 	private void listParameters(Command cmd, PrintStream out) {
 		List<ParameterDescriptor> parameters = cmd.getDescriptor().getParameters();
 		for (ParameterDescriptor param : parameters) {
-			// explicit param value ELSE defaultParameter ELSE defaultParamValue
+			// explicit param value ELSE defaultParameter ELSE defaultParamValue, but never show passwords
 			String paramSet = cmd.getParameter(param.getName()) != null ? cmd.getParameter(param.getName()).getValue()
 					: (!param.isNoDefault() && defaultProvider.getDefault(param.getName()) != null)
 							? defaultProvider.getDefault(param.getName()) + " (default)" : param.getDefaultValue();
 			if (!StringUtils.hasText(paramSet) && StringUtils.hasText(param.getDefaultValueText())) {
 				paramSet = param.getDefaultValueText() + " (default)";
 			}
+			if (StringUtils.hasText(paramSet) && param.isMasked()) {
+				paramSet = "###(masked)###";
+			}
 			if (!StringUtils.hasText(paramSet) && param.isRequired()) {
 				paramSet = "MISSING!";
 			}
-			// TODO #105: mask pwds
 			getLog(out).println(param.getName() + "=" + paramSet);
 		}
 		List<OptionDescriptor> options = cmd.getDescriptor().getOptions();

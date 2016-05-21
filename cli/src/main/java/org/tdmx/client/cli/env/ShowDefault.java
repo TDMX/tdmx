@@ -53,6 +53,17 @@ public class ShowDefault implements CommandExecutable {
 			out.println("zacPassword not set");
 		}
 
+		if (StaticDefaultParameterProvider.getDefaultValue("dacPassword") != null) {
+			out.println("dacPassword set");
+		} else {
+			out.println("dacPassword not set");
+		}
+
+		if (StaticDefaultParameterProvider.getDefaultValue("userPassword") != null) {
+			out.println("userPassword set");
+		} else {
+			out.println("userPassword not set");
+		}
 	}
 
 	// -------------------------------------------------------------------------

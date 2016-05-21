@@ -60,7 +60,7 @@ public class CollectUntrust implements CommandExecutable {
 	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate dacSerialNumber.")
 	private Integer dacSerialNumber;
 
-	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
+	@Parameter(name = "dacPassword", required = true, masked = true, description = "the domain administrator's keystore password.")
 	private String dacPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")

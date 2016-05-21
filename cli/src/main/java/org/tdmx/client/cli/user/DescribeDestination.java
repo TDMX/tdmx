@@ -56,7 +56,7 @@ public class DescribeDestination implements CommandExecutable {
 	@Parameter(name = "userSerial", defaultValueText = "<greatest existing User serial>", description = "the user's certificate serialNumber.")
 	private Integer userSerialNumber;
 
-	@Parameter(name = "userPassword", required = true, description = "the user's keystore password.")
+	@Parameter(name = "userPassword", required = true, masked = true, description = "the user's keystore password.")
 	private String userPassword;
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")

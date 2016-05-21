@@ -65,7 +65,7 @@ public class Route53Dns implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", required = true, masked = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
 	@Parameter(name = "awsRegion", required = true, description = "the Amazon AWS region name ie. us-gov-west-1, us-east-1, us-west-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-1, ap-southeast-2, ap-northeast-1, sa-east-1, cn-north-1.")

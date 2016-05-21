@@ -39,6 +39,12 @@ public class ClearDefault implements CommandExecutable {
 	@Option(name = "zacPassword", description = "the zone administrator's keystore password.")
 	private Boolean zacPassword;
 
+	@Option(name = "dacPassword", description = "the domain administrator's keystore password.")
+	private Boolean dacPassword;
+
+	@Option(name = "userPassword", description = "the domain administrator's keystore password.")
+	private Boolean userPassword;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -52,6 +58,14 @@ public class ClearDefault implements CommandExecutable {
 		if (zacPassword != null) {
 			out.println("Clearing default for zacPassword.");
 			StaticDefaultParameterProvider.clearDefaultValue("zacPassword");
+		}
+		if (dacPassword != null) {
+			out.println("Clearing default for dacPassword.");
+			StaticDefaultParameterProvider.clearDefaultValue("dacPassword");
+		}
+		if (userPassword != null) {
+			out.println("Clearing default for userPassword.");
+			StaticDefaultParameterProvider.clearDefaultValue("userPassword");
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

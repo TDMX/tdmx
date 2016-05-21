@@ -41,8 +41,14 @@ public class SetDefault implements CommandExecutable {
 	@Option(name = "verbose", description = "sets the output verbosity.")
 	private Boolean verbose;
 
-	@Parameter(name = "zacPassword", description = "the zone administrator's keystore password.", noDefault = true)
+	@Parameter(name = "zacPassword", masked = true, description = "the zone administrator's keystore password.", noDefault = true)
 	private String zacPassword;
+
+	@Parameter(name = "dacPassword", masked = true, description = "the domain administrator's keystore password.", noDefault = true)
+	private String dacPassword;
+
+	@Parameter(name = "userPassword", masked = true, description = "the user's keystore password.", noDefault = true)
+	private String userPassword;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,8 +66,15 @@ public class SetDefault implements CommandExecutable {
 		}
 		if (StringUtils.hasText(zacPassword)) {
 			out.println("Setting zacPassword.");
-			// TODO #103:
 			StaticDefaultParameterProvider.setDefaultValue("zacPassword", zacPassword);
+		}
+		if (StringUtils.hasText(dacPassword)) {
+			out.println("Setting dacPassword.");
+			StaticDefaultParameterProvider.setDefaultValue("dacPassword", dacPassword);
+		}
+		if (StringUtils.hasText(userPassword)) {
+			out.println("Setting userPassword.");
+			StaticDefaultParameterProvider.setDefaultValue("userPassword", userPassword);
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

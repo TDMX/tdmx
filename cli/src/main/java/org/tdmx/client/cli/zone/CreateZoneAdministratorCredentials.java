@@ -69,7 +69,7 @@ public class CreateZoneAdministratorCredentials implements CommandExecutable {
 	@Parameter(name = "validityInYears", defaultValue = "10", description = "the validity of the zone administrator's credential in years.")
 	private int validityInYears;
 
-	@Parameter(name = "zacPassword", required = true, description = "the zone administrator's keystore password.")
+	@Parameter(name = "zacPassword", required = true, masked = true, description = "the zone administrator's keystore password.")
 	private String zacPassword;
 
 	// -------------------------------------------------------------------------

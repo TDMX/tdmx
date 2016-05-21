@@ -51,7 +51,7 @@ public class ConfigureDestination implements CommandExecutable {
 	@Parameter(name = "userSerial", defaultValueText = "<greatest existing User serial>", description = "the user's certificate serialNumber.")
 	private Integer userSerialNumber;
 
-	@Parameter(name = "userPassword", required = true, description = "the user's keystore password.")
+	@Parameter(name = "userPassword", required = true, masked = true, description = "the user's keystore password.")
 	private String userPassword;
 
 	@Parameter(name = "encryptionScheme", defaultValue = DEFAULT_SCHEME, description = "the encryption scheme name. Use encryption:list to list out the known encryption schemes.")

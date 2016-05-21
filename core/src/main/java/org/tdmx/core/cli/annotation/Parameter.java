@@ -61,4 +61,9 @@ public @interface Parameter {
 	 * @return True if default parameter binding is not performed.
 	 */
 	boolean noDefault() default false;
+
+	/**
+	 * @return whether the parameter is to be handled as a password and masked in all output.
+	 */
+	boolean masked() default false;
 }

@@ -78,6 +78,10 @@ public class ParameterDescriptor {
 		return parameter.required();
 	}
 
+	public boolean isMasked() {
+		return parameter.masked();
+	}
+
 	public boolean isNoDefault() {
 		return parameter.noDefault();
 	}

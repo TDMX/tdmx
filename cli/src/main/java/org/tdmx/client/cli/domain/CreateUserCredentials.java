@@ -55,7 +55,7 @@ public class CreateUserCredentials implements CommandExecutable {
 
 	@Parameter(name = "userSerial", defaultValueText = "<greatest existing UC serial>+1", description = "the user credential's certificate serialNumber.")
 	private Integer serialNumber;
-	@Parameter(name = "userPassword", required = true, description = "the user credential's keystore password.")
+	@Parameter(name = "userPassword", required = true, masked = true, description = "the user credential's keystore password.")
 	private String userPassword;
 
 	@Parameter(name = "validityInDays", defaultValue = "365", description = "the validity of the user's credential in days.")
@@ -63,7 +63,7 @@ public class CreateUserCredentials implements CommandExecutable {
 
 	@Parameter(name = "dacSerial", defaultValueText = "<greatest existing DAC serial>", description = "the domain administrator's certificate serialNumber.")
 	private Integer dacSerialNumber;
-	@Parameter(name = "dacPassword", required = true, description = "the domain administrator's keystore password.")
+	@Parameter(name = "dacPassword", required = true, masked = true, description = "the domain administrator's keystore password.")
 	private String dacPassword;
 
 	// -------------------------------------------------------------------------
