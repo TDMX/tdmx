@@ -50,6 +50,9 @@ public class SetDefault implements CommandExecutable {
 	@Parameter(name = "userPassword", masked = true, description = "the user's keystore password.", noDefault = true)
 	private String userPassword;
 
+	@Parameter(name = "domain", description = "the domain.", noDefault = true)
+	private String domain;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -75,6 +78,10 @@ public class SetDefault implements CommandExecutable {
 		if (StringUtils.hasText(userPassword)) {
 			out.println("Setting userPassword.");
 			StaticDefaultParameterProvider.setDefaultValue("userPassword", userPassword);
+		}
+		if (StringUtils.hasText(domain)) {
+			out.println("Setting domain.");
+			StaticDefaultParameterProvider.setDefaultValue("domain", domain);
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

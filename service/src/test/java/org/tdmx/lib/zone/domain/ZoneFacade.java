@@ -81,7 +81,7 @@ public class ZoneFacade {
 		DestinationSession ds = new DestinationSession();
 		ds.setEncryptionContextId("1");
 		ds.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1);
-		ds.setSessionKey(new byte[] { 1, 2, 3 }); // FIXME propper signature.
+		ds.setSessionKey(new byte[] { 1, 2, 3 }); // this is not a "propper" session key, but it is signed correctly.
 
 		Destinationsession ads = d2a.mapDestinationSession(ds);
 		SignatureUtils.createDestinationSessionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),

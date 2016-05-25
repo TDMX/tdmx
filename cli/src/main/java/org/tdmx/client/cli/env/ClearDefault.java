@@ -45,6 +45,9 @@ public class ClearDefault implements CommandExecutable {
 	@Option(name = "userPassword", description = "the domain administrator's keystore password.")
 	private Boolean userPassword;
 
+	@Option(name = "domain", description = "the domain.")
+	private Boolean domain;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -66,6 +69,10 @@ public class ClearDefault implements CommandExecutable {
 		if (userPassword != null) {
 			out.println("Clearing default for userPassword.");
 			StaticDefaultParameterProvider.clearDefaultValue("userPassword");
+		}
+		if (domain != null) {
+			out.println("Clearing default for domain.");
+			StaticDefaultParameterProvider.clearDefaultValue("domain");
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

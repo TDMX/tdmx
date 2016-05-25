@@ -24,7 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
@@ -40,6 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.ContinuedAcknowledge;
 import org.tdmx.core.api.v01.common.Page;
@@ -55,9 +59,12 @@ import org.tdmx.core.api.v01.mos.Upload;
 import org.tdmx.core.api.v01.mos.UploadResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
+import org.tdmx.core.api.v01.msg.ChannelDestinationFilter;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -211,7 +218,7 @@ public class MOSImplUnitTest {
 		assertSuccess(response);
 		assertNotNull(response.getOrigin());
 		assertEquals(domain.getDomainName(), response.getOrigin().getDomain());
-		// TODO others
+		assertEquals(address.getLocalName(), response.getOrigin().getLocalname());
 	}
 
 	@Test
@@ -230,6 +237,7 @@ public class MOSImplUnitTest {
 		GetChannelResponse response = mos.getChannel(req);
 		assertSuccess(response);
 		assertNotNull(response.getChannelinfo());
+
 		// TODO others
 	}
 
@@ -250,12 +258,62 @@ public class MOSImplUnitTest {
 		ListChannelResponse response = mos.listChannel(req);
 		assertSuccess(response);
 
-		// TODO others
 		assertEquals(1, response.getChannelinfos().size());
 	}
 
 	@Test
-	public void testSubmitMessageAndUploadChunk() throws Exception {
+	public void testListChannel_AllExplicit() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelDestinationFilter cdf = new ChannelDestinationFilter();
+		cdf.setDomain(domain.getDomainName());
+		cdf.setLocalname(address.getLocalName());
+		cdf.setServicename(service.getServiceName());
+		cdf.setDomain(domain.getDomainName());
+		req.setDestination(cdf);
+
+		ListChannelResponse response = mos.listChannel(req);
+		assertSuccess(response);
+
+		assertEquals(1, response.getChannelinfos().size());
+	}
+
+	@Test
+	public void testListChannel_OnlyServiceExplicit() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelDestinationFilter cdf = new ChannelDestinationFilter();
+		cdf.setServicename(service.getServiceName());
+		req.setDestination(cdf);
+
+		ListChannelResponse response = mos.listChannel(req);
+		assertSuccess(response);
+
+		assertEquals(1, response.getChannelinfos().size());
+	}
+
+	@Test
+	public void testSubmitSmallMessageAndUploadChunk_Tx() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
@@ -264,25 +322,55 @@ public class MOSImplUnitTest {
 
 		Submit req = new Submit();
 		req.setSessionId(UC_SESSION_ID);
-		TransactionSpecification tx = new TransactionSpecification();
+		Transaction tx = new Transaction();
 		tx.setXid("txId:" + System.currentTimeMillis());
 		tx.setTxtimeout(60);
 		req.setTransaction(tx);
 
-		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName());
-		// TODO setup msg, create signatures
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
 
 		req.setMsg(msg);
 
 		SubmitResponse response = mos.submit(req);
 		assertSuccess(response, false);
 
-		Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(ChannelMessage.class));
-		// FIXME assertNotNull(response.getContinuation());
+		// the transaction is not committed, so it shouldnt yet be relayed.
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+	}
 
-		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1);
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_NoTx() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit(); // local tx
+		req.setSessionId(UC_SESSION_ID);
+
+		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		local.setClientId("Client-" + System.currentTimeMillis());
+		local.setTxtimeout(60);
+		req.setLocaltransaction(local);
+
+		req.setMsg(msg);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+				Mockito.any(ChannelMessage.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
 
 		Upload upl = new Upload();
 		upl.setSessionId(UC_SESSION_ID);
@@ -291,7 +379,54 @@ public class MOSImplUnitTest {
 		upl.setChunk(chunk);
 
 		UploadResponse uplResponse = mos.upload(upl);
-		assertError(ErrorCode.MissingChunkContinuationId, uplResponse); // FIXME - num chunks
+		assertSuccess(uplResponse, false); // final chunk has no continuationId
+
+		// because we have no transaction, the receipt of the final chunk initiates relay
+		Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+				Mockito.any(ChannelMessage.class));
+	}
+
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_Tx() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
+		req.setMsg(msg);
+
+		Transaction tx = new Transaction();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertSuccess(uplResponse, false); // final chunk has no continuationId
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// TODO need to go further with commit and check that it's relayed then.
 	}
 
 	private void assertSuccess(ContinuedAcknowledge ack, boolean hasContinuation) {

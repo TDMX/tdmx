@@ -59,10 +59,10 @@ import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Msgreference;
-import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.api.v01.tx.Msgack;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -228,14 +228,14 @@ public class PollReceive implements CommandExecutable {
 		}
 
 		// do receive of the message
-		String uniqTxId = ByteArray.asHex(EntropySource.getRandomBytes(16));
-		NonTransaction nonTx = new NonTransaction();
-		nonTx.setXid(uniqTxId);
+		String uniqClientId = ByteArray.asHex(EntropySource.getRandomBytes(16));
+		Msgack nonTx = new Msgack();
+		nonTx.setClientId(uniqClientId);
 		nonTx.setTxtimeout(60);
 
 		Receive receiveRequest = new Receive();
 		receiveRequest.setSessionId(sessionResponse.getSession().getSessionId());
-		receiveRequest.setNonTransaction(nonTx);
+		receiveRequest.setMsgack(nonTx);
 		receiveRequest.setWaitTimeoutSec(60);
 
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
@@ -253,14 +253,14 @@ public class PollReceive implements CommandExecutable {
 					msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp())) {
 				out.println("Corrupted msgId.");
 				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageId), mds,
-						uniqTxId, sessionResponse.getSession().getSessionId(), out);
+						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			// check the message signature is ok
 			if (!SignatureUtils.checkMessageSignature(msg.getHeader(), msg.getPayload())) {
 				out.println("Msg signature invalid.");
 				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageSignature),
-						mds, uniqTxId, sessionResponse.getSession().getSessionId(), out);
+						mds, uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			PKIXCertificate[] fromUserChain = ClientCliUtils
@@ -281,14 +281,14 @@ public class PollReceive implements CommandExecutable {
 				// we are unable to decrypt the message since we don't know the session key
 				out.println("unable to decrypt the message, session key unknown.");
 
-				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveNoSessionKey), mds, uniqTxId,
-						sessionResponse.getSession().getSessionId(), out);
+				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveNoSessionKey), mds,
+						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			if (!sk.getScheme().getName().equals(msg.getHeader().getScheme())) {
 				out.println("Mismatch in encryption scheme.");
 				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageSchemeSessionMismatch), mds,
-						uniqTxId, sessionResponse.getSession().getSessionId(), out);
+						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			FileBackedOutputStream fbos = bufferManager.getOutputStream(sk.getScheme().getChunkSize());
@@ -356,7 +356,7 @@ public class PollReceive implements CommandExecutable {
 				}
 				if (!chunksOk) {
 					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidChunk), mds,
-							uniqTxId, sessionResponse.getSession().getSessionId(), out);
+							uniqClientId, sessionResponse.getSession().getSessionId(), out);
 					return;
 				}
 
@@ -387,10 +387,11 @@ public class PollReceive implements CommandExecutable {
 
 				if (decryptedOk) {
 					out.println("Sucessfully decrypted to " + filename);
-					handleAcknowledge(uc, msg, null, mds, uniqTxId, sessionResponse.getSession().getSessionId(), out);
+					handleAcknowledge(uc, msg, null, mds, uniqClientId, sessionResponse.getSession().getSessionId(),
+							out);
 				} else {
 					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageDecryptionFailure), mds,
-							uniqTxId, sessionResponse.getSession().getSessionId(), out);
+							uniqClientId, sessionResponse.getSession().getSessionId(), out);
 
 				}
 			} finally {

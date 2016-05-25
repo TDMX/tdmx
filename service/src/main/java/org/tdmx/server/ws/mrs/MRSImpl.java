@@ -227,7 +227,7 @@ public class MRSImpl implements MRS {
 		response.setSuccess(true);
 	}
 
-	// handle the message inbound
+	// handle the message inbound with 1st chunk
 	private void processMessage(Msg msg, RelayResponse response) {
 		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 

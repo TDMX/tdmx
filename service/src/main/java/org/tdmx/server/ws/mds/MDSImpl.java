@@ -43,18 +43,18 @@ import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
 import org.tdmx.core.api.v01.tx.ForgetResponse;
+import org.tdmx.core.api.v01.tx.Msgack;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -127,6 +127,9 @@ public class MDSImpl implements MDS {
 
 	private int maxTransactionTimeoutSec = 3600 * 8; // 8hrs
 	private int minTransactionTimeoutSec = 60; // 60s
+
+	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
+	private static final int DEFAULT_TX_TIMEOUT_SEC = 1800;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -244,7 +247,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		TransactionSpecification tx = null;
+		Transaction tx = null;
 		if (recvRequest.getTransaction() != null) {
 			// validate tx
 			tx = validator.checkTransaction(recvRequest.getTransaction(), response, minTransactionTimeoutSec,
@@ -252,17 +255,18 @@ public class MDSImpl implements MDS {
 			if (tx == null) {
 				return response;
 			}
-			if (recvRequest.getNonTransaction() != null) {
+			if (recvRequest.getMsgack() != null) {
 				ErrorCode.setError(ErrorCode.InvalidReceiveAcknowledgeMode, response);
 				return response;
 			}
-		} else if (recvRequest.getNonTransaction() != null) {
+		} else if (recvRequest.getMsgack() != null) {
 			// validate NonTransaction info from api
-			NonTransaction ack = validator.checkNonTransaction(recvRequest.getNonTransaction(), response);
+			Msgack ack = validator.checkMessageAutoAcknowledge(recvRequest.getMsgack(), response,
+					minTransactionTimeoutSec, maxTransactionTimeoutSec);
 			if (ack == null) {
 				return response;
 			}
-			tx = ack;
+			tx = getNonTransactionSpecification(ack);
 
 			// Handle the acknowledge of previous received message and initiate relay back of DR
 			// caching the ROS address of the reverse channel
@@ -283,7 +287,7 @@ public class MDSImpl implements MDS {
 					return null;
 				}
 				// acknowledge the message, possibly opening the relay flow control
-				// FIXME errorCode+msg too
+				// FIXME ReceiptHolder.errorCode+msg too
 				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
 						ctx.getMsg(), rh.signature);
 				if (ackStatus.flowControlOpened) {
@@ -384,6 +388,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 		response.setChunk(d2a.mapChunk(chunk));
+		// TODO 109: missing setting the continuation id of the next chunk!!!
 
 		return response;
 	}
@@ -398,7 +403,7 @@ public class MDSImpl implements MDS {
 		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
 
 		if (!StringUtils.hasText(ackRequest.getXid())) {
-			ErrorCode.setError(ErrorCode.MissingTransactionId, response);
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
 			return response;
 		}
 
@@ -422,7 +427,7 @@ public class MDSImpl implements MDS {
 				return null;
 			}
 			// acknowledge the message, possibly opening the relay flow control
-			// FIXME errorCode+msg too
+			// FIXME ReceiptHolder.errorCode+msg too
 			ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
 					ctx.getMsg(), rh.signature);
 			if (ackStatus.flowControlOpened) {
@@ -443,6 +448,17 @@ public class MDSImpl implements MDS {
 		private Integer errorCode;
 		private String errorMessage;
 		private AgentSignature signature;
+	}
+
+	private Transaction getNonTransactionSpecification(Msgack ack) {
+		Transaction tx = new Transaction();
+		tx.setTxtimeout(ack.getTxtimeout());
+		tx.setXid(NON_TX_SPEC_ID_PREFIX + ack.getClientId());
+		return tx;
+	}
+
+	private boolean isNonTransactionSpecification(Transaction txSpec) {
+		return txSpec.getXid().startsWith(NON_TX_SPEC_ID_PREFIX);
 	}
 
 	private ReceiptHolder checkDr(String xid, MessageContext msg, Dr ack,

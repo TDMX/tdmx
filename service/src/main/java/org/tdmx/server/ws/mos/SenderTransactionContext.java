@@ -18,16 +18,27 @@
  */
 package org.tdmx.server.ws.mos;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**
  * A context describing the Messages which are contained in a Transaction.
+ * 
+ * LocalTransactions will only contain max 1 ChannelMessage, which is the current being submitted. A new
+ * LocalTransaction is started for each submitted message of a client. The timeout of a local transaction is therefore
+ * the time between the submit of a message and the upload of the final chunk.
+ * 
+ * XATransactions can contain several ChannelMessages. The XA transaction must be completed (all messages completely
+ * uploaded) before the timeout expires. The timer starts with the first message is submitted.
+ * 
  * 
  * @author Peter
  * 
@@ -44,31 +55,49 @@ public class SenderTransactionContext {
 	private static final int LEN_ENTROPY = 32;
 	private static final int LEN_CONTINUATION_ID = 8;
 
-	private final TransactionSpecification txSpec;
-	private final long txTimeoutTS;
+	private final Transaction txSpec;
 	private final byte[] entropy;
-	private final Map<String, ChannelMessage> messages = new HashMap<>();
+
+	private final Map<String, ChannelMessage> messages = new HashMap<>(); // map[msgId->ChannelMessage]
+
+	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
+
+	// TODO #109: for each message we need to know if we've received all chunks and which chunk is the current chunk (
+	// which can be repeatedly sent )
+
+	public ScheduledFuture<?> getTimeoutFuture() {
+		return timeoutFuture;
+	}
+
+	public void setTimeoutFuture(ScheduledFuture<?> timeoutFuture) {
+		this.timeoutFuture = timeoutFuture;
+	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public SenderTransactionContext(TransactionSpecification txSpec) {
+	public SenderTransactionContext(Transaction txSpec) {
 		this.txSpec = txSpec;
-		this.txTimeoutTS = System.currentTimeMillis() + (txSpec.getTxtimeout() * 1000);
 		this.entropy = EntropySource.getRandomBytes(LEN_ENTROPY);
 	}
 
-	public TransactionSpecification getTxSpec() {
+	// -------------------------------------------------------------------------
+	// PUBLIC METHODS
+	// -------------------------------------------------------------------------
+
+	public Transaction getTxSpec() {
 		return txSpec;
 	}
 
 	/**
-	 * When the transaction has passed it's timeout timestamp and can only be rolled-back.
+	 * Return all the ChannelMessages involved in the transaction.
 	 * 
 	 * @return
 	 */
-	public boolean isTimeout() {
-		return System.currentTimeMillis() > txTimeoutTS;
+	public List<ChannelMessage> getMessages() {
+		List<ChannelMessage> result = new ArrayList<>();
+		result.addAll(messages.values());
+		return result;
 	}
 
 	/**
@@ -106,10 +135,6 @@ public class SenderTransactionContext {
 		}
 		return SignatureUtils.createContinuationId(chunkPos, entropy, msg.getMsgId(), LEN_CONTINUATION_ID);
 	}
-
-	// -------------------------------------------------------------------------
-	// PUBLIC METHODS
-	// -------------------------------------------------------------------------
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

@@ -30,7 +30,6 @@ import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
 
 @Ignore
 public class SoapClientFactoryTest {
@@ -91,7 +90,6 @@ public class SoapClientFactoryTest {
 
 		Submit submit = new Submit();
 		submit.setMsg(new Msg());
-		submit.setTransaction(new TransactionSpecification());
 		SubmitResponse response = client.submit(submit);
 		assertNotNull(response);
 	}

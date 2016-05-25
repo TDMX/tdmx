@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
@@ -143,7 +143,7 @@ public class ReceiverContext {
 	 * @param maxWaitDurationMs
 	 * @return
 	 */
-	public MessageContext getNextPendingMessage(long maxWaitDurationMs, TransactionSpecification txSpec) {
+	public MessageContext getNextPendingMessage(long maxWaitDurationMs, Transaction txSpec) {
 		long waitUntilTimestamp = System.currentTimeMillis() + maxWaitDurationMs;
 
 		MessageContext result = null;

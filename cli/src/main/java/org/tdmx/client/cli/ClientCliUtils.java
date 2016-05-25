@@ -1264,7 +1264,7 @@ public class ClientCliUtils {
 		factory.setKeepAlive(true);
 		factory.setClazz(SCS.class);
 		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
-		factory.setDisableCNCheck(true); // FIXME
+		factory.setDisableCNCheck(true); // FIXME enable SSL cn check
 		factory.setKeyManagerFactory(kmf);
 		factory.setTrustManagerFactory(stfm);
 		factory.setTlsProtocolVersion(TLS_VERSION);

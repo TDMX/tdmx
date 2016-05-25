@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.mrs.Relay;
@@ -50,10 +53,12 @@ import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelEndpoint;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Grant;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
+import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -447,15 +452,32 @@ public class MRSImplUnitTest {
 		assertEquals(channel.getDestination().getLocalname(), address2.getLocalName());
 		assertEquals(channel.getDestination().getServicename(), service2.getServiceName());
 
-		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName());
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
 
 		Relay req = new Relay();
 		req.setSessionId(ZAC_SESSION_ID);
 
 		req.setMsg(msg);
 
+		// relay msg + 0th chunk
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
+		assertNotNull(response.getCorrelationID());
+
+		// upload 1'st chunk
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1));
+		Relay chunkReq = new Relay();
+		chunkReq.setChunk(chunk);
+		chunkReq.setCorrelationID(response.getCorrelationID());
+		RelayResponse chunkResponse = mrs.relay(chunkReq);
+		assertSuccess(chunkResponse);
+		assertNull(chunkResponse.getCorrelationID());
 	}
 
 	private void assertSuccess(Acknowledge ack) {

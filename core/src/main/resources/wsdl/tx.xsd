@@ -6,11 +6,26 @@
 	<xs:annotation>
 		<xs:documentation>Transaction types for TDMX ServiceProvider API</xs:documentation>
 	</xs:annotation>
-	<xs:complexType name="TransactionSpecification">
+	<xs:complexType name="XATransactionSpecification">
 		<xs:sequence>
 			<xs:element ref="xid"/>
 			<xs:element ref="txtimeout"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LocalTransactionSpecification">
+		<xs:sequence>
+			<xs:element ref="clientId"/>
+			<xs:element ref="txtimeout"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MessageAutoAcknowledge">
+		<xs:complexContent>
+			<xs:extension base="LocalTransactionSpecification">
+				<xs:sequence>
+					<xs:element ref="msg:dr" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
 	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--             OPERATION TYPES                       -->
@@ -23,7 +38,7 @@
 			<xs:extension base="common:Request">
 				<xs:sequence>
 					<xs:element ref="xid"/>
-					<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+					<xs:element ref="msg:dr" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -42,7 +57,7 @@
 				<xs:sequence>
 					<xs:element ref="xid"/>
 					<xs:element name="onePhase" type="xs:boolean"/>
-					<xs:element ref="msg:receiptsignature" minOccurs="0"/>
+					<xs:element ref="msg:dr" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -95,6 +110,12 @@
 	<!-- ********************************************* -->
 	<!--             SIMPLE TYPES                      -->
 	<!-- ********************************************* -->
+	<xs:simpleType name="clientid">
+		<xs:annotation>
+			<xs:documentation>URI of a unique client, for use as a non transactional identifier.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:anyURI"/>
+	</xs:simpleType>
 	<xs:simpleType name="txid">
 		<xs:annotation>
 			<xs:documentation>URI of transactionID := jta-xid:formatId:globalTransactionId:branchQualifier</xs:documentation>
@@ -114,14 +135,34 @@
 			<xs:documentation>The transaction timeout in seconds.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="xid" type="txid">
+	<xs:element name="acktimeout" type="xs:unsignedShort">
+		<xs:annotation>
+			<xs:documentation>The auto acknowledge timeout in seconds.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="clientId" type="clientid">
+		<xs:annotation>
+			<xs:documentation>A unique client identifier - which identifies a logical client connection. Each client can send or receive only one message at a time.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="xid" type="clientid">
 		<xs:annotation>
 			<xs:documentation>A transaction identifier.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="transaction" type="TransactionSpecification">
+	<xs:element name="transaction" type="XATransactionSpecification">
 		<xs:annotation>
-			<xs:documentation>A transaction identifier with optional timeout.</xs:documentation>
+			<xs:documentation>A transaction specification with XA identifier with transaction timeout.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="localtransaction" type="LocalTransactionSpecification">
+		<xs:annotation>
+			<xs:documentation>A local transaction with client identifier and timeout.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="msgack" type="MessageAutoAcknowledge">
+		<xs:annotation>
+			<xs:documentation>A non transaction with delivery report (ack) of previously received message.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<!-- ********************************************* -->

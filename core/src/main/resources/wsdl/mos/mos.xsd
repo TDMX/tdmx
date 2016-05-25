@@ -81,8 +81,11 @@
 			<xs:extension base="common:Request">
 				<xs:sequence>
 					<xs:choice>
+						<xs:annotation>
+							<xs:documentation>with local transaction, the delivery report is automatically acknowledged as soon as it is returned to the client in the response.</xs:documentation>
+						</xs:annotation>
 						<xs:element ref="tx:transaction"/>
-						<xs:element ref="msg:nonTransaction"/>
+						<xs:element ref="tx:localtransaction"/>
 					</xs:choice>
 					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
@@ -127,7 +130,13 @@
 		<xs:complexContent>
 			<xs:extension base="common:Request">
 				<xs:sequence>
-					<xs:element ref="tx:transaction" minOccurs="0"/>
+					<xs:choice>
+						<xs:annotation>
+							<xs:documentation>with local transaction, the message is sent on the upload of the last chunk or this request if the message is not chunked. Any incompletely uploaded messages are discarded if a new message is submitted by the same client.</xs:documentation>
+						</xs:annotation>
+						<xs:element ref="tx:transaction"/>
+						<xs:element ref="tx:localtransaction"/>
+					</xs:choice>
 					<xs:element ref="msg:msg"/>
 				</xs:sequence>
 			</xs:extension>

@@ -94,6 +94,17 @@ public class SignatureUtils {
 				signatureHex);
 	}
 
+	public static String createChunkMac(byte[] data, IntegratedCryptoScheme ies) {
+		DigestAlgorithm da = ies.getChunkMACAlgorithm();
+		try {
+			byte[] mac = da.kdf(data);
+			String macHex = ByteArray.asHex(mac);
+			return macHex;
+		} catch (CryptoException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	public static boolean checkChunkMac(Chunk chunk, IntegratedCryptoScheme ies) {
 		DigestAlgorithm da = ies.getChunkMACAlgorithm();
 		try {

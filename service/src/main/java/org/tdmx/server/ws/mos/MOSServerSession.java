@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
@@ -51,9 +51,6 @@ public class MOSServerSession extends WebServiceSession {
 
 	// Map[txId]->SenderTransactionContext
 	private static final String TX_MAP = "TX_MAP";
-
-	private static final int LEN_ENTROPY = 32;
-	private static final int LEN_CONTINUATION_ID = 8;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -148,16 +145,15 @@ public class MOSServerSession extends WebServiceSession {
 		return cch;
 	}
 
-	public SenderTransactionContext getTransaction(TransactionSpecification txSpec) {
-		SenderTransactionContext stc = getTransactionMap().get(txSpec.getXid());
-		if (stc == null) {
-			stc = new SenderTransactionContext(txSpec);
-			getTransactionMap().put(txSpec.getXid(), stc);
-		}
-		return stc;
+	public SenderTransactionContext getTransaction(Transaction txSpec) {
+		return getTransactionMap().get(txSpec.getXid());
 	}
 
-	public void removeTransaction(TransactionSpecification txSpec) {
+	public void setTransaction(Transaction txSpec, SenderTransactionContext tx) {
+		getTransactionMap().put(txSpec.getXid(), tx);
+	}
+
+	public void removeTransaction(Transaction txSpec) {
 		getTransactionMap().remove(txSpec.getXid());
 	}
 

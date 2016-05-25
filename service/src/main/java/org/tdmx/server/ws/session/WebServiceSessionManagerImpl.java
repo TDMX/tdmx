@@ -147,6 +147,9 @@ public class WebServiceSessionManagerImpl<E extends WebServiceSession>
 		List<WebServiceSession> result = new ArrayList<>();
 		for (Entry<String, E> e : sessionMap.entrySet()) {
 			WebServiceSession ss = e.getValue();
+
+			// TODO #109: introduce mechanism to excempt from idle timeout, ie. if a transaction is not yet timed-out.
+
 			if (creationCutoffDate != null && creationCutoffDate.after(ss.getCreationTimestamp())) {
 				result.add(ss);
 				continue;

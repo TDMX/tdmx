@@ -21,12 +21,12 @@ package org.tdmx.server.ws.mos;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
-import org.tdmx.client.crypto.converters.ByteArray;
-import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.mos.Acknowledge;
 import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
@@ -51,13 +51,14 @@ import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
 import org.tdmx.core.api.v01.tx.ForgetResponse;
+import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Recover;
 import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -94,6 +95,26 @@ import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
 import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
+/**
+ * TODO #109: FlowQuota is checked on submit, but only used when a message is stored on prepare or one-phase commit.
+ * Therefore FlowQuota has to be released and message deleted on rollback of 2pc, but only after prepare. Before
+ * prepare, when a transaction is rolled-back or timed-out, no changes to the DB is required. Once prepared, a
+ * transaction remains prepared until TM either commits or rolls back the transaction after recovers. Messages which are
+ * prepared for sending but not committed or rolledback by a TM will eventually reach their TTL and be removed, freeing
+ * their quota.
+ * 
+ * The sender should submit the message and then upload each chunk in sequential order until all chunks are uploaded.
+ * Only the last chunk uploaded may be re-uploaded by the client. A XA transaction cannot prepare successfully unless
+ * all chunks are completely uploaded for each message in the transaction.
+ * 
+ * With XA transactions, the messages received are written to the DB ( using flow quota ) on prepare with the
+ * transaction XID. This is recoverable from the DB with the recover method. A prepared transaction can then be
+ * forgotten ( where the DB messages are discarded and quota freed ) or committed ( status changed and relay initiated,
+ * without changing quota ).
+ * 
+ * @author Peter
+ *
+ */
 public class MOSImpl implements MOS {
 
 	// -------------------------------------------------------------------------
@@ -144,8 +165,6 @@ public class MOSImpl implements MOS {
 	// TODO make sure the session LastUsedTimestamp is put to the end of the transaction timeout timestamp so we don't
 	// idle out
 	// sessions which the transaction can still be completed later.
-
-	// TODO independent executor and scheduler for eventual cleanup transaction timeout handling.
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -198,17 +217,6 @@ public class MOSImpl implements MOS {
 		return response;
 	}
 
-	private TransactionSpecification getNonTransactionSpecification() {
-		TransactionSpecification tx = new TransactionSpecification();
-		tx.setTxtimeout(DEFAULT_TX_TIMEOUT_SEC);
-		tx.setXid(NON_TX_SPEC_ID_PREFIX + ByteArray.asHex(EntropySource.getRandomBytes(16)));
-		return tx;
-	}
-
-	private boolean isNonTransactionSpecification(TransactionSpecification txSpec) {
-		return txSpec.getXid().startsWith(NON_TX_SPEC_ID_PREFIX);
-	}
-
 	@Override
 	public SubmitResponse submit(Submit parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
@@ -221,16 +229,14 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		TransactionSpecification tx = parameters.getTransaction();
-		if (tx != null && validator.checkTransaction(tx, response, minTransactionTimeoutSec,
-				maxTransactionTimeoutSec) == null) {
+		if (!validator.checkTransactionChoice(parameters.getTransaction(), parameters.getLocaltransaction(),
+				minTransactionTimeoutSec, maxTransactionTimeoutSec, response)) {
 			return response;
 		}
+		Transaction tx = parameters.getTransaction();
 		if (tx == null) {
-			tx = getNonTransactionSpecification();
+			tx = getNonTransactionSpecification(parameters.getLocaltransaction());
 		}
-
-		// TODO #70: check chunk's mac
 
 		Msg msg = parameters.getMsg();
 		Header header = msg.getHeader();
@@ -244,9 +250,18 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
+		// validate Chunk fields present
+		if (validator.checkChunk(msg.getChunk(), response) == null) {
+			return response;
+		}
 		Chunk c = a2d.mapChunk(msg.getChunk());
 
 		ChannelMessage m = a2d.mapMessage(msg);
+
+		// check chunk's mac
+		if (validator.checkChunkMac(msg.getChunk(), m.getScheme(), response) == null) {
+			return response;
+		}
 
 		AgentCredentialDescriptor srcUc = credentialFactory.createAgentCredential(
 				header.getUsersignature().getUserIdentity().getUsercertificate(),
@@ -323,25 +338,19 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// adds the tx to the session immediately.
-		SenderTransactionContext stc = session.getTransaction(tx);
+		SenderTransactionContext stc = startOrContinueTx(session, tx);
 
 		// give the caller the continuationId for the next chunk
 		String continuationId = stc.getContinuationId(c.getPos() + 1, m);
 		if (continuationId == null) {
-			// last chunk - autocommit if we have no tx.
+			// last chunk - auto-commit if we have no tx.
 			if (isNonTransactionSpecification(stc.getTxSpec())) {
-				m.setProcessingState(ProcessingState.pending());
-				// TODO #109 message state NEW
-				// TODO #70 - commit the flow's buffer increment for the single message.
-				channelService.create(m);
-				session.removeTransaction(tx);
-			} else {
-				// add message to tx to commit later.
-				stc.addMessage(m);
+				List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
+				relayMessages(session, msgs);
 			}
-
-			// give the message to the ROS to relay.
-			relayWithRetry(session, cch, m);
+		} else {
+			// add message to tx to commit and relay later.
+			stc.addMessage(m);
 		}
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
@@ -386,9 +395,8 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 		// check chunk's mac
-		if (validator.checkChunkMac(parameters.getChunk(), cch.getChannel().getSession().getScheme(),
-				response) == null) {
-			return null;
+		if (validator.checkChunkMac(parameters.getChunk(), m.getScheme(), response) == null) {
+			return response;
 		}
 
 		chunkService.createOrUpdate(c);
@@ -398,13 +406,9 @@ public class MOSImpl implements MOS {
 		if (nextContinuationId == null) {
 			// this was the last chunk
 			if (isNonTransactionSpecification(stc.getTxSpec())) {
-				// auto-commit
-				m.setProcessingState(ProcessingState.pending());
-				// TODO #109 message state NEW
-				channelService.create(m);
-				session.removeTransaction(stc.getTxSpec());
+				List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
+				relayMessages(session, msgs);
 			}
-
 		}
 		response.setContinuation(nextContinuationId);
 
@@ -506,6 +510,80 @@ public class MOSImpl implements MOS {
 		}
 	}
 
+	private void relayMessages(MOSServerSession session, List<ChannelMessage> msgs) {
+		for (ChannelMessage msg : msgs) {
+			final ChannelName cn = msg.getChannel().getChannelName();
+			final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
+
+			ChannelContextHolder cch = session.getChannel(channelKey);
+
+			// give the message to the ROS to relay.
+			relayWithRetry(session, cch, msg);
+		}
+	}
+
+	private List<ChannelMessage> onePhaseCommitTx(SenderTransactionContext stc, MOSServerSession session) {
+		List<ChannelMessage> msgs = stc.getMessages();
+		try {
+			for (ChannelMessage m : msgs) {
+				m.setProcessingState(ProcessingState.pending());
+				// TODO #109 message state NEW
+				// TODO #70 - commit the flow's buffer increment for the single message.
+				channelService.create(m);
+			}
+		} finally {
+			discardTx(stc, session);
+		}
+		return msgs;
+	}
+
+	private void discardTx(SenderTransactionContext stc, MOSServerSession session) {
+		ScheduledFuture<?> timeout = stc.getTimeoutFuture();
+		if (timeout != null) {
+			timeout.cancel(false);
+		}
+		session.removeTransaction(stc.getTxSpec());
+	}
+
+	private SenderTransactionContext startOrContinueTx(MOSServerSession session, Transaction tx) {
+		SenderTransactionContext stc = session.getTransaction(tx);
+		if (stc != null) {
+			// continuation of a tx
+			if (isNonTransactionSpecification(tx)) {
+				// a local transaction should have finished before we start the next - so we discard the current
+				// incomplete
+				log.warn("Local transaction discarded " + tx.getXid()); // TODO #112: client incident
+				discardTx(stc, session);
+				stc = null;
+			} else {
+				log.warn("XA transaction timeout but not discarded yet " + tx.getXid()); // TODO #112: system health
+																							// incident
+				discardTx(stc, session);
+				stc = null;
+			}
+		}
+		if (stc == null) {
+			stc = new SenderTransactionContext(tx);
+			session.setTransaction(tx, stc);
+			scheduleTransactionTimeout(stc, session);
+		}
+		return stc;
+	}
+
+	private void scheduleTransactionTimeout(SenderTransactionContext stc, MOSServerSession session) {
+		// transaction will timeout after the tx timeout seconds after starting the tx.
+		ScheduledFuture<?> timeoutFuture = txTimeoutScheduler.schedule(new Runnable() {
+			@Override
+			public void run() {
+				// we simply forget the transaction if it times-out.
+				log.info("Timeout of " + stc.getTxSpec().getXid());
+				discardTx(stc, session);
+			}
+		}, stc.getTxSpec().getTxtimeout(), TimeUnit.SECONDS);
+		// we need to record the future object so we can cancel later ( when tx completes )
+		stc.setTimeoutFuture(timeoutFuture);
+	}
+
 	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, ChannelMessage msg) {
 		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getRosTcpAddress(), session.getAccountZone(),
 				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), msg);
@@ -532,6 +610,17 @@ public class MOSImpl implements MOS {
 			// cache the working ROS address
 			cch.setRosTcpAddress(rs.getRosTcpAddress());
 		}
+	}
+
+	private Transaction getNonTransactionSpecification(LocalTransactionSpecification local) {
+		Transaction tx = new Transaction();
+		tx.setTxtimeout(local.getTxtimeout());
+		tx.setXid(NON_TX_SPEC_ID_PREFIX + local.getClientId());
+		return tx;
+	}
+
+	private boolean isNonTransactionSpecification(Transaction txSpec) {
+		return txSpec.getXid().startsWith(NON_TX_SPEC_ID_PREFIX);
 	}
 
 	// -------------------------------------------------------------------------

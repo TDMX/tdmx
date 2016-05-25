@@ -20,6 +20,7 @@ package org.tdmx.lib.message.domain;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
@@ -37,18 +38,23 @@ import org.tdmx.core.system.lang.CalendarUtils;
 
 public class MessageFacade {
 
-	public static Chunk createChunk(String msgId, int pos) {
+	public static Chunk createChunk(String msgId, int pos, IntegratedCryptoScheme ies, byte[] content) {
 		Chunk chunk = new org.tdmx.core.api.v01.msg.Chunk();
 		chunk.setMsgId(msgId);
-		chunk.setData(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1 });
-		chunk.setMac("MAC"); // TODO
-		chunk.setPos(0);
+		chunk.setData(content);
+		chunk.setPos(pos);
+		chunk.setMac(SignatureUtils.createChunkMac(chunk.getData(), ies));
 		return chunk;
 	}
 
-	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName)
-			throws Exception {
+	public static Msg createMsg(PKIXCredential sourceUser, PKIXCredential targetUser, String serviceName,
+			IntegratedCryptoScheme scheme, List<byte[]> chunks) throws Exception {
 		// define the message's timestamp
+		int totalLen = 0;
+		for (byte[] chunk : chunks) {
+			totalLen += chunk.length;
+		}
+
 		Calendar msgTs = CalendarUtils.getTimestamp(new Date());
 
 		Calendar ttlCal = CalendarUtils.getTimestamp(new Date());
@@ -80,11 +86,11 @@ public class MessageFacade {
 		hdr.setTo(to);
 
 		hdr.setEncryptionContextId("TODO"); // TODO
-		hdr.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1.getName()); // TODO
+		hdr.setScheme(scheme.getName()); // TODO
 
 		Payload payload = new Payload();
-		payload.setLength(100);
-		payload.setPlaintextLength(1000);
+		payload.setLength(totalLen);
+		payload.setPlaintextLength(totalLen * 2); // compressed
 		payload.setEncryptionContext(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
 		// TODO create payloadMACofMACs ( SHA256 ) #72
 		payload.setMACofMACs("TODO"); // TODO
@@ -95,7 +101,7 @@ public class MessageFacade {
 		SignatureUtils.createMessageSignature(sourceUser, SignatureAlgorithm.SHA_256_RSA, msgTs, hdr, payload);
 
 		// link the chunk to the message
-		Chunk chunk = createChunk(hdr.getMsgId(), 0);
+		Chunk chunk = createChunk(hdr.getMsgId(), 0, scheme, chunks.get(0));
 
 		Msg msg = new Msg();
 		msg.setHeader(hdr);

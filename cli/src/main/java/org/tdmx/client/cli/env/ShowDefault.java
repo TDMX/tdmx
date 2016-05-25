@@ -64,6 +64,11 @@ public class ShowDefault implements CommandExecutable {
 		} else {
 			out.println("userPassword not set");
 		}
+		if (StaticDefaultParameterProvider.getDefaultValue("domain") != null) {
+			out.println("domain set to " + StaticDefaultParameterProvider.getDefaultValue("domain"));
+		} else {
+			out.println("domain not set");
+		}
 	}
 
 	// -------------------------------------------------------------------------

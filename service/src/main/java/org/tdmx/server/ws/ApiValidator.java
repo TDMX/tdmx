@@ -38,14 +38,15 @@ import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Msgreference;
-import org.tdmx.core.api.v01.msg.NonTransaction;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
 import org.tdmx.core.api.v01.msg.UserSignature;
-import org.tdmx.core.api.v01.tx.TransactionSpecification;
+import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Msgack;
+import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 
 public class ApiValidator {
@@ -131,6 +132,13 @@ public class ApiValidator {
 		return perm;
 	}
 
+	/**
+	 * Checks all fields are present.
+	 * 
+	 * @param signature
+	 * @param ack
+	 * @return
+	 */
 	public Administratorsignature checkAdministratorsignature(Administratorsignature signature, Acknowledge ack) {
 		if (signature == null) {
 			ErrorCode.setError(ErrorCode.MissingAdministratorSignature, ack);
@@ -142,10 +150,16 @@ public class ApiValidator {
 		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
 			return null;
 		}
-		// TODO check the pkix certificate chain from user cert to domain issuer to zone issuer is correct
 		return signature;
 	}
 
+	/**
+	 * Checks all fiels are present.
+	 * 
+	 * @param signature
+	 * @param ack
+	 * @return
+	 */
 	public UserSignature checkUsersignature(UserSignature signature, Acknowledge ack) {
 		if (signature == null) {
 			ErrorCode.setError(ErrorCode.MissingUserSignature, ack);
@@ -157,10 +171,16 @@ public class ApiValidator {
 		if (checkSignaturevalue(signature.getSignaturevalue(), ack) == null) {
 			return null;
 		}
-		// TODO check the pkix certificate chain from user cert to domain issuer to zone issuer is correct
 		return signature;
 	}
 
+	/**
+	 * Checks all fields are present.
+	 * 
+	 * @param sig
+	 * @param ack
+	 * @return
+	 */
 	public Signaturevalue checkSignaturevalue(Signaturevalue sig, Acknowledge ack) {
 		if (sig == null) {
 			ErrorCode.setError(ErrorCode.MissingSignatureValue, ack);
@@ -293,17 +313,25 @@ public class ApiValidator {
 		return msg;
 	}
 
-	public NonTransaction checkNonTransaction(NonTransaction acknowledge, Acknowledge ack) {
-		if (acknowledge == null) {
-			ErrorCode.setError(ErrorCode.MissingReceiveNonTransaction, ack);
+	public boolean checkTransactionChoice(Transaction tx, Msgack local, Acknowledge ack) {
+		if (tx == null && local == null) {
+			ErrorCode.setError(ErrorCode.MissingTransaction, ack);
+			return false;
+		} else if (tx != null && local != null) {
+			ErrorCode.setError(ErrorCode.InvalidTransaction, ack);
+			return false;
+		}
+		return true;
+	}
+
+	public Msgack checkMessageAutoAcknowledge(Msgack acknowledge, Acknowledge ack, int minTxTimeoutSec,
+			int maxTxTimeoutSec) {
+		if (!StringUtils.hasText(acknowledge.getClientId())) {
+			ErrorCode.setError(ErrorCode.MissingLocalTransactionClientId, ack);
 			return null;
 		}
-		if (!StringUtils.hasText(acknowledge.getXid())) {
-			ErrorCode.setError(ErrorCode.MissingTransactionId, ack);
-			return null;
-		}
-		if (acknowledge.getTxtimeout() < 0) {
-			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack);
+		if (acknowledge.getTxtimeout() < minTxTimeoutSec || acknowledge.getTxtimeout() > maxTxTimeoutSec) {
+			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack, minTxTimeoutSec, maxTxTimeoutSec);
 			return null;
 		}
 		// the DR is optional - if its provided we check it
@@ -315,14 +343,23 @@ public class ApiValidator {
 		return acknowledge;
 	}
 
-	public TransactionSpecification checkTransaction(TransactionSpecification tx, Acknowledge ack, int minTxTimeoutSec,
-			int maxTxTimeoutSec) {
-		if (tx == null) {
-			ErrorCode.setError(ErrorCode.MissingReceiveTransaction, ack);
-			return null;
+	public boolean checkTransactionChoice(Transaction tx, LocalTransactionSpecification local, int minTxTimeoutSec,
+			int maxTxTimeoutSec, Acknowledge ack) {
+		if (tx == null && local == null) {
+			ErrorCode.setError(ErrorCode.MissingTransaction, ack);
+			return false;
+		} else if (tx != null && local != null) {
+			ErrorCode.setError(ErrorCode.InvalidTransaction, ack);
+			return false;
+		} else if (tx != null) {
+			return checkTransaction(tx, ack, minTxTimeoutSec, maxTxTimeoutSec) != null;
 		}
+		return checkLocalTransaction(local, ack, minTxTimeoutSec, maxTxTimeoutSec) != null;
+	}
+
+	public Transaction checkTransaction(Transaction tx, Acknowledge ack, int minTxTimeoutSec, int maxTxTimeoutSec) {
 		if (!StringUtils.hasText(tx.getXid())) {
-			ErrorCode.setError(ErrorCode.MissingTransactionId, ack);
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, ack);
 			return null;
 		}
 		if (tx.getTxtimeout() < minTxTimeoutSec || tx.getTxtimeout() > maxTxTimeoutSec) {
@@ -330,6 +367,19 @@ public class ApiValidator {
 			return null;
 		}
 		return tx;
+	}
+
+	public LocalTransactionSpecification checkLocalTransaction(LocalTransactionSpecification local, Acknowledge ack,
+			int minTxTimeoutSec, int maxTxTimeoutSec) {
+		if (!StringUtils.hasText(local.getClientId())) {
+			ErrorCode.setError(ErrorCode.MissingLocalTransactionClientId, ack);
+			return null;
+		}
+		if (local.getTxtimeout() < minTxTimeoutSec || local.getTxtimeout() > maxTxTimeoutSec) {
+			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack, minTxTimeoutSec, maxTxTimeoutSec);
+			return null;
+		}
+		return local;
 	}
 
 	public Dr checkDeliveryReport(Dr dr, Acknowledge ack) {
@@ -411,7 +461,7 @@ public class ApiValidator {
 			ErrorCode.setError(ErrorCode.MissingChunkMac, ack);
 			return null;
 		}
-		if (SignatureUtils.checkChunkMac(c, scheme)) {
+		if (!SignatureUtils.checkChunkMac(c, scheme)) {
 			ErrorCode.setError(ErrorCode.InvalidChunkMac, ack);
 			return null;
 		}
