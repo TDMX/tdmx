@@ -20,13 +20,17 @@ package org.tdmx.server.ws.mos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**
@@ -59,6 +63,8 @@ public class SenderTransactionContext {
 	private final byte[] entropy;
 
 	private final Map<String, ChannelMessage> messages = new HashMap<>(); // map[msgId->ChannelMessage]
+
+	private boolean prepared = false; // TODO #109: xa use this
 
 	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
 
@@ -97,6 +103,59 @@ public class SenderTransactionContext {
 	public List<ChannelMessage> getMessages() {
 		List<ChannelMessage> result = new ArrayList<>();
 		result.addAll(messages.values());
+		return result;
+	}
+
+	/**
+	 * Return the cumulative size of message payloads for a given channel.
+	 * 
+	 * @param channel
+	 * @return
+	 */
+	public long getTotalPayloadSizeForChannel(Channel channel) {
+		int totalQuota = 0;
+		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+			// always check against persisted instances
+			if (entry.getValue().getChannel().getId().equals(channel.getId())) {
+				totalQuota += entry.getValue().getPayloadLength();
+			}
+		}
+		return totalQuota;
+	}
+
+	/**
+	 * Get the ChannelMessages being sent to the Channel in the context of this transaction.
+	 * 
+	 * @param channel
+	 * @return emtpyList if no message for the channel, else the ChannelMessages being sent to the Channel.
+	 */
+	public List<ChannelMessage> getChannelMessages(Channel channel) {
+		List<ChannelMessage> channelMsgs = new ArrayList<>();
+		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+			// always check against persisted instances
+			if (entry.getValue().getChannel().getId().equals(channel.getId())) {
+				channelMsgs.add(entry.getValue());
+			}
+		}
+		return channelMsgs;
+	}
+
+	/**
+	 * List the unique channels to which messages are being sent in this transaction.
+	 * 
+	 * @return emptyList if no channels, else the unique channels to which messages are being sent.
+	 */
+	public List<Channel> getChannels() {
+		List<Channel> result = new ArrayList<>();
+		Set<Long> uniqueChannelIds = new HashSet<>();
+		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+			// always check against persisted instances
+			Long channelId = entry.getValue().getChannel().getId();
+			if (!uniqueChannelIds.contains(channelId)) {
+				uniqueChannelIds.add(channelId);
+				result.add(entry.getValue().getChannel());
+			}
+		}
 		return result;
 	}
 
@@ -147,5 +206,13 @@ public class SenderTransactionContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public boolean isPrepared() {
+		return prepared;
+	}
+
+	public void setPrepared(boolean prepared) {
+		this.prepared = prepared;
+	}
 
 }

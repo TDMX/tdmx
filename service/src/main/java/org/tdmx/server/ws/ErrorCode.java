@@ -80,6 +80,8 @@ public enum ErrorCode {
 	InvalidTransactionTimeout(500, "Invalid transaction timeout %d < tx <= %d seconds."),
 	MissingTransaction(500, "Missing transaction or localtransaction."),
 	InvalidTransaction(500, "Use either transaction or localtransaction, not both."),
+	XATransactionPreparedImmutable(500, "Transaction prepared are immutable. Complete before re-using XID %s."),
+	XATransactionTimeout(500, "Transaction XID %s already timed-out."),
 	MissingDeliveryReceipt(500, "Missing delivery receipt."),
 	MissingMessageReference(500, "Missing message reference."),
 	MissingMessageReferenceMsgId(500, "Missing message reference msgId."),
@@ -197,6 +199,8 @@ public enum ErrorCode {
 	ReceiveFlowControlClosed(306, "FlowControl closed - relay prohibited."),
 	SubmitChannelClosed(306, "No channel authorization - submit prohibited."),
 	ReceiveChannelClosed(306, "No channel authorization - relay and receive prohibited."),
+	SubmitQuotaNotSufficient(306, "Not enough quota - submit prohibited."),
+	SubmitMessageTooLarge(306, "Message too large - submit prohibited."),
 
 	DnsZoneApexMissing(306, "Unable to locate TDMX zone apex information for domain %s in DNS."),
 

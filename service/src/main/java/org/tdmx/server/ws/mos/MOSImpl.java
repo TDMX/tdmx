@@ -18,6 +18,7 @@
  */
 package org.tdmx.server.ws.mos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,7 +80,6 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
-import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -153,7 +153,6 @@ public class MOSImpl implements MOS {
 			new RenamingThreadFactoryProxy("SenderTxTimeoutScheduler", Executors.defaultThreadFactory()));
 
 	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
-	private static final int DEFAULT_TX_TIMEOUT_SEC = 1800;
 
 	private int maxTransactionTimeoutSec = 3600 * 8; // 8hrs
 	private int minTransactionTimeoutSec = 60; // 60s
@@ -163,8 +162,7 @@ public class MOSImpl implements MOS {
 	// -------------------------------------------------------------------------
 
 	// TODO make sure the session LastUsedTimestamp is put to the end of the transaction timeout timestamp so we don't
-	// idle out
-	// sessions which the transaction can still be completed later.
+	// idle out sessions which the transaction can still be completed later.
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -326,28 +324,30 @@ public class MOSImpl implements MOS {
 
 		Channel cachedChannel = cch.getChannel();
 		m.setChannel(cachedChannel);
-		// TODO #70 just check if the flow control is open on the channel
-		// TODO #70 ... checkSend / checkRelay / commitSend / commitRelay
-		SubmitMessageResultHolder result = channelService.preSubmitMessage(zone, m);
-		if (result.status != null) {
-			ErrorCode.setError(mapSubmitOperationStatus(result.status), response);
+
+		// adds the tx to the session immediately.
+		SenderTransactionContext stc = startOrContinueTx(session, tx, response);
+		if (stc == null) {
+			return response;
+		}
+
+		long totalChannelQuota = m.getPayloadLength() + stc.getTotalPayloadSizeForChannel(cachedChannel);
+		SubmitMessageOperationStatus quotaCheck = channelService.checkChannelQuota(zone, cachedChannel,
+				m.getPayloadLength(), totalChannelQuota);
+		if (quotaCheck != null) {
+			ErrorCode.setError(mapSubmitOperationStatus(quotaCheck), response);
 			return response;
 		}
 
 		// persist Chunk
 		chunkService.createOrUpdate(c);
 
-		// adds the tx to the session immediately.
-		SenderTransactionContext stc = startOrContinueTx(session, tx);
-
 		// give the caller the continuationId for the next chunk
 		String continuationId = stc.getContinuationId(c.getPos() + 1, m);
-		if (continuationId == null) {
+		if (continuationId == null && isNonTransactionSpecification(stc.getTxSpec())) {
 			// last chunk - auto-commit if we have no tx.
-			if (isNonTransactionSpecification(stc.getTxSpec())) {
-				List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
-				relayMessages(session, msgs);
-			}
+			List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
+			relayMessages(session, msgs);
 		} else {
 			// add message to tx to commit and relay later.
 			stc.addMessage(m);
@@ -505,6 +505,10 @@ public class MOSImpl implements MOS {
 			return ErrorCode.SubmitFlowControlClosed;
 		case CHANNEL_CLOSED:
 			return ErrorCode.SubmitChannelClosed;
+		case NOT_ENOUGH_QUOTA_AVAILABLE:
+			return ErrorCode.SubmitQuotaNotSufficient;
+		case MESSAGE_TOO_LARGE:
+			return ErrorCode.SubmitMessageTooLarge;
 		default:
 			return null;
 		}
@@ -523,18 +527,20 @@ public class MOSImpl implements MOS {
 	}
 
 	private List<ChannelMessage> onePhaseCommitTx(SenderTransactionContext stc, MOSServerSession session) {
-		List<ChannelMessage> msgs = stc.getMessages();
+		List<ChannelMessage> sentMessages = new ArrayList<>();
 		try {
-			for (ChannelMessage m : msgs) {
-				m.setProcessingState(ProcessingState.pending());
-				// TODO #109 message state NEW
-				// TODO #70 - commit the flow's buffer increment for the single message.
-				channelService.create(m);
+			stc.setPrepared(true);
+			for (Channel ch : stc.getChannels()) {
+				List<ChannelMessage> msgs = stc.getChannelMessages(ch);
+
+				channelService.onePhaseCommitSend(session.getZone(), ch, msgs);
+				// messages changed by the sending to be ready for relay.
+				sentMessages.addAll(msgs);
 			}
 		} finally {
 			discardTx(stc, session);
 		}
-		return msgs;
+		return sentMessages;
 	}
 
 	private void discardTx(SenderTransactionContext stc, MOSServerSession session) {
@@ -545,27 +551,36 @@ public class MOSImpl implements MOS {
 		session.removeTransaction(stc.getTxSpec());
 	}
 
-	private SenderTransactionContext startOrContinueTx(MOSServerSession session, Transaction tx) {
+	private SenderTransactionContext startOrContinueTx(MOSServerSession session, Transaction tx, SubmitResponse ack) {
 		SenderTransactionContext stc = session.getTransaction(tx);
-		if (stc != null) {
+		if (stc != null && isNonTransactionSpecification(tx)) {
 			// continuation of a tx
-			if (isNonTransactionSpecification(tx)) {
-				// a local transaction should have finished before we start the next - so we discard the current
-				// incomplete
-				log.warn("Local transaction discarded " + tx.getXid()); // TODO #112: client incident
-				discardTx(stc, session);
-				stc = null;
-			} else {
-				log.warn("XA transaction timeout but not discarded yet " + tx.getXid()); // TODO #112: system health
-																							// incident
-				discardTx(stc, session);
-				stc = null;
-			}
+			// a local transaction should have finished before we start the next - so we discard the current
+			// incomplete
+			log.warn("Local transaction discarded " + tx.getXid());
+			// TODO #112: raise client incident
+			discardTx(stc, session);
+			stc = null;
+		}
+		if (stc != null && stc.isPrepared()) {
+			ErrorCode.setError(ErrorCode.XATransactionPreparedImmutable, ack, tx.getXid());
+			// TODO #112: raise client incident
+			return null;
+		}
+		if (stc != null && stc.getTimeoutFuture().isDone()) {
+			// can only happen with a race condition
+			ErrorCode.setError(ErrorCode.XATransactionTimeout, ack, tx.getXid());
+			// TODO #112: raise client incident
+			discardTx(stc, session);
+			return null;
 		}
 		if (stc == null) {
 			stc = new SenderTransactionContext(tx);
 			session.setTransaction(tx, stc);
 			scheduleTransactionTimeout(stc, session);
+			log.debug("Starting new transaction " + tx.getXid());
+		} else {
+			log.debug("Continuing existing transaction " + tx.getXid());
 		}
 		return stc;
 	}

@@ -369,27 +369,45 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg) {
-		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
+	public SubmitMessageOperationStatus checkChannelQuota(Zone zone, Channel channel, long messageSize,
+			long requiredQuota) {
 		// TODO #49 : limit max size of message to authorized max
 
 		// get and lock quota and check we can send
-		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
+		FlowQuota quota = channelDao.read(channel.getQuota().getId());
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to send out.
-			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
-			return result;
+			return SubmitMessageOperationStatus.CHANNEL_CLOSED;
 		}
 		if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
-			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
-			return result;
+			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
 		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
-		quota.incrementBufferOnSend(msg.getPayloadLength());
+		if (!quota.hasAvailableQuotaFor(requiredQuota)) {
+			return SubmitMessageOperationStatus.NOT_ENOUGH_QUOTA_AVAILABLE;
+		}
+		return null;
+	}
 
-		result.flowQuota = quota;
-		return result;
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void onePhaseCommitSend(Zone zone, Channel channel, List<ChannelMessage> messages) {
+		// persist each message in a state that they can be immediately relayed afterwards.
+		long totalPayloadSize = 0;
+		for (ChannelMessage msg : messages) {
+			// relay initiated immediately
+			msg.setProcessingState(ProcessingState.pending());
+
+			// persist the message
+			create(msg);
+
+			totalPayloadSize += msg.getPayloadLength();
+		}
+		// reduce the available quota for all the messages sent in the tx together.
+		FlowQuota quota = channelDao.lock(channel.getQuota().getId());
+		quota.incrementBufferOnSend(totalPayloadSize);
+		// TODO #109 message state NEW
 	}
 
 	@Override

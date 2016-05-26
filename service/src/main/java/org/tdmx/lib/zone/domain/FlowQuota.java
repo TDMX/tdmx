@@ -163,6 +163,17 @@ public class FlowQuota implements Serializable {
 	}
 
 	/**
+	 * Return true if there is quota available for the payload size requested.
+	 * 
+	 * @param payloadSizeBytes
+	 * @return true if there is quota available for the payload size requested.
+	 */
+	public boolean hasAvailableQuotaFor(long payloadSizeBytes) {
+		return (getUsedBytes().add(BigInteger.valueOf(payloadSizeBytes)).subtract(getLimit().getHighMarkBytes())
+				.compareTo(BigInteger.ZERO) <= 0);
+	}
+
+	/**
 	 * Adapt flow control to the bytes which are consumed by receiving.
 	 * 
 	 * @param payloadSizeBytes

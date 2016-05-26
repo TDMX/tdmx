@@ -61,6 +61,8 @@ public interface ChannelDao {
 
 	public FlowQuota lock(Long quotaId);
 
+	public FlowQuota read(Long quotaId);
+
 	public Channel loadById(Long id, boolean includeFlowQuota, boolean includeAuth);
 
 	public TemporaryChannel loadByTempId(Long tempChannelId);

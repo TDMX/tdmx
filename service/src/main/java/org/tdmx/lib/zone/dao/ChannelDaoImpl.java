@@ -129,6 +129,12 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
+	public FlowQuota read(Long quotaId) {
+		return new JPAQuery(em).setLockMode(LockModeType.NONE).from(flowQuota).where(flowQuota.id.eq(quotaId))
+				.uniqueResult(flowQuota);
+	}
+
+	@Override
 	public List<Channel> search(Zone zone, ChannelAuthorizationSearchCriteria criteria) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");

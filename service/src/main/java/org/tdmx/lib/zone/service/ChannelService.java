@@ -287,24 +287,42 @@ public interface ChannelService {
 
 	public enum SubmitMessageOperationStatus {
 		MESSAGE_TOO_LARGE, // TODO #49 limit size of messages being sent.
+		NOT_ENOUGH_QUOTA_AVAILABLE,
 		FLOW_CONTROL_CLOSED,
 		CHANNEL_CLOSED,
 	}
 
+	// TODO needed?
 	public class SubmitMessageResultHolder {
 		public FlowQuota flowQuota;
 		public SubmitMessageOperationStatus status;
 	}
 
+	// TODO #70 ... checkRelay / / commitRelay
+
 	/**
-	 * Pre-submit a Message outbound called on the sender side. Updates the FlowQuota of the channel.
+	 * Check that the Channel is open and has the required free quota available.
 	 * 
 	 * @param zone
-	 * @param msg
-	 *            detached ChannelMessage
-	 * @return
+	 * @param channel
+	 *            detached Channel
+	 * @param messageSize
+	 *            the payload size of the message being checked
+	 * @param totalRequiredQuota
+	 *            the total payload sizes of messages being sent in the same transaction to the channel.
+	 * @return whether the channel is usable and has the free quota available.
 	 */
-	public SubmitMessageResultHolder preSubmitMessage(Zone zone, ChannelMessage msg);
+	public SubmitMessageOperationStatus checkChannelQuota(Zone zone, Channel channel, long messageSize,
+			long totalRequiredQuota);
+
+	/**
+	 * Commit messages immediately skipping the prepared step.
+	 * 
+	 * @param zone
+	 * @param channel
+	 * @param messages
+	 */
+	public void onePhaseCommitSend(Zone zone, Channel channel, List<ChannelMessage> messages);
 
 	/**
 	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
