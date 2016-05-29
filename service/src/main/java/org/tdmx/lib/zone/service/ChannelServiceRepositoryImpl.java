@@ -460,6 +460,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
+	public List<String> twoPhaseRecover(Zone zone, ChannelOrigin origin) {
+		return messageDao.getPreparedSendTransactions(zone, origin);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
 	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid) {
 		List<MessageState> result = new ArrayList<>();
 

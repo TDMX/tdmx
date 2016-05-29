@@ -19,10 +19,7 @@
 package org.tdmx.server.tos.client;
 
 import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 
 /**
  * The client's interface to the TOS.
@@ -41,16 +38,12 @@ public interface TransferClientService {
 	 *            the sessionId which is actively handling the channel's destination ( null if not known ).
 	 * @param accountzone
 	 *            the detached accountzone
-	 * @param zone
-	 *            the detached zone
-	 * @param domain
-	 *            the detached domain
-	 * @param channel
-	 *            the detached channel
-	 * @param msg
-	 *            the detached message
+	 * @param dest
+	 *            the channel destination
+	 * @param stateId
+	 *            the message's state identifier
 	 * @return the relay status
 	 */
-	public TransferStatus transferMDS(String tosTcpAddress, String sessionId, AccountZone az, Zone zone, Domain domain,
-			Channel channel, ChannelMessage msg);
+	public TransferStatus transferMDS(String tosTcpAddress, String sessionId, AccountZone az, ChannelDestination dest,
+			Long stateId);
 }

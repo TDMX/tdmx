@@ -20,7 +20,6 @@ package org.tdmx.server.tos.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.Common.ObjectType;
@@ -67,7 +66,7 @@ public class TransferObjectServiceClient {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public TransferStatus transferMDS(String segment, String tosTcpAddress, String sessionId, ChannelMessage msg) {
+	public TransferStatus transferMDS(String segment, String tosTcpAddress, String sessionId, Long stateId) {
 
 		if (!rpcClient.isClosed()) {
 			TransferRequest.Builder reqBuilder = TransferRequest.newBuilder();
@@ -78,7 +77,7 @@ public class TransferObjectServiceClient {
 
 			AttributeValue.Builder attr = AttributeValue.newBuilder();
 			attr.setName(AttributeId.MessageId);
-			attr.setValue(msg.getId());
+			attr.setValue(stateId);
 			reqBuilder.addAttribute(attr);
 
 			return transfer(reqBuilder.build(), tosTcpAddress);

@@ -67,6 +67,8 @@ import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
+import org.tdmx.core.api.v01.tx.Recover;
+import org.tdmx.core.api.v01.tx.RecoverResponse;
 import org.tdmx.core.api.v01.tx.Rollback;
 import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
@@ -94,6 +96,7 @@ import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ros.client.RelayClientService;
 import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.tos.client.TransferClientService;
+import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -379,9 +382,9 @@ public class MOSImplUnitTest {
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
 				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
 
-		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
 
 		Upload upl = new Upload();
 		upl.setSessionId(UC_SESSION_ID);
@@ -393,9 +396,11 @@ public class MOSImplUnitTest {
 		assertSuccess(uplResponse, false); // final chunk has no continuationId
 
 		// because we have no transaction, the receipt of the final chunk initiates relay
-		Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(MessageState.class));
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class));
+
 	}
 
 	@Test
@@ -444,21 +449,17 @@ public class MOSImplUnitTest {
 		commitReq.setXid(tx.getXid());
 		commitReq.setOnePhase(true);
 
-		// TODO #109: TOS not ROS
-		// Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-		// Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
 
 		CommitResponse commitRes = mos.commit(commitReq);
 		assertSuccess(commitRes);
 
 		Mockito.verifyZeroInteractions(mockRelayClientService);
-		// because we have committed the xa transaction, the messages are relayed
-		// TODO #109: TOS not ROS
-		// Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(),
-		// Mockito.any(AccountZone.class),
-		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-		// Mockito.any(MessageState.class));
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class));
 	}
 
 	@Test
@@ -484,7 +485,6 @@ public class MOSImplUnitTest {
 
 		SubmitResponse response = mos.submit(req);
 		assertSuccess(response, true);
-		Mockito.verifyZeroInteractions(mockRelayClientService);
 
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
 				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
@@ -498,7 +498,12 @@ public class MOSImplUnitTest {
 		UploadResponse uplResponse = mos.upload(upl);
 		assertSuccess(uplResponse, false); // final chunk has no continuationId
 
-		Mockito.verifyZeroInteractions(mockRelayClientService);
+		// recover doesn't find anything because the tx is not yet prepared.
+		Recover recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		RecoverResponse recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertTrue(recoverRes.getXids().isEmpty());
 
 		// preparing writes to DB and uses quota
 		Prepare prepareReq = new Prepare();
@@ -508,28 +513,37 @@ public class MOSImplUnitTest {
 		PrepareResponse prepareRes = mos.prepare(prepareReq);
 		assertSuccess(prepareRes);
 
-		Mockito.verifyZeroInteractions(mockRelayClientService);
+		// recover finds the txid which we prepared before.
+		recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertEquals(1, recoverRes.getXids().size());
+		assertEquals(tx.getXid(), recoverRes.getXids().get(0));
 
 		// commit and check that it's relayed then.
 		Commit commitReq = new Commit();
 		commitReq.setSessionId(UC_SESSION_ID);
 		commitReq.setXid(tx.getXid());
 
-		// TODO #109: TOS instead of ROS
-		// Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-		// Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
 
 		CommitResponse commitRes = mos.commit(commitReq);
 		assertSuccess(commitRes);
 
 		Mockito.verifyZeroInteractions(mockRelayClientService);
-		// because we have committed the xa transaction, the messages are relayed
-		// TODO #109: TOS instead of ROS
-		// Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(),
-		// Mockito.any(AccountZone.class),
-		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-		// Mockito.any(MessageState.class));
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class));
+
+		// recover doesn't find anything
+		recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertTrue(recoverRes.getXids().isEmpty());
 	}
 
 	@Test
@@ -555,7 +569,6 @@ public class MOSImplUnitTest {
 
 		SubmitResponse response = mos.submit(req);
 		assertSuccess(response, true);
-		Mockito.verifyZeroInteractions(mockRelayClientService);
 
 		// We can rollback an unprepared transaction ( in this case we uploaded only 1 of 2 chunks )
 		Rollback rollbackReq = new Rollback();
@@ -564,8 +577,6 @@ public class MOSImplUnitTest {
 
 		RollbackResponse rollbackRes = mos.rollback(rollbackReq);
 		assertSuccess(rollbackRes);
-
-		Mockito.verifyZeroInteractions(mockRelayClientService);
 
 		// so when we upload the 2nd chunk - the rolledback message is not found because the tx is discarded
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
@@ -581,6 +592,7 @@ public class MOSImplUnitTest {
 		assertError(ErrorCode.MessageNotFound, uplResponse);
 
 		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
 
 	}
 
@@ -607,7 +619,6 @@ public class MOSImplUnitTest {
 
 		SubmitResponse response = mos.submit(req);
 		assertSuccess(response, true);
-		Mockito.verifyZeroInteractions(mockRelayClientService);
 
 		// so when we upload the 2nd chunk - the rolledback message is not found because the tx is discarded
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
@@ -620,9 +631,7 @@ public class MOSImplUnitTest {
 		upl.setChunk(chunk);
 
 		UploadResponse uplResponse = mos.upload(upl);
-		assertError(ErrorCode.MessageNotFound, uplResponse);
-
-		Mockito.verifyZeroInteractions(mockRelayClientService);
+		assertSuccess(uplResponse);
 
 		// preparing writes to DB and uses quota
 		Prepare prepareReq = new Prepare();
@@ -632,8 +641,6 @@ public class MOSImplUnitTest {
 		PrepareResponse prepareRes = mos.prepare(prepareReq);
 		assertSuccess(prepareRes);
 
-		Mockito.verifyZeroInteractions(mockRelayClientService);
-
 		// We can rollback an unprepared transaction ( in this case we uploaded only 1 of 2 chunks )
 		Rollback rollbackReq = new Rollback();
 		rollbackReq.setSessionId(UC_SESSION_ID);
@@ -642,8 +649,6 @@ public class MOSImplUnitTest {
 		RollbackResponse rollbackRes = mos.rollback(rollbackReq);
 		assertSuccess(rollbackRes);
 
-		Mockito.verifyZeroInteractions(mockRelayClientService);
-
 		// commit after rollback - tx not known
 		Commit commitReq = new Commit();
 		commitReq.setSessionId(UC_SESSION_ID);
@@ -651,6 +656,9 @@ public class MOSImplUnitTest {
 
 		CommitResponse commitRes = mos.commit(commitReq);
 		assertError(ErrorCode.XATransactionUnknown, commitRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
 	}
 
 	// TODO test 2pc prepare, recover (find xa), commit

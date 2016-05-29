@@ -72,6 +72,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelName;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.MessageStatus;
@@ -88,6 +89,7 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ros.client.RelayClientService;
 import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.tos.client.TransferClientService;
+import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -280,8 +282,18 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public RecoverResponse recover(Recover parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		ChannelOrigin co = new ChannelOrigin();
+		co.setLocalName(session.getOriginatingAddress().getLocalName());
+		co.setDomainName(session.getDomain().getDomainName());
+
+		RecoverResponse response = new RecoverResponse();
+		List<String> preparedXids = channelService.twoPhaseRecover(session.getZone(), co);
+
+		response.getXids().addAll(preparedXids);
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -410,7 +422,8 @@ public class MOSImpl implements MOS {
 
 			// initialize session's DestinationContextHolder to cache the TOS info (only for same domain channels)
 			if (channel.isSameDomain() && null == session.getDestinationContext(cn.getDestinationName())) {
-				DestinationContextHolder ddh = new DestinationContextHolder(cn.getDestinationName());
+				DestinationContextHolder ddh = new DestinationContextHolder(cn.getDestinationName(),
+						cn.getDestination());
 				session.setDestinationContext(cn.getDestinationName(), ddh);
 			}
 		}
@@ -622,8 +635,10 @@ public class MOSImpl implements MOS {
 				relayWithRetry(session, cch, state);
 
 			} else if (MessageStatus.READY == state.getStatus()) {
+				DestinationContextHolder ddh = session.getDestinationContext(cn.getDestinationName());
+
 				// same domain so transfer to the receiver.
-				transferReceiver(session, state);
+				transferReceiver(session, ddh, state);
 			} else {
 				log.warn("Unexpected message state for relay. " + state);
 			}
@@ -699,11 +714,25 @@ public class MOSImpl implements MOS {
 		stc.setTimeoutFuture(timeoutFuture);
 	}
 
-	private void transferReceiver(MOSServerSession session, MessageState state) {
-		// TODO #96: transfer object to MAS Message Acknowledge Service
-		// transferClientService.transferMDS(tosTcpAddress, sessionId, az, session.getZone(), session.getDomain(),
-		// channel,
-		// msg);
+	private void transferReceiver(MOSServerSession session, DestinationContextHolder ddh, MessageState state) {
+		// transfer message to MDS for same domain receiver to take.
+		// we don't retry since the receiver finds the messages from the DB if we don't fast transfer with this TOS
+		// mechanism.
+		final TransferStatus ts = transferClientService.transferMDS(ddh.getTosTcpAddress(), ddh.getSessionId(),
+				session.getAccountZone(), ddh.getDestination(), state.getId());
+		if (!ts.isSuccess()) {
+			// we clear the not working TOS address of the MDS and it's session
+			if (ts.getErrorCode() != org.tdmx.server.tos.client.TransferStatus.ErrorCode.PCS_SESSION_NOT_FOUND) {
+				// PCS session not found is normal if there is no active receiver.
+				log.warn("MOS->MDS message transfer failure  " + ts);
+			}
+			ddh.setSessionId(null);
+			ddh.setTosTcpAddress(null);
+		} else {
+			// possibly changed
+			ddh.setTosTcpAddress(ts.getTosTcpAddress());
+			ddh.setSessionId(ts.getSessionId());
+		}
 	}
 
 	/**
@@ -718,8 +747,10 @@ public class MOSImpl implements MOS {
 		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getRosTcpAddress(), session.getAccountZone(),
 				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), state);
 		if (!rs.isSuccess()) {
+			// we 'clear' a possibly wrong ROS address
+			cch.setRosTcpAddress(null);
 			if (rs.getErrorCode().isRetryable()) {
-				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new ROS session */,
+				RelayStatus retry = relayClientService.relayChannelMessage(null /* null get new ROS session */,
 						session.getAccountZone(), session.getZone(), cch.getChannel().getDomain(), cch.getChannel(),
 						state);
 				if (!retry.isSuccess()) {

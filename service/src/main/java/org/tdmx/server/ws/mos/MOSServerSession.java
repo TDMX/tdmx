@@ -23,6 +23,7 @@ import java.util.Map;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -105,13 +106,19 @@ public class MOSServerSession extends WebServiceSession {
 	 */
 	public static class DestinationContextHolder {
 		private final String destinationName;
+		private final ChannelDestination destination;
 
 		// we cache the transfer MDS address and sessionId for this destination.
 		private String tosTcpAddress;
 		private String sessionId;
 
-		public DestinationContextHolder(String destinationName) {
+		public DestinationContextHolder(String destinationName, ChannelDestination dest) {
 			this.destinationName = destinationName;
+			this.destination = dest;
+		}
+
+		public ChannelDestination getDestination() {
+			return destination;
 		}
 
 		public String getTosTcpAddress() {
@@ -188,7 +195,7 @@ public class MOSServerSession extends WebServiceSession {
 	}
 
 	public DestinationContextHolder getDestinationContext(String destinationName) {
-		return getAttribute(createChannelKey(destinationName));
+		return getAttribute(createDestinationKey(destinationName));
 	}
 
 	public void setDestinationContext(String destinationName, DestinationContextHolder ddh) {

@@ -340,8 +340,8 @@ public class MRSImpl implements MRS {
 
 			// attempt to "fast" transfer the MSG to the MDS responsible for the channel's destination.
 			// TODO #96: keep track of when last tried to lookup any sessionId
-			TransferStatus ts = transferService.transferMDS(null, null, session.getAccountZone(), zone,
-					session.getDomain(), channel, m);
+			TransferStatus ts = transferService.transferMDS(null, null, session.getAccountZone(),
+					channel.getDestination(), m.getState().getId());
 			// TODO #96: keep the tosAddress, sessionId in the session for later use.
 		}
 

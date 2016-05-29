@@ -31,7 +31,9 @@ import javax.persistence.PersistenceContext;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.MessageState;
+import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 
@@ -85,6 +87,26 @@ public class MessageDaoImpl implements MessageDao {
 		}
 		JPAQuery query = new JPAQuery(em).from(messageState).where(messageState.id.eq(stateId));
 		return query.uniqueResult(messageState);
+	}
+
+	@Override
+	public List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		if (origin == null) {
+			throw new IllegalArgumentException("missing origin");
+		}
+		JPAQuery query = new JPAQuery(em).from(messageState);
+
+		BooleanExpression where = messageState.zone.eq(zone).and(messageState.txId.isNotNull())
+				.and(messageState.status.eq(MessageStatus.UPLOADED))
+				.and(messageState.origin.localName.eq(origin.getLocalName()))
+				.and(messageState.origin.domainName.eq(origin.getDomainName()));
+
+		query.where(where);
+		query.distinct();
+		return query.list(messageState.txId);
 	}
 
 	@Override

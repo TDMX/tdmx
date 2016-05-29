@@ -31,10 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
@@ -115,9 +112,9 @@ public class TransferClientServiceImpl implements TransferClientService, Managea
 	// -------------------------------------------------------------------------
 
 	@Override
-	public TransferStatus transferMDS(String tosTcpAddress, String sessionId, AccountZone az, Zone zone, Domain domain,
-			Channel channel, ChannelMessage msg) {
-		String sessionKey = SessionKeyUtil.createMDSSessionKey(az.getZoneApex(), channel.getDestination());
+	public TransferStatus transferMDS(String tosTcpAddress, String sessionId, AccountZone az,
+			ChannelDestination destination, Long stateId) {
+		String sessionKey = SessionKeyUtil.createMDSSessionKey(az.getZoneApex(), destination);
 
 		if (tosTcpAddress == null || sessionId == null) {
 			FindApiSessionResponse pcsInfo = controlService.findApiSession(segment.getSegmentName(),
@@ -140,7 +137,7 @@ public class TransferClientServiceImpl implements TransferClientService, Managea
 		if (tosClient == null) {
 			return TransferStatus.failure(ErrorCode.TOS_CONNECTION_REFUSED);
 		}
-		return tosClient.transferMDS(segment.getSegmentName(), tosTcpAddress, sessionId, msg);
+		return tosClient.transferMDS(segment.getSegmentName(), tosTcpAddress, sessionId, stateId);
 	}
 
 	@Override

@@ -137,7 +137,11 @@ public abstract class WebServiceSession {
 	}
 
 	protected <E extends Object> void setAttribute(String name, E object) {
-		attributeMap.put(name, object);
+		if (object == null) {
+			removeAttribute(name);
+		} else {
+			attributeMap.put(name, object);
+		}
 	}
 
 	// -------------------------------------------------------------------------

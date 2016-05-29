@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -37,6 +38,15 @@ public interface MessageDao {
 	public void persist(ChannelMessage value);
 
 	public void delete(ChannelMessage value);
+
+	/**
+	 * Return the list of prepared XIDs for the sender on ChannelOrigin.
+	 * 
+	 * @param zone
+	 * @param origin
+	 * @return the list of prepared XIDs for the sender on ChannelOrigin.
+	 */
+	List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin);
 
 	/**
 	 * Load the ChannelMessage by id.

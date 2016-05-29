@@ -349,6 +349,15 @@ public interface ChannelService {
 	public void twoPhasePrepareSend(Zone zone, Channel channel, List<ChannelMessage> messages, String xid);
 
 	/**
+	 * Discover the XID of the prepared transactions for the channel origin.
+	 * 
+	 * @param zone
+	 * @param origin
+	 * @return
+	 */
+	public List<String> twoPhaseRecover(Zone zone, ChannelOrigin origin);
+
+	/**
 	 * Commit messages for sending. Flow quota already reduced by prepare. Clears the xid from the already persisted
 	 * messages.
 	 * 
