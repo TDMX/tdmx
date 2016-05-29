@@ -114,6 +114,7 @@
 	<bean id="ws.MOS.Implementation" class="org.tdmx.server.ws.mos.MOSImpl" >
 	
 		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
+		<property name="transferClientService" ref="tos.client.TransferObjectService"/>
 		
 		<property name="authorizedSessionService" ref="ws.MOS.AuthorizedSessionService"/>
 		<property name="authenticatedClientService" ref="ws.authenticatedClientService"/>

@@ -20,9 +20,9 @@ package org.tdmx.server.ws.session;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -36,7 +36,7 @@ public abstract class WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	protected final Map<String, Object> attributeMap = new HashMap<>();
+	protected final Map<String, Object> attributeMap = new ConcurrentHashMap<>();
 
 	protected static final String CREATED_TIMESTAMP = "CREATED_TIMESTAMP";
 	protected static final String LAST_USED_TIMESTAMP = "LAST_USED_TIMESTAMP";
@@ -129,6 +129,11 @@ public abstract class WebServiceSession {
 	@SuppressWarnings("unchecked")
 	protected <E extends Object> E getAttribute(String name) {
 		return (E) attributeMap.get(name);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <E extends Object> E removeAttribute(String name) {
+		return (E) attributeMap.remove(name);
 	}
 
 	protected <E extends Object> void setAttribute(String name, E object) {

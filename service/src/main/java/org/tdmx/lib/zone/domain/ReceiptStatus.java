@@ -18,17 +18,18 @@
  */
 package org.tdmx.lib.zone.domain;
 
-public enum MessageStatus {
+/**
+ * The status of a DeliveryReport ( receipt ).
+ * 
+ * @author Peter
+ *
+ */
+public enum ReceiptStatus {
 
-	NEW,
-	UPLOADED,
-	SUBMITTED,
-	TRANSFERRED,
-	READY,
-	DOWNLOADED,
-	REDELIVER,
-	DELIVERED,
-	UNDELIVERED;
+	NOTIFY,
+	NOTIFIED,
+	INFORMED,
+	RENOTIFY;
 
-	public static final int MAX_MSGSTATUS_LEN = 12;
+	public static final int MAX_DRSTATUS_LEN = 12;
 }

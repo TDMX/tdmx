@@ -41,3 +41,17 @@ The trust in a given User Certificate is achieved as follows:
 
 - DNS must authorize the Zone Administration Certificate
 - The certificate chain from Zone Administration Certificate through the Domain Administration Certificate to the User Certificate must be valid.
+
+### Message Lifecycle
+
+The lifecycle of messages sent to the ServiceProvider are shown below.
+![Message Lifecycle](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/message-status.png "logical-concepts/message-status.png")
+
+The sender also is capable of receiving the message delivery report - or receipt. This is shown by diagram below:
+
+![Message Lifecycle (Same Domain)](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/message-status-same-domain.png "logical-concepts/message-status-same-domain.png")
+
+In the case that the sender and receiver belong to the same domain, then there is no effective relay of the message and delivery report and the message lifecycle looks like:
+
+![Receipt Lifecycle](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/receipt-status.png "logical-concepts/receipt-status.png")
+

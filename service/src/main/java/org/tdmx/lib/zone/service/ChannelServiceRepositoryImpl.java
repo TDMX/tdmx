@@ -20,7 +20,9 @@
 package org.tdmx.lib.zone.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,9 +415,17 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// persist each message in a state that they can be immediately relayed afterwards.
 		long totalPayloadSize = 0;
 		for (ChannelMessage msg : messages) {
-			msg.getState().setStatus(MessageStatus.SUBMITTED);
-			// relay initiated immediately
-			msg.getState().setProcessingState(ProcessingState.pending());
+			if (msg.getState().isSameDomain()) {
+				msg.getState().setStatus(MessageStatus.READY);
+				// transfer to receiver.
+				msg.getState().setProcessingState(ProcessingState.none());
+
+			} else {
+				msg.getState().setStatus(MessageStatus.SUBMITTED);
+				// relay initiated immediately
+				msg.getState().setProcessingState(ProcessingState.pending());
+
+			}
 
 			// persist the message
 			create(msg);
@@ -434,7 +444,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		long totalPayloadSize = 0;
 		for (ChannelMessage msg : messages) {
 			// prepared and waiting for commit before relaying
-			msg.getState().setStatus(MessageStatus.PREPARED);
+			msg.getState().setStatus(MessageStatus.UPLOADED);
 			msg.getState().setProcessingState(ProcessingState.none());
 			msg.getState().setTxId(xid);
 
@@ -453,13 +463,20 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid) {
 		List<MessageState> result = new ArrayList<>();
 
-		boolean more = true;
-		for (int pageNo = 0; more; pageNo++) {
+		List<MessageState> states = null;
+		do {
 			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
-					new PageSpecifier(pageNo, PageSpecifier.DEFAULT_PAGE_SIZE));
-			List<MessageState> states = messageDao.search(zone, sc, false);
+					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.setXid(xid);
+			sc.setMessageStatus(MessageStatus.UPLOADED);
+
+			states = messageDao.search(zone, sc, false);
+			// we don't want to fetch the entire message with the status because on prepare we flushed
+			// the channel messages to the DB, we don't want to read them back again just to continue
+			// with their relaying.
 
 			for (MessageState state : states) {
+				state.setTxId(null); // clear the XID
 				if (state.isSameDomain()) {
 					// same domain can be "received" immediately without relaying
 					state.setStatus(MessageStatus.READY);
@@ -471,9 +488,55 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				}
 				result.add(state);
 			}
-			if (states.isEmpty()) {
-				more = false;
+
+		} while (states.size() == PageSpecifier.DEFAULT_PAGE_SIZE);
+
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, String xid) {
+		List<MessageState> result = new ArrayList<>();
+
+		Map<Channel, Long> quotaMap = new HashMap<>(); // undo the quota reduction done at prepare.
+
+		List<MessageState> states = null;
+		do {
+			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
+					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.setXid(xid);
+			sc.setMessageStatus(MessageStatus.UPLOADED);
+
+			states = messageDao.search(zone, sc, true);
+			// we need to fetch the entire message with the status because on we need to undo it's quota per channel
+
+			for (MessageState state : states) {
+				ChannelMessage msg = state.getMsg();
+
+				// accumulate the quota used per channel
+				Channel ch = msg.getChannel();
+				Long channelQuota = quotaMap.get(ch);
+				if (channelQuota == null) {
+					channelQuota = msg.getPayloadLength();
+				} else {
+					channelQuota += msg.getPayloadLength();
+				}
+				quotaMap.put(ch, channelQuota);
+
+				// delete the message - chunks are handled separate.
+				messageDao.delete(msg);
+
+				// provide feedback of what was rolled-back
+				result.add(state);
+
 			}
+		} while (states.size() == PageSpecifier.DEFAULT_PAGE_SIZE);
+
+		// reduce the available quota for all the messages sent in the tx together.
+		for (Map.Entry<Channel, Long> channelQuota : quotaMap.entrySet()) {
+			FlowQuota quota = channelDao.lock(channelQuota.getKey().getQuota().getId());
+			quota.reduceBuffer(channelQuota.getValue());
 		}
 		return result;
 	}
@@ -530,7 +593,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// get and lock quota, reduce unsent buffer on origin side
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 		// update other side's relay status too
-		quota.reduceBufferOnRelay(msg.getPayloadLength(), relayStatus);
+		quota.reduceBuffer(msg.getPayloadLength());
+		quota.setRelayStatus(relayStatus);
 	}
 
 	@Override

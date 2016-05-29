@@ -19,10 +19,7 @@
 package org.tdmx.server.ws.mos;
 
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
@@ -47,10 +44,11 @@ public class MOSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final String CHANNEL_MAP = "CHANNEL_MAP";
+	private static final String CHANNEL_PREFIX = "Channel:"; // ChannelKey->
+	private static final String DESTINATION_PREFIX = "Destination:"; // DestinationName->
+	private static final String TX_PREFIX = "Tx:"; // txId->
 
 	// Map[txId]->SenderTransactionContext
-	private static final String TX_MAP = "TX_MAP";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -61,14 +59,6 @@ public class MOSServerSession extends WebServiceSession {
 		setZone(zone);
 		setDomain(domain);
 		setOriginatingAddress(address);
-
-		// pre-initiated context map for Channels.
-		Map<String, ChannelContextHolder> ccm = new ConcurrentHashMap<>();
-		setAttribute(CHANNEL_MAP, ccm);
-
-		// pre-initiated context map for transactions.
-		Map<String, SenderTransactionContext> mcm = new ConcurrentHashMap<>();
-		setAttribute(TX_MAP, mcm);
 	}
 
 	/**
@@ -107,6 +97,44 @@ public class MOSServerSession extends WebServiceSession {
 
 	}
 
+	/**
+	 * A DestinationContextHolder holds a destination information in a session.
+	 * 
+	 * @author Peter
+	 * 
+	 */
+	public static class DestinationContextHolder {
+		private final String destinationName;
+
+		// we cache the transfer MDS address and sessionId for this destination.
+		private String tosTcpAddress;
+		private String sessionId;
+
+		public DestinationContextHolder(String destinationName) {
+			this.destinationName = destinationName;
+		}
+
+		public String getTosTcpAddress() {
+			return tosTcpAddress;
+		}
+
+		public void setTosTcpAddress(String tosTcpAddress) {
+			this.tosTcpAddress = tosTcpAddress;
+		}
+
+		public String getSessionId() {
+			return sessionId;
+		}
+
+		public void setSessionId(String sessionId) {
+			this.sessionId = sessionId;
+		}
+
+		public String getDestinationName() {
+			return destinationName;
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
@@ -117,12 +145,21 @@ public class MOSServerSession extends WebServiceSession {
 	 */
 	@Override
 	public boolean isIdle(java.util.Date lastCutoffDate) {
-		return getTransactionMap().size() == 0 && super.isIdle(lastCutoffDate);
+		if (super.isIdle(lastCutoffDate)) {
+			for (Map.Entry<String, Object> attrs : attributeMap.entrySet()) {
+				if (isTxAttr(attrs.getKey())) {
+					// if we have any active transactions, then we cannot be idle.
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
-		// TODO #93: MOS receives DR from MRS
+		// TODO #113: MAS receives DR from MRS
 		return false;
 	}
 
@@ -142,28 +179,32 @@ public class MOSServerSession extends WebServiceSession {
 		return getAttribute(ORIGIN_ADDRESS);
 	}
 
-	public ChannelContextHolder getChannel(String channelKey) {
-		return getChannelMap().get(channelKey);
+	public ChannelContextHolder getChannelContext(String channelKey) {
+		return getAttribute(createChannelKey(channelKey));
 	}
 
-	public ChannelContextHolder addChannel(String channelKey, Channel channel) {
-		ChannelContextHolder cch = new ChannelContextHolder(channelKey, channel);
-
-		Map<String, ChannelContextHolder> ccm = getChannelMap();
-		ccm.put(cch.getChannelKey(), cch);
-		return cch;
+	public void setChannelContext(String channelKey, ChannelContextHolder cch) {
+		setAttribute(createChannelKey(channelKey), cch);
 	}
 
-	public SenderTransactionContext getTransaction(Transaction txSpec) {
-		return getTransactionMap().get(txSpec.getXid());
+	public DestinationContextHolder getDestinationContext(String destinationName) {
+		return getAttribute(createChannelKey(destinationName));
 	}
 
-	public void setTransaction(Transaction txSpec, SenderTransactionContext tx) {
-		getTransactionMap().put(txSpec.getXid(), tx);
+	public void setDestinationContext(String destinationName, DestinationContextHolder ddh) {
+		setAttribute(createDestinationKey(destinationName), ddh);
 	}
 
-	public void removeTransaction(Transaction txSpec) {
-		getTransactionMap().remove(txSpec.getXid());
+	public SenderTransactionContext getTransactionContext(String xid) {
+		return getAttribute(createTxKey(xid));
+	}
+
+	public void setTransactionContext(String xid, SenderTransactionContext stc) {
+		setAttribute(createTxKey(xid), stc);
+	}
+
+	public void removeTransactionContext(String xid) {
+		removeAttribute(createTxKey(xid));
 	}
 
 	/**
@@ -172,14 +213,19 @@ public class MOSServerSession extends WebServiceSession {
 	 * @param msgId
 	 * @return
 	 */
-	public SenderTransactionContext getTransaction(String msgId) {
-		for (Entry<String, SenderTransactionContext> entry : getTransactionMap().entrySet()) {
-			if (entry.getValue().getMessage(msgId) != null) {
-				return entry.getValue();
+	public SenderTransactionContext getTransactionByMsgId(String msgId) {
+		for (Map.Entry<String, Object> attrs : attributeMap.entrySet()) {
+			if (isTxAttr(attrs.getKey())) {
+				// if we have any active transactions, then we cannot be idle.
+				SenderTransactionContext stc = (SenderTransactionContext) attrs.getValue();
+				if (stc.getMessage(msgId) != null) {
+					return stc;
+				}
 			}
 		}
 		return null;
 	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -204,12 +250,20 @@ public class MOSServerSession extends WebServiceSession {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private Map<String, SenderTransactionContext> getTransactionMap() {
-		return getAttribute(TX_MAP);
+	private String createChannelKey(String channelKey) {
+		return CHANNEL_PREFIX + channelKey;
 	}
 
-	private Map<String, ChannelContextHolder> getChannelMap() {
-		return getAttribute(CHANNEL_MAP);
+	private String createDestinationKey(String destinationName) {
+		return DESTINATION_PREFIX + destinationName;
+	}
+
+	private String createTxKey(String xid) {
+		return TX_PREFIX + xid;
+	}
+
+	private boolean isTxAttr(String attributeKey) {
+		return attributeKey.startsWith(TX_PREFIX);
 	}
 
 	// -------------------------------------------------------------------------

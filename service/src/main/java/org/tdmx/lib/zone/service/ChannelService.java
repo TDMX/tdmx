@@ -354,8 +354,20 @@ public interface ChannelService {
 	 * 
 	 * @param zone
 	 * @param xid
+	 * @return the list of messages committed.
 	 */
 	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid);
+
+	/**
+	 * Rollback messages for prepared for sending. Flow quota already reduced by prepare, so undo that. Removes the
+	 * messages.
+	 * 
+	 * @param zone
+	 * @param xid
+	 * @param the
+	 *            list of messages discarded.
+	 */
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, String xid);
 
 	/**
 	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing

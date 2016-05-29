@@ -93,6 +93,10 @@ public class SenderTransactionContext {
 		return txSpec;
 	}
 
+	public String getXid() {
+		return txSpec.getXid();
+	}
+
 	/**
 	 * Return all the ChannelMessages involved in the transaction.
 	 * 

@@ -334,6 +334,7 @@
         processingStatus varchar(12) not null,
         processingTimestamp timestamp not null,
         redeliverAfter timestamp,
+        report varchar(12),
         status varchar(12) not null,
         txId varchar(255),
         zone_id bigint not null,

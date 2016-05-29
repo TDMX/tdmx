@@ -87,11 +87,13 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ros.client.RelayClientService;
 import org.tdmx.server.ros.client.RelayStatus;
+import org.tdmx.server.tos.client.TransferClientService;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.ApiValidator;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.mos.MOSServerSession.ChannelContextHolder;
+import org.tdmx.server.ws.mos.MOSServerSession.DestinationContextHolder;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
@@ -135,6 +137,7 @@ public class MOSImpl implements MOS {
 	private AuthenticatedClientLookupService authenticatedClientService;
 
 	private RelayClientService relayClientService;
+	private TransferClientService transferClientService;
 
 	private DomainService domainService;
 	private AddressService addressService;
@@ -184,7 +187,7 @@ public class MOSImpl implements MOS {
 			return response;
 
 		}
-		SenderTransactionContext stc = session.getTransaction(parameters.getXid());
+		SenderTransactionContext stc = session.getTransactionContext(parameters.getXid());
 		if (stc == null) {
 			ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 			return response;
@@ -220,11 +223,11 @@ public class MOSImpl implements MOS {
 			return response;
 
 		}
-		SenderTransactionContext stc = session.getTransaction(parameters.getXid());
+		SenderTransactionContext stc = session.getTransactionContext(parameters.getXid());
 		if (stc != null) {
 			if (parameters.isOnePhase()) {
 				List<MessageState> states = onePhaseCommitTx(stc, session);
-				relayMessages(session, states);
+				relayOrTransferMessages(session, states);
 			} else {
 				// 2pc we should not have found the stc.
 				ErrorCode.setError(ErrorCode.XATransactionNotPrepared, response);
@@ -236,7 +239,7 @@ public class MOSImpl implements MOS {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
 			}
-			relayMessages(session, states);
+			relayOrTransferMessages(session, states);
 		}
 
 		response.setSuccess(true);
@@ -245,8 +248,28 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public RollbackResponse rollback(Rollback parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		RollbackResponse response = new RollbackResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		SenderTransactionContext stc = session.getTransactionContext(parameters.getXid());
+		if (stc != null) {
+			// rollback of a tx which is not yet prepared.
+			discardTx(stc, session);
+		} else {
+			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -364,7 +387,7 @@ public class MOSImpl implements MOS {
 		}
 
 		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
-		ChannelContextHolder cch = session.getChannel(channelKey);
+		ChannelContextHolder cch = session.getChannelContext(channelKey);
 		if (cch == null) {
 			ChannelAuthorizationSearchCriteria sc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
 			sc.setDomainName(authorizedUser.getTdmxDomainName());
@@ -380,7 +403,16 @@ public class MOSImpl implements MOS {
 				return response;
 			}
 			Channel channel = channels.get(0);
-			cch = session.addChannel(channelKey, channel);
+
+			// initialize session's ChannelContextHolder to cache the ROS info
+			cch = new ChannelContextHolder(channelKey, channel);
+			session.setChannelContext(channelKey, cch);
+
+			// initialize session's DestinationContextHolder to cache the TOS info (only for same domain channels)
+			if (channel.isSameDomain() && null == session.getDestinationContext(cn.getDestinationName())) {
+				DestinationContextHolder ddh = new DestinationContextHolder(cn.getDestinationName());
+				session.setDestinationContext(cn.getDestinationName(), ddh);
+			}
 		}
 
 		Channel cachedChannel = cch.getChannel();
@@ -411,7 +443,7 @@ public class MOSImpl implements MOS {
 		if (continuationId == null && isNonTransactionSpecification(stc.getTxSpec())) {
 			// last chunk - auto-commit if we have no tx.
 			List<MessageState> msgs = onePhaseCommitTx(stc, session);
-			relayMessages(session, msgs);
+			relayOrTransferMessages(session, msgs);
 		} else {
 			// add message to tx to commit and relay later.
 			stc.addMessage(m);
@@ -440,7 +472,7 @@ public class MOSImpl implements MOS {
 
 		Chunk c = a2d.mapChunk(parameters.getChunk());
 
-		SenderTransactionContext stc = session.getTransaction(parameters.getChunk().getMsgId());
+		SenderTransactionContext stc = session.getTransactionByMsgId(parameters.getChunk().getMsgId());
 		if (stc == null) {
 			ErrorCode.setError(ErrorCode.MessageNotFound, response);
 			return response;
@@ -453,7 +485,7 @@ public class MOSImpl implements MOS {
 		}
 		ChannelName cn = m.getChannel().getChannelName();
 		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
-		ChannelContextHolder cch = session.getChannel(channelKey);
+		ChannelContextHolder cch = session.getChannelContext(channelKey);
 		if (cch == null) {
 			ErrorCode.setError(ErrorCode.ChannelNotFound, response);
 			return response;
@@ -471,7 +503,7 @@ public class MOSImpl implements MOS {
 			// this was the last chunk
 			if (isNonTransactionSpecification(stc.getTxSpec())) {
 				List<MessageState> states = onePhaseCommitTx(stc, session);
-				relayMessages(session, states);
+				relayOrTransferMessages(session, states);
 			}
 		}
 		response.setContinuation(nextContinuationId);
@@ -578,20 +610,20 @@ public class MOSImpl implements MOS {
 		}
 	}
 
-	private void relayMessages(MOSServerSession session, List<MessageState> states) {
+	private void relayOrTransferMessages(MOSServerSession session, List<MessageState> states) {
 		for (MessageState state : states) {
 			final ChannelName cn = state.getChannelName();
-			final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
-
-			ChannelContextHolder cch = session.getChannel(channelKey);
 
 			if (MessageStatus.SUBMITTED == state.getStatus()) {
+				final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
+				ChannelContextHolder cch = session.getChannelContext(channelKey);
+
 				// give the message to the ROS to relay.
 				relayWithRetry(session, cch, state);
 
 			} else if (MessageStatus.READY == state.getStatus()) {
-				// same domain send and receive
-				// TODO #96: transfer object to MAS Message Acknowledge Service
+				// same domain so transfer to the receiver.
+				transferReceiver(session, state);
 			} else {
 				log.warn("Unexpected message state for relay. " + state);
 			}
@@ -621,11 +653,11 @@ public class MOSImpl implements MOS {
 		if (timeout != null) {
 			timeout.cancel(false);
 		}
-		session.removeTransaction(stc.getTxSpec());
+		session.removeTransactionContext(stc.getXid());
 	}
 
 	private SenderTransactionContext startOrContinueTx(MOSServerSession session, Transaction tx, SubmitResponse ack) {
-		SenderTransactionContext stc = session.getTransaction(tx);
+		SenderTransactionContext stc = session.getTransactionContext(tx.getXid());
 		if (stc != null && isNonTransactionSpecification(tx)) {
 			// continuation of a tx
 			// a local transaction should have finished before we start the next - so we discard the current
@@ -644,7 +676,7 @@ public class MOSImpl implements MOS {
 		}
 		if (stc == null) {
 			stc = new SenderTransactionContext(tx);
-			session.setTransaction(tx, stc);
+			session.setTransactionContext(tx.getXid(), stc);
 			scheduleTransactionTimeout(stc, session);
 			log.debug("Starting new transaction " + tx.getXid());
 		} else {
@@ -667,6 +699,21 @@ public class MOSImpl implements MOS {
 		stc.setTimeoutFuture(timeoutFuture);
 	}
 
+	private void transferReceiver(MOSServerSession session, MessageState state) {
+		// TODO #96: transfer object to MAS Message Acknowledge Service
+		// transferClientService.transferMDS(tosTcpAddress, sessionId, az, session.getZone(), session.getDomain(),
+		// channel,
+		// msg);
+	}
+
+	/**
+	 * Relay to the ROS, retrying if there are retryable errors. The ChannelContextHolder caches the last good
+	 * RosTcpAddress.
+	 * 
+	 * @param session
+	 * @param cch
+	 * @param state
+	 */
 	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, MessageState state) {
 		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getRosTcpAddress(), session.getAccountZone(),
 				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), state);
@@ -732,6 +779,14 @@ public class MOSImpl implements MOS {
 
 	public void setRelayClientService(RelayClientService relayClientService) {
 		this.relayClientService = relayClientService;
+	}
+
+	public TransferClientService getTransferClientService() {
+		return transferClientService;
+	}
+
+	public void setTransferClientService(TransferClientService transferClientService) {
+		this.transferClientService = transferClientService;
 	}
 
 	public DomainService getDomainService() {

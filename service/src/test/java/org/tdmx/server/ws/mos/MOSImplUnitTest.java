@@ -62,7 +62,13 @@ import org.tdmx.core.api.v01.msg.ChannelDestination;
 import org.tdmx.core.api.v01.msg.ChannelDestinationFilter;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.tx.Commit;
+import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Prepare;
+import org.tdmx.core.api.v01.tx.PrepareResponse;
+import org.tdmx.core.api.v01.tx.Rollback;
+import org.tdmx.core.api.v01.tx.RollbackResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
@@ -87,6 +93,7 @@ import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ros.client.RelayClientService;
 import org.tdmx.server.ros.client.RelayStatus;
+import org.tdmx.server.tos.client.TransferClientService;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -118,6 +125,8 @@ public class MOSImplUnitTest {
 
 	@Autowired
 	private RelayClientService mockRelayClientService;
+	@Autowired
+	private TransferClientService mockTransferObjectService;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -188,6 +197,8 @@ public class MOSImplUnitTest {
 		authenticatedClientService.clearAuthenticatedClient();
 
 		dataGenerator.tearDown(input, data);
+
+		Mockito.reset(mockRelayClientService, mockTransferObjectService);
 	}
 
 	@Test
@@ -388,7 +399,7 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
-	public void testSubmitLargeMessageAndUploadChunk_Tx() throws Exception {
+	public void testSubmitLargeMessageAndUploadChunk_TxOnePhaseCommit() throws Exception {
 		// create a 16MB chunk 0 data, 2MB chunk 1 data
 		List<byte[]> chunks = new ArrayList<>();
 		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
@@ -426,10 +437,221 @@ public class MOSImplUnitTest {
 
 		Mockito.verifyZeroInteractions(mockRelayClientService);
 
-		// TODO need to go further with commit and check that it's relayed then.
+		// commit and check that it's relayed then.
+
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setXid(tx.getXid());
+		commitReq.setOnePhase(true);
+
+		// TODO #109: TOS not ROS
+		// Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+		// Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+
+		CommitResponse commitRes = mos.commit(commitReq);
+		assertSuccess(commitRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		// because we have committed the xa transaction, the messages are relayed
+		// TODO #109: TOS not ROS
+		// Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(),
+		// Mockito.any(AccountZone.class),
+		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+		// Mockito.any(MessageState.class));
 	}
 
-	// TODO test 2pc prepare, commit ( happy-path )
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_TxTwoPhaseCommit() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
+		req.setMsg(msg);
+
+		Transaction tx = new Transaction();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertSuccess(uplResponse, false); // final chunk has no continuationId
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// preparing writes to DB and uses quota
+		Prepare prepareReq = new Prepare();
+		prepareReq.setSessionId(UC_SESSION_ID);
+		prepareReq.setXid(tx.getXid());
+
+		PrepareResponse prepareRes = mos.prepare(prepareReq);
+		assertSuccess(prepareRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// commit and check that it's relayed then.
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setXid(tx.getXid());
+
+		// TODO #109: TOS instead of ROS
+		// Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
+		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+		// Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+
+		CommitResponse commitRes = mos.commit(commitReq);
+		assertSuccess(commitRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		// because we have committed the xa transaction, the messages are relayed
+		// TODO #109: TOS instead of ROS
+		// Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(),
+		// Mockito.any(AccountZone.class),
+		// Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
+		// Mockito.any(MessageState.class));
+	}
+
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_TxRollbackBeforePrepare() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
+		req.setMsg(msg);
+
+		Transaction tx = new Transaction();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// We can rollback an unprepared transaction ( in this case we uploaded only 1 of 2 chunks )
+		Rollback rollbackReq = new Rollback();
+		rollbackReq.setSessionId(UC_SESSION_ID);
+		rollbackReq.setXid(tx.getXid());
+
+		RollbackResponse rollbackRes = mos.rollback(rollbackReq);
+		assertSuccess(rollbackRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// so when we upload the 2nd chunk - the rolledback message is not found because the tx is discarded
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertError(ErrorCode.MessageNotFound, uplResponse);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+	}
+
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_TxRollbackAfterPrepare() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
+		req.setMsg(msg);
+
+		Transaction tx = new Transaction();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// so when we upload the 2nd chunk - the rolledback message is not found because the tx is discarded
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertError(ErrorCode.MessageNotFound, uplResponse);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// preparing writes to DB and uses quota
+		Prepare prepareReq = new Prepare();
+		prepareReq.setSessionId(UC_SESSION_ID);
+		prepareReq.setXid(tx.getXid());
+
+		PrepareResponse prepareRes = mos.prepare(prepareReq);
+		assertSuccess(prepareRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// We can rollback an unprepared transaction ( in this case we uploaded only 1 of 2 chunks )
+		Rollback rollbackReq = new Rollback();
+		rollbackReq.setSessionId(UC_SESSION_ID);
+		rollbackReq.setXid(tx.getXid());
+
+		RollbackResponse rollbackRes = mos.rollback(rollbackReq);
+		assertSuccess(rollbackRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// commit after rollback - tx not known
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setXid(tx.getXid());
+
+		CommitResponse commitRes = mos.commit(commitReq);
+		assertError(ErrorCode.XATransactionUnknown, commitRes);
+	}
 
 	// TODO test 2pc prepare, recover (find xa), commit
 

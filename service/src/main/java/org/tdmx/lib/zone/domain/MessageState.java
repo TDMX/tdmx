@@ -105,6 +105,10 @@ public class MessageState implements Serializable {
 	@Column(length = MessageStatus.MAX_MSGSTATUS_LEN, nullable = false)
 	private MessageStatus status;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = ReceiptStatus.MAX_DRSTATUS_LEN)
+	private ReceiptStatus report;
+
 	@Column
 	private String txId;
 
@@ -148,7 +152,7 @@ public class MessageState implements Serializable {
 		if (msg.getChannel() == null) {
 			throw new IllegalStateException("missing channel");
 		}
-		setStatus(MessageStatus.UNDEFINED);
+		setStatus(MessageStatus.NEW);
 		setZone(zone);
 		setMsg(msg);
 

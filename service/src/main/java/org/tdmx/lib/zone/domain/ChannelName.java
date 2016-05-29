@@ -59,13 +59,18 @@ public class ChannelName implements Serializable {
 
 	public String getChannelKey(String domainName) {
 		if (domainName.equals(getOrigin().getDomainName())) {
-			return getOrigin().getLocalName() + "@" + getOrigin().getDomainName() + "->"
-					+ getDestination().getLocalName() + "@" + getDestination().getDomainName() + "#"
-					+ getDestination().getServiceName();
+			return getOriginName() + "->" + getDestinationName();
 		}
+		return getDestinationName() + "<-" + getOriginName();
+	}
+
+	public String getOriginName() {
+		return getOrigin().getLocalName() + "@" + getOrigin().getDomainName();
+	}
+
+	public String getDestinationName() {
 		return getDestination().getLocalName() + "@" + getDestination().getDomainName() + "#"
-				+ getDestination().getServiceName() + "<-" + getOrigin().getLocalName() + "@"
-				+ getOrigin().getDomainName();
+				+ getDestination().getServiceName();
 	}
 
 	@Override
