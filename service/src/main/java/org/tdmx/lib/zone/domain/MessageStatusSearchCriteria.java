@@ -18,81 +18,75 @@
  */
 package org.tdmx.lib.zone.domain;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
- * An TransactionState describes the (persistent) XA transaction status related to a message.
+ * The SearchCriteria for ChannelMessageState.
  * 
  * @author Peter Klauser
  * 
  */
-@Embeddable
-public class TransactionState implements Serializable {
+public class MessageStatusSearchCriteria {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-	public static final int MAX_XA_TXID_LEN = 256;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
 
-	@Column
-	private String txId;
+	private final PageSpecifier pageSpecifier;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column
-	private Date txTimeoutTimestamp; // the time where the XA transaction time's out
+	/**
+	 * Specify the each individual field of of the ChannelOrigin to search for.
+	 */
+	private final ChannelOrigin origin = new ChannelOrigin();
 
-	@Column
-	private int deliveryCount = 0;
+	/**
+	 * Specify the each individual field of of the ChannelDestination to search for.
+	 */
+	private final ChannelDestination destination = new ChannelDestination();
+
+	/**
+	 * The message status.
+	 */
+	private MessageStatus messageStatus;
+
+	/**
+	 * The processing state.
+	 */
+	private ProcessingStatus processingStatus;
+
+	/**
+	 * The XA xid.
+	 */
+	private String xid;
+
+	/**
+	 * To select delivery reports for delivery to a specific origin.
+	 */
+	private Integer originSerialNr;
+
+	/**
+	 * To select messages for delivery to a specific destination.
+	 */
+	private Integer destinationSerialNr;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	private TransactionState() {
-		this(null, null, 0);
-	}
-
-	private TransactionState(String txId, Date txTimeoutTimestamp, int deliveryCount) {
-		this.txId = txId;
-		this.txTimeoutTimestamp = txTimeoutTimestamp;
-	}
-
-	public static TransactionState none() {
-		return new TransactionState(null, null, 0);
-	}
-
-	public static TransactionState none(int deliveryCount) {
-		return new TransactionState(null, null, deliveryCount);
-	}
-
-	public static TransactionState prepared(String txId, Date txTimeoutTimestamp, int deliveryCount) {
-		return new TransactionState(txId, txTimeoutTimestamp, deliveryCount);
+	public MessageStatusSearchCriteria(PageSpecifier pageSpecifier) {
+		this.pageSpecifier = pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DeliveryState [");
-		builder.append(" txId=").append(txId);
-		builder.append(" txTimeoutTimestamp=").append(txTimeoutTimestamp);
-		builder.append(" deliveryCount=").append(deliveryCount);
-		builder.append("]");
-		return builder.toString();
+	public PageSpecifier getPageSpecifier() {
+		return pageSpecifier;
 	}
 
 	// -------------------------------------------------------------------------
@@ -107,16 +101,52 @@ public class TransactionState implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public String getTxId() {
-		return txId;
+	public ChannelOrigin getOrigin() {
+		return origin;
 	}
 
-	public Date getTxTimeoutTimestamp() {
-		return txTimeoutTimestamp;
+	public ChannelDestination getDestination() {
+		return destination;
 	}
 
-	public int getDeliveryCount() {
-		return deliveryCount;
+	public ProcessingStatus getProcessingStatus() {
+		return processingStatus;
+	}
+
+	public void setProcessingStatus(ProcessingStatus processingStatus) {
+		this.processingStatus = processingStatus;
+	}
+
+	public Integer getOriginSerialNr() {
+		return originSerialNr;
+	}
+
+	public void setOriginSerialNr(Integer originSerialNr) {
+		this.originSerialNr = originSerialNr;
+	}
+
+	public Integer getDestinationSerialNr() {
+		return destinationSerialNr;
+	}
+
+	public void setDestinationSerialNr(Integer destinationSerialNr) {
+		this.destinationSerialNr = destinationSerialNr;
+	}
+
+	public MessageStatus getMessageStatus() {
+		return messageStatus;
+	}
+
+	public void setMessageStatus(MessageStatus messageStatus) {
+		this.messageStatus = messageStatus;
+	}
+
+	public String getXid() {
+		return xid;
+	}
+
+	public void setXid(String xid) {
+		this.xid = xid;
 	}
 
 }

@@ -115,9 +115,12 @@
 
 	<bean id="tdmx.lib.zone.dao.ChannelDao"	class="org.tdmx.lib.zone.dao.ChannelDaoImpl">
 	</bean>
+	<bean id="tdmx.lib.zone.dao.MessageDao"	class="org.tdmx.lib.zone.dao.MessageDaoImpl">
+	</bean>
 
 	<bean id="tdmx.lib.zone.ChannelRepository" class="org.tdmx.lib.zone.service.ChannelServiceRepositoryImpl">
 		<property name="channelDao" ref="tdmx.lib.zone.dao.ChannelDao" />
+		<property name="messageDao" ref="tdmx.lib.zone.dao.MessageDao" />
 		<property name="destinationDao" ref="tdmx.lib.zone.dao.DestinationDao" />
 		<property name="serviceDao" ref="tdmx.lib.zone.dao.ServiceDao" />
 		<property name="agentCredentialDao" ref="tdmx.lib.zone.dao.AgentCredentialDao" />

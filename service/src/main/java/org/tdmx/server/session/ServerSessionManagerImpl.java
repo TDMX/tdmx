@@ -132,10 +132,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCe
 	 */
 	private int timeoutCheckIntervalSec = 60;
 	/**
-	 * Sessions created prior to sessionCreationTimeoutHours are considered too old and need renewing.
-	 */
-	private int sessionCreationTimeoutHours = 24;
-	/**
 	 * Sessions not used since sessionIdleTimeoutMinutes are considered orphaned and discarded.
 	 */
 	private int sessionIdleTimeoutMinutes = 30;
@@ -251,9 +247,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCe
 	public void start(Segment segment, List<WebServiceApiName> apis) {
 		if (sessionIdleTimeoutMinutes <= 0) {
 			throw new IllegalArgumentException("sessionIdleTimeoutMinutes must be positive");
-		}
-		if (sessionCreationTimeoutHours <= 0) {
-			throw new IllegalArgumentException("sessionCreationTimeoutHours must be positive");
 		}
 		this.apiList = Collections.unmodifiableList(apis);
 		this.segment = segment;
@@ -454,14 +447,9 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCe
 			idleCutoff.add(Calendar.MINUTE, 0 - sessionIdleTimeoutMinutes);
 			Date idleCutoffDate = idleCutoff.getTime();
 
-			Calendar creationCutoff = Calendar.getInstance();
-			creationCutoff.add(Calendar.HOUR, 0 - sessionCreationTimeoutHours);
-			Date creationCutoffDate = creationCutoff.getTime();
-
-			log.info("Processing idle sessions for " + apis.getKey() + " in segment " + segment + " created before "
-					+ creationCutoffDate + " or not used after " + idleCutoffDate);
-			List<WebServiceSession> sessions = h.getSessionManager().getIdleSessions(idleCutoff.getTime(),
-					creationCutoff.getTime());
+			log.info("Processing idle sessions for " + apis.getKey() + " in segment " + segment + " not used after "
+					+ idleCutoffDate);
+			List<WebServiceSession> sessions = h.getSessionManager().removeIdleSessions(idleCutoff.getTime());
 
 			for (Entry<PartitionControlServer, LocalControlServiceListenerClient> channel : serverProxyMap.entrySet()) {
 				Set<String> sessionIds = new HashSet<>();
@@ -638,14 +626,6 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCe
 
 	public void setTimeoutCheckIntervalSec(int timeoutCheckIntervalSec) {
 		this.timeoutCheckIntervalSec = timeoutCheckIntervalSec;
-	}
-
-	public int getSessionCreationTimeoutHours() {
-		return sessionCreationTimeoutHours;
-	}
-
-	public void setSessionCreationTimeoutHours(int sessionCreationTimeoutHours) {
-		this.sessionCreationTimeoutHours = sessionCreationTimeoutHours;
 	}
 
 	public int getSessionIdleTimeoutMinutes() {

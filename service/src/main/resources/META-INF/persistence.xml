@@ -38,6 +38,7 @@
 		<class>org.tdmx.lib.zone.domain.ChannelAuthorization</class>
 		<class>org.tdmx.lib.zone.domain.FlowQuota</class>
 		<class>org.tdmx.lib.zone.domain.ChannelMessage</class>
+		<class>org.tdmx.lib.zone.domain.MessageState</class>
 	</persistence-unit>
 
 	<persistence-unit name="MessageDB" transaction-type="RESOURCE_LOCAL">

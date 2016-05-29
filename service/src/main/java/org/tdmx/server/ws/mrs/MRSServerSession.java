@@ -99,6 +99,7 @@ public class MRSServerSession extends WebServiceSession {
 		setAttribute(SHORTCUT, Boolean.TRUE);
 	}
 
+	// TODO rename "sameSegmentSession" - to differentiate same domain.
 	public boolean isShortcutSession() {
 		return Boolean.TRUE == getAttribute(SHORTCUT);
 	}

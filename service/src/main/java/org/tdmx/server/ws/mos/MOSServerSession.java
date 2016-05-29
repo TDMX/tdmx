@@ -111,6 +111,15 @@ public class MOSServerSession extends WebServiceSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * MOS sessions may not be idled out if transactions are active. Note: transaction timeout or completion removes the
+	 * transaction from the session.
+	 */
+	@Override
+	public boolean isIdle(java.util.Date lastCutoffDate) {
+		return getTransactionMap().size() == 0 && super.isIdle(lastCutoffDate);
+	}
+
 	@Override
 	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
 		// TODO #93: MOS receives DR from MRS

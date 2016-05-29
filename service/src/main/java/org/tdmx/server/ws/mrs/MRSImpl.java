@@ -264,7 +264,6 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.ChannelOriginUserDomainMismatch, response);
 			return;
 		}
-		m.setOriginSerialNr(srcUc.getSerialNumber());
 
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
@@ -281,13 +280,15 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.ChannelDestinationUserDomainMismatch, response);
 			return;
 		}
-		m.setDestinationSerialNr(dstUc.getSerialNumber());
 
 		Zone zone = session.getZone();
 		Channel channel = session.getChannel();
 
 		m.setChannel(channel);
 
+		m.initMessageState(zone, srcUc.getSerialNumber(), dstUc.getSerialNumber());
+
+		// TODO #109: review
 		SubmitMessageResultHolder result = channelService.preRelayInMessage(zone, m);
 		if (result.status != null) {
 			// provide the flowquota's relaystate back to the caller in the relay response.

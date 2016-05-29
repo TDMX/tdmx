@@ -30,6 +30,8 @@ public class PageSpecifier {
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
 
+	public static final int DEFAULT_PAGE_SIZE = 100;
+
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------

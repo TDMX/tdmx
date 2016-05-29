@@ -45,6 +45,10 @@ public class DeliveryReceipt implements Serializable {
 
 	private AgentSignature receiverSignature;
 
+	private Integer deliveryErrorCode;
+
+	private String deliveryErrorMessage;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -68,6 +72,12 @@ public class DeliveryReceipt implements Serializable {
 		}
 		if (receiverSignature != null && receiverSignature.getSignatureDate() != null) {
 			builder.append(", receivedAt=").append(receiverSignature.getSignatureDate());
+		}
+		if (deliveryErrorCode != null) {
+			builder.append(", deliveryErrorCode=").append(deliveryErrorCode);
+		}
+		if (deliveryErrorMessage != null) {
+			builder.append(", deliveryErrorMessage=").append(deliveryErrorMessage);
 		}
 		builder.append("]");
 		return builder.toString();
@@ -115,6 +125,22 @@ public class DeliveryReceipt implements Serializable {
 
 	public void setReceiverSignature(AgentSignature receiverSignature) {
 		this.receiverSignature = receiverSignature;
+	}
+
+	public Integer getDeliveryErrorCode() {
+		return deliveryErrorCode;
+	}
+
+	public void setDeliveryErrorCode(Integer deliveryErrorCode) {
+		this.deliveryErrorCode = deliveryErrorCode;
+	}
+
+	public String getDeliveryErrorMessage() {
+		return deliveryErrorMessage;
+	}
+
+	public void setDeliveryErrorMessage(String deliveryErrorMessage) {
+		this.deliveryErrorMessage = deliveryErrorMessage;
 	}
 
 }

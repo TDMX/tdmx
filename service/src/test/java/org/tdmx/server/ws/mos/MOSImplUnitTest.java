@@ -72,8 +72,8 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -318,7 +318,7 @@ public class MOSImplUnitTest {
 
 		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
 				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(ChannelMessage.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+				Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
 
 		Submit req = new Submit();
 		req.setSessionId(UC_SESSION_ID);
@@ -370,7 +370,7 @@ public class MOSImplUnitTest {
 
 		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
 				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(ChannelMessage.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
+				Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
 
 		Upload upl = new Upload();
 		upl.setSessionId(UC_SESSION_ID);
@@ -384,7 +384,7 @@ public class MOSImplUnitTest {
 		// because we have no transaction, the receipt of the final chunk initiates relay
 		Mockito.verify(mockRelayClientService).relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
 				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(ChannelMessage.class));
+				Mockito.any(MessageState.class));
 	}
 
 	@Test
@@ -428,6 +428,14 @@ public class MOSImplUnitTest {
 
 		// TODO need to go further with commit and check that it's relayed then.
 	}
+
+	// TODO test 2pc prepare, commit ( happy-path )
+
+	// TODO test 2pc prepare, recover (find xa), commit
+
+	// TODO test 2pc prepare, rollback, no-recover possible
+
+	// TODO test 2pc prepare, recover (find xa), rollback
 
 	private void assertSuccess(ContinuedAcknowledge ack, boolean hasContinuation) {
 		assertNotNull(ack);

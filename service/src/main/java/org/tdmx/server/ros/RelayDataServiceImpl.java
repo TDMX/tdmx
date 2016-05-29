@@ -31,9 +31,10 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
+import org.tdmx.lib.zone.domain.MessageStatus;
+import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DomainService;
@@ -137,15 +138,15 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
-	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long msgId,
+	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
 			ProcessingState newState) {
-		if (az == null || z == null || d == null || channel == null || msgId == null || newState == null) {
+		if (az == null || z == null || d == null || channel == null || stateId == null || newState == null) {
 			log.warn("Missing parameter.");
 			return;
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			channelService.updateStatusMessage(msgId, newState);
+			channelService.updateMessageProcessingState(stateId, newState);
 		} finally {
 			disassociateZoneDB();
 		}
@@ -219,9 +220,13 @@ public class RelayDataServiceImpl implements RelayDataService {
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
-			criteria.setChannel(channel);
-			criteria.setAcknowledged(false);
+			MessageStatusSearchCriteria criteria = new MessageStatusSearchCriteria(new PageSpecifier(0, maxMsg));
+			criteria.getOrigin().setLocalName(channel.getOrigin().getLocalName());
+			criteria.getOrigin().setDomainName(channel.getOrigin().getDomainName());
+			criteria.getDestination().setLocalName(channel.getDestination().getLocalName());
+			criteria.getDestination().setDomainName(channel.getDestination().getDomainName());
+			criteria.getDestination().setServiceName(channel.getDestination().getServiceName());
+			criteria.setMessageStatus(MessageStatus.SUBMITTED);
 			criteria.setProcessingStatus(ProcessingStatus.PENDING);
 			return channelService.search(z, criteria);
 		} finally {
@@ -237,9 +242,13 @@ public class RelayDataServiceImpl implements RelayDataService {
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, maxMsg));
-			criteria.setChannel(channel);
-			criteria.setAcknowledged(true);
+			MessageStatusSearchCriteria criteria = new MessageStatusSearchCriteria(new PageSpecifier(0, maxMsg));
+			criteria.getOrigin().setLocalName(channel.getOrigin().getLocalName());
+			criteria.getOrigin().setDomainName(channel.getOrigin().getDomainName());
+			criteria.getDestination().setLocalName(channel.getDestination().getLocalName());
+			criteria.getDestination().setDomainName(channel.getDestination().getDomainName());
+			criteria.getDestination().setServiceName(channel.getDestination().getServiceName());
+			criteria.setMessageStatus(MessageStatus.DELIVERED);
 			criteria.setProcessingStatus(ProcessingStatus.PENDING);
 			return channelService.search(z, criteria);
 		} finally {

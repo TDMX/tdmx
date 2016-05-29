@@ -36,6 +36,8 @@
 
     drop table MaxValueEntry if exists;
 
+    drop table MessageState if exists;
+
     drop table PartitionControlServer if exists;
 
     drop table Segment if exists;
@@ -170,23 +172,13 @@
 
     create table ChannelMessage (
         id bigint not null,
-        deliveryErrorCode integer,
-        deliveryErrorMessage varchar(2048),
-        deliveryStatus varchar(12) not null,
-        deliveryTimestamp timestamp not null,
-        destinationSerialNr integer not null,
         encryptionContext longvarbinary not null,
         encryptionContextId varchar(256) not null,
         externalReference varchar(256),
         macOfMacs varchar(80) not null,
         msgId varchar(64) not null,
-        originSerialNr integer not null,
         payloadLength bigint not null,
         plaintextLength bigint not null,
-        processingErrorCode integer,
-        processingErrorMessage varchar(2048),
-        processingStatus varchar(12) not null,
-        processingTimestamp timestamp not null,
         receiverSignatureAlgorithm varchar(16),
         receiverPem varchar(12000) not null,
         receiverSignatureDate timestamp,
@@ -197,11 +189,10 @@
         senderSignatureDate timestamp not null,
         senderSignature varchar(1024) not null,
         ttlTimestamp timestamp not null,
-        deliveryCount integer not null,
-        txId varchar(256),
-        txTimeoutTimestamp timestamp,
         channel_id bigint not null,
-        primary key (id)
+        state_id bigint not null,
+        primary key (id),
+        unique (state_id)
     );
 
     create table Chunk (
@@ -326,6 +317,29 @@
         primary key (name)
     );
 
+    create table MessageState (
+        id bigint not null,
+        deliveryCount integer,
+        deliveryErrorCode integer,
+        deliveryErrorMessage varchar(2048),
+        destDomain varchar(255) not null,
+        destAddress varchar(255) not null,
+        destService varchar(255) not null,
+        destinationSerialNr integer not null,
+        originDomain varchar(255) not null,
+        originAddress varchar(255) not null,
+        originSerialNr integer not null,
+        processingErrorCode integer,
+        processingErrorMessage varchar(2048),
+        processingStatus varchar(12) not null,
+        processingTimestamp timestamp not null,
+        redeliverAfter timestamp,
+        status varchar(12) not null,
+        txId varchar(255),
+        zone_id bigint not null,
+        primary key (id)
+    );
+
     create table PartitionControlServer (
         id bigint not null,
         ipAddress varchar(16) not null,
@@ -417,6 +431,11 @@
         references FlowQuota;
 
     alter table ChannelMessage 
+        add constraint FKCC8BCDA4EE953BCD 
+        foreign key (state_id) 
+        references MessageState;
+
+    alter table ChannelMessage 
         add constraint FKCC8BCDA494FB8720 
         foreign key (channel_id) 
         references Channel;
@@ -433,6 +452,11 @@
 
     alter table Domain 
         add constraint FK7A58C0E4981D3FB4 
+        foreign key (zone_id) 
+        references Zone;
+
+    alter table MessageState 
+        add constraint FKBC7A14EA981D3FB4 
         foreign key (zone_id) 
         references Zone;
 

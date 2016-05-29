@@ -64,13 +64,7 @@ public class ChannelDestination implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelDestination [");
-		builder.append(" serviceName=").append(serviceName);
-		builder.append(", localName=").append(localName);
-		builder.append(", domainName=").append(domainName);
-		builder.append("]");
-		return builder.toString();
+		return localName + "@" + domainName + "#" + serviceName;
 	}
 
 	@Override

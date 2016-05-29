@@ -140,7 +140,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 		}
 
 		// relay the MSG
-		if (msg.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+		if (msg.getState().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Both) {
 				// TODO #93: LATER shortcut relay for same domain
 			} else {
@@ -168,10 +168,10 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						if (error != null) {
 							// we have an error relaying the msg or the chunks
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), error);
 						} else {
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
+									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), ProcessingState.none());
 							// rr can indicate flowcontrol "closed" by remote after transfer - so stop sending.
 							FlowControlStatus relayStatus = a2d.mapFlowControlStatus(rr.getRelayStatus());
 							job.setFlowStatus(relayStatus);
@@ -277,7 +277,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 		}
 
 		// relay the MSG
-		if (msg.getProcessingState().getStatus() == ProcessingStatus.PENDING) {
+		if (msg.getState().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Both) {
 				// TODO #93: LATER shortcut relay for same domain
 			} else {
@@ -295,13 +295,13 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						RelayResponse rr = sh.getMrs().relay(relayCA);
 						if (rr.isSuccess()) {
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), ProcessingState.none());
+									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), ProcessingState.none());
 							// there is no "reverse" flowcontrol to stop DR relaying
 						} else {
 							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
 									rr.getError().getDescription());
 							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), error);
 						}
 					} catch (WebServiceException wse) {
 						// runtime error handling

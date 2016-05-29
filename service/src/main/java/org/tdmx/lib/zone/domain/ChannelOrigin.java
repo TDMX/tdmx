@@ -62,12 +62,7 @@ public class ChannelOrigin implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ChannelOrigin [");
-		builder.append(" localName=").append(localName);
-		builder.append(", domainName=").append(domainName);
-		builder.append("]");
-		return builder.toString();
+		return localName + "@" + domainName;
 	}
 
 	@Override

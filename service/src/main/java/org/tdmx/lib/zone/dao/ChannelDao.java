@@ -23,8 +23,6 @@ import java.util.List;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -45,10 +43,6 @@ public interface ChannelDao {
 
 	public Channel merge(Channel value);
 
-	public void persist(ChannelMessage value);
-
-	public void updateChannelMessageProcessingState(Long msgId, ProcessingState ps);
-
 	public void updateChannelDestinationSessionProcessingState(Long channelId, ProcessingState ps);
 
 	public void updateChannelAuthorizationProcessingState(Long channelId, ProcessingState ps);
@@ -57,8 +51,6 @@ public interface ChannelDao {
 
 	public void delete(TemporaryChannel value);
 
-	public void delete(ChannelMessage value);
-
 	public FlowQuota lock(Long quotaId);
 
 	public FlowQuota read(Long quotaId);
@@ -66,15 +58,6 @@ public interface ChannelDao {
 	public Channel loadById(Long id, boolean includeFlowQuota, boolean includeAuth);
 
 	public TemporaryChannel loadByTempId(Long tempChannelId);
-
-	/**
-	 * Fetch the ChannelMessage ( no fetch plan ) by messageId.
-	 * 
-	 * @param zone
-	 * @param messageId
-	 * @return the ChannelMessage or null if not found.
-	 */
-	public ChannelMessage loadChannelMessageByMessageId(Long msgId);
 
 	/**
 	 * Search for Channels. FetchPlan includes ChannelAuthorizations, FlowQuota and Domain.
@@ -102,15 +85,5 @@ public interface ChannelDao {
 	 * @return
 	 */
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria);
-
-	/**
-	 * Search for ChannelFlowMessages. FetchPlan includes Channel, Domain, unless the channel is provided explicitly, in
-	 * which case we only fetch the ChannelMessage.
-	 * 
-	 * @param zone
-	 * @param criteria
-	 * @return
-	 */
-	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 }

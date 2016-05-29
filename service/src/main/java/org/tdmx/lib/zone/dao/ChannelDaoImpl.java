@@ -20,7 +20,6 @@ package org.tdmx.lib.zone.dao;
 
 import static org.tdmx.lib.zone.domain.QChannel.channel;
 import static org.tdmx.lib.zone.domain.QChannelAuthorization.channelAuthorization;
-import static org.tdmx.lib.zone.domain.QChannelMessage.channelMessage;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
 import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
 import static org.tdmx.lib.zone.domain.QTemporaryChannel.temporaryChannel;
@@ -35,8 +34,6 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
-import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowQuota;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -87,16 +84,6 @@ public class ChannelDaoImpl implements ChannelDao {
 	@Override
 	public Channel merge(Channel value) {
 		return em.merge(value);
-	}
-
-	@Override
-	public void persist(ChannelMessage value) {
-		em.persist(value);
-	}
-
-	@Override
-	public void delete(ChannelMessage value) {
-		em.remove(value);
 	}
 
 	@Override
@@ -255,29 +242,6 @@ public class ChannelDaoImpl implements ChannelDao {
 	}
 
 	@Override
-	public ChannelMessage loadChannelMessageByMessageId(Long msgId) {
-		if (msgId == null) {
-			throw new IllegalArgumentException("missing msgId");
-		}
-		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.id.eq(msgId));
-		return query.uniqueResult(channelMessage);
-	}
-
-	@Override
-	public void updateChannelMessageProcessingState(Long msgId, ProcessingState ps) {
-		if (msgId == null) {
-			throw new IllegalArgumentException("missing msgId");
-		}
-		// TODO LATER - HIBERNATE/JPA updating PS as a single item doesn't work - try later.
-		JPAUpdateClause update = new JPAUpdateClause(em, channelMessage).where(channelMessage.id.eq(msgId))
-				.set(channelMessage.processingState.status, ps.getStatus())
-				.set(channelMessage.processingState.timestamp, ps.getTimestamp())
-				.set(channelMessage.processingState.errorCode, ps.getErrorCode())
-				.set(channelMessage.processingState.errorMessage, ps.getErrorMessage());
-		update.execute();
-	}
-
-	@Override
 	public void updateChannelAuthorizationProcessingState(Long channelId, ProcessingState ps) {
 		if (channelId == null) {
 			throw new IllegalArgumentException("missing channelId");
@@ -306,69 +270,6 @@ public class ChannelDaoImpl implements ChannelDao {
 				.set(channel.processingState.errorCode, ps.getErrorCode())
 				.set(channel.processingState.errorMessage, ps.getErrorMessage());
 		update.execute();
-	}
-
-	@Override
-	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria) {
-		if (zone == null) {
-			throw new IllegalArgumentException("missing zone");
-		}
-		JPAQuery query = new JPAQuery(em).from(channelMessage);
-
-		BooleanExpression where = null;
-
-		if (criteria.getChannel() != null) {
-			where = channelMessage.channel.eq(criteria.getChannel());
-		} else {
-			// we are not looking for messages of a specific channel, so we need to fetch the channel and it's domain
-			query = query.innerJoin(channelMessage.channel, channel).fetch().innerJoin(channel.domain, domain).fetch();
-
-			where = domain.zone.eq(zone);
-			if (StringUtils.hasText(criteria.getDomainName())) {
-				where = where.and(domain.domainName.eq(criteria.getDomainName()));
-			}
-			if (criteria.getDomain() != null) {
-				where = where.and(channel.domain.eq(criteria.getDomain()));
-			}
-			if (StringUtils.hasText(criteria.getOrigin().getLocalName())) {
-				where = where.and(channel.origin.localName.eq(criteria.getOrigin().getLocalName()));
-			}
-			if (StringUtils.hasText(criteria.getOrigin().getDomainName())) {
-				where = where.and(channel.origin.domainName.eq(criteria.getOrigin().getDomainName()));
-			}
-			if (StringUtils.hasText(criteria.getDestination().getLocalName())) {
-				where = where.and(channel.destination.localName.eq(criteria.getDestination().getLocalName()));
-			}
-			if (StringUtils.hasText(criteria.getDestination().getDomainName())) {
-				where = where.and(channel.destination.domainName.eq(criteria.getDestination().getDomainName()));
-			}
-			if (StringUtils.hasText(criteria.getDestination().getServiceName())) {
-				where = where.and(channel.destination.serviceName.eq(criteria.getDestination().getServiceName()));
-			}
-		}
-		if (StringUtils.hasText(criteria.getMsgId())) {
-			where = where.and(channelMessage.msgId.eq(criteria.getMsgId()));
-		}
-		if (criteria.getAcknowledged() != null) {
-			if (Boolean.TRUE == criteria.getAcknowledged()) {
-				where = where.and(channelMessage.receipt.signatureDate.isNotNull());
-			} else {
-				where = where.and(channelMessage.receipt.signatureDate.isNull());
-			}
-		}
-		if (criteria.getDestinationSerialNr() != null) {
-			where = where.and(channelMessage.destinationSerialNr.eq(criteria.getDestinationSerialNr()));
-		}
-		if (criteria.getOriginSerialNr() != null) {
-			where = where.and(channelMessage.originSerialNr.eq(criteria.getOriginSerialNr()));
-		}
-		if (criteria.getProcessingStatus() != null) {
-			where = where.and(channelMessage.processingState.status.eq(criteria.getProcessingStatus()));
-		}
-		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
-				(long) criteria.getPageSpecifier().getFirstResult()));
-		return query.list(channelMessage);
 	}
 
 	// -------------------------------------------------------------------------

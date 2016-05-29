@@ -73,6 +73,8 @@ import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelName;
 import org.tdmx.lib.zone.domain.Domain;
+import org.tdmx.lib.zone.domain.MessageState;
+import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -108,9 +110,12 @@ import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
  * all chunks are completely uploaded for each message in the transaction.
  * 
  * With XA transactions, the messages received are written to the DB ( using flow quota ) on prepare with the
- * transaction XID. This is recoverable from the DB with the recover method. A prepared transaction can then be
- * forgotten ( where the DB messages are discarded and quota freed ) or committed ( status changed and relay initiated,
- * without changing quota ).
+ * transaction XID. This is recoverable from the DB with the recover method. A prepared transaction is then forgotten /
+ * removed from the MOS. The quota is used on prepare.
+ * 
+ * After committing ( one phase or two ) the message relay is initiated without changing quota.
+ * 
+ * Rollback of a prepared XA transaction requires freeing the quota and deleting the channel messages.
  * 
  * @author Peter
  *
@@ -161,23 +166,81 @@ public class MOSImpl implements MOS {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	// TODO make sure the session LastUsedTimestamp is put to the end of the transaction timeout timestamp so we don't
-	// idle out sessions which the transaction can still be completed later.
-
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
 	public PrepareResponse prepare(Prepare parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PrepareResponse response = new PrepareResponse();
+		if (parameters.getDr() != null) {
+			ErrorCode.setError(ErrorCode.XATransactionInvalidDR, response);
+			return response;
+		}
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		SenderTransactionContext stc = session.getTransaction(parameters.getXid());
+		if (stc == null) {
+			ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+			return response;
+		}
+		List<ChannelMessage> sentMessages = new ArrayList<>();
+		try {
+			for (Channel ch : stc.getChannels()) {
+				List<ChannelMessage> msgs = stc.getChannelMessages(ch);
+
+				channelService.twoPhasePrepareSend(session.getZone(), ch, msgs, stc.getTxSpec().getXid());
+				// messages changed by the sending to be ready for relay.
+				sentMessages.addAll(msgs);
+			}
+		} finally {
+			discardTx(stc, session);
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
 	public CommitResponse commit(Commit parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		CommitResponse response = new CommitResponse();
+		if (parameters.getDr() != null) {
+			ErrorCode.setError(ErrorCode.XATransactionInvalidDR, response);
+			return response;
+		}
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		SenderTransactionContext stc = session.getTransaction(parameters.getXid());
+		if (stc != null) {
+			if (parameters.isOnePhase()) {
+				List<MessageState> states = onePhaseCommitTx(stc, session);
+				relayMessages(session, states);
+			} else {
+				// 2pc we should not have found the stc.
+				ErrorCode.setError(ErrorCode.XATransactionNotPrepared, response);
+				return response;
+			}
+		} else {
+			List<MessageState> states = channelService.twoPhaseCommitSend(session.getZone(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+			relayMessages(session, states);
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -274,7 +337,6 @@ public class MOSImpl implements MOS {
 			ErrorCode.setError(ErrorCode.InvalidMessageSource, response);
 			return response;
 		}
-		m.setOriginSerialNr(srcUc.getSerialNumber());
 
 		AgentCredentialDescriptor dstUc = credentialFactory.createAgentCredential(header.getTo().getUsercertificate(),
 				header.getTo().getDomaincertificate(), header.getTo().getRootcertificate());
@@ -282,7 +344,6 @@ public class MOSImpl implements MOS {
 			ErrorCode.setError(ErrorCode.InvalidUserCredentials, response);
 			return response;
 		}
-		m.setDestinationSerialNr(dstUc.getSerialNumber());
 
 		// create originating ChannelMessage
 		Zone zone = session.getZone();
@@ -325,6 +386,9 @@ public class MOSImpl implements MOS {
 		Channel cachedChannel = cch.getChannel();
 		m.setChannel(cachedChannel);
 
+		// create the message state and link with the message.
+		m.initMessageState(zone, srcUc.getSerialNumber(), dstUc.getSerialNumber());
+
 		// adds the tx to the session immediately.
 		SenderTransactionContext stc = startOrContinueTx(session, tx, response);
 		if (stc == null) {
@@ -346,7 +410,7 @@ public class MOSImpl implements MOS {
 		String continuationId = stc.getContinuationId(c.getPos() + 1, m);
 		if (continuationId == null && isNonTransactionSpecification(stc.getTxSpec())) {
 			// last chunk - auto-commit if we have no tx.
-			List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
+			List<MessageState> msgs = onePhaseCommitTx(stc, session);
 			relayMessages(session, msgs);
 		} else {
 			// add message to tx to commit and relay later.
@@ -406,8 +470,8 @@ public class MOSImpl implements MOS {
 		if (nextContinuationId == null) {
 			// this was the last chunk
 			if (isNonTransactionSpecification(stc.getTxSpec())) {
-				List<ChannelMessage> msgs = onePhaseCommitTx(stc, session);
-				relayMessages(session, msgs);
+				List<MessageState> states = onePhaseCommitTx(stc, session);
+				relayMessages(session, states);
 			}
 		}
 		response.setContinuation(nextContinuationId);
@@ -481,13 +545,13 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public ReceiptResponse receipt(Receipt parameters) {
-		// TODO Auto-generated method stub
+		// TODO separate MOS dr receipt into MAS - message acknowledge service
 		return null;
 	}
 
 	@Override
 	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
-		// TODO Auto-generated method stub
+		// TODO separate MOS dr receipt into MAS - message acknowledge service
 		return null;
 	}
 
@@ -514,28 +578,37 @@ public class MOSImpl implements MOS {
 		}
 	}
 
-	private void relayMessages(MOSServerSession session, List<ChannelMessage> msgs) {
-		for (ChannelMessage msg : msgs) {
-			final ChannelName cn = msg.getChannel().getChannelName();
+	private void relayMessages(MOSServerSession session, List<MessageState> states) {
+		for (MessageState state : states) {
+			final ChannelName cn = state.getChannelName();
 			final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
 
 			ChannelContextHolder cch = session.getChannel(channelKey);
 
-			// give the message to the ROS to relay.
-			relayWithRetry(session, cch, msg);
+			if (MessageStatus.SUBMITTED == state.getStatus()) {
+				// give the message to the ROS to relay.
+				relayWithRetry(session, cch, state);
+
+			} else if (MessageStatus.READY == state.getStatus()) {
+				// same domain send and receive
+				// TODO #96: transfer object to MAS Message Acknowledge Service
+			} else {
+				log.warn("Unexpected message state for relay. " + state);
+			}
 		}
 	}
 
-	private List<ChannelMessage> onePhaseCommitTx(SenderTransactionContext stc, MOSServerSession session) {
-		List<ChannelMessage> sentMessages = new ArrayList<>();
+	private List<MessageState> onePhaseCommitTx(SenderTransactionContext stc, MOSServerSession session) {
+		List<MessageState> sentMessages = new ArrayList<>();
 		try {
-			stc.setPrepared(true);
 			for (Channel ch : stc.getChannels()) {
 				List<ChannelMessage> msgs = stc.getChannelMessages(ch);
 
 				channelService.onePhaseCommitSend(session.getZone(), ch, msgs);
 				// messages changed by the sending to be ready for relay.
-				sentMessages.addAll(msgs);
+				for (ChannelMessage msg : msgs) {
+					sentMessages.add(msg.getState());
+				}
 			}
 		} finally {
 			discardTx(stc, session);
@@ -561,11 +634,6 @@ public class MOSImpl implements MOS {
 			// TODO #112: raise client incident
 			discardTx(stc, session);
 			stc = null;
-		}
-		if (stc != null && stc.isPrepared()) {
-			ErrorCode.setError(ErrorCode.XATransactionPreparedImmutable, ack, tx.getXid());
-			// TODO #112: raise client incident
-			return null;
 		}
 		if (stc != null && stc.getTimeoutFuture().isDone()) {
 			// can only happen with a race condition
@@ -599,18 +667,18 @@ public class MOSImpl implements MOS {
 		stc.setTimeoutFuture(timeoutFuture);
 	}
 
-	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, ChannelMessage msg) {
+	private void relayWithRetry(MOSServerSession session, ChannelContextHolder cch, MessageState state) {
 		final RelayStatus rs = relayClientService.relayChannelMessage(cch.getRosTcpAddress(), session.getAccountZone(),
-				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), msg);
+				session.getZone(), cch.getChannel().getDomain(), cch.getChannel(), state);
 		if (!rs.isSuccess()) {
 			if (rs.getErrorCode().isRetryable()) {
 				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new ROS session */,
 						session.getAccountZone(), session.getZone(), cch.getChannel().getDomain(), cch.getChannel(),
-						msg);
+						state);
 				if (!retry.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 							rs.getErrorCode().getErrorMessage());
-					channelService.updateStatusMessage(msg.getId(), error);
+					channelService.updateMessageProcessingState(state.getId(), error);
 				} else {
 					// cache the potentially changed ROS address
 					cch.setRosTcpAddress(retry.getRosTcpAddress());
@@ -618,7 +686,7 @@ public class MOSImpl implements MOS {
 			} else {
 				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 						rs.getErrorCode().getErrorMessage());
-				channelService.updateStatusMessage(msg.getId(), error);
+				channelService.updateMessageProcessingState(state.getId(), error);
 			}
 
 		} else {

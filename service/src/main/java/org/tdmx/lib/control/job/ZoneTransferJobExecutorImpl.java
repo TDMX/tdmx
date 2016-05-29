@@ -175,8 +175,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 					more = false;
 				}
 			}
-			
-			
+
 			more = true;
 			while (more) {
 				ChannelMessageSearchCriteria casc = new ChannelMessageSearchCriteria(
@@ -189,7 +188,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 					more = false;
 				}
 			}
-			
+
 			more = true;
 			while (more) {
 				DestinationSearchCriteria casc = new DestinationSearchCriteria(new PageSpecifier(0, getBatchSize()));
@@ -333,7 +332,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 				// channel, channel authorizations and messages
 				transferChannelAuthorizations(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
-				
+
 				transferTemporaryChannels(oldZone, oldDomain, oldPartitionId, newZone, newDomain, newPartitionId);
 			}
 			if (domains.isEmpty()) {
@@ -573,8 +572,9 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				} finally {
 					zonePartitionIdProvider.clearPartitionId();
 				}
-				
-				transferChannelMessages(oldZone, oldDomain, oldChannel, oldPartitionId, newZone, newDomain, newChannel, newPartitionId);
+
+				transferChannelMessages(oldZone, oldDomain, oldChannel, oldPartitionId, newZone, newDomain, newChannel,
+						newPartitionId);
 			}
 			if (channels.isEmpty()) {
 				more = false;
@@ -582,15 +582,15 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		}
 	}
 
-	private void transferChannelMessages(Zone oldZone, Domain oldDomain, Channel oldChannel, String oldPartitionId, Zone newZone,
-			Domain newDomain, Channel newChannel, String newPartitionId) {
+	private void transferChannelMessages(Zone oldZone, Domain oldDomain, Channel oldChannel, String oldPartitionId,
+			Zone newZone, Domain newDomain, Channel newChannel, String newPartitionId) {
 		boolean more = true;
 		for (int pageNo = 0; more; pageNo++) {
 			ChannelMessageSearchCriteria sc = new ChannelMessageSearchCriteria(
 					new PageSpecifier(pageNo, getBatchSize()));
 			sc.setDomain(oldDomain);
 			sc.setChannel(oldChannel);
-			
+
 			List<ChannelMessage> channels = null;
 			zonePartitionIdProvider.setPartitionId(oldPartitionId);
 			try {
@@ -599,7 +599,7 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			for (ChannelMessage oldMessage : channels) {
-				ChannelMessage newMessage = new ChannelMessage(newChannel, oldMessage);
+				ChannelMessage newMessage = new ChannelMessage(newZone, newChannel, oldMessage);
 
 				zonePartitionIdProvider.setPartitionId(newPartitionId);
 				try {
@@ -609,14 +609,14 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				} finally {
 					zonePartitionIdProvider.clearPartitionId();
 				}
-				
+
 			}
 			if (channels.isEmpty()) {
 				more = false;
 			}
 		}
 	}
-	
+
 	private void transferTemporaryChannels(Zone oldZone, Domain oldDomain, String oldPartitionId, Zone newZone,
 			Domain newDomain, String newPartitionId) {
 		boolean more = true;
@@ -633,7 +633,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 				zonePartitionIdProvider.clearPartitionId();
 			}
 			for (TemporaryChannel oldChannel : channels) {
-				TemporaryChannel newChannel = new TemporaryChannel(newDomain, oldChannel.getOrigin(), oldChannel.getDestination());
+				TemporaryChannel newChannel = new TemporaryChannel(newDomain, oldChannel.getOrigin(),
+						oldChannel.getDestination());
 
 				zonePartitionIdProvider.setPartitionId(newPartitionId);
 				try {

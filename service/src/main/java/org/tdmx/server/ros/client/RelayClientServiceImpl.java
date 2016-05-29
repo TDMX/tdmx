@@ -33,9 +33,9 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -170,11 +170,11 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 
 	@Override
 	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
-			Channel channel, ChannelMessage msg) {
+			Channel channel, MessageState state) {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 
 		if (rosTcpAddress == null) {
-			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, msg);
+			rosTcpAddress = getRelayAddress(channelKey, az, zone, domain, channel, null, null, state);
 		}
 		if (rosTcpAddress == null) {
 			return RelayStatus.failure(channelKey, ErrorCode.PCS_FAILURE);
@@ -183,7 +183,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (rosClient == null) {
 			return RelayStatus.failure(channelKey, ErrorCode.ROS_CONNECTION_REFUSED);
 		}
-		return rosClient.relayChannelMessage(rosTcpAddress, az, zone, domain, channel, msg);
+		return rosClient.relayChannelMessage(rosTcpAddress, az, zone, domain, channel, state);
 	}
 
 	@Override
@@ -313,7 +313,7 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 	}
 
 	private String getRelayAddress(String channelKey, AccountZone az, Zone zone, Domain domain, Channel channel,
-			ChannelAuthorization ca, FlowQuota flow, ChannelMessage msg) {
+			ChannelAuthorization ca, FlowQuota flow, MessageState state) {
 
 		Map<AttributeId, Long> attributes = new HashMap<>();
 
@@ -327,8 +327,8 @@ public class RelayClientServiceImpl implements RelayClientService, Manageable {
 		if (flow != null) {
 			attributes.put(AttributeId.FlowQuotaId, flow.getId());
 		}
-		if (msg != null) {
-			attributes.put(AttributeId.MessageId, msg.getId());
+		if (state != null) {
+			attributes.put(AttributeId.MessageId, state.getId());
 		}
 
 		return relayControlService.assignRelayServer(channelKey, segment.getSegmentName(), attributes);

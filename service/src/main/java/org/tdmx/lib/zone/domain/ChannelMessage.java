@@ -24,6 +24,7 @@ import java.util.Date;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -35,6 +36,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
@@ -43,8 +45,6 @@ import javax.persistence.TemporalType;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
-import org.tdmx.lib.common.domain.ProcessingState;
-import org.tdmx.lib.common.domain.ProcessingStatus;
 
 /**
  * An ChannelMessage is a message in a Flow. The ChannelMessage "includes" the DeliveryReceipt data @see
@@ -52,10 +52,7 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
  * 
  * ChannelMessages are created at by the {@link MOS#submit(org.tdmx.core.api.v01.mos.Submit)} when the Channel's
  * FlowControl permits sending on the originating side, and when relayed in with
- * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)} at the destination side .
- * 
- * The origin and destination UserCertificate's serial numbers are denormalized here to allow more efficient selecting
- * messages or delivery receipts for specific users at either end.
+ * {@link MRS#relay(org.tdmx.core.api.v01.mrs.Relay)} at the destination side.
  * 
  * @author Peter Klauser
  * 
@@ -157,35 +154,11 @@ public class ChannelMessage implements Serializable {
 	// CONTROL FIELDS
 	// -------------------------------------------------------------------------
 
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "status", column = @Column(name = "deliveryStatus", length = DeliveryStatus.MAX_DELIVERYSTATUS_LEN, nullable = false) ),
-			@AttributeOverride(name = "timestamp", column = @Column(name = "deliveryTimestamp", nullable = false) ),
-			@AttributeOverride(name = "errorCode", column = @Column(name = "deliveryErrorCode") ),
-			@AttributeOverride(name = "errorMessage", column = @Column(name = "deliveryErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
-	private DeliveryState deliveryState = DeliveryState.ready();
-
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "txId", column = @Column(name = "txId", length = TransactionState.MAX_XA_TXID_LEN, nullable = true) ),
-			@AttributeOverride(name = "txTimeoutTimestamp", column = @Column(name = "txTimeoutTimestamp", nullable = true) ),
-			@AttributeOverride(name = "deliveryCount", column = @Column(name = "deliveryCount", nullable = false) ) })
-	private TransactionState txState = TransactionState.none();
-
-	// TODO #97: rename to "relayState"
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "status", column = @Column(name = "processingStatus", length = ProcessingStatus.MAX_PROCESSINGSTATUS_LEN, nullable = false) ),
-			@AttributeOverride(name = "timestamp", column = @Column(name = "processingTimestamp", nullable = false) ),
-			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode", nullable = true) ),
-			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
-	private ProcessingState processingState = ProcessingState.none();
-
-	@Column(nullable = false)
-	private int originSerialNr = -1;
-
-	@Column(nullable = false)
-	private int destinationSerialNr = -1;
+	/**
+	 * The ChannelMessageState associated with this ChannelMessage.
+	 */
+	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private MessageState state;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -194,7 +167,14 @@ public class ChannelMessage implements Serializable {
 	public ChannelMessage() {
 	}
 
-	public ChannelMessage(Channel channel, ChannelMessage other) {
+	/**
+	 * Clone the message, but not the ChannelMessageState
+	 * 
+	 * @param zone
+	 * @param channel
+	 * @param other
+	 */
+	public ChannelMessage(Zone zone, Channel channel, ChannelMessage other) {
 		this.channel = channel;
 		// header fields
 		this.msgId = other.getMsgId();
@@ -209,16 +189,17 @@ public class ChannelMessage implements Serializable {
 		this.encryptionContext = other.getEncryptionContext();
 		this.plaintextLength = other.getPlaintextLength();
 		this.macOfMacs = other.getMacOfMacs();
-		// control fields
-		this.processingState = other.getProcessingState();
-		this.originSerialNr = other.getOriginSerialNr();
-		this.destinationSerialNr = other.getDestinationSerialNr();
-		this.deliveryState = other.getDeliveryState();
-		this.txState = other.getTxState();
+		// control
+		this.state = new MessageState(zone, this, other.getState());
 	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public void initMessageState(Zone zone, int oSerialNr, int dSerialNr) {
+		MessageState cms = new MessageState(zone, this, oSerialNr, dSerialNr);
+		this.state = cms;
+	}
 
 	public Channel getChannel() {
 		return channel;
@@ -243,9 +224,6 @@ public class ChannelMessage implements Serializable {
 		if (receipt != null) {
 			builder.append(" receivedAt=").append(receipt.getSignatureDate());
 		}
-		builder.append(" deliveryState=").append(deliveryState);
-		builder.append(" txState=").append(txState);
-		builder.append(" processingState=").append(processingState);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -260,7 +238,8 @@ public class ChannelMessage implements Serializable {
 		dr.setMsgId(msgId);
 		dr.setReceiverSignature(receipt);
 		dr.setSenderSignature(signature);
-		// TODO #97: error
+		dr.setDeliveryErrorCode(state.getDeliveryErrorCode());
+		dr.setDeliveryErrorMessage(state.getDeliveryErrorMessage());
 		dr.setExternalReference(externalReference);
 		return dr;
 	}
@@ -382,48 +361,12 @@ public class ChannelMessage implements Serializable {
 		this.macOfMacs = macOfMacs;
 	}
 
-	public DeliveryState getDeliveryState() {
-		return deliveryState;
+	public MessageState getState() {
+		return state;
 	}
 
-	public void setDeliveryState(DeliveryState deliveryState) {
-		this.deliveryState = deliveryState;
-	}
-
-	public TransactionState getTxState() {
-		if (txState == null) {
-			// needed because we don't have a mandatory field - and it's nulled by hibernate
-			txState = TransactionState.none();
-		}
-		return txState;
-	}
-
-	public void setTxState(TransactionState txState) {
-		this.txState = txState;
-	}
-
-	public ProcessingState getProcessingState() {
-		return processingState;
-	}
-
-	public void setProcessingState(ProcessingState processingState) {
-		this.processingState = processingState;
-	}
-
-	public int getOriginSerialNr() {
-		return originSerialNr;
-	}
-
-	public void setOriginSerialNr(int originSerialNr) {
-		this.originSerialNr = originSerialNr;
-	}
-
-	public int getDestinationSerialNr() {
-		return destinationSerialNr;
-	}
-
-	public void setDestinationSerialNr(int destinationSerialNr) {
-		this.destinationSerialNr = destinationSerialNr;
+	public void setState(MessageState state) {
+		this.state = state;
 	}
 
 }

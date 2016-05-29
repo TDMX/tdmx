@@ -66,10 +66,12 @@ import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
-import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
+import org.tdmx.lib.zone.domain.MessageStatus;
+import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
@@ -294,9 +296,12 @@ public class MDSImpl implements MDS {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 				}
-				if (ProcessingStatus.PENDING == ackStatus.msg.getProcessingState().getStatus()) {
+				if (ackStatus.msg.getState().isSameDomain()) {
+					// TODO #109: transfer DR back to origin
+
+				} else {
 					// relay DR back to origin
-					relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg());
+					relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg().getState());
 				}
 			} else {
 				log.debug("No current message and no DR for " + tx.getXid());
@@ -310,11 +315,11 @@ public class MDSImpl implements MDS {
 		boolean mustFetch = rcv.isFetchRequired();
 		if (mustFetch) {
 			// fetch next batch of messages
-			ChannelMessageSearchCriteria criteria = new ChannelMessageSearchCriteria(new PageSpecifier(0, batchSize));
-			criteria.getDestination().setDomainName(session.getDomain().getDomainName());
+			MessageStatusSearchCriteria criteria = new MessageStatusSearchCriteria(new PageSpecifier(0, batchSize));
 			criteria.getDestination().setLocalName(session.getDestinationAddress().getLocalName());
+			criteria.getDestination().setDomainName(session.getDomain().getDomainName());
 			criteria.getDestination().setServiceName(session.getService().getServiceName());
-			criteria.setAcknowledged(false);
+			criteria.setMessageStatus(MessageStatus.READY);
 			criteria.setProcessingStatus(ProcessingStatus.NONE);
 			List<ChannelMessage> pendingMsgs = channelService.search(session.getZone(), criteria);
 			rcv.addPendingMessages(pendingMsgs, pendingMsgs.size() == batchSize);
@@ -434,9 +439,12 @@ public class MDSImpl implements MDS {
 				// relay opened FC back to origin
 				relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 			}
-			if (ProcessingStatus.PENDING == ackStatus.msg.getProcessingState().getStatus()) {
+			if (ackStatus.msg.getState().isSameDomain()) {
+				// transfer DR back to origin
+				// TODO #109: transfer DR back to origin
+			} else {
 				// relay DR back to origin
-				relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg());
+				relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg().getState());
 			}
 		} else {
 			log.debug("No current message and no DR for " + ackRequest.getXid());
@@ -676,18 +684,18 @@ public class MDSImpl implements MDS {
 		}
 	}
 
-	private void relayMsgWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel, ChannelMessage msg) {
+	private void relayMsgWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel, MessageState state) {
 		// relay to the last known good ros for the channel.
 		RelayStatus rs = relayClientService.relayChannelMessage(rc.getRosTcpAddress(channel), session.getAccountZone(),
-				session.getZone(), session.getDomain(), channel, msg);
+				session.getZone(), session.getDomain(), channel, state);
 		if (!rs.isSuccess()) {
 			if (rs.getErrorCode().isRetryable()) {
 				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new MRS session */,
-						session.getAccountZone(), session.getZone(), session.getDomain(), channel, msg);
+						session.getAccountZone(), session.getZone(), session.getDomain(), channel, state);
 				if (!retry.isSuccess()) {
 					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 							rs.getErrorCode().getErrorMessage());
-					channelService.updateStatusMessage(msg.getId(), error);
+					channelService.updateMessageProcessingState(state.getId(), error);
 					// remove any cached ros address since not working
 					rc.clearRosTcpAddress(channel);
 				} else {
@@ -697,7 +705,7 @@ public class MDSImpl implements MDS {
 			} else {
 				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 						rs.getErrorCode().getErrorMessage());
-				channelService.updateStatusMessage(msg.getId(), error);
+				channelService.updateMessageProcessingState(state.getId(), error);
 				// remove any cached ros address since not working
 				rc.clearRosTcpAddress(channel);
 			}

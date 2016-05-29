@@ -62,14 +62,13 @@ public interface WebServiceSessionManager {
 	public void disconnectController(String controllerId);
 
 	/**
-	 * Return a list of sessions which have not been used after the lastCutoffDate or who's creation date is prior to
-	 * the creationCutoffDate.
+	 * Return a list of sessions which have not been used after the lastCutoffDate.
 	 * 
 	 * @param lastCutoffDate
 	 * @param creationCutoffDate
 	 * @return
 	 */
-	public List<WebServiceSession> getIdleSessions(Date lastCutoffDate, Date creationCutoffDate);
+	public List<WebServiceSession> removeIdleSessions(Date lastCutoffDate);
 
 	/**
 	 * Add a new client certificate to an existing session.

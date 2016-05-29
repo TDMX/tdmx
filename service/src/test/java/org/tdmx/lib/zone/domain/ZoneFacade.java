@@ -220,14 +220,14 @@ public class ZoneFacade {
 		return cal.getTime();
 	}
 
-	public static ChannelMessage createChannelMessage(String msgId, Channel channel, ProcessingState ps) {
+	public static ChannelMessage createChannelMessage(String msgId, Zone zone, Channel channel, ProcessingState ps) {
 		ChannelMessage cm = new ChannelMessage();
 		cm.setMsgId(msgId);
 		cm.setChannel(channel);
-		cm.setTxState(TransactionState.none());
-		cm.setProcessingState(ps);
-		cm.setOriginSerialNr(1);
-		cm.setDestinationSerialNr(1);
+
+		cm.initMessageState(zone, 1, 1);
+
+		cm.getState().setProcessingState(ps);
 
 		// not null properties
 		AgentSignature sig = new AgentSignature();

@@ -64,8 +64,6 @@ public class SenderTransactionContext {
 
 	private final Map<String, ChannelMessage> messages = new HashMap<>(); // map[msgId->ChannelMessage]
 
-	private boolean prepared = false; // TODO #109: xa use this
-
 	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
 
 	// TODO #109: for each message we need to know if we've received all chunks and which chunk is the current chunk (
@@ -206,13 +204,5 @@ public class SenderTransactionContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public boolean isPrepared() {
-		return prepared;
-	}
-
-	public void setPrepared(boolean prepared) {
-		this.prepared = prepared;
-	}
 
 }

@@ -77,7 +77,7 @@ public interface RelayDataService {
 	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
 			FlowControlStatus relayStatus);
 
-	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long msgId,
+	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
 			ProcessingState newState);
 
 	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,

@@ -37,6 +37,9 @@ import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
+import org.tdmx.lib.zone.domain.MessageStatus;
+import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -217,6 +220,15 @@ public interface ChannelService {
 	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria);
 
 	/**
+	 * Search for Messages with a state criteria - FetchPlan gets the ChannelMessage.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<ChannelMessage> search(Zone zone, MessageStatusSearchCriteria criteria);
+
+	/**
 	 * Fetch the ChannelMessage which has the messageId provided. No fetch plan.
 	 * 
 	 * @param zone
@@ -316,13 +328,34 @@ public interface ChannelService {
 			long totalRequiredQuota);
 
 	/**
-	 * Commit messages immediately skipping the prepared step.
+	 * Commit messages immediately skipping the prepared step. Reduces the flow quota.
 	 * 
 	 * @param zone
 	 * @param channel
 	 * @param messages
 	 */
 	public void onePhaseCommitSend(Zone zone, Channel channel, List<ChannelMessage> messages);
+
+	/**
+	 * Prepare messages for sending. Reduces the flow quota. ChannelMessages are persisted with the xid for eventual
+	 * later recovery.
+	 * 
+	 * @param zone
+	 * @param channel
+	 * @param messages
+	 *            not yet persisted ChannelMessages.
+	 * @param xid
+	 */
+	public void twoPhasePrepareSend(Zone zone, Channel channel, List<ChannelMessage> messages, String xid);
+
+	/**
+	 * Commit messages for sending. Flow quota already reduced by prepare. Clears the xid from the already persisted
+	 * messages.
+	 * 
+	 * @param zone
+	 * @param xid
+	 */
+	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid);
 
 	/**
 	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
@@ -389,12 +422,20 @@ public interface ChannelService {
 	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState);
 
 	/**
-	 * Update the ProcessingState of a ChannelMessage ( which is it's relay status, delivery status and delivery report
-	 * status ).
+	 * Update the ProcessingState of a MessageState.
 	 * 
-	 * @param msgId
+	 * @param stateId
 	 * @param newState
 	 */
-	public void updateStatusMessage(Long msgId, ProcessingState newState);
+	public void updateMessageProcessingState(Long stateId, ProcessingState newState);
 
+	/**
+	 * Update the ProcessingState of a MessageState.
+	 * 
+	 * @param stateId
+	 * @param status
+	 * @param xid
+	 * @param newState
+	 */
+	public void updateMessageProcessingState(Long stateId, MessageStatus status, String xid, ProcessingState newState);
 }

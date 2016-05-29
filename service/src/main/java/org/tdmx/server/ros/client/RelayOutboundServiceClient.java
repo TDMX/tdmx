@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -113,12 +113,12 @@ public class RelayOutboundServiceClient implements RelayClientService {
 
 	@Override
 	public RelayStatus relayChannelMessage(String rosTcpAddress, AccountZone az, Zone zone, Domain domain,
-			Channel channel, ChannelMessage msg) {
+			Channel channel, MessageState state) {
 		String channelKey = channel.getChannelName().getChannelKey(domain.getDomainName());
 		if (!rpcClient.isClosed()) {
 
 			RelayRequest request = createRelayRequest(channelKey, ObjectType.Message, AttributeId.MessageId,
-					msg.getId());
+					state.getId());
 			return relay(request, rosTcpAddress);
 		}
 		return RelayStatus.failure(channelKey, ErrorCode.ROS_RPC_CHANNEL_CLOSED);

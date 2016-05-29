@@ -19,6 +19,7 @@
 
 package org.tdmx.lib.zone.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.dao.AgentCredentialDao;
 import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.DestinationDao;
+import org.tdmx.lib.zone.dao.MessageDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
@@ -48,6 +50,9 @@ import org.tdmx.lib.zone.domain.EndpointPermission;
 import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
+import org.tdmx.lib.zone.domain.MessageStatus;
+import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
@@ -71,6 +76,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	private static final Logger log = LoggerFactory.getLogger(ChannelServiceRepositoryImpl.class);
 
 	private ChannelDao channelDao;
+	private MessageDao messageDao;
 	private DestinationDao destinationDao;
 	private ServiceDao serviceDao;
 	private AgentCredentialDao agentCredentialDao;
@@ -334,16 +340,16 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		if (message.getId() != null) {
 			log.warn("Unable to persist ChannelMessage with id " + message.getId());
 		} else {
-			channelDao.persist(message);
+			messageDao.persist(message);
 		}
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(ChannelMessage message) {
-		ChannelMessage storedMessage = channelDao.loadChannelMessageByMessageId(message.getId());
+		ChannelMessage storedMessage = messageDao.loadById(message.getId());
 		if (storedMessage != null) {
-			channelDao.delete(storedMessage);
+			messageDao.delete(storedMessage);
 		} else {
 			log.warn("Unable to find ChannelMessage to delete with id " + message.getId());
 		}
@@ -358,7 +364,18 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<ChannelMessage> search(Zone zone, ChannelMessageSearchCriteria criteria) {
-		return channelDao.search(zone, criteria);
+		return messageDao.search(zone, criteria);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<ChannelMessage> search(Zone zone, MessageStatusSearchCriteria criteria) {
+		List<MessageState> states = messageDao.search(zone, criteria, true);
+		List<ChannelMessage> msgs = new ArrayList<>(states.size());
+		for (MessageState state : states) {
+			msgs.add(state.getMsg());
+		}
+		return msgs;
 	}
 
 	@Override
@@ -396,8 +413,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// persist each message in a state that they can be immediately relayed afterwards.
 		long totalPayloadSize = 0;
 		for (ChannelMessage msg : messages) {
+			msg.getState().setStatus(MessageStatus.SUBMITTED);
 			// relay initiated immediately
-			msg.setProcessingState(ProcessingState.pending());
+			msg.getState().setProcessingState(ProcessingState.pending());
 
 			// persist the message
 			create(msg);
@@ -407,7 +425,77 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		// reduce the available quota for all the messages sent in the tx together.
 		FlowQuota quota = channelDao.lock(channel.getQuota().getId());
 		quota.incrementBufferOnSend(totalPayloadSize);
-		// TODO #109 message state NEW
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void twoPhasePrepareSend(Zone zone, Channel channel, List<ChannelMessage> messages, String xid) {
+		// persist each message in a state that they can be immediately relayed afterwards.
+		long totalPayloadSize = 0;
+		for (ChannelMessage msg : messages) {
+			// prepared and waiting for commit before relaying
+			msg.getState().setStatus(MessageStatus.PREPARED);
+			msg.getState().setProcessingState(ProcessingState.none());
+			msg.getState().setTxId(xid);
+
+			// persist the message
+			create(msg);
+
+			totalPayloadSize += msg.getPayloadLength();
+		}
+		// reduce the available quota for all the messages sent in the tx together.
+		FlowQuota quota = channelDao.lock(channel.getQuota().getId());
+		quota.incrementBufferOnSend(totalPayloadSize);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid) {
+		List<MessageState> result = new ArrayList<>();
+
+		boolean more = true;
+		for (int pageNo = 0; more; pageNo++) {
+			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
+					new PageSpecifier(pageNo, PageSpecifier.DEFAULT_PAGE_SIZE));
+			List<MessageState> states = messageDao.search(zone, sc, false);
+
+			for (MessageState state : states) {
+				if (state.isSameDomain()) {
+					// same domain can be "received" immediately without relaying
+					state.setStatus(MessageStatus.READY);
+					state.setProcessingState(ProcessingState.none());
+
+				} else {
+					state.setStatus(MessageStatus.SUBMITTED);
+					state.setProcessingState(ProcessingState.pending());
+				}
+				result.add(state);
+			}
+			if (states.isEmpty()) {
+				more = false;
+			}
+		}
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void updateMessageProcessingState(Long stateId, ProcessingState newState) {
+		MessageState cms = messageDao.loadStateById(stateId);
+
+		// update the processing state.
+		cms.setProcessingState(newState);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public void updateMessageProcessingState(Long stateId, MessageStatus status, String xid, ProcessingState newState) {
+		MessageState cms = messageDao.loadStateById(stateId);
+
+		// update the processing state.
+		cms.setStatus(status);
+		cms.setTxId(xid);
+		cms.setProcessingState(newState);
 	}
 
 	@Override
@@ -437,6 +525,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
 	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
 		// get and lock quota, reduce unsent buffer on origin side
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
@@ -445,16 +534,15 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
 	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt) {
 		// lock quota, reduce undelivered buffer, set status if crossing low limit
-		ChannelMessage existingMsg = channelDao.loadChannelMessageByMessageId(msg.getId());
+		ChannelMessage existingMsg = messageDao.loadById(msg.getId());
 		if (existingMsg != null) {
 			existingMsg.setReceipt(receipt);
 
-			// if it's same domain we don't need to relay back the DR
-			if (!msg.getChannel().isSameDomain()) {
-				existingMsg.setProcessingState(ProcessingState.pending());
-			}
+			existingMsg.getState().setStatus(MessageStatus.DELIVERED);
+			existingMsg.getState().setProcessingState(ProcessingState.pending());
 		}
 
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
@@ -563,7 +651,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public ChannelMessage findByMessageId(Long msgId) {
-		return channelDao.loadChannelMessageByMessageId(msgId);
+		return messageDao.loadById(msgId);
 	}
 
 	@Override
@@ -584,12 +672,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		FlowQuota fc = channelDao.lock(quotaId);
 		fc.setProcessingState(newState);
 		return fc;
-	}
-
-	@Override
-	@Transactional(value = "ZoneDB")
-	public void updateStatusMessage(Long msgId, ProcessingState newState) {
-		channelDao.updateChannelMessageProcessingState(msgId, newState);
 	}
 
 	// -------------------------------------------------------------------------
@@ -622,6 +704,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	public void setChannelDao(ChannelDao channelDao) {
 		this.channelDao = channelDao;
+	}
+
+	public MessageDao getMessageDao() {
+		return messageDao;
+	}
+
+	public void setMessageDao(MessageDao messageDao) {
+		this.messageDao = messageDao;
 	}
 
 	public DestinationDao getDestinationDao() {

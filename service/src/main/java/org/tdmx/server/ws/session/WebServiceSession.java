@@ -78,6 +78,17 @@ public abstract class WebServiceSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Whether the session has NOT been used since the lastCutoffDate, and can be discarded because no resources are
+	 * currently held by the session.
+	 * 
+	 * @param lastCutoffDate
+	 * @return true if the session has NOT been used since the lastCutoffDate.
+	 */
+	public boolean isIdle(Date lastCutoffDate) {
+		return lastCutoffDate.after(getLastUsedTimestamp());
+	}
+
 	public void addAuthorizedCertificate(PKIXCertificate authorizedCert) {
 		attributeMap.put(authorizedCert.getFingerprint(), new ServerSessionCertificateHolder(authorizedCert));
 	}

@@ -18,15 +18,16 @@
  */
 package org.tdmx.lib.zone.domain;
 
-public enum DeliveryStatus {
+public enum MessageStatus {
 
+	UNDEFINED,
 	PREPARED,
 	SUBMITTED,
 	TRANSFERRED,
 	READY,
 	EXCEPTION,
-	UNDELIVERED,
+	NOTIFIED,
 	DELIVERED;
 
-	public static final int MAX_DELIVERYSTATUS_LEN = 12;
+	public static final int MAX_MSGSTATUS_LEN = 12;
 }
