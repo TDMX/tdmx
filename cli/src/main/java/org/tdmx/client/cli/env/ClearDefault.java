@@ -36,6 +36,9 @@ public class ClearDefault implements CommandExecutable {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	@Option(name = "verbose", description = "clears the output verbosity.")
+	private Boolean verbose;
+
 	@Option(name = "zacPassword", description = "the zone administrator's keystore password.")
 	private Boolean zacPassword;
 
@@ -58,6 +61,10 @@ public class ClearDefault implements CommandExecutable {
 
 	@Override
 	public void run(CliPrinter out) {
+		if (verbose != null) {
+			ClientCliLoggingUtils.setVerbose(false);
+			out.println("verbose - option " + (ClientCliLoggingUtils.isVerbose() ? "set" : "not set"));
+		}
 		if (zacPassword != null) {
 			out.println("Clearing default for zacPassword.");
 			StaticDefaultParameterProvider.clearDefaultValue("zacPassword");

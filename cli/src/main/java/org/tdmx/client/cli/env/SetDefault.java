@@ -64,7 +64,7 @@ public class SetDefault implements CommandExecutable {
 	@Override
 	public void run(CliPrinter out) {
 		if (verbose != null) {
-			ClientCliLoggingUtils.setVerbose(verbose);
+			ClientCliLoggingUtils.setVerbose(true);
 			out.println("verbose - option " + (ClientCliLoggingUtils.isVerbose() ? "set" : "not set"));
 		}
 		if (StringUtils.hasText(zacPassword)) {
