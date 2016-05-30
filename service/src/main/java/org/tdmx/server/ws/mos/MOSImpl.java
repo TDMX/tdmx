@@ -276,8 +276,30 @@ public class MOSImpl implements MOS {
 
 	@Override
 	public ForgetResponse forget(Forget parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		ForgetResponse response = new ForgetResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		SenderTransactionContext stc = session.getTransactionContext(parameters.getXid());
+		if (stc != null) {
+			// can't forget a tx which is not yet prepared.
+			ErrorCode.setError(ErrorCode.XATransactionNotPrepared, response);
+			return response;
+		} else {
+			// forget is equivalent to rollback since we don't do heuristic commiting or rolling back ourselves.
+			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override

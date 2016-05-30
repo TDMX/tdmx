@@ -64,6 +64,8 @@ import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
+import org.tdmx.core.api.v01.tx.Forget;
+import org.tdmx.core.api.v01.tx.ForgetResponse;
 import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
@@ -657,15 +659,115 @@ public class MOSImplUnitTest {
 		CommitResponse commitRes = mos.commit(commitReq);
 		assertError(ErrorCode.XATransactionUnknown, commitRes);
 
+		Forget forgetReq = new Forget();
+		forgetReq.setSessionId(UC_SESSION_ID);
+		forgetReq.setXid(tx.getXid());
+
+		ForgetResponse forgetRes = mos.forget(forgetReq);
+		assertError(ErrorCode.XATransactionUnknown, forgetRes);
+
+		// recover doesn't find anything because the tx is not yet prepared.
+		Recover recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		RecoverResponse recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertTrue(recoverRes.getXids().isEmpty());
+
 		Mockito.verifyZeroInteractions(mockRelayClientService);
 		Mockito.verifyZeroInteractions(mockTransferObjectService);
 	}
 
-	// TODO test 2pc prepare, recover (find xa), commit
+	@Test
+	public void testSubmitLargeMessageAndUploadChunk_TxPrepareForget() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
 
-	// TODO test 2pc prepare, rollback, no-recover possible
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
 
-	// TODO test 2pc prepare, recover (find xa), rollback
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit();
+		req.setSessionId(UC_SESSION_ID);
+		req.setMsg(msg);
+
+		Transaction tx = new Transaction();
+		tx.setXid("txId:" + System.currentTimeMillis());
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+
+		// so when we upload the 2nd chunk - the rolledback message is not found because the tx is discarded
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation());
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertSuccess(uplResponse);
+
+		// preparing writes to DB and uses quota
+		Prepare prepareReq = new Prepare();
+		prepareReq.setSessionId(UC_SESSION_ID);
+		prepareReq.setXid(tx.getXid());
+
+		PrepareResponse prepareRes = mos.prepare(prepareReq);
+		assertSuccess(prepareRes);
+
+		// recover finds the prepared tx.
+		Recover recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		RecoverResponse recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertFalse(recoverRes.getXids().isEmpty());
+		assertTrue(recoverRes.getXids().contains(tx.getXid()));
+		;
+
+		// we forget the transaction, so afterwards we can neither prepare nor commit
+		Forget forgetReq = new Forget();
+		forgetReq.setSessionId(UC_SESSION_ID);
+		forgetReq.setXid(tx.getXid());
+
+		ForgetResponse forgetRes = mos.forget(forgetReq);
+		assertSuccess(forgetRes);
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+
+		// We can rollback an unprepared transaction ( in this case we uploaded only 1 of 2 chunks )
+		Rollback rollbackReq = new Rollback();
+		rollbackReq.setSessionId(UC_SESSION_ID);
+		rollbackReq.setXid(tx.getXid());
+
+		RollbackResponse rollbackRes = mos.rollback(rollbackReq);
+		assertError(ErrorCode.XATransactionUnknown, rollbackRes);
+
+		// commit after rollback - tx not known
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setXid(tx.getXid());
+
+		CommitResponse commitRes = mos.commit(commitReq);
+		assertError(ErrorCode.XATransactionUnknown, commitRes);
+
+		// recover doesn't find anything because the tx is forgotten
+		recoverReq = new Recover();
+		recoverReq.setSessionId(UC_SESSION_ID);
+		recoverRes = mos.recover(recoverReq);
+		assertSuccess(recoverRes);
+		assertTrue(recoverRes.getXids().isEmpty());
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+	}
 
 	private void assertSuccess(ContinuedAcknowledge ack, boolean hasContinuation) {
 		assertNotNull(ack);
