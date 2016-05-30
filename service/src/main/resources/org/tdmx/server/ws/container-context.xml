@@ -47,9 +47,6 @@
 	            <ref bean="ws.MRS.ServerSessionManager"/>
 	        </list>
         </property>
-        
-        
-		<property name="sessionCreationTimeoutHours" value="${ws.sessionCreationTimeoutHours}"/>
 		<property name="sessionIdleTimeoutMinutes" value="${ws.sessionIdleTimeoutMinutes}"/>
 		<property name="timeoutCheckIntervalSec" value="${ws.sessionTimeoutCheckIntervalSec}"/>
 	</bean>
