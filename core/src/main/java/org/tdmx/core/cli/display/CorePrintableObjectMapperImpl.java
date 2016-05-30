@@ -298,11 +298,11 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 	}
 
 	public String toString(org.tdmx.core.api.v01.msg.Service service) {
-		return "Service [" + service.getDomain() + "#" + service.getServicename() + "]";
+		return service.getDomain() + "#" + service.getServicename();
 	}
 
 	public String toString(org.tdmx.core.api.v01.msg.Address address) {
-		return "Address [" + address.getLocalname() + "@" + address.getDomain() + "]";
+		return address.getLocalname() + "@" + address.getDomain();
 	}
 
 	public String toString(org.tdmx.core.api.v01.msg.Channel channel) {

@@ -94,7 +94,7 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		if (rep instanceof PrintableObject) {
 			outputRepresentation(object, (PrintableObject) rep, indentation);
 		} else {
-			out.print(object);
+			out.print(rep);
 		}
 	}
 
@@ -161,6 +161,12 @@ public class ObjectPrettyPrinter implements CliPrinter {
 		return buf;
 	}
 
+	/**
+	 * Return the object or a mapped representation of the object for printing.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	private Object getRepresentation(Object object) {
 		if (object == null) {
 			return null;
