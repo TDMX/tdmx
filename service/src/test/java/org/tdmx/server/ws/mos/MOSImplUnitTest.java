@@ -238,7 +238,7 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
-	public void testGetChannel() {
+	public void testGetChannel_All() {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		GetChannel req = new GetChannel();
@@ -253,12 +253,26 @@ public class MOSImplUnitTest {
 		GetChannelResponse response = mos.getChannel(req);
 		assertSuccess(response);
 		assertNotNull(response.getChannelinfo());
-
-		// TODO others
 	}
 
 	@Test
-	public void testListChannel_All() {
+	public void testGetChannel_MissingService() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		GetChannel req = new GetChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		ChannelDestination cd = new ChannelDestination();
+		cd.setDomain(domain.getDomainName());
+		cd.setLocalname(address.getLocalName());
+		req.setDestination(cd);
+
+		GetChannelResponse response = mos.getChannel(req);
+		assertError(ErrorCode.MissingChannelDestinationService, response);
+	}
+
+	@Test
+	public void testListChannel_None() {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
 
 		ListChannel req = new ListChannel();
@@ -268,8 +282,6 @@ public class MOSImplUnitTest {
 		p.setNumber(0);
 		p.setSize(10);
 		req.setPage(p);
-
-		// TODO test without svc name fails
 
 		ListChannelResponse response = mos.listChannel(req);
 		assertSuccess(response);
