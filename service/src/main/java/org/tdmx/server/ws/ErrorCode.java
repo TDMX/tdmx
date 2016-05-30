@@ -93,6 +93,7 @@ public enum ErrorCode {
 	InvalidPayloadLength(500, "Payload length invalid."),
 	InvalidPlaintextLength(500, "Payload plaintext length invalid."),
 	InvalidChunkContinuationId(500, "Chunk continuationId invalid."),
+	InvalidChunkOrder(500, "Chunks should be received in order - repeating only the last sent."),
 	InvalidReceiveTransaction(500, "Invalid receive transaction."),
 	InvalidReceiveNonTransaction(500, "Invalid receive non transaction."),
 

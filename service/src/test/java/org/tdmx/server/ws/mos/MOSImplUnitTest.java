@@ -356,6 +356,42 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
+	public void testSubmitSmallMessageNoChunk_NoTx() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit(); // local tx
+		req.setSessionId(UC_SESSION_ID);
+
+		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		local.setClientId("Client-" + System.currentTimeMillis());
+		local.setTxtimeout(60);
+		req.setLocaltransaction(local);
+
+		req.setMsg(msg);
+
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, false);
+
+		// because we have no transaction and no expected chunks, the submit initiates relay
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class));
+
+	}
+
+	@Test
 	public void testSubmitLargeMessageAndUploadChunk_NoTx() throws Exception {
 		// create a 16MB chunk 0 data, 2MB chunk 1 data
 		List<byte[]> chunks = new ArrayList<>();
@@ -406,6 +442,49 @@ public class MOSImplUnitTest {
 	}
 
 	@Test
+	public void testSubmitLargeMessageAndUploadChunk_ChunkContinuationIdWrong() throws Exception {
+		// create a 16MB chunk 0 data, 2MB chunk 1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Submit req = new Submit(); // local tx
+		req.setSessionId(UC_SESSION_ID);
+
+		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		local.setClientId("Client-" + System.currentTimeMillis());
+		local.setTxtimeout(60);
+		req.setLocaltransaction(local);
+
+		req.setMsg(msg);
+
+		SubmitResponse response = mos.submit(req);
+		assertSuccess(response, true);
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1)); // 2MB
+
+		Upload upl = new Upload();
+		upl.setSessionId(UC_SESSION_ID);
+
+		upl.setContinuation(response.getContinuation() + "-ERROR");
+		upl.setChunk(chunk);
+
+		UploadResponse uplResponse = mos.upload(upl);
+		assertError(ErrorCode.InvalidChunkContinuationId, uplResponse);
+
+		// because we have no transaction, the receipt of the final chunk initiates relay
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+	}
+
+	@Test
 	public void testSubmitLargeMessageAndUploadChunk_TxOnePhaseCommit() throws Exception {
 		// create a 16MB chunk 0 data, 2MB chunk 1 data
 		List<byte[]> chunks = new ArrayList<>();
@@ -440,6 +519,12 @@ public class MOSImplUnitTest {
 		upl.setChunk(chunk);
 
 		UploadResponse uplResponse = mos.upload(upl);
+		assertSuccess(uplResponse, false); // final chunk has no continuationId
+
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+
+		// we can re-upload the same chunk again....
+		uplResponse = mos.upload(upl);
 		assertSuccess(uplResponse, false); // final chunk has no continuationId
 
 		Mockito.verifyZeroInteractions(mockRelayClientService);
@@ -729,7 +814,6 @@ public class MOSImplUnitTest {
 		assertSuccess(recoverRes);
 		assertFalse(recoverRes.getXids().isEmpty());
 		assertTrue(recoverRes.getXids().contains(tx.getXid()));
-		;
 
 		// we forget the transaction, so afterwards we can neither prepare nor commit
 		Forget forgetReq = new Forget();

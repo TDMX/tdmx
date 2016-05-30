@@ -96,6 +96,7 @@ import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.mos.MOSServerSession.ChannelContextHolder;
 import org.tdmx.server.ws.mos.MOSServerSession.DestinationContextHolder;
+import org.tdmx.server.ws.mos.SenderTransactionContext.MessageContextHolder;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
@@ -461,6 +462,9 @@ public class MOSImpl implements MOS {
 		if (stc == null) {
 			return response;
 		}
+		// add the message to the tx
+		MessageContextHolder mch = new MessageContextHolder(m);
+		stc.addMessage(mch);
 
 		long totalChannelQuota = m.getPayloadLength() + stc.getTotalPayloadSizeForChannel(cachedChannel);
 		SubmitMessageOperationStatus quotaCheck = channelService.checkChannelQuota(zone, cachedChannel,
@@ -474,15 +478,13 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// give the caller the continuationId for the next chunk
-		String continuationId = stc.getContinuationId(c.getPos() + 1, m);
+		String continuationId = mch.getContinuationId(c.getPos() + 1);
 		if (continuationId == null && isNonTransactionSpecification(stc.getTxSpec())) {
 			// last chunk - auto-commit if we have no tx.
 			List<MessageState> msgs = onePhaseCommitTx(stc, session);
 			relayOrTransferMessages(session, msgs);
-		} else {
-			// add message to tx to commit and relay later.
-			stc.addMessage(m);
 		}
+
 		response.setContinuation(continuationId);
 		response.setSuccess(true);
 		return response;
@@ -512,12 +514,18 @@ public class MOSImpl implements MOS {
 			ErrorCode.setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
-		ChannelMessage m = stc.getMessage(parameters.getChunk().getMsgId());
+		MessageContextHolder cmh = stc.getMessage(parameters.getChunk().getMsgId());
 		// calculate the continuationId for the chunk and check that it matches the continuationId
-		if (!continuationId.equals(stc.getContinuationId(c.getPos(), m))) {
+		if (!continuationId.equals(cmh.getContinuationId(c.getPos()))) {
 			ErrorCode.setError(ErrorCode.InvalidChunkContinuationId, response);
 			return response;
 		}
+		if (c.getPos() < cmh.getLastChunkReceived() || c.getPos() > cmh.getLastChunkReceived() + 1) {
+			ErrorCode.setError(ErrorCode.InvalidChunkOrder, response);
+			return response;
+		}
+
+		ChannelMessage m = cmh.getMsg();
 		ChannelName cn = m.getChannel().getChannelName();
 		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
 		ChannelContextHolder cch = session.getChannelContext(channelKey);
@@ -533,7 +541,7 @@ public class MOSImpl implements MOS {
 		chunkService.createOrUpdate(c);
 
 		// calculate the next continuationId
-		String nextContinuationId = stc.getContinuationId(c.getPos() + 1, m);
+		String nextContinuationId = cmh.getContinuationId(c.getPos() + 1);
 		if (nextContinuationId == null) {
 			// this was the last chunk
 			if (isNonTransactionSpecification(stc.getTxSpec())) {
@@ -541,6 +549,8 @@ public class MOSImpl implements MOS {
 				relayOrTransferMessages(session, states);
 			}
 		}
+		// record the last successful uploaded so we allow only it again or the next.
+		cmh.setLastChunkReceived(c.getPos());
 		response.setContinuation(nextContinuationId);
 
 		response.setSuccess(true);

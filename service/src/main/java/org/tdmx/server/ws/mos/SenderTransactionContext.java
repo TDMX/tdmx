@@ -56,13 +56,11 @@ public class SenderTransactionContext {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final int LEN_ENTROPY = 32;
 	private static final int LEN_CONTINUATION_ID = 8;
 
 	private final Transaction txSpec;
-	private final byte[] entropy;
 
-	private final Map<String, ChannelMessage> messages = new HashMap<>(); // map[msgId->ChannelMessage]
+	private final Map<String, MessageContextHolder> messages = new HashMap<>(); // map[msgId->MessageContextHolder]
 
 	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
 
@@ -82,7 +80,58 @@ public class SenderTransactionContext {
 	// -------------------------------------------------------------------------
 	public SenderTransactionContext(Transaction txSpec) {
 		this.txSpec = txSpec;
-		this.entropy = EntropySource.getRandomBytes(LEN_ENTROPY);
+	}
+
+	/**
+	 * A MessageContextHolder holds a message being sent in the context of a transaction.
+	 * 
+	 * @author Peter
+	 * 
+	 */
+	public static class MessageContextHolder {
+		private static final int LEN_ENTROPY = 8;
+		private final byte[] entropy;
+
+		private final ChannelMessage msg;
+
+		private int lastChunkReceived = 0;
+
+		public MessageContextHolder(ChannelMessage msg) {
+			this.msg = msg;
+			this.entropy = EntropySource.getRandomBytes(LEN_ENTROPY);
+		}
+
+		public String getMsgId() {
+			return msg.getMsgId();
+		}
+
+		public int getLastChunkReceived() {
+			return lastChunkReceived;
+		}
+
+		public void setLastChunkReceived(int lastChunkReceived) {
+			this.lastChunkReceived = lastChunkReceived;
+		}
+
+		public ChannelMessage getMsg() {
+			return msg;
+		}
+
+		/**
+		 * Create the continuationId for the chunkPos. The continuationId is a truncated Hash of the msgId, chunkPos and
+		 * the "secret" entropy which the client doesn't know so cannot create the continuationId themselves. This
+		 * forces the client to have to receive the continuationId from the server before sending the next chunk.
+		 * 
+		 * @param chunkPos
+		 * @return null if no chunk at the requested pos
+		 */
+		public String getContinuationId(int chunkPos) {
+			// if the chunk requested starts after the end of the payload then the previous chunk is the last
+			if ((msg.getScheme().getChunkSize() * chunkPos) > msg.getPayloadLength()) {
+				return null;
+			}
+			return SignatureUtils.createContinuationId(chunkPos, entropy, msg.getMsgId(), LEN_CONTINUATION_ID);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -104,7 +153,10 @@ public class SenderTransactionContext {
 	 */
 	public List<ChannelMessage> getMessages() {
 		List<ChannelMessage> result = new ArrayList<>();
-		result.addAll(messages.values());
+		for (Entry<String, MessageContextHolder> entry : messages.entrySet()) {
+			// always check against persisted instances
+			result.add(entry.getValue().getMsg());
+		}
 		return result;
 	}
 
@@ -116,10 +168,10 @@ public class SenderTransactionContext {
 	 */
 	public long getTotalPayloadSizeForChannel(Channel channel) {
 		int totalQuota = 0;
-		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+		for (Entry<String, MessageContextHolder> entry : messages.entrySet()) {
 			// always check against persisted instances
-			if (entry.getValue().getChannel().getId().equals(channel.getId())) {
-				totalQuota += entry.getValue().getPayloadLength();
+			if (entry.getValue().getMsg().getChannel().getId().equals(channel.getId())) {
+				totalQuota += entry.getValue().getMsg().getPayloadLength();
 			}
 		}
 		return totalQuota;
@@ -133,10 +185,10 @@ public class SenderTransactionContext {
 	 */
 	public List<ChannelMessage> getChannelMessages(Channel channel) {
 		List<ChannelMessage> channelMsgs = new ArrayList<>();
-		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+		for (Entry<String, MessageContextHolder> entry : messages.entrySet()) {
 			// always check against persisted instances
-			if (entry.getValue().getChannel().getId().equals(channel.getId())) {
-				channelMsgs.add(entry.getValue());
+			if (entry.getValue().getMsg().getChannel().getId().equals(channel.getId())) {
+				channelMsgs.add(entry.getValue().getMsg());
 			}
 		}
 		return channelMsgs;
@@ -150,12 +202,12 @@ public class SenderTransactionContext {
 	public List<Channel> getChannels() {
 		List<Channel> result = new ArrayList<>();
 		Set<Long> uniqueChannelIds = new HashSet<>();
-		for (Entry<String, ChannelMessage> entry : messages.entrySet()) {
+		for (Entry<String, MessageContextHolder> entry : messages.entrySet()) {
 			// always check against persisted instances
-			Long channelId = entry.getValue().getChannel().getId();
+			Long channelId = entry.getValue().getMsg().getChannel().getId();
 			if (!uniqueChannelIds.contains(channelId)) {
 				uniqueChannelIds.add(channelId);
-				result.add(entry.getValue().getChannel());
+				result.add(entry.getValue().getMsg().getChannel());
 			}
 		}
 		return result;
@@ -167,7 +219,7 @@ public class SenderTransactionContext {
 	 * 
 	 * @param msg
 	 */
-	public void addMessage(ChannelMessage msg) {
+	public void addMessage(MessageContextHolder msg) {
 		messages.put(msg.getMsgId(), msg);
 	}
 
@@ -177,24 +229,8 @@ public class SenderTransactionContext {
 	 * @param msgId
 	 * @return
 	 */
-	public ChannelMessage getMessage(String msgId) {
+	public MessageContextHolder getMessage(String msgId) {
 		return messages.get(msgId);
-	}
-
-	/**
-	 * Create the continuationId for the chunkPos. The continuationId is a truncated Hash of the msgId, chunkPos and the
-	 * "secret" entropy which the client doesn't know so cannot create the continuationId themselves. This forces the
-	 * client to have to receive the continuationId from the server before sending the next chunk.
-	 * 
-	 * @param chunkPos
-	 * @return null if no chunk at the requested pos
-	 */
-	public String getContinuationId(int chunkPos, ChannelMessage msg) {
-		// if the chunk requested starts after the end of the payload then the previous chunk is the last
-		if ((msg.getScheme().getChunkSize() * chunkPos) > msg.getPayloadLength()) {
-			return null;
-		}
-		return SignatureUtils.createContinuationId(chunkPos, entropy, msg.getMsgId(), LEN_CONTINUATION_ID);
 	}
 
 	// -------------------------------------------------------------------------
