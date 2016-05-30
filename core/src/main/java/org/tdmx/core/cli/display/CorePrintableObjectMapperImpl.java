@@ -25,6 +25,7 @@ import java.util.Calendar;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.TrustStoreEntry;
+import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.EnumUtils;
 
@@ -61,13 +62,16 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		} else if (object instanceof org.tdmx.core.api.v01.common.Error) {
 			return toLog((org.tdmx.core.api.v01.common.Error) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.User) {
-			return toLog((org.tdmx.core.api.v01.msg.User) object);
+			org.tdmx.core.api.v01.msg.User u = (org.tdmx.core.api.v01.msg.User) object;
+			return verbose ? toVerbose(u) : toLog(u);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.UserIdentity) {
 			return toLog((org.tdmx.core.api.v01.msg.UserIdentity) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.Administrator) {
-			return toLog((org.tdmx.core.api.v01.msg.Administrator) object);
+			org.tdmx.core.api.v01.msg.Administrator admin = (org.tdmx.core.api.v01.msg.Administrator) object;
+			return verbose ? toVerbose(admin) : toLog(admin);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.AdministratorIdentity) {
-			return toLog((org.tdmx.core.api.v01.msg.AdministratorIdentity) object);
+			org.tdmx.core.api.v01.msg.AdministratorIdentity ai = (org.tdmx.core.api.v01.msg.AdministratorIdentity) object;
+			return verbose ? toVerbose(ai) : toLog(ai);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.Channelinfo) {
 			return toLog((org.tdmx.core.api.v01.msg.Channelinfo) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.Channelauthorization) {
@@ -137,9 +141,24 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		PrintableObject result = new PrintableObject("ChannelAuthorization");
 		result.add("domain", ca.getDomain());
 		result.add("channel", ca.getChannel());
-		result.add("current", ca.getCurrent() != null ? ca.getCurrent() : "none");
-		result.add("requested", ca.getUnconfirmed() != null ? ca.getUnconfirmed() : "none");
+		if (ca.getCurrent() != null) {
+			result.add("send-permission", ca.getCurrent().getOriginPermission());
+		}
+		if (ca.getUnconfirmed() != null) {
+			result.add("requested-send", ca.getUnconfirmed().getOriginPermission());
+		}
+		if (ca.getCurrent() != null) {
+			result.add("recv-permission", ca.getCurrent().getDestinationPermission());
+		}
+		if (ca.getUnconfirmed() != null) {
+			result.add("requested-recv", ca.getUnconfirmed().getDestinationPermission());
+		}
+		if (ca.getCurrent() != null) {
+			result.add("limit", ca.getCurrent().getLimit());
+			result.add("signature", ca.getCurrent().getAdministratorsignature());
+		}
 		result.add("status", ca.getPs());
+
 		return result;
 	}
 
@@ -168,7 +187,13 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 				.add("timestamp", ps.getTimestamp());
 	}
 
-	public PrintableObject toLog(org.tdmx.core.api.v01.msg.Administrator admin) {
+	public String toLog(org.tdmx.core.api.v01.msg.Administrator admin) {
+		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(admin.getAdministratorIdentity().getDomaincertificate());
+
+		return pk.getCommonName() + " (" + admin.getStatus() + ")";
+	}
+
+	public PrintableObject toVerbose(org.tdmx.core.api.v01.msg.Administrator admin) {
 		PrintableObject result = new PrintableObject("Administrator");
 
 		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(admin.getAdministratorIdentity().getDomaincertificate());
@@ -179,7 +204,13 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		return result;
 	}
 
-	public PrintableObject toLog(org.tdmx.core.api.v01.msg.AdministratorIdentity admin) {
+	public String toLog(org.tdmx.core.api.v01.msg.AdministratorIdentity admin) {
+		PKIXCertificate dc = CertificateIOUtils.safeDecodeX509(admin.getDomaincertificate());
+
+		return dc.getCommonName() + " (" + dc.getFingerprint() + ")";
+	}
+
+	public PrintableObject toVerbose(org.tdmx.core.api.v01.msg.AdministratorIdentity admin) {
 		PrintableObject result = new PrintableObject("AdministratorIdentity");
 
 		PKIXCertificate dc = CertificateIOUtils.safeDecodeX509(admin.getDomaincertificate());
@@ -201,7 +232,13 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		return result;
 	}
 
-	public PrintableObject toLog(org.tdmx.core.api.v01.msg.User u) {
+	public String toLog(org.tdmx.core.api.v01.msg.User u) {
+		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(u.getUserIdentity().getUsercertificate());
+
+		return pk.getCommonName() + " (" + u.getStatus() + ")";
+	}
+
+	public PrintableObject toVerbose(org.tdmx.core.api.v01.msg.User u) {
 		PrintableObject result = new PrintableObject("User");
 
 		PKIXCertificate pk = CertificateIOUtils.safeDecodeX509(u.getUserIdentity().getUsercertificate());
@@ -231,10 +268,10 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 	}
 
 	public PrintableObject toLog(org.tdmx.core.api.v01.msg.Permission p) {
-		PrintableObject result = new PrintableObject(EnumUtils.mapToString(p.getPermission()));
-
+		PrintableObject result = new PrintableObject("Permission");
+		result.add("grant", EnumUtils.mapToString(p.getPermission()));
 		result.add("maxPlaintextSizeBytes", p.getMaxPlaintextSizeBytes());
-		result.add("signature", p.getAdministratorsignature());
+		result.addVerbose("signature", p.getAdministratorsignature());
 		return result;
 	}
 
@@ -265,9 +302,12 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 	}
 
 	public static PrintableObject toLog(org.tdmx.core.api.v01.msg.Destinationsession ds) {
-		return new PrintableObject("DestinationSession").add("contextId", ds.getEncryptionContextId())
-				.add("scheme", ds.getScheme()).add("sessionKey", ds.getSessionKey())
-				.add("usersignature", ds.getUsersignature());
+		PrintableObject result = new PrintableObject("DestinationSession");
+		result.add("contextId", ds.getEncryptionContextId());
+		result.add("scheme", ds.getScheme());
+		result.add("sessionKey", ByteArray.asHex(ds.getSessionKey()));
+		result.addVerbose("usersignature", ds.getUsersignature());
+		return result;
 	}
 
 	public PrintableObject toLog(PKIXCertificate pk) {
@@ -275,6 +315,11 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		if (pk.isTdmxZoneAdminCertificate()) {
 			result = new PrintableObject("ZoneAdministrator");
 			result.add("zone", pk.getTdmxZoneInfo().getZoneRoot());
+			result.add("email", pk.getEmailAddress());
+			result.add("name", pk.getCommonName());
+			result.add("tel", pk.getTelephoneNumber());
+			result.add("location", pk.getLocation());
+			result.add("country", pk.getCountry());
 		} else if (pk.isTdmxDomainAdminCertificate()) {
 			result = new PrintableObject("DomainAdministrator");
 			result.add("domain", pk.getTdmxDomainName());
