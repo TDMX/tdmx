@@ -19,13 +19,12 @@
 package org.tdmx.server.ws.mrs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
@@ -43,7 +42,8 @@ public class MRSServerSession extends WebServiceSession {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 	protected static final String SHORTCUT = "SHORTCUT";
-	protected static final String MESSAGE_MAP = "MESSAGE_MAP";
+	private static final String DESTINATION_PREFIX = "Destination:"; // DestinationName->
+	private static final String MESSAGE_PREFIX = "Msg:"; // msgId->MessageRelayContext
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -53,6 +53,50 @@ public class MRSServerSession extends WebServiceSession {
 		setAccountZone(az);
 		setZone(zone);
 		setDomain(domain);
+	}
+
+	/**
+	 * A DestinationContextHolder holds a destination information in a session.
+	 * 
+	 * @author Peter
+	 * 
+	 */
+	public static class DestinationContextHolder {
+		private final String destinationName;
+		private final ChannelDestination destination;
+
+		// we cache the transfer MDS address and sessionId for this destination.
+		private String tosTcpAddress;
+		private String sessionId;
+
+		public DestinationContextHolder(String destinationName, ChannelDestination dest) {
+			this.destinationName = destinationName;
+			this.destination = dest;
+		}
+
+		public ChannelDestination getDestination() {
+			return destination;
+		}
+
+		public String getTosTcpAddress() {
+			return tosTcpAddress;
+		}
+
+		public void setTosTcpAddress(String tosTcpAddress) {
+			this.tosTcpAddress = tosTcpAddress;
+		}
+
+		public String getSessionId() {
+			return sessionId;
+		}
+
+		public void setSessionId(String sessionId) {
+			this.sessionId = sessionId;
+		}
+
+		public String getDestinationName() {
+			return destinationName;
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -104,40 +148,43 @@ public class MRSServerSession extends WebServiceSession {
 		return Boolean.TRUE == getAttribute(SHORTCUT);
 	}
 
-	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
-
-	void addMessage(MessageRelayContext msg) {
-		Map<String, MessageRelayContext> msgMap = getMessageMap();
-		msgMap.put(msg.getMsgId(), msg);
+	public DestinationContextHolder getDestinationContext(String destinationName) {
+		return getAttribute(createDestinationKey(destinationName));
 	}
 
-	void removeMessage(MessageRelayContext msg) {
-		Map<String, MessageRelayContext> msgMap = getMessageMap();
-		msgMap.remove(msg.getMsgId());
+	public void setDestinationContext(String destinationName, DestinationContextHolder ddh) {
+		setAttribute(createDestinationKey(destinationName), ddh);
 	}
 
-	List<String> getTimeoutMessageIds() {
+	public MessageRelayContext getMessageContext(String msgId) {
+		return getAttribute(createMessageKey(msgId));
+	}
+
+	public void setMessageContext(String msgId, MessageRelayContext mrc) {
+		setAttribute(createMessageKey(msgId), mrc);
+	}
+
+	public void removeMessageContext(String msgId) {
+		removeAttribute(createMessageKey(msgId));
+	}
+
+	public List<String> getTimeoutMessageIds() {
 		List<String> result = new ArrayList<>();
 
-		Map<String, MessageRelayContext> msgMap = getMessageMap();
-		for (Entry<String, MessageRelayContext> msgEntry : msgMap.entrySet()) {
-			if (msgEntry.getValue().isIdle()) {
-				result.add(msgEntry.getKey());
+		for (Map.Entry<String, Object> attrs : attributeMap.entrySet()) {
+			if (isMsgAttr(attrs.getKey())) {
+				MessageRelayContext mrc = (MessageRelayContext) attrs.getValue();
+				if (mrc.isIdle()) {
+					result.add(mrc.getMsgId());
+				}
 			}
 		}
 		return result;
 	}
 
-	Map<String, MessageRelayContext> getMessageMap() {
-		Map<String, MessageRelayContext> msgs = getAttribute(MESSAGE_MAP);
-		if (msgs == null) {
-			msgs = new HashMap<String, MessageRelayContext>();
-			setAttribute(MESSAGE_MAP, msgs);
-		}
-		return msgs;
-	}
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
 
 	void setAccountZone(AccountZone az) {
 		setAttribute(ACCOUNT_ZONE, az);
@@ -154,6 +201,18 @@ public class MRSServerSession extends WebServiceSession {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private String createDestinationKey(String destinationName) {
+		return DESTINATION_PREFIX + destinationName;
+	}
+
+	private String createMessageKey(String msgId) {
+		return MESSAGE_PREFIX + msgId;
+	}
+
+	private boolean isMsgAttr(String attributeKey) {
+		return attributeKey.startsWith(MESSAGE_PREFIX);
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

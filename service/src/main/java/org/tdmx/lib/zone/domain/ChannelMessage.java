@@ -196,8 +196,8 @@ public class ChannelMessage implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
-	public void initMessageState(Zone zone, int oSerialNr, int dSerialNr) {
-		MessageState cms = new MessageState(zone, this, oSerialNr, dSerialNr);
+	public void initMessageState(Zone zone, MessageStatus status, int oSerialNr, int dSerialNr) {
+		MessageState cms = new MessageState(zone, this, status, oSerialNr, dSerialNr);
 		this.state = cms;
 	}
 

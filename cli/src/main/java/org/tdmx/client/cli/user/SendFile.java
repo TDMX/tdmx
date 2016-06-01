@@ -32,6 +32,7 @@ import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.CryptoContext;
 import org.tdmx.client.crypto.scheme.CryptoContext.ChunkSequentialReader;
 import org.tdmx.client.crypto.scheme.CryptoException;
@@ -59,6 +60,7 @@ import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.scs.GetMOSSession;
 import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
+import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -286,6 +288,13 @@ public class SendFile implements CommandExecutable {
 			}
 		}
 
+		// an identifier which is constant for all sends from this client
+		String clientId = ByteArray.asHex(EntropySource.getRandomBytes(8));
+		// we make a single local transaction to use for each send
+		LocalTransactionSpecification lt = new LocalTransactionSpecification();
+		lt.setClientId(clientId);
+		lt.setTxtimeout(3600);
+
 		Calendar now = CalendarUtils.getTimestamp(new Date());
 		Calendar ttl = CalendarUtils.getTimestamp(now.getTime());
 		ttl.add(Calendar.HOUR, ttlHours);
@@ -312,11 +321,13 @@ public class SendFile implements CommandExecutable {
 
 					Submit submitReq = new Submit();
 					submitReq.setSessionId(sessionResponse.getSession().getSessionId());
+					submitReq.setLocaltransaction(lt);
 					submitReq.setMsg(m);
 
 					SubmitResponse submitResponse = mos.submit(submitReq);
 					if (!submitResponse.isSuccess()) {
 						out.println("Message submission failed. ", submitResponse.getError());
+						return;
 					}
 					out.println("Message header uploaded successfully.");
 					out.println("Message chunk[0] uploaded successfully.");

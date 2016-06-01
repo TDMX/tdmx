@@ -44,11 +44,21 @@ public interface RelayDataService {
 
 	public Channel getChannel(AccountZone az, Zone z, Domain d, Long channelId);
 
-	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long msgId);
+	/**
+	 * Get the ChannelMessage and it's associated MessageState from a given stateId.
+	 * 
+	 * @param az
+	 * @param z
+	 * @param d
+	 * @param channel
+	 * @param stateId
+	 * @return
+	 */
+	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long stateId);
 
 	/**
 	 * Outbound ChannelMessages to be relayed on origin side {@see RelayDirection#Fowards} have a pending
-	 * {@see ChannelMessage#getProcessingState()}.
+	 * {@see ChannelMessage#getProcessingState()}. Fetchplan includes ChannelMessage and MessageState.
 	 * 
 	 * @param az
 	 * @param z
@@ -77,7 +87,7 @@ public interface RelayDataService {
 	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
 			FlowControlStatus relayStatus);
 
-	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
+	public void updateMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
 			ProcessingState newState);
 
 	public void updateChannelAuthorizationProcessingState(AccountZone az, Zone z, Domain d, Long channelId,

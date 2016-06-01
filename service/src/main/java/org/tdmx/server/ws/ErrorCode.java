@@ -77,6 +77,7 @@ public enum ErrorCode {
 	MissingLocalTransactionClientId(500, "Missing localtransaction clientId."),
 	UnknownEncryptionScheme(500, "Unknown encryption scheme."),
 	InvalidChunkMac(500, "Chunk MAC invalid."),
+	InvalidMessageMacOfMac(500, "Message MACofMAC is invalid."),
 	InvalidTransactionTimeout(500, "Invalid transaction timeout %d < tx <= %d seconds."),
 	MissingTransaction(500, "Missing transaction or localtransaction."),
 	InvalidTransaction(500, "Use either transaction or localtransaction, not both."),

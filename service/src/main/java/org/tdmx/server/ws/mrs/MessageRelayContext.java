@@ -94,7 +94,7 @@ public class MessageRelayContext {
 	 * @param mac
 	 * @return true if chunk handled ok otherwise false.
 	 */
-	public boolean setChunkReceived(int pos, String mac) {
+	public boolean setChunkReceivedInOrder(int pos, String mac) {
 		if (pos < 0 || pos >= msg.getNumberOfChunks()) {
 			// invalid chunk position
 			return false;
@@ -129,5 +129,9 @@ public class MessageRelayContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ChannelMessage getMsg() {
+		return msg;
+	}
 
 }

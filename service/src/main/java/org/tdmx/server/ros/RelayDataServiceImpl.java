@@ -123,13 +123,13 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
-	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long msgId) {
-		if (az == null || z == null || d == null || channel == null || msgId == null) {
+	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long stateId) {
+		if (az == null || z == null || d == null || channel == null || stateId == null) {
 			return null;
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			ChannelMessage msg = channelService.findByMessageId(msgId);
+			ChannelMessage msg = channelService.findByStateId(stateId);
 			msg.setChannel(channel);
 			return msg;
 		} finally {
@@ -138,7 +138,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
-	public void updateChannelMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
+	public void updateMessageProcessingState(AccountZone az, Zone z, Domain d, Channel channel, Long stateId,
 			ProcessingState newState) {
 		if (az == null || z == null || d == null || channel == null || stateId == null || newState == null) {
 			log.warn("Missing parameter.");

@@ -54,7 +54,7 @@ public interface MessageDao {
 	 * @param id
 	 * @return the ChannelMessage or null if not found.
 	 */
-	public ChannelMessage loadById(Long id);
+	public ChannelMessage loadById(Long id, boolean fetchState);
 
 	/**
 	 * Load the ChannelMessageState by id.
@@ -62,7 +62,7 @@ public interface MessageDao {
 	 * @param stateId
 	 * @return the ChannelMessageState or null if not found.
 	 */
-	public MessageState loadStateById(Long id);
+	public MessageState loadStateById(Long id, boolean fetchMsg);
 
 	/**
 	 * Search for ChannelMessages. FetchPlan includes Domain, Channel, ChannelMessageStatus.

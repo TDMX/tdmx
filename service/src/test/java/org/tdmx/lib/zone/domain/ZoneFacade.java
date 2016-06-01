@@ -225,7 +225,7 @@ public class ZoneFacade {
 		cm.setMsgId(msgId);
 		cm.setChannel(channel);
 
-		cm.initMessageState(zone, 1, 1);
+		cm.initMessageState(zone, MessageStatus.NEW, 1, 1);
 
 		cm.getState().setProcessingState(ps);
 

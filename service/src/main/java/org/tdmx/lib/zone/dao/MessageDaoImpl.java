@@ -72,20 +72,28 @@ public class MessageDaoImpl implements MessageDao {
 	}
 
 	@Override
-	public ChannelMessage loadById(Long msgId) {
+	public ChannelMessage loadById(Long msgId, boolean fetchState) {
 		if (msgId == null) {
 			throw new IllegalArgumentException("missing msgId");
 		}
-		JPAQuery query = new JPAQuery(em).from(channelMessage).where(channelMessage.id.eq(msgId));
+		JPAQuery query = new JPAQuery(em).from(channelMessage);
+		if (fetchState) {
+			query = query.innerJoin(channelMessage.state, messageState).fetch();
+		}
+		query.where(channelMessage.id.eq(msgId));
 		return query.uniqueResult(channelMessage);
 	}
 
 	@Override
-	public MessageState loadStateById(Long stateId) {
+	public MessageState loadStateById(Long stateId, boolean fetchMsg) {
 		if (stateId == null) {
 			throw new IllegalArgumentException("stateId msgId");
 		}
-		JPAQuery query = new JPAQuery(em).from(messageState).where(messageState.id.eq(stateId));
+		JPAQuery query = new JPAQuery(em).from(messageState);
+		if (fetchMsg) {
+			query = query.innerJoin(messageState.msg, channelMessage).fetch();
+		}
+		query.where(messageState.id.eq(stateId));
 		return query.uniqueResult(messageState);
 	}
 

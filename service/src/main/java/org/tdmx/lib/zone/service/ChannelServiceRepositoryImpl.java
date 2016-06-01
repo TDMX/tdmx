@@ -349,7 +349,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void delete(ChannelMessage message) {
-		ChannelMessage storedMessage = messageDao.loadById(message.getId());
+		ChannelMessage storedMessage = messageDao.loadById(message.getId(), false);
 		if (storedMessage != null) {
 			messageDao.delete(storedMessage);
 		} else {
@@ -388,25 +388,29 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageOperationStatus checkChannelQuota(Zone zone, Channel channel, long messageSize,
+	public SubmitMessageResultHolder checkChannelQuota(Zone zone, Channel channel, long messageSize,
 			long requiredQuota) {
 		// TODO #49 : limit max size of message to authorized max
 
+		// checked by MOS on submit of message and MRS on relay of message.
+
 		// get and lock quota and check we can send
 		FlowQuota quota = channelDao.read(channel.getQuota().getId());
+
+		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
+		result.flowQuota = quota;
+
 		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
 			// we are not currently authorized to send out.
-			return SubmitMessageOperationStatus.CHANNEL_CLOSED;
-		}
-		if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
+			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
+		} else if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
-			return SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+		} else if (!quota.hasAvailableQuotaFor(requiredQuota)) {
+			// we can exceed the high mark but if we do then we set flow control to closed.
+			result.status = SubmitMessageOperationStatus.NOT_ENOUGH_QUOTA_AVAILABLE;
 		}
-		// we can exceed the high mark but if we do then we set flow control to closed.
-		if (!quota.hasAvailableQuotaFor(requiredQuota)) {
-			return SubmitMessageOperationStatus.NOT_ENOUGH_QUOTA_AVAILABLE;
-		}
-		return null;
+		return result;
 	}
 
 	@Override
@@ -550,7 +554,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateMessageProcessingState(Long stateId, ProcessingState newState) {
-		MessageState cms = messageDao.loadStateById(stateId);
+		MessageState cms = messageDao.loadStateById(stateId, false);
 
 		// update the processing state.
 		cms.setProcessingState(newState);
@@ -559,7 +563,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateMessageProcessingState(Long stateId, MessageStatus status, String xid, ProcessingState newState) {
-		MessageState cms = messageDao.loadStateById(stateId);
+		MessageState cms = messageDao.loadStateById(stateId, false);
 
 		// update the processing state.
 		cms.setStatus(status);
@@ -569,28 +573,17 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg) {
-		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
-		// TODO #49 : limit max size of message to authorized max
+	public FlowQuota relayInMessage(Zone zone, ChannelMessage msg) {
 
-		// get and lock quota and check we can send
+		// persist the message, READY state, no ProcessingState
+		create(msg);
+
+		// get and lock quota and check we can recv
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
-		if (ChannelAuthorizationStatus.CLOSED == quota.getAuthorizationStatus()) {
-			// we are not currently authorized to receive
-			result.status = SubmitMessageOperationStatus.CHANNEL_CLOSED;
-			return result;
-		}
-		if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
-			// quota remains exceeded and closed to relaying in - receiving consuming messages creates capacity which
-			// changes this status eventually
-			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
-			return result;
-		}
 		// we can exceed the high mark but if we do then we set flow control to closed.
 		quota.incrementBufferOnRelay(msg.getPayloadLength());
 
-		result.flowQuota = quota;
-		return result;
+		return quota;
 	}
 
 	@Override
@@ -607,7 +600,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Transactional(value = "ZoneDB")
 	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt) {
 		// lock quota, reduce undelivered buffer, set status if crossing low limit
-		ChannelMessage existingMsg = messageDao.loadById(msg.getId());
+		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
 		if (existingMsg != null) {
 			existingMsg.setReceipt(receipt);
 
@@ -721,7 +714,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public ChannelMessage findByMessageId(Long msgId) {
-		return messageDao.loadById(msgId);
+		return messageDao.loadById(msgId, true);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
+	public ChannelMessage findByStateId(Long stateId) {
+		MessageState state = messageDao.loadStateById(stateId, true);
+		return state != null ? state.getMsg() : null;
 	}
 
 	@Override

@@ -167,10 +167,10 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 
 						if (error != null) {
 							// we have an error relaying the msg or the chunks
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), error);
 						} else {
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), ProcessingState.none());
 							// rr can indicate flowcontrol "closed" by remote after transfer - so stop sending.
 							FlowControlStatus relayStatus = a2d.mapFlowControlStatus(rr.getRelayStatus());
@@ -189,7 +189,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 						error = ProcessingState.error(ErrorCode.RelayChannelMessageFault.getErrorCode(),
 								ErrorCode.RelayChannelMessageFault.getErrorDescription(errorInfo));
 
-						relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+						relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
 
 					}
@@ -197,8 +197,8 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 				} else {
 					// update MSG processing state to error of the MRS session holder error
 					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
-					relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-							ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+					relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
+							ctx.getChannel(), job.getObjectId(), error);
 				}
 			}
 		}
@@ -294,13 +294,13 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					try {
 						RelayResponse rr = sh.getMrs().relay(relayCA);
 						if (rr.isSuccess()) {
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), ProcessingState.none());
 							// there is no "reverse" flowcontrol to stop DR relaying
 						} else {
 							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
 									rr.getError().getDescription());
-							relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), error);
 						}
 					} catch (WebServiceException wse) {
@@ -314,15 +314,15 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 								ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
 								ErrorCode.RelayChannelAuthorizationFault.getErrorDescription(errorInfo));
 
-						relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
+						relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
 								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
 
 					}
 				} else {
 					// update MSG processing state to error of the MRS session holder error
 					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
-					relayDataService.updateChannelMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-							ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
+					relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
+							ctx.getChannel(), job.getObjectId(), error);
 				}
 			}
 		}

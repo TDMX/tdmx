@@ -36,6 +36,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,7 @@ import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -67,6 +70,8 @@ import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.message.domain.MessageFacade;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.domain.ZoneFacade;
@@ -80,6 +85,9 @@ import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.tos.client.TransferClientService;
+import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
@@ -110,6 +118,11 @@ public class MRSImplUnitTest {
 	@Autowired
 	@Named("ws.MRS.ServerSessionManager")
 	private WebServiceSessionManager serverSessionManager;
+
+	@Autowired
+	private TransferClientService mockTransferObjectService;
+	@Autowired
+	private RelayClientService mockRelayClientService;
 
 	@Autowired
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -198,6 +211,8 @@ public class MRSImplUnitTest {
 		authenticatedClientService.clearAuthenticatedClient();
 
 		dataGenerator.tearDown(input, data);
+
+		Mockito.reset(mockRelayClientService, mockTransferObjectService);
 	}
 
 	@Test
@@ -469,15 +484,41 @@ public class MRSImplUnitTest {
 		assertSuccess(response);
 		assertNotNull(response.getCorrelationID());
 
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+
 		// upload 1'st chunk
 		Chunk chunk = MessageFacade.createChunk(msg.getHeader().getMsgId(), 1,
 				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks.get(1));
+
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
+
 		Relay chunkReq = new Relay();
 		chunkReq.setChunk(chunk);
 		chunkReq.setCorrelationID(response.getCorrelationID());
 		RelayResponse chunkResponse = mrs.relay(chunkReq);
 		assertSuccess(chunkResponse);
 		assertNull(chunkResponse.getCorrelationID());
+
+		ArgumentCaptor<Long> stateIdCaptor = ArgumentCaptor.forClass(Long.class);
+
+		// because the receipt of message completion transfers it to the MDS.
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				stateIdCaptor.capture());
+
+		// check that the message received
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue());
+			assertEquals(MessageStatus.READY, storedMsg.getState().getStatus());
+			assertEquals(ProcessingStatus.NONE, storedMsg.getState().getProcessingState().getStatus());
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 	}
 
 	private void assertSuccess(Acknowledge ack) {

@@ -83,6 +83,7 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.AgentCredentialValidator;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.ChannelService.SubmitMessageOperationStatus;
+import org.tdmx.lib.zone.service.ChannelService.SubmitMessageResultHolder;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
@@ -455,7 +456,7 @@ public class MOSImpl implements MOS {
 		m.setChannel(cachedChannel);
 
 		// create the message state and link with the message.
-		m.initMessageState(zone, srcUc.getSerialNumber(), dstUc.getSerialNumber());
+		m.initMessageState(zone, MessageStatus.NEW, srcUc.getSerialNumber(), dstUc.getSerialNumber());
 
 		// adds the tx to the session immediately.
 		SenderTransactionContext stc = startOrContinueTx(session, tx, response);
@@ -466,11 +467,12 @@ public class MOSImpl implements MOS {
 		MessageContextHolder mch = new MessageContextHolder(m);
 		stc.addMessage(mch);
 
+		// check authorization and flow control
 		long totalChannelQuota = m.getPayloadLength() + stc.getTotalPayloadSizeForChannel(cachedChannel);
-		SubmitMessageOperationStatus quotaCheck = channelService.checkChannelQuota(zone, cachedChannel,
+		SubmitMessageResultHolder quotaCheck = channelService.checkChannelQuota(zone, cachedChannel,
 				m.getPayloadLength(), totalChannelQuota);
-		if (quotaCheck != null) {
-			ErrorCode.setError(mapSubmitOperationStatus(quotaCheck), response);
+		if (quotaCheck.status != null) {
+			ErrorCode.setError(mapSubmitOperationStatus(quotaCheck.status), response);
 			return response;
 		}
 

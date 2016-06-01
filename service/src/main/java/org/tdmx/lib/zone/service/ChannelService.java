@@ -229,7 +229,16 @@ public interface ChannelService {
 	public List<ChannelMessage> search(Zone zone, MessageStatusSearchCriteria criteria);
 
 	/**
-	 * Fetch the ChannelMessage which has the messageId provided. No fetch plan.
+	 * Fetch the ChannelMessage which has the MessageState with the stateId provided. No fetch plan.
+	 * 
+	 * @param zone
+	 * @param stateId
+	 * @return
+	 */
+	public ChannelMessage findByStateId(Long stateId);
+
+	/**
+	 * Fetch the ChannelMessage which has the messageId provided. FetchPlan includes ChannelMessage.
 	 * 
 	 * @param zone
 	 * @param msgId
@@ -304,13 +313,16 @@ public interface ChannelService {
 		CHANNEL_CLOSED,
 	}
 
-	// TODO needed?
+	/**
+	 * A context holder returning the FlowQuota and status of the submit to the caller ( MOS or MRS ).
+	 * 
+	 * @author Peter
+	 *
+	 */
 	public class SubmitMessageResultHolder {
 		public FlowQuota flowQuota;
 		public SubmitMessageOperationStatus status;
 	}
-
-	// TODO #70 ... checkRelay / / commitRelay
 
 	/**
 	 * Check that the Channel is open and has the required free quota available.
@@ -324,7 +336,7 @@ public interface ChannelService {
 	 *            the total payload sizes of messages being sent in the same transaction to the channel.
 	 * @return whether the channel is usable and has the free quota available.
 	 */
-	public SubmitMessageOperationStatus checkChannelQuota(Zone zone, Channel channel, long messageSize,
+	public SubmitMessageResultHolder checkChannelQuota(Zone zone, Channel channel, long messageSize,
 			long totalRequiredQuota);
 
 	/**
@@ -379,15 +391,15 @@ public interface ChannelService {
 	public List<MessageState> twoPhaseRollbackSend(Zone zone, String xid);
 
 	/**
-	 * Pre-relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
+	 * Relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
 	 * undelivered).
 	 * 
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
-	 * @return
+	 * @return the modified FlowQuota
 	 */
-	public SubmitMessageResultHolder preRelayInMessage(Zone zone, ChannelMessage msg);
+	public FlowQuota relayInMessage(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Post-relay Message updates the FlowQuota of the channel ( reducing unsent buffer on origin side ).

@@ -273,12 +273,10 @@ public class ChannelServiceRepositoryUnitTest {
 		ChannelMessage storedCm = channelService.findByMessageId(cm.getId());
 		assertNotNull(storedCm);
 
-		// FIXME findByMessageId needs to fetch the state here - or we need a separate state lookup with stateId with
-		// optional fetch of msg.
-		// assertEquals(error.getErrorCode(), storedCm.getProcessingState().getErrorCode());
-		// assertEquals(error.getErrorMessage(), storedCm.getProcessingState().getErrorMessage());
-		// assertEquals(error.getStatus(), storedCm.getProcessingState().getStatus());
-		// assertEquals(error.getTimestamp(), storedCm.getProcessingState().getTimestamp());
+		assertEquals(error.getErrorCode(), storedCm.getState().getProcessingState().getErrorCode());
+		assertEquals(error.getErrorMessage(), storedCm.getState().getProcessingState().getErrorMessage());
+		assertEquals(error.getStatus(), storedCm.getState().getProcessingState().getStatus());
+		assertEquals(error.getTimestamp(), storedCm.getState().getProcessingState().getTimestamp());
 	}
 
 	@Test

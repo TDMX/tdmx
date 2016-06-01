@@ -148,11 +148,11 @@ public class MessageState implements Serializable {
 	 * @param originSerialNr
 	 * @param destionationSerialNr
 	 */
-	public MessageState(Zone zone, ChannelMessage msg, int oSerialNr, int dSerialNr) {
+	public MessageState(Zone zone, ChannelMessage msg, MessageStatus status, int oSerialNr, int dSerialNr) {
 		if (msg.getChannel() == null) {
 			throw new IllegalStateException("missing channel");
 		}
-		setStatus(MessageStatus.NEW);
+		setStatus(status);
 		setZone(zone);
 		setMsg(msg);
 
@@ -163,9 +163,8 @@ public class MessageState implements Serializable {
 	}
 
 	public MessageState(Zone zone, ChannelMessage msg, MessageState other) {
-		this(zone, msg, other.getOriginSerialNr(), other.getDestinationSerialNr());
+		this(zone, msg, other.getStatus(), other.getOriginSerialNr(), other.getDestinationSerialNr());
 
-		setStatus(other.getStatus());
 		setDeliveryCount(other.getDeliveryCount());
 		setDeliveryErrorCode(other.getDeliveryErrorCode());
 		setDeliveryErrorMessage(other.getDeliveryErrorMessage());
