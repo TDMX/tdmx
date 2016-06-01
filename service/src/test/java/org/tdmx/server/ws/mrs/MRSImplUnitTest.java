@@ -458,7 +458,7 @@ public class MRSImplUnitTest {
 	}
 
 	@Test
-	public void testRelay_Message() throws Exception {
+	public void testRelay_MessageChunked() throws Exception {
 		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
 
 		Channel channel = d2a.mapChannel(recvAuth2.getChannel());
@@ -501,6 +501,56 @@ public class MRSImplUnitTest {
 		RelayResponse chunkResponse = mrs.relay(chunkReq);
 		assertSuccess(chunkResponse);
 		assertNull(chunkResponse.getCorrelationID());
+
+		ArgumentCaptor<Long> stateIdCaptor = ArgumentCaptor.forClass(Long.class);
+
+		// because the receipt of message completion transfers it to the MDS.
+		Mockito.verify(mockTransferObjectService).transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				stateIdCaptor.capture());
+
+		// check that the message received
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue());
+			assertEquals(MessageStatus.READY, storedMsg.getState().getStatus());
+			assertEquals(ProcessingStatus.NONE, storedMsg.getState().getProcessingState().getStatus());
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+	}
+
+	@Test
+	public void testRelay_MessageNotChunked() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
+
+		Channel channel = d2a.mapChannel(recvAuth2.getChannel());
+
+		assertEquals(channel.getDestination().getDomain(), domain2.getDomainName());
+		assertEquals(channel.getDestination().getLocalname(), address2.getLocalName());
+		assertEquals(channel.getDestination().getServicename(), service2.getServiceName());
+
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc1, uc2, service2.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+
+		Mockito.when(mockTransferObjectService.transferMDS(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(AccountZone.class), Mockito.any(org.tdmx.lib.zone.domain.ChannelDestination.class),
+				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
+
+		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
+		req.setMsg(msg);
+
+		// relay msg + only chunk
+		RelayResponse response = mrs.relay(req);
+		assertSuccess(response);
+		assertNull(response.getCorrelationID());
 
 		ArgumentCaptor<Long> stateIdCaptor = ArgumentCaptor.forClass(Long.class);
 

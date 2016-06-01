@@ -64,17 +64,6 @@ public class SenderTransactionContext {
 
 	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
 
-	// TODO #109: for each message we need to know if we've received all chunks and which chunk is the current chunk (
-	// which can be repeatedly sent )
-
-	public ScheduledFuture<?> getTimeoutFuture() {
-		return timeoutFuture;
-	}
-
-	public void setTimeoutFuture(ScheduledFuture<?> timeoutFuture) {
-		this.timeoutFuture = timeoutFuture;
-	}
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -244,5 +233,13 @@ public class SenderTransactionContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ScheduledFuture<?> getTimeoutFuture() {
+		return timeoutFuture;
+	}
+
+	public void setTimeoutFuture(ScheduledFuture<?> timeoutFuture) {
+		this.timeoutFuture = timeoutFuture;
+	}
 
 }
