@@ -240,7 +240,7 @@ public class RelayConnectionProviderImpl implements RelayConnectionProvider {
 
 		final String sessionId = "shortcut:" + channel.getChannelName().getChannelKey(otherDomain);
 		final MRSServerSession session = new MRSServerSession(sessionId, az, zone, domain);
-		session.setShortcutSession();
+		session.setSameSegmentShortcutSession();
 
 		ChannelAuthorization existingChannelAuth = sessionDataService.findChannelAuthorization(az, zone, domain,
 				channel.getOrigin(), channel.getDestination());

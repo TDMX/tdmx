@@ -182,6 +182,7 @@ public enum ErrorCode {
 	RelayFlowControlOpenFault(501, "Relay FlowControl open to remote MRS failed. Reason=%s"),
 	RelayGetSessionFault(501, "Relay setup call to remote SCS failed. Reason=%s"),
 	ChunkDataLost(501, "Chunk data lost for msgId=%s and pos=%d"),
+	ChunkDataNotRelayed(501, "Chunk data not relayed on the same segment."),
 	CacheInvalidationFailed(501, "Chunk invalidation failed for event=%s, cache=%s and key=%s. Reason=%s"),
 
 	SenderChannelAuthorizationMissing(300, "Missing confirmation of sender's requested EndpointPermission."),

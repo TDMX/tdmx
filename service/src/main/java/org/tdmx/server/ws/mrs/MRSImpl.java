@@ -137,9 +137,9 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getChunk() != null) {
 			processChunk(parameters.getCorrelationID(), parameters.getChunk(), response);
 		} else if (parameters.getDr() != null) {
-			// TODO #95: relay in DR
+			// TODO #113: relay in DR
 		} else if (parameters.getRelayStatus() != null) {
-			// TODO #93: relay in FC-open, notify ROS of FC change
+			// TODO #113: relay in FC-open, notify ROS of FC change
 		} else {
 			// none of the above - equals missing data.
 			ErrorCode.setError(ErrorCode.MissingRelayPayload, response);
@@ -257,8 +257,8 @@ public class MRSImpl implements MRS {
 		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		// check that the Message provided is complete. For messages relayed within the same segment
-		// the chunk's are not actually transferred. TODO check definition "shortcut"==same segment / rename
-		if (validator.checkMessage(msg, response, !session.isShortcutSession()) == null) {
+		// the chunk's are not actually transferred.
+		if (validator.checkMessage(msg, response, !session.isSameSegmentShortcutSession()) == null) {
 			return;
 		}
 		Header header = msg.getHeader();
@@ -327,13 +327,17 @@ public class MRSImpl implements MRS {
 		MessageRelayContext mrc = new MessageRelayContext(m);
 		session.setMessageContext(m.getMsgId(), mrc);
 
-		if (!session.isShortcutSession()) {
-
-			String fakedContinuationId = mrc.getContinuationId(0);
-			processChunk(fakedContinuationId, msg.getChunk(), response);
+		if (session.isSameSegmentShortcutSession()) {
+			// for messages not effectively relayed but are handled by the same segment, the chunks are shared between
+			// the two
+			// messages ( origin and destination ) and don't need transfer.
+			finishMessage(session, mrc, response);
 
 		} else {
-			finishMessage(session, mrc, response);
+			// propper relaying embeds the chunk in the msg transferred and then sends chunks individually, in order
+			// afterwards, repeating at most the last chunk
+			String fakedContinuationId = mrc.getContinuationId(0);
+			processChunk(fakedContinuationId, msg.getChunk(), response);
 		}
 
 		response.setSuccess(true);
@@ -348,9 +352,14 @@ public class MRSImpl implements MRS {
 			ErrorCode.setError(ErrorCode.MissingChunkContinuationId, response);
 			return;
 		}
+		// safeguard to prohibit relay of chunk data on the same segment.
+		if (session.isSameSegmentShortcutSession()) {
+			ErrorCode.setError(ErrorCode.ChunkDataNotRelayed, response);
+			return;
+		}
 
 		// check that the Message provided is complete. For messages relayed within the same segment
-		// the chunk's are not actually transferred. TODO check definition "shortcut"==same segment / rename
+		// the chunk's are not actually transferred.
 		if (validator.checkChunk(relayedChunk, response) == null) {
 			return;
 		}

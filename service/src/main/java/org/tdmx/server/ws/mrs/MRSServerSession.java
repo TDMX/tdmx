@@ -155,12 +155,16 @@ public class MRSServerSession extends WebServiceSession {
 		setAttribute(TEMP_CHANNEL, c);
 	}
 
-	public void setShortcutSession() {
+	public void setSameSegmentShortcutSession() {
 		setAttribute(SHORTCUT, Boolean.TRUE);
 	}
 
-	// TODO rename "sameSegmentSession" - to differentiate same domain.
-	public boolean isShortcutSession() {
+	/**
+	 * Same segment sessions are a shortcut where actual relaying does not take place, but data directly
+	 * 
+	 * @return
+	 */
+	public boolean isSameSegmentShortcutSession() {
 		return Boolean.TRUE == getAttribute(SHORTCUT);
 	}
 
