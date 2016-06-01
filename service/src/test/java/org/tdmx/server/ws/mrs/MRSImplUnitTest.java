@@ -495,6 +495,7 @@ public class MRSImplUnitTest {
 				Mockito.any(Long.class))).thenReturn(TransferStatus.success("sid", "tosTcpAddress"));
 
 		Relay chunkReq = new Relay();
+		chunkReq.setSessionId(ZAC_SESSION_ID);
 		chunkReq.setChunk(chunk);
 		chunkReq.setCorrelationID(response.getCorrelationID());
 		RelayResponse chunkResponse = mrs.relay(chunkReq);

@@ -18,6 +18,11 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.api.SignatureUtils;
@@ -29,6 +34,7 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
+import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
@@ -62,6 +68,8 @@ import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.mrs.MRSServerSession.DestinationContextHolder;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
+
+import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 /**
  * ChannelMessages are submitted one at a time from concurrent clients sharing the same session. The message is
@@ -103,6 +111,11 @@ public class MRSImpl implements MRS {
 	private TransferClientService transferService;
 	private RelayClientService relayClientService;
 
+	private ScheduledExecutorService msgTimeoutScheduler = Executors.newScheduledThreadPool(1,
+			new RenamingThreadFactoryProxy("RelayMsgTimeoutScheduler", Executors.defaultThreadFactory()));
+
+	private int messageIdleTimeoutSec = 300;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -122,7 +135,7 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getMsg() != null) {
 			processMessage(parameters.getMsg(), response);
 		} else if (parameters.getChunk() != null) {
-			// TODO #70: relay in Chunk
+			processChunk(parameters.getCorrelationID(), parameters.getChunk(), response);
 		} else if (parameters.getDr() != null) {
 			// TODO #95: relay in DR
 		} else if (parameters.getRelayStatus() != null) {
@@ -311,73 +324,129 @@ public class MRSImpl implements MRS {
 		}
 
 		// the chunks are not transferred for shortcut relaying.
+		MessageRelayContext mrc = new MessageRelayContext(m);
+		session.setMessageContext(m.getMsgId(), mrc);
+
 		if (!session.isShortcutSession()) {
 
-			Chunk c = a2d.mapChunk(msg.getChunk());
+			String fakedContinuationId = mrc.getContinuationId(0);
+			processChunk(fakedContinuationId, msg.getChunk(), response);
 
-			// validate chunk MAC - error chunk MAC
-			if (validator.checkChunkMac(msg.getChunk(), m.getScheme(), response) == null) {
-				return;
-			}
-
-			MessageRelayContext mrc = new MessageRelayContext(m);
-			session.setMessageContext(m.getMsgId(), mrc);
-
-			if (handleChunkReceipt(zone, session, mrc, c, response) == null) {
-				return;
-			}
 		} else {
-
-			// persist the message itself. MessageStatus is READY, ProcessingState is "none".
-			FlowQuota afterSendQuota = channelService.relayInMessage(zone, m);
-			response.setRelayStatus(d2a.mapFlowControlStatus(afterSendQuota.getRelayStatus()));
-
-			// attempt to "fast" transfer the MSG to the MDS responsible for the channel's destination.
-			transferReceiver(session, m.getState());
+			finishMessage(session, mrc, response);
 		}
 
 		response.setSuccess(true);
 	}
 
-	private Chunk handleChunkReceipt(Zone zone, MRSServerSession session, MessageRelayContext mrc, Chunk c,
+	// handle a subsequent message chunk
+	private void processChunk(String continuationId, org.tdmx.core.api.v01.msg.Chunk relayedChunk,
 			RelayResponse response) {
-		if (mrc.setChunkReceivedInOrder(c.getPos(), c.getMac())) {
-			// persist Chunk via ChunkService
-			chunkService.createOrUpdate(c);
+		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 
-			if (mrc.isComplete()) {
-				log.debug("Received all chunks for message " + mrc.getMsgId());
-				// received all chunks - finish the message
-				session.removeMessageContext(mrc.getMsgId());
-				if (!mrc.isCorrect()) {
-					// TODO #107: chunk cleanup - remove all previously received chunks
-					// since channel message is not yet persisted and the quota is untouched,
-					// we don't need to undo much, just one chunk
-					ErrorCode.setError(ErrorCode.InvalidMessageMacOfMac, response);
-					return null;
-				} else {
-					// persist the message itself only after all chunks are received, on receipt of last chunk
-					FlowQuota afterSendQuota = channelService.relayInMessage(zone, mrc.getMsg());
-					response.setRelayStatus(d2a.mapFlowControlStatus(afterSendQuota.getRelayStatus()));
-					// fast transfer to MDS
-					transferReceiver(session, mrc.getMsg().getState());
-				}
-			} else {
-				log.debug("Expecting further chunks for message " + mrc.getMsgId());
-			}
-		} else {
-			// Error chunkproblem sequence problem, relaying side forced to restart
-			session.removeMessageContext(mrc.getMsgId());
-			// TODO #107: chunk cleanup - remove all previously received chunks
-			ErrorCode.setError(ErrorCode.InvalidChunkOrder, response);
-			return null;
+		if (!StringUtils.hasText(continuationId)) {
+			ErrorCode.setError(ErrorCode.MissingChunkContinuationId, response);
+			return;
 		}
-		return c;
+
+		// check that the Message provided is complete. For messages relayed within the same segment
+		// the chunk's are not actually transferred. TODO check definition "shortcut"==same segment / rename
+		if (validator.checkChunk(relayedChunk, response) == null) {
+			return;
+		}
+
+		MessageRelayContext mrc = session.getMessageContext(relayedChunk.getMsgId());
+		if (mrc == null) {
+			ErrorCode.setError(ErrorCode.MessageNotFound, response);
+			return;
+		}
+		if (!continuationId.equals(mrc.getContinuationId(relayedChunk.getPos()))) {
+			ErrorCode.setError(ErrorCode.InvalidChunkContinuationId, response);
+			return;
+		}
+		if (relayedChunk.getPos() < mrc.getLastChunkReceived()
+				|| relayedChunk.getPos() > mrc.getLastChunkReceived() + 1) {
+			ErrorCode.setError(ErrorCode.InvalidChunkOrder, response);
+			return;
+		}
+
+		// validate chunk MAC - error chunk MAC
+		if (validator.checkChunkMac(relayedChunk, mrc.getMsg().getScheme(), response) == null) {
+			return;
+		}
+
+		Chunk c = a2d.mapChunk(relayedChunk);
+
+		// persist Chunk via ChunkService
+		chunkService.createOrUpdate(c);
+
+		// calculate the next continuationId
+		String nextContinuationId = mrc.getContinuationId(c.getPos() + 1);
+		if (nextContinuationId == null) {
+			log.debug("Received all chunks for message " + mrc.getMsgId());
+			// received all chunks - finish the message
+			finishMessage(session, mrc, response);
+
+		} else {
+			log.debug("Expecting further chunks for message " + mrc.getMsgId());
+			rescheduleMessageTimeout(session, mrc);
+
+		}
+		// record the last successful uploaded so we allow only it again or the next.
+		mrc.setLastChunkReceived(c.getPos());
+		response.setCorrelationID(nextContinuationId);
+		response.setSuccess(true);
+	}
+
+	private void abortMessage(MRSServerSession session, MessageRelayContext mrc) {
+		cancelMessageTimeout(mrc);
+		session.removeMessageContext(mrc.getMsgId());
+		// TODO #107: chunk cleanup - remove all previously received chunks, if the msgId doesn't exist
+
+		// TODO #112: incident event relevant for the originating SP.
+	}
+
+	private void finishMessage(MRSServerSession session, MessageRelayContext mrc, RelayResponse response) {
+		// persist the message itself only after all chunks are received, on receipt of last chunk
+		FlowQuota afterSendQuota = channelService.relayInMessage(session.getZone(), mrc.getMsg());
+		response.setRelayStatus(d2a.mapFlowControlStatus(afterSendQuota.getRelayStatus()));
+		// fast transfer to MDS
+		transferReceiver(session, mrc.getMsg().getState());
+
+		cancelMessageTimeout(mrc);
+		session.removeMessageContext(mrc.getMsgId());
+	}
+
+	private void cancelMessageTimeout(MessageRelayContext mrc) {
+		ScheduledFuture<?> f = mrc.getTimeoutFuture();
+		if (f != null) {
+			f.cancel(false);
+			mrc.setTimeoutFuture(null);
+		}
+	}
+
+	private void rescheduleMessageTimeout(MRSServerSession session, MessageRelayContext mrc) {
+		// transaction will timeout after the tx timeout seconds after starting the tx.
+		cancelMessageTimeout(mrc);
+		ScheduledFuture<?> timeoutFuture = msgTimeoutScheduler.schedule(new Runnable() {
+			@Override
+			public void run() {
+				// we simply forget the transaction if it times-out.
+				log.info("Timeout of " + mrc.getMsgId());
+				abortMessage(session, mrc);
+			}
+		}, getMessageIdleTimeoutSec(), TimeUnit.SECONDS);
+		// we need to record the future object so we can cancel later ( when tx completes )
+		mrc.setTimeoutFuture(timeoutFuture);
 	}
 
 	private void transferReceiver(MRSServerSession session, MessageState state) {
 		final ChannelName cn = state.getChannelName();
 		DestinationContextHolder ddh = session.getDestinationContext(cn.getDestinationName());
+		if (ddh == null) {
+			ddh = new DestinationContextHolder(cn.getDestinationName(), cn.getDestination());
+			session.setDestinationContext(cn.getDestinationName(), ddh);
+		}
 
 		// TODO LATER: improve IO usage by not retrying on each received message when we don't have a receiver session.
 
@@ -514,6 +583,14 @@ public class MRSImpl implements MRS {
 
 	public void setRelayClientService(RelayClientService relayClientService) {
 		this.relayClientService = relayClientService;
+	}
+
+	public int getMessageIdleTimeoutSec() {
+		return messageIdleTimeoutSec;
+	}
+
+	public void setMessageIdleTimeoutSec(int messageIdleTimeoutSec) {
+		this.messageIdleTimeoutSec = messageIdleTimeoutSec;
 	}
 
 }

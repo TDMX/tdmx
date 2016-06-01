@@ -18,8 +18,12 @@
  */
 package org.tdmx.server.ws.mrs;
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 public class MessageRelayContext {
@@ -33,22 +37,23 @@ public class MessageRelayContext {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(MessageRelayContext.class);
 
+	private static final int LEN_CONTINUATION_ID = 8;
+	private static final int LEN_ENTROPY = 8;
+
 	// if we don't get the next chunk within this timeframe the whole message transfer will be aborted.
-	private static final long idleTimeoutIntervalMs = 300000;
-
 	private final ChannelMessage msg;
+	private final byte[] entropy;
 
-	private int currentChunkPos;
-	private long lastChunkTimestamp;
-	private String runningMAC;
+	private int lastChunkReceived = -1;
+
+	private volatile ScheduledFuture<?> timeoutFuture; // discards Msg after idle timeout.
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 	public MessageRelayContext(ChannelMessage msg) {
 		this.msg = msg;
-		this.currentChunkPos = -1;
-		this.lastChunkTimestamp = System.currentTimeMillis();
+		this.entropy = EntropySource.getRandomBytes(LEN_ENTROPY);
 	}
 
 	// -------------------------------------------------------------------------
@@ -60,64 +65,20 @@ public class MessageRelayContext {
 	}
 
 	/**
-	 * {@link #idleTimeoutIntervalMs} has gone by without a new chunk being received.
+	 * Create the continuationId for the chunkPos. The continuationId is a truncated Hash of the msgId, chunkPos and the
+	 * "secret" entropy which the client doesn't know so cannot create the continuationId themselves. This forces the
+	 * client to have to receive the continuationId from the server before sending the next chunk.
 	 * 
-	 * @return timeout before a new chunk is received.
+	 * @param chunkPos
+	 * @return null if no chunk at the requested pos
 	 */
-	public boolean isIdle() {
-		return lastChunkTimestamp + idleTimeoutIntervalMs < System.currentTimeMillis();
-	}
-
-	/**
-	 * Check if all Chunks have been received.
-	 * 
-	 * @return true if all Chunks have been received.
-	 */
-	public boolean isComplete() {
-		return currentChunkPos == msg.getNumberOfChunks() - 1;
-	}
-
-	/**
-	 * Check if all Chunks have been received AND their checksums ALL correlated.
-	 * 
-	 * @return
-	 */
-	public boolean isCorrect() {
-		return msg.getMacOfMacs().equals(runningMAC);
-	}
-
-	/**
-	 * Mark Chunk as received and keep track of the MAC. If a chunk is received in the wrong order return false. We
-	 * allow to receive the same chunk twice as long as it is still the "latest" chunk.
-	 * 
-	 * @param pos
-	 * @param mac
-	 * @return true if chunk handled ok otherwise false.
-	 */
-	public boolean setChunkReceivedInOrder(int pos, String mac) {
-		if (pos < 0 || pos >= msg.getNumberOfChunks()) {
-			// invalid chunk position
-			return false;
+	public String getContinuationId(int chunkPos) {
+		// if the chunk requested starts after the end of the payload then the previous chunk is the last
+		if ((msg.getScheme().getChunkSize() * chunkPos) > msg.getPayloadLength()) {
+			return null;
 		}
-		if (pos == currentChunkPos + 1) {
-			currentChunkPos = pos;
-			if (pos == 0) {
-				// initialize the runningMAC
-				runningMAC = mac;
-			} else {
-				// add the MAC to the runningMAC
-				// TODO #93: calculate runningMAC
-				runningMAC = runningMAC + mac;
-			}
-			return true;
-		} else if (pos == currentChunkPos) {
-			// ignore - retry
-			return true;
-		}
-		// invalid order of chunk received
-		return false;
+		return SignatureUtils.createContinuationId(chunkPos, entropy, msg.getMsgId(), LEN_CONTINUATION_ID);
 	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -132,6 +93,22 @@ public class MessageRelayContext {
 
 	public ChannelMessage getMsg() {
 		return msg;
+	}
+
+	public int getLastChunkReceived() {
+		return lastChunkReceived;
+	}
+
+	public void setLastChunkReceived(int lastChunkReceived) {
+		this.lastChunkReceived = lastChunkReceived;
+	}
+
+	public ScheduledFuture<?> getTimeoutFuture() {
+		return timeoutFuture;
+	}
+
+	public void setTimeoutFuture(ScheduledFuture<?> timeoutFuture) {
+		this.timeoutFuture = timeoutFuture;
 	}
 
 }

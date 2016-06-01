@@ -227,6 +227,7 @@
 		<property name="chunkService" ref="tdmx.lib.message.ChunkRepository"/>
 		<property name="transferService" ref="tos.client.TransferObjectService"/>
 		<property name="relayClientService" ref="ros.client.RelayOutboundService"/>
+		<property name="messageIdleTimeoutSec" value="300"/>
 	</bean>
 
 

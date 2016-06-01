@@ -18,8 +18,6 @@
  */
 package org.tdmx.server.ws.mrs;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.tdmx.lib.control.domain.AccountZone;
@@ -103,6 +101,24 @@ public class MRSServerSession extends WebServiceSession {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * MRS sessions may not be idled out if any messages are not yet completely transferred and we have not yet time'd
+	 * them out.
+	 */
+	@Override
+	public boolean isIdle(java.util.Date lastCutoffDate) {
+		if (super.isIdle(lastCutoffDate)) {
+			for (Map.Entry<String, Object> attrs : attributeMap.entrySet()) {
+				if (isMsgAttr(attrs.getKey())) {
+					// if we have any incomplete messages, then we cannot be idle.
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
 		// MRS does not handle any inbound objects
@@ -166,20 +182,6 @@ public class MRSServerSession extends WebServiceSession {
 
 	public void removeMessageContext(String msgId) {
 		removeAttribute(createMessageKey(msgId));
-	}
-
-	public List<String> getTimeoutMessageIds() {
-		List<String> result = new ArrayList<>();
-
-		for (Map.Entry<String, Object> attrs : attributeMap.entrySet()) {
-			if (isMsgAttr(attrs.getKey())) {
-				MessageRelayContext mrc = (MessageRelayContext) attrs.getValue();
-				if (mrc.isIdle()) {
-					result.add(mrc.getMsgId());
-				}
-			}
-		}
-		return result;
 	}
 
 	// -------------------------------------------------------------------------
