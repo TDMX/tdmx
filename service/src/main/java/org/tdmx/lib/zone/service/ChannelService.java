@@ -24,7 +24,6 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.scs.ws.SCS;
 import org.tdmx.lib.common.domain.ProcessingState;
-import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -424,10 +423,9 @@ public interface ChannelService {
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
-	 * @param receipt
-	 *            the delivery report.
+	 * @return the flowquota state.
 	 */
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt);
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.

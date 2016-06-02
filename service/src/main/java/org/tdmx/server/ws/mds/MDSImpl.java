@@ -41,7 +41,6 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
@@ -62,14 +61,12 @@ import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.message.service.ChunkService;
 import org.tdmx.lib.zone.domain.Address;
-import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowQuota;
-import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
@@ -131,7 +128,6 @@ public class MDSImpl implements MDS {
 	private int minTransactionTimeoutSec = 60; // 60s
 
 	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
-	private static final int DEFAULT_TX_TIMEOUT_SEC = 1800;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -274,37 +270,18 @@ public class MDSImpl implements MDS {
 			// caching the ROS address of the reverse channel
 
 			MessageContext ctx = rcv.endTransaction(tx.getXid());
-			if (ctx != null && ack.getDr() == null) {
-				// error not acknowledging previously received msg
-				ErrorCode.setError(ErrorCode.InvalidNonTransactionalAcknowledge, response, tx.getXid(), ctx.getMsgId());
-				return response;
-			} else if (ctx == null && ack.getDr() != null) {
+			if (ctx == null) {
 				// no current message in the session - cannot have a DeliveryReport
-				ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptNoReceive, response, tx.getXid(),
-						ack.getDr().getMsgreference().getMsgId());
+				ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
 				return response;
-			} else if (ctx != null && ack.getDr() != null) {
-				ReceiptHolder rh = checkDr(tx.getXid(), ctx, ack.getDr(), response);
-				if (rh == null) {
-					return null;
-				}
+			} else {
 				// acknowledge the message, possibly opening the relay flow control
-				// FIXME ReceiptHolder.errorCode+msg too
 				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
-						ctx.getMsg(), rh.signature);
+						ctx.getMsg());
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 				}
-				if (ackStatus.msg.getState().isSameDomain()) {
-					// TODO #109: transfer DR back to origin
-
-				} else {
-					// relay DR back to origin
-					relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg().getState());
-				}
-			} else {
-				log.debug("No current message and no DR for " + tx.getXid());
 			}
 		} else {
 			// must be tx or non tx not neither
@@ -415,47 +392,20 @@ public class MDSImpl implements MDS {
 		// Handle the acknowledge of previous received message and initiate relay back of DR
 		// caching the ROS address of the reverse channel
 		MessageContext ctx = rcv.endTransaction(ackRequest.getXid());
-		if (ctx != null && ackRequest.getDr() == null) {
-			// error not acknowledging previously received msg
-			ErrorCode.setError(ErrorCode.InvalidNonTransactionalAcknowledge, response, ackRequest.getXid(),
-					ctx.getMsgId());
-			return response;
-		} else if (ctx == null && ackRequest.getDr() != null) {
+		if (ctx == null) {
 			// no current message in the session - cannot have a DeliveryReport
-			ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptNoReceive, response, ackRequest.getXid(),
-					ackRequest.getDr().getMsgreference().getMsgId());
+			ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
 			return response;
-		} else if (ctx != null && ackRequest.getDr() != null) {
-			// validate DR
-			ReceiptHolder rh = checkDr(ackRequest.getXid(), ctx, ackRequest.getDr(), response);
-			if (rh == null) {
-				return null;
-			}
+		} else {
 			// acknowledge the message, possibly opening the relay flow control
-			// FIXME ReceiptHolder.errorCode+msg too
 			ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
-					ctx.getMsg(), rh.signature);
-			if (ackStatus.flowControlOpened) {
+					ctx.getMsg());
+			if (ackStatus.flowControlOpened && !ctx.getMsg().getState().isSameDomain()) {
 				// relay opened FC back to origin
 				relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 			}
-			if (ackStatus.msg.getState().isSameDomain()) {
-				// transfer DR back to origin
-				// TODO #109: transfer DR back to origin
-			} else {
-				// relay DR back to origin
-				relayMsgWithRetry(session, rcv, ctx.getMsg().getChannel(), ctx.getMsg().getState());
-			}
-		} else {
-			log.debug("No current message and no DR for " + ackRequest.getXid());
 		}
 		return response;
-	}
-
-	private static class ReceiptHolder {
-		private Integer errorCode;
-		private String errorMessage;
-		private AgentSignature signature;
 	}
 
 	private Transaction getNonTransactionSpecification(Msgack ack) {
@@ -463,96 +413,6 @@ public class MDSImpl implements MDS {
 		tx.setTxtimeout(ack.getTxtimeout());
 		tx.setXid(NON_TX_SPEC_ID_PREFIX + ack.getClientId());
 		return tx;
-	}
-
-	private boolean isNonTransactionSpecification(Transaction txSpec) {
-		return txSpec.getXid().startsWith(NON_TX_SPEC_ID_PREFIX);
-	}
-
-	private ReceiptHolder checkDr(String xid, MessageContext msg, Dr ack,
-			org.tdmx.core.api.v01.common.Acknowledge response) {
-		Dr dr = checkAcknowledge(xid, msg, ack, response);
-		if (dr == null) {
-			return null;
-		}
-		ReceiptHolder res = new ReceiptHolder();
-		if (dr.getError() != null) {
-			res.errorCode = dr.getError().getCode();
-			res.errorMessage = dr.getError().getDescription();
-		}
-		if (dr.getReceiptsignature() != null) {
-			AgentSignature receipt = checkAcknowledgeSignature(msg, dr, response);
-			if (receipt == null) {
-				return null;
-			}
-			res.signature = receipt;
-		}
-		return res;
-	}
-
-	private AgentSignature checkAcknowledgeSignature(MessageContext msg, Dr dr,
-			org.tdmx.core.api.v01.common.Acknowledge response) {
-		AgentSignature receipt = a2d.mapUserSignature(dr.getReceiptsignature());
-		// check that the DR signer is the same as the receiver UC
-		if (!receipt.getCertificateChainPem()
-				.equals(msg.getMsg().getDeliveryReport().getReceiverSignature().getCertificateChainPem())) {
-			ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptSignerMismatch, response);
-			return null;
-		}
-		// check signature
-		if (!SignatureUtils.checkDeliveryReceiptSignature(dr)) {
-			ErrorCode.setError(ErrorCode.InvalidSignatureDeliveryReceipt, response);
-			return null;
-		}
-		return receipt;
-	}
-
-	private Dr checkAcknowledge(String xid, MessageContext msg, Dr dr,
-			org.tdmx.core.api.v01.common.Acknowledge response) {
-		// check that the ack of the msg in the dr matches the ctx.
-		if (!dr.getMsgreference().getMsgId().equals(msg.getMsgId())) {
-			ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptMsgIdMismatch, response, xid, msg.getMsgId(),
-					dr.getMsgreference().getMsgId());
-			return null;
-		}
-		if (!dr.getMsgreference().getSignature().equals(msg.getMsg().getSignature().getValue())) {
-			ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptSignatureMismatch, response, xid, msg.getMsgId());
-			return null;
-		}
-		// extref is optional but must be replied exactly as received
-		if (StringUtils.hasText(dr.getMsgreference().getExternalReference())) {
-			if (!dr.getMsgreference().getExternalReference().equals(msg.getMsg().getExternalReference())) {
-				ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptExtRefMismatch, response, xid, msg.getMsgId());
-				return null;
-			}
-		} else if (StringUtils.hasText(msg.getMsg().getExternalReference())) {
-			ErrorCode.setError(ErrorCode.InvalidDeliveryReceiptExtRefMismatch, response, xid, msg.getMsgId());
-			return null;
-		}
-
-		// if it's a NACK we must describe the problem.
-		if (dr.getError() != null) {
-			if (dr.getError().getCode() == 0) {
-				ErrorCode.setError(ErrorCode.MissingErrorCode, response);
-				return null;
-			}
-			if (!StringUtils.hasText(dr.getError().getDescription())) {
-				ErrorCode.setError(ErrorCode.MissingErrorDescription, response);
-				return null;
-			}
-		}
-
-		// DR can sign the error and the message ref, but if we don't have an error it must be signed.
-		if (dr.getError() == null && dr.getReceiptsignature() == null) {
-			ErrorCode.setError(ErrorCode.MissingUserSignature, response);
-			return null;
-		}
-		if (dr.getReceiptsignature() != null) {
-			if (validator.checkUsersignature(dr.getReceiptsignature(), response) == null) {
-				return null;
-			}
-		}
-		return dr;
 	}
 
 	@Override
@@ -675,37 +535,6 @@ public class MDSImpl implements MDS {
 				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
 						rs.getErrorCode().getErrorMessage());
 				channelService.updateStatusFlowQuota(fc.getId(), error);
-				// remove any cached ros address since not working
-				rc.clearRosTcpAddress(channel);
-			}
-		} else {
-			// cache the working ROS address
-			rc.setRosTcpAddress(channel, rs.getRosTcpAddress());
-		}
-	}
-
-	private void relayMsgWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel, MessageState state) {
-		// relay to the last known good ros for the channel.
-		RelayStatus rs = relayClientService.relayChannelMessage(rc.getRosTcpAddress(channel), session.getAccountZone(),
-				session.getZone(), session.getDomain(), channel, state);
-		if (!rs.isSuccess()) {
-			if (rs.getErrorCode().isRetryable()) {
-				RelayStatus retry = relayClientService.relayChannelMessage(null /* get new MRS session */,
-						session.getAccountZone(), session.getZone(), session.getDomain(), channel, state);
-				if (!retry.isSuccess()) {
-					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
-							rs.getErrorCode().getErrorMessage());
-					channelService.updateMessageProcessingState(state.getId(), error);
-					// remove any cached ros address since not working
-					rc.clearRosTcpAddress(channel);
-				} else {
-					// cache the potentially changed ROS address
-					rc.setRosTcpAddress(channel, retry.getRosTcpAddress());
-				}
-			} else {
-				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
-						rs.getErrorCode().getErrorMessage());
-				channelService.updateMessageProcessingState(state.getId(), error);
 				// remove any cached ros address since not working
 				rc.clearRosTcpAddress(channel);
 			}

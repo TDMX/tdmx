@@ -47,11 +47,17 @@ The trust in a given User Certificate is achieved as follows:
 The lifecycle of messages sent to the ServiceProvider are shown below.
 ![Message Lifecycle](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/message-status.png "logical-concepts/message-status.png")
 
-The sender also is capable of receiving the message delivery report - or receipt. This is shown by diagram below:
+In the case that the sender and receiver belong to the same domain, then there is no actual relay of the message . The message lifecycle looks like:
 
 ![Message Lifecycle (Same Domain)](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/message-status-same-domain.png "logical-concepts/message-status-same-domain.png")
 
-In the case that the sender and receiver belong to the same domain, then there is no effective relay of the message and delivery report and the message lifecycle looks like:
+The persistence lifecycle of messages and chunks is shown below:
 
-![Receipt Lifecycle](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/receipt-status.png "logical-concepts/receipt-status.png")
+![Message Persistence](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/message-persistence.png "logical-concepts/message-persistence.png")
+
+### Service Interactions
+
+Within the service provider implementation, the following diagram shows how the internal services interact to provide the overall communication function.
+
+![Service Interactions](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/service-interactions.png "logical-concepts/service-interactions.png")
 

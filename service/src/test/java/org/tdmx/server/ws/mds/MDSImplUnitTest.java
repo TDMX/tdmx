@@ -279,6 +279,8 @@ public class MDSImplUnitTest {
 		assertTrue(setCft);
 	}
 
+	// TODO #101: inject message and then do receive, then the transactional variants.
+
 	private void assertSuccess(Acknowledge ack) {
 		assertNotNull(ack);
 		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";

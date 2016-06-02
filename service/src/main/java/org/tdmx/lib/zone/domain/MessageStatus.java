@@ -26,9 +26,7 @@ public enum MessageStatus {
 	TRANSFERRED,
 	READY,
 	DOWNLOADED,
-	REDELIVER,
-	DELIVERED,
-	UNDELIVERED;
+	DELIVERED;
 
 	public static final int MAX_MSGSTATUS_LEN = 12;
 }

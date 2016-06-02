@@ -36,7 +36,6 @@ import org.tdmx.lib.zone.dao.ChannelDao;
 import org.tdmx.lib.zone.dao.DestinationDao;
 import org.tdmx.lib.zone.dao.MessageDao;
 import org.tdmx.lib.zone.dao.ServiceDao;
-import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
@@ -598,14 +597,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg, AgentSignature receipt) {
+	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg) {
 		// lock quota, reduce undelivered buffer, set status if crossing low limit
 		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
 		if (existingMsg != null) {
-			existingMsg.setReceipt(receipt);
-
 			existingMsg.getState().setStatus(MessageStatus.DELIVERED);
-			existingMsg.getState().setProcessingState(ProcessingState.pending());
 		}
 
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
