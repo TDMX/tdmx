@@ -60,7 +60,7 @@ import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.scs.GetMOSSession;
 import org.tdmx.core.api.v01.scs.GetMOSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
-import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -291,7 +291,7 @@ public class SendFile implements CommandExecutable {
 		// an identifier which is constant for all sends from this client
 		String clientId = ByteArray.asHex(EntropySource.getRandomBytes(8));
 		// we make a single local transaction to use for each send
-		LocalTransactionSpecification lt = new LocalTransactionSpecification();
+		Localtransaction lt = new Localtransaction();
 		lt.setClientId(clientId);
 		lt.setTxtimeout(3600);
 

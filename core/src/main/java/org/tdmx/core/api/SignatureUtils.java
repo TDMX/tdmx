@@ -39,14 +39,13 @@ import org.tdmx.core.api.v01.msg.Channel;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.UserSignature;
+import org.tdmx.core.api.v01.msg.Usersignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -116,43 +115,9 @@ public class SignatureUtils {
 		}
 	}
 
-	public static boolean checkDeliveryReceiptSignature(Dr dr) {
-		PKIXCertificate signingPublicCert = CertificateIOUtils
-				.safeDecodeX509(dr.getReceiptsignature().getUserIdentity().getUsercertificate());
-		SignatureAlgorithm alg = SignatureAlgorithm
-				.getByAlgorithmName(dr.getReceiptsignature().getSignaturevalue().getSignatureAlgorithm().value());
-
-		String valueToSign = getValueToSign(dr);
-		String signatureHex = dr.getReceiptsignature().getSignaturevalue().getSignature();
-
-		return StringSigningUtils.checkHexSignature(signingPublicCert.getCertificate().getPublicKey(), alg, valueToSign,
-				signatureHex);
-	}
-
-	public static void createDeliveryReceiptSignature(PKIXCredential credential, SignatureAlgorithm alg,
-			Date signatureDate, Dr dr) {
-		UserSignature us = new UserSignature();
-
-		UserIdentity id = new UserIdentity();
-		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
-		id.setDomaincertificate(credential.getIssuerPublicCert().getX509Encoded());
-		id.setRootcertificate(credential.getZoneRootPublicCert().getX509Encoded());
-
-		Signaturevalue sig = new Signaturevalue();
-		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
-		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
-
-		us.setSignaturevalue(sig);
-		us.setUserIdentity(id);
-		dr.setReceiptsignature(us);
-
-		String valueToSignHeader = getValueToSign(dr);
-		sig.setSignature(StringSigningUtils.getHexSignature(credential.getPrivateKey(), alg, valueToSignHeader));
-	}
-
 	public static void createMessageSignature(PKIXCredential credential, SignatureAlgorithm alg, Calendar signatureDate,
 			Header header, Payload payload) {
-		UserSignature us = new UserSignature();
+		Usersignature us = new Usersignature();
 
 		UserIdentity id = new UserIdentity();
 		id.setUsercertificate(credential.getPublicCert().getX509Encoded());
@@ -242,7 +207,7 @@ public class SignatureUtils {
 		sig.setTimestamp(CalendarUtils.getTimestamp(signatureDate));
 		sig.setSignatureAlgorithm(org.tdmx.core.api.v01.msg.SignatureAlgorithm.fromValue(alg.getAlgorithm()));
 
-		UserSignature signature = new UserSignature();
+		Usersignature signature = new Usersignature();
 		signature.setUserIdentity(id);
 		signature.setSignaturevalue(sig);
 		ds.setUsersignature(signature);
@@ -308,18 +273,6 @@ public class SignatureUtils {
 			return null;
 		}
 		return ByteArray.asHex(hashedByes);
-	}
-
-	private static String getValueToSign(Dr dr) {
-		StringBuilder value = new StringBuilder();
-
-		appendValueToSign(value, dr.getMsgreference());
-		if (dr.getError() != null) {
-			appendValueToSign(value, dr.getError());
-		}
-		value.append(toValue(dr.getReceiptsignature().getSignaturevalue().getTimestamp()));
-
-		return value.toString();
 	}
 
 	private static String getValueToSign(Header header, Payload payload) {

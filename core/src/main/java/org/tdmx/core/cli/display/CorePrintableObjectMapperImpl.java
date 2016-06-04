@@ -92,8 +92,8 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 			return toLog((org.tdmx.core.api.v01.msg.Signaturevalue) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.Administratorsignature) {
 			return toLog((org.tdmx.core.api.v01.msg.Administratorsignature) object);
-		} else if (object instanceof org.tdmx.core.api.v01.msg.UserSignature) {
-			return toLog((org.tdmx.core.api.v01.msg.UserSignature) object);
+		} else if (object instanceof org.tdmx.core.api.v01.msg.Usersignature) {
+			return toLog((org.tdmx.core.api.v01.msg.Usersignature) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.Currentchannelauthorization) {
 			return toLog((org.tdmx.core.api.v01.msg.Currentchannelauthorization) object);
 		} else if (object instanceof org.tdmx.core.api.v01.msg.RequestedChannelAuthorization) {
@@ -290,7 +290,7 @@ public class CorePrintableObjectMapperImpl implements PrintableObjectMapper {
 		return result;
 	}
 
-	public PrintableObject toLog(org.tdmx.core.api.v01.msg.UserSignature sig) {
+	public PrintableObject toLog(org.tdmx.core.api.v01.msg.Usersignature sig) {
 		PrintableObject result = new PrintableObject("UserSignature");
 		result.add("identity", sig.getUserIdentity());
 		result.add("signature", sig.getSignaturevalue());

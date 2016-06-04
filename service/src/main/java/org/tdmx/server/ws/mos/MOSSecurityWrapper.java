@@ -20,16 +20,12 @@ package org.tdmx.server.ws.mos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.mos.Acknowledge;
-import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetChannel;
 import org.tdmx.core.api.v01.mos.GetChannelResponse;
 import org.tdmx.core.api.v01.mos.ListChannel;
 import org.tdmx.core.api.v01.mos.ListChannelResponse;
-import org.tdmx.core.api.v01.mos.Receipt;
-import org.tdmx.core.api.v01.mos.ReceiptResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
@@ -196,38 +192,6 @@ public class MOSSecurityWrapper implements MOS {
 			partitionIdService.setPartitionId(az.getZonePartitionId());
 
 			return delegate.upload(parameters);
-
-		} finally {
-			authorizationService.clearAuthorizedSession();
-			partitionIdService.clearPartitionId();
-		}
-	}
-
-	@Override
-	public ReceiptResponse receipt(Receipt parameters) {
-		MOSServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.receipt(parameters);
-
-		} finally {
-			authorizationService.clearAuthorizedSession();
-			partitionIdService.clearPartitionId();
-		}
-	}
-
-	@Override
-	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
-		MOSServerSession session = securityManager.getSession(parameters.getSessionId());
-		authorizationService.setAuthorizedSession(session);
-		try {
-			AccountZone az = session.getAccountZone();
-			partitionIdService.setPartitionId(az.getZonePartitionId());
-
-			return delegate.acknowledge(parameters);
 
 		} finally {
 			authorizationService.clearAuthorizedSession();

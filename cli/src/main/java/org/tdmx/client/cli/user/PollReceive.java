@@ -22,13 +22,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 import org.tdmx.client.cli.ClientCliUtils;
 import org.tdmx.client.cli.ClientCliUtils.DestinationDescriptor;
 import org.tdmx.client.cli.ClientCliUtils.UnencryptedSessionKey;
 import org.tdmx.client.cli.ClientErrorCode;
-import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.buffer.TemporaryFileManagerImpl;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
@@ -56,13 +54,12 @@ import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
-import org.tdmx.core.api.v01.tx.Msgack;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -229,13 +226,13 @@ public class PollReceive implements CommandExecutable {
 
 		// do receive of the message
 		String uniqClientId = ByteArray.asHex(EntropySource.getRandomBytes(16));
-		Msgack nonTx = new Msgack();
+		Localtransaction nonTx = new Localtransaction();
 		nonTx.setClientId(uniqClientId);
 		nonTx.setTxtimeout(60);
 
 		Receive receiveRequest = new Receive();
 		receiveRequest.setSessionId(sessionResponse.getSession().getSessionId());
-		receiveRequest.setMsgack(nonTx);
+		receiveRequest.setLocaltransaction(nonTx);
 		receiveRequest.setWaitTimeoutSec(60);
 
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
@@ -418,16 +415,9 @@ public class PollReceive implements CommandExecutable {
 		msgRef.setMsgId(msg.getHeader().getMsgId());
 		msgRef.setSignature(msg.getHeader().getUsersignature().getSignaturevalue().getSignature());
 
-		Dr dr = new Dr();
-		dr.setError(error);
-		dr.setMsgreference(msgRef);
-
-		SignatureUtils.createDeliveryReceiptSignature(uc, SignatureAlgorithm.SHA_384_RSA, new Date(), dr);
-
 		Acknowledge ackRequest = new Acknowledge();
 		ackRequest.setXid(xid);
 		ackRequest.setSessionId(sessionId);
-		ackRequest.setDr(dr);
 		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
 		if (!ackResponse.isSuccess()) {
 			out.println("Failed to NACK receipt. ", ackResponse.getError());

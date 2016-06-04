@@ -87,12 +87,11 @@ public class ApiToDomainMapper {
 		md.setEncryptionContextId(msg.getHeader().getEncryptionContextId());
 		md.setScheme(IntegratedCryptoScheme.fromName(msg.getHeader().getScheme()));
 		md.setExternalReference(msg.getHeader().getExternalReference());
-		// on submit of a message, we don't have the "receipt" signature parts, just the identity.
-		org.tdmx.core.api.v01.msg.UserSignature receipt = new org.tdmx.core.api.v01.msg.UserSignature();
-		receipt.setUserIdentity(msg.getHeader().getTo());
-		md.setReceipt(mapUserSignature(receipt));
+		// from
 		md.setSignature(mapUserSignature(msg.getHeader().getUsersignature()));
-
+		// to
+		md.setReceiverPem(CertificateIOUtils.safeX509certsToPem(msg.getHeader().getTo().getUsercertificate(),
+				msg.getHeader().getTo().getDomaincertificate(), msg.getHeader().getTo().getRootcertificate()));
 		md.setPayloadLength(msg.getPayload().getLength());
 		md.setEncryptionContext(msg.getPayload().getEncryptionContext());
 		md.setPlaintextLength(msg.getPayload().getPlaintextLength());
@@ -167,7 +166,7 @@ public class ApiToDomainMapper {
 		return s;
 	}
 
-	public AgentSignature mapUserSignature(org.tdmx.core.api.v01.msg.UserSignature signature) {
+	public AgentSignature mapUserSignature(org.tdmx.core.api.v01.msg.Usersignature signature) {
 		if (signature == null) {
 			return null;
 		}

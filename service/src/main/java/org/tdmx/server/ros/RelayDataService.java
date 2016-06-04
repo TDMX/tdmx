@@ -70,20 +70,6 @@ public interface RelayDataService {
 	 */
 	public List<ChannelMessage> getForwardRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
 
-	/**
-	 * Delivered ChannelMessages (where {@link ChannelMessage#getReceipt()} is signed) have the DR relayed back
-	 * {@see RelayDirection#Backwards}
-	 * 
-	 * @param az
-	 * @param z
-	 * @param d
-	 * @param channel
-	 * @param maxMsg
-	 *            fetch up to this number of pending message receipts.
-	 * @return
-	 */
-	public List<ChannelMessage> getReverseRelayReceipts(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
-
 	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
 			FlowControlStatus relayStatus);
 

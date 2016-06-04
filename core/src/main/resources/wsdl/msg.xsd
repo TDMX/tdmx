@@ -610,16 +610,6 @@
 			<xs:element ref="pos"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="DeliveryReport">
-		<xs:annotation>
-			<xs:documentation>delivery failures are not signed ( ie. service provider failures, ttl timeouts etc ). On successful receipt, the message receiver signs the msgReference.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element ref="msgreference"/>
-			<xs:element ref="common:error" minOccurs="0"/>
-			<xs:element ref="receiptsignature" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:simpleType name="messageauthenticationcode">
 		<xs:annotation>
 			<xs:documentation>Message Authentication Code / Digest</xs:documentation>
@@ -670,16 +660,6 @@
 	<xs:element name="data" type="xs:base64Binary">
 		<xs:annotation>
 			<xs:documentation>The chunk data.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="receiptsignature" type="UserSignature">
-		<xs:annotation>
-			<xs:documentation>The signature of receipt by the target user. All the msgreference fields are signed by the receiptsignature.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="dr" type="DeliveryReport">
-		<xs:annotation>
-			<xs:documentation>The message delivery report.</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 </xs:schema>

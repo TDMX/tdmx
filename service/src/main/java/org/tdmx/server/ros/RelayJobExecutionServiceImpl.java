@@ -87,19 +87,11 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 		switch (job.getType()) {
 		case Data:
 			// relay data
-			if (RelayDirection.Fowards == job.getChannelContext().getDirection()) {
-				relayMessageData(job.getChannelContext(), job);
-			} else {
-				relayReceiptData(job.getChannelContext(), job);
-			}
+			relayMessageData(job.getChannelContext(), job);
 			break;
 		case Fetch:
 			// fetch data
-			if (RelayDirection.Fowards == job.getChannelContext().getDirection()) {
-				fetchMessageData(job.getChannelContext(), job);
-			} else {
-				fetchReceiptData(job.getChannelContext(), job);
-			}
+			fetchMessageData(job.getChannelContext(), job);
 			break;
 		case MetaData:
 			relayMetaData(job.getChannelContext(), job);
@@ -253,79 +245,6 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 			}
 		}
 		return null;
-	}
-
-	private void fetchReceiptData(RelayChannelContext ctx, RelayJobContext job) {
-		// fetch the delivery report data from the DB
-		List<ChannelMessage> msgs = relayDataService.getReverseRelayReceipts(ctx.getAccountZone(), ctx.getZone(),
-				ctx.getDomain(), ctx.getChannel(), ctx.getMaxConcurrentMessages());
-
-		job.setChannelMessages(msgs);
-	}
-
-	private void relayReceiptData(RelayChannelContext ctx, RelayJobContext job) {
-		// like relayMsg but the DR instead
-		// fetch the msg containing receipt from the db if it wasn't fetched already
-		ChannelMessage msg = job.getChannelMessage();
-		if (msg == null) {
-			msg = relayDataService.getMessage(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(), ctx.getChannel(),
-					job.getObjectId());
-		}
-		if (msg == null) {
-			log.warn("Unable to find message for . " + job);
-			return;
-		}
-
-		// relay the MSG
-		if (msg.getState().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
-			if (ctx.getDirection() == RelayDirection.Both) {
-				// TODO #93: LATER shortcut relay for same domain
-			} else {
-				MRSSessionHolder sh = getSessionHolder(ctx);
-				if (sh.isValid()) {
-					// use the MRS to relay the CA to the other side
-					if (log.isDebugEnabled()) {
-						log.debug("Relay DR " + ctx.getChannelKey());
-					}
-
-					Relay relayCA = new Relay();
-					relayCA.setSessionId(sh.getMrsSessionId());
-					relayCA.setDr(d2a.mapDeliveryReceipt(msg));
-					try {
-						RelayResponse rr = sh.getMrs().relay(relayCA);
-						if (rr.isSuccess()) {
-							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), ProcessingState.none());
-							// there is no "reverse" flowcontrol to stop DR relaying
-						} else {
-							ProcessingState error = ProcessingState.error(rr.getError().getCode(),
-									rr.getError().getDescription());
-							relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-									ctx.getDomain(), ctx.getChannel(), msg.getState().getId(), error);
-						}
-					} catch (WebServiceException wse) {
-						// runtime error handling
-						if (log.isDebugEnabled()) {
-							log.debug("MRS call to relay DR failed.", wse);
-						}
-						String errorInfo = StringUtils.getExceptionSummary(wse);
-						log.info("MRS relay MSG call to remote failed " + errorInfo);
-						ProcessingState error = ProcessingState.error(
-								ErrorCode.RelayChannelAuthorizationFault.getErrorCode(),
-								ErrorCode.RelayChannelAuthorizationFault.getErrorDescription(errorInfo));
-
-						relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(),
-								ctx.getDomain(), ctx.getChannel(), job.getObjectId(), error);
-
-					}
-				} else {
-					// update MSG processing state to error of the MRS session holder error
-					ProcessingState error = ProcessingState.error(sh.getErrorCode(), sh.getErrorMessage());
-					relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
-							ctx.getChannel(), job.getObjectId(), error);
-				}
-			}
-		}
 	}
 
 	private void relayMetaData(RelayChannelContext ctx, RelayJobContext job) {

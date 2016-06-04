@@ -46,7 +46,7 @@ import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
 import org.tdmx.core.api.v01.tx.ForgetResponse;
-import org.tdmx.core.api.v01.tx.Msgack;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Recover;
@@ -253,13 +253,13 @@ public class MDSImpl implements MDS {
 			if (tx == null) {
 				return response;
 			}
-			if (recvRequest.getMsgack() != null) {
+			if (recvRequest.getLocaltransaction() != null) {
 				ErrorCode.setError(ErrorCode.InvalidReceiveAcknowledgeMode, response);
 				return response;
 			}
-		} else if (recvRequest.getMsgack() != null) {
+		} else if (recvRequest.getLocaltransaction() != null) {
 			// validate NonTransaction info from api
-			Msgack ack = validator.checkMessageAutoAcknowledge(recvRequest.getMsgack(), response,
+			Localtransaction ack = validator.checkLocalTransaction(recvRequest.getLocaltransaction(), response,
 					minTransactionTimeoutSec, maxTransactionTimeoutSec);
 			if (ack == null) {
 				return response;
@@ -408,7 +408,7 @@ public class MDSImpl implements MDS {
 		return response;
 	}
 
-	private Transaction getNonTransactionSpecification(Msgack ack) {
+	private Transaction getNonTransactionSpecification(Localtransaction ack) {
 		Transaction tx = new Transaction();
 		tx.setTxtimeout(ack.getTxtimeout());
 		tx.setXid(NON_TX_SPEC_ID_PREFIX + ack.getClientId());

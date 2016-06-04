@@ -73,55 +73,6 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="receiptRequestType">
-		<xs:annotation>
-			<xs:documentation>receive a DeliveryReport either in the context of a transaction, or an autoacknowledging session.</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="common:Request">
-				<xs:sequence>
-					<xs:choice>
-						<xs:annotation>
-							<xs:documentation>with local transaction, the delivery report is automatically acknowledged as soon as it is returned to the client in the response.</xs:documentation>
-						</xs:annotation>
-						<xs:element ref="tx:transaction"/>
-						<xs:element ref="tx:localtransaction"/>
-					</xs:choice>
-					<xs:element ref="msg:waitTimeoutSec"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="receiptResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge">
-				<xs:choice minOccurs="0">
-					<xs:sequence>
-						<xs:element ref="msg:dr"/>
-						<xs:element ref="msg:retryCount"/>
-					</xs:sequence>
-				</xs:choice>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="acknowledgeRequestType">
-		<xs:annotation>
-			<xs:documentation>acknowledge receipt of a DeliveryReport, in the context of a non auto-acknowledging session. Use the acknowledge in the receipt operation for more efficiency.</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="common:Request">
-				<xs:sequence>
-					<xs:element ref="tx:xid"/>
-					<xs:element ref="msg:msgId"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:complexType name="acknowledgeResponseType">
-		<xs:complexContent>
-			<xs:extension base="common:Acknowledge"/>
-		</xs:complexContent>
-	</xs:complexType>
 	<!-- ********************************************* -->
 	<!--    MOS SEND OPERATION TYPES                                                     -->
 	<!--                                        -->
@@ -172,10 +123,6 @@
 	<xs:element name="listChannelResponse" type="listChannelResponseType"/>
 	<xs:element name="getChannel" type="getChannelRequestType"/>
 	<xs:element name="getChannelResponse" type="getChannelResponseType"/>
-	<xs:element name="receipt" type="receiptRequestType"/>
-	<xs:element name="receiptResponse" type="receiptResponseType"/>
-	<xs:element name="acknowledge" type="acknowledgeRequestType"/>
-	<xs:element name="acknowledgeResponse" type="acknowledgeResponseType"/>
 	<xs:element name="submit" type="submitRequestType"/>
 	<xs:element name="submitResponse" type="submitResponseType"/>
 	<xs:element name="upload" type="uploadRequestType"/>

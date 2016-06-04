@@ -29,16 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.api.SignatureUtils;
-import org.tdmx.core.api.v01.mos.Acknowledge;
-import org.tdmx.core.api.v01.mos.AcknowledgeResponse;
 import org.tdmx.core.api.v01.mos.GetAddress;
 import org.tdmx.core.api.v01.mos.GetAddressResponse;
 import org.tdmx.core.api.v01.mos.GetChannel;
 import org.tdmx.core.api.v01.mos.GetChannelResponse;
 import org.tdmx.core.api.v01.mos.ListChannel;
 import org.tdmx.core.api.v01.mos.ListChannelResponse;
-import org.tdmx.core.api.v01.mos.Receipt;
-import org.tdmx.core.api.v01.mos.ReceiptResponse;
 import org.tdmx.core.api.v01.mos.Submit;
 import org.tdmx.core.api.v01.mos.SubmitResponse;
 import org.tdmx.core.api.v01.mos.Upload;
@@ -52,7 +48,7 @@ import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
 import org.tdmx.core.api.v01.tx.ForgetResponse;
-import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Recover;
@@ -182,10 +178,6 @@ public class MOSImpl implements MOS {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		PrepareResponse response = new PrepareResponse();
-		if (parameters.getDr() != null) {
-			ErrorCode.setError(ErrorCode.XATransactionInvalidDR, response);
-			return response;
-		}
 		if (!StringUtils.hasText(parameters.getXid())) {
 			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
 			return response;
@@ -218,10 +210,6 @@ public class MOSImpl implements MOS {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
 		CommitResponse response = new CommitResponse();
-		if (parameters.getDr() != null) {
-			ErrorCode.setError(ErrorCode.XATransactionInvalidDR, response);
-			return response;
-		}
 		if (!StringUtils.hasText(parameters.getXid())) {
 			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
 			return response;
@@ -622,18 +610,6 @@ public class MOSImpl implements MOS {
 		return response;
 	}
 
-	@Override
-	public ReceiptResponse receipt(Receipt parameters) {
-		// TODO separate MOS dr receipt into MAS - message acknowledge service
-		return null;
-	}
-
-	@Override
-	public AcknowledgeResponse acknowledge(Acknowledge parameters) {
-		// TODO separate MOS dr receipt into MAS - message acknowledge service
-		return null;
-	}
-
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -807,7 +783,7 @@ public class MOSImpl implements MOS {
 		}
 	}
 
-	private Transaction getNonTransactionSpecification(LocalTransactionSpecification local) {
+	private Transaction getNonTransactionSpecification(Localtransaction local) {
 		Transaction tx = new Transaction();
 		tx.setTxtimeout(local.getTxtimeout());
 		tx.setXid(NON_TX_SPEC_ID_PREFIX + local.getClientId());

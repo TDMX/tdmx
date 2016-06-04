@@ -41,7 +41,11 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.v01.mos.ws.MOS;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
@@ -92,15 +96,10 @@ public class ChannelMessage implements Serializable {
 	private Date ttlTimestamp;
 
 	/**
-	 * The delivery receipt double's as the receiver cert.
+	 * The public certificate of the receiving User.
 	 */
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "signatureDate", column = @Column(name = "receiverSignatureDate", nullable = true) ),
-			@AttributeOverride(name = "certificateChainPem", column = @Column(name = "receiverPem", length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false) ),
-			@AttributeOverride(name = "value", column = @Column(name = "receiverSignature", length = AgentSignature.MAX_SIGNATURE_LEN, nullable = true) ),
-			@AttributeOverride(name = "algorithm", column = @Column(name = "receiverSignatureAlgorithm", length = AgentSignature.MAX_SIG_ALG_LEN, nullable = true) ) })
-	private AgentSignature receipt;
+	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)
+	private String receiverPem;
 
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)
 	private String encryptionContextId;
@@ -160,6 +159,9 @@ public class ChannelMessage implements Serializable {
 	@OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private MessageState state;
 
+	@Transient
+	private PKIXCertificate[] receiverChain;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -179,7 +181,7 @@ public class ChannelMessage implements Serializable {
 		// header fields
 		this.msgId = other.getMsgId();
 		this.ttlTimestamp = other.getTtlTimestamp();
-		this.receipt = other.getReceipt();
+		this.receiverPem = other.getReceiverPem();
 		this.encryptionContextId = other.getEncryptionContextId();
 		this.scheme = other.getScheme();
 		this.signature = other.getSignature();
@@ -221,27 +223,8 @@ public class ChannelMessage implements Serializable {
 			builder.append(" sentAt=").append(signature.getSignatureDate());
 		}
 		builder.append(" payloadLength=").append(payloadLength);
-		if (receipt != null) {
-			builder.append(" receivedAt=").append(receipt.getSignatureDate());
-		}
 		builder.append("]");
 		return builder.toString();
-	}
-
-	/**
-	 * Return the DR contained in this ChannelMessage.
-	 * 
-	 * @return the DR contained in this ChannelMessage.
-	 */
-	public DeliveryReceipt getDeliveryReport() {
-		DeliveryReceipt dr = new DeliveryReceipt();
-		dr.setMsgId(msgId);
-		dr.setReceiverSignature(receipt);
-		dr.setSenderSignature(signature);
-		dr.setDeliveryErrorCode(state.getDeliveryErrorCode());
-		dr.setDeliveryErrorMessage(state.getDeliveryErrorMessage());
-		dr.setExternalReference(externalReference);
-		return dr;
 	}
 
 	/**
@@ -251,6 +234,19 @@ public class ChannelMessage implements Serializable {
 	 */
 	public int getNumberOfChunks() {
 		return (int) (1 + (payloadLength / scheme.getChunkSize()));
+	}
+
+	/**
+	 * Get the PEM certificate chain of the receiver in PKIXCertificate form, converting and caching on the first call.
+	 * 
+	 * @return
+	 * @throws CryptoCertificateException
+	 */
+	public PKIXCertificate[] getReceiverChain() {
+		if (receiverChain == null && getReceiverPem() != null) {
+			receiverChain = CertificateIOUtils.safePemToX509certs(getReceiverPem());
+		}
+		return receiverChain;
 	}
 
 	// -------------------------------------------------------------------------
@@ -345,12 +341,12 @@ public class ChannelMessage implements Serializable {
 		this.signature = signature;
 	}
 
-	public AgentSignature getReceipt() {
-		return receipt;
+	public String getReceiverPem() {
+		return receiverPem;
 	}
 
-	public void setReceipt(AgentSignature receipt) {
-		this.receipt = receipt;
+	public void setReceiverPem(String receiverPem) {
+		this.receiverPem = receiverPem;
 	}
 
 	public String getMacOfMacs() {

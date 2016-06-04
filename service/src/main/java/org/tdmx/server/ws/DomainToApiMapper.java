@@ -37,7 +37,6 @@ import org.tdmx.core.api.v01.msg.CredentialStatus;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationinfo;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.FlowStatus;
 import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Grant;
@@ -45,7 +44,6 @@ import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.IpAddressList;
 import org.tdmx.core.api.v01.msg.Limit;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.RequestedChannelAuthorization;
@@ -55,7 +53,7 @@ import org.tdmx.core.api.v01.msg.SignatureAlgorithm;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.User;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.UserSignature;
+import org.tdmx.core.api.v01.msg.Usersignature;
 import org.tdmx.core.system.lang.CalendarUtils;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredential;
@@ -228,7 +226,7 @@ public class DomainToApiMapper {
 		h.setScheme(msg.getScheme().getName());
 		h.setExternalReference(msg.getExternalReference());
 		h.setTtl(CalendarUtils.cast(msg.getTtlTimestamp()));
-		h.setTo(mapUserIdentity(msg.getReceipt().getCertificateChain()));
+		h.setTo(mapUserIdentity(msg.getReceiverChain()));
 		h.setUsersignature(mapUserSignature(msg.getSignature()));
 		m.setHeader(h);
 
@@ -252,22 +250,6 @@ public class DomainToApiMapper {
 		c.setMac(chunk.getMac());
 		c.setData(chunk.getData());
 		return c;
-	}
-
-	public Dr mapDeliveryReceipt(org.tdmx.lib.zone.domain.ChannelMessage msg) {
-		if (msg == null) {
-			return null;
-		}
-		Dr dr = new Dr();
-
-		Msgreference r = new Msgreference();
-		r.setMsgId(msg.getMsgId());
-		r.setExternalReference(msg.getExternalReference());
-		r.setSignature(msg.getSignature().getValue());
-		dr.setMsgreference(r);
-
-		dr.setReceiptsignature(mapUserSignature(msg.getReceipt()));
-		return dr;
 	}
 
 	public Channel mapChannel(org.tdmx.lib.zone.domain.Channel channel) {
@@ -343,11 +325,11 @@ public class DomainToApiMapper {
 		return s;
 	}
 
-	public UserSignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
+	public Usersignature mapUserSignature(org.tdmx.lib.zone.domain.AgentSignature agentSignature) {
 		if (agentSignature == null) {
 			return null;
 		}
-		UserSignature us = new UserSignature();
+		Usersignature us = new Usersignature();
 		us.setSignaturevalue(mapSignature(agentSignature));
 		us.setUserIdentity(mapUserIdentity(agentSignature.getCertificateChain()));
 		return us;

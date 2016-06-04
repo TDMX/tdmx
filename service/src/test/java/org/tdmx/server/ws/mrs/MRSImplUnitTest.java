@@ -482,7 +482,7 @@ public class MRSImplUnitTest {
 		// relay msg + 0th chunk
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
-		assertNotNull(response.getCorrelationID());
+		assertNotNull(response.getContinuation());
 
 		Mockito.verifyZeroInteractions(mockTransferObjectService);
 
@@ -497,10 +497,10 @@ public class MRSImplUnitTest {
 		Relay chunkReq = new Relay();
 		chunkReq.setSessionId(ZAC_SESSION_ID);
 		chunkReq.setChunk(chunk);
-		chunkReq.setCorrelationID(response.getCorrelationID());
+		chunkReq.setContinuation(response.getContinuation());
 		RelayResponse chunkResponse = mrs.relay(chunkReq);
 		assertSuccess(chunkResponse);
-		assertNull(chunkResponse.getCorrelationID());
+		assertNull(chunkResponse.getContinuation());
 
 		ArgumentCaptor<Long> stateIdCaptor = ArgumentCaptor.forClass(Long.class);
 
@@ -550,7 +550,7 @@ public class MRSImplUnitTest {
 		// relay msg + only chunk
 		RelayResponse response = mrs.relay(req);
 		assertSuccess(response);
-		assertNull(response.getCorrelationID());
+		assertNull(response.getContinuation());
 
 		ArgumentCaptor<Long> stateIdCaptor = ArgumentCaptor.forClass(Long.class);
 

@@ -237,9 +237,7 @@ public class ZoneFacade {
 		sig.setValue("" + System.currentTimeMillis());
 		cm.setSignature(sig);
 
-		AgentSignature rec = new AgentSignature();
-		rec.setCertificateChainPem("RECEIVER CERT");
-		cm.setReceipt(rec);
+		cm.setReceiverPem("RECEIVER CERT");
 
 		cm.setEncryptionContext(new byte[] { 1, 2, 3, 4, 5 });
 		cm.setTtlTimestamp(new Date());

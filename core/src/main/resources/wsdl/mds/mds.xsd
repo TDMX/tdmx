@@ -83,7 +83,7 @@
 				<xs:sequence>
 					<xs:choice>
 						<xs:element ref="tx:transaction"/>
-						<xs:element ref="tx:msgack"/>
+						<xs:element ref="tx:localtransaction"/>
 					</xs:choice>
 					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
@@ -135,7 +135,7 @@
 			<xs:extension base="common:Request">
 				<xs:sequence>
 					<xs:element ref="tx:xid"/>
-					<xs:element ref="msg:dr"/>
+					<xs:element ref="tx:clientId"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

@@ -34,7 +34,6 @@ import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
-import org.tdmx.core.api.v01.msg.Dr;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Msgreference;
@@ -43,9 +42,8 @@ import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
 import org.tdmx.core.api.v01.msg.UserIdentity;
-import org.tdmx.core.api.v01.msg.UserSignature;
-import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
-import org.tdmx.core.api.v01.tx.Msgack;
+import org.tdmx.core.api.v01.msg.Usersignature;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.StringUtils;
 
@@ -73,7 +71,7 @@ public class ApiValidator {
 			ErrorCode.setError(ErrorCode.MissingDestinationSession, ack);
 			return null;
 		}
-		if (checkUsersignature(fts.getUsersignature(), ack) == null) {
+		if (checkUserSignature(fts.getUsersignature(), ack) == null) {
 			return null;
 		}
 		if (!StringUtils.hasText(fts.getEncryptionContextId())) {
@@ -154,13 +152,13 @@ public class ApiValidator {
 	}
 
 	/**
-	 * Checks all fiels are present.
+	 * Checks all fields are present.
 	 * 
 	 * @param signature
 	 * @param ack
 	 * @return
 	 */
-	public UserSignature checkUsersignature(UserSignature signature, Acknowledge ack) {
+	public Usersignature checkUserSignature(Usersignature signature, Acknowledge ack) {
 		if (signature == null) {
 			ErrorCode.setError(ErrorCode.MissingUserSignature, ack);
 			return null;
@@ -313,7 +311,7 @@ public class ApiValidator {
 		return msg;
 	}
 
-	public boolean checkTransactionChoice(Transaction tx, Msgack local, Acknowledge ack) {
+	public boolean checkTransactionChoice(Transaction tx, Localtransaction local, Acknowledge ack) {
 		if (tx == null && local == null) {
 			ErrorCode.setError(ErrorCode.MissingTransaction, ack);
 			return false;
@@ -324,26 +322,7 @@ public class ApiValidator {
 		return true;
 	}
 
-	public Msgack checkMessageAutoAcknowledge(Msgack acknowledge, Acknowledge ack, int minTxTimeoutSec,
-			int maxTxTimeoutSec) {
-		if (!StringUtils.hasText(acknowledge.getClientId())) {
-			ErrorCode.setError(ErrorCode.MissingLocalTransactionClientId, ack);
-			return null;
-		}
-		if (acknowledge.getTxtimeout() < minTxTimeoutSec || acknowledge.getTxtimeout() > maxTxTimeoutSec) {
-			ErrorCode.setError(ErrorCode.InvalidTransactionTimeout, ack, minTxTimeoutSec, maxTxTimeoutSec);
-			return null;
-		}
-		// the DR is optional - if its provided we check it
-		if (acknowledge.getDr() != null) {
-			if (checkDeliveryReport(acknowledge.getDr(), ack) == null) {
-				return null;
-			}
-		}
-		return acknowledge;
-	}
-
-	public boolean checkTransactionChoice(Transaction tx, LocalTransactionSpecification local, int minTxTimeoutSec,
+	public boolean checkTransactionChoice(Transaction tx, Localtransaction local, int minTxTimeoutSec,
 			int maxTxTimeoutSec, Acknowledge ack) {
 		if (tx == null && local == null) {
 			ErrorCode.setError(ErrorCode.MissingTransaction, ack);
@@ -369,8 +348,8 @@ public class ApiValidator {
 		return tx;
 	}
 
-	public LocalTransactionSpecification checkLocalTransaction(LocalTransactionSpecification local, Acknowledge ack,
-			int minTxTimeoutSec, int maxTxTimeoutSec) {
+	public Localtransaction checkLocalTransaction(Localtransaction local, Acknowledge ack, int minTxTimeoutSec,
+			int maxTxTimeoutSec) {
 		if (!StringUtils.hasText(local.getClientId())) {
 			ErrorCode.setError(ErrorCode.MissingLocalTransactionClientId, ack);
 			return null;
@@ -380,20 +359,6 @@ public class ApiValidator {
 			return null;
 		}
 		return local;
-	}
-
-	public Dr checkDeliveryReport(Dr dr, Acknowledge ack) {
-		if (dr == null) {
-			ErrorCode.setError(ErrorCode.MissingDeliveryReceipt, ack);
-			return null;
-		}
-		if (checkMsgreference(dr.getMsgreference(), ack) == null) {
-			return null;
-		}
-		if (checkUsersignature(dr.getReceiptsignature(), ack) == null) {
-			return null;
-		}
-		return dr;
 	}
 
 	public Msgreference checkMsgreference(Msgreference ref, Acknowledge ack) {
@@ -480,7 +445,7 @@ public class ApiValidator {
 		if (checkChannel(hdr.getChannel(), ack) == null) {
 			return null;
 		}
-		if (checkUsersignature(hdr.getUsersignature(), ack) == null) {
+		if (checkUserSignature(hdr.getUsersignature(), ack) == null) {
 			return null;
 		}
 		if (hdr.getTo() == null) {

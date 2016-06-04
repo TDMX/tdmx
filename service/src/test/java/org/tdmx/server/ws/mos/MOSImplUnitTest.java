@@ -66,7 +66,7 @@ import org.tdmx.core.api.v01.tx.Commit;
 import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Forget;
 import org.tdmx.core.api.v01.tx.ForgetResponse;
-import org.tdmx.core.api.v01.tx.LocalTransactionSpecification;
+import org.tdmx.core.api.v01.tx.Localtransaction;
 import org.tdmx.core.api.v01.tx.Prepare;
 import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Recover;
@@ -381,7 +381,7 @@ public class MOSImplUnitTest {
 		Submit req = new Submit(); // local tx
 		req.setSessionId(UC_SESSION_ID);
 
-		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		Localtransaction local = new Localtransaction();
 		local.setClientId("Client-" + System.currentTimeMillis());
 		local.setTxtimeout(60);
 		req.setLocaltransaction(local);
@@ -418,7 +418,7 @@ public class MOSImplUnitTest {
 		Submit req = new Submit(); // local tx
 		req.setSessionId(UC_SESSION_ID);
 
-		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		Localtransaction local = new Localtransaction();
 		local.setClientId("Client-" + System.currentTimeMillis());
 		local.setTxtimeout(60);
 		req.setLocaltransaction(local);
@@ -468,7 +468,7 @@ public class MOSImplUnitTest {
 		Submit req = new Submit(); // local tx
 		req.setSessionId(UC_SESSION_ID);
 
-		LocalTransactionSpecification local = new LocalTransactionSpecification();
+		Localtransaction local = new Localtransaction();
 		local.setClientId("Client-" + System.currentTimeMillis());
 		local.setTxtimeout(60);
 		req.setLocaltransaction(local);

@@ -135,9 +135,7 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getMsg() != null) {
 			processMessage(parameters.getMsg(), response);
 		} else if (parameters.getChunk() != null) {
-			processChunk(parameters.getCorrelationID(), parameters.getChunk(), response);
-		} else if (parameters.getDr() != null) {
-			// TODO #113: relay in DR
+			processChunk(parameters.getContinuation(), parameters.getChunk(), response);
 		} else if (parameters.getRelayStatus() != null) {
 			// TODO #113: relay in FC-open, notify ROS of FC change
 		} else {
@@ -403,7 +401,7 @@ public class MRSImpl implements MRS {
 		}
 		// record the last successful uploaded so we allow only it again or the next.
 		mrc.setLastChunkReceived(c.getPos());
-		response.setCorrelationID(nextContinuationId);
+		response.setContinuation(nextContinuationId);
 		response.setSuccess(true);
 	}
 
