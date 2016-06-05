@@ -126,9 +126,6 @@ public class ReceiverContext {
 				&& (dirty == true || lastFetchTimestamp + safetyPollIntervalMs < System.currentTimeMillis())) {
 			lastFetchTimestamp = System.currentTimeMillis();
 			dirty = false;
-
-			// recycle any unacknowledged messages in transactions which have timed-out
-			// TODO abortTx, recycleMessagesAfterTransactionTimeout();
 			return true;
 		}
 		return false;
@@ -259,10 +256,6 @@ public class ReceiverContext {
 
 	public long getLastFetchTimestamp() {
 		return lastFetchTimestamp;
-	}
-
-	public void setLastFetchTimestamp(long lastFetchTimestamp) {
-		this.lastFetchTimestamp = lastFetchTimestamp;
 	}
 
 }

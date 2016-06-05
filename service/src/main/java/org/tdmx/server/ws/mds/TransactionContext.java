@@ -18,8 +18,11 @@
  */
 package org.tdmx.server.ws.mds;
 
+import java.util.concurrent.ScheduledFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.core.api.v01.tx.Transaction;
 
 public class TransactionContext {
 
@@ -32,18 +35,18 @@ public class TransactionContext {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(TransactionContext.class);
 
-	private final String txId;
-
-	private long txTimeoutTimestamp;
+	private final Transaction txSpec;
 
 	// the message received in the context of the transaction.
 	private MessageContext currentMessage;
 
+	private volatile ScheduledFuture<?> timeoutFuture; // discards TX after tx timeout.
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public TransactionContext(String txId) {
-		this.txId = txId;
+	public TransactionContext(Transaction txSpec) {
+		this.txSpec = txSpec;
 	}
 
 	// -------------------------------------------------------------------------
@@ -52,7 +55,7 @@ public class TransactionContext {
 
 	@Override
 	public int hashCode() {
-		return txId.hashCode();
+		return txSpec.getXid().hashCode();
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class TransactionContext {
 			return false;
 		TransactionContext other = (TransactionContext) obj;
 
-		return txId.equals(other.txId);
+		return txSpec.getXid().equals(other.getTxSpec().getXid());
 	}
 
 	// -------------------------------------------------------------------------
@@ -80,12 +83,8 @@ public class TransactionContext {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public long getTxTimeoutTimestamp() {
-		return txTimeoutTimestamp;
-	}
-
-	public void setTxTimeoutTimestamp(long txTimeoutTimestamp) {
-		this.txTimeoutTimestamp = txTimeoutTimestamp;
+	public Transaction getTxSpec() {
+		return txSpec;
 	}
 
 	public MessageContext getCurrentMessage() {
@@ -97,7 +96,15 @@ public class TransactionContext {
 	}
 
 	public String getTxId() {
-		return txId;
+		return txSpec.getXid();
+	}
+
+	public ScheduledFuture<?> getTimeoutFuture() {
+		return timeoutFuture;
+	}
+
+	public void setTimeoutFuture(ScheduledFuture<?> timeoutFuture) {
+		this.timeoutFuture = timeoutFuture;
 	}
 
 }

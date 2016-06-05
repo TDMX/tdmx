@@ -25,6 +25,7 @@ public enum MessageStatus {
 	SUBMITTED, // is sent
 	TRANSFERRED, // is relayed
 	READY, // is ready for delivery
+	RECEIVING, // is being delivered
 	DOWNLOADED, // delivery is prepared
 	REDELIVER, // failed delivery
 	DELETED,// is deleted after delivery or delivery failure ( not anymore persisted )

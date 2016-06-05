@@ -19,6 +19,10 @@
 package org.tdmx.server.ws.mds;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +94,8 @@ import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientLookupService;
 import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 
+import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
+
 public class MDSImpl implements MDS {
 
 	// -------------------------------------------------------------------------
@@ -123,14 +129,15 @@ public class MDSImpl implements MDS {
 	private final ApiValidator validator = new ApiValidator();
 
 	private int batchSize = 100;
-	private int maxWaitTimeoutSec = 300;
+	private int maxWaitTimeoutSec = 600;
 
 	private int maxTransactionTimeoutSec = 3600 * 8; // 8hrs
 	private int minTransactionTimeoutSec = 60; // 60s
 
-	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
+	private ScheduledExecutorService txTimeoutScheduler = Executors.newScheduledThreadPool(1,
+			new RenamingThreadFactoryProxy("ReceiveTxTimeoutScheduler", Executors.defaultThreadFactory()));
 
-	// TODO #101: transaction timeout handling - memory / db?
+	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -334,14 +341,29 @@ public class MDSImpl implements MDS {
 		}
 
 		// fetch the message data for reply
-		ChannelMessage msg = channelService.findByStateId(stateId, true);
-		if (msg == null || MessageStatus.READY != msg.getState().getStatus()
-				|| rcv.getUnackedMessage(msg.getMsgId()) != null) {
-			// strange error / race condition - don't bother the receiver - consumed the stateId
-			log.info("Found pending message doesn't fit receive criteria. " + msg);
+		ReceiveMessageResultHolder recvMsg = channelService.receiveMessage(stateId);
+		if (recvMsg == null) {
+			// not valid after fetching.
 			response.setSuccess(true);
 			return response;
 		}
+
+		if (recvMsg.flowControlOpened) {
+			// relay opened FC back to origin
+			relayFCWithRetry(session, rcv, recvMsg.msg.getChannel(), recvMsg.flowQuota);
+		}
+		if (MessageStatus.RECEIVING != recvMsg.msg.getState().getStatus()) {
+			// message redelivered too many times
+			response.setSuccess(true);
+			return response;
+		}
+		if (rcv.getUnackedMessage(recvMsg.msg.getMsgId()) != null) {
+			// strange error / race condition - don't bother the receiver - consumed the stateId
+			log.info("Found pending message doesn't fit receive criteria. " + recvMsg.msg);
+			response.setSuccess(true);
+			return response;
+		}
+		ChannelMessage msg = recvMsg.msg;
 
 		MessageContext msgCtx = startTx(rcv, tx, msg);
 		Msg m = d2a.mapChannelMessage(msg);
@@ -430,15 +452,7 @@ public class MDSImpl implements MDS {
 		if (txCtx != null) {
 			// we are auto acking the last received message in the previous transaction
 			MessageContext msgCtx = txCtx.getCurrentMessage();
-			if (!StringUtils.hasText(ackRequest.getMsgId())) {
-				// abort existing tx, since same client now requests new receive without acking old msg received.
-				ReceiveMessageResultHolder ackStatus = channelService.onePhaseRollbackReceive(session.getZone(),
-						msgCtx.getMsg());
-				if (ackStatus.flowControlOpened) {
-					// relay opened FC back to origin
-					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
-				}
-			} else if (!ackRequest.getMsgId().equals(msgCtx.getMsgId())) {
+			if (!ackRequest.getMsgId().equals(msgCtx.getMsgId())) {
 				// ack message not received
 				ErrorCode.setError(ErrorCode.InvalidAcknowledgeNotReceived, response);
 				return response;
@@ -739,17 +753,34 @@ public class MDSImpl implements MDS {
 	}
 
 	private MessageContext startTx(ReceiverContext rcv, Transaction tx, ChannelMessage msg) {
-		TransactionContext txCtx = new TransactionContext(tx.getXid());
+		TransactionContext txCtx = new TransactionContext(tx);
 		MessageContext msgCtx = new MessageContext(msg);
 		txCtx.setCurrentMessage(msgCtx);
 		rcv.addTransaction(txCtx);
-		// TODO Timeout mechanism
+		scheduleTransactionTimeout(txCtx, rcv);
 		return msgCtx;
 	}
 
 	private void finishTx(ReceiverContext rcv, TransactionContext txCtx) {
+		ScheduledFuture<?> timeout = txCtx.getTimeoutFuture();
+		if (timeout != null) {
+			timeout.cancel(false);
+		}
 		rcv.removeTransaction(txCtx.getTxId());
-		// TODO
+	}
+
+	private void scheduleTransactionTimeout(TransactionContext txCtx, ReceiverContext rcv) {
+		// transaction will timeout after the tx timeout seconds after starting the tx.
+		ScheduledFuture<?> timeoutFuture = txTimeoutScheduler.schedule(new Runnable() {
+			@Override
+			public void run() {
+				// we simply forget the transaction if it times-out.
+				log.info("Timeout of " + txCtx.getTxId());
+				finishTx(rcv, txCtx);
+			}
+		}, txCtx.getTxSpec().getTxtimeout(), TimeUnit.SECONDS);
+		// we need to record the future object so we can cancel later ( when tx completes )
+		txCtx.setTimeoutFuture(timeoutFuture);
 	}
 
 	// -------------------------------------------------------------------------

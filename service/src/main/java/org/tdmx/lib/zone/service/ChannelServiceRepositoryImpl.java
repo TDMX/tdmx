@@ -381,6 +381,42 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
+	@Transactional(value = "ZoneDB")
+	public ReceiveMessageResultHolder receiveMessage(Long stateId) {
+		//
+		MessageState state = messageDao.loadStateById(stateId, true, true);
+		if (state == null) {
+			return null;
+		}
+		if (MessageStatus.READY != state.getStatus()) {
+			return null;
+		}
+		ChannelMessage existingMsg = state.getMsg();
+
+		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
+		result.flowQuota = null;
+		result.flowControlOpened = false;
+		result.msg = existingMsg;
+
+		if (existingMsg.getState().getDeliveryCount() > 3) { // TODO #101: max redelivery part of quota
+			// the ChannelMessage and it's MessageState are deleted if not delivered after x retries
+			// freeing quota
+			existingMsg.getState().setStatus(MessageStatus.DELETED);
+			messageDao.delete(existingMsg);
+
+			result.flowQuota = channelDao.lock(existingMsg.getChannel().getQuota().getId());
+			result.flowControlOpened = result.flowQuota.reduceBufferOnReceive(existingMsg.getPayloadLength());
+			// we can fall below the low mark but and if we do then the flow control is opened.
+		} else {
+			// transition state and delivery count
+			existingMsg.getState().setStatus(MessageStatus.RECEIVING);
+			existingMsg.getState().setDeliveryCount(state.getDeliveryCount() + 1);
+		}
+
+		return result;
+	}
+
+	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<Long> getStatusReferences(Zone zone, MessageStatusSearchCriteria criteria, int maxResults) {
 		return messageDao.getReferences(zone, criteria, maxResults);

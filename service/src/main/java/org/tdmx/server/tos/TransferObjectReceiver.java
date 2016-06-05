@@ -27,12 +27,6 @@ import org.tdmx.server.ws.session.WebServiceApiName;
 /**
  * A receiver of object references passed between services.
  * 
- * TODO #93: MRS -(MSG)-> MDS
- *
- * TODO #93: MRS -(DR)-> MOS
- * 
- * TODO #93: use relay service from MRS to transfer relayed-in FC-open to ROS(sender side)
- * 
  * TODO #93: fast inform of MOS sender that a CDS has changed. Flowquota to include DS id.
  * 
  * @author Peter
@@ -43,7 +37,7 @@ public interface TransferObjectReceiver {
 	/**
 	 * Inbound transfer of an object to a session.
 	 * 
-	 * @param sessionKey
+	 * @param sessionId
 	 * @param api
 	 * @param type
 	 * @param attributes

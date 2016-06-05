@@ -482,9 +482,13 @@ public class ServerSessionManagerImpl implements Manageable, Runnable, SessionCe
 	}
 
 	@Override
-	public boolean transferObject(String sessionKey, WebServiceApiName api, ObjectType type,
+	public boolean transferObject(String sessionId, WebServiceApiName api, ObjectType type,
 			Map<AttributeId, Long> attributes) {
-		// #93: delegate to specific session
+		// delegate the transferred object to it's specific session
+		WebServiceSessionManagerHolder h = apiManagerMap.get(api);
+		if (h != null) {
+			return h.getSessionManager().transferObject(sessionId, type, attributes);
+		}
 		return false;
 	}
 

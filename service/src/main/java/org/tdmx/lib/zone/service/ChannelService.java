@@ -436,6 +436,15 @@ public interface ChannelService {
 	}
 
 	/**
+	 * Fetch the ChannelMessage for receive. Updates the MessageStatus to {@link MessageStatus#RECEIVING}
+	 * 
+	 * @param zone
+	 * @param stateId
+	 * @return
+	 */
+	public ReceiveMessageResultHolder receiveMessage(Long stateId);
+
+	/**
 	 * Message acknowledge after successful receipt. Updates the FlowQuota of the channel ( increasing the quota
 	 * available on destination side ). This could lead to the channel flow control status changing from closed to open.
 	 * The MessageStatus returned indicates {@link MessageStatus#DELETED}.

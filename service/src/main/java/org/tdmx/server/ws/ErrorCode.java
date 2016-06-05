@@ -123,8 +123,10 @@ public enum ErrorCode {
 	InvalidReceiveAcknowledgeMode(
 			500,
 			"Invalid receive. Either use transactional receiving or auto acknowledge, not both."),
-	InvalidAcknowledgeNoReceive(500, "Non transactional acknowledged without receiving a message."),
-	InvalidAcknowledgeNotReceived(500, "Non transactional acknowledged of message not received."),
+	InvalidAcknowledgeNoReceive(
+			500,
+			"Non transactional acknowledge without receiving the acknowledged message ( or transaction timeout occured before acknowledge)."),
+	InvalidAcknowledgeNotReceived(500, "Non transactional acknowledge of message not received."),
 	MissingReceiveAcknowledgeMode(
 			500,
 			"Invalid receive. Either use transactional receiving or a non transactional session."),
