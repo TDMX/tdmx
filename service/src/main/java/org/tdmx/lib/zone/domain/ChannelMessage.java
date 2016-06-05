@@ -98,7 +98,7 @@ public class ChannelMessage implements Serializable {
 	/**
 	 * The public certificate of the receiving User.
 	 */
-	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN)
+	@Column(length = AgentCredential.MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String receiverPem;
 
 	@Column(length = DestinationSession.MAX_IDENTIFIER_LEN, nullable = false)

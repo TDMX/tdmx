@@ -228,16 +228,27 @@ public interface ChannelService {
 	public List<ChannelMessage> search(Zone zone, MessageStatusSearchCriteria criteria);
 
 	/**
+	 * Searches references of MessageStatus with a state criteria.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @return
+	 */
+	public List<Long> getStatusReferences(Zone zone, MessageStatusSearchCriteria criteria, int maxResults);
+
+	/**
 	 * Fetch the ChannelMessage which has the MessageState with the stateId provided. No fetch plan.
 	 * 
 	 * @param zone
 	 * @param stateId
+	 * @param fetchChannel
+	 *            whether to fetch the message's channel too.
 	 * @return
 	 */
-	public ChannelMessage findByStateId(Long stateId);
+	public ChannelMessage findByStateId(Long stateId, boolean fetchChannel);
 
 	/**
-	 * Fetch the ChannelMessage which has the messageId provided. FetchPlan includes ChannelMessage.
+	 * Fetch the ChannelMessage which has the messageId provided. FetchPlan includes MessageState.
 	 * 
 	 * @param zone
 	 * @param msgId

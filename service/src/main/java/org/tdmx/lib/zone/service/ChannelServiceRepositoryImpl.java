@@ -381,6 +381,12 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
+	public List<Long> getStatusReferences(Zone zone, MessageStatusSearchCriteria criteria, int maxResults) {
+		return messageDao.getReferences(zone, criteria, maxResults);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB", readOnly = true)
 	public List<TemporaryChannel> search(Zone zone, TemporaryChannelSearchCriteria criteria) {
 		return channelDao.search(zone, criteria);
 	}
@@ -553,7 +559,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateMessageProcessingState(Long stateId, ProcessingState newState) {
-		MessageState cms = messageDao.loadStateById(stateId, false);
+		MessageState cms = messageDao.loadStateById(stateId, false, false);
 
 		// update the processing state.
 		cms.setProcessingState(newState);
@@ -562,7 +568,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void updateMessageProcessingState(Long stateId, MessageStatus status, String xid, ProcessingState newState) {
-		MessageState cms = messageDao.loadStateById(stateId, false);
+		MessageState cms = messageDao.loadStateById(stateId, false, false);
 
 		// update the processing state.
 		cms.setStatus(status);
@@ -715,8 +721,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB", readOnly = true)
-	public ChannelMessage findByStateId(Long stateId) {
-		MessageState state = messageDao.loadStateById(stateId, true);
+	public ChannelMessage findByStateId(Long stateId, boolean fetchChannel) {
+		MessageState state = messageDao.loadStateById(stateId, true, fetchChannel);
 		return state != null ? state.getMsg() : null;
 	}
 

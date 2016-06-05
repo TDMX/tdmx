@@ -179,7 +179,7 @@
         msgId varchar(64) not null,
         payloadLength bigint not null,
         plaintextLength bigint not null,
-        receiverPem varchar(12000),
+        receiverPem varchar(12000) not null,
         scheme varchar(256) not null,
         senderSignatureAlgorithm varchar(16) not null,
         senderPem varchar(12000) not null,

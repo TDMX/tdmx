@@ -35,8 +35,6 @@ public class MessageContext {
 	// -------------------------------------------------------------------------
 	private final ChannelMessage msg;
 
-	private long redeliverAfterTimestamp = 0;
-	private int numDeliveries = 0;
 	private final byte[] entropy;
 
 	// -------------------------------------------------------------------------
@@ -53,6 +51,10 @@ public class MessageContext {
 
 	public String getMsgId() {
 		return this.msg.getMsgId();
+	}
+
+	public Long getStateId() {
+		return this.msg.getState().getId();
 	}
 
 	@Override
@@ -97,22 +99,6 @@ public class MessageContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public long getRedeliverAfterTimestamp() {
-		return redeliverAfterTimestamp;
-	}
-
-	public void setRedeliverAfterTimestamp(long redeliverAfterTimestamp) {
-		this.redeliverAfterTimestamp = redeliverAfterTimestamp;
-	}
-
-	public int getNumDeliveries() {
-		return numDeliveries;
-	}
-
-	public void setNumDeliveries(int numDeliveries) {
-		this.numDeliveries = numDeliveries;
-	}
 
 	public ChannelMessage getMsg() {
 		return msg;

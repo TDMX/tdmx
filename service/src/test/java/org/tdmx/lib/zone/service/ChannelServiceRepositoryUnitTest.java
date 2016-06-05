@@ -112,7 +112,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_None() throws Exception {
+	public void testSearchCA_None() throws Exception {
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
 		List<Channel> channels = channelService.search(zone, criteria);
 		assertNotNull(channels);
@@ -120,7 +120,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_OriginAll() throws Exception {
+	public void testSearchCA_OriginAll() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
@@ -133,7 +133,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_DestinationAll() throws Exception {
+	public void testSearchCA_DestinationAll() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
@@ -147,7 +147,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_OriginAndDestinationAll() throws Exception {
+	public void testSearchCA_OriginAndDestinationAll() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
@@ -163,7 +163,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_RelayPendingMessages() throws Exception {
+	public void testSearchStatus_RelayPendingMessages() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		MessageStatusSearchCriteria criteria = new MessageStatusSearchCriteria(new PageSpecifier(0, 999));
@@ -182,7 +182,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_RelayPendingReceipts() throws Exception {
+	public void testSearchStatusIds_RelayPendingMessages() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		MessageStatusSearchCriteria criteria = new MessageStatusSearchCriteria(new PageSpecifier(0, 999));
@@ -191,12 +191,12 @@ public class ChannelServiceRepositoryUnitTest {
 		criteria.getDestination().setLocalName(ca.getChannel().getDestination().getLocalName());
 		criteria.getDestination().setDomainName(ca.getChannel().getDestination().getDomainName());
 		criteria.getDestination().setServiceName(ca.getChannel().getDestination().getServiceName());
-		criteria.setMessageStatus(MessageStatus.DELIVERED);
+		criteria.setMessageStatus(MessageStatus.SUBMITTED);
 		criteria.setProcessingStatus(ProcessingStatus.PENDING);
 
-		List<ChannelMessage> messages = channelService.search(zone, criteria);
+		List<Long> messages = channelService.getStatusReferences(zone, criteria, 100);
 		assertNotNull(messages);
-		// currently the test data factory creates the messages without pending status
+		// currently the test data factory creates the messages without pending status TODO
 		assertEquals(0, messages.size());
 	}
 
@@ -210,7 +210,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testSearch_UnknownZone() throws Exception {
+	public void testSearchCA_UnknownZone() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorizationSearchCriteria criteria = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 999));
@@ -225,7 +225,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testUpdate_ChannelProcessingState() throws Exception {
+	public void testUpdateChannel_DSProcessingState() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
@@ -249,7 +249,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testUpdate_ChannelMessageProcessingState() throws Exception {
+	public void testUpdateStatus_ChannelMessageProcessingState() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
@@ -280,7 +280,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testUpdate_ChannelAuthorizationProcessingState() throws Exception {
+	public void testUpdateCA_ChannelAuthorizationProcessingState() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),
@@ -306,7 +306,7 @@ public class ChannelServiceRepositoryUnitTest {
 	}
 
 	@Test
-	public void testUpdate_ChannelFlowQuotaProcessingState() throws Exception {
+	public void testUpdateFQ_ChannelFlowQuotaProcessingState() throws Exception {
 		ChannelAuthorization ca = data.getDomains().get(0).getAuths().get(0);
 
 		ChannelAuthorization storedCA = channelService.findByChannel(zone, ca.getChannel().getDomain(),

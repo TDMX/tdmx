@@ -21,6 +21,7 @@ package org.tdmx.lib.zone.dao;
 import static org.tdmx.lib.zone.domain.QChannel.channel;
 import static org.tdmx.lib.zone.domain.QChannelMessage.channelMessage;
 import static org.tdmx.lib.zone.domain.QDomain.domain;
+import static org.tdmx.lib.zone.domain.QFlowQuota.flowQuota;
 import static org.tdmx.lib.zone.domain.QMessageState.messageState;
 
 import java.util.List;
@@ -85,13 +86,20 @@ public class MessageDaoImpl implements MessageDao {
 	}
 
 	@Override
-	public MessageState loadStateById(Long stateId, boolean fetchMsg) {
+	public MessageState loadStateById(Long stateId, boolean fetchMsg, boolean fetchChannel) {
 		if (stateId == null) {
 			throw new IllegalArgumentException("stateId msgId");
+		}
+		if (fetchChannel && !fetchMsg) {
+			throw new IllegalArgumentException("fetchChannel only if fetchMsg");
 		}
 		JPAQuery query = new JPAQuery(em).from(messageState);
 		if (fetchMsg) {
 			query = query.innerJoin(messageState.msg, channelMessage).fetch();
+		}
+		if (fetchChannel) {
+			query = query.innerJoin(channelMessage.channel, channel).fetch().innerJoin(channel.domain, domain).fetch()
+					.innerJoin(channel.quota, flowQuota).fetch();
 		}
 		query.where(messageState.id.eq(stateId));
 		return query.uniqueResult(messageState);
@@ -176,6 +184,36 @@ public class MessageDaoImpl implements MessageDao {
 			query = query.innerJoin(messageState.msg, channelMessage).fetch();
 		}
 
+		query.where(buildCriteria(zone, criteria));
+
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
+		return query.list(messageState);
+	}
+
+	@Override
+	public List<Long> getReferences(Zone zone, MessageStatusSearchCriteria criteria, int maxResults) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		JPAQuery query = new JPAQuery(em).from(messageState);
+
+		query.where(buildCriteria(zone, criteria));
+
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
+		return query.list(messageState.id);
+	}
+
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	private BooleanExpression buildCriteria(Zone zone, MessageStatusSearchCriteria criteria) {
 		BooleanExpression where = messageState.zone.eq(zone);
 
 		if (criteria.getMessageStatus() != null) {
@@ -208,19 +246,8 @@ public class MessageDaoImpl implements MessageDao {
 		if (criteria.getProcessingStatus() != null) {
 			where = where.and(messageState.processingState.status.eq(criteria.getProcessingStatus()));
 		}
-		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
-				(long) criteria.getPageSpecifier().getFirstResult()));
-		return query.list(messageState);
+		return where;
 	}
-
-	// -------------------------------------------------------------------------
-	// PROTECTED METHODS
-	// -------------------------------------------------------------------------
-
-	// -------------------------------------------------------------------------
-	// PRIVATE METHODS
-	// -------------------------------------------------------------------------
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

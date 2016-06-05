@@ -60,9 +60,13 @@ public interface MessageDao {
 	 * Load the ChannelMessageState by id.
 	 * 
 	 * @param stateId
+	 * @param whether
+	 *            to fetch the associated ChannelMessage
+	 * @param whether
+	 *            to fetch the associated Channel and it's FlowQuota
 	 * @return the ChannelMessageState or null if not found.
 	 */
-	public MessageState loadStateById(Long id, boolean fetchMsg);
+	public MessageState loadStateById(Long id, boolean fetchMsg, boolean fetchChannel);
 
 	/**
 	 * Search for ChannelMessages. FetchPlan includes Domain, Channel, ChannelMessageStatus.
@@ -84,4 +88,13 @@ public interface MessageDao {
 	 */
 	public List<MessageState> search(Zone zone, MessageStatusSearchCriteria criteria, boolean fetchMsg);
 
+	/**
+	 * Search for MessageState ids.
+	 * 
+	 * @param zone
+	 * @param criteria
+	 * @param maxResults
+	 * @return
+	 */
+	public List<Long> getReferences(Zone zone, MessageStatusSearchCriteria criteria, int maxResults);
 }

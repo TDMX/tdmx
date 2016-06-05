@@ -129,6 +129,10 @@ public class MDSImpl implements MDS {
 
 	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
 
+	// TODO #101: transaction timeout handling - memory / db?
+
+	// TODO #101: message queue based on stateId
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -270,11 +274,7 @@ public class MDSImpl implements MDS {
 			// caching the ROS address of the reverse channel
 
 			MessageContext ctx = rcv.endTransaction(tx.getXid());
-			if (ctx == null) {
-				// no current message in the session - cannot have a DeliveryReport
-				ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
-				return response;
-			} else {
+			if (ctx != null) {
 				// acknowledge the message, possibly opening the relay flow control
 				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
 						ctx.getMsg());
@@ -298,19 +298,29 @@ public class MDSImpl implements MDS {
 			criteria.getDestination().setServiceName(session.getService().getServiceName());
 			criteria.setMessageStatus(MessageStatus.READY);
 			criteria.setProcessingStatus(ProcessingStatus.NONE);
-			List<ChannelMessage> pendingMsgs = channelService.search(session.getZone(), criteria);
-			rcv.addPendingMessages(pendingMsgs, pendingMsgs.size() == batchSize);
+			List<Long> pendingStatusIds = channelService.getStatusReferences(session.getZone(), criteria, batchSize);
+			rcv.addPendingMessages(pendingStatusIds, pendingStatusIds.size() == batchSize);
 		}
 
 		// get any ready message, waiting if none available.
-		MessageContext msgCtx = rcv.getNextPendingMessage(recvRequest.getWaitTimeoutSec() * 1000, tx);
-		if (msgCtx == null) {
+		Long stateId = rcv.getNextPendingStateId(recvRequest.getWaitTimeoutSec() * 1000);
+		if (stateId == null) {
 			// no message available even after waiting.
 			response.setSuccess(true);
 			return response;
 		}
 
-		ChannelMessage msg = msgCtx.getMsg();
+		// TODO change state on DB and incr. delivery count
+		ChannelMessage msg = channelService.findByStateId(stateId, true);
+		if (msg == null || MessageStatus.READY != msg.getState().getStatus()
+				|| rcv.getUnackedMessage(msg.getMsgId()) != null) {
+			// strange error / race condition - don't bother the receiver - consumed the stateId
+			log.info("Found pending message doesn't fit receive criteria. " + msg);
+			response.setSuccess(true);
+			return response;
+		}
+
+		MessageContext msgCtx = rcv.startTransaction(tx, msg);
 		Msg m = d2a.mapChannelMessage(msg);
 
 		// get 1st chunk and map it into msg
@@ -322,7 +332,7 @@ public class MDSImpl implements MDS {
 		m.setChunk(d2a.mapChunk(chunk));
 
 		response.setMsg(m);
-		response.setRetryCount(msgCtx.getNumDeliveries());
+		response.setRetryCount(msg.getState().getDeliveryCount() - 1);
 		response.setSuccess(true);
 		if (msg.getNumberOfChunks() > 1) {
 			// set the continuationId for the next chunk.
@@ -370,8 +380,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 		response.setChunk(d2a.mapChunk(chunk));
-		// TODO 109: missing setting the continuation id of the next chunk!!!
-
+		response.setContinuation(msg.getContinuationId(cr.getPos() + 1));
 		return response;
 	}
 
@@ -391,9 +400,9 @@ public class MDSImpl implements MDS {
 
 		// Handle the acknowledge of previous received message and initiate relay back of DR
 		// caching the ROS address of the reverse channel
-		MessageContext ctx = rcv.endTransaction(ackRequest.getXid());
+		MessageContext ctx = rcv.endTransaction(getNonTransactionXid(ackRequest.getXid()));
 		if (ctx == null) {
-			// no current message in the session - cannot have a DeliveryReport
+			// no current message in the session - cannot acknowledge
 			ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
 			return response;
 		} else {
@@ -405,14 +414,8 @@ public class MDSImpl implements MDS {
 				relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
 			}
 		}
+		response.setSuccess(true);
 		return response;
-	}
-
-	private Transaction getNonTransactionSpecification(Localtransaction ack) {
-		Transaction tx = new Transaction();
-		tx.setTxtimeout(ack.getTxtimeout());
-		tx.setXid(NON_TX_SPEC_ID_PREFIX + ack.getClientId());
-		return tx;
 	}
 
 	@Override
@@ -542,6 +545,17 @@ public class MDSImpl implements MDS {
 			// cache the working ROS address
 			rc.setRosTcpAddress(channel, rs.getRosTcpAddress());
 		}
+	}
+
+	private Transaction getNonTransactionSpecification(Localtransaction ack) {
+		Transaction tx = new Transaction();
+		tx.setTxtimeout(ack.getTxtimeout());
+		tx.setXid(getNonTransactionXid(ack.getClientId()));
+		return tx;
+	}
+
+	private String getNonTransactionXid(String clientId) {
+		return NON_TX_SPEC_ID_PREFIX + clientId;
 	}
 
 	// -------------------------------------------------------------------------

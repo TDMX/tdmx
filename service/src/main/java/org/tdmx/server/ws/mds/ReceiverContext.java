@@ -18,12 +18,12 @@
  */
 package org.tdmx.server.ws.mds;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
@@ -37,8 +37,6 @@ public class ReceiverContext {
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-
-	// TODO #95: cache ros endpoints per channel
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -64,8 +62,8 @@ public class ReceiverContext {
 	// for pending messages on the DB if no new messages has been received.
 	private long lastFetchTimestamp = 0;
 
-	// internal
-	private final Queue<MessageContext> fetchedMessages = new ConcurrentLinkedDeque<>();
+	// internal, message stateId ready to deliver.
+	private final Queue<Long> fetchedMessages = new ConcurrentLinkedDeque<>();
 
 	// the destination user's certificate seqNr. We only fetch messages which are exactly determined for this user,
 	// where there could be more than one user (version) receiving at the same time on the session.
@@ -132,7 +130,7 @@ public class ReceiverContext {
 			dirty = false;
 
 			// recycle any unacknowledged messages in transactions which have timed-out
-			recycleMessagesAfterTransactionTimeout();
+			// TODO abortTx, recycleMessagesAfterTransactionTimeout();
 			return true;
 		}
 		return false;
@@ -141,15 +139,15 @@ public class ReceiverContext {
 	/**
 	 * 
 	 * @param maxWaitDurationMs
-	 * @return
+	 * @return the stateId
 	 */
-	public MessageContext getNextPendingMessage(long maxWaitDurationMs, Transaction txSpec) {
+	public Long getNextPendingStateId(long maxWaitDurationMs) {
 		long waitUntilTimestamp = System.currentTimeMillis() + maxWaitDurationMs;
 
-		MessageContext result = null;
+		Long stateId = null;
 		do {
-			result = fetchedMessages.poll();
-			if (result == null) {
+			stateId = fetchedMessages.poll();
+			if (stateId == null) {
 				synchronized (fetchedMessages) {
 					long waitForMs = waitUntilTimestamp - System.currentTimeMillis();
 					if (waitForMs > 0) {
@@ -161,24 +159,27 @@ public class ReceiverContext {
 					}
 				}
 			}
-		} while (result == null && System.currentTimeMillis() < waitUntilTimestamp);
+		} while (stateId == null && System.currentTimeMillis() < waitUntilTimestamp);
 
-		if (result != null) {
-			if (unackedMessageMap.containsKey(result.getMsgId())) {
-				log.warn("Ignoring message fetched which is unacknowledged " + result.getMsgId());
-				result = null;
-			} else {
-				log.debug("Associating tx " + txSpec.getXid() + " with msg " + result.getMsgId());
+		return stateId;
+	}
 
-				TransactionContext tx = new TransactionContext(txSpec.getXid());
-
-				tx.setCurrentMessage(result);
-				tx.setTxTimeoutTimestamp(System.currentTimeMillis() + txSpec.getTxtimeout() * 1000);
-				transactionMap.put(tx.getTxId(), tx);
-				unackedMessageMap.put(result.getMsgId(), result);
-			}
-		}
-		return result;
+	/**
+	 * Start the transaction, adding the message to the unackedMessageMap.
+	 * 
+	 * @param tx
+	 * @param msg
+	 * @return
+	 */
+	public MessageContext startTransaction(Transaction tx, ChannelMessage msg) {
+		TransactionContext txCtx = new TransactionContext(tx.getXid());
+		log.debug("Associating tx " + txCtx.getTxId() + " with msg " + msg.getMsgId());
+		MessageContext msgCtx = new MessageContext(msg);
+		txCtx.setCurrentMessage(msgCtx);
+		txCtx.setTxTimeoutTimestamp(System.currentTimeMillis() + tx.getTxtimeout() * 1000);
+		transactionMap.put(txCtx.getTxId(), txCtx);
+		unackedMessageMap.put(msgCtx.getMsgId(), msgCtx);
+		return msgCtx;
 	}
 
 	/**
@@ -208,16 +209,15 @@ public class ReceiverContext {
 	 * 
 	 * @param messages
 	 */
-	public void addPendingMessages(List<ChannelMessage> messages, boolean moreMsgs) {
-		if (!messages.isEmpty()) {
-
-			for (ChannelMessage msg : messages) {
-				if (unackedMessageMap.containsKey(msg.getMsgId())) {
-					log.debug("Ignoring unacked message " + msg.getMsgId());
+	public void addPendingMessages(List<Long> stateIds, boolean moreMsgs) {
+		if (!stateIds.isEmpty()) {
+			Set<Long> unackedIds = getUnackedStateIds();
+			for (Long stateId : stateIds) {
+				if (unackedIds.contains(stateId)) {
+					log.debug("Ignoring unacked message " + stateId);
 					continue;
 				}
-				MessageContext ctx = new MessageContext(msg);
-				fetchedMessages.add(ctx);
+				fetchedMessages.add(stateId);
 			}
 			// we can fetch more as soon as possible
 			if (moreMsgs) {
@@ -244,28 +244,13 @@ public class ReceiverContext {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
-	private void recycleMessagesAfterTransactionTimeout() {
-		// find the open transactions which have reached their timeout time.
-		long now = System.currentTimeMillis();
-		List<String> timeoutTxIds = new ArrayList<>();
-		for (Entry<String, TransactionContext> txEntry : transactionMap.entrySet()) {
-			if (txEntry.getValue().getTxTimeoutTimestamp() < now) {
-				timeoutTxIds.add(txEntry.getKey());
-			}
-		}
-		// timeout the transaction and recycle the message
-		for (String txId : timeoutTxIds) {
-			log.info("Transaction timeout " + txId);
-			TransactionContext txCtx = transactionMap.remove(txId);
-			if (txCtx != null) {
 
-				MessageContext txMsg = txCtx.getCurrentMessage();
-				unackedMessageMap.remove(txMsg.getMsgId());
-				// increment the number of deliveries for the message being recycled.
-				txMsg.setNumDeliveries(txMsg.getNumDeliveries() + 1);
-				fetchedMessages.add(txMsg);
-			}
+	private Set<Long> getUnackedStateIds() {
+		Set<Long> result = new HashSet<>();
+		for (Map.Entry<String, MessageContext> unackedMsg : unackedMessageMap.entrySet()) {
+			result.add(unackedMsg.getValue().getStateId());
 		}
+		return result;
 	}
 
 	// -------------------------------------------------------------------------

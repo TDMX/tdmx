@@ -513,7 +513,7 @@ public class MRSImplUnitTest {
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
 
-			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue());
+			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue(), false);
 			assertEquals(MessageStatus.READY, storedMsg.getState().getStatus());
 			assertEquals(ProcessingStatus.NONE, storedMsg.getState().getProcessingState().getStatus());
 
@@ -563,7 +563,7 @@ public class MRSImplUnitTest {
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
 
-			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue());
+			ChannelMessage storedMsg = channelService.findByStateId(stateIdCaptor.getValue(), false);
 			assertEquals(MessageStatus.READY, storedMsg.getState().getStatus());
 			assertEquals(ProcessingStatus.NONE, storedMsg.getState().getProcessingState().getStatus());
 

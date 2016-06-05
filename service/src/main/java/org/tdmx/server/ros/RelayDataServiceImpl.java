@@ -129,7 +129,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			ChannelMessage msg = channelService.findByStateId(stateId);
+			ChannelMessage msg = channelService.findByStateId(stateId, false);
 			msg.setChannel(channel);
 			return msg;
 		} finally {
