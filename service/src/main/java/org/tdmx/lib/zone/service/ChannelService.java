@@ -388,10 +388,11 @@ public interface ChannelService {
 	 * 
 	 * @param zone
 	 * @param origin
+	 * @param originSerialNr
 	 * @param xid
 	 * @return the list of messages committed.
 	 */
-	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, String xid);
+	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, int originSerialNr, String xid);
 
 	/**
 	 * Rollback messages for prepared for sending. Flow quota already reduced by prepare, so undo that. Removes the
@@ -399,11 +400,12 @@ public interface ChannelService {
 	 * 
 	 * @param zone
 	 * @param origin
+	 * @param originSerialNr
 	 * @param xid
 	 * @param the
 	 *            list of messages discarded.
 	 */
-	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, String xid);
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, int originSerialNr, String xid);
 
 	/**
 	 * Relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
@@ -443,7 +445,7 @@ public interface ChannelService {
 	 *            detached ChannelMessage
 	 * @return
 	 */
-	public ReceiveMessageResultHolder onePhaseCommitReceipt(Zone zone, ChannelMessage msg);
+	public ReceiveMessageResultHolder onePhaseCommitReceive(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Message negative-acknowledge. The MessageStatus returned indicates {@link MessageStatus#DELETED} or
@@ -455,7 +457,7 @@ public interface ChannelService {
 	 *            detached ChannelMessage
 	 * @return
 	 */
-	public ReceiveMessageResultHolder onePhaseRollbackReceipt(Zone zone, ChannelMessage msg);
+	public ReceiveMessageResultHolder onePhaseRollbackReceive(Zone zone, ChannelMessage msg);
 
 	/**
 	 * Prepare a message receive. Increases the flow quota. ChannelMessage is persisted as
@@ -489,7 +491,8 @@ public interface ChannelService {
 	 * @param xid
 	 * @return the message committed (deleted - should be only 1).
 	 */
-	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, String xid);
+	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, int destinationSerialNr,
+			String xid);
 
 	/**
 	 * Rollback message prepared for receive. Flow quota already increased by prepare, so undo that. Message status is
@@ -501,7 +504,8 @@ public interface ChannelService {
 	 * @param xid
 	 * @return the message recycled or discarded (should be only 1).
 	 */
-	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination, String xid);
+	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination,
+			int destinationSerialNr, String xid);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.

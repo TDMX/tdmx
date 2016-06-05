@@ -576,21 +576,6 @@
 			<xs:element ref="chunk"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="MessageReference">
-		<xs:sequence>
-			<xs:element ref="msgId"/>
-			<xs:element name="externalReference" type="common:longtext" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>plaintext reference provided by the originator.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="signature" type="signature">
-				<xs:annotation>
-					<xs:documentation>the message signature value.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="Chunk">
 		<xs:complexContent>
 			<xs:extension base="ChunkReference">
@@ -625,11 +610,6 @@
 		<xs:restriction base="messageauthenticationcode"/>
 	</xs:simpleType>
 	<xs:element name="msg" type="Message">
-		<xs:annotation>
-			<xs:documentation>A message.</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="msgreference" type="MessageReference">
 		<xs:annotation>
 			<xs:documentation>A message.</xs:documentation>
 		</xs:annotation>

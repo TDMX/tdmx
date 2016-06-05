@@ -67,6 +67,7 @@ import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowQuota;
+import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.Service;
@@ -130,8 +131,6 @@ public class MDSImpl implements MDS {
 	private static final String NON_TX_SPEC_ID_PREFIX = "non-tx:";
 
 	// TODO #101: transaction timeout handling - memory / db?
-
-	// TODO #101: message queue based on stateId
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -251,7 +250,7 @@ public class MDSImpl implements MDS {
 
 		Transaction tx = null;
 		if (recvRequest.getTransaction() != null) {
-			// validate tx
+			// validate XA tx
 			tx = validator.checkTransaction(recvRequest.getTransaction(), response, minTransactionTimeoutSec,
 					maxTransactionTimeoutSec);
 			if (tx == null) {
@@ -270,19 +269,42 @@ public class MDSImpl implements MDS {
 			}
 			tx = getNonTransactionSpecification(ack);
 
-			// Handle the acknowledge of previous received message and initiate relay back of DR
-			// caching the ROS address of the reverse channel
+			// handle the non transactional ACK of previously received message
+			TransactionContext txCtx = rcv.getTransaction(tx.getXid());
+			if (txCtx != null) {
+				// we are auto acking the last received message in the previous transaction
+				MessageContext msgCtx = txCtx.getCurrentMessage();
+				if (!StringUtils.hasText(recvRequest.getMsgId())) {
+					// abort existing tx, since same client now requests new receive without acking old msg received.
+					ReceiveMessageResultHolder ackStatus = channelService.onePhaseRollbackReceive(session.getZone(),
+							msgCtx.getMsg());
+					if (ackStatus.flowControlOpened) {
+						// relay opened FC back to origin
+						relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+					}
+					finishTx(rcv, txCtx);
 
-			MessageContext ctx = rcv.endTransaction(tx.getXid());
-			if (ctx != null) {
-				// acknowledge the message, possibly opening the relay flow control
-				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceipt(session.getZone(),
-						ctx.getMsg());
-				if (ackStatus.flowControlOpened) {
-					// relay opened FC back to origin
-					relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
+				} else if (!recvRequest.getMsgId().equals(msgCtx.getMsgId())) {
+					// ack message not received
+					ErrorCode.setError(ErrorCode.InvalidAcknowledgeNotReceived, response);
+					return response;
+				} else {
+					// acknowledge the message, possibly opening the relay flow control
+					ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
+							msgCtx.getMsg());
+					if (ackStatus.flowControlOpened) {
+						// relay opened FC back to origin
+						relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+					}
+					finishTx(rcv, txCtx);
 				}
+			} else if (StringUtils.hasText(recvRequest.getMsgId())) {
+				// we don't have a transaction existing
+				// acking a message which we don't know
+				ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
+				return response;
 			}
+
 		} else {
 			// must be tx or non tx not neither
 			ErrorCode.setError(ErrorCode.MissingReceiveAcknowledgeMode, response);
@@ -311,7 +333,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		// TODO change state on DB and incr. delivery count
+		// fetch the message data for reply
 		ChannelMessage msg = channelService.findByStateId(stateId, true);
 		if (msg == null || MessageStatus.READY != msg.getState().getStatus()
 				|| rcv.getUnackedMessage(msg.getMsgId()) != null) {
@@ -321,7 +343,7 @@ public class MDSImpl implements MDS {
 			return response;
 		}
 
-		MessageContext msgCtx = rcv.startTransaction(tx, msg);
+		MessageContext msgCtx = startTx(rcv, tx, msg);
 		Msg m = d2a.mapChannelMessage(msg);
 
 		// get 1st chunk and map it into msg
@@ -394,26 +416,48 @@ public class MDSImpl implements MDS {
 		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
 		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
 
-		if (!StringUtils.hasText(ackRequest.getXid())) {
-			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+		if (!StringUtils.hasText(ackRequest.getClientId())) {
+			ErrorCode.setError(ErrorCode.MissingLocalTransactionClientId, response);
+			return response;
+		}
+		if (!StringUtils.hasText(ackRequest.getMsgId())) {
+			ErrorCode.setError(ErrorCode.MissingAcknowledgeMsgId, response);
 			return response;
 		}
 
-		// Handle the acknowledge of previous received message and initiate relay back of DR
-		// caching the ROS address of the reverse channel
-		MessageContext ctx = rcv.endTransaction(getNonTransactionXid(ackRequest.getXid()));
-		if (ctx == null) {
-			// no current message in the session - cannot acknowledge
+		// handle the non transactional ACK of previously received message
+		TransactionContext txCtx = rcv.getTransaction(getNonTransactionXid(ackRequest.getClientId()));
+		if (txCtx != null) {
+			// we are auto acking the last received message in the previous transaction
+			MessageContext msgCtx = txCtx.getCurrentMessage();
+			if (!StringUtils.hasText(ackRequest.getMsgId())) {
+				// abort existing tx, since same client now requests new receive without acking old msg received.
+				ReceiveMessageResultHolder ackStatus = channelService.onePhaseRollbackReceive(session.getZone(),
+						msgCtx.getMsg());
+				if (ackStatus.flowControlOpened) {
+					// relay opened FC back to origin
+					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+				}
+			} else if (!ackRequest.getMsgId().equals(msgCtx.getMsgId())) {
+				// ack message not received
+				ErrorCode.setError(ErrorCode.InvalidAcknowledgeNotReceived, response);
+				return response;
+			} else {
+				// acknowledge the message, possibly opening the relay flow control
+				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
+						msgCtx.getMsg());
+				if (ackStatus.flowControlOpened) {
+					// relay opened FC back to origin
+					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+				}
+			}
+			finishTx(rcv, txCtx);
+
+		} else if (StringUtils.hasText(ackRequest.getMsgId())) {
+			// we don't have a transaction existing
+			// acking a message which we don't know
 			ErrorCode.setError(ErrorCode.InvalidAcknowledgeNoReceive, response);
 			return response;
-		} else {
-			// acknowledge the message, possibly opening the relay flow control
-			ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceipt(session.getZone(),
-					ctx.getMsg());
-			if (ackStatus.flowControlOpened && !ctx.getMsg().getState().isSameDomain()) {
-				// relay opened FC back to origin
-				relayFCWithRetry(session, rcv, ctx.getMsg().getChannel(), ackStatus.flowQuota);
-			}
 		}
 		response.setSuccess(true);
 		return response;
@@ -450,26 +494,152 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public PrepareResponse prepare(Prepare parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
+
+		PrepareResponse response = new PrepareResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		TransactionContext txCtx = rcv.getTransaction(parameters.getXid());
+		if (txCtx == null) {
+			ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+			return response;
+		}
+		MessageContext msgCtx = txCtx.getCurrentMessage();
+		try {
+			ReceiveMessageResultHolder ackStatus = channelService.twoPhasePrepareReceive(session.getZone(),
+					msgCtx.getMsg(), txCtx.getTxId());
+
+			if (ackStatus.flowControlOpened) {
+				// relay opened FC back to origin
+				relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+			}
+		} finally {
+			finishTx(rcv, txCtx);
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
 	public ForgetResponse forget(Forget parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
+
+		ForgetResponse response = new ForgetResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		TransactionContext txCtx = rcv.getTransaction(parameters.getXid());
+		if (txCtx != null) {
+			// can't forget a tx which is not yet prepared.
+			ErrorCode.setError(ErrorCode.XATransactionNotPrepared, response);
+			return response;
+		} else {
+			// forget is equivalent to rollback since we don't do heuristic commiting or rolling back ourselves.
+			List<MessageState> states = channelService.twoPhaseRollbackReceive(session.getZone(),
+					session.getChannelDestination(), authorizedUser.getSerialNumber(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
 	public RollbackResponse rollback(Rollback parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
+
+		RollbackResponse response = new RollbackResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		TransactionContext txCtx = rcv.getTransaction(parameters.getXid());
+		if (txCtx != null) {
+			MessageContext msgCtx = txCtx.getCurrentMessage();
+			try {
+				ReceiveMessageResultHolder ackStatus = channelService.onePhaseRollbackReceive(session.getZone(),
+						msgCtx.getMsg());
+
+				if (ackStatus.flowControlOpened) {
+					// relay opened FC back to origin
+					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+				}
+			} finally {
+				finishTx(rcv, txCtx);
+			}
+		} else {
+			List<MessageState> states = channelService.twoPhaseRollbackReceive(session.getZone(),
+					session.getChannelDestination(), authorizedUser.getSerialNumber(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
 	public CommitResponse commit(Commit parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+		ReceiverContext rcv = session.getReceiverContext(authorizedUser.getSerialNumber());
+
+		CommitResponse response = new CommitResponse();
+		if (!StringUtils.hasText(parameters.getXid())) {
+			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
+			return response;
+
+		}
+		// prepare deletes the tx so we should only find it in the case of one phase commit
+		TransactionContext txCtx = rcv.getTransaction(parameters.getXid());
+		if (txCtx != null) {
+			if (parameters.isOnePhase()) {
+				MessageContext msgCtx = txCtx.getCurrentMessage();
+				// one phase commit - where the message was not yet prepared.
+				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
+						msgCtx.getMsg());
+				if (ackStatus.flowControlOpened) {
+					// relay opened FC back to origin
+					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
+				}
+			} else {
+				// 2pc we should not have found the stc.
+				ErrorCode.setError(ErrorCode.XATransactionNotPrepared, response);
+				return response;
+			}
+		} else {
+			List<MessageState> states = channelService.twoPhaseCommitReceive(session.getZone(),
+					session.getChannelDestination(), authorizedUser.getSerialNumber(), parameters.getXid());
+			if (states.isEmpty()) {
+				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
+				return response;
+			}
+		}
+
+		response.setSuccess(true);
+		return response;
 	}
 
 	@Override
@@ -566,6 +736,20 @@ public class MDSImpl implements MDS {
 
 	private String getNonTransactionXid(String clientId) {
 		return NON_TX_SPEC_ID_PREFIX + clientId;
+	}
+
+	private MessageContext startTx(ReceiverContext rcv, Transaction tx, ChannelMessage msg) {
+		TransactionContext txCtx = new TransactionContext(tx.getXid());
+		MessageContext msgCtx = new MessageContext(msg);
+		txCtx.setCurrentMessage(msgCtx);
+		rcv.addTransaction(txCtx);
+		// TODO Timeout mechanism
+		return msgCtx;
+	}
+
+	private void finishTx(ReceiverContext rcv, TransactionContext txCtx) {
+		rcv.removeTransaction(txCtx.getTxId());
+		// TODO
 	}
 
 	// -------------------------------------------------------------------------

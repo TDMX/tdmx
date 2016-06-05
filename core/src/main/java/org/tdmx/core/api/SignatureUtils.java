@@ -40,7 +40,6 @@ import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Header;
-import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Signaturevalue;
@@ -298,12 +297,6 @@ public class SignatureUtils {
 	private static void appendValueToSign(StringBuilder value, Error error) {
 		value.append(toValue(error.getCode()));
 		value.append(toValue(error.getDescription()));
-	}
-
-	private static void appendValueToSign(StringBuilder value, Msgreference mr) {
-		value.append(toValue(mr.getMsgId()));
-		value.append(toValue(mr.getExternalReference()));
-		value.append(toValue(mr.getSignature()));
 	}
 
 	private static void appendValueToSign(StringBuilder value, UserIdentity uc) {

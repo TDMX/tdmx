@@ -28,9 +28,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 
 public class ReceiverContext {
 
@@ -168,18 +166,20 @@ public class ReceiverContext {
 	 * Start the transaction, adding the message to the unackedMessageMap.
 	 * 
 	 * @param tx
-	 * @param msg
-	 * @return
 	 */
-	public MessageContext startTransaction(Transaction tx, ChannelMessage msg) {
-		TransactionContext txCtx = new TransactionContext(tx.getXid());
-		log.debug("Associating tx " + txCtx.getTxId() + " with msg " + msg.getMsgId());
-		MessageContext msgCtx = new MessageContext(msg);
-		txCtx.setCurrentMessage(msgCtx);
-		txCtx.setTxTimeoutTimestamp(System.currentTimeMillis() + tx.getTxtimeout() * 1000);
+	public void addTransaction(TransactionContext txCtx) {
 		transactionMap.put(txCtx.getTxId(), txCtx);
-		unackedMessageMap.put(msgCtx.getMsgId(), msgCtx);
-		return msgCtx;
+		unackedMessageMap.put(txCtx.getCurrentMessage().getMsgId(), txCtx.getCurrentMessage());
+	}
+
+	/**
+	 * Get the transaction.
+	 * 
+	 * @param txId
+	 * @return the transaction.
+	 */
+	public TransactionContext getTransaction(String txId) {
+		return transactionMap.get(txId);
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class ReceiverContext {
 	 * @param txId
 	 * @return the message previously associated with the transaction.
 	 */
-	public MessageContext endTransaction(String txId) {
+	public MessageContext removeTransaction(String txId) {
 		TransactionContext tx = transactionMap.remove(txId);
 		if (tx != null) {
 			MessageContext msg = tx.getCurrentMessage();

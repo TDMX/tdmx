@@ -76,14 +76,17 @@
 	<!-- ********************************************* -->
 	<xs:complexType name="receiveRequestType">
 		<xs:annotation>
-			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an auto-acknowledging session.</xs:documentation>
+			<xs:documentation>receive a message on the calling agent's destination, either in the context of a transaction, or an auto-acknowledging session, where the msgId of the previously received message is acknowledged.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="common:Request">
 				<xs:sequence>
 					<xs:choice>
 						<xs:element ref="tx:transaction"/>
-						<xs:element ref="tx:localtransaction"/>
+						<xs:sequence>
+							<xs:element ref="tx:localtransaction"/>
+							<xs:element ref="msg:msgId" minOccurs="0"/>
+						</xs:sequence>
 					</xs:choice>
 					<xs:element ref="msg:waitTimeoutSec"/>
 				</xs:sequence>
@@ -129,13 +132,13 @@
 	</xs:complexType>
 	<xs:complexType name="acknowledgeRequestType">
 		<xs:annotation>
-			<xs:documentation>acknowledge receipt of a message on the calling agent's destination, in the context of a non auto-acknowledging session. Use the acknowledge in the receive operation for more efficiency.</xs:documentation>
+			<xs:documentation>acknowledge receipt of a message on the calling agent's destination, in the context of a non auto-acknowledging session. Use the acknowledge in the receive operation (continual receive operation) for more efficiency.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="common:Request">
 				<xs:sequence>
-					<xs:element ref="tx:xid"/>
 					<xs:element ref="tx:clientId"/>
+					<xs:element ref="msg:msgId"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>

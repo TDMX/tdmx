@@ -55,7 +55,6 @@ import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.scs.GetMDSSession;
 import org.tdmx.core.api.v01.scs.GetMDSSessionResponse;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -253,15 +252,15 @@ public class PollReceive implements CommandExecutable {
 			if (!SignatureUtils.checkMsgId(msg.getHeader(), msg.getPayload(),
 					msg.getHeader().getUsersignature().getSignaturevalue().getTimestamp())) {
 				out.println("Corrupted msgId.");
-				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageId), mds,
+				handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageId), mds,
 						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			// check the message signature is ok
 			if (!SignatureUtils.checkMessageSignature(msg.getHeader(), msg.getPayload())) {
 				out.println("Msg signature invalid.");
-				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageSignature),
-						mds, uniqClientId, sessionResponse.getSession().getSessionId(), out);
+				handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidMessageSignature), mds,
+						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			PKIXCertificate[] fromUserChain = ClientCliUtils
@@ -282,13 +281,13 @@ public class PollReceive implements CommandExecutable {
 				// we are unable to decrypt the message since we don't know the session key
 				out.println("unable to decrypt the message, session key unknown.");
 
-				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveNoSessionKey), mds,
-						uniqClientId, sessionResponse.getSession().getSessionId(), out);
+				handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.ReceiveNoSessionKey), mds, uniqClientId,
+						sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
 			if (!sk.getScheme().getName().equals(msg.getHeader().getScheme())) {
 				out.println("Mismatch in encryption scheme.");
-				handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageSchemeSessionMismatch), mds,
+				handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.MessageSchemeSessionMismatch), mds,
 						uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				return;
 			}
@@ -356,7 +355,7 @@ public class PollReceive implements CommandExecutable {
 					chunksOk = false;
 				}
 				if (!chunksOk) {
-					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidChunk), mds,
+					handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.ReceiveInvalidChunk), mds,
 							uniqClientId, sessionResponse.getSession().getSessionId(), out);
 					return;
 				}
@@ -388,10 +387,9 @@ public class PollReceive implements CommandExecutable {
 
 				if (decryptedOk) {
 					out.println("Sucessfully decrypted to " + filename);
-					handleAcknowledge(uc, msg, null, mds, uniqClientId, sessionResponse.getSession().getSessionId(),
-							out);
+					handleAcknowledge(msg, null, mds, uniqClientId, sessionResponse.getSession().getSessionId(), out);
 				} else {
-					handleAcknowledge(uc, msg, ClientErrorCode.getError(ClientErrorCode.MessageDecryptionFailure), mds,
+					handleAcknowledge(msg, ClientErrorCode.getError(ClientErrorCode.MessageDecryptionFailure), mds,
 							uniqClientId, sessionResponse.getSession().getSessionId(), out);
 
 				}
@@ -412,16 +410,13 @@ public class PollReceive implements CommandExecutable {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private void handleAcknowledge(PKIXCredential uc, Msg msg, Error error, MDS mds, String xid, String sessionId,
-			CliPrinter out) {
-		Msgreference msgRef = new Msgreference();
-		msgRef.setExternalReference(msg.getHeader().getExternalReference());
-		msgRef.setMsgId(msg.getHeader().getMsgId());
-		msgRef.setSignature(msg.getHeader().getUsersignature().getSignaturevalue().getSignature());
+	private void handleAcknowledge(Msg msg, Error error, MDS mds, String clientId, String sessionId, CliPrinter out) {
+		out.println(error);
 
 		Acknowledge ackRequest = new Acknowledge();
-		ackRequest.setXid(xid);
+		ackRequest.setClientId(clientId);
 		ackRequest.setSessionId(sessionId);
+		ackRequest.setMsgId(msg.getHeader().getMsgId());
 		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
 		if (!ackResponse.isSuccess()) {
 			out.println("Failed to acknowledge receipt. ", ackResponse.getError());

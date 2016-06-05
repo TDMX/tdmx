@@ -478,7 +478,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, String xid) {
+	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, int originSerialNr, String xid) {
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");
 		}
@@ -489,6 +489,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
 			sc.getOrigin().setLocalName(origin.getLocalName());
 			sc.getOrigin().setDomainName(origin.getDomainName());
+			sc.setOriginSerialNr(originSerialNr);
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.UPLOADED);
 
@@ -518,7 +519,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, String xid) {
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, int originSerialNr, String xid) {
 		if (origin == null) {
 			throw new IllegalArgumentException("missing origin");
 		}
@@ -532,6 +533,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
 			sc.getOrigin().setLocalName(origin.getLocalName());
 			sc.getOrigin().setDomainName(origin.getDomainName());
+			sc.setOriginSerialNr(originSerialNr);
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.UPLOADED);
 
@@ -615,7 +617,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ReceiveMessageResultHolder onePhaseCommitReceipt(Zone zone, ChannelMessage msg) {
+	public ReceiveMessageResultHolder onePhaseCommitReceive(Zone zone, ChannelMessage msg) {
 		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
 		if (existingMsg == null) {
 			throw new IllegalStateException("Message " + msg.getMsgId() + " not found.");
@@ -638,7 +640,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ReceiveMessageResultHolder onePhaseRollbackReceipt(Zone zone, ChannelMessage msg) {
+	public ReceiveMessageResultHolder onePhaseRollbackReceive(Zone zone, ChannelMessage msg) {
 		// message failed delivery is either recycled (up to a point) or deleted
 
 		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
@@ -689,7 +691,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, String xid) {
+	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, int destinationSerialNr,
+			String xid) {
 		if (destination == null) {
 			throw new IllegalArgumentException("missing destination");
 		}
@@ -701,6 +704,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			sc.getDestination().setLocalName(destination.getLocalName());
 			sc.getDestination().setDomainName(destination.getDomainName());
 			sc.getDestination().setServiceName(destination.getServiceName());
+			sc.setDestinationSerialNr(destinationSerialNr);
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.DOWNLOADED);
 
@@ -724,7 +728,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination, String xid) {
+	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination,
+			int destinationSerialNr, String xid) {
 		if (destination == null) {
 			throw new IllegalArgumentException("missing destination");
 		}
@@ -736,6 +741,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			sc.getDestination().setLocalName(destination.getLocalName());
 			sc.getDestination().setDomainName(destination.getDomainName());
 			sc.getDestination().setServiceName(destination.getServiceName());
+			sc.setDestinationSerialNr(destinationSerialNr);
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.DOWNLOADED);
 

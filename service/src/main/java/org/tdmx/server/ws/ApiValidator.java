@@ -36,7 +36,6 @@ import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
-import org.tdmx.core.api.v01.msg.Msgreference;
 import org.tdmx.core.api.v01.msg.Payload;
 import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.api.v01.msg.Service;
@@ -359,22 +358,6 @@ public class ApiValidator {
 			return null;
 		}
 		return local;
-	}
-
-	public Msgreference checkMsgreference(Msgreference ref, Acknowledge ack) {
-		if (ref == null) {
-			ErrorCode.setError(ErrorCode.MissingMessageReference, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(ref.getMsgId())) {
-			ErrorCode.setError(ErrorCode.MissingMessageReferenceMsgId, ack);
-			return null;
-		}
-		if (!StringUtils.hasText(ref.getSignature())) {
-			ErrorCode.setError(ErrorCode.MissingMessageReferenceSignature, ack);
-			return null;
-		}
-		return ref;
 	}
 
 	public ChunkReference checkChunkReference(ChunkReference chunk, Acknowledge ack) {

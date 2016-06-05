@@ -208,6 +208,8 @@ public class MOSImpl implements MOS {
 	public CommitResponse commit(Commit parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+
 		CommitResponse response = new CommitResponse();
 		if (!StringUtils.hasText(parameters.getXid())) {
 			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
@@ -226,7 +228,7 @@ public class MOSImpl implements MOS {
 			}
 		} else {
 			List<MessageState> states = channelService.twoPhaseCommitSend(session.getZone(), session.getChannelOrigin(),
-					parameters.getXid());
+					authorizedUser.getSerialNumber(), parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
@@ -242,6 +244,8 @@ public class MOSImpl implements MOS {
 	public RollbackResponse rollback(Rollback parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+
 		RollbackResponse response = new RollbackResponse();
 		if (!StringUtils.hasText(parameters.getXid())) {
 			ErrorCode.setError(ErrorCode.MissingTransactionXID, response);
@@ -254,7 +258,7 @@ public class MOSImpl implements MOS {
 			discardTx(stc, session);
 		} else {
 			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(),
-					session.getChannelOrigin(), parameters.getXid());
+					session.getChannelOrigin(), authorizedUser.getSerialNumber(), parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
@@ -268,6 +272,8 @@ public class MOSImpl implements MOS {
 	@Override
 	public ForgetResponse forget(Forget parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
 
 		ForgetResponse response = new ForgetResponse();
 		if (!StringUtils.hasText(parameters.getXid())) {
@@ -283,7 +289,7 @@ public class MOSImpl implements MOS {
 		} else {
 			// forget is equivalent to rollback since we don't do heuristic commiting or rolling back ourselves.
 			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(),
-					session.getChannelOrigin(), parameters.getXid());
+					session.getChannelOrigin(), authorizedUser.getSerialNumber(), parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;

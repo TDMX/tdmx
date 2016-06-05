@@ -84,9 +84,7 @@ public enum ErrorCode {
 	XATransactionTimeout(500, "Transaction XID %s already timed-out."),
 	XATransactionUnknown(500, "Transaction XID unknown."),
 	XATransactionNotPrepared(500, "Transaction is not prepared."),
-	MissingMessageReference(500, "Missing message reference."),
-	MissingMessageReferenceMsgId(500, "Missing message reference msgId."),
-	MissingMessageReferenceSignature(500, "Missing message reference signature value."),
+	MissingAcknowledgeMsgId(500, "Missing acknowledge msgId."),
 	InvalidMessageSource(500, "Message source invalid."),
 	InvalidChunkPos(500, "Chunk pos invalid."),
 	InvalidPayloadLength(500, "Payload length invalid."),
@@ -126,6 +124,7 @@ public enum ErrorCode {
 			500,
 			"Invalid receive. Either use transactional receiving or auto acknowledge, not both."),
 	InvalidAcknowledgeNoReceive(500, "Non transactional acknowledged without receiving a message."),
+	InvalidAcknowledgeNotReceived(500, "Non transactional acknowledged of message not received."),
 	MissingReceiveAcknowledgeMode(
 			500,
 			"Invalid receive. Either use transactional receiving or a non transactional session."),

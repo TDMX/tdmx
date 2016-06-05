@@ -89,7 +89,9 @@ public class ObjectPrettyPrinter implements CliPrinter {
 	// -------------------------------------------------------------------------
 
 	protected void outputObject(Object object, int indentation) {
-
+		if (object == null) {
+			return;
+		}
 		Object rep = getRepresentation(object);
 		if (rep instanceof PrintableObject) {
 			outputRepresentation(object, (PrintableObject) rep, indentation);
