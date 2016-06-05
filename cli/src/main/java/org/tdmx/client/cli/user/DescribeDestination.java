@@ -124,7 +124,7 @@ public class DescribeDestination implements CommandExecutable {
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
 
-		MDS mds = ClientCliUtils.createMDSClient(uc, sessionResponse.getEndpoint());
+		MDS mds = ClientCliUtils.createMDSClient(uc, sessionResponse.getEndpoint(), 0);
 
 		// -------------------------------------------------------------------------
 		// CHECK SESSION at SERVICEPROVIDER

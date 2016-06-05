@@ -1309,7 +1309,21 @@ public class ClientCliUtils {
 		return client;
 	}
 
-	public static MDS createMDSClient(PKIXCredential uc, Endpoint endpoint) {
+	/**
+	 * Create a WS client to the MDS for a specific User.
+	 * 
+	 * @param uc
+	 * @param endpoint
+	 * @param readTimeoutSec
+	 *            if >0 this sets the read timeout in seconds.
+	 * @return
+	 */
+	public static MDS createMDSClient(PKIXCredential uc, Endpoint endpoint, int readTimeoutSec) {
+		int readTimeoutMs = READ_TIMEOUT_MS;
+		if (readTimeoutSec > 0) {
+			readTimeoutMs = readTimeoutSec * 1000;
+		}
+
 		ClientCredentialProvider cp = new ClientCredentialProvider() {
 
 			@Override
@@ -1331,7 +1345,7 @@ public class ClientCliUtils {
 		factory.setConnectionTimeoutMillis(10000);
 		factory.setKeepAlive(true);
 		factory.setClazz(MDS.class);
-		factory.setReceiveTimeoutMillis(READ_TIMEOUT_MS);
+		factory.setReceiveTimeoutMillis(readTimeoutMs);
 		factory.setDisableCNCheck(false);
 		factory.setKeyManagerFactory(kmf);
 		factory.setTrustManagerFactory(stfm);

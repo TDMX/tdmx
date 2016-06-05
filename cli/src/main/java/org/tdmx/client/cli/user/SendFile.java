@@ -293,7 +293,7 @@ public class SendFile implements CommandExecutable {
 		// we make a single local transaction to use for each send
 		Localtransaction lt = new Localtransaction();
 		lt.setClientId(clientId);
-		lt.setTxtimeout(3600);
+		lt.setTxtimeout(3600); // TODO config
 
 		Calendar now = CalendarUtils.getTimestamp(new Date());
 		Calendar ttl = CalendarUtils.getTimestamp(now.getTime());

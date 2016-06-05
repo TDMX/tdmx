@@ -90,6 +90,10 @@ public class PollReceive implements CommandExecutable {
 
 	@Parameter(name = "scsTrustedCertFile", defaultValue = ClientCliUtils.TRUSTED_SCS_CERT, description = "the SCS server's trusted root certificate filename. Use scs:download to fetch it.")
 	private String scsTrustedCertFile;
+
+	@Parameter(name = "waitSec", defaultValue = "60", description = "the time in seconds to wait for a message at the ServiceProvider.")
+	private int waitSec;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -152,7 +156,7 @@ public class PollReceive implements CommandExecutable {
 		}
 		out.println("ZAS sessionId: " + sessionResponse.getSession().getSessionId());
 
-		MDS mds = ClientCliUtils.createMDSClient(uc, sessionResponse.getEndpoint());
+		MDS mds = ClientCliUtils.createMDSClient(uc, sessionResponse.getEndpoint(), waitSec * 2);
 
 		// -------------------------------------------------------------------------
 		// CLI FUNCTION
@@ -228,12 +232,12 @@ public class PollReceive implements CommandExecutable {
 		String uniqClientId = ByteArray.asHex(EntropySource.getRandomBytes(16));
 		Localtransaction nonTx = new Localtransaction();
 		nonTx.setClientId(uniqClientId);
-		nonTx.setTxtimeout(60);
+		nonTx.setTxtimeout(60); // TODO config
 
 		Receive receiveRequest = new Receive();
 		receiveRequest.setSessionId(sessionResponse.getSession().getSessionId());
 		receiveRequest.setLocaltransaction(nonTx);
-		receiveRequest.setWaitTimeoutSec(60);
+		receiveRequest.setWaitTimeoutSec(waitSec);
 
 		ReceiveResponse receiveResponse = mds.receive(receiveRequest);
 		if (!receiveResponse.isSuccess()) {
@@ -420,7 +424,7 @@ public class PollReceive implements CommandExecutable {
 		ackRequest.setSessionId(sessionId);
 		AcknowledgeResponse ackResponse = mds.acknowledge(ackRequest);
 		if (!ackResponse.isSuccess()) {
-			out.println("Failed to NACK receipt. ", ackResponse.getError());
+			out.println("Failed to acknowledge receipt. ", ackResponse.getError());
 		}
 	}
 
