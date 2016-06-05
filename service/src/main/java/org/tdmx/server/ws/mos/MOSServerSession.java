@@ -24,6 +24,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelDestination;
+import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -212,6 +213,13 @@ public class MOSServerSession extends WebServiceSession {
 
 	public void removeTransactionContext(String xid) {
 		removeAttribute(createTxKey(xid));
+	}
+
+	public ChannelOrigin getChannelOrigin() {
+		ChannelOrigin co = new ChannelOrigin();
+		co.setLocalName(getOriginatingAddress().getLocalName());
+		co.setDomainName(getDomain().getDomainName());
+		return co;
 	}
 
 	/**

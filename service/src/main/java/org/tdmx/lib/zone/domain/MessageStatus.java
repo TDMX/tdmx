@@ -20,13 +20,15 @@ package org.tdmx.lib.zone.domain;
 
 public enum MessageStatus {
 
-	NEW,
-	UPLOADED,
-	SUBMITTED,
-	TRANSFERRED,
-	READY,
-	DOWNLOADED,
-	DELIVERED;
+	NEW, // is not yet persisted
+	UPLOADED, // is send prepared
+	SUBMITTED, // is sent
+	TRANSFERRED, // is relayed
+	READY, // is ready for delivery
+	DOWNLOADED, // delivery is prepared
+	REDELIVER, // failed delivery
+	DELETED,// is deleted after delivery or delivery failure ( not anymore persisted )
+	;
 
 	public static final int MAX_MSGSTATUS_LEN = 12;
 }

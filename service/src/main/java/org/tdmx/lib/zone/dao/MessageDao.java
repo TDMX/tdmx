@@ -20,6 +20,7 @@ package org.tdmx.lib.zone.dao;
 
 import java.util.List;
 
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
@@ -44,9 +45,20 @@ public interface MessageDao {
 	 * 
 	 * @param zone
 	 * @param origin
+	 * @param originSerialNr
 	 * @return the list of prepared XIDs for the sender on ChannelOrigin.
 	 */
-	List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin);
+	List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin, int originSerialNr);
+
+	/**
+	 * Return the list of prepared XIDs for the receiver on ChannelDestination.
+	 * 
+	 * @param zone
+	 * @param destination
+	 * @param destinationSerialNr
+	 * @return the list of prepared XIDs for the receiver on ChannelDestination.
+	 */
+	List<String> getPreparedReceiveTransactions(Zone zone, ChannelDestination destination, int destinationSerialNr);
 
 	/**
 	 * Load the ChannelMessage by id.

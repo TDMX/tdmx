@@ -20,6 +20,7 @@
 package org.tdmx.lib.zone.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,7 +422,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void onePhaseCommitSend(Zone zone, Channel channel, List<ChannelMessage> messages) {
-		// persist each message in a state that they can be immediately relayed afterwards.
+		// the messages have not been persisted yet, so persist each message in a state that they can be immediately
+		// relayed afterwards.
 		long totalPayloadSize = 0;
 		for (ChannelMessage msg : messages) {
 			if (msg.getState().isSameDomain()) {
@@ -449,7 +451,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public void twoPhasePrepareSend(Zone zone, Channel channel, List<ChannelMessage> messages, String xid) {
-		// persist each message in a state that they can be immediately relayed afterwards.
+		// the messages have not been persisted yet, so persist each message in a state that relates to the TX which can
+		// be committed or rolled back afterwards.
 		long totalPayloadSize = 0;
 		for (ChannelMessage msg : messages) {
 			// prepared and waiting for commit before relaying
@@ -469,19 +472,23 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<String> twoPhaseRecover(Zone zone, ChannelOrigin origin) {
-		return messageDao.getPreparedSendTransactions(zone, origin);
+	public List<String> twoPhaseRecoverSend(Zone zone, ChannelOrigin origin, int originSerialNr) {
+		return messageDao.getPreparedSendTransactions(zone, origin, originSerialNr);
 	}
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid) {
+	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, String xid) {
+		if (origin == null) {
+			throw new IllegalArgumentException("missing origin");
+		}
 		List<MessageState> result = new ArrayList<>();
-
 		List<MessageState> states = null;
 		do {
 			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
 					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.getOrigin().setLocalName(origin.getLocalName());
+			sc.getOrigin().setDomainName(origin.getDomainName());
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.UPLOADED);
 
@@ -511,7 +518,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public List<MessageState> twoPhaseRollbackSend(Zone zone, String xid) {
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, String xid) {
+		if (origin == null) {
+			throw new IllegalArgumentException("missing origin");
+		}
 		List<MessageState> result = new ArrayList<>();
 
 		Map<Channel, Long> quotaMap = new HashMap<>(); // undo the quota reduction done at prepare.
@@ -520,6 +530,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		do {
 			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
 					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.getOrigin().setLocalName(origin.getLocalName());
+			sc.getOrigin().setDomainName(origin.getDomainName());
 			sc.setXid(xid);
 			sc.setMessageStatus(MessageStatus.UPLOADED);
 
@@ -603,22 +615,154 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg) {
-		// lock quota, reduce undelivered buffer, set status if crossing low limit
+	public ReceiveMessageResultHolder onePhaseCommitReceipt(Zone zone, ChannelMessage msg) {
 		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
-		if (existingMsg != null) {
-			existingMsg.getState().setStatus(MessageStatus.DELIVERED);
+		if (existingMsg == null) {
+			throw new IllegalStateException("Message " + msg.getMsgId() + " not found.");
 		}
+		// the ChannelMessage and it's MessageState are deleted.
+		existingMsg.getState().setStatus(MessageStatus.DELETED);
+		messageDao.delete(existingMsg);
 
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
 
-		// we can fall below the low mark but and if we do then the flow control is opened.
+		// lock quota, increase available quota, set flow control status opened if crossing low limit
 		boolean openedRelayFC = quota.reduceBufferOnReceive(msg.getPayloadLength());
 
 		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
 		result.flowQuota = quota;
 		result.flowControlOpened = openedRelayFC;
 		result.msg = existingMsg;
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public ReceiveMessageResultHolder onePhaseRollbackReceipt(Zone zone, ChannelMessage msg) {
+		// message failed delivery is either recycled (up to a point) or deleted
+
+		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
+		if (existingMsg == null) {
+			throw new IllegalStateException("Message " + msg.getMsgId() + " not found.");
+		}
+
+		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
+		result.flowQuota = channelDao.lock(msg.getChannel().getQuota().getId());
+		result.flowControlOpened = false;
+		result.msg = existingMsg;
+
+		if (existingMsg.getState().getDeliveryCount() >= 3) { // TODO #101: max redelivery part of quota
+			// the ChannelMessage and it's MessageState are deleted if not delivered after x retries
+			// freeing quota
+
+			existingMsg.getState().setStatus(MessageStatus.DELETED);
+			messageDao.delete(existingMsg);
+			result.flowControlOpened = result.flowQuota.reduceBufferOnReceive(msg.getPayloadLength());
+			// we can fall below the low mark but and if we do then the flow control is opened.
+		} else {
+			existingMsg.getState().setStatus(MessageStatus.REDELIVER);
+			Calendar redeliverTime = Calendar.getInstance();
+			redeliverTime.add(Calendar.SECOND, 3600); // TODO #101: delivery after x seconds configured in flow
+			existingMsg.getState().setRedeliverAfter(redeliverTime.getTime());
+		}
+
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public ReceiveMessageResultHolder twoPhasePrepareReceive(Zone zone, ChannelMessage msg, String xid) {
+		ChannelMessage existingMsg = messageDao.loadById(msg.getId(), true);
+		if (existingMsg == null) {
+			throw new IllegalStateException("Message " + msg.getMsgId() + " not found.");
+		}
+		ReceiveMessageResultHolder result = new ReceiveMessageResultHolder();
+		result.flowQuota = channelDao.lock(msg.getChannel().getQuota().getId());
+		result.flowControlOpened = false;
+		result.msg = existingMsg;
+
+		msg.getState().setStatus(MessageStatus.DOWNLOADED);
+		result.flowControlOpened = result.flowQuota.reduceBufferOnReceive(msg.getPayloadLength());
+		// we can fall below the low mark but and if we do then the flow control is opened.
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, String xid) {
+		if (destination == null) {
+			throw new IllegalArgumentException("missing destination");
+		}
+		List<MessageState> result = new ArrayList<>();
+		List<MessageState> states = null;
+		do {
+			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
+					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.getDestination().setLocalName(destination.getLocalName());
+			sc.getDestination().setDomainName(destination.getDomainName());
+			sc.getDestination().setServiceName(destination.getServiceName());
+			sc.setXid(xid);
+			sc.setMessageStatus(MessageStatus.DOWNLOADED);
+
+			states = messageDao.search(zone, sc, true);
+
+			for (MessageState state : states) {
+				state.setStatus(MessageStatus.DELETED);
+				messageDao.delete(state.getMsg());
+			}
+
+		} while (states.size() == PageSpecifier.DEFAULT_PAGE_SIZE);
+
+		return result;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public List<String> twoPhaseRecoverReceive(Zone zone, ChannelDestination destination, int destinationSerialNr) {
+		return messageDao.getPreparedReceiveTransactions(zone, destination, destinationSerialNr);
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination, String xid) {
+		if (destination == null) {
+			throw new IllegalArgumentException("missing destination");
+		}
+		List<MessageState> result = new ArrayList<>();
+		List<MessageState> states = null;
+		do {
+			MessageStatusSearchCriteria sc = new MessageStatusSearchCriteria(
+					new PageSpecifier(0, PageSpecifier.DEFAULT_PAGE_SIZE));
+			sc.getDestination().setLocalName(destination.getLocalName());
+			sc.getDestination().setDomainName(destination.getDomainName());
+			sc.getDestination().setServiceName(destination.getServiceName());
+			sc.setXid(xid);
+			sc.setMessageStatus(MessageStatus.DOWNLOADED);
+
+			states = messageDao.search(zone, sc, true);
+
+			for (MessageState state : states) {
+
+				if (state.getDeliveryCount() >= 3) { // TODO #101: max redelivery part of quota
+					// the message is deleted, quota used up before.
+
+					state.setStatus(MessageStatus.DELETED);
+					messageDao.delete(state.getMsg());
+				} else {
+					state.setStatus(MessageStatus.REDELIVER);
+					Calendar redeliverTime = Calendar.getInstance();
+					redeliverTime.add(Calendar.SECOND, 3600); // TODO #101: delivery after x seconds configured in flow
+					state.setRedeliverAfter(redeliverTime.getTime());
+
+					// put back the used quota
+					FlowQuota quota = channelDao.lock(state.getMsg().getChannel().getQuota().getId());
+					// we can exceed the high mark but if we do then we set flow control to closed.
+					quota.incrementBufferOnRelay(state.getMsg().getPayloadLength());
+				}
+			}
+
+		} while (states.size() == PageSpecifier.DEFAULT_PAGE_SIZE);
+
 		return result;
 	}
 

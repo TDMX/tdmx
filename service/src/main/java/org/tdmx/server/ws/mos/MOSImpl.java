@@ -68,7 +68,6 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelName;
-import org.tdmx.lib.zone.domain.ChannelOrigin;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.MessageStatus;
@@ -226,7 +225,8 @@ public class MOSImpl implements MOS {
 				return response;
 			}
 		} else {
-			List<MessageState> states = channelService.twoPhaseCommitSend(session.getZone(), parameters.getXid());
+			List<MessageState> states = channelService.twoPhaseCommitSend(session.getZone(), session.getChannelOrigin(),
+					parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
@@ -253,7 +253,8 @@ public class MOSImpl implements MOS {
 			// rollback of a tx which is not yet prepared.
 			discardTx(stc, session);
 		} else {
-			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(), parameters.getXid());
+			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(),
+					session.getChannelOrigin(), parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
@@ -281,7 +282,8 @@ public class MOSImpl implements MOS {
 			return response;
 		} else {
 			// forget is equivalent to rollback since we don't do heuristic commiting or rolling back ourselves.
-			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(), parameters.getXid());
+			List<MessageState> states = channelService.twoPhaseRollbackSend(session.getZone(),
+					session.getChannelOrigin(), parameters.getXid());
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
@@ -296,12 +298,11 @@ public class MOSImpl implements MOS {
 	public RecoverResponse recover(Recover parameters) {
 		MOSServerSession session = authorizedSessionService.getAuthorizedSession();
 
-		ChannelOrigin co = new ChannelOrigin();
-		co.setLocalName(session.getOriginatingAddress().getLocalName());
-		co.setDomainName(session.getDomain().getDomainName());
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
 
 		RecoverResponse response = new RecoverResponse();
-		List<String> preparedXids = channelService.twoPhaseRecover(session.getZone(), co);
+		List<String> preparedXids = channelService.twoPhaseRecoverSend(session.getZone(), session.getChannelOrigin(),
+				authorizedUser.getSerialNumber());
 
 		response.getXids().addAll(preparedXids);
 		response.setSuccess(true);

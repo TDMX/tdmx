@@ -276,7 +276,7 @@ public class MDSImpl implements MDS {
 			MessageContext ctx = rcv.endTransaction(tx.getXid());
 			if (ctx != null) {
 				// acknowledge the message, possibly opening the relay flow control
-				ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
+				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceipt(session.getZone(),
 						ctx.getMsg());
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
@@ -296,6 +296,7 @@ public class MDSImpl implements MDS {
 			criteria.getDestination().setLocalName(session.getDestinationAddress().getLocalName());
 			criteria.getDestination().setDomainName(session.getDomain().getDomainName());
 			criteria.getDestination().setServiceName(session.getService().getServiceName());
+			criteria.setDestinationSerialNr(authorizedUser.getSerialNumber());
 			criteria.setMessageStatus(MessageStatus.READY);
 			criteria.setProcessingStatus(ProcessingStatus.NONE);
 			List<Long> pendingStatusIds = channelService.getStatusReferences(session.getZone(), criteria, batchSize);
@@ -407,7 +408,7 @@ public class MDSImpl implements MDS {
 			return response;
 		} else {
 			// acknowledge the message, possibly opening the relay flow control
-			ReceiveMessageResultHolder ackStatus = channelService.acknowledgeMessageReceipt(session.getZone(),
+			ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceipt(session.getZone(),
 					ctx.getMsg());
 			if (ackStatus.flowControlOpened && !ctx.getMsg().getState().isSameDomain()) {
 				// relay opened FC back to origin
@@ -473,8 +474,17 @@ public class MDSImpl implements MDS {
 
 	@Override
 	public RecoverResponse recover(Recover parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		MDSServerSession session = authorizedSessionService.getAuthorizedSession();
+
+		PKIXCertificate authorizedUser = authenticatedClientService.getAuthenticatedClient();
+
+		RecoverResponse response = new RecoverResponse();
+		List<String> preparedXids = channelService.twoPhaseRecoverReceive(session.getZone(),
+				session.getChannelDestination(), authorizedUser.getSerialNumber());
+
+		response.getXids().addAll(preparedXids);
+		response.setSuccess(true);
+		return response;
 	}
 
 	// -------------------------------------------------------------------------

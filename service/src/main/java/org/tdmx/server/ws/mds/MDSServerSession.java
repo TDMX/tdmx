@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Address;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.Zone;
@@ -95,6 +96,14 @@ public class MDSServerSession extends WebServiceSession {
 
 	public Service getService() {
 		return getAttribute(SERVICE);
+	}
+
+	public ChannelDestination getChannelDestination() {
+		ChannelDestination cd = new ChannelDestination();
+		cd.setLocalName(getDestinationAddress().getLocalName());
+		cd.setDomainName(getDomain().getDomainName());
+		cd.setServiceName(getService().getServiceName());
+		return cd;
 	}
 
 	// -------------------------------------------------------------------------

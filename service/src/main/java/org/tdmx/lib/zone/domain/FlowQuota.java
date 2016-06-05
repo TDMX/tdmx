@@ -71,7 +71,11 @@ public class FlowQuota implements Serializable {
 	@Column(length = ChannelAuthorizationStatus.MAX_AUTH_STATUS_LEN, nullable = false)
 	private ChannelAuthorizationStatus authorizationStatus;
 
-	// TODO #49 : max size of individual messages from authorization
+	// TODO #101 : max size of individual messages denormalized from min(send+recv) authorization
+
+	// TODO #101 : max redelivery count - new part of destination authorization
+
+	// TODO #101 : redeliver after wait seconds - new part of destination authorization
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)

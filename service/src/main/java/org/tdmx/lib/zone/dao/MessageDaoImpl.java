@@ -30,6 +30,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.zone.domain.ChannelDestination;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.ChannelMessageSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelOrigin;
@@ -106,7 +107,7 @@ public class MessageDaoImpl implements MessageDao {
 	}
 
 	@Override
-	public List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin) {
+	public List<String> getPreparedSendTransactions(Zone zone, ChannelOrigin origin, int originSerialNr) {
 		if (zone == null) {
 			throw new IllegalArgumentException("missing zone");
 		}
@@ -118,7 +119,31 @@ public class MessageDaoImpl implements MessageDao {
 		BooleanExpression where = messageState.zone.eq(zone).and(messageState.txId.isNotNull())
 				.and(messageState.status.eq(MessageStatus.UPLOADED))
 				.and(messageState.origin.localName.eq(origin.getLocalName()))
-				.and(messageState.origin.domainName.eq(origin.getDomainName()));
+				.and(messageState.origin.domainName.eq(origin.getDomainName()))
+				.and(messageState.originSerialNr.eq(originSerialNr));
+
+		query.where(where);
+		query.distinct();
+		return query.list(messageState.txId);
+	}
+
+	@Override
+	public List<String> getPreparedReceiveTransactions(Zone zone, ChannelDestination destination,
+			int destinationSerialNr) {
+		if (zone == null) {
+			throw new IllegalArgumentException("missing zone");
+		}
+		if (destination == null) {
+			throw new IllegalArgumentException("missing destination");
+		}
+		JPAQuery query = new JPAQuery(em).from(messageState);
+
+		BooleanExpression where = messageState.zone.eq(zone).and(messageState.txId.isNotNull())
+				.and(messageState.status.eq(MessageStatus.UPLOADED))
+				.and(messageState.destination.localName.eq(destination.getLocalName()))
+				.and(messageState.destination.domainName.eq(destination.getDomainName()))
+				.and(messageState.destination.serviceName.eq(destination.getServiceName()))
+				.and(messageState.destinationSerialNr.eq(destinationSerialNr));
 
 		query.where(where);
 		query.distinct();

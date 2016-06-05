@@ -317,7 +317,7 @@ public interface ChannelService {
 	public void delete(ChannelMessage message);
 
 	public enum SubmitMessageOperationStatus {
-		MESSAGE_TOO_LARGE, // TODO #49 limit size of messages being sent.
+		MESSAGE_TOO_LARGE,
 		NOT_ENOUGH_QUOTA_AVAILABLE,
 		FLOW_CONTROL_CLOSED,
 		CHANNEL_CLOSED,
@@ -360,7 +360,7 @@ public interface ChannelService {
 
 	/**
 	 * Prepare messages for sending. Reduces the flow quota. ChannelMessages are persisted with the xid for eventual
-	 * later recovery.
+	 * later recovery. The MessageStatus is set to {@link MessageStatus#UPLOADED}.
 	 * 
 	 * @param zone
 	 * @param channel
@@ -371,34 +371,39 @@ public interface ChannelService {
 	public void twoPhasePrepareSend(Zone zone, Channel channel, List<ChannelMessage> messages, String xid);
 
 	/**
-	 * Discover the XID of the prepared transactions for the channel origin.
+	 * Discover the XID of the prepared transactions for the channel origin, by looking over messages in status
+	 * {@link MessageStatus#UPLOADED}.
 	 * 
 	 * @param zone
 	 * @param origin
+	 * @param originSerialNr
 	 * @return
 	 */
-	public List<String> twoPhaseRecover(Zone zone, ChannelOrigin origin);
+	public List<String> twoPhaseRecoverSend(Zone zone, ChannelOrigin origin, int originSerialNr);
 
 	/**
 	 * Commit messages for sending. Flow quota already reduced by prepare. Clears the xid from the already persisted
-	 * messages.
+	 * messages. The MessageStatus becomes {@link MessageStatus#READY} for same domain submits, or
+	 * {@link MessageStatus#SUBMITTED} for the normal case.
 	 * 
 	 * @param zone
+	 * @param origin
 	 * @param xid
 	 * @return the list of messages committed.
 	 */
-	public List<MessageState> twoPhaseCommitSend(Zone zone, String xid);
+	public List<MessageState> twoPhaseCommitSend(Zone zone, ChannelOrigin origin, String xid);
 
 	/**
 	 * Rollback messages for prepared for sending. Flow quota already reduced by prepare, so undo that. Removes the
 	 * messages.
 	 * 
 	 * @param zone
+	 * @param origin
 	 * @param xid
 	 * @param the
 	 *            list of messages discarded.
 	 */
-	public List<MessageState> twoPhaseRollbackSend(Zone zone, String xid);
+	public List<MessageState> twoPhaseRollbackSend(Zone zone, ChannelOrigin origin, String xid);
 
 	/**
 	 * Relay a Message inbound called on the receiver side. Updates the FlowQuota of the channel (increasing
@@ -429,14 +434,74 @@ public interface ChannelService {
 	}
 
 	/**
-	 * Message acknowledge updates the FlowQuota of the channel ( reducing undelivered buffer on destination side ).
+	 * Message acknowledge after successful receipt. Updates the FlowQuota of the channel ( increasing the quota
+	 * available on destination side ). This could lead to the channel flow control status changing from closed to open.
+	 * The MessageStatus returned indicates {@link MessageStatus#DELETED}.
 	 * 
 	 * @param zone
 	 * @param msg
 	 *            detached ChannelMessage
-	 * @return the flowquota state.
+	 * @return
 	 */
-	public ReceiveMessageResultHolder acknowledgeMessageReceipt(Zone zone, ChannelMessage msg);
+	public ReceiveMessageResultHolder onePhaseCommitReceipt(Zone zone, ChannelMessage msg);
+
+	/**
+	 * Message negative-acknowledge. The MessageStatus returned indicates {@link MessageStatus#DELETED} or
+	 * {@link MessageStatus#REDELIVER} if the max re-deliveries has not been exceeded. If deleted, the FlowQuota of the
+	 * channel is increased on destination side.
+	 * 
+	 * @param zone
+	 * @param msg
+	 *            detached ChannelMessage
+	 * @return
+	 */
+	public ReceiveMessageResultHolder onePhaseRollbackReceipt(Zone zone, ChannelMessage msg);
+
+	/**
+	 * Prepare a message receive. Increases the flow quota. ChannelMessage is persisted as
+	 * {@link MessageStatus#DOWNLOADED} with the xid for eventual later recovery.
+	 * 
+	 * @param zone
+	 * @param channel
+	 * @param message
+	 *            the ChannelMessage to mark as downloaded.
+	 * @param xid
+	 * @return
+	 */
+	public ReceiveMessageResultHolder twoPhasePrepareReceive(Zone zone, ChannelMessage message, String xid);
+
+	/**
+	 * Discover the XID of the prepared transactions for the channel origin.
+	 * 
+	 * @param zone
+	 * @param destination
+	 * @param destinationSerialNr
+	 * @return the list of XIDs which are prepared.
+	 */
+	public List<String> twoPhaseRecoverReceive(Zone zone, ChannelDestination destination, int destinationSerialNr);
+
+	/**
+	 * Commit messages for sending, effectively deleting the message. Flow quota already increased by prepare. Clears
+	 * the XID from the already persisted messages. The MessageStatus returned indicates {@link MessageStatus#DELETED}.
+	 * 
+	 * @param zone
+	 * @param destination
+	 * @param xid
+	 * @return the message committed (deleted - should be only 1).
+	 */
+	public List<MessageState> twoPhaseCommitReceive(Zone zone, ChannelDestination destination, String xid);
+
+	/**
+	 * Rollback message prepared for receive. Flow quota already increased by prepare, so undo that. Message status is
+	 * changed to {@link MessageStatus#REDELIVER} in case it is to be recycled, otherwise the state is
+	 * {@link MessageStatus#DELETED}
+	 * 
+	 * @param zone
+	 * @param destination
+	 * @param xid
+	 * @return the message recycled or discarded (should be only 1).
+	 */
+	public List<MessageState> twoPhaseRollbackReceive(Zone zone, ChannelDestination destination, String xid);
 
 	/**
 	 * Update the ProcessingState of the Channel's DestinationSession.
