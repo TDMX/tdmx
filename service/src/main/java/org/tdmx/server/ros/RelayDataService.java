@@ -26,6 +26,7 @@ import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
+import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.Zone;
 
 /**
@@ -57,8 +58,8 @@ public interface RelayDataService {
 	public ChannelMessage getMessage(AccountZone az, Zone z, Domain d, Channel channel, Long stateId);
 
 	/**
-	 * Outbound ChannelMessages to be relayed on origin side {@see RelayDirection#Fowards} have a pending
-	 * {@see ChannelMessage#getProcessingState()}. Fetchplan includes ChannelMessage and MessageState.
+	 * Outbound ChannelMessages to be relayed on origin side have {@link MessageStatus#SUBMITTED} with a pending
+	 * {@see ChannelMessage#getProcessingState()}.
 	 * 
 	 * @param az
 	 * @param z
@@ -66,9 +67,9 @@ public interface RelayDataService {
 	 * @param channel
 	 * @param maxMsg
 	 *            fetch up to this number of pending messages.
-	 * @return
+	 * @return the list of stateIds
 	 */
-	public List<ChannelMessage> getForwardRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
+	public List<Long> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
 
 	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
 			FlowControlStatus relayStatus);

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 
 /**
@@ -48,10 +47,7 @@ public class RelayJobContext {
 
 	// reference
 	private final RelayJobType type;
-	private final Long objectId;
-
-	private Object relayObject;
-	private long timestamp = 0L;
+	private List<Long> objectIds;
 
 	/**
 	 * After each relay, the channel flow status is known to the sender.
@@ -61,10 +57,14 @@ public class RelayJobContext {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type, Long objectId) {
+	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type) {
 		this.channelContext = channelContext;
 		this.type = type;
-		this.objectId = objectId;
+	}
+
+	public RelayJobContext(RelayChannelContext channelContext, RelayJobType type, Long objectId) {
+		this(channelContext, type);
+		setObjectId(objectId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -75,38 +75,9 @@ public class RelayJobContext {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("RelayJobContext [type=").append(type);
-		builder.append("objectId=").append(objectId).append("]");
+		builder.append("objectIds=").append(objectIds).append("]");
 		return builder.toString();
 	}
-
-	public void setChannelMessage(ChannelMessage msg) {
-		if (RelayJobType.Data == type) {
-			relayObject = msg;
-			timestamp = msg.getSignature().getSignatureDate().getTime();
-		}
-	}
-
-	public ChannelMessage getChannelMessage() {
-		if (RelayJobType.Data == type) {
-			return (ChannelMessage) relayObject;
-		}
-		return null;
-	}
-
-	public void setChannelMessages(List<ChannelMessage> msgs) {
-		if (RelayJobType.Fetch == type) {
-			relayObject = msgs.toArray(new ChannelMessage[0]);
-		}
-	}
-
-	public List<ChannelMessage> getChannelMessages() {
-		if (RelayJobType.Fetch == type && relayObject instanceof ChannelMessage[]) {
-			return Arrays.asList((ChannelMessage[]) relayObject);
-		}
-		return null;
-	}
-
-	// TODO #95 DR
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -129,11 +100,19 @@ public class RelayJobContext {
 	}
 
 	public Long getObjectId() {
-		return objectId;
+		return objectIds.get(0);
 	}
 
-	public long getTimestamp() {
-		return timestamp;
+	public void setObjectId(Long objectId) {
+		this.objectIds = Arrays.asList(objectId);
+	}
+
+	public List<Long> getObjectIds() {
+		return objectIds;
+	}
+
+	public void setObjectIds(List<Long> objectIds) {
+		this.objectIds = objectIds;
 	}
 
 	public FlowControlStatus getFlowStatus() {

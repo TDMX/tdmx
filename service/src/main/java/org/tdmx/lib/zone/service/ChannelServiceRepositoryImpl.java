@@ -643,11 +643,14 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
+	public void onePhaseCommitRelaySend(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus) {
+		// we delete the channel message and it's state.
+		delete(msg);
+
 		// get and lock quota, reduce unsent buffer on origin side
 		FlowQuota quota = channelDao.lock(msg.getChannel().getQuota().getId());
-		// update other side's relay status too
 		quota.reduceBuffer(msg.getPayloadLength());
+		// update other side's relay status too
 		quota.setRelayStatus(relayStatus);
 	}
 

@@ -190,8 +190,10 @@ public class RelayOutboundServiceImpl implements RelayOutboundService {
 		Domain d = relayDataService.getDomain(az, z, attributes.get(AttributeId.DomainId));
 		Channel c = relayDataService.getChannel(az, z, d, attributes.get(AttributeId.ChannelId));
 
-		RelayDirection dir = c.isSameDomain() ? RelayDirection.Both
-				: c.isSend() ? RelayDirection.Fowards : RelayDirection.Backwards;
+		if (c.isSameDomain()) {
+			throw new IllegalStateException("No relay for same domain channels.");
+		}
+		RelayDirection dir = c.isSend() ? RelayDirection.Fowards : RelayDirection.Backwards;
 
 		RelayChannelContext rc = new RelayChannelContext(pcsServerName, channelKey, az, z, d, c, dir,
 				maxConcurrentRelaysPerChannel);

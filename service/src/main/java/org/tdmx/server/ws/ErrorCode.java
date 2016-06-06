@@ -168,7 +168,6 @@ public enum ErrorCode {
 	MissingRelayPayload(500, "Relay payload missing."),
 	RelayChannelDestinationForwards(500, "Relay ChannelDestinationSession only allowed from destination to origin."),
 	RelayFlowControlForwards(500, "Relay Flowcontrol open only allowed from destination to origin."),
-	RelayFlowControlBothDirection(500, "Relay Flowcontrol for same domain not allowed."),
 
 	RelayClientConstructionFailed(501, "MRS client construction failed. Reason=%s"),
 	RelayChannelAuthorizationFault(501, "Relay ChannelAuthorization to remote MRS failed. Reason=%s"),

@@ -161,7 +161,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 		}
 		associateZoneDB(az.getZonePartitionId());
 		try {
-			channelService.postRelayOutMessage(z, msg, relayStatus);
+			channelService.onePhaseCommitRelaySend(z, msg, relayStatus);
 		} finally {
 			disassociateZoneDB();
 		}
@@ -213,7 +213,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 	}
 
 	@Override
-	public List<ChannelMessage> getForwardRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
+	public List<Long> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg) {
 		if (az == null || z == null || d == null || channel == null) {
 			log.warn("Missing parameter.");
 			return Collections.emptyList();
@@ -228,7 +228,7 @@ public class RelayDataServiceImpl implements RelayDataService {
 			criteria.getDestination().setServiceName(channel.getDestination().getServiceName());
 			criteria.setMessageStatus(MessageStatus.SUBMITTED);
 			criteria.setProcessingStatus(ProcessingStatus.PENDING);
-			return channelService.search(z, criteria);
+			return channelService.getStatusReferences(z, criteria, maxMsg);
 		} finally {
 			disassociateZoneDB();
 		}

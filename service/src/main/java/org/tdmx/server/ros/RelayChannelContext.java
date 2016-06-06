@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.Zone;
@@ -68,7 +67,7 @@ public class RelayChannelContext {
 	private final Comparator<RelayJobContext> ORDER = new Comparator<RelayJobContext>() {
 		@Override
 		public int compare(RelayJobContext o1, RelayJobContext o2) {
-			return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+			return Long.compare(o1.getObjectId(), o2.getObjectId());
 		}
 	};
 
@@ -140,8 +139,6 @@ public class RelayChannelContext {
 		state = RelayContextState.SHUTDOWN;
 		queuedJobs.clear();
 	}
-
-	// TODO #95 relay DR
 
 	public synchronized List<RelayJobContext> finishJob(RelayJobContext finishedJob) {
 		// remove the finished job from the scheduledJobs
@@ -239,14 +236,10 @@ public class RelayChannelContext {
 			break;
 		case FETCH:
 			if (RelayJobType.Fetch == finishedJob.getType()) {
-				for (ChannelMessage msg : finishedJob.getChannelMessages()) {
-					RelayJobContext existingJob = getPendingJob(RelayJobType.Data, msg.getId());
-					if (existingJob != null) {
-						// enrich the existing relay job with a found Msg
-						existingJob.setChannelMessage(msg);
-					} else {
-						RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.Data, msg.getId());
-						newCtx.setChannelMessage(msg);
+				for (Long stateId : finishedJob.getObjectIds()) {
+					RelayJobContext existingJob = getPendingJob(RelayJobType.Data, stateId);
+					if (existingJob == null) {
+						RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.Data, stateId);
 						queuedJobs.add(newCtx);
 					}
 				}

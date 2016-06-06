@@ -419,7 +419,7 @@ public interface ChannelService {
 	public FlowQuota relayInMessage(Zone zone, ChannelMessage msg);
 
 	/**
-	 * Post-relay Message updates the FlowQuota of the channel ( reducing unsent buffer on origin side ).
+	 * Post-relay Message updates the FlowQuota of the channel. ChannelMessage is deleted, freeing used channel quota.
 	 * 
 	 * @param zone
 	 * @param msg
@@ -427,7 +427,7 @@ public interface ChannelService {
 	 * @param relayStatus
 	 *            the other side's relay status known after we send out the message.
 	 */
-	public void postRelayOutMessage(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus);
+	public void onePhaseCommitRelaySend(Zone zone, ChannelMessage msg, FlowControlStatus relayStatus);
 
 	public class ReceiveMessageResultHolder {
 		public boolean flowControlOpened;

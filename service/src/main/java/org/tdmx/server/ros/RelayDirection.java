@@ -26,12 +26,8 @@ public enum RelayDirection {
 	Fowards,
 
 	/**
-	 * Destination to Origin. Eg. FlowControl, DestinationSession, DeliveryReport, ChannelAuthorization
+	 * Destination to Origin. Eg. ChannelAuthorization, DestinationSession, FlowControl
 	 */
-	Backwards,
+	Backwards,;
 
-	/**
-	 * Forwards and Backwards. (Same domain).
-	 */
-	Both;
 }
