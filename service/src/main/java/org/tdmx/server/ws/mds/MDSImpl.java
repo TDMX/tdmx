@@ -341,7 +341,7 @@ public class MDSImpl implements MDS {
 		}
 
 		// fetch the message data for reply
-		ReceiveMessageResultHolder recvMsg = channelService.receiveMessage(stateId);
+		ReceiveMessageResultHolder recvMsg = channelService.receiveMessage(stateId, tx.getTxtimeout());
 		if (recvMsg == null) {
 			// not valid after fetching.
 			response.setSuccess(true);

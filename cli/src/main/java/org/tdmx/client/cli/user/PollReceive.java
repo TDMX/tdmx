@@ -18,6 +18,7 @@
  */
 package org.tdmx.client.cli.user;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -363,11 +364,16 @@ public class PollReceive implements CommandExecutable {
 				// decrypt the message
 				boolean decryptedOk = true;
 				String filename = msg.getHeader().getExternalReference();
-				if (StringUtils.hasText(filename)) {
+				if (!StringUtils.hasText(filename)) {
 					filename = "TDMX-" + System.currentTimeMillis();
 					out.println("No external reference - so filename is defaulted to " + filename);
 				}
-				try (FileOutputStream fos = new FileOutputStream(filename)) {
+				File outputFile = new File(filename);
+				int suffix = 2;
+				while (outputFile.exists()) {
+					outputFile = new File(filename + "-" + suffix++);
+				}
+				try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 					Decrypter dec = iecFactory.getDecrypter(sk.getScheme(), sk.getSessionKeyPair());
 					InputStream plainContent = dec.getInputStream(fbos.getInputStream(),
 							msg.getPayload().getEncryptionContext());
@@ -375,13 +381,13 @@ public class PollReceive implements CommandExecutable {
 					StreamUtils.transfer(plainContent, fos);
 
 				} catch (FileNotFoundException e) {
-					out.println("Output file " + filename + " not found. ", e);
+					out.println("Output file " + outputFile.getName() + " not found. ", e);
 					decryptedOk = false;
 				} catch (IOException e) {
-					out.println("Error writing file " + filename + ". ", e);
+					out.println("Error writing file " + outputFile.getName() + ". ", e);
 					decryptedOk = false;
 				} catch (CryptoException e) {
-					out.println("Error decrypting to file " + filename + ". ", e);
+					out.println("Error decrypting to file " + outputFile.getName() + ". ", e);
 					decryptedOk = false;
 				}
 

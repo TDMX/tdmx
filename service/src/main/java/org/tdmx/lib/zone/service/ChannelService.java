@@ -440,9 +440,10 @@ public interface ChannelService {
 	 * 
 	 * @param zone
 	 * @param stateId
+	 * @param txTimeoutSec
 	 * @return
 	 */
-	public ReceiveMessageResultHolder receiveMessage(Long stateId);
+	public ReceiveMessageResultHolder receiveMessage(Long stateId, int txTimeoutSec);
 
 	/**
 	 * Message acknowledge after successful receipt. Updates the FlowQuota of the channel ( increasing the quota

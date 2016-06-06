@@ -382,7 +382,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public ReceiveMessageResultHolder receiveMessage(Long stateId) {
+	public ReceiveMessageResultHolder receiveMessage(Long stateId, int txTimeoutSec) {
 		//
 		MessageState state = messageDao.loadStateById(stateId, true, true);
 		if (state == null) {
@@ -411,6 +411,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			// transition state and delivery count
 			existingMsg.getState().setStatus(MessageStatus.RECEIVING);
 			existingMsg.getState().setDeliveryCount(state.getDeliveryCount() + 1);
+			// we can recycle the message after the retry time - since MDS tx timeout just "forgets" the message in the
+			// RECEIVING state.
+			Calendar futureRetry = Calendar.getInstance();
+			futureRetry.add(Calendar.SECOND, txTimeoutSec);
+			existingMsg.getState().setRedeliverAfter(futureRetry.getTime());
 		}
 
 		return result;
