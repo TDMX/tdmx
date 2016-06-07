@@ -18,7 +18,11 @@
  */
 package org.tdmx.lib.control.service;
 
+import java.util.Date;
+import java.util.List;
+
 import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabaseType;
 
 /**
  * The DatabasePartitionCache provides a cache of DatabasePartition records.
@@ -28,8 +32,6 @@ import org.tdmx.lib.control.domain.DatabasePartition;
  */
 public interface DatabasePartitionCache {
 
-	public static final String CACHE_KEY = "DatabasePartition";
-
 	/**
 	 * Find the DatabasePartition by partitionId.
 	 * 
@@ -37,4 +39,13 @@ public interface DatabasePartitionCache {
 	 * @return the DatabasePartition or null if not found.
 	 */
 	public DatabasePartition findByPartitionId(String partitionId);
+
+	/**
+	 * Get the list of DatabasePartitions which are active ( sorted by partitionId ) at a specific time.
+	 * 
+	 * @param type
+	 * @param timestamp
+	 * @return
+	 */
+	public List<DatabasePartition> getActiveAtTimestamp(DatabaseType type, Date timestamp);
 }

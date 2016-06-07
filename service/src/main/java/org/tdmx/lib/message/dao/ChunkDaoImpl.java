@@ -32,6 +32,8 @@ public class ChunkDaoImpl implements ChunkDao {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
+	private DataSource dataSource;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -41,19 +43,19 @@ public class ChunkDaoImpl implements ChunkDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void store(DataSource ds, Chunk value) {
+	public void store(Chunk value) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public Chunk loadByMsgIdAndPos(DataSource ds, String msgId, int pos) {
+	public Chunk loadByMsgIdAndPos(String msgId, int pos) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void deleteByMsgId(DataSource ds, String msgId) {
+	public void deleteByMsgId(String msgId) {
 		// TODO Auto-generated method stub
 
 	}
@@ -69,5 +71,13 @@ public class ChunkDaoImpl implements ChunkDao {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
 
 }

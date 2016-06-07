@@ -21,6 +21,7 @@ package org.tdmx.lib.message.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.message.dao.ChunkDao;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -42,6 +43,7 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	// -------------------------------------------------------------------------
 	private static final Logger log = LoggerFactory.getLogger(ChunkServiceRepositoryImpl.class);
 
+	private ThreadLocalPartitionIdProvider partitionIdProvider;
 	private ChunkDao chunkDao;
 
 	// -------------------------------------------------------------------------
@@ -54,19 +56,35 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 
 	@Override
 	public void storeChunk(ChannelMessage msg, Chunk chunk) {
-		// TODO Auto-generated method stub
-
+		String partitionId = getPartitionId(msg);
+		partitionIdProvider.setPartitionId(partitionId);
+		try {
+			chunkDao.store(chunk);
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
 	}
 
 	@Override
 	public Chunk fetchChunk(ChannelMessage msg, int pos) {
-		// TODO Auto-generated method stub
-		return null;
+		String partitionId = getPartitionId(msg);
+		partitionIdProvider.setPartitionId(partitionId);
+		try {
+			return chunkDao.loadByMsgIdAndPos(msg.getMsgId(), pos);
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
 	}
 
 	@Override
 	public void deleteChunks(ChannelMessage msg) {
-		// TODO Auto-generated method stub
+		String partitionId = getPartitionId(msg);
+		partitionIdProvider.setPartitionId(partitionId);
+		try {
+			chunkDao.deleteByMsgId(msg.getMsgId());
+		} finally {
+			partitionIdProvider.clearPartitionId();
+		}
 
 	}
 
@@ -78,6 +96,9 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
+	private String getPartitionId(ChannelMessage msg) {
+		return "p1"; // TODO
+	}
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -88,6 +109,14 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 
 	public void setChunkDao(ChunkDao chunkDao) {
 		this.chunkDao = chunkDao;
+	}
+
+	public ThreadLocalPartitionIdProvider getPartitionIdProvider() {
+		return partitionIdProvider;
+	}
+
+	public void setPartitionIdProvider(ThreadLocalPartitionIdProvider partitionIdProvider) {
+		this.partitionIdProvider = partitionIdProvider;
 	}
 
 }
