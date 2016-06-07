@@ -18,14 +18,9 @@
  */
 package org.tdmx.lib.message.dao;
 
-import static org.tdmx.lib.message.domain.QChunk.chunk;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
 
 import org.tdmx.lib.message.domain.Chunk;
-
-import com.mysema.query.jpa.impl.JPAQuery;
 
 public class ChunkDaoImpl implements ChunkDao {
 
@@ -37,9 +32,6 @@ public class ChunkDaoImpl implements ChunkDao {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	@PersistenceContext(unitName = "MessageDB")
-	private EntityManager em;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -49,28 +41,21 @@ public class ChunkDaoImpl implements ChunkDao {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void persist(Chunk value) {
-		em.persist(value);
+	public void store(DataSource ds, Chunk value) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
-	public void delete(Chunk value) {
-		em.remove(value);
+	public Chunk loadByMsgIdAndPos(DataSource ds, String msgId, int pos) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public Chunk merge(Chunk value) {
-		return em.merge(value);
-	}
+	public void deleteByMsgId(DataSource ds, String msgId) {
+		// TODO Auto-generated method stub
 
-	@Override
-	public Chunk loadById(Long id) {
-		return new JPAQuery(em).from(chunk).where(chunk.id.eq(id)).uniqueResult(chunk);
-	}
-
-	@Override
-	public Chunk loadByMsgIdAndPos(String msgId, int pos) {
-		return new JPAQuery(em).from(chunk).where(chunk.msgId.eq(msgId).and(chunk.pos.eq(pos))).uniqueResult(chunk);
 	}
 
 	// -------------------------------------------------------------------------

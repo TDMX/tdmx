@@ -21,6 +21,8 @@ package org.tdmx.lib.message.service;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Date;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.zone.domain.AgentSignature;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -37,27 +41,34 @@ public class ChunkServiceRepositoryUnitTest {
 	@Autowired
 	private ChunkService service;
 
-	private String msgId;
+	private ChannelMessage msg;
 	private int pos;
 
 	@Before
 	public void doSetup() throws Exception {
-		Chunk c = new Chunk("" + System.currentTimeMillis(), 0);
+		msg = new ChannelMessage();
+		msg.setMsgId("" + System.currentTimeMillis());
+		AgentSignature sig = new AgentSignature();
+		sig.setSignatureDate(new Date()); // needed to determine which db
+		msg.setSignature(sig);
+		msg.setTtlTimestamp(new Date());
+
+		Chunk c = new Chunk(msg.getMsgId(), 0);
 		c.setMac("1234");
 		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
+		c.setTtlTimestamp(msg.getTtlTimestamp()); // denormalized
 
-		msgId = c.getMsgId();
 		pos = c.getPos();
 
-		service.createOrUpdate(c);
+		service.storeChunk(msg, c);
 
 	}
 
 	@After
 	public void doTeardown() {
-		Chunk c = service.findByMsgIdAndPos(msgId, pos);
+		Chunk c = service.fetchChunk(msg, pos);
 		if (c != null) {
-			service.delete(c);
+			service.deleteChunks(msg);
 		}
 	}
 
@@ -68,19 +79,26 @@ public class ChunkServiceRepositoryUnitTest {
 
 	@Test
 	public void testLookup() throws Exception {
-		Chunk c = service.findByMsgIdAndPos(msgId, pos);
+		Chunk c = service.fetchChunk(msg, pos);
 		assertNotNull(c);
 	}
 
 	@Test
 	public void testLookup_NotFoundMsgId() throws Exception {
-		Chunk c = service.findByMsgIdAndPos("gugus", pos);
+		ChannelMessage m = new ChannelMessage();
+		m.setMsgId("NEW" + System.currentTimeMillis());
+		AgentSignature sig = new AgentSignature();
+		sig.setSignatureDate(new Date()); // needed to determine which db
+		m.setSignature(sig);
+		m.setTtlTimestamp(new Date());
+
+		Chunk c = service.fetchChunk(m, pos);
 		assertNull(c);
 	}
 
 	@Test
 	public void testLookup_NotFoundPos() throws Exception {
-		Chunk c = service.findByMsgIdAndPos(msgId, (short) -1);
+		Chunk c = service.fetchChunk(msg, (short) -1);
 		assertNull(c);
 	}
 

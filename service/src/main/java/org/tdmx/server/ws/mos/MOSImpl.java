@@ -472,7 +472,7 @@ public class MOSImpl implements MOS {
 		}
 
 		// persist Chunk
-		chunkService.createOrUpdate(c);
+		chunkService.storeChunk(m, c);
 
 		// give the caller the continuationId for the next chunk
 		String continuationId = mch.getContinuationId(c.getPos() + 1);
@@ -535,7 +535,7 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		chunkService.createOrUpdate(c);
+		chunkService.storeChunk(m, c);
 
 		// calculate the next continuationId
 		String nextContinuationId = cmh.getContinuationId(c.getPos() + 1);

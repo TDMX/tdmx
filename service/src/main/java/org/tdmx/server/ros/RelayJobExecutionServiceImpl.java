@@ -210,7 +210,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 				log.debug("Relay Chunk " + msg.getMsgId() + " pos " + pos);
 			}
 
-			Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), pos);
+			Chunk chunk = chunkService.fetchChunk(msg, pos);
 			if (chunk == null) {
 				ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
 						ErrorCode.ChunkDataLost.getErrorDescription(msg.getMsgId(), pos));

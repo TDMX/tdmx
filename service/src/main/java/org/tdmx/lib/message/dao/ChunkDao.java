@@ -18,6 +18,8 @@
  */
 package org.tdmx.lib.message.dao;
 
+import javax.sql.DataSource;
+
 import org.tdmx.lib.message.domain.Chunk;
 
 /**
@@ -28,14 +30,10 @@ import org.tdmx.lib.message.domain.Chunk;
  */
 public interface ChunkDao {
 
-	public void persist(Chunk value);
+	public void store(DataSource ds, Chunk value);
 
-	public void delete(Chunk value);
+	public Chunk loadByMsgIdAndPos(DataSource ds, String msgId, int pos);
 
-	public Chunk merge(Chunk value);
-
-	public Chunk loadById(Long id);
-
-	public Chunk loadByMsgIdAndPos(String msgId, int pos);
+	public void deleteByMsgId(DataSource ds, String msgId);
 
 }

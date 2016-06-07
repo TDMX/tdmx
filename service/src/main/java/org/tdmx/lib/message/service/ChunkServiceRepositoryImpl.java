@@ -21,12 +21,12 @@ package org.tdmx.lib.message.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 import org.tdmx.lib.message.dao.ChunkDao;
 import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**
- * Transactional CRUD Services for Chunk Entity.
+ * NonTransactional CRUD Services for Chunk Entity.
  * 
  * @author Peter Klauser
  * 
@@ -53,35 +53,21 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	@Transactional(value = "MessageDB")
-	public void createOrUpdate(Chunk chunk) {
-		if (chunk.getId() != null) {
-			Chunk storedChunk = getChunkDao().loadById(chunk.getId());
-			if (storedChunk != null) {
-				getChunkDao().merge(chunk);
-			} else {
-				log.warn("Unable to find Chunk with id " + chunk.getId());
-			}
-		} else {
-			getChunkDao().persist(chunk);
-		}
+	public void storeChunk(ChannelMessage msg, Chunk chunk) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
-	@Transactional(value = "MessageDB")
-	public void delete(Chunk chunk) {
-		Chunk storedChunk = getChunkDao().loadById(chunk.getId());
-		if (storedChunk != null) {
-			getChunkDao().delete(storedChunk);
-		} else {
-			log.warn("Unable to find Chunk to delete with id " + chunk.getId());
-		}
+	public Chunk fetchChunk(ChannelMessage msg, int pos) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	@Transactional(value = "MessageDB", readOnly = true)
-	public Chunk findByMsgIdAndPos(String msgId, int pos) {
-		return getChunkDao().loadByMsgIdAndPos(msgId, pos);
+	public void deleteChunks(ChannelMessage msg) {
+		// TODO Auto-generated method stub
+
 	}
 
 	// -------------------------------------------------------------------------

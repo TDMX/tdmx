@@ -71,6 +71,16 @@ public interface RelayDataService {
 	 */
 	public List<Long> getRelayMessages(AccountZone az, Zone z, Domain d, Channel channel, int maxMsg);
 
+	/**
+	 * Update post successful relay out of a message. Message is deleted and quota freed. The relayStatus (closing) of
+	 * the destination side is stored locally, to be opened later by a relay in from the other side.
+	 * 
+	 * @param az
+	 * @param z
+	 * @param d
+	 * @param msg
+	 * @param relayStatus
+	 */
 	public void updatePostRelayChannelMessage(AccountZone az, Zone z, Domain d, ChannelMessage msg,
 			FlowControlStatus relayStatus);
 

@@ -369,7 +369,7 @@ public class MDSImpl implements MDS {
 		Msg m = d2a.mapChannelMessage(msg);
 
 		// get 1st chunk and map it into msg
-		Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), 0);
+		Chunk chunk = chunkService.fetchChunk(msg, 0);
 		if (chunk == null) {
 			ErrorCode.setError(ErrorCode.ChunkDataLost, response, msg.getMsgId(), 0);
 			return response;
@@ -418,7 +418,7 @@ public class MDSImpl implements MDS {
 		}
 
 		// get next chunk and map it into msg
-		Chunk chunk = chunkService.findByMsgIdAndPos(msg.getMsgId(), cr.getPos());
+		Chunk chunk = chunkService.fetchChunk(msg.getMsg(), cr.getPos());
 		if (chunk == null) {
 			ErrorCode.setError(ErrorCode.ChunkDataLost, response, msg.getMsgId(),
 					downloadRequest.getChunkref().getPos());

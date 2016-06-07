@@ -19,6 +19,7 @@
 package org.tdmx.lib.message.service;
 
 import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**
  * Management Services for a Chunk.
@@ -28,10 +29,10 @@ import org.tdmx.lib.message.domain.Chunk;
  */
 public interface ChunkService {
 
-	public void createOrUpdate(Chunk chunk);
+	public void storeChunk(ChannelMessage msg, Chunk chunk);
 
-	public Chunk findByMsgIdAndPos(String msgId, int pos);
+	public Chunk fetchChunk(ChannelMessage msg, int pos);
 
-	public void delete(Chunk chunk);
+	public void deleteChunks(ChannelMessage msg);
 
 }

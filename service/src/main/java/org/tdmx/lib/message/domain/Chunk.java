@@ -19,17 +19,7 @@
 package org.tdmx.lib.message.domain;
 
 import java.io.Serializable;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.persistence.TableGenerator;
+import java.util.Date;
 
 /**
  * A Chunk (part of a Message).
@@ -37,8 +27,6 @@ import javax.persistence.TableGenerator;
  * @author Peter Klauser
  * 
  */
-@Entity
-@Table(name = "Chunk")
 public class Chunk implements Serializable {
 
 	// -------------------------------------------------------------------------
@@ -53,28 +41,27 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	private static final long serialVersionUID = -128859602084626282L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChunkIdGen")
-	@TableGenerator(name = "ChunkIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "chunkObjectId", valueColumnName = "value", allocationSize = 10)
-	private Long id;
-
-	// TODO #107 denormalize ttl from msg, non tx mysql engine for storage, partitioned datasource
+	// TODO #107 denormalize ttl from msg, partitioned datasource
 
 	// -------------------------------------------------------------------------
 	// HEADER FIELDS
 	// -------------------------------------------------------------------------
-	@Column(length = MAX_MSGID_LEN, nullable = false)
+	// @Column(length = MAX_MSGID_LEN, nullable = false)
 	private String msgId;
 
-	@Column(nullable = false)
+	// @Column(nullable = false)
 	private int pos;
 
-	@Column(nullable = false)
+	// @Column(nullable = false)
+	// @Temporal(TemporalType.TIMESTAMP)
+	private Date ttlTimestamp; // max time to keep the data (un relayed)
+
+	// Column(length=MAX_SHA1_MAC_LEN, nullable = false)
 	private String mac;
 
-	@Basic(fetch = FetchType.LAZY)
-	@Column(nullable = false)
-	@Lob
+	// @Basic(fetch = FetchType.LAZY)
+	// @Column(nullable = false)
+	// @Lob
 	private byte[] data;
 
 	// -------------------------------------------------------------------------
@@ -104,14 +91,6 @@ public class Chunk implements Serializable {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getMac() {
 		return mac;
 	}
@@ -134,6 +113,14 @@ public class Chunk implements Serializable {
 
 	public int getPos() {
 		return pos;
+	}
+
+	public Date getTtlTimestamp() {
+		return ttlTimestamp;
+	}
+
+	public void setTtlTimestamp(Date ttlTimestamp) {
+		this.ttlTimestamp = ttlTimestamp;
 	}
 
 }

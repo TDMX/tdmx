@@ -385,7 +385,7 @@ public class MRSImpl implements MRS {
 		Chunk c = a2d.mapChunk(relayedChunk);
 
 		// persist Chunk via ChunkService
-		chunkService.createOrUpdate(c);
+		chunkService.storeChunk(mrc.getMsg(), c);
 
 		// calculate the next continuationId
 		String nextContinuationId = mrc.getContinuationId(c.getPos() + 1);
