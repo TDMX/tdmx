@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,10 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+
+	public DatabasePartitionCacheImpl() {
+
+	}
 
 	public class DatabaseSetTimeDimension {
 		private final long fromTimestamp;
@@ -121,6 +127,9 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 
 	@Override
 	public List<DatabasePartition> getActiveAtTimestamp(DatabaseType type, Date timestamp) {
+		if (typeMap == null) {
+			fetchDatabasePartitions(false);
+		}
 		List<DatabaseSetTimeDimension> dimensions = typeMap.get(type);
 		long ts = timestamp.getTime();
 		for (DatabaseSetTimeDimension dimension : dimensions) {
@@ -141,7 +150,7 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 	// -------------------------------------------------------------------------
 
 	private synchronized void fetchDatabasePartitions(boolean forceFetch) {
-		if (idMap == null || forceFetch) {
+		if (idMap == null || typeMap == null || forceFetch) {
 			List<DatabasePartition> list = getDatabasePartitionService().findAll();
 
 			// prepare the map of id->partition
@@ -153,8 +162,8 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 			// prepare the local type map
 			Map<DatabaseType, List<DatabaseSetTimeDimension>> localTypeMap = new HashMap<>();
 			for (DatabaseType type : DatabaseType.values()) {
-				List<DatabasePartition> partitions = getAllPartitionsOfType(list, type);
-				List<Date> dates = getAllDatesAscendingOrder(partitions);
+				List<DatabasePartition> partitions = getAllActivatedPartitionsOfType(list, type);
+				Set<Date> dates = getAllDatesAscendingOrder(partitions);
 
 				List<DatabaseSetTimeDimension> dimensions = convertDatesToDimension(dates);
 				mergePartitionsIntoDimensions(partitions, dimensions);
@@ -189,18 +198,29 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 		}
 	}
 
-	private List<DatabaseSetTimeDimension> convertDatesToDimension(List<Date> dates) {
+	private List<DatabaseSetTimeDimension> convertDatesToDimension(Set<Date> dates) {
+		List<Date> allDates = new ArrayList<>();
+		allDates.addAll(dates);
+
 		List<DatabaseSetTimeDimension> result = new ArrayList<>();
-		for (int idx = 0; idx < dates.size() - 1; idx++) {
-			result.add(new DatabaseSetTimeDimension(dates.get(idx).getTime(), dates.get(idx + 1).getTime()));
+		for (int idx = 0; idx < allDates.size() - 1; idx++) {
+			result.add(new DatabaseSetTimeDimension(allDates.get(idx).getTime(), allDates.get(idx + 1).getTime()));
 		}
 		return result;
 	}
 
-	private List<DatabasePartition> getAllPartitionsOfType(List<DatabasePartition> partitions, DatabaseType type) {
+	/**
+	 * Get all partition which are activated.
+	 * 
+	 * @param partitions
+	 * @param type
+	 * @return
+	 */
+	private List<DatabasePartition> getAllActivatedPartitionsOfType(List<DatabasePartition> partitions,
+			DatabaseType type) {
 		List<DatabasePartition> subList = new ArrayList<>();
 		for (DatabasePartition partition : partitions) {
-			if (type == partition.getDbType()) {
+			if (type == partition.getDbType() && partition.getActivationTimestamp() != null) {
 				subList.add(partition);
 			}
 		}
@@ -213,20 +233,25 @@ public class DatabasePartitionCacheImpl implements DatabasePartitionCache, Cache
 	 * @param partitions
 	 * @return
 	 */
-	private List<Date> getAllDatesAscendingOrder(List<DatabasePartition> partitions) {
-		List<Date> allDates = new ArrayList<>();
+	private Set<Date> getAllDatesAscendingOrder(List<DatabasePartition> partitions) {
+		Set<Date> allDates = new TreeSet<>();
+		// default sort increasing...
 		for (DatabasePartition partition : partitions) {
-			allDates.add(partition.getActivationTimestamp());
-			if (partition.getDeactivationTimestamp() != null) {
-				allDates.add(partition.getDeactivationTimestamp());
+			if (partition.getActivationTimestamp() != null) {
+				allDates.add(partition.getActivationTimestamp());
+				if (partition.getDeactivationTimestamp() != null) {
+					allDates.add(partition.getDeactivationTimestamp());
+				}
+			} else {
+				log.debug("Partition " + partition + " is active, ignore.");
 			}
+
 		}
 		// put an end of time date as last.
 		Calendar eot = Calendar.getInstance();
 		eot.add(Calendar.YEAR, 100);
 		allDates.add(eot.getTime());
 
-		Collections.sort(allDates); // default sort increasing...
 		return allDates;
 	}
 

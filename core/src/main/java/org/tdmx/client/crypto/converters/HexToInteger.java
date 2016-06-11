@@ -16,24 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.message.dao;
+package org.tdmx.client.crypto.converters;
 
-import java.sql.SQLException;
+public class HexToInteger {
 
-import org.tdmx.lib.message.domain.Chunk;
-
-/**
- * DAO for the Chunk Entity.
- * 
- * @author Peter
- * 
- */
-public interface ChunkDao {
-
-	public void store(Chunk chunk) throws SQLException;
-
-	public Chunk loadByMsgIdAndPos(String msgId, int pos) throws SQLException;
-
-	public void deleteByMsgId(String msgId) throws SQLException;
+	public static int fromHex(String hex) {
+		int result = Integer.parseInt(hex, 16);
+		return result;
+	}
 
 }

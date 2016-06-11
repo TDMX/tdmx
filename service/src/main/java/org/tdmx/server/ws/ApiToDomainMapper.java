@@ -102,13 +102,13 @@ public class ApiToDomainMapper {
 		return md;
 	}
 
-	public Chunk mapChunk(org.tdmx.core.api.v01.msg.Chunk chunk) {
+	public Chunk mapChunk(ChannelMessage msg, org.tdmx.core.api.v01.msg.Chunk chunk) {
 		if (chunk == null) {
 			return null;
 		}
-		Chunk c = new Chunk(chunk.getMsgId(), chunk.getPos());
-		c.setData(chunk.getData());
+		Chunk c = new Chunk(msg, chunk.getPos());
 		c.setMac(chunk.getMac());
+		c.setData(chunk.getData());
 		return c;
 	}
 

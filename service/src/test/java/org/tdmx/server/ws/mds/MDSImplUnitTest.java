@@ -60,6 +60,7 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
@@ -69,7 +70,6 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -103,6 +103,7 @@ public class MDSImplUnitTest {
 	private WebServiceSessionManager serverSessionManager;
 
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -139,7 +140,7 @@ public class MDSImplUnitTest {
 	public void doSetup() throws Exception {
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(1);
 		input.setNumDACsPerDomain(1);

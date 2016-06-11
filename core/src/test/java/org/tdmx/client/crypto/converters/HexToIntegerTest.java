@@ -16,24 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.message.dao;
+package org.tdmx.client.crypto.converters;
 
-import java.sql.SQLException;
+import static org.junit.Assert.assertEquals;
 
-import org.tdmx.lib.message.domain.Chunk;
+import org.junit.Test;
 
-/**
- * DAO for the Chunk Entity.
- * 
- * @author Peter
- * 
- */
-public interface ChunkDao {
+public class HexToIntegerTest {
 
-	public void store(Chunk chunk) throws SQLException;
-
-	public Chunk loadByMsgIdAndPos(String msgId, int pos) throws SQLException;
-
-	public void deleteByMsgId(String msgId) throws SQLException;
+	@Test
+	public void test() {
+		assertEquals(0xff, HexToInteger.fromHex("ff"));
+		assertEquals(0xd6, HexToInteger.fromHex("d6"));
+		assertEquals(0xd620, HexToInteger.fromHex("d620"));
+		assertEquals(0xd6208e, HexToInteger.fromHex("d6208e"));
+	}
 
 }

@@ -121,6 +121,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestCredentialGenerator;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Domain;
@@ -132,7 +133,6 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
@@ -168,6 +168,7 @@ public class ZASImplUnitTest {
 	@Autowired
 	private SessionCertificateInvalidationService mockSessionInvalidationService;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -208,7 +209,7 @@ public class ZASImplUnitTest {
 	public void doSetup() throws Exception {
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(1);
 		input.setNumDACsPerDomain(1);
@@ -1226,7 +1227,7 @@ public class ZASImplUnitTest {
 	@Test
 	public void testCreateAdministrator_DomainNotExists() throws Exception {
 		// create new credential for non-existent domain
-		zonePartitionIdProvider.setPartitionId(MockZonePartitionIdInstaller.ZP1_S1);
+		zonePartitionIdProvider.setPartitionId(MockDatabasePartitionInstaller.ZP1_S1);
 		PKIXCredential dac3 = TestCredentialGenerator.createDAC(zac, "gugus", 2, 2);
 
 		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());

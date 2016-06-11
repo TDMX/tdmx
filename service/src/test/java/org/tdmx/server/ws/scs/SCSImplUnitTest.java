@@ -59,6 +59,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.AgentCredentialStatus;
@@ -69,7 +70,6 @@ import org.tdmx.lib.zone.service.AgentCredentialService;
 import org.tdmx.lib.zone.service.ChannelService;
 import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.runtime.DomainZoneResolutionService;
@@ -100,6 +100,7 @@ public class SCSImplUnitTest {
 	@Autowired
 	private SegmentService segmentService;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -150,7 +151,7 @@ public class SCSImplUnitTest {
 	public void doSetup() throws Exception {
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(2);
 		input.setNumServicesPerDomain(1);
@@ -181,7 +182,7 @@ public class SCSImplUnitTest {
 
 		reset(mockDomainZoneResolutionService);
 
-		Segment s1 = segmentService.findBySegment(MockZonePartitionIdInstaller.S1);
+		Segment s1 = segmentService.findBySegment(MockDatabasePartitionInstaller.S1);
 		scs.start(s1, null);
 	}
 
@@ -400,7 +401,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
+		dzi2.setScsUrl(MockDatabasePartitionInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
@@ -440,7 +441,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
+		dzi2.setScsUrl(MockDatabasePartitionInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel
@@ -490,7 +491,7 @@ public class SCSImplUnitTest {
 		DomainZoneApexInfo dzi2 = new DomainZoneApexInfo();
 		dzi2.setDomainName(domain1.getDomainName());
 		dzi2.setZoneApex(zone.getZoneApex());
-		dzi2.setScsUrl(MockZonePartitionIdInstaller.SCS_S1_URL);
+		dzi2.setScsUrl(MockDatabasePartitionInstaller.SCS_S1_URL);
 		Mockito.when(mockDomainZoneResolutionService.resolveDomain(domain1.getDomainName())).thenReturn(dzi2);
 
 		// channel

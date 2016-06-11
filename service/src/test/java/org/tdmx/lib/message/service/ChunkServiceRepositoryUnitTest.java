@@ -18,8 +18,10 @@
  */
 package org.tdmx.lib.message.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -30,6 +32,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
+import org.tdmx.client.crypto.converters.ByteArray;
+import org.tdmx.client.crypto.entropy.EntropySource;
+import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -53,14 +59,13 @@ public class ChunkServiceRepositoryUnitTest {
 		msg.setSignature(sig);
 		msg.setTtlTimestamp(new Date());
 
-		Chunk c = new Chunk(msg.getMsgId(), 0);
+		Chunk c = new Chunk(msg, 0);
 		c.setMac("1234");
 		c.setData(new byte[] { 12, 1, 2, 3, 4, 5, 6 });
-		c.setTtlTimestamp(msg.getTtlTimestamp()); // denormalized
 
 		pos = c.getPos();
 
-		service.storeChunk(msg, c);
+		assertTrue(service.storeChunk(msg, c));
 
 	}
 
@@ -68,7 +73,7 @@ public class ChunkServiceRepositoryUnitTest {
 	public void doTeardown() {
 		Chunk c = service.fetchChunk(msg, pos);
 		if (c != null) {
-			service.deleteChunks(msg);
+			assertTrue(service.deleteChunks(msg));
 		}
 	}
 
@@ -86,7 +91,8 @@ public class ChunkServiceRepositoryUnitTest {
 	@Test
 	public void testLookup_NotFoundMsgId() throws Exception {
 		ChannelMessage m = new ChannelMessage();
-		m.setMsgId("NEW" + System.currentTimeMillis());
+		// doesn't exist
+		m.setMsgId("abcde" + System.currentTimeMillis());
 		AgentSignature sig = new AgentSignature();
 		sig.setSignatureDate(new Date()); // needed to determine which db
 		m.setSignature(sig);
@@ -94,6 +100,36 @@ public class ChunkServiceRepositoryUnitTest {
 
 		Chunk c = service.fetchChunk(m, pos);
 		assertNull(c);
+	}
+
+	@Test
+	public void testFullLifecycle() throws Exception {
+		ChannelMessage m = new ChannelMessage();
+		m.setScheme(IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1);
+		m.setMsgId(ByteArray.asHex(DigestAlgorithm.SHA_256.kdf(EntropySource.getRandomBytes(8))));
+		AgentSignature sig = new AgentSignature();
+		sig.setSignatureDate(new Date()); // needed to determine which db
+		m.setSignature(sig);
+		m.setTtlTimestamp(new Date());
+
+		Chunk c = new Chunk(m, 0);
+		c.setMac(ByteArray.asHex(DigestAlgorithm.SHA_1.kdf(EntropySource.getRandomBytes(4))));
+		c.setData(new byte[m.getScheme().getChunkSize()]);
+
+		assertTrue(service.storeChunk(m, c));
+		assertTrue(service.storeChunk(m, c)); // repeat save ok
+		assertTrue(service.storeChunk(m, c)); // repeat save ok
+
+		Chunk existingChunk = service.fetchChunk(m, 0);
+		assertNotNull(existingChunk);
+		ByteArray.equals(c.getData(), existingChunk.getData());
+		assertEquals(c.getMsgId(), existingChunk.getMsgId());
+		assertEquals(c.getMac(), existingChunk.getMac());
+		assertEquals(c.getPos(), existingChunk.getPos());
+		assertEquals(c.getTtlTimestamp(), existingChunk.getTtlTimestamp());
+
+		assertTrue(service.deleteChunks(m));
+		assertNull(service.fetchChunk(m, 0));
 	}
 
 	@Test

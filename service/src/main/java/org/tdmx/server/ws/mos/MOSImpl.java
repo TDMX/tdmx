@@ -369,9 +369,9 @@ public class MOSImpl implements MOS {
 		if (validator.checkChunk(msg.getChunk(), response) == null) {
 			return response;
 		}
-		Chunk c = a2d.mapChunk(msg.getChunk());
 
 		ChannelMessage m = a2d.mapMessage(msg);
+		Chunk c = a2d.mapChunk(m, msg.getChunk());
 
 		// check chunk's mac
 		if (validator.checkChunkMac(msg.getChunk(), m.getScheme(), response) == null) {
@@ -504,14 +504,15 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		Chunk c = a2d.mapChunk(parameters.getChunk());
-
 		SenderTransactionContext stc = session.getTransactionByMsgId(parameters.getChunk().getMsgId());
 		if (stc == null) {
 			ErrorCode.setError(ErrorCode.MessageNotFound, response);
 			return response;
 		}
+
 		MessageContextHolder cmh = stc.getMessage(parameters.getChunk().getMsgId());
+		ChannelMessage m = cmh.getMsg();
+		Chunk c = a2d.mapChunk(m, parameters.getChunk());
 		// calculate the continuationId for the chunk and check that it matches the continuationId
 		if (!continuationId.equals(cmh.getContinuationId(c.getPos()))) {
 			ErrorCode.setError(ErrorCode.InvalidChunkContinuationId, response);
@@ -522,7 +523,6 @@ public class MOSImpl implements MOS {
 			return response;
 		}
 
-		ChannelMessage m = cmh.getMsg();
 		ChannelName cn = m.getChannel().getChannelName();
 		final String channelKey = cn.getChannelKey(cn.getOrigin().getDomainName());
 		ChannelContextHolder cch = session.getChannelContext(channelKey);

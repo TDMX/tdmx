@@ -24,6 +24,8 @@ import static org.junit.Assert.fail;
 
 import java.util.Random;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +37,8 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneFacade;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
@@ -51,6 +53,7 @@ public class ZoneInstallJobUnitTest {
 	@Autowired
 	private JobExecutor<ZoneInstallTask> executor;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -63,7 +66,7 @@ public class ZoneInstallJobUnitTest {
 		jobId = new Random().nextLong();
 
 		az = AccountZoneFacade.createAccountZone("1234", "ZoneInstallJobUnitTestZoneApex",
-				MockZonePartitionIdInstaller.S1, MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.S1, MockDatabasePartitionInstaller.ZP1_S1);
 		az.setJobId(jobId);
 		accountZoneService.createOrUpdate(az);
 	}
@@ -88,7 +91,7 @@ public class ZoneInstallJobUnitTest {
 	@Test
 	public void test_Success() throws Exception {
 		ZoneInstallTask task = new ZoneInstallTask();
-		task.setAccountId(1L); //NOT used
+		task.setAccountId(1L); // NOT used
 		task.setAccountZoneId(az.getId());
 
 		executor.execute(jobId, task);

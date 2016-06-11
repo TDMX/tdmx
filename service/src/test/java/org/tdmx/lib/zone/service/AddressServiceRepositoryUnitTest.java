@@ -24,6 +24,8 @@ import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
@@ -50,6 +53,7 @@ public class AddressServiceRepositoryUnitTest {
 	@Autowired
 	private AddressService addressService;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 
 	private TestDataGeneratorInput input;
@@ -63,7 +67,7 @@ public class AddressServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(1);
 		input.setNumDACsPerDomain(0);

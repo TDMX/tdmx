@@ -18,6 +18,14 @@
  */
 package org.tdmx.lib.message.dao;
 
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+
 import javax.sql.DataSource;
 
 import org.tdmx.lib.message.domain.Chunk;
@@ -38,26 +46,35 @@ public class ChunkDaoImpl implements ChunkDao {
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	// TODO #107: split into 0..9-a..f sub-tables.
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void store(Chunk value) {
-		// TODO Auto-generated method stub
-
+	public void store(Chunk chunk) throws SQLException {
+		try {
+			insertChunk(chunk);
+		} catch (SQLException e) {
+			// in the case of constrain violation ( resend ) - delete existing and add our chunk
+			try {
+				deleteChunk(chunk);
+			} catch (SQLException de) {
+				// ignore
+			}
+			insertChunk(chunk);
+		}
 	}
 
 	@Override
-	public Chunk loadByMsgIdAndPos(String msgId, int pos) {
-		// TODO Auto-generated method stub
-		return null;
+	public Chunk loadByMsgIdAndPos(String msgId, int pos) throws SQLException {
+		return selectChunk(msgId, pos);
 	}
 
 	@Override
-	public void deleteByMsgId(String msgId) {
-		// TODO Auto-generated method stub
-
+	public void deleteByMsgId(String msgId) throws SQLException {
+		deleteMessage(msgId);
 	}
 
 	// -------------------------------------------------------------------------
@@ -67,6 +84,70 @@ public class ChunkDaoImpl implements ChunkDao {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void insertChunk(Chunk chunk) throws SQLException {
+		try (Connection con = dataSource.getConnection()) {
+			String sql = "INSERT INTO chunk_0 (msgId,pos,mac,ttl,data) values (?,?,?,?,?)";
+			try (PreparedStatement statement = con.prepareStatement(sql)) {
+				statement.setString(1, chunk.getMsgId());
+				statement.setInt(2, chunk.getPos());
+				statement.setString(3, chunk.getMac());
+				statement.setTimestamp(4, new Timestamp(chunk.getTtlTimestamp().getTime()));
+				Blob dataBlob = con.createBlob();
+				dataBlob.setBytes(1, chunk.getData());
+				statement.setBlob(5, dataBlob);
+
+				statement.executeUpdate();
+			}
+		}
+	}
+
+	private Chunk selectChunk(String msgId, int pos) throws SQLException {
+		Chunk result = new Chunk();
+		try (Connection con = dataSource.getConnection()) {
+			String sql = "SELECT msgId, pos, mac, ttl, data FROM chunk_0 WHERE msgId = ? and pos = ?";
+			try (PreparedStatement statement = con.prepareStatement(sql)) {
+				statement.setString(1, msgId);
+				statement.setInt(2, pos);
+
+				try (ResultSet rs = statement.executeQuery()) {
+					if (rs.next()) {
+						result.setMsgId(rs.getString(1));
+						result.setPos(rs.getInt(2));
+						result.setMac(rs.getString(3));
+						result.setTtlTimestamp(new Date(rs.getTimestamp(4).getTime()));
+						Blob dataBlob = rs.getBlob(5);
+						result.setData(dataBlob.getBytes(1, (int) dataBlob.length()));
+					}
+				}
+			}
+		}
+		if (result.getMsgId() != null && result.getData() != null) {
+			return result;
+		}
+		return null;
+	}
+
+	private void deleteChunk(Chunk chunk) throws SQLException {
+		try (Connection con = dataSource.getConnection()) {
+			String sql = "DELETE FROM chunk_0 where msgId = ? and pos = ?";
+			try (PreparedStatement statement = con.prepareStatement(sql)) {
+				statement.setString(1, chunk.getMsgId());
+				statement.setInt(2, chunk.getPos());
+				statement.executeUpdate();
+			}
+		}
+	}
+
+	private void deleteMessage(String msgId) throws SQLException {
+		try (Connection con = dataSource.getConnection()) {
+			String sql = "DELETE FROM chunk_0 where msgId = ?";
+			try (PreparedStatement statement = con.prepareStatement(sql)) {
+				statement.setString(1, msgId);
+				statement.executeUpdate();
+			}
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)

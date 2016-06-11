@@ -55,7 +55,7 @@
 	<bean id="scs.authenticatedClientService" class="org.tdmx.server.ws.security.service.AuthenticatedClientServiceImpl">
 	</bean>
 	
-	<bean class="org.tdmx.lib.zone.service.MockZonePartitionIdInstaller" init-method="init">
+	<bean class="org.tdmx.lib.control.service.MockDatabasePartitionInstaller" init-method="init">
 		<property name="segmentService" ref="tdmx.lib.control.SegmentRepository"/>
 		<property name="databasePartitionService" ref="tdmx.lib.control.DatabasePartitionRepository"/>
 	</bean>

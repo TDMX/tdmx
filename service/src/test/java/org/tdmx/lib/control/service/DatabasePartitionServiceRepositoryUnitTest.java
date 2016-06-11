@@ -51,43 +51,43 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	public void doSetup() throws Exception {
 
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id1", DatabaseType.ZONE,
-					"unittest-segment-1");
+			DatabasePartition zp1 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment1-id1",
+					DatabaseType.ZONE, "unittest-segment-1", new Date());
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id2", DatabaseType.ZONE,
-					"unittest-segment-1");
+			DatabasePartition zp2 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment1-id2",
+					DatabaseType.ZONE, "unittest-segment-1", new Date());
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment1-id3", DatabaseType.ZONE,
-					"unittest-segment-1");
+			DatabasePartition zp3 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment1-id3",
+					DatabaseType.ZONE, "unittest-segment-1", new Date());
 			service.createOrUpdate(zp3);
 		}
 		{
-			DatabasePartition zp1 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id1", DatabaseType.ZONE,
-					"unittest-segment-2");
+			DatabasePartition zp1 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment2-id1",
+					DatabaseType.ZONE, "unittest-segment-2", new Date());
 			service.createOrUpdate(zp1);
 
-			DatabasePartition zp2 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id2", DatabaseType.ZONE,
-					"unittest-segment-2");
+			DatabasePartition zp2 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment2-id2",
+					DatabaseType.ZONE, "unittest-segment-2", new Date());
 			service.createOrUpdate(zp2);
 
-			DatabasePartition zp3 = DatabasePartitionFacade.createDatabasePartition("z-segment2-id3", DatabaseType.ZONE,
-					"unittest-segment-2");
+			DatabasePartition zp3 = DatabasePartitionFacade.createHQLDatabasePartition("z-segment2-id3",
+					DatabaseType.ZONE, "unittest-segment-2", new Date());
 			service.createOrUpdate(zp3);
 		}
 
 		{
-			DatabasePartition p1 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id1",
-					DatabaseType.MESSAGE, "unittest-segment-1");
+			DatabasePartition p1 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id1",
+					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
 			service.createOrUpdate(p1);
 
-			DatabasePartition p2 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id2",
-					DatabaseType.MESSAGE, "unittest-segment-1");
+			DatabasePartition p2 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id2",
+					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
 			service.createOrUpdate(p2);
 
-			DatabasePartition p3 = DatabasePartitionFacade.createDatabasePartition("m-segment1-id3",
-					DatabaseType.MESSAGE, "unittest-segment-1");
+			DatabasePartition p3 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id3",
+					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
 			service.createOrUpdate(p3);
 		}
 	}
@@ -230,7 +230,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		sc.setDbType(DatabaseType.MESSAGE);
 		List<DatabasePartition> messagelist = service.search(sc);
 		assertNotNull(messagelist);
-		assertEquals(3, messagelist.size());
+		assertEquals(9, messagelist.size());
 	}
 
 	@Test

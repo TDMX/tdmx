@@ -382,7 +382,7 @@ public class MRSImpl implements MRS {
 			return;
 		}
 
-		Chunk c = a2d.mapChunk(relayedChunk);
+		Chunk c = a2d.mapChunk(mrc.getMsg(), relayedChunk);
 
 		// persist Chunk via ChunkService
 		chunkService.storeChunk(mrc.getMsg(), c);

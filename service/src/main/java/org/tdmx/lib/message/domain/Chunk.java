@@ -21,6 +21,8 @@ package org.tdmx.lib.message.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.tdmx.lib.zone.domain.ChannelMessage;
+
 /**
  * A Chunk (part of a Message).
  * 
@@ -67,17 +69,23 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-	Chunk() {
+	public Chunk() {
 	}
 
-	public Chunk(String msgId, int pos) {
-		this.msgId = msgId;
+	public Chunk(ChannelMessage msg, int pos) {
+		this.msgId = msg.getMsgId();
+		this.ttlTimestamp = msg.getTtlTimestamp();
 		this.pos = pos;
 	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public String toString() {
+		return "Chunk " + msgId + ":" + pos;
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -90,6 +98,14 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public void setMsgId(String msgId) {
+		this.msgId = msgId;
+	}
+
+	public void setPos(int pos) {
+		this.pos = pos;
+	}
 
 	public String getMac() {
 		return mac;

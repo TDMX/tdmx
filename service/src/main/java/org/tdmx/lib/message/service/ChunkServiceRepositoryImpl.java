@@ -19,9 +19,16 @@
 
 package org.tdmx.lib.message.service;
 
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
+import org.tdmx.lib.control.domain.DatabasePartition;
+import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.service.DatabasePartitionCache;
 import org.tdmx.lib.message.dao.ChunkDao;
 import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.zone.domain.ChannelMessage;
@@ -44,6 +51,7 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	private static final Logger log = LoggerFactory.getLogger(ChunkServiceRepositoryImpl.class);
 
 	private ThreadLocalPartitionIdProvider partitionIdProvider;
+	private DatabasePartitionCache partitionCache;
 	private ChunkDao chunkDao;
 
 	// -------------------------------------------------------------------------
@@ -55,14 +63,18 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void storeChunk(ChannelMessage msg, Chunk chunk) {
+	public boolean storeChunk(ChannelMessage msg, Chunk chunk) {
 		String partitionId = getPartitionId(msg);
 		partitionIdProvider.setPartitionId(partitionId);
 		try {
 			chunkDao.store(chunk);
+		} catch (SQLException e) {
+			log.warn("Cannot store chunk " + chunk, e);
+			return false;
 		} finally {
 			partitionIdProvider.clearPartitionId();
 		}
+		return true;
 	}
 
 	@Override
@@ -71,21 +83,27 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 		partitionIdProvider.setPartitionId(partitionId);
 		try {
 			return chunkDao.loadByMsgIdAndPos(msg.getMsgId(), pos);
+		} catch (SQLException e) {
+			log.warn("Cannot fetch chunk " + msg.getMsgId() + ":" + pos, e);
 		} finally {
 			partitionIdProvider.clearPartitionId();
 		}
+		return null;
 	}
 
 	@Override
-	public void deleteChunks(ChannelMessage msg) {
+	public boolean deleteChunks(ChannelMessage msg) {
 		String partitionId = getPartitionId(msg);
 		partitionIdProvider.setPartitionId(partitionId);
 		try {
 			chunkDao.deleteByMsgId(msg.getMsgId());
+		} catch (SQLException e) {
+			log.warn("Cannot delete chunks for message " + msg.getMsgId(), e);
+			return false;
 		} finally {
 			partitionIdProvider.clearPartitionId();
 		}
-
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -97,8 +115,22 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 	// -------------------------------------------------------------------------
 
 	private String getPartitionId(ChannelMessage msg) {
-		return "p1"; // TODO
+
+		Date msgTs = msg.getSignature().getSignatureDate();
+
+		List<DatabasePartition> chunkDbs = partitionCache.getActiveAtTimestamp(DatabaseType.MESSAGE, msgTs);
+		if (chunkDbs.isEmpty()) {
+			throw new IllegalStateException("No available chunk partition found for " + msgTs);
+		}
+
+		String hex16bitMsgId = msg.getMsgId().substring(0, 4);
+		int hex16 = Integer.valueOf(hex16bitMsgId, 16);
+
+		DatabasePartition consistentHash = chunkDbs.get(hex16 % chunkDbs.size());
+
+		return consistentHash.getPartitionId();
 	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
@@ -117,6 +149,14 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 
 	public void setPartitionIdProvider(ThreadLocalPartitionIdProvider partitionIdProvider) {
 		this.partitionIdProvider = partitionIdProvider;
+	}
+
+	public DatabasePartitionCache getPartitionCache() {
+		return partitionCache;
+	}
+
+	public void setPartitionCache(DatabasePartitionCache partitionCache) {
+		this.partitionCache = partitionCache;
 	}
 
 }

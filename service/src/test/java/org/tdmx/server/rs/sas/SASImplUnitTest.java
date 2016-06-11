@@ -58,9 +58,9 @@ import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.DnsResolverGroupService;
 import org.tdmx.lib.control.service.LockService;
 import org.tdmx.lib.control.service.MaxValueService;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.UniqueIdService;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.server.rs.sas.resource.AccountResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
@@ -150,7 +150,7 @@ public class SASImplUnitTest {
 
 		accountZoneResource = new AccountZoneResource();
 		accountZoneResource.setAccountId(accountResource.getAccountId());
-		accountZoneResource.setSegment(MockZonePartitionIdInstaller.S1);
+		accountZoneResource.setSegment(MockDatabasePartitionInstaller.S1);
 		accountZoneResource.setZoneApex(accountResource.getAccountId() + ".zone.apex"); // make it unique.
 		accountZoneResource.setAccessStatus("ACTIVE");
 

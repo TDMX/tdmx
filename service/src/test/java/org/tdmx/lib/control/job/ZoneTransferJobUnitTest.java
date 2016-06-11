@@ -25,6 +25,8 @@ import static org.junit.Assert.fail;
 
 import java.util.Random;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +40,8 @@ import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
@@ -56,6 +58,7 @@ public class ZoneTransferJobUnitTest {
 	@Autowired
 	private JobExecutor<ZoneTransferTask> executor;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -64,13 +67,13 @@ public class ZoneTransferJobUnitTest {
 	private TestDataGeneratorOutput data;
 	private Long jobId;
 	private Account account;
-	
+
 	@Before
 	public void doSetup() throws Exception {
 		jobId = new Random().nextLong();
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(3);
 		input.setNumDomains(2);
 		input.setNumDACsPerDomain(2);
@@ -80,7 +83,7 @@ public class ZoneTransferJobUnitTest {
 		data = dataGenerator.setUp(input);
 
 		account = data.getAccount();
-		
+
 		AccountZone az = data.getAccountZone();
 		az.setJobId(jobId);
 		accountZoneService.createOrUpdate(az);
@@ -103,7 +106,7 @@ public class ZoneTransferJobUnitTest {
 
 	@Test
 	public void test_Success() throws Exception {
-		String newPartitionId = MockZonePartitionIdInstaller.ZP1_S2;
+		String newPartitionId = MockDatabasePartitionInstaller.ZP1_S2;
 		ZoneTransferTask task = new ZoneTransferTask();
 		task.setAccountId(account.getId());
 		task.setAccountZoneId(data.getAccountZone().getId());
@@ -129,7 +132,7 @@ public class ZoneTransferJobUnitTest {
 		ZoneTransferTask task = new ZoneTransferTask();
 		task.setAccountId(account.getId());
 		task.setAccountZoneId(data.getAccountZone().getId());
-		task.setZoneDbPartitionId(MockZonePartitionIdInstaller.ZP1_S2);
+		task.setZoneDbPartitionId(MockDatabasePartitionInstaller.ZP1_S2);
 
 		try {
 			executor.execute(new Random().nextLong(), task);

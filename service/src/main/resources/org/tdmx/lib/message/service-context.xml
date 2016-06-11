@@ -35,6 +35,7 @@
 	</bean>
 	
 	<bean id="tdmx.lib.message.ChunkRepository"	class="org.tdmx.lib.message.service.ChunkServiceRepositoryImpl">
+		<property name="partitionCache" ref="tdmx.server.control.DatabasePartitionCache"/>
 		<property name="chunkDao" ref="tdmx.lib.message.dao.ChunkDao" />
 		<property name="partitionIdProvider" ref="tdmx.lib.message.ThreadLocalPartitionIdProvider"/>
 	</bean>

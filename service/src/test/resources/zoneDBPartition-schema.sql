@@ -14,8 +14,6 @@
 
     drop table ChannelMessage if exists;
 
-    drop table Chunk if exists;
-
     drop table ConsoleUser if exists;
 
     drop table ControlJob if exists;
@@ -190,15 +188,6 @@
         state_id bigint not null,
         primary key (id),
         unique (state_id)
-    );
-
-    create table Chunk (
-        id bigint not null,
-        data longvarbinary not null,
-        mac varchar(255) not null,
-        msgId varchar(64) not null,
-        pos integer not null,
-        primary key (id)
     );
 
     create table ConsoleUser (

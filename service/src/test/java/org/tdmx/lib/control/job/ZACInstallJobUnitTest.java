@@ -25,6 +25,8 @@ import static org.junit.Assert.fail;
 
 import java.util.Random;
 
+import javax.inject.Named;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,10 +43,10 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.AgentCredential;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AgentCredentialService;
-import org.tdmx.lib.zone.service.MockZonePartitionIdInstaller;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.service.control.task.dao.ZACInstallTask;
 
@@ -63,6 +65,7 @@ public class ZACInstallJobUnitTest {
 	@Autowired
 	private JobExecutor<ZACInstallTask> executor;
 	@Autowired
+	@Named("tdmx.lib.zone.ThreadLocalPartitionIdProvider")
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	@Autowired
 	private ZoneService zoneService;
@@ -81,7 +84,7 @@ public class ZACInstallJobUnitTest {
 		jobId = new Random().nextLong();
 
 		input = new TestDataGeneratorInput("zone.apex." + System.currentTimeMillis(),
-				MockZonePartitionIdInstaller.ZP1_S1);
+				MockDatabasePartitionInstaller.ZP1_S1);
 		input.setNumZACs(1);
 		input.setNumDomains(1);
 		input.setNumDACsPerDomain(1);

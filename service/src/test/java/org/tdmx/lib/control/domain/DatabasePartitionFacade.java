@@ -20,13 +20,10 @@ package org.tdmx.lib.control.domain;
 
 import java.util.Date;
 
-import org.tdmx.lib.control.domain.DatabasePartition;
-import org.tdmx.lib.control.domain.DatabaseType;
-
 public class DatabasePartitionFacade {
 
-	public static DatabasePartition createDatabasePartition(String partitionId, DatabaseType dbType, String segment)
-			throws Exception {
+	public static DatabasePartition createHQLDatabasePartition(String partitionId, DatabaseType dbType, String segment,
+			Date activationDate) throws Exception {
 		/*
 		 * jdbc.zonedb.url=jdbc:hsqldb:mem:zone
 		 * 
@@ -54,7 +51,7 @@ public class DatabasePartitionFacade {
 		p.setUsername("sa");
 		p.setPassword("");
 
-		p.setActivationTimestamp(new Date()); // currently active
+		p.setActivationTimestamp(activationDate); // currently active
 		p.setDeactivationTimestamp(null);
 		return p;
 	}

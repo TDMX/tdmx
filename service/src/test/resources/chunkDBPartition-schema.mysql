@@ -1,0 +1,159 @@
+
+CREATE TABLE IF NOT EXISTS `Chunk_0` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_0` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_1` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_1` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_2` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_2` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_3` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_3` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_4` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_4` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_5` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_5` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_6` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_6` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_7` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_7` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_8` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_8` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_9` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_9` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_a` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_a` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_b` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_b` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_c` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_c` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_d` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_d` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_e` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_e` (`msgId`,`pos`)        
+);
+
+
+CREATE TABLE IF NOT EXISTS `Chunk_f` (
+   `msgId` varchar(64) NOT NULL,
+   `pos` int(11) NOT NULL,
+   `mac` varchar(40) NOT NULL,
+   `ttl` datetime NOT NULL,
+   `data` longblob NOT NULL,
+   UNIQUE KEY `idx_f` (`msgId`,`pos`)        
+);
