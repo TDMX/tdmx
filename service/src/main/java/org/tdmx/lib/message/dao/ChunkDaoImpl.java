@@ -87,9 +87,10 @@ public class ChunkDaoImpl implements ChunkDao {
 
 	private void insertChunk(Chunk chunk) throws SQLException {
 		try (Connection con = dataSource.getConnection()) {
-			String sql = "INSERT INTO chunk_0 (msgId,pos,mac,ttl,data) values (?,?,?,?,?)";
+			String msgId = chunk.getMsgId();
+			String sql = getInsertSql(msgId);
 			try (PreparedStatement statement = con.prepareStatement(sql)) {
-				statement.setString(1, chunk.getMsgId());
+				statement.setString(1, msgId);
 				statement.setInt(2, chunk.getPos());
 				statement.setString(3, chunk.getMac());
 				statement.setTimestamp(4, new Timestamp(chunk.getTtlTimestamp().getTime()));
@@ -105,7 +106,7 @@ public class ChunkDaoImpl implements ChunkDao {
 	private Chunk selectChunk(String msgId, int pos) throws SQLException {
 		Chunk result = new Chunk();
 		try (Connection con = dataSource.getConnection()) {
-			String sql = "SELECT msgId, pos, mac, ttl, data FROM chunk_0 WHERE msgId = ? and pos = ?";
+			String sql = getSelectSql(msgId);
 			try (PreparedStatement statement = con.prepareStatement(sql)) {
 				statement.setString(1, msgId);
 				statement.setInt(2, pos);
@@ -130,9 +131,10 @@ public class ChunkDaoImpl implements ChunkDao {
 
 	private void deleteChunk(Chunk chunk) throws SQLException {
 		try (Connection con = dataSource.getConnection()) {
-			String sql = "DELETE FROM chunk_0 where msgId = ? and pos = ?";
+			String msgId = chunk.getMsgId();
+			String sql = getDeleteChunkSql(msgId);
 			try (PreparedStatement statement = con.prepareStatement(sql)) {
-				statement.setString(1, chunk.getMsgId());
+				statement.setString(1, msgId);
 				statement.setInt(2, chunk.getPos());
 				statement.executeUpdate();
 			}
@@ -141,12 +143,32 @@ public class ChunkDaoImpl implements ChunkDao {
 
 	private void deleteMessage(String msgId) throws SQLException {
 		try (Connection con = dataSource.getConnection()) {
-			String sql = "DELETE FROM chunk_0 where msgId = ?";
+			String sql = getDeleteMessageSql(msgId);
 			try (PreparedStatement statement = con.prepareStatement(sql)) {
 				statement.setString(1, msgId);
 				statement.executeUpdate();
 			}
 		}
+	}
+
+	private String getInsertSql(String msgId) {
+		return "INSERT INTO chunk_" + getTableNr(msgId) + " (msgId,pos,mac,ttl,data) values (?,?,?,?,?)";
+	}
+
+	private String getSelectSql(String msgId) {
+		return "SELECT msgId, pos, mac, ttl, data FROM chunk_" + getTableNr(msgId) + " WHERE msgId = ? and pos = ?";
+	}
+
+	private String getDeleteChunkSql(String msgId) {
+		return "DELETE FROM chunk_" + getTableNr(msgId) + " where msgId = ? and pos = ?";
+	}
+
+	private String getDeleteMessageSql(String msgId) {
+		return "DELETE FROM chunk_" + getTableNr(msgId) + " where msgId = ?";
+	}
+
+	private String getTableNr(String msgId) {
+		return "" + msgId.charAt(4);
 	}
 
 	// -------------------------------------------------------------------------
