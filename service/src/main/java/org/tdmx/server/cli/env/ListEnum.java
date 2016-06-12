@@ -16,16 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli.cache;
+package org.tdmx.server.cli.env;
 
 import java.util.List;
 
 import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 
-@Cli(name = "cache:list", description = "lists all caches")
-public class ListCache extends AbstractCliCommand {
+@Cli(name = "enum:list", description = "lists all enumerations", note = "not choosing any option will show all enumeration values.")
+public class ListEnum extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,6 +35,11 @@ public class ListCache extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	@Option(name = "dbType", description = "shows valid database types.")
+	private boolean dbType;
+
+	@Option(name = "cache", description = "shows valid cache names.")
+	private boolean cache;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -45,9 +51,18 @@ public class ListCache extends AbstractCliCommand {
 
 	@Override
 	public void run(CliPrinter out) {
-		List<String> segments = getSas().getCacheNames();
-		for (String seg : segments) {
-			out.println(seg);
+		boolean noneSelected = !dbType && !cache;
+
+		if (dbType || noneSelected) {
+
+			List<String> dbTypes = getSas().getDbTypes();
+			out.println("Found " + dbTypes.size() + " dbType values.");
+			out.println(dbTypes);
+		}
+		if (cache || noneSelected) {
+			List<String> cacheNames = getSas().getCacheNames();
+			out.println("Found " + cacheNames.size() + " cache values.");
+			out.println(cacheNames);
 		}
 	}
 

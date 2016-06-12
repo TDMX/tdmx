@@ -26,15 +26,15 @@ package org.tdmx.server.runtime;
  */
 public enum ServiceName {
 
+	PCS, // PartitionControlService
 	PCC, // PartitionControlService client ( prerequisite of all except PCS )
 
-	TOS, // TransferObjectService ( prerequisite of WS [MRS], )
+	TOS, // TransferObjectService ( prerequisite of WS [MRS,MDS], )
 	ROC, // RelayOutboundService client ( prerequisite of WS [MOS,MDS,ZAS] )
 
 	WS, // Web(SOAP) Services - MOS,MDS,MRS,ZAS APIs
 	RS, // RESTful Services
 	SCS, // SessionControlService
-	PCS, // PartitionControlService
 	ROS, // RelayOutboundService
 	JOB; // Background Jobs
 

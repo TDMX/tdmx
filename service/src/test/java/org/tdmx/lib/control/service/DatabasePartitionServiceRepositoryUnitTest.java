@@ -79,15 +79,15 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 
 		{
 			DatabasePartition p1 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id1",
-					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
+					DatabaseType.CHUNK, "unittest-segment-1", new Date());
 			service.createOrUpdate(p1);
 
 			DatabasePartition p2 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id2",
-					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
+					DatabaseType.CHUNK, "unittest-segment-1", new Date());
 			service.createOrUpdate(p2);
 
 			DatabasePartition p3 = DatabasePartitionFacade.createHQLDatabasePartition("m-segment1-id3",
-					DatabaseType.MESSAGE, "unittest-segment-1", new Date());
+					DatabaseType.CHUNK, "unittest-segment-1", new Date());
 			service.createOrUpdate(p3);
 		}
 	}
@@ -227,7 +227,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 		assertNotNull(zonelist);
 		assertTrue(zonelist.size() > 6);
 
-		sc.setDbType(DatabaseType.MESSAGE);
+		sc.setDbType(DatabaseType.CHUNK);
 		List<DatabasePartition> messagelist = service.search(sc);
 		assertNotNull(messagelist);
 		assertEquals(9, messagelist.size());
@@ -236,7 +236,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	@Test
 	public void testLookupCache_ByTypeNotFound() throws Exception {
 		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
-		sc.setDbType(DatabaseType.CONSOLE);
+		sc.setDbType(DatabaseType.CONTROL);
 		List<DatabasePartition> l = service.search(sc);
 		assertNotNull(l);
 		assertEquals(0, l.size());
@@ -261,7 +261,7 @@ public class DatabasePartitionServiceRepositoryUnitTest {
 	@Test
 	public void testLookupCache_ByTypeAndSegmentNotFound() throws Exception {
 		DatabasePartitionSearchCriteria sc = new DatabasePartitionSearchCriteria(new PageSpecifier(0, 100));
-		sc.setDbType(DatabaseType.CONSOLE);
+		sc.setDbType(DatabaseType.CHUNK);
 		sc.setSegment("gugus");
 		List<DatabasePartition> l = service.search(sc);
 		assertNotNull(l);

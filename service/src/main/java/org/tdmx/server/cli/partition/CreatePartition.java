@@ -37,7 +37,7 @@ public class CreatePartition extends AbstractCliCommand {
 
 	@Parameter(name = "partition", required = true, description = "the partition identifier.")
 	private String partitionId;
-	@Parameter(name = "dbType", required = true, description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
+	@Parameter(name = "dbType", required = true, description = "the database type ( use 'enum:list dbType' for valid values).")
 	private String dbType;
 	@Parameter(name = "segment", required = true, description = "the segment name.")
 	private String segment;

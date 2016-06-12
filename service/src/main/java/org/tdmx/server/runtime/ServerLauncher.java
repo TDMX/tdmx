@@ -84,7 +84,7 @@ public class ServerLauncher {
 	// PCC is the client of the PCS - segment bound services except PCS (and ROS (handles cache invalidation itself)
 	// require PCS support at least for cache invalidation support.
 	private static List<ServiceName> PCC_REQUISITES = Arrays
-			.asList(new ServiceName[] { ServiceName.JOB, ServiceName.SCS, ServiceName.WS });
+			.asList(new ServiceName[] { ServiceName.JOB, ServiceName.SCS, ServiceName.WS, ServiceName.ROS });
 	// ROC is the client of the RelayOutbound - all WS need to use initiate outbound relay.
 	private static List<ServiceName> ROC_REQUISITES = Arrays.asList(new ServiceName[] { ServiceName.WS });
 	// TOC is the client of the TransferObject service - some WS need to transfer objects.

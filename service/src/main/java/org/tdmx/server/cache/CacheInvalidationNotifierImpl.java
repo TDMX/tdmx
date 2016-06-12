@@ -47,7 +47,7 @@ public class CacheInvalidationNotifierImpl implements CacheInvalidationNotifier 
 
 	private Manageable pcsClient;
 
-	private CacheInvalidationListener pcsInformer;
+	private CacheInvalidationNotifier pcsInformer;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -63,16 +63,15 @@ public class CacheInvalidationNotifierImpl implements CacheInvalidationNotifier 
 	public ProcessingState invalidateCache(Segment segment, CacheInvalidationInstruction event) {
 
 		try {
-			informPCS(segment, event);
+			return informPCS(segment, event);
 		} catch (Exception e) {
 			log.warn("Unable to invalidate cache " + event + " on segment " + segment.getSegmentName(), e);
 			String errorInfo = StringUtils.getExceptionSummary(e);
-			ProcessingState error = ProcessingState.error(ErrorCode.ChunkDataLost.getErrorCode(),
+			ProcessingState error = ProcessingState.error(ErrorCode.CacheInvalidationFailed.getErrorCode(),
 					ErrorCode.CacheInvalidationFailed.getErrorDescription(event.getId(), event.getName(),
 							event.getKey(), errorInfo));
 			return error;
 		}
-		return ProcessingState.none();
 	}
 
 	// -------------------------------------------------------------------------
@@ -83,14 +82,14 @@ public class CacheInvalidationNotifierImpl implements CacheInvalidationNotifier 
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
 
-	private synchronized void informPCS(Segment s, CacheInvalidationInstruction event) {
+	private synchronized ProcessingState informPCS(Segment s, CacheInvalidationInstruction event) {
 		log.info("Notifying segment " + s.getSegmentName() + " of " + event);
 
 		try {
 			// connect the PCC to the segment
 			pcsClient.start(s, Collections.emptyList());
 
-			pcsInformer.invalidateCache(event);
+			return pcsInformer.invalidateCache(s, event);
 		} finally {
 			pcsClient.stop();
 		}
@@ -108,11 +107,11 @@ public class CacheInvalidationNotifierImpl implements CacheInvalidationNotifier 
 		this.pcsClient = pcsClient;
 	}
 
-	public CacheInvalidationListener getPcsInformer() {
+	public CacheInvalidationNotifier getPcsInformer() {
 		return pcsInformer;
 	}
 
-	public void setPcsInformer(CacheInvalidationListener pcsInformer) {
+	public void setPcsInformer(CacheInvalidationNotifier pcsInformer) {
 		this.pcsInformer = pcsInformer;
 	}
 

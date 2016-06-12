@@ -299,6 +299,7 @@ public class MDSImpl implements MDS {
 					// acknowledge the message, possibly opening the relay flow control
 					ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 							msgCtx.getMsg());
+					// TODO #107: delete chunks.
 					if (ackStatus.flowControlOpened) {
 						// relay opened FC back to origin
 						relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
@@ -460,6 +461,7 @@ public class MDSImpl implements MDS {
 				// acknowledge the message, possibly opening the relay flow control
 				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 						msgCtx.getMsg());
+				// TODO #107: delete messag chunks (async).
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
@@ -634,6 +636,7 @@ public class MDSImpl implements MDS {
 				// one phase commit - where the message was not yet prepared.
 				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 						msgCtx.getMsg());
+				// TODO #107: delete chunks of received message
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);

@@ -134,21 +134,21 @@ public class MockDatabasePartitionInstaller {
 
 		// setup the message DBs of the 2 segments.
 		{
-			DatabasePartition mp1 = DatabasePartitionFacade.createHQLDatabasePartition(MP1_S1, DatabaseType.MESSAGE, S1,
+			DatabasePartition mp1 = DatabasePartitionFacade.createHQLDatabasePartition(MP1_S1, DatabaseType.CHUNK, S1,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp1.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp1);
 
 				installChunkDB(MP1_S1);
 			}
-			DatabasePartition mp2 = DatabasePartitionFacade.createHQLDatabasePartition(MP2_S1, DatabaseType.MESSAGE, S1,
+			DatabasePartition mp2 = DatabasePartitionFacade.createHQLDatabasePartition(MP2_S1, DatabaseType.CHUNK, S1,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp2.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp2);
 
 				installChunkDB(MP2_S1);
 			}
-			DatabasePartition mp3 = DatabasePartitionFacade.createHQLDatabasePartition(MP3_S1, DatabaseType.MESSAGE, S1,
+			DatabasePartition mp3 = DatabasePartitionFacade.createHQLDatabasePartition(MP3_S1, DatabaseType.CHUNK, S1,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp3.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp3);
@@ -157,21 +157,21 @@ public class MockDatabasePartitionInstaller {
 			}
 		}
 		{
-			DatabasePartition mp1 = DatabasePartitionFacade.createHQLDatabasePartition(MP1_S2, DatabaseType.MESSAGE, S2,
+			DatabasePartition mp1 = DatabasePartitionFacade.createHQLDatabasePartition(MP1_S2, DatabaseType.CHUNK, S2,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp1.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp1);
 
 				installChunkDB(MP1_S2);
 			}
-			DatabasePartition mp2 = DatabasePartitionFacade.createHQLDatabasePartition(MP2_S2, DatabaseType.MESSAGE, S2,
+			DatabasePartition mp2 = DatabasePartitionFacade.createHQLDatabasePartition(MP2_S2, DatabaseType.CHUNK, S2,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp2.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp2);
 
 				installChunkDB(MP2_S2);
 			}
-			DatabasePartition mp3 = DatabasePartitionFacade.createHQLDatabasePartition(MP3_S2, DatabaseType.MESSAGE, S2,
+			DatabasePartition mp3 = DatabasePartitionFacade.createHQLDatabasePartition(MP3_S2, DatabaseType.CHUNK, S2,
 					activationDate);
 			if (databasePartitionService.findByPartitionId(mp3.getPartitionId()) == null) {
 				databasePartitionService.createOrUpdate(mp3);

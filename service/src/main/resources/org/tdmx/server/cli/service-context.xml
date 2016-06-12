@@ -19,8 +19,8 @@
 			<array>
 				<value>org.tdmx.server.cli.env.SetDefault</value>
 				<value>org.tdmx.server.cli.env.ShowDefault</value>
+				<value>org.tdmx.server.cli.env.ListEnum</value>
 				
-				<value>org.tdmx.server.cli.cache.ListCache</value>
 				<value>org.tdmx.server.cli.cache.InvalidateCache</value>
 				
 				<value>org.tdmx.server.cli.dns.CreateDnsResolverGroup</value>
@@ -77,8 +77,8 @@
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="default:set" value="tdmx.server.cli.env.SetDefault"/>
 				<entry key="default:show" value="tdmx.server.cli.env.ShowDefault"/>
+				<entry key="enum:list" value="tdmx.server.cli.cmd.ListEnum"/>
 
-				<entry key="cache:list" value="tdmx.server.cli.cmd.ListCache"/>
 				<entry key="cache:invalidate" value="tdmx.server.cli.cmd.InvalidateCache"/>
 				
 				<entry key="ssltruststore:load" value="tdmx.server.cli.cmd.LoadTruststoreSSLCertificate"/>
@@ -163,7 +163,7 @@
 		<property name="defaultProvider" ref="tdmx.server.cli.DefaultProvider"/>
 	</bean>
 
-	<bean id="tdmx.server.cli.cmd.ListCache" class="org.tdmx.server.cli.cache.ListCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
+	<bean id="tdmx.server.cli.cmd.ListEnum" class="org.tdmx.server.cli.env.ListEnum" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.InvalidateCache" class="org.tdmx.server.cli.cache.InvalidateCache" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>

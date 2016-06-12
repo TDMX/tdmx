@@ -40,7 +40,7 @@ public class InvalidateCache extends AbstractCliCommand {
 	@Parameter(name = "segment", description = "the optional segment name - all segments targetted if missing.")
 	private String segment;
 
-	@Parameter(name = "cache", required = true, description = "the cache name.")
+	@Parameter(name = "cache", required = true, description = "the cache name. Use 'enum:list cache' for valid cache names.")
 	private String cache;
 
 	// -------------------------------------------------------------------------

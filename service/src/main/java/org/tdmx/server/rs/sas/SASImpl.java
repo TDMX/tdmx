@@ -144,6 +144,16 @@ public class SASImpl implements SAS {
 	// -------------------------------------------------------------------------
 
 	@Override
+	public List<String> getDbTypes() {
+		List<String> allDbTypeNames = new ArrayList<>();
+		for (DatabaseType n : DatabaseType.values()) {
+			allDbTypeNames.add(EnumUtils.mapToString(n));
+		}
+		Collections.sort(allDbTypeNames);
+		return allDbTypeNames;
+	}
+
+	@Override
 	public List<String> getCacheNames() {
 		List<String> allCacheNames = new ArrayList<>();
 		for (CacheName n : CacheName.values()) {

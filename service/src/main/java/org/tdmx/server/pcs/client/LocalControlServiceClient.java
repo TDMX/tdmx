@@ -26,12 +26,15 @@ import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.core.system.lang.StringUtils;
+import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.server.cache.CacheInvalidationInstruction;
-import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.cache.CacheInvalidationNotifier;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
 import org.tdmx.server.pcs.protobuf.Cache.CacheServiceProxy;
+import org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheResponse;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.AssignRelaySessionRequest;
@@ -42,6 +45,7 @@ import org.tdmx.server.pcs.protobuf.PCSServer.ControlServiceProxy;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionRequest;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.ByteString;
@@ -50,7 +54,7 @@ import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 
 public class LocalControlServiceClient
-		implements SessionControlService, RelayControlService, CacheInvalidationListener {
+		implements SessionControlService, RelayControlService, CacheInvalidationNotifier {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -78,7 +82,8 @@ public class LocalControlServiceClient
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(CacheInvalidationInstruction instruction) {
+	public ProcessingState invalidateCache(Segment segment, CacheInvalidationInstruction instruction) {
+		String errorInfo = "PCS communication channel closed.";
 		if (!rpcClient.isClosed()) {
 
 			CacheServiceProxy.BlockingInterface blockingService = CacheServiceProxy.newBlockingStub(rpcClient);
@@ -93,12 +98,20 @@ public class LocalControlServiceClient
 				req.setKeyValue(instruction.getKey());
 			}
 			try {
-				blockingService.invalidateCache(controller, req.build());
-				log.info("Cache invalidated " + instruction);
+				InvalidateCacheResponse resp = blockingService.invalidateCache(controller, req.build());
+				if (resp != null && resp.getSuccess()) {
+					log.info("Cache invalidated " + instruction);
+					return ProcessingState.none();
+				}
+				errorInfo = "PCS indicated failure of cache invalidation at one or more attached PCC.";
 			} catch (ServiceException e) {
-				log.warn("invalidateCache call failed.", e);
+				errorInfo = "PCS cache invaldation call failed." + StringUtils.getExceptionSummary(e);
 			}
 		}
+		ProcessingState error = ProcessingState.error(ErrorCode.CacheInvalidationFailed.getErrorCode(),
+				ErrorCode.CacheInvalidationFailed.getErrorDescription(instruction.getId(), instruction.getName(),
+						instruction.getKey(), errorInfo));
+		return error;
 	}
 
 	@Override

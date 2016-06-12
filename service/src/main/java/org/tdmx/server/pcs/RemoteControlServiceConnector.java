@@ -68,6 +68,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
+import com.googlecode.protobuf.pro.duplex.ClientRpcController;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 import com.googlecode.protobuf.pro.duplex.RpcConnectionEventNotifier;
@@ -398,16 +399,48 @@ public class RemoteControlServiceConnector
 	@Override
 	public InvalidateCacheResponse invalidateCache(RpcController controller, InvalidateCacheRequest request)
 			throws ServiceException {
-		log.info("Received cache invalidation[" + request.getId() + ":" + request.getCacheName() + "]"); // TODO #88
-																											// objectId
+		log.info("Received cache invalidation[" + request.getId() + ":" + request.getCacheName() + "]");
+
+		InvalidateCacheResponse.Builder resp = InvalidateCacheResponse.newBuilder();
+
 		if (serverFactory != null) {
-			for (RpcClientChannel channel : serverFactory.getRpcClientRegistry().getAllClients()) {
+			boolean overallSuccess = true;
+			for (RpcClientChannel revChannel : serverFactory.getRpcClientRegistry().getAllClients()) {
 				// we only broadcast events to the only PCC, which is a prerequisite service for all services except PCS
 				// itself.
-				// TODO #88: delegate to each client channel
+				ReverseRpcServerSessionController ssm = (ReverseRpcServerSessionController) revChannel
+						.getAttribute(ReverseRpcServerSessionController.SSM);
+				ReverseRpcRelayOutboundServiceController ros = (ReverseRpcRelayOutboundServiceController) revChannel
+						.getAttribute(ReverseRpcRelayOutboundServiceController.ROS);
+				if (ssm == null && ros == null) {
+					log.info("Delegating cache invalidation[" + request.getId() + ":" + request.getCacheName()
+							+ "] to ");
+					CacheServiceProxy.BlockingInterface blockingService = CacheServiceProxy.newBlockingStub(revChannel);
+					final ClientRpcController revController = revChannel.newRpcController();
+					revController.setTimeoutMs(0);
+
+					org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest.Builder req = org.tdmx.server.pcs.protobuf.Cache.InvalidateCacheRequest
+							.newBuilder();
+					req.setId(request.getId());
+					req.setCacheName(request.getCacheName());
+					if (request.getKeyValue() != null) {
+						req.setKeyValue(request.getKeyValue());
+					}
+					try {
+						blockingService.invalidateCache(revController, req.build());
+						log.info("Cache invalidated " + req + " for " + revChannel.getPeerInfo());
+					} catch (ServiceException e) {
+						overallSuccess = false;
+						log.warn("invalidateCache call failed for " + revChannel.getPeerInfo(), e);
+					}
+				}
+
+				resp.setSuccess(overallSuccess);
 			}
+		} else {
+			resp.setSuccess(false);
 		}
-		return null;
+		return resp.build();
 	}
 
 	@Override

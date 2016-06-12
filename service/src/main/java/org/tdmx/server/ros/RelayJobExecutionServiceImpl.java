@@ -164,7 +164,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					relayDataService.updateMessageProcessingState(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
 							ctx.getChannel(), msg.getState().getId(), error);
 				} else {
-					// successfull relay - rr can indicate flowcontrol "closed" by remote after transfer - so stop
+					// successful relay - rr can indicate flowcontrol "closed" by remote after transfer - so stop
 					// sending.
 					FlowControlStatus relayStatus = a2d.mapFlowControlStatus(rr.getRelayStatus());
 					job.setFlowStatus(relayStatus);
@@ -175,7 +175,7 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 					relayDataService.updatePostRelayChannelMessage(ctx.getAccountZone(), ctx.getZone(), ctx.getDomain(),
 							msg, relayStatus);
 
-					if (sh.isSameSegment()) {
+					if (!sh.isSameSegment()) {
 						// TODO #107: delete chunks if !sameSegment
 						log.info("Delete chunks for message " + msg.getMsgId());
 					}

@@ -45,12 +45,19 @@ import org.tdmx.server.rs.sas.resource.SegmentResource;
 public interface SAS {
 
 	/*
-	 * RESTFUL service for cache invalidation
+	 * RESTFUL service for static value enumerations
 	 */
 	@GET
-	@Path("/cache")
+	@Path("/enum/dbType")
+	List<String> getDbTypes();
+
+	@GET
+	@Path("/enum/cache")
 	List<String> getCacheNames();
 
+	/*
+	 * RESTFUL service for cache invalidation
+	 */
 	@POST
 	@Path("/cache/{cache}/invalidate")
 	List<SegmentCacheInvalidationStatusValue> invalidateCache(@QueryParam("cache") String cache,

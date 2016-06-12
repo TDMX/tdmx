@@ -39,7 +39,7 @@ public class SearchPartition extends AbstractCliCommand {
 
 	@Parameter(name = "partition", description = "the partition identifier.")
 	private String partitionId;
-	@Parameter(name = "dbType", description = "the database type ( CONSOLE, CONTROL, ZONE, MESSAGE ).")
+	@Parameter(name = "dbType", description = "the database type. Use 'enum:list dbType' for valid values.")
 	private String dbType;
 	@Parameter(name = "segment", description = "the segment name.")
 	private String segment;

@@ -28,12 +28,14 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.job.NamedThreadFactory;
 import org.tdmx.lib.control.service.PartitionControlServerService;
 import org.tdmx.server.cache.CacheInvalidationInstruction;
 import org.tdmx.server.cache.CacheInvalidationListener;
+import org.tdmx.server.cache.CacheInvalidationNotifier;
 import org.tdmx.server.pcs.RelayControlService;
 import org.tdmx.server.pcs.SessionControlService;
 import org.tdmx.server.pcs.SessionHandle;
@@ -44,6 +46,7 @@ import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.pcs.protobuf.PCSServer.FindApiSessionResponse;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.session.WebServiceSessionEndpoint;
+import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 import com.google.protobuf.BlockingService;
@@ -76,13 +79,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  *
  */
 public class LocalControlServiceImpl
-		implements SessionControlService, RelayControlService, CacheInvalidationListener, Manageable {
+		implements SessionControlService, RelayControlService, CacheInvalidationNotifier, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
 	// -------------------------------------------------------------------------
-
-	// TODO #88: setup to handle inbound cache invalidation requests from the PCS
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -125,14 +126,18 @@ public class LocalControlServiceImpl
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void invalidateCache(CacheInvalidationInstruction message) {
+	public ProcessingState invalidateCache(Segment segment, CacheInvalidationInstruction instruction) {
 		// if we are connected to any PCS at all, then taking one is enough.
 		// we use a hash distribution of the unique ID but we could do round-robin instead.
-		LocalControlServiceClient clientProxy = consistentHashToServer(message.getId());
+		LocalControlServiceClient clientProxy = consistentHashToServer(instruction.getId());
 		if (clientProxy != null) {
-			clientProxy.invalidateCache(message);
+			return clientProxy.invalidateCache(segment, instruction);
 		} else {
-			log.warn("No PCS client proxy found for " + consistentHashCode(message.getId()));
+			String errorInfo = "No PCS client proxy found for " + consistentHashCode(instruction.getId());
+			ProcessingState error = ProcessingState.error(ErrorCode.CacheInvalidationFailed.getErrorCode(),
+					ErrorCode.CacheInvalidationFailed.getErrorDescription(instruction.getId(), instruction.getName(),
+							instruction.getKey(), errorInfo));
+			return error;
 		}
 	}
 
