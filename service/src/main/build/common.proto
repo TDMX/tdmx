@@ -15,7 +15,6 @@ message AttributeValue {
 	  AuthorizationId = 7;
 	  FlowQuotaId = 8;
 	  MessageId = 9;
-	  DeliveryReportId = 10;
 	}
 	required AttributeId name = 1;
 	optional int64 value = 2;
@@ -24,10 +23,9 @@ message AttributeValue {
 
 enum ObjectType {
 	  Message = 0;
-	  DeliveryReply = 1;
-	  Authorization = 2;
-	  DestinationSession = 3;
-	  FlowControl = 4;
+	  Authorization = 1;
+	  DestinationSession = 2;
+	  FlowControl = 3;
 }
 
 

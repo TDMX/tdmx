@@ -118,7 +118,7 @@ public class ChunkServiceRepositoryImpl implements ChunkService {
 
 		Date msgTs = msg.getSignature().getSignatureDate();
 
-		List<DatabasePartition> chunkDbs = partitionCache.getActiveAtTimestamp(DatabaseType.MESSAGE, msgTs);
+		List<DatabasePartition> chunkDbs = partitionCache.getActiveAtTimestamp(DatabaseType.CHUNK, msgTs);
 		if (chunkDbs.isEmpty()) {
 			throw new IllegalStateException("No available chunk partition found for " + msgTs);
 		}

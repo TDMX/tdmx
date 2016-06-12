@@ -17,7 +17,6 @@
 	<import resource="classpath:/org/tdmx/core/system/env/ssl-context.xml"/>
 	
 	<!-- LIBRARIES -->
-	<import resource="classpath:/org/tdmx/lib/console/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/control/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/chunk/service-context.xml"/>

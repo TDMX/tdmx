@@ -16,11 +16,44 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.console.domain;
+package org.tdmx.lib.control.domain;
 
-public enum ConsoleUserStatus {
+import java.io.Serializable;
+import java.util.Date;
 
-	ACTIVE,
-	BLOCKED, ;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * An ConsoleUser is a person who uses the Console to administer a TDMX zone.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+@Entity
+@Table(name = "ConsoleUser")
+public class ConsoleUser implements Serializable {
+
+	public static final int MAX_LOGINNAME_LEN = 255;
+
+	private static final long serialVersionUID = -988419614813872556L;
+
+	@Id
+	@Column(length = MAX_LOGINNAME_LEN)
+	private String loginName;
+
+	private ConsoleUserStatus status;
+
+	private String passwordHash;
+
+	private String firstName;
+	private String lastName;
+	private String email;
+
+	private Date lastSuccessfulLogin;
+	private Date lastFailureAttempt;
+	private int numConsecutiveFailures;
 
 }
