@@ -13,25 +13,25 @@
        http://www.springframework.org/schema/aop 
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
-	<bean id="jdbc.messagedb.DatabaseConfigurationProvider" class="org.tdmx.lib.control.datasource.DatabasePartitionConfigurationProvider">
+	<bean id="jdbc.chunkdb.DatabaseConfigurationProvider" class="org.tdmx.lib.control.datasource.DatabasePartitionConfigurationProvider">
 		<property name="cache" ref="tdmx.server.control.DatabasePartitionCache"/>
 		<!-- default properties -->
-		<property name="driverClassname" value="${jdbc.messagedb.driverClassName}" />
-		<property name="url" value="${jdbc.messagedb.url}" />
-		<property name="username" value="${jdbc.messagedb.username}" />
-		<property name="password" value="${jdbc.messagedb.password}" />
+		<property name="driverClassname" value="${jdbc.chunkdb.driverClassName}" />
+		<property name="url" value="${jdbc.chunkdb.url}" />
+		<property name="username" value="${jdbc.chunkdb.username}" />
+		<property name="password" value="${jdbc.chunkdb.password}" />
 	</bean>
 
 	<bean id="tdmx.lib.message.ThreadLocalPartitionIdProvider" class="org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProviderImpl">
 	</bean>
 
-	<bean id="jdbc.messagedb.dataSource" class="org.tdmx.lib.control.datasource.DynamicDataSource">
+	<bean id="jdbc.chunkdb.dataSource" class="org.tdmx.lib.control.datasource.DynamicDataSource">
 		<property name="partitionIdProvider" ref="tdmx.lib.message.ThreadLocalPartitionIdProvider"/>
-		<property name="configurationProvider" ref="jdbc.messagedb.DatabaseConfigurationProvider"/>
+		<property name="configurationProvider" ref="jdbc.chunkdb.DatabaseConfigurationProvider"/>
 	</bean>
 
 	<bean id="tdmx.lib.message.dao.ChunkDao" class="org.tdmx.lib.chunk.dao.ChunkDaoImpl">
-		<property name="dataSource" ref="jdbc.messagedb.dataSource"/>
+		<property name="dataSource" ref="jdbc.chunkdb.dataSource"/>
 	</bean>
 	
 	<bean id="tdmx.lib.message.ChunkRepository"	class="org.tdmx.lib.chunk.service.ChunkServiceRepositoryImpl">
