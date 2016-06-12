@@ -17,7 +17,7 @@
  * http://www.gnu.org/licenses/.
  */
 
-package org.tdmx.lib.message.service;
+package org.tdmx.lib.chunk.service;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -25,12 +25,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.lib.chunk.dao.ChunkDao;
+import org.tdmx.lib.chunk.domain.Chunk;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.service.DatabasePartitionCache;
-import org.tdmx.lib.message.dao.ChunkDao;
-import org.tdmx.lib.message.domain.Chunk;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 /**

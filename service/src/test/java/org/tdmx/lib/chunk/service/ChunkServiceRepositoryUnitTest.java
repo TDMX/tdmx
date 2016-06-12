@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.message.service;
+package org.tdmx.lib.chunk.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +36,8 @@ import org.tdmx.client.crypto.algorithm.DigestAlgorithm;
 import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
-import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.chunk.domain.Chunk;
+import org.tdmx.lib.chunk.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.message.dao;
+package org.tdmx.lib.chunk.dao;
 
 import java.sql.Blob;
 import java.sql.Connection;
@@ -28,7 +28,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.chunk.domain.Chunk;
 
 public class ChunkDaoImpl implements ChunkDao {
 

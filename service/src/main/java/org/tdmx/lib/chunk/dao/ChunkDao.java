@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.message.dao;
+package org.tdmx.lib.chunk.dao;
 
 import java.sql.SQLException;
 
-import org.tdmx.lib.message.domain.Chunk;
+import org.tdmx.lib.chunk.domain.Chunk;
 
 /**
  * DAO for the Chunk Entity.

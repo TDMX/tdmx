@@ -240,7 +240,7 @@ public class DomainToApiMapper {
 		return m;
 	}
 
-	public Chunk mapChunk(org.tdmx.lib.message.domain.Chunk chunk) {
+	public Chunk mapChunk(org.tdmx.lib.chunk.domain.Chunk chunk) {
 		if (chunk == null) {
 			return null;
 		}
