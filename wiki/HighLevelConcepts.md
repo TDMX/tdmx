@@ -61,3 +61,10 @@ Within the service provider implementation, the following diagram shows how the 
 
 ![Service Interactions](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/service-interactions.png "logical-concepts/service-interactions.png")
 
+### TCP/IP Connectivity
+
+Within the service provider implementation, the following diagram shows how which internal services expose TCP/IP server connections (either protobuf-rpc or HTTPS), and which consume protobuf-rpc services from other services.
+
+![TCP/IP](https://raw.githubusercontent.com/TDMX/tdmx/master/wiki/images/logical-concept/tcp-connectivity.png "logical-concepts/tcp-connectivity.png")
+
+
