@@ -18,12 +18,14 @@
  */
 package org.tdmx.server.ws.mds;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
@@ -50,10 +53,19 @@ import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ListChannel;
 import org.tdmx.core.api.v01.mds.ListChannelResponse;
+import org.tdmx.core.api.v01.mds.Receive;
+import org.tdmx.core.api.v01.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
 import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.Chunk;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.tx.Localtransaction;
+import org.tdmx.core.api.v01.tx.Transaction;
+import org.tdmx.core.system.lang.EnumUtils;
+import org.tdmx.lib.chunk.domain.MessageFacade;
+import org.tdmx.lib.chunk.service.ChunkService;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -63,6 +75,8 @@ import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
 import org.tdmx.lib.zone.domain.Channel;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
+import org.tdmx.lib.zone.domain.ChannelMessage;
+import org.tdmx.lib.zone.domain.MessageStatus;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -73,6 +87,8 @@ import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
+import org.tdmx.server.ws.ApiToDomainMapper;
+import org.tdmx.server.ws.DomainToApiMapper;
 import org.tdmx.server.ws.ErrorCode;
 import org.tdmx.server.ws.security.service.AuthenticatedClientService;
 import org.tdmx.server.ws.session.WebServiceApiName;
@@ -116,7 +132,12 @@ public class MDSImplUnitTest {
 	@Autowired
 	private ChannelService channelService;
 	@Autowired
+	private ChunkService chunkService;
+	@Autowired
 	private DestinationService destinationService;
+
+	private final DomainToApiMapper d2a = new DomainToApiMapper();
+	private final ApiToDomainMapper a2d = new ApiToDomainMapper();
 
 	@Autowired
 	@Named("ws.MDS")
@@ -135,6 +156,8 @@ public class MDSImplUnitTest {
 	private PKIXCredential uc;
 
 	private final String UC_SESSION_ID = "UC-1";
+	private final String CLIENT_ID = "client-1";
+	private final String XID = "xid-1";
 
 	@Before
 	public void doSetup() throws Exception {
@@ -231,7 +254,6 @@ public class MDSImplUnitTest {
 
 		SetDestinationSessionResponse response = mds.setDestinationSession(req);
 		assertSuccess(response);
-		// TODO others
 
 		// do getDestinationSession to confirm DS created
 		GetDestinationSession getReq = new GetDestinationSession();
@@ -249,6 +271,108 @@ public class MDSImplUnitTest {
 
 		// check that the channeldestinationsessions are set
 		boolean setCft = false;
+		List<Channel> channels = getDestinationChannels();
+		for (Channel channel : channels) {
+			log.info("" + channel);
+			if (channel.getSession() != null) {
+				setCft = true;
+			}
+		}
+		assertTrue(setCft);
+	}
+
+	// TODO #101: inject message and then do receive, then the transactional variants.
+	@Test
+	public void testReceiveMessage_NoMsg_NoTx() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+
+		Localtransaction noTx = new Localtransaction();
+		noTx.setClientId(CLIENT_ID);
+		noTx.setTxtimeout(60);
+		req.setLocaltransaction(noTx);
+
+		req.setWaitTimeoutSec(5);
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNull(res.getMsg());
+		assertNull(res.getContinuation());
+	}
+
+	@Test
+	public void testReceiveMessage_NoMsg_Tx() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+
+		Transaction tx = new Transaction();
+		tx.setXid(XID);
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		req.setWaitTimeoutSec(5);
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNull(res.getMsg());
+		assertNull(res.getContinuation());
+	}
+
+	@Test
+	public void testReceiveMessage_SmallMsg_NoTx() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		// 2MB chunk:0 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+		List<Channel> destinationChannels = getDestinationChannels();
+		assertEquals(1, destinationChannels.size());
+
+		ChannelMessage m = persistMessageForReceive(zone, msg, destinationChannels.get(0));
+		org.tdmx.lib.chunk.domain.Chunk c = persistChunk(m, msg.getChunk());
+
+		// now try and receive it.
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+		req.setWaitTimeoutSec(5);
+
+		Localtransaction noTx = new Localtransaction();
+		noTx.setClientId(CLIENT_ID);
+		noTx.setTxtimeout(60);
+		req.setLocaltransaction(noTx);
+
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNotNull(res.getMsg());
+		assertNull(res.getContinuation());
+
+		assertEquals(msg.getHeader().getMsgId(), res.getMsg().getHeader().getMsgId());
+		assertNotNull(msg.getChunk());
+		assertEquals(c.getMac(), msg.getChunk().getMac());
+		assertArrayEquals(c.getData(), msg.getChunk().getData());
+
+		// the message is not deleted until it is ACK'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+
+		// now try and ack the prior message - no new ones to recv.
+		req.setMsgId(m.getMsgId());
+		res = mds.receive(req);
+		assertSuccess(res);
+		assertNull(res.getMsg());
+		assertNull(res.getContinuation());
+		// the message is deleted because it is ACK'd
+		assertNull(fetchMessage(m.getId()));
+		assertNull(chunkService.fetchChunk(m, 0));
+	}
+
+	private List<Channel> getDestinationChannels() {
+		List<Channel> result = new ArrayList<>();
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
 			boolean more = true;
@@ -264,10 +388,7 @@ public class MDSImplUnitTest {
 				List<Channel> channels = channelService.search(zone, sc);
 
 				for (Channel channel : channels) {
-					log.info("" + channel);
-					if (channel.getSession() != null) {
-						setCft = true;
-					}
+					result.add(channel);
 				}
 				if (channels.isEmpty()) {
 					more = false;
@@ -277,10 +398,38 @@ public class MDSImplUnitTest {
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}
-		assertTrue(setCft);
+		return result;
 	}
 
-	// TODO #101: inject message and then do receive, then the transactional variants.
+	private ChannelMessage fetchMessage(Long id) {
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			return channelService.findByMessageId(id);
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+	}
+
+	private ChannelMessage persistMessageForReceive(Zone zone, Msg msg, Channel channel) {
+		ChannelMessage m = a2d.mapMessage(msg);
+		m.setChannel(channel);
+		m.initMessageState(zone, MessageStatus.READY, uc.getPublicCert().getSerialNumber(),
+				uc.getPublicCert().getSerialNumber());
+
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			channelService.relayInMessage(zone, m);
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+		return m;
+	}
+
+	private org.tdmx.lib.chunk.domain.Chunk persistChunk(ChannelMessage m, Chunk c) {
+		org.tdmx.lib.chunk.domain.Chunk chunk = a2d.mapChunk(m, c);
+		assertTrue(chunkService.storeChunk(m, chunk));
+		return chunk;
+	}
 
 	private void assertSuccess(Acknowledge ack) {
 		assertNotNull(ack);
