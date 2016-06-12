@@ -208,9 +208,6 @@ public class RelayOutboundServiceConnector implements Manageable, RelayOutboundS
 		case Authorization:
 			result = relayOutboundService.relayChannelAuthorization(channelKey, attrs.get(AttributeId.AuthorizationId));
 			break;
-		case DeliveryReply:
-			// TODO #95 DR
-			break;
 		case DestinationSession:
 			result = relayOutboundService.relayChannelDestinationSession(channelKey, attrs.get(AttributeId.ChannelId));
 			break;

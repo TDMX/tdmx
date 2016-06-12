@@ -18,21 +18,17 @@ public final class Common {
      */
     Message(0, 0),
     /**
-     * <code>DeliveryReply = 1;</code>
+     * <code>Authorization = 1;</code>
      */
-    DeliveryReply(1, 1),
+    Authorization(1, 1),
     /**
-     * <code>Authorization = 2;</code>
+     * <code>DestinationSession = 2;</code>
      */
-    Authorization(2, 2),
+    DestinationSession(2, 2),
     /**
-     * <code>DestinationSession = 3;</code>
+     * <code>FlowControl = 3;</code>
      */
-    DestinationSession(3, 3),
-    /**
-     * <code>FlowControl = 4;</code>
-     */
-    FlowControl(4, 4),
+    FlowControl(3, 3),
     ;
 
     /**
@@ -40,21 +36,17 @@ public final class Common {
      */
     public static final int Message_VALUE = 0;
     /**
-     * <code>DeliveryReply = 1;</code>
+     * <code>Authorization = 1;</code>
      */
-    public static final int DeliveryReply_VALUE = 1;
+    public static final int Authorization_VALUE = 1;
     /**
-     * <code>Authorization = 2;</code>
+     * <code>DestinationSession = 2;</code>
      */
-    public static final int Authorization_VALUE = 2;
+    public static final int DestinationSession_VALUE = 2;
     /**
-     * <code>DestinationSession = 3;</code>
+     * <code>FlowControl = 3;</code>
      */
-    public static final int DestinationSession_VALUE = 3;
-    /**
-     * <code>FlowControl = 4;</code>
-     */
-    public static final int FlowControl_VALUE = 4;
+    public static final int FlowControl_VALUE = 3;
 
 
     public final int getNumber() { return value; }
@@ -62,10 +54,9 @@ public final class Common {
     public static ObjectType valueOf(int value) {
       switch (value) {
         case 0: return Message;
-        case 1: return DeliveryReply;
-        case 2: return Authorization;
-        case 3: return DestinationSession;
-        case 4: return FlowControl;
+        case 1: return Authorization;
+        case 2: return DestinationSession;
+        case 3: return FlowControl;
         default: return null;
       }
     }
@@ -291,10 +282,6 @@ public final class Common {
        * <code>MessageId = 9;</code>
        */
       MessageId(9, 9),
-      /**
-       * <code>DeliveryReportId = 10;</code>
-       */
-      DeliveryReportId(10, 10),
       ;
 
       /**
@@ -337,10 +324,6 @@ public final class Common {
        * <code>MessageId = 9;</code>
        */
       public static final int MessageId_VALUE = 9;
-      /**
-       * <code>DeliveryReportId = 10;</code>
-       */
-      public static final int DeliveryReportId_VALUE = 10;
 
 
       public final int getNumber() { return value; }
@@ -357,7 +340,6 @@ public final class Common {
           case 7: return AuthorizationId;
           case 8: return FlowQuotaId;
           case 9: return MessageId;
-          case 10: return DeliveryReportId;
           default: return null;
         }
       }
@@ -786,18 +768,17 @@ public final class Common {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014common.proto\"\227\002\n\016AttributeValue\022)\n\004nam" +
+      "\n\014common.proto\"\201\002\n\016AttributeValue\022)\n\004nam" +
       "e\030\001 \002(\0162\033.AttributeValue.AttributeId\022\r\n\005" +
-      "value\030\002 \001(\003\"\312\001\n\013AttributeId\022\021\n\rAccountZo" +
+      "value\030\002 \001(\003\"\264\001\n\013AttributeId\022\021\n\rAccountZo" +
       "neId\020\000\022\n\n\006ZoneId\020\001\022\014\n\010DomainId\020\002\022\r\n\tChan" +
       "nelId\020\003\022\026\n\022TemporaryChannelId\020\004\022\r\n\tServi" +
       "ceId\020\005\022\r\n\tAddressId\020\006\022\023\n\017AuthorizationId" +
-      "\020\007\022\017\n\013FlowQuotaId\020\010\022\r\n\tMessageId\020\t\022\024\n\020De" +
-      "liveryReportId\020\n*h\n\nObjectType\022\013\n\007Messag" +
-      "e\020\000\022\021\n\rDeliveryReply\020\001\022\021\n\rAuthorization\020" +
-      "\002\022\026\n\022DestinationSession\020\003\022\017\n\013FlowControl",
-      "\020\004B&\n\034org.tdmx.server.pcs.protobufB\006Comm" +
-      "on"
+      "\020\007\022\017\n\013FlowQuotaId\020\010\022\r\n\tMessageId\020\t*U\n\nOb" +
+      "jectType\022\013\n\007Message\020\000\022\021\n\rAuthorization\020\001" +
+      "\022\026\n\022DestinationSession\020\002\022\017\n\013FlowControl\020" +
+      "\003B&\n\034org.tdmx.server.pcs.protobufB\006Commo",
+      "n"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
