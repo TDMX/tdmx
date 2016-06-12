@@ -299,7 +299,7 @@ public class MDSImpl implements MDS {
 					// acknowledge the message, possibly opening the relay flow control
 					ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 							msgCtx.getMsg());
-					// TODO #107: delete chunks.
+					deleteChunks(ackStatus.msg);
 					if (ackStatus.flowControlOpened) {
 						// relay opened FC back to origin
 						relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
@@ -461,7 +461,8 @@ public class MDSImpl implements MDS {
 				// acknowledge the message, possibly opening the relay flow control
 				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 						msgCtx.getMsg());
-				// TODO #107: delete messag chunks (async).
+				// delete messag chunks.
+				deleteChunks(ackStatus.msg);
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
@@ -636,7 +637,8 @@ public class MDSImpl implements MDS {
 				// one phase commit - where the message was not yet prepared.
 				ReceiveMessageResultHolder ackStatus = channelService.onePhaseCommitReceive(session.getZone(),
 						msgCtx.getMsg());
-				// TODO #107: delete chunks of received message
+				// delete chunks of received message
+				deleteChunks(ackStatus.msg);
 				if (ackStatus.flowControlOpened) {
 					// relay opened FC back to origin
 					relayFCWithRetry(session, rcv, msgCtx.getMsg().getChannel(), ackStatus.flowQuota);
@@ -681,6 +683,18 @@ public class MDSImpl implements MDS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	private void deleteChunks(ChannelMessage msg) {
+		if (msg == null) {
+			log.warn("No message to delete chunks for.");
+			// TODO #112: incident service provider
+			return;
+		}
+		if (!chunkService.deleteChunks(msg)) {
+			log.warn("Unable to delete chunks for " + msg);
+			// TODO #112: incident service provider
+		}
+	}
 
 	private void relayCDSWithRetry(MDSServerSession session, ReceiverContext rc, Channel channel) {
 		// relay to the last known good ros for the channel.

@@ -176,8 +176,12 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 							msg, relayStatus);
 
 					if (!sh.isSameSegment()) {
-						// TODO #107: delete chunks if !sameSegment
+						// delete chunks if !sameSegment
 						log.info("Delete chunks for message " + msg.getMsgId());
+						if (!chunkService.deleteChunks(msg)) {
+							log.warn("Unable to delete chunks for " + msg.getMsgId());
+							// TODO #112: incident service provider
+						}
 					}
 				}
 			} catch (WebServiceException wse) {
