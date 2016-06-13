@@ -52,6 +52,8 @@ public enum ErrorCode {
 	MissingChannelEndpoint(500, "ChannelEndpoint missing."),
 	MissingChannelAuthorization(500, "ChannelAuthorization missing."),
 	MissingFlowControlLimit(500, "FlowControlLimit missing."),
+	MissingMaxRedeliveryCount(500, "Max redelivery count missing."),
+	MissingMinRedeliveryDelay(500, "Min redelivery delay missing."),
 	MissingDestinationSession(500, "DestinationSession missing."),
 	MissingSegment(500, "Segment missing."),
 	MissingService(500, "Service missing."),
@@ -93,6 +95,8 @@ public enum ErrorCode {
 	InvalidChunkOrder(500, "Chunks should be received in order - repeating only the last sent."),
 	InvalidReceiveTransaction(500, "Invalid receive transaction."),
 	InvalidReceiveNonTransaction(500, "Invalid receive non transaction."),
+	InvalidMaxRedeliveryCount(500, "Invalid max redelivery count missing."),
+	InvalidMinRedeliveryDelay(500, "Invalid min redelivery delay missing."),
 
 	MissingChannelDestinationService(500, "ChannelDestination Service missing."),
 	MissingChannelEndpointDomain(500, "ChannelEndpoint Domain missing."),

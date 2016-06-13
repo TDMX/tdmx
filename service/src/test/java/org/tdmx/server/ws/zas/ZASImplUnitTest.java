@@ -1427,6 +1427,9 @@ public class ZASImplUnitTest {
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
 
+		auth.setMaxRedeliveryCount(1);
+		auth.setMinRedeliveryDelaySec(60);
+
 		Limit l = new Limit();
 		l.setHighBytes(ZoneFacade.ONE_GB);
 		l.setLowBytes(ZoneFacade.ONE_MB);
@@ -1481,6 +1484,9 @@ public class ZASImplUnitTest {
 		auth.setOriginPermission(sendPermission);
 		SignatureUtils.createEndpointPermissionSignature(dac, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
 				sendPermission);
+
+		auth.setMaxRedeliveryCount(1);
+		auth.setMinRedeliveryDelaySec(60);
 
 		Limit l = new Limit();
 		l.setHighBytes(ZoneFacade.ONE_GB);

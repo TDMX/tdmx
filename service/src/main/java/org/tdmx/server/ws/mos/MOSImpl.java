@@ -99,12 +99,11 @@ import org.tdmx.server.ws.security.service.AuthorizedSessionLookupService;
 import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
 
 /**
- * TODO #109: FlowQuota is checked on submit, but only used when a message is stored on prepare or one-phase commit.
- * Therefore FlowQuota has to be released and message deleted on rollback of 2pc, but only after prepare. Before
- * prepare, when a transaction is rolled-back or timed-out, no changes to the DB is required. Once prepared, a
- * transaction remains prepared until TM either commits or rolls back the transaction after recovers. Messages which are
- * prepared for sending but not committed or rolledback by a TM will eventually reach their TTL and be removed, freeing
- * their quota.
+ * FlowQuota is checked on submit, but only used up when a message is stored on prepare or one-phase commit. Therefore
+ * FlowQuota has to be released and message deleted on roll back of 2pc, but only after prepare. Before prepare, when a
+ * transaction is rolled-back or timed-out, no changes to the DB is required. Once prepared, a transaction remains
+ * prepared until TM either commits or rolls back the transaction after recovers. Messages which are prepared for
+ * sending but not committed or rolled back by a TM will eventually reach their TTL and be removed, freeing their quota.
  * 
  * The sender should submit the message and then upload each chunk in sequential order until all chunks are uploaded.
  * Only the last chunk uploaded may be re-uploaded by the client. A XA transaction cannot prepare successfully unless
@@ -116,7 +115,7 @@ import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
  * 
  * After committing ( one phase or two ) the message relay is initiated without changing quota.
  * 
- * Rollback of a prepared XA transaction requires freeing the quota and deleting the channel messages.
+ * Roll back of a prepared XA transaction requires freeing the quota and deleting the channel messages.
  * 
  * @author Peter
  *

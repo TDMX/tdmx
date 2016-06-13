@@ -167,7 +167,8 @@ public class MOSServerSession extends WebServiceSession {
 
 	@Override
 	public boolean transferObject(ObjectType type, Map<AttributeId, Long> attributes) {
-		// TODO #113: MAS receives DR from MRS
+		// MOS isn't transferred any object inbound. Sender's have to check periodically if there is a new CDS for any
+		// channel they send to.
 		return false;
 	}
 

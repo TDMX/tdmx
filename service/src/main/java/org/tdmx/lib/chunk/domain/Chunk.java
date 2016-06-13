@@ -41,9 +41,7 @@ public class Chunk implements Serializable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final long serialVersionUID = -128859602084626282L;
-
-	// TODO #107 denormalize ttl from msg, partitioned datasource
+	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------
 	// HEADER FIELDS

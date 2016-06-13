@@ -104,6 +104,27 @@ public class ApiValidator {
 			ErrorCode.setError(ErrorCode.MissingFlowControlLimit, ack);
 			return null;
 		}
+		if (ca.getDestinationPermission() != null) {
+			// we must have retry count and delay set
+			if (ca.getMaxRedeliveryCount() == null) {
+				ErrorCode.setError(ErrorCode.MissingMaxRedeliveryCount, ack);
+				return null;
+			}
+			if (ca.getMinRedeliveryDelaySec() == null) {
+				ErrorCode.setError(ErrorCode.MissingMinRedeliveryDelay, ack);
+				return null;
+			}
+		} else {
+			// we must have retry count and delay set
+			if (ca.getMaxRedeliveryCount() != null) {
+				ErrorCode.setError(ErrorCode.InvalidMaxRedeliveryCount, ack);
+				return null;
+			}
+			if (ca.getMinRedeliveryDelaySec() != null) {
+				ErrorCode.setError(ErrorCode.InvalidMinRedeliveryDelay, ack);
+				return null;
+			}
+		}
 		if (checkAdministratorsignature(ca.getAdministratorsignature(), ack) == null) {
 			return null;
 		}

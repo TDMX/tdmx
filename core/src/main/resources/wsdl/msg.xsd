@@ -235,6 +235,16 @@
 				</xs:annotation>
 			</xs:element>
 			<xs:element ref="limit"/>
+			<xs:element name="maxRedeliveryCount" type="xs:unsignedShort" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>a destination may state the number of times a message may be redelivered (after rollback).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="minRedeliveryDelaySec" type="xs:unsignedShort" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>after rollback, a message shall be delayed at least by minRedeliveryDelay seconds before redelivery to the destination.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element ref="administratorsignature"/>
 		</xs:sequence>
 	</xs:complexType>

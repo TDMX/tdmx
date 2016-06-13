@@ -408,9 +408,20 @@ public class MRSImpl implements MRS {
 	private void abortMessage(MRSServerSession session, MessageRelayContext mrc) {
 		cancelMessageTimeout(mrc);
 		session.removeMessageContext(mrc.getMsgId());
-		// TODO #107: chunk cleanup - remove all previously received chunks, if the msgId doesn't exist
+		// chunk cleanup - remove all previously received chunks, since the msg doesn't exist yet and must be resent.
+		deleteChunks(mrc.getMsg());
+	}
 
-		// TODO #112: incident event relevant for the originating SP.
+	private void deleteChunks(ChannelMessage msg) {
+		if (msg == null) {
+			log.warn("No message to delete chunks for.");
+			// TODO #112: incident service provider
+			return;
+		}
+		if (!chunkService.deleteChunks(msg)) {
+			log.warn("Unable to delete chunks for " + msg);
+			// TODO #112: incident event relevant for the originating SP.
+		}
 	}
 
 	private void finishMessage(MRSServerSession session, MessageRelayContext mrc, RelayResponse response) {

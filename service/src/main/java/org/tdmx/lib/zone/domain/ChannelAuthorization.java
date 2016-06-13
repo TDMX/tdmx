@@ -19,6 +19,7 @@
 package org.tdmx.lib.zone.domain;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -108,6 +109,14 @@ public class ChannelAuthorization implements Serializable {
 			@AttributeOverride(name = "lowMarkBytes", column = @Column(name = "limitLowBytes") ) })
 	private FlowLimit limit;
 
+	// max re-delivery count - only in destination authorization
+	@Column
+	private Integer maxRedeliveryCount;
+
+	// re-deliver after wait seconds - only in destination authorization
+	@Column
+	private Integer redeliveryDelaySec;
+
 	// the signature can be null when a requested ca is relayed in before being set by the local DAC.
 	@Embedded
 	@AttributeOverrides({ @AttributeOverride(name = "signatureDate", column = @Column(name = "signatureDate") ),
@@ -170,6 +179,18 @@ public class ChannelAuthorization implements Serializable {
 		return builder.toString();
 	}
 
+	/**
+	 * Return the smaller of the send and recv authorized maxPlaintextSizes.
+	 * 
+	 * @return
+	 */
+	public BigInteger getMaxPlaintextPayloadSize() {
+		BigInteger sendSize = getSendAuthorization() != null ? getSendAuthorization().getMaxPlaintextSizeBytes()
+				: BigInteger.ZERO;
+		BigInteger recvSize = getRecvAuthorization() != null ? getRecvAuthorization().getMaxPlaintextSizeBytes()
+				: BigInteger.ZERO;
+		return sendSize.compareTo(recvSize) < 0 ? sendSize : recvSize;
+	}
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------
@@ -252,6 +273,22 @@ public class ChannelAuthorization implements Serializable {
 
 	public void setProcessingState(ProcessingState processingState) {
 		this.processingState = processingState;
+	}
+
+	public Integer getMaxRedeliveryCount() {
+		return maxRedeliveryCount;
+	}
+
+	public void setMaxRedeliveryCount(Integer maxRedeliveryCount) {
+		this.maxRedeliveryCount = maxRedeliveryCount;
+	}
+
+	public Integer getRedeliveryDelaySec() {
+		return redeliveryDelaySec;
+	}
+
+	public void setRedeliveryDelaySec(Integer redeliveryDelaySec) {
+		this.redeliveryDelaySec = redeliveryDelaySec;
 	}
 
 }

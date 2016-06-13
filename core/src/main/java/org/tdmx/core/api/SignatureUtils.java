@@ -387,6 +387,8 @@ public class SignatureUtils {
 		} else {
 			value.append(MISSING);
 		}
+		value.append(toValue(ca.getMaxRedeliveryCount()));
+		value.append(toValue(ca.getMinRedeliveryDelaySec()));
 		// signer
 		value.append(toValue(ca.getAdministratorsignature().getAdministratorIdentity().getDomaincertificate()));
 		value.append(toValue(ca.getAdministratorsignature().getAdministratorIdentity().getRootcertificate()));
@@ -398,8 +400,8 @@ public class SignatureUtils {
 	}
 
 	private static void appendValueToSign(StringBuilder value, org.tdmx.core.api.v01.msg.Limit limit) {
-		value.append(limit.getHighBytes());
-		value.append(limit.getLowBytes());
+		value.append(toValue(limit.getHighBytes()));
+		value.append(toValue(limit.getLowBytes()));
 	}
 
 	private static void appendValueToSign(StringBuilder value, Permission perm) {
@@ -467,11 +469,17 @@ public class SignatureUtils {
 		return bigint.toString();
 	}
 
-	private static String toValue(long longValue) {
+	private static String toValue(Long longValue) {
+		if (longValue == null) {
+			return MISSING;
+		}
 		return "" + longValue;
 	}
 
-	private static String toValue(int intValue) {
+	private static String toValue(Integer intValue) {
+		if (intValue == null) {
+			return MISSING;
+		}
 		return "" + intValue;
 	}
 

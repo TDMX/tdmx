@@ -71,12 +71,6 @@ public class FlowQuota implements Serializable {
 	@Column(length = ChannelAuthorizationStatus.MAX_AUTH_STATUS_LEN, nullable = false)
 	private ChannelAuthorizationStatus authorizationStatus;
 
-	// TODO #101 : max size of individual messages denormalized from min(send+recv) authorization
-
-	// TODO #101 : max redelivery count - new part of destination authorization
-
-	// TODO #101 : redeliver after wait seconds - new part of destination authorization
-
 	@Enumerated(EnumType.STRING)
 	@Column(length = FlowControlStatus.MAX_FLOWCONTROL_STATUS_LEN, nullable = false)
 	private FlowControlStatus relayStatus;
@@ -100,6 +94,18 @@ public class FlowQuota implements Serializable {
 			@AttributeOverride(name = "errorCode", column = @Column(name = "processingErrorCode") ),
 			@AttributeOverride(name = "errorMessage", column = @Column(name = "processingErrorMessage", length = ProcessingState.MAX_ERRORMESSAGE_LEN) ) })
 	private ProcessingState processingState = ProcessingState.none(); // of relay of FlowControl "OPEN" event
+
+	// max size of messages denormalized from min(send+recv) authorization
+	@Column
+	private BigInteger maxPlaintextSizeBytes;
+
+	// max redelivery count - new part of destination authorization
+	@Column
+	private Integer maxRedeliveryCount;
+
+	// redeliver after wait seconds - new part of destination authorization
+	@Column
+	private Integer redeliveryDelaySec;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -135,7 +141,13 @@ public class FlowQuota implements Serializable {
 		if (channel != null && channel.getAuthorization() != null) {
 			setAuthorizationStatus(
 					channel.isOpen() ? ChannelAuthorizationStatus.OPEN : ChannelAuthorizationStatus.CLOSED);
-			setLimit(channel.getAuthorization().getLimit());
+
+			// denormalized info from the CA.
+			ChannelAuthorization ca = channel.getAuthorization();
+			setLimit(ca.getLimit());
+			setMaxPlaintextSizeBytes(ca.getMaxPlaintextPayloadSize());
+			setRedeliveryDelaySec(ca.getRedeliveryDelaySec());
+			setMaxRedeliveryCount(ca.getMaxRedeliveryCount());
 		}
 	}
 
@@ -220,6 +232,9 @@ public class FlowQuota implements Serializable {
 		builder.append(", flowStatus=").append(flowStatus);
 		builder.append(", usedBytes=").append(usedBytes);
 		builder.append(", limit=").append(limit);
+		builder.append(", maxPlaintextSizeBytes=").append(maxPlaintextSizeBytes);
+		builder.append(", maxRedeliveryCount=").append(maxRedeliveryCount);
+		builder.append(", redeliveryDelaySec=").append(redeliveryDelaySec);
 		builder.append(", ps=").append(processingState);
 		builder.append("]");
 		return builder.toString();
@@ -295,6 +310,30 @@ public class FlowQuota implements Serializable {
 
 	public void setProcessingState(ProcessingState processingState) {
 		this.processingState = processingState;
+	}
+
+	public long getMaxPlaintextSizeBytes() {
+		return maxPlaintextSizeBytes != null ? maxPlaintextSizeBytes.longValue() : 0L;
+	}
+
+	public void setMaxPlaintextSizeBytes(BigInteger maxPlaintextSizeBytes) {
+		this.maxPlaintextSizeBytes = maxPlaintextSizeBytes;
+	}
+
+	public int getMaxRedeliveryCount() {
+		return maxRedeliveryCount != null ? maxRedeliveryCount : 0;
+	}
+
+	public void setMaxRedeliveryCount(Integer maxRedeliveryCount) {
+		this.maxRedeliveryCount = maxRedeliveryCount;
+	}
+
+	public int getRedeliveryDelaySec() {
+		return redeliveryDelaySec != null ? redeliveryDelaySec : 0;
+	}
+
+	public void setRedeliveryDelaySec(Integer redeliveryDelaySec) {
+		this.redeliveryDelaySec = redeliveryDelaySec;
 	}
 
 }

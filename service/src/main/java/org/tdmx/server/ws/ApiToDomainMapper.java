@@ -144,6 +144,8 @@ public class ApiToDomainMapper {
 		a.setReqSendAuthorization(null);
 		a.setReqSendAuthorization(null);
 		a.setLimit(mapFlowLimit(ca.getLimit()));
+		a.setMaxRedeliveryCount(ca.getMaxRedeliveryCount());
+		a.setRedeliveryDelaySec(ca.getMinRedeliveryDelaySec());
 		a.setSignature(mapAdministratorSignature(ca.getAdministratorsignature()));
 		return a;
 	}

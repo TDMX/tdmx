@@ -134,7 +134,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setLimit(auth.getLimit());
-			existingCA.setProcessingState(ProcessingState.none()); // no need to relay
+			existingCA.setMaxRedeliveryCount(auth.getMaxRedeliveryCount());
+			existingCA.setRedeliveryDelaySec(auth.getRedeliveryDelaySec());
+			// no need to relay
+			existingCA.setProcessingState(ProcessingState.none());
 
 		} else if (existingChannel.isSend()) {
 			// we must confirm any requested recvAuth if there is one, but not invent one
@@ -166,6 +169,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 			existingCA.setSendAuthorization(auth.getSendAuthorization());
 			existingCA.setLimit(auth.getLimit());
+			existingCA.setMaxRedeliveryCount(auth.getMaxRedeliveryCount());
+			existingCA.setRedeliveryDelaySec(auth.getRedeliveryDelaySec());
 		} else {
 			// 3) recvAuth(+confirming requested sendAuth)
 			// - no reqRecvAuth allowed in existing ca.
@@ -206,6 +211,8 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			}
 			existingCA.setRecvAuthorization(auth.getRecvAuthorization());
 			existingCA.setLimit(auth.getLimit());
+			existingCA.setMaxRedeliveryCount(auth.getMaxRedeliveryCount());
+			existingCA.setRedeliveryDelaySec(auth.getRedeliveryDelaySec());
 		}
 		// set the signature of the CA
 		existingCA.setSignature(auth.getSignature());
@@ -383,7 +390,6 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	@Override
 	@Transactional(value = "ZoneDB")
 	public ReceiveMessageResultHolder receiveMessage(Long stateId, int txTimeoutSec) {
-		//
 		MessageState state = messageDao.loadStateById(stateId, true, true);
 		if (state == null) {
 			return null;
@@ -398,7 +404,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		result.flowControlOpened = false;
 		result.msg = existingMsg;
 
-		if (existingMsg.getState().getDeliveryCount() > 3) { // TODO #101: max redelivery part of quota
+		if (existingMsg.getState().getDeliveryCount() > existingMsg.getChannel().getQuota().getMaxRedeliveryCount()) {
 			// the ChannelMessage and it's MessageState are deleted if not delivered after x retries
 			// freeing quota
 			existingMsg.getState().setStatus(MessageStatus.DELETED);
@@ -434,14 +440,11 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	}
 
 	@Override
-	@Transactional(value = "ZoneDB")
+	@Transactional(value = "ZoneDB", readOnly = true)
 	public SubmitMessageResultHolder checkChannelQuota(Zone zone, Channel channel, long messageSize,
 			long requiredQuota) {
-		// TODO #49 : limit max size of message to authorized max
 
-		// checked by MOS on submit of message and MRS on relay of message.
-
-		// get and lock quota and check we can send
+		// get quota (no lock / read-only) and check we can send
 		FlowQuota quota = channelDao.read(channel.getQuota().getId());
 
 		SubmitMessageResultHolder result = new SubmitMessageResultHolder();
@@ -453,6 +456,10 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		} else if (FlowControlStatus.CLOSED == quota.getFlowStatus()) {
 			// we are already closed for sending - opening is only changed by the relaying out creating capacity.
 			result.status = SubmitMessageOperationStatus.FLOW_CONTROL_CLOSED;
+		} else if (messageSize > quota.getMaxPlaintextSizeBytes()) {
+			// limit max size of message to authorized max
+			// checked by MOS on submit of message and MRS on relay of message.
+			result.status = SubmitMessageOperationStatus.MESSAGE_TOO_LARGE;
 		} else if (!quota.hasAvailableQuotaFor(requiredQuota)) {
 			// we can exceed the high mark but if we do then we set flow control to closed.
 			result.status = SubmitMessageOperationStatus.NOT_ENOUGH_QUOTA_AVAILABLE;
@@ -697,7 +704,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		result.flowControlOpened = false;
 		result.msg = existingMsg;
 
-		if (existingMsg.getState().getDeliveryCount() >= 3) { // TODO #101: max redelivery part of quota
+		if (existingMsg.getState().getDeliveryCount() >= result.flowQuota.getMaxRedeliveryCount()) {
 			// the ChannelMessage and it's MessageState are deleted if not delivered after x retries
 			// freeing quota
 
@@ -708,7 +715,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		} else {
 			existingMsg.getState().setStatus(MessageStatus.REDELIVER);
 			Calendar redeliverTime = Calendar.getInstance();
-			redeliverTime.add(Calendar.SECOND, 3600); // TODO #101: delivery after x seconds configured in flow
+			redeliverTime.add(Calendar.SECOND, result.flowQuota.getRedeliveryDelaySec());
 			existingMsg.getState().setRedeliverAfter(redeliverTime.getTime());
 		}
 
@@ -793,7 +800,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 			for (MessageState state : states) {
 
-				if (state.getDeliveryCount() >= 3) { // TODO #101: max redelivery part of quota
+				if (state.getDeliveryCount() >= state.getMsg().getChannel().getQuota().getMaxRedeliveryCount()) {
 					// the message is deleted, quota used up before.
 
 					state.setStatus(MessageStatus.DELETED);
@@ -801,7 +808,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 				} else {
 					state.setStatus(MessageStatus.REDELIVER);
 					Calendar redeliverTime = Calendar.getInstance();
-					redeliverTime.add(Calendar.SECOND, 3600); // TODO #101: delivery after x seconds configured in flow
+					redeliverTime.add(Calendar.SECOND, state.getMsg().getChannel().getQuota().getRedeliveryDelaySec());
 					state.setRedeliverAfter(redeliverTime.getTime());
 
 					// put back the used quota
