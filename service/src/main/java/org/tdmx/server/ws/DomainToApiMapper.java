@@ -283,6 +283,8 @@ public class DomainToApiMapper {
 			Currentchannelauthorization current = new Currentchannelauthorization();
 			current.setOriginPermission(mapPermission(ca.getSendAuthorization()));
 			current.setDestinationPermission(mapPermission(ca.getRecvAuthorization()));
+			current.setMaxRedeliveryCount(ca.getMaxRedeliveryCount());
+			current.setMinRedeliveryDelaySec(ca.getRedeliveryDelaySec());
 			current.setLimit(mapLimit(ca.getLimit()));
 			current.setAdministratorsignature(mapAdministratorSignature(ca.getSignature()));
 			c.setCurrent(current);

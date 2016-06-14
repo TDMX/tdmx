@@ -26,7 +26,10 @@ import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
+import org.tdmx.core.api.v01.msg.Currentchannelauthorization;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Grant;
+import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.server.ws.ApiToDomainMapper;
 import org.tdmx.server.ws.DomainToApiMapper;
@@ -90,131 +93,49 @@ public class ZoneFacade {
 		return a2d.mapDestination(address, service, ads);
 	}
 
-	// TODO give DAC to be able to construct correct signatures
-	public static ChannelAuthorization createSendRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
-			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
+	public static EndpointPermission createPermission(AgentCredential userAgent, PKIXCredential userCred,
+			EndpointPermissionGrant grant, Domain domain, ChannelOrigin origin, ChannelDestination dest) {
+		Channel channel = new Channel(domain, origin, dest);
 
+		Permission p = new Permission();
+		p.setPermission(Grant.valueOf(grant.toString()));
+		p.setMaxPlaintextSizeBytes(ONE_GB);
+		SignatureUtils.createEndpointPermissionSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				d2a.mapChannel(channel), p);
+
+		return a2d.mapEndpointPermission(p);
+	}
+
+	public static ChannelAuthorization createChannelAuthorization(Domain domain, PKIXCredential userCred,
+			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest, EndpointPermission sendPermission,
+			EndpointPermission recvPermission) {
 		Channel channel = new Channel(domain, origin, dest);
 
 		ChannelAuthorization c = new ChannelAuthorization(channel);
 		channel.setAuthorization(c);
 
-		EndpointPermission sendPermission = new EndpointPermission();
-		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
-		sendPermission.setMaxPlaintextSizeBytes(ONE_GB);
-		AgentSignature sendPermSignature = new AgentSignature();
-		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		sendPermSignature.setSignatureDate(new Date());
-		sendPermSignature.setValue("hexvalueofsignature");
-		sendPermission.setSignature(sendPermSignature);
 		c.setSendAuthorization(sendPermission);
-
-		EndpointPermission recvPermission = new EndpointPermission();
-		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);
-		recvPermission.setMaxPlaintextSizeBytes(ONE_GB);
-		AgentSignature recvPermSignature = new AgentSignature();
-		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		recvPermSignature.setSignatureDate(new Date());
-		recvPermSignature.setValue("hexvalueofsignature");
-		recvPermission.setSignature(recvPermSignature);
 		c.setRecvAuthorization(recvPermission);
-
-		FlowLimit l = new FlowLimit();
-		l.setHighMarkBytes(ONE_GB);
-		l.setLowMarkBytes(ONE_MB);
-		c.setLimit(l);
-
-		// TODO make a valid signature
-		AgentSignature signature = new AgentSignature();
-		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		signature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		signature.setSignatureDate(new Date());
-		signature.setValue("hexvalueofsignature");
-		c.setSignature(signature);
+		// pending authorizations not set.
 
 		c.setMaxRedeliveryCount(1);
 		c.setRedeliveryDelaySec(60);
 
-		channel.getQuota().updateAuthorizationInfo();
-		return c;
-	}
-
-	public static ChannelAuthorization createSendChannelAuthorization(Domain domain, PKIXCredential userCred,
-			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-
-		Channel channel = new Channel(domain, origin, dest);
-
-		ChannelAuthorization c = new ChannelAuthorization(channel);
-		channel.setAuthorization(c);
-
-		EndpointPermission sendPermission = new EndpointPermission();
-		sendPermission.setGrant(EndpointPermissionGrant.ALLOW);
-		sendPermission.setMaxPlaintextSizeBytes(ONE_GB);
-		AgentSignature sendPermSignature = new AgentSignature();
-		sendPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		sendPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		sendPermSignature.setSignatureDate(new Date());
-		sendPermSignature.setValue("hexvalueofsignature");
-		sendPermission.setSignature(sendPermSignature);
-		c.setSendAuthorization(sendPermission);
-
-		// pending authorizations not set.
-
-		// undelivered is on the recv side
 		FlowLimit l = new FlowLimit();
 		l.setHighMarkBytes(ONE_GB);
 		l.setLowMarkBytes(ONE_MB);
 		c.setLimit(l);
 
-		// TODO make a valid signature
-		AgentSignature signature = new AgentSignature();
-		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		signature.setCertificateChainPem("certificateChainPem");
-		signature.setSignatureDate(new Date());
-		signature.setValue("hexvalueofsignature");
-		c.setSignature(signature);
-
-		channel.getQuota().updateAuthorizationInfo();
-		return c;
-	}
-
-	public static ChannelAuthorization createRecvChannelAuthorization(Domain domain, PKIXCredential userCred,
-			AgentCredential userAgent, ChannelOrigin origin, ChannelDestination dest) {
-		Channel channel = new Channel(domain, origin, dest);
-
-		ChannelAuthorization c = new ChannelAuthorization(channel);
-		channel.setAuthorization(c);
-
-		EndpointPermission recvPermission = new EndpointPermission();
-		recvPermission.setGrant(EndpointPermissionGrant.ALLOW);
-		recvPermission.setMaxPlaintextSizeBytes(ONE_GB);
-		AgentSignature recvPermSignature = new AgentSignature();
-		recvPermSignature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		recvPermSignature.setCertificateChainPem(userAgent.getCertificateChainPem());
-		recvPermSignature.setSignatureDate(new Date());
-		recvPermSignature.setValue("hexvalueofsignature");
-		recvPermission.setSignature(recvPermSignature);
-		c.setRecvAuthorization(recvPermission);
-
-		// pending authorizations not set.
-
-		FlowLimit l = new FlowLimit();
-		l.setHighMarkBytes(ONE_GB);
-		l.setLowMarkBytes(ONE_MB);
-		c.setLimit(l);
-
-		// TODO make a valid signature
-		AgentSignature signature = new AgentSignature();
-		signature.setAlgorithm(SignatureAlgorithm.SHA_256_RSA);
-		signature.setCertificateChainPem("certificateChainPem");
-		signature.setSignatureDate(new Date());
-		signature.setValue("hexvalueofsignature");
-		c.setSignature(signature);
-
-		c.setMaxRedeliveryCount(1);
-		c.setRedeliveryDelaySec(60);
+		// make a valid signature by mapping back and from the API
+		Currentchannelauthorization current = new Currentchannelauthorization();
+		current.setOriginPermission(d2a.mapPermission(c.getSendAuthorization()));
+		current.setDestinationPermission(d2a.mapPermission(c.getRecvAuthorization()));
+		current.setMaxRedeliveryCount(c.getMaxRedeliveryCount());
+		current.setMinRedeliveryDelaySec(c.getRedeliveryDelaySec());
+		current.setLimit(d2a.mapLimit(c.getLimit()));
+		SignatureUtils.createChannelAuthorizationSignature(userCred, SignatureAlgorithm.SHA_256_RSA, new Date(),
+				d2a.mapChannel(channel), current);
+		c.setSignature(a2d.mapAdministratorSignature(current.getAdministratorsignature()));
 
 		channel.getQuota().updateAuthorizationInfo();
 		return c;

@@ -64,6 +64,8 @@ import org.tdmx.lib.zone.domain.Destination;
 import org.tdmx.lib.zone.domain.DestinationSearchCriteria;
 import org.tdmx.lib.zone.domain.Domain;
 import org.tdmx.lib.zone.domain.DomainSearchCriteria;
+import org.tdmx.lib.zone.domain.EndpointPermission;
+import org.tdmx.lib.zone.domain.EndpointPermissionGrant;
 import org.tdmx.lib.zone.domain.Service;
 import org.tdmx.lib.zone.domain.ServiceSearchCriteria;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
@@ -253,17 +255,25 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 
 					// if both domains are the same we merge the 2 auths into one.
 					if (from.getDomain().getDomainName().equals(to.getDomain().getDomainName())) {
-						ChannelAuthorization sendRecvCa = ZoneFacade.createSendRecvChannelAuthorization(
-								fromDomain.getDomain(), fromDac.getCredential(), fromDac.getAg(), co, cd);
+						EndpointPermission permission = ZoneFacade.createPermission(fromDac.getAg(),
+								fromDac.getCredential(), EndpointPermissionGrant.ALLOW, from.getDomain(), co, cd);
+
+						ChannelAuthorization sendRecvCa = ZoneFacade.createChannelAuthorization(fromDomain.getDomain(),
+								fromDac.getCredential(), fromDac.getAg(), co, cd, permission, permission);
 						channelService.create(sendRecvCa.getChannel());
 						fromDomain.getAuths().add(sendRecvCa);
 						sendChannel = sendRecvCa.getChannel();
 						recvChannel = sendRecvCa.getChannel();
 					} else {
-						ChannelAuthorization sendCa = ZoneFacade.createSendChannelAuthorization(fromDomain.getDomain(),
-								fromDac.getCredential(), fromDac.getAg(), co, cd);
-						ChannelAuthorization recvCa = ZoneFacade.createRecvChannelAuthorization(toDomain.getDomain(),
-								toDac.getCredential(), toDac.getAg(), co, cd);
+						EndpointPermission sendPermission = ZoneFacade.createPermission(fromDac.getAg(),
+								fromDac.getCredential(), EndpointPermissionGrant.ALLOW, fromDomain.getDomain(), co, cd);
+						EndpointPermission recvPermission = ZoneFacade.createPermission(toDac.getAg(),
+								toDac.getCredential(), EndpointPermissionGrant.ALLOW, toDomain.getDomain(), co, cd);
+
+						ChannelAuthorization sendCa = ZoneFacade.createChannelAuthorization(fromDomain.getDomain(),
+								fromDac.getCredential(), fromDac.getAg(), co, cd, sendPermission, recvPermission);
+						ChannelAuthorization recvCa = ZoneFacade.createChannelAuthorization(toDomain.getDomain(),
+								toDac.getCredential(), toDac.getAg(), co, cd, sendPermission, recvPermission);
 
 						channelService.create(sendCa.getChannel());
 						fromDomain.getAuths().add(sendCa);
