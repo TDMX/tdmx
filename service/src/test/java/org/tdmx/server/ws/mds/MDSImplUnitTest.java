@@ -49,6 +49,9 @@ import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.core.api.SignatureUtils;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.core.api.v01.common.Page;
+import org.tdmx.core.api.v01.mds.AcknowledgeResponse;
+import org.tdmx.core.api.v01.mds.Download;
+import org.tdmx.core.api.v01.mds.DownloadResponse;
 import org.tdmx.core.api.v01.mds.GetDestinationSession;
 import org.tdmx.core.api.v01.mds.GetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ListChannel;
@@ -58,10 +61,17 @@ import org.tdmx.core.api.v01.mds.ReceiveResponse;
 import org.tdmx.core.api.v01.mds.SetDestinationSession;
 import org.tdmx.core.api.v01.mds.SetDestinationSessionResponse;
 import org.tdmx.core.api.v01.mds.ws.MDS;
+import org.tdmx.core.api.v01.msg.ChannelEndpointFilter;
+import org.tdmx.core.api.v01.msg.Channelinfo;
 import org.tdmx.core.api.v01.msg.Chunk;
+import org.tdmx.core.api.v01.msg.ChunkReference;
 import org.tdmx.core.api.v01.msg.Destinationsession;
 import org.tdmx.core.api.v01.msg.Msg;
+import org.tdmx.core.api.v01.tx.Commit;
+import org.tdmx.core.api.v01.tx.CommitResponse;
 import org.tdmx.core.api.v01.tx.Localtransaction;
+import org.tdmx.core.api.v01.tx.Prepare;
+import org.tdmx.core.api.v01.tx.PrepareResponse;
 import org.tdmx.core.api.v01.tx.Transaction;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.chunk.domain.MessageFacade;
@@ -231,7 +241,55 @@ public class MDSImplUnitTest {
 		ListChannelResponse response = mds.listChannel(req);
 		assertSuccess(response);
 
-		// TODO others
+		assertEquals(1, response.getChannelinfos().size());
+		Channelinfo ch = response.getChannelinfos().get(0);
+		assertNotNull(ch.getChannelauthorization());
+		assertNotNull(ch.getSessioninfo());
+		assertNotNull(ch.getStatus());
+	}
+
+	@Test
+	public void testListChannelAuthorization_OriginDomain() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelEndpointFilter filter = new ChannelEndpointFilter();
+		filter.setDomain(domain.getDomainName());
+		req.setOrigin(filter);
+
+		ListChannelResponse response = mds.listChannel(req);
+		assertSuccess(response);
+
+		assertEquals(1, response.getChannelinfos().size());
+	}
+
+	@Test
+	public void testListChannelAuthorization_OriginAll() {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		ListChannel req = new ListChannel();
+		req.setSessionId(UC_SESSION_ID);
+
+		Page p = new Page();
+		p.setNumber(0);
+		p.setSize(10);
+		req.setPage(p);
+
+		ChannelEndpointFilter filter = new ChannelEndpointFilter();
+		filter.setDomain(domain.getDomainName());
+		filter.setLocalname(address.getLocalName());
+		req.setOrigin(filter);
+
+		ListChannelResponse response = mds.listChannel(req);
+		assertSuccess(response);
+
 		assertEquals(1, response.getChannelinfos().size());
 	}
 
@@ -281,7 +339,6 @@ public class MDSImplUnitTest {
 		assertTrue(setCft);
 	}
 
-	// TODO #101: inject message and then do receive, then the transactional variants.
 	@Test
 	public void testReceiveMessage_NoMsg_NoTx() {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
@@ -320,6 +377,7 @@ public class MDSImplUnitTest {
 		assertNull(res.getContinuation());
 	}
 
+	// TODO #101: inject message and then do receive, then the transactional variants.
 	@Test
 	public void testReceiveMessage_SmallMsg_NoTx() throws Exception {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
@@ -367,6 +425,202 @@ public class MDSImplUnitTest {
 		assertNull(res.getMsg());
 		assertNull(res.getContinuation());
 		// the message is deleted because it is ACK'd
+		assertNull(fetchMessage(m.getId()));
+		assertNull(chunkService.fetchChunk(m, 0));
+	}
+
+	@Test
+	public void testReceiveMessage_LargeMsg_NoTx() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		// 16MB chunk:0 data
+		// 2MB chunk:1 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(16 * EnumUtils.MB));
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+		List<Channel> destinationChannels = getDestinationChannels();
+		assertEquals(1, destinationChannels.size());
+		// persist chunk:0
+		ChannelMessage m = persistMessageForReceive(zone, msg, destinationChannels.get(0));
+		org.tdmx.lib.chunk.domain.Chunk c = persistChunk(m, msg.getChunk());
+		// persist chunk:1
+		Chunk chunk1 = MessageFacade.createChunk(m.getMsgId(), 1, m.getScheme(), chunks.get(1));
+		org.tdmx.lib.chunk.domain.Chunk c1 = persistChunk(m, chunk1);
+
+		// now try and receive msg+chunk:0.
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+		req.setWaitTimeoutSec(5);
+
+		Localtransaction noTx = new Localtransaction();
+		noTx.setClientId(CLIENT_ID);
+		noTx.setTxtimeout(60);
+		req.setLocaltransaction(noTx);
+
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNotNull(res.getMsg());
+		assertNotNull(res.getContinuation()); // have next chunk
+
+		assertEquals(msg.getHeader().getMsgId(), res.getMsg().getHeader().getMsgId());
+		assertNotNull(msg.getChunk());
+		assertEquals(c.getMac(), msg.getChunk().getMac());
+		assertArrayEquals(c.getData(), msg.getChunk().getData());
+
+		// the message is not deleted until it is ACK'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+
+		// now download the chunk:1
+		Download downloadReq = new Download();
+		downloadReq.setSessionId(UC_SESSION_ID);
+		downloadReq.setContinuation(res.getContinuation());
+		ChunkReference cr = new ChunkReference();
+		cr.setMsgId(m.getMsgId());
+		cr.setPos(1);
+		downloadReq.setChunkref(cr);
+		DownloadResponse downloadRes = mds.download(downloadReq);
+		assertSuccess(downloadRes);
+		assertNull(downloadRes.getContinuation());
+		assertNotNull(downloadRes.getChunk());
+		assertEquals(c1.getMac(), downloadRes.getChunk().getMac());
+		assertArrayEquals(c1.getData(), downloadRes.getChunk().getData());
+
+		// the message is still not deleted until it is ACK'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+		assertNotNull(chunkService.fetchChunk(m, 1));
+
+		// now try and ack the prior message - no new ones to recv.
+		org.tdmx.core.api.v01.mds.Acknowledge ackReq = new org.tdmx.core.api.v01.mds.Acknowledge();
+		ackReq.setSessionId(UC_SESSION_ID);
+		ackReq.setClientId(CLIENT_ID);
+		ackReq.setMsgId(m.getMsgId());
+		AcknowledgeResponse ackRes = mds.acknowledge(ackReq);
+		assertSuccess(ackRes);
+
+		// the message is deleted because it is ACK'd
+		assertNull(fetchMessage(m.getId()));
+		assertNull(chunkService.fetchChunk(m, 0));
+		assertNull(chunkService.fetchChunk(m, 1));
+	}
+
+	@Test
+	public void testReceiveMessage_SmallMsg_XATx_OnePhaseCommit() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		// 2MB chunk:0 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+		List<Channel> destinationChannels = getDestinationChannels();
+		assertEquals(1, destinationChannels.size());
+
+		ChannelMessage m = persistMessageForReceive(zone, msg, destinationChannels.get(0));
+		org.tdmx.lib.chunk.domain.Chunk c = persistChunk(m, msg.getChunk());
+
+		// now try and receive it.
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+		req.setWaitTimeoutSec(5);
+
+		Transaction tx = new Transaction();
+		tx.setXid(XID);
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNotNull(res.getMsg());
+		assertNull(res.getContinuation());
+
+		assertEquals(msg.getHeader().getMsgId(), res.getMsg().getHeader().getMsgId());
+		assertNotNull(msg.getChunk());
+		assertEquals(c.getMac(), msg.getChunk().getMac());
+		assertArrayEquals(c.getData(), msg.getChunk().getData());
+
+		// the message is not deleted until it is committed'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+
+		// now try and ack the prior message - no new ones to recv.
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setOnePhase(true);
+		commitReq.setXid(XID);
+
+		CommitResponse commitRes = mds.commit(commitReq);
+		assertSuccess(commitRes);
+
+		// the message is deleted because it is opc'd
+		assertNull(fetchMessage(m.getId()));
+		assertNull(chunkService.fetchChunk(m, 0));
+	}
+
+	@Test
+	public void testReceiveMessage_SmallMsg_XATx_TwoPhaseCommit() throws Exception {
+		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
+
+		// 2MB chunk:0 data
+		List<byte[]> chunks = new ArrayList<>();
+		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
+
+		Msg msg = MessageFacade.createMsg(uc, uc, service.getServiceName(),
+				IntegratedCryptoScheme.ECDH384_AES256plusRSA_SLASH_AES256__16MB_SHA1, chunks);
+		List<Channel> destinationChannels = getDestinationChannels();
+		assertEquals(1, destinationChannels.size());
+
+		ChannelMessage m = persistMessageForReceive(zone, msg, destinationChannels.get(0));
+		org.tdmx.lib.chunk.domain.Chunk c = persistChunk(m, msg.getChunk());
+
+		// now try and receive it.
+		Receive req = new Receive();
+		req.setSessionId(UC_SESSION_ID);
+		req.setWaitTimeoutSec(5);
+
+		Transaction tx = new Transaction();
+		tx.setXid(XID);
+		tx.setTxtimeout(60);
+		req.setTransaction(tx);
+
+		ReceiveResponse res = mds.receive(req);
+		assertSuccess(res);
+		assertNotNull(res.getMsg());
+		assertNull(res.getContinuation());
+
+		assertEquals(msg.getHeader().getMsgId(), res.getMsg().getHeader().getMsgId());
+		assertNotNull(msg.getChunk());
+		assertEquals(c.getMac(), msg.getChunk().getMac());
+		assertArrayEquals(c.getData(), msg.getChunk().getData());
+
+		// the message is not deleted until it is committed'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+
+		Prepare prepareReq = new Prepare();
+		prepareReq.setSessionId(UC_SESSION_ID);
+		prepareReq.setXid(XID);
+		PrepareResponse prepareRes = mds.prepare(prepareReq);
+		assertSuccess(prepareRes);
+
+		// the message is not deleted until it is committed'd
+		assertNotNull(fetchMessage(m.getId()));
+		assertNotNull(chunkService.fetchChunk(m, 0));
+
+		// now try and ack the prior message - no new ones to recv.
+		Commit commitReq = new Commit();
+		commitReq.setSessionId(UC_SESSION_ID);
+		commitReq.setOnePhase(false);
+		commitReq.setXid(XID);
+		CommitResponse commitRes = mds.commit(commitReq);
+		assertSuccess(commitRes);
+
+		// the message is deleted because it is opc'd
 		assertNull(fetchMessage(m.getId()));
 		assertNull(chunkService.fetchChunk(m, 0));
 	}

@@ -427,6 +427,7 @@ public class MDSImpl implements MDS {
 		}
 		response.setChunk(d2a.mapChunk(chunk));
 		response.setContinuation(msg.getContinuationId(cr.getPos() + 1));
+		response.setSuccess(true);
 		return response;
 	}
 
@@ -654,6 +655,11 @@ public class MDSImpl implements MDS {
 			if (states.isEmpty()) {
 				ErrorCode.setError(ErrorCode.XATransactionUnknown, response);
 				return response;
+			} else {
+				// we delete all the messages chunks
+				for (MessageState state : states) {
+					deleteChunks(state.getMsg());
+				}
 			}
 		}
 

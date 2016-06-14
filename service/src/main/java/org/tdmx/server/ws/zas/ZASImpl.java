@@ -1345,7 +1345,6 @@ public class ZASImpl implements ZAS {
 			cd.setLocalName(d.getTarget().getLocalName());
 			cd.setServiceName(d.getService().getServiceName());
 
-			// TODO check eager fetch dest.address.domain & dest.service
 			response.getDestinationinfos().add(d2a.mapDestinationInfo(cd, d.getDestinationSession()));
 		}
 

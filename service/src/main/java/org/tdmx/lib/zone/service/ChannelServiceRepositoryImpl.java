@@ -734,8 +734,9 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 		result.flowControlOpened = false;
 		result.msg = existingMsg;
 
-		msg.getState().setStatus(MessageStatus.DOWNLOADED);
-		result.flowControlOpened = result.flowQuota.reduceBufferOnReceive(msg.getPayloadLength());
+		existingMsg.getState().setStatus(MessageStatus.DOWNLOADED);
+		existingMsg.getState().setTxId(xid);
+		result.flowControlOpened = result.flowQuota.reduceBufferOnReceive(existingMsg.getPayloadLength());
 		// we can fall below the low mark but and if we do then the flow control is opened.
 		return result;
 	}
@@ -764,6 +765,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 			for (MessageState state : states) {
 				state.setStatus(MessageStatus.DELETED);
 				messageDao.delete(state.getMsg());
+				result.add(state);
 			}
 
 		} while (states.size() == PageSpecifier.DEFAULT_PAGE_SIZE);

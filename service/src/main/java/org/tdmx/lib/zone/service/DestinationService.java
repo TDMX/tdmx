@@ -54,7 +54,7 @@ public interface DestinationService {
 	public Destination findById(Long id);
 
 	/**
-	 * Find FlowTargets given the criteria. FetchPlan includes Domain, Service, Target and Target's address.
+	 * Find Destinations given the criteria. FetchPlan includes Domain, Service, and Target's address.
 	 * 
 	 * @param zone
 	 * @param criteria
