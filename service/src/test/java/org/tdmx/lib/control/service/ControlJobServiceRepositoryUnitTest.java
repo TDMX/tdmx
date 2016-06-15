@@ -71,7 +71,7 @@ public class ControlJobServiceRepositoryUnitTest {
 		j.setType(cmdConverter.getType());
 		cmdConverter.setData(j, task);
 
-		je = ControlJobFacade.createImmediateJob(ControlJobStatus.NEW, j);
+		je = ControlJobFacade.createImmediateJob(ControlJobStatus.NEW, j, "default");
 
 		service.createOrUpdate(je);
 	}
@@ -117,11 +117,40 @@ public class ControlJobServiceRepositoryUnitTest {
 	}
 
 	@Test
+	public void testSearch_TypeStatusSegment() throws Exception {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobType(cmdConverter.getType());
+		sc.setStatus(ControlJobStatus.ERR);
+		sc.setSegment(je.getSegment());
+		List<ControlJob> l = service.search(sc);
+		assertEquals(0, l.size());
+
+		sc.setStatus(ControlJobStatus.NEW);
+		l = service.search(sc);
+		assertEquals(1, l.size());
+	}
+
+	@Test
 	public void testSearch_TypeTimeStatus() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
 		sc.setJobType(cmdConverter.getType());
 		sc.setScheduledTimeBefore(new Date());
 		sc.setStatus(ControlJobStatus.ERR);
+		List<ControlJob> l = service.search(sc);
+		assertEquals(0, l.size());
+
+		sc.setStatus(ControlJobStatus.NEW);
+		l = service.search(sc);
+		assertEquals(1, l.size());
+	}
+
+	@Test
+	public void testSearch_TypeTimeStatusSegment() throws Exception {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobType(cmdConverter.getType());
+		sc.setScheduledTimeBefore(new Date());
+		sc.setStatus(ControlJobStatus.ERR);
+		sc.setSegment(je.getSegment());
 		List<ControlJob> l = service.search(sc);
 		assertEquals(0, l.size());
 
@@ -138,7 +167,7 @@ public class ControlJobServiceRepositoryUnitTest {
 
 	@Test
 	public void testReserveAndModify() throws Exception {
-		List<ControlJob> runnable = service.reserve(1);
+		List<ControlJob> runnable = service.reserve(je.getSegment(), 1);
 		assertEquals(1, runnable.size());
 
 		Thread.sleep(1000);
@@ -146,7 +175,7 @@ public class ControlJobServiceRepositoryUnitTest {
 		ControlJob j = runnable.get(0);
 		assertEquals(je.getJob().getJobId(), j.getJob().getJobId());
 		assertEquals(ControlJobStatus.RUN, j.getStatus());
-
+		assertEquals(je.getSegment(), j.getSegment());
 		j.setStatus(ControlJobStatus.OK);
 		service.createOrUpdate(j);
 

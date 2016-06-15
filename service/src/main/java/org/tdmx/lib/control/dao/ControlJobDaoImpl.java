@@ -84,6 +84,10 @@ public class ControlJobDaoImpl implements ControlJobDao {
 			BooleanExpression e = controlJob.status.eq(criteria.getStatus());
 			where = where != null ? where.and(e) : e;
 		}
+		if (StringUtils.hasText(criteria.getSegment())) {
+			BooleanExpression e = controlJob.segment.eq(criteria.getSegment());
+			where = where != null ? where.and(e) : e;
+		}
 		if (criteria.getScheduledTimeBefore() != null) { // <=
 			BooleanExpression e = controlJob.scheduledTime.loe(criteria.getScheduledTimeBefore());
 			where = where != null ? where.and(e) : e;
@@ -98,8 +102,8 @@ public class ControlJobDaoImpl implements ControlJobDao {
 		}
 
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(controlJob);
 	}
 

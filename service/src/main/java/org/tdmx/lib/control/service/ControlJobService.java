@@ -40,12 +40,13 @@ public interface ControlJobService {
 	public List<ControlJob> search(ControlJobSearchCriteria criteria);
 
 	/**
-	 * Pessimistically lock and update status from NEW to RUN for up to maxJobs which have scheduledTime in the past.
+	 * Pessimistic lock and update status from NEW to RUN for up to maxJobs which have scheduledTime in the past.
 	 * 
+	 * @param segment
 	 * @param maxJobs
 	 * @return
 	 */
-	public List<ControlJob> reserve(int maxJobs);
+	public List<ControlJob> reserve(String segment, int maxJobs);
 
 	public void delete(ControlJob job);
 

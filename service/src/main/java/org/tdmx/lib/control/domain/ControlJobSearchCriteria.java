@@ -23,7 +23,7 @@ import java.util.Date;
 import org.tdmx.lib.common.domain.PageSpecifier;
 
 /**
- * The SearchCriteria for a ControlJobEntry.
+ * The SearchCriteria for a ControlJob.
  * 
  * @author Peter Klauser
  * 
@@ -42,6 +42,7 @@ public class ControlJobSearchCriteria {
 
 	private String jobId;
 	private ControlJobStatus status;
+	private String segment;
 	private Date scheduledTimeBefore;
 	private String jobType;
 
@@ -88,6 +89,14 @@ public class ControlJobSearchCriteria {
 
 	public void setStatus(ControlJobStatus status) {
 		this.status = status;
+	}
+
+	public String getSegment() {
+		return segment;
+	}
+
+	public void setSegment(String segment) {
+		this.segment = segment;
 	}
 
 	public Date getScheduledTimeBefore() {

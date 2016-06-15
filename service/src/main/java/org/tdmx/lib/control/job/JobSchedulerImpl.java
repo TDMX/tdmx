@@ -56,13 +56,14 @@ public class JobSchedulerImpl implements JobScheduler {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ControlJob scheduleImmediate(Job task) {
+	public ControlJob scheduleImmediate(String segment, Job task) {
 		log.info("Scheduling task " + task);
 
 		ControlJob j = new ControlJob();
 		j.setJob(task);
 		j.setScheduledTime(new Date());
 		j.setStatus(ControlJobStatus.NEW);
+		j.setSegment(segment);
 		getControlJobService().createOrUpdate(j);
 
 		// lookup after transaction to fetch the ID.

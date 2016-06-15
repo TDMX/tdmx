@@ -722,7 +722,7 @@ public class SASImpl implements SAS {
 		installTask.setAccountId(a.getId());
 		installTask.setAccountZoneId(az.getId());
 		Job installJob = getJobFactory().createJob(installTask);
-		ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+		ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
 
 		az.setJobId(j.getId());
 
@@ -881,7 +881,7 @@ public class SASImpl implements SAS {
 			installTask.setAccountZoneId(az.getId());
 			installTask.setFingerprint(azc.getFingerprint());
 			Job installJob = getJobFactory().createJob(installTask);
-			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+			ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
 
 			azc.setJobId(j.getId());
 			accountZoneCredentialService.createOrUpdate(azc);
@@ -1007,7 +1007,7 @@ public class SASImpl implements SAS {
 			installTask.setAccountZoneId(az.getId());
 			installTask.setFingerprint(azc.getFingerprint());
 			Job installJob = getJobFactory().createJob(installTask);
-			ControlJob j = getJobScheduler().scheduleImmediate(installJob);
+			ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
 
 			updatedAzc.setJobId(j.getId());
 			accountZoneCredentialService.createOrUpdate(updatedAzc);

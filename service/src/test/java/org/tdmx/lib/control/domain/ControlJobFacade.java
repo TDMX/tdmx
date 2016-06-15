@@ -21,14 +21,13 @@ package org.tdmx.lib.control.domain;
 import java.util.Date;
 
 import org.tdmx.lib.common.domain.Job;
-import org.tdmx.lib.control.domain.ControlJob;
-import org.tdmx.lib.control.domain.ControlJobStatus;
 
 public class ControlJobFacade {
 
-	public static ControlJob createImmediateJob(ControlJobStatus status, Job job) {
+	public static ControlJob createImmediateJob(ControlJobStatus status, Job job, String segment) {
 		ControlJob j = new ControlJob();
 		j.setStatus(status);
+		j.setSegment(segment);
 		j.setScheduledTime(new Date());
 		j.setJob(job);
 		return j;

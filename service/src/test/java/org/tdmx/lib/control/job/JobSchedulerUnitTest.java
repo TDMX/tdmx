@@ -53,6 +53,7 @@ public class JobSchedulerUnitTest {
 	private ControlJobService jobService;
 
 	private ControlJob je;
+	private String segmentName = "default";
 
 	@Before
 	public void doSetup() throws Exception {
@@ -79,7 +80,7 @@ public class JobSchedulerUnitTest {
 		task.setAccountId(1L);
 		task.setAccountZoneId(2L);
 		Job j = jobFactory.createJob(task);
-		je = jobScheduler.scheduleImmediate(j);
+		je = jobScheduler.scheduleImmediate(segmentName, j);
 
 		checkImmediate(task.getClass().getName(), je);
 	}
@@ -91,7 +92,7 @@ public class JobSchedulerUnitTest {
 		task.setAccountZoneId(2L);
 		task.setZoneDbPartitionId("az-pid-1");
 		Job j = jobFactory.createJob(task);
-		je = jobScheduler.scheduleImmediate(j);
+		je = jobScheduler.scheduleImmediate(segmentName, j);
 
 		checkImmediate(task.getClass().getName(), je);
 	}
@@ -102,6 +103,7 @@ public class JobSchedulerUnitTest {
 		assertNotNull(j.getScheduledTime());
 		assertNotNull(j.getJob());
 		assertEquals(ControlJobStatus.NEW, j.getStatus());
+		assertEquals(segmentName, j.getSegment());
 		Date scheduledTime = j.getScheduledTime();
 
 		Job job = j.getJob();

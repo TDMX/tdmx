@@ -28,9 +28,10 @@ public interface JobScheduler {
 	 * 
 	 * The ControlJob will have an id on return.
 	 * 
+	 * @param segment
 	 * @param task
 	 * @return the immediately scheduled ControlJob
 	 */
-	public ControlJob scheduleImmediate(Job task);
+	public ControlJob scheduleImmediate(String segment, Job task);
 
 }

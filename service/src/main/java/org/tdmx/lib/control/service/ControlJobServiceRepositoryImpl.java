@@ -117,9 +117,13 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public List<ControlJob> reserve(int maxJobs) {
+	public List<ControlJob> reserve(String segment, int maxJobs) {
+		if (segment == null) {
+			throw new IllegalArgumentException("Missing segment.");
+		}
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, maxJobs));
 		sc.setStatus(ControlJobStatus.NEW);
+		sc.setSegment(segment);
 		sc.setScheduledTimeBefore(new Date());
 		List<ControlJob> result = getControlJobDao().fetch(sc, LockModeType.PESSIMISTIC_WRITE);
 		for (ControlJob e : result) {

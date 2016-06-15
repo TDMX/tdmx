@@ -214,6 +214,7 @@
         startTimestamp timestamp,
         type varchar(128) not null,
         scheduledTime timestamp not null,
+        segment varchar(64) not null,
         status varchar(4) not null,
         primary key (id),
         unique (jobId)

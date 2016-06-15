@@ -377,7 +377,6 @@ public class MDSImplUnitTest {
 		assertNull(res.getContinuation());
 	}
 
-	// TODO #101: inject message and then do receive, then the transactional variants.
 	@Test
 	public void testReceiveMessage_SmallMsg_NoTx() throws Exception {
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
@@ -624,6 +623,8 @@ public class MDSImplUnitTest {
 		assertNull(fetchMessage(m.getId()));
 		assertNull(chunkService.fetchChunk(m, 0));
 	}
+
+	// TODO #101: receive with transactional rollback / recover / forget variants.
 
 	private List<Channel> getDestinationChannels() {
 		List<Channel> result = new ArrayList<>();

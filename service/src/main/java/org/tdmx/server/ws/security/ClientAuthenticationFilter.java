@@ -66,8 +66,8 @@ public class ClientAuthenticationFilter implements Filter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-			ServletException {
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
 		if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
 			throw new ServletException("ClientAuthenticationFilter just supports HTTP requests");
 		}
@@ -95,7 +95,7 @@ public class ClientAuthenticationFilter implements Filter {
 			chain.doFilter(request, response);
 
 		} catch (AuthorizationException e) {
-			log.info("Unauthorized access.", e); // TODO future raise incident!
+			log.info("Unauthorized access.", e); // TODO #112: raise incident
 			// 401 - access denied
 			httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Not Authorized.");
 			return;

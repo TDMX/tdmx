@@ -19,7 +19,7 @@
 package org.tdmx.server.runtime;
 
 /**
- * The name of an independent services.
+ * The name of an independent services within a segment.
  * 
  * @author Peter
  * 
@@ -36,6 +36,7 @@ public enum ServiceName {
 	RS, // RESTful Services
 	SCS, // SessionControlService
 	ROS, // RelayOutboundService
-	JOB; // Background Jobs
+
+	JOB; // Background Jobs for a segment
 
 }

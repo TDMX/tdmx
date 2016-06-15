@@ -86,6 +86,7 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 
 	// internal //
 	private boolean started = false;
+	private Segment segment = null;
 	private final Map<String, JobExecutor<?>> jobExecutorMap = new HashMap<>();
 	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
 	private ScheduledExecutorService scheduledThreadPool = null;
@@ -123,6 +124,7 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	@Override
 	public void start(Segment segment, List<WebServiceApiName> apis) {
 		started = true;
+		this.segment = segment;
 		scheduledThreadPool.scheduleWithFixedDelay(this, getLongPollIntervalSec(), getLongPollIntervalSec(),
 				TimeUnit.SECONDS);
 	}
@@ -130,6 +132,7 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	@Override
 	public void stop() {
 		started = false;
+		segment = null;
 		scheduledThreadPool.shutdown();
 		try {
 			scheduledThreadPool.awaitTermination(60, TimeUnit.SECONDS);
@@ -173,8 +176,8 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 			int freeSlots = cleanFinishedJobs();
 			log.info("free slots " + freeSlots);
 
-			if (freeSlots > 0) {
-				List<ControlJob> jobsToRun = jobService.reserve(freeSlots);
+			if (freeSlots > 0 && segment != null) {
+				List<ControlJob> jobsToRun = jobService.reserve(segment.getSegmentName(), freeSlots);
 				for (ControlJob j : jobsToRun) {
 					Future<?> r = jobRunners.submit(new JobRunner(j));
 					jobStatus.add(r);

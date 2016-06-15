@@ -38,6 +38,7 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.service.control.task.dao.ExceptionType;
@@ -59,9 +60,13 @@ public class JobExecutionServiceUnitTest {
 
 	private JobConverter<TestTask> testJobConverter;
 	private JobExecutionProcessImpl service;
+	private String segmentName = "default";
 
 	@Before
 	public void doSetup() throws Exception {
+
+		Segment s = new Segment();
+		s.setSegmentName(segmentName);
 
 		service = new JobExecutionProcessImpl();
 		service.setJobIdService(jobIdService);
@@ -84,7 +89,7 @@ public class JobExecutionServiceUnitTest {
 
 		service.init();
 
-		service.start(null, null);
+		service.start(s, null);
 	}
 
 	@After
@@ -113,7 +118,7 @@ public class JobExecutionServiceUnitTest {
 		t.setProcessTimeMs(0);
 
 		Job j = service.createJob(t);
-		jobScheduler.scheduleImmediate(j);
+		jobScheduler.scheduleImmediate(segmentName, j);
 
 		Thread.sleep(2000);
 
@@ -137,7 +142,7 @@ public class JobExecutionServiceUnitTest {
 		t.setProcessMessage("EXCEPTION THROWN!!!");
 
 		Job j = service.createJob(t);
-		jobScheduler.scheduleImmediate(j);
+		jobScheduler.scheduleImmediate(segmentName, j);
 
 		Thread.sleep(2000);
 
@@ -165,7 +170,7 @@ public class JobExecutionServiceUnitTest {
 
 		for (int i = 0; i < NUM; i++) {
 			Job j = service.createJob(t);
-			jobScheduler.scheduleImmediate(j);
+			jobScheduler.scheduleImmediate(segmentName, j);
 		}
 
 		// 5 at a time @ 0.1s

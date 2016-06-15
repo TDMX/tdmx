@@ -23,7 +23,7 @@ public enum ControlJobStatus {
 	// newly inserted not yet running
 	NEW,
 
-	// running
+	// running, segment is set
 	RUN,
 
 	// run but failed

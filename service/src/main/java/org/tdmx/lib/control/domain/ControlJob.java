@@ -37,7 +37,7 @@ import javax.persistence.TemporalType;
 import org.tdmx.lib.common.domain.Job;
 
 /**
- * An JobEntry is a Job scheduled for execution at some time.
+ * An ControlJob is a Job scheduled for execution at some time in a specific segment.
  * 
  * @author Peter Klauser
  * 
@@ -60,7 +60,13 @@ public class ControlJob implements Serializable {
 	@TableGenerator(name = "ControlJobIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
 	private Long id;
 
-	// TODO DB: index on status, scheduledTime
+	/**
+	 * The segment is a secondary partitioning criteria like "premium" or "free" tier.
+	 */
+	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
+	private String segment;
+
+	// TODO DB: index on status, segment, scheduledTime
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date scheduledTime;
@@ -84,12 +90,10 @@ public class ControlJob implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ControlJob [id=");
 		builder.append(id);
-		builder.append(", scheduledTime=");
-		builder.append(scheduledTime);
-		builder.append(", status=");
-		builder.append(status);
-		builder.append(", job=");
-		builder.append(job);
+		builder.append(", status=").append(status);
+		builder.append(", segment=").append(segment);
+		builder.append(", scheduledTime=").append(scheduledTime);
+		builder.append(", job=").append(job);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -136,6 +140,14 @@ public class ControlJob implements Serializable {
 
 	public void setJob(Job job) {
 		this.job = job;
+	}
+
+	public String getSegment() {
+		return segment;
+	}
+
+	public void setSegment(String segment) {
+		this.segment = segment;
 	}
 
 }

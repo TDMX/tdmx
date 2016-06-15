@@ -56,13 +56,14 @@ public class MockJobSchedulerImpl implements MockJobScheduler {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public ControlJob scheduleImmediate(Job task) {
+	public ControlJob scheduleImmediate(String segmentName, Job task) {
 		log.info("Scheduling task " + task);
 
 		ControlJob j = new ControlJob();
 		j.setJob(task);
 		j.setScheduledTime(new Date());
 		j.setStatus(ControlJobStatus.NEW);
+		j.setSegment(segmentName);
 
 		// lookup after transaction to fetch the ID.
 		j.setId(new Random().nextLong());
