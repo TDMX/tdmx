@@ -57,6 +57,12 @@ public class ChannelName implements Serializable {
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * If the domain is the origin domain then "origin"->"destination" otherwise "origin"<-"destination".
+	 * 
+	 * @param domainName
+	 * @return if the domain is the origin domain then "origin"->"destination" otherwise "origin"<-"destination".
+	 */
 	public String getChannelKey(String domainName) {
 		if (domainName.equals(getOrigin().getDomainName())) {
 			return getOriginName() + "->" + getDestinationName();

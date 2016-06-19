@@ -573,6 +573,8 @@ public class MRSImplUnitTest {
 		}
 	}
 
+	// TODO relay in FC-open, relay transfer to ROS
+
 	private void assertSuccess(Acknowledge ack) {
 		assertNotNull(ack);
 		String errorDesc = ack.getError() != null ? ack.getError().getDescription() : "ok";

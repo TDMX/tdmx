@@ -42,6 +42,7 @@ public class MRSServerSession extends WebServiceSession {
 	protected static final String SHORTCUT = "SHORTCUT";
 	private static final String DESTINATION_PREFIX = "Destination:"; // DestinationName->
 	private static final String MESSAGE_PREFIX = "Msg:"; // msgId->MessageRelayContext
+	private static final String ROS_TCP_ADDRESS = "Ros:"; //
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -157,6 +158,14 @@ public class MRSServerSession extends WebServiceSession {
 
 	public void setSameSegmentShortcutSession() {
 		setAttribute(SHORTCUT, Boolean.TRUE);
+	}
+
+	public void setRosTcpAddress(String rosTcpAddress) {
+		setAttribute(ROS_TCP_ADDRESS, rosTcpAddress);
+	}
+
+	public String getRosTcpAddress() {
+		return getAttribute(ROS_TCP_ADDRESS);
 	}
 
 	/**

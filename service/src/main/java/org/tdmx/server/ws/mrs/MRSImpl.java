@@ -30,6 +30,7 @@ import org.tdmx.core.api.v01.mrs.Relay;
 import org.tdmx.core.api.v01.mrs.RelayResponse;
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.msg.Destinationsession;
+import org.tdmx.core.api.v01.msg.Flowcontrolstatus;
 import org.tdmx.core.api.v01.msg.Header;
 import org.tdmx.core.api.v01.msg.Msg;
 import org.tdmx.core.api.v01.msg.Payload;
@@ -37,6 +38,7 @@ import org.tdmx.core.api.v01.msg.Permission;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.chunk.domain.Chunk;
 import org.tdmx.lib.chunk.service.ChunkService;
+import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
@@ -60,6 +62,7 @@ import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.server.ros.client.RelayClientService;
+import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.tos.client.TransferClientService;
 import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ApiToDomainMapper;
@@ -137,7 +140,7 @@ public class MRSImpl implements MRS {
 		} else if (parameters.getChunk() != null) {
 			processChunk(parameters.getContinuation(), parameters.getChunk(), response);
 		} else if (parameters.getRelayStatus() != null) {
-			// TODO #113: relay in FC-open, notify ROS of FC change
+			processFCOpen(parameters.getRelayStatus(), response);
 		} else {
 			// none of the above - equals missing data.
 			ErrorCode.setError(ErrorCode.MissingRelayPayload, response);
@@ -152,6 +155,18 @@ public class MRSImpl implements MRS {
 	// -------------------------------------------------------------------------
 	// PRIVATE METHODS
 	// -------------------------------------------------------------------------
+
+	// handle the destination relaying in a fc-open, notify ROS of FC change
+	private void processFCOpen(Flowcontrolstatus fcStatus, RelayResponse response) {
+		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
+		Channel sessionChannel = session.getChannel();
+
+		// TODO #113: use channel service to change the relay state to open, so ROS can continue
+		// - check what ROS does once a FC-closed is returned synchronously from the MRS destination
+		// - don't send any new messages until FC-open relayed(transferred) from MRS(origin) to ROS
+		relayFCOpenWithRetry(session, sessionChannel, sessionChannel.getQuota());
+		response.setSuccess(true);
+	}
 
 	// handle the channel authorization relayed inbound.
 	private void processChannelAuthorization(Permission auth, RelayResponse response) {
@@ -456,6 +471,37 @@ public class MRSImpl implements MRS {
 		}, getMessageIdleTimeoutSec(), TimeUnit.SECONDS);
 		// we need to record the future object so we can cancel later ( when tx completes )
 		mrc.setTimeoutFuture(timeoutFuture);
+	}
+
+	private void relayFCOpenWithRetry(MRSServerSession session, Channel channel, FlowQuota quota) {
+		// relay to the last known good ros for the channel relaying back to the destination.
+		RelayStatus rs = relayClientService.relayChannelFlowControl(session.getRosTcpAddress(),
+				session.getAccountZone(), session.getZone(), session.getDomain(), channel, quota);
+		if (!rs.isSuccess()) {
+			if (rs.getErrorCode().isRetryable()) {
+				RelayStatus retry = relayClientService.relayChannelFlowControl(null /* get new MRS session */,
+						session.getAccountZone(), session.getZone(), session.getDomain(), channel, quota);
+				if (!retry.isSuccess()) {
+					ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+							rs.getErrorCode().getErrorMessage());
+					channelService.updateStatusFlowQuota(quota.getId(), error);
+					// remove any cached ros address since not working
+					session.setRosTcpAddress(null);
+				} else {
+					// cache the potentially changed ROS address
+					session.setRosTcpAddress(retry.getRosTcpAddress());
+				}
+			} else {
+				ProcessingState error = ProcessingState.error(ProcessingState.FAILURE_RELAY_RETRY,
+						rs.getErrorCode().getErrorMessage());
+				channelService.updateStatusFlowQuota(quota.getId(), error);
+				// remove any cached ros address since not working
+				session.setRosTcpAddress(null);
+			}
+		} else {
+			// cache the working ROS address
+			session.setRosTcpAddress(rs.getRosTcpAddress());
+		}
 	}
 
 	private void transferReceiver(MRSServerSession session, MessageState state) {

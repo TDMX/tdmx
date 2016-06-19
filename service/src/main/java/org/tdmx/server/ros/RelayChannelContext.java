@@ -42,9 +42,9 @@ import org.tdmx.lib.zone.domain.Zone;
  * FETCH - we have a data fetching job scheduled. Only one data fetching job can be scheduled at one time.
  * 
  * When FlowControl is "closed" by the receiving end at the sending end ( ROS receives FC-closed on relay out - clears
- * all msg in queued jobs ), then the FlowQuota relay status is changed at the sender, so all WS ros clients which
- * initiate relaying will refrain. This will cause the ROS session at the sender to become idle if the FC-closed
- * situation is longer than the idle timeout.
+ * all msg in queued jobs ), then the FlowQuota relay status is changed at the sender. The WS ros clients which initiate
+ * relaying will not refrain from sending relay data to the ROS session, which will not queue these.The ROS session will
+ * only time-out if the MOS agent stops sending or send buffer quota is exceede.
  * 
  * When FlowControl is "opened" by the receiving end at the sending end ( MRS receives relay in of FC-open ), then the
  * MRS initiates a "relayFlowControl" to the ROS which transitions the IDLE ROS session to re-evaluate if CA/CDS
@@ -73,6 +73,7 @@ public class RelayChannelContext {
 
 	// internal
 	private RelayContextState state = RelayContextState.IDLE;
+	private FlowControlStatus relayFlowStatus = FlowControlStatus.OPEN;
 
 	private LinkedList<RelayJobContext> scheduledJobs = new LinkedList<>();
 	private LinkedList<RelayJobContext> queuedJobs = new LinkedList<>();
@@ -159,7 +160,7 @@ public class RelayChannelContext {
 		RelayJobContext existingJob = getPendingJob(RelayJobType.Data, messageId);
 		if (existingJob == null) {
 			RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.Data, messageId);
-			queuedJobs.add(newCtx);
+			addPendingJob(newCtx);
 		}
 		return schedule(transition());
 	}
@@ -169,7 +170,7 @@ public class RelayChannelContext {
 		RelayJobContext existingJob = getPendingJob(RelayJobType.MetaData, channelId);
 		if (existingJob == null) {
 			RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.MetaData, channelId);
-			queuedJobs.add(newCtx);
+			addPendingJob(newCtx);
 		}
 		return schedule(transition());
 	}
@@ -179,7 +180,7 @@ public class RelayChannelContext {
 		RelayJobContext existingJob = getPendingJob(RelayJobType.MetaData, quotaId);
 		if (existingJob == null) {
 			RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.MetaData, quotaId);
-			queuedJobs.add(newCtx);
+			addPendingJob(newCtx);
 		}
 		return schedule(transition());
 	}
@@ -189,7 +190,7 @@ public class RelayChannelContext {
 		RelayJobContext existingJob = getPendingJob(RelayJobType.MetaData, channelId);
 		if (existingJob == null) {
 			RelayJobContext newCtx = new RelayJobContext(this, RelayJobType.MetaData, channelId);
-			queuedJobs.add(newCtx);
+			addPendingJob(newCtx);
 		}
 		return schedule(transition());
 	}
@@ -203,13 +204,18 @@ public class RelayChannelContext {
 	// -------------------------------------------------------------------------
 
 	private void handleFinish(RelayJobContext finishedJob) {
-		// if we finish a task and the state of flow control is now closed, we discard any queued job.
-		if (finishedJob.getFlowStatus() == FlowControlStatus.CLOSED) {
-			log.info("Skipping " + scheduledJobs.size() + " scheduled jobs due to flow control close.");
-			scheduledJobs.clear();
-			// we transition to idle state so if multiple data relay jobs concurrently finish we don't trigger
-			// a new fetch, since we don't track the flow control status when fetching.
-			state = RelayContextState.IDLE;
+		// we take the job's relay status and transpose this onto the relaychannelcontext
+		if (finishedJob.getFlowStatus() != null) {
+			setRelayFlowStatus(finishedJob.getFlowStatus());
+
+			// if we finish a task and the state of flow control is now closed, we discard any queued job.
+			if (getRelayFlowStatus() == FlowControlStatus.CLOSED) {
+				log.info("Skipping " + scheduledJobs.size() + " scheduled jobs due to flow control close.");
+				scheduledJobs.clear();
+				// we transition to idle state so if multiple data relay jobs concurrently finish we don't trigger
+				// a new fetch, since we don't track the flow control status when fetching.
+				state = RelayContextState.IDLE;
+			}
 		}
 
 		switch (state) {
@@ -320,7 +326,12 @@ public class RelayChannelContext {
 	 * @param ctx
 	 */
 	private void addPendingJob(RelayJobContext job) {
-		queuedJobs.add(job);
+		if (state == RelayContextState.IDLE && RelayJobType.Data == job.getType()) {
+			// If flow control is blocking relay to the destination, we cannot take on any new data to relay out.
+			log.debug("Ignoring relay message since relay flow is closed.");
+		} else {
+			queuedJobs.add(job);
+		}
 	}
 
 	/**
@@ -434,6 +445,14 @@ public class RelayChannelContext {
 
 	public void setState(RelayContextState state) {
 		this.state = state;
+	}
+
+	public FlowControlStatus getRelayFlowStatus() {
+		return relayFlowStatus;
+	}
+
+	public void setRelayFlowStatus(FlowControlStatus relayFlowStatus) {
+		this.relayFlowStatus = relayFlowStatus;
 	}
 
 	public MRSSessionHolder getMrsSession() {

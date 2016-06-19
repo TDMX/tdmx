@@ -389,9 +389,10 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 			}
 		}
 
-		// relay the FC-open receiver to sender
+		// relay the FC-open (destination side) or open FC (origin side)
 		if (c.getQuota().getProcessingState().getStatus() == ProcessingStatus.PENDING) {
 			if (ctx.getDirection() == RelayDirection.Backwards) {
+				// FC-open is relayed from destination to origin side
 				MRSSessionHolder sh = getSessionHolder(ctx);
 				if (sh.isValid()) {
 					// use the MRS to relay the FC-open to the sender side
@@ -438,11 +439,14 @@ public class RelayJobExecutionServiceImpl implements RelayJobExecutionService {
 							ctx.getDomain(), c.getQuota().getId(), error);
 				}
 			} else {
-				// it is an error to want to relay the FC-open from origin to destination
-				ProcessingState error = ProcessingState.error(ErrorCode.RelayFlowControlForwards.getErrorCode(),
-						ErrorCode.RelayFlowControlForwards.getErrorDescription());
+				// we "confirm" the handling of the FC-open on the origin side, by forcing us to relay pending meta data
+				// which takes us out of IDLE state
+				if (c.getQuota().getRelayStatus() != FlowControlStatus.OPEN) {
+					log.warn("Expected relay status to be open. " + c.getQuota() + " for Channel " + c);
+				}
+				job.setFlowStatus(c.getQuota().getRelayStatus());
 				relayDataService.updateChannelFlowControlProcessingState(ctx.getAccountZone(), ctx.getZone(),
-						ctx.getDomain(), c.getQuota().getId(), error);
+						ctx.getDomain(), c.getQuota().getId(), ProcessingState.none());
 			}
 
 		}
