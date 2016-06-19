@@ -82,9 +82,6 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
-import org.tdmx.lib.zone.domain.Channel;
-import org.tdmx.lib.zone.domain.Domain;
-import org.tdmx.lib.zone.domain.MessageState;
 import org.tdmx.lib.zone.domain.Zone;
 import org.tdmx.lib.zone.service.AddressService;
 import org.tdmx.lib.zone.service.AgentCredentialFactory;
@@ -96,7 +93,6 @@ import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.pcs.protobuf.Common.AttributeValue.AttributeId;
 import org.tdmx.server.ros.client.RelayClientService;
-import org.tdmx.server.ros.client.RelayStatus;
 import org.tdmx.server.tos.client.TransferClientService;
 import org.tdmx.server.tos.client.TransferStatus;
 import org.tdmx.server.ws.ErrorCode;
@@ -106,7 +102,7 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class MOSImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(MOSImplUnitTest.class);
@@ -344,10 +340,6 @@ public class MOSImplUnitTest {
 		chunks.add(EntropySource.getRandomBytes(2 * EnumUtils.MB));
 
 		authenticatedClientService.setAuthenticatedClient(uc.getPublicCert());
-
-		Mockito.when(mockRelayClientService.relayChannelMessage(Mockito.anyString(), Mockito.any(AccountZone.class),
-				Mockito.any(Zone.class), Mockito.any(Domain.class), Mockito.any(Channel.class),
-				Mockito.any(MessageState.class))).thenReturn(RelayStatus.success("ck", "rosTcpAddress"));
 
 		Submit req = new Submit();
 		req.setSessionId(UC_SESSION_ID);

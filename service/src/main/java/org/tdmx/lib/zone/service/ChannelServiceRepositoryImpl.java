@@ -640,7 +640,7 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 
 	@Override
 	@Transactional(value = "ZoneDB")
-	public FlowQuota relayInMessage(Zone zone, ChannelMessage msg) {
+	public FlowQuota relayMessage(Zone zone, ChannelMessage msg) {
 
 		// persist the message, READY state, no ProcessingState
 		create(msg);
@@ -946,6 +946,15 @@ public class ChannelServiceRepositoryImpl implements ChannelService {
 	public FlowQuota updateStatusFlowQuota(Long quotaId, ProcessingState newState) {
 		FlowQuota fc = channelDao.lock(quotaId);
 		fc.setProcessingState(newState);
+		return fc;
+	}
+
+	@Override
+	@Transactional(value = "ZoneDB")
+	public FlowQuota relayFlowControlOpen(Zone zone, Long quotaId) {
+		FlowQuota fc = channelDao.lock(quotaId);
+		fc.setRelayStatus(FlowControlStatus.OPEN);
+		fc.setProcessingState(ProcessingState.pending());
 		return fc;
 	}
 

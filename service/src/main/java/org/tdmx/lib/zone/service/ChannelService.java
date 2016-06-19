@@ -416,7 +416,17 @@ public interface ChannelService {
 	 *            detached ChannelMessage
 	 * @return the modified FlowQuota
 	 */
-	public FlowQuota relayInMessage(Zone zone, ChannelMessage msg);
+	public FlowQuota relayMessage(Zone zone, ChannelMessage msg);
+
+	/**
+	 * Relay a FC-open.
+	 * 
+	 * @param zone
+	 * @param quotaId
+	 *            id of the channel's FlowQuota.
+	 * @return the modified FlowQuota
+	 */
+	public FlowQuota relayFlowControlOpen(Zone zone, Long quotaId);
 
 	/**
 	 * Post-relay Message updates the FlowQuota of the channel. ChannelMessage is deleted, freeing used channel quota.

@@ -106,7 +106,7 @@ import org.tdmx.server.ws.session.WebServiceSessionFactory;
 import org.tdmx.server.ws.session.WebServiceSessionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class MDSImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(MDSImplUnitTest.class);
@@ -673,7 +673,7 @@ public class MDSImplUnitTest {
 
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
-			channelService.relayInMessage(zone, m);
+			channelService.relayMessage(zone, m);
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();
 		}

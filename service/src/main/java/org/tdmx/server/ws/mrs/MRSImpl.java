@@ -39,6 +39,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.chunk.domain.Chunk;
 import org.tdmx.lib.chunk.service.ChunkService;
 import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.common.domain.ProcessingStatus;
 import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
 import org.tdmx.lib.zone.domain.AgentCredentialType;
 import org.tdmx.lib.zone.domain.Channel;
@@ -161,10 +162,18 @@ public class MRSImpl implements MRS {
 		MRSServerSession session = authorizedSessionService.getAuthorizedSession();
 		Channel sessionChannel = session.getChannel();
 
-		// TODO #113: use channel service to change the relay state to open, so ROS can continue
+		if (Flowcontrolstatus.OPEN != fcStatus) {
+			// TODO #112: wrong protocol incident other SP
+			ErrorCode.setError(ErrorCode.RelayFlowControlBackwardsClosed, response);
+			return;
+		}
+		// use channel service to change the relay state to open, so ROS can continue
+		FlowQuota quota = channelService.relayFlowControlOpen(session.getZone(), sessionChannel.getQuota().getId());
 		// - check what ROS does once a FC-closed is returned synchronously from the MRS destination
 		// - don't send any new messages until FC-open relayed(transferred) from MRS(origin) to ROS
-		relayFCOpenWithRetry(session, sessionChannel, sessionChannel.getQuota());
+		if (ProcessingStatus.PENDING == quota.getProcessingState().getStatus()) {
+			relayFCOpenWithRetry(session, sessionChannel, sessionChannel.getQuota());
+		}
 		response.setSuccess(true);
 	}
 
@@ -441,7 +450,7 @@ public class MRSImpl implements MRS {
 
 	private void finishMessage(MRSServerSession session, MessageRelayContext mrc, RelayResponse response) {
 		// persist the message itself only after all chunks are received, on receipt of last chunk
-		FlowQuota afterSendQuota = channelService.relayInMessage(session.getZone(), mrc.getMsg());
+		FlowQuota afterSendQuota = channelService.relayMessage(session.getZone(), mrc.getMsg());
 		response.setRelayStatus(d2a.mapFlowControlStatus(afterSendQuota.getRelayStatus()));
 		// fast transfer to MDS
 		transferReceiver(session, mrc.getMsg().getState());
