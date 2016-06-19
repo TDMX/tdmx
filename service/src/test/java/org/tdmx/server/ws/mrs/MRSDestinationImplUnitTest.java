@@ -69,6 +69,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 import org.tdmx.lib.zone.domain.EndpointPermission;
@@ -254,6 +255,25 @@ public class MRSDestinationImplUnitTest {
 		dest.setServicename(newService);
 		channel.setDestination(dest);
 
+		// assert that a CA doesn't exist beforehand.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getDestination().setLocalName(address2.getLocalName());
+			casc.getDestination().setDomainName(domain2.getDomainName());
+			casc.getDestination().setServiceName(newService);
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(0, channels.size());
+
+			// test that the temp channel is deleted
+			assertNull(channelService.findByTemporaryChannel(zone, domain2, a2d.mapChannelOrigin(origin),
+					a2d.mapChannelDestination(dest)));
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
 		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
 		try {
 			TemporaryChannel tc = new TemporaryChannel(domain2, a2d.mapChannelOrigin(origin),
@@ -301,13 +321,13 @@ public class MRSDestinationImplUnitTest {
 			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
 			assertEquals(1, channels.size());
 			// test we have a reqSend
-			org.tdmx.lib.zone.domain.Channel c = channels.get(0);
-			assertNull(c.getAuthorization().getSendAuthorization());
-			assertNull(c.getAuthorization().getRecvAuthorization());
-			assertNull(c.getAuthorization().getReqRecvAuthorization());
-			assertNotNull(c.getAuthorization().getReqSendAuthorization());
+			org.tdmx.lib.zone.domain.ChannelAuthorization ca = channels.get(0).getAuthorization();
+			assertNull(ca.getSendAuthorization());
+			assertNull(ca.getRecvAuthorization());
+			assertNull(ca.getReqRecvAuthorization());
+			assertNotNull(ca.getReqSendAuthorization());
 			// and the permission is transferred
-			EndpointPermission epp = c.getAuthorization().getReqSendAuthorization();
+			EndpointPermission epp = ca.getReqSendAuthorization();
 			assertEquals(auth.getMaxPlaintextSizeBytes(), epp.getMaxPlaintextSizeBytes());
 			assertEquals(auth.getAdministratorsignature().getSignaturevalue().getSignature(),
 					epp.getSignature().getValue());
@@ -315,6 +335,90 @@ public class MRSDestinationImplUnitTest {
 			// test that the temp channel is deleted
 			assertNull(channelService.findByTemporaryChannel(zone, domain2, a2d.mapChannelOrigin(origin),
 					a2d.mapChannelDestination(dest)));
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+	}
+
+	@Test
+	public void testRelay_ChannelAuthorization_Update_SendSetAtOriginRelayedToDestination() {
+		// channel
+		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setDomain(domain1.getDomainName());
+		origin.setLocalname(address1.getLocalName());
+		channel.setOrigin(origin);
+
+		ChannelDestination dest = new ChannelDestination();
+		dest.setDomain(domain2.getDomainName());
+		dest.setLocalname(address2.getLocalName());
+		dest.setServicename(service2.getServiceName());
+		channel.setDestination(dest);
+
+		// assert that a CA exists beforehand.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getDestination().setLocalName(address2.getLocalName());
+			casc.getDestination().setDomainName(domain2.getDomainName());
+			casc.getDestination().setServiceName(service2.getServiceName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			ChannelAuthorization ca = channels.get(0).getAuthorization();
+			assertNotNull(ca);
+			assertNotNull(ca.getSendAuthorization());
+			assertNotNull(ca.getRecvAuthorization());
+			assertNull(ca.getReqSendAuthorization());
+			assertNull(ca.getReqRecvAuthorization());
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		// we just use DAC2 to be a different client than
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
+
+		Permission auth = new Permission();
+		// permission created by origin DAC
+		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		auth.setPermission(Grant.ALLOW);
+		SignatureUtils.createEndpointPermissionSignature(dac1, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				auth);
+		// signer is origin, so reqSend at destination
+
+		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+
+		req.setPermission(auth);
+
+		RelayResponse response = mrs.relay(req);
+		assertSuccess(response);
+
+		// check the CA exists and reqSend is set.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain2.getDomainName());
+			casc.getDestination().setDomainName(domain2.getDomainName());
+			casc.getDestination().setLocalName(address2.getLocalName());
+			casc.getDestination().setServiceName(service2.getServiceName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			// test we have a reqSend
+			org.tdmx.lib.zone.domain.ChannelAuthorization ca = channels.get(0).getAuthorization();
+			assertNotNull(ca.getSendAuthorization());
+			assertNotNull(ca.getRecvAuthorization());
+			assertNull(ca.getReqRecvAuthorization());
+			assertNotNull(ca.getReqSendAuthorization());
+			// and the permission is transferred
+			EndpointPermission epp = ca.getReqSendAuthorization();
+			assertEquals(auth.getMaxPlaintextSizeBytes(), epp.getMaxPlaintextSizeBytes());
+			assertEquals(auth.getAdministratorsignature().getSignaturevalue().getSignature(),
+					epp.getSignature().getValue());
 
 		} finally {
 			zonePartitionIdProvider.clearPartitionId();

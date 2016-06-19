@@ -65,6 +65,7 @@ import org.tdmx.lib.control.domain.TestDataGeneratorInput;
 import org.tdmx.lib.control.domain.TestDataGeneratorOutput;
 import org.tdmx.lib.control.job.TestDataGenerator;
 import org.tdmx.lib.control.service.MockDatabasePartitionInstaller;
+import org.tdmx.lib.zone.domain.ChannelAuthorization;
 import org.tdmx.lib.zone.domain.ChannelAuthorizationSearchCriteria;
 import org.tdmx.lib.zone.domain.FlowControlStatus;
 import org.tdmx.lib.zone.domain.FlowQuota;
@@ -326,6 +327,80 @@ public class MRSOriginImplUnitTest {
 			zonePartitionIdProvider.clearPartitionId();
 		}
 		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
+	}
+
+	@Test
+	public void testRelay_ChannelAuthorization_Update_RecvSetAtDestinationRelayedToOrigin() {
+		authenticatedClientService.setAuthenticatedClient(zac.getPublicCert());
+
+		Channel channel = new Channel();
+		ChannelEndpoint origin = new ChannelEndpoint();
+		origin.setLocalname(address1.getLocalName());
+		origin.setDomain(domain1.getDomainName());
+		channel.setOrigin(origin);
+
+		ChannelDestination dest = new ChannelDestination();
+		dest.setLocalname(address2.getLocalName());
+		dest.setDomain(domain2.getDomainName());
+		dest.setServicename(service2.getServiceName());
+		channel.setDestination(dest);
+
+		// assert that a CA exists beforehand.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getDestination().setLocalName(address2.getLocalName());
+			casc.getDestination().setDomainName(domain2.getDomainName());
+			casc.getDestination().setServiceName(service2.getServiceName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			ChannelAuthorization ca = channels.get(0).getAuthorization();
+			assertNotNull(ca);
+			assertNotNull(ca.getSendAuthorization());
+			assertNotNull(ca.getRecvAuthorization());
+			assertNull(ca.getReqSendAuthorization());
+			assertNull(ca.getReqRecvAuthorization());
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+
+		Permission auth = new Permission();
+		auth.setMaxPlaintextSizeBytes(ZoneFacade.ONE_GB);
+		auth.setPermission(Grant.ALLOW);
+		SignatureUtils.createEndpointPermissionSignature(dac2, SignatureAlgorithm.SHA_256_RSA, new Date(), channel,
+				auth);
+		// signer is destination, so reqRecv at origin
+
+		Relay req = new Relay();
+		req.setSessionId(ZAC_SESSION_ID);
+		req.setPermission(auth);
+
+		RelayResponse response = mrs.relay(req);
+		assertSuccess(response);
+
+		// check CA exists and that the authorization is set as a reqRecv by dac2.
+		zonePartitionIdProvider.setPartitionId(accountZone.getZonePartitionId());
+		try {
+			ChannelAuthorizationSearchCriteria casc = new ChannelAuthorizationSearchCriteria(new PageSpecifier(0, 1));
+			casc.setDomainName(domain1.getDomainName());
+			casc.getDestination().setLocalName(address2.getLocalName());
+			casc.getDestination().setDomainName(domain2.getDomainName());
+			casc.getDestination().setServiceName(service2.getServiceName());
+			List<org.tdmx.lib.zone.domain.Channel> channels = channelService.search(zone, casc);
+			assertEquals(1, channels.size());
+			org.tdmx.lib.zone.domain.ChannelAuthorization ca = channels.get(0).getAuthorization();
+			assertNotNull(ca.getSendAuthorization());
+			assertNotNull(ca.getRecvAuthorization());
+			assertNotNull(ca.getReqRecvAuthorization()); // updated by dest
+			assertNull(ca.getReqSendAuthorization());
+
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
+		Mockito.verifyZeroInteractions(mockRelayClientService);
+		Mockito.verifyZeroInteractions(mockTransferObjectService);
 	}
 
 	@Test
