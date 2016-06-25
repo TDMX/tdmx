@@ -39,14 +39,11 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.control.domain.Lock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class LockServiceRepositoryUnitTest {
 
 	@Autowired
 	private LockService service;
-
-	// @Autowired
-	// private AuthorizedAgentDao dao;
 
 	private String lockName;
 

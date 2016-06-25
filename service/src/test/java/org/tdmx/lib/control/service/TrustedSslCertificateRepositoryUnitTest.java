@@ -38,7 +38,7 @@ import org.tdmx.lib.control.domain.TrustedSslCertificate;
 import org.tdmx.lib.control.domain.TrustedSslCertificateFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class TrustedSslCertificateRepositoryUnitTest {
 
 	@Autowired

@@ -28,10 +28,23 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class StringUtils {
+
+	static String LINEFEED = "\n";
+
+	static {
+		try {
+			String lf = (String) System.getProperty("line.separator");
+			LINEFEED = (lf == null) ? "\n" : lf;
+		} catch (Throwable t) {
+			// Doh.... whatever; most likely SecurityException
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -42,6 +55,10 @@ public class StringUtils {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public static String getLF() {
+		return LINEFEED;
+	}
 
 	public static boolean hasText(String text) {
 		return text != null && text.length() > 0;
@@ -199,6 +216,38 @@ public class StringUtils {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Return a property map representation of a CSV.
+	 * 
+	 * @param csv
+	 * @return
+	 */
+	public static Map<String, String> getPropertyMap(String csv) {
+		List<String> params = StringUtils.convertCsvToStringList(csv);
+		Map<String, String> paramMap = new HashMap<>();
+		for (String p : params) {
+			int splitIdx = p.indexOf("=");
+			if (splitIdx > 0) {
+				paramMap.put(p.substring(0, splitIdx), p.substring(splitIdx + 1));
+			}
+		}
+		return paramMap;
+	}
+
+	/**
+	 * Convert a PropertyMap into a CSV
+	 * 
+	 * @param paramMap
+	 * @return
+	 */
+	public static String convertPropertyMapToCSV(Map<String, String> paramMap) {
+		List<String> params = new ArrayList<>(paramMap.size());
+		for (Map.Entry<String, String> entry : paramMap.entrySet()) {
+			params.add(entry.getKey() + "=" + entry.getValue());
+		}
+		return convertStringListToCsv(params);
 	}
 
 	public static String getExceptionSummary(Exception e) {

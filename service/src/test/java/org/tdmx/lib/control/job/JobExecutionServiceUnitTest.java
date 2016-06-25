@@ -18,47 +18,37 @@
  */
 package org.tdmx.lib.control.job;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Named;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
-import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.domain.ControlJobType;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.ControlJobService;
-import org.tdmx.lib.control.service.UniqueIdService;
-import org.tdmx.service.control.task.dao.ExceptionType;
-import org.tdmx.service.control.task.dao.TestTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class JobExecutionServiceUnitTest {
 
 	@Autowired
-	@Qualifier("tdmx.lib.control.JobIdService")
-	private UniqueIdService jobIdService;
-	@Autowired
 	private ControlJobService jobService;
 	@Autowired
-	private JobScheduler jobScheduler;
-	@Autowired
-	private JobExceptionConverter exceptionConverter;
+	@Named("tdmx.lib.control.job.WaitJobExecutor")
+	private JobExecutor jobExecutor;
 
-	private JobConverter<TestTask> testJobConverter;
 	private JobExecutionProcessImpl service;
 	private String segmentName = "default";
 
@@ -69,23 +59,11 @@ public class JobExecutionServiceUnitTest {
 		s.setSegmentName(segmentName);
 
 		service = new JobExecutionProcessImpl();
-		service.setJobIdService(jobIdService);
 		service.setJobService(jobService);
+		service.setJobExecutor(jobExecutor);
 		service.setFastTriggerDelayMillis(100);
 		service.setLongPollIntervalSec(1);
 		service.setMaxConcurrentJobs(5);
-
-		testJobConverter = new TestJobConverterImpl();
-		JobExecutor<TestTask> je = new TestJobExecutorImpl();
-
-		List<JobConverter<?>> jcL = new ArrayList<>();
-		jcL.add(testJobConverter);
-		List<JobExecutor<?>> jeL = new ArrayList<>();
-		jeL.add(je);
-
-		service.setJobConverterList(jcL);
-		service.setJobExecutorList(jeL);
-		service.setExceptionConverter(exceptionConverter);
 
 		service.init();
 
@@ -97,7 +75,8 @@ public class JobExecutionServiceUnitTest {
 		service.stop();
 
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 999));
-		sc.setJobType(TestTask.class.getName());
+		sc.setSegment(segmentName);
+		sc.setJobType(ControlJobType.WAIT);
 		List<ControlJob> jobs = jobService.search(sc);
 		for (ControlJob j : jobs) {
 			jobService.delete(j);
@@ -106,90 +85,44 @@ public class JobExecutionServiceUnitTest {
 
 	@Test
 	public void testAutoWire() throws Exception {
-		assertNotNull(jobIdService);
 		assertNotNull(jobService);
-		assertNotNull(jobScheduler);
-		assertNotNull(exceptionConverter);
 	}
 
 	@Test
 	public void testExecute_SingleJob_Success() throws Exception {
-		TestTask t = new TestTask();
-		t.setProcessTimeMs(0);
+		ControlJob j = ControlJob.createWaitJob(segmentName).scheduleNow();
+		assertNotNull(j.getScheduledTime());
+		assertNull(j.getEndTimestamp());
+		assertNull(j.getStartTimestamp());
 
-		Job j = service.createJob(t);
-		jobScheduler.scheduleImmediate(segmentName, j);
+		jobService.createOrUpdate(j);
+		assertNotNull(j.getId());
 
+		// give it time to execute, it's deleted afterwards
 		Thread.sleep(2000);
 
-		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 999));
-		sc.setJobId(j.getJobId());
-		List<ControlJob> cjL = jobService.search(sc);
-		assertNotNull(cjL);
-		assertEquals(1, cjL.size());
-		ControlJob cj = cjL.get(0);
-		assertEquals(ControlJobStatus.OK, cj.getStatus());
-		assertNotNull(cj.getJob().getEndTimestamp());
-		assertNull(cj.getJob().getException());
-		TestTask tt = testJobConverter.getData(cj.getJob());
-		assertEquals("" + cj.getId(), tt.getProcessMessage());
-	}
-
-	@Test
-	public void testExecute_SingleJob_Exception() throws Exception {
-		TestTask t = new TestTask();
-		t.setProcessTimeMs(0);
-		t.setProcessMessage("EXCEPTION THROWN!!!");
-
-		Job j = service.createJob(t);
-		jobScheduler.scheduleImmediate(segmentName, j);
-
-		Thread.sleep(2000);
-
-		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 999));
-		sc.setJobId(j.getJobId());
-		List<ControlJob> cjL = jobService.search(sc);
-		assertNotNull(cjL);
-		assertEquals(1, cjL.size());
-		ControlJob cj = cjL.get(0);
-		assertEquals(ControlJobStatus.ERR, cj.getStatus());
-		assertNotNull(cj.getJob().getEndTimestamp());
-		assertNotNull(cj.getJob().getException());
-		ExceptionType et = exceptionConverter.getException(cj.getJob());
-		assertNotNull(et);
-
-		assertEquals("EXCEPTION THROWN!!!", et.getMessage());
+		ControlJob storedJob = jobService.findById(j.getId());
+		assertNull(storedJob);
 	}
 
 	@Test
 	public void testExecute_MultipleJob_Success() throws Exception {
 		int NUM = 100;
 
-		TestTask t = new TestTask();
-		t.setProcessTimeMs(0);
-
+		ControlJob[] jobs = new ControlJob[NUM];
 		for (int i = 0; i < NUM; i++) {
-			Job j = service.createJob(t);
-			jobScheduler.scheduleImmediate(segmentName, j);
+			jobs[i] = ControlJob.createWaitJob(segmentName).scheduleNow();
+
+			jobService.createOrUpdate(jobs[i]);
+			assertNotNull(jobs[i].getId());
 		}
 
 		// 5 at a time @ 0.1s
 		Thread.sleep(5000);
 
-		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 999));
-		sc.setJobType(TestTask.class.getName());
-		List<ControlJob> cjL = jobService.search(sc);
-		assertNotNull(cjL);
-		assertEquals(NUM, cjL.size());
-
 		for (int i = 0; i < NUM; i++) {
-			ControlJob cj = cjL.get(i);
-			assertEquals(ControlJobStatus.OK, cj.getStatus());
-			assertNotNull(cj.getJob().getEndTimestamp());
-			assertNull(cj.getJob().getException());
-			// test that it's marshalled after processing
-			TestTask tt = testJobConverter.getData(cj.getJob());
-			assertEquals("" + cj.getId(), tt.getProcessMessage());
+			ControlJob storedJob = jobService.findById(jobs[i].getId());
+			assertNull(storedJob);
 		}
 	}
 

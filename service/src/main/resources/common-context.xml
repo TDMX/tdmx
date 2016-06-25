@@ -21,17 +21,16 @@
 	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/chunk/service-context.xml"/>
 	
-	<!-- JOBS -->
-	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
+	<!-- SERVER -->
+	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
+	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
+	
+	<!-- JOB CONFG -->
 	<import resource="classpath:/org/tdmx/server/job/container-context.xml"/>
 
 	<!-- CACHE NOTIFICATION CONFIG -->
 	<import resource="classpath:/org/tdmx/server/cache/cache-context.xml"/>
 
-	<!-- SERVER -->
-	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
-	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>
-	
 	<!-- TOS CONFIG -->
 	<import resource="classpath:/org/tdmx/server/tos/server-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/tos/container-context.xml"/>

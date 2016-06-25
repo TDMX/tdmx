@@ -41,8 +41,7 @@ public class AccountZoneResource {
 		ZONEAPEX("zoneApex"),
 		SEGMENT("segment"),
 		ZONEPARTITIONID("zonePartitionId"),
-		ACCESSSTATUS("accessStatus"),
-		JOBID("jobId"),;
+		ACCESSSTATUS("accessStatus");
 
 		private final String n;
 
@@ -68,8 +67,6 @@ public class AccountZoneResource {
 	private String zonePartitionId;
 	@CliAttribute(order = 5)
 	private String accessStatus;
-	@CliAttribute(order = 6)
-	private Long jobId;
 
 	public static AccountZone mapTo(AccountZoneResource az) {
 		if (az == null) {
@@ -83,7 +80,6 @@ public class AccountZoneResource {
 		a.setSegment(az.getSegment());
 		a.setZonePartitionId(az.getZonePartitionId());
 
-		a.setJobId(az.getJobId());
 		a.setStatus(EnumUtils.mapTo(AccountZoneStatus.class, az.getAccessStatus()));
 		return a;
 	}
@@ -100,7 +96,6 @@ public class AccountZoneResource {
 		a.setSegment(az.getSegment());
 		a.setZonePartitionId(az.getZonePartitionId());
 
-		a.setJobId(az.getJobId());
 		a.setAccessStatus(EnumUtils.mapToString(az.getStatus()));
 		return a;
 	}
@@ -151,14 +146,6 @@ public class AccountZoneResource {
 
 	public void setAccessStatus(String accessStatus) {
 		this.accessStatus = accessStatus;
-	}
-
-	public Long getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(Long jobId) {
-		this.jobId = jobId;
 	}
 
 }

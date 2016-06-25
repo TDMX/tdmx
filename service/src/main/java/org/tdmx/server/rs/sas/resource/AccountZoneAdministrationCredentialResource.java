@@ -41,8 +41,7 @@ public class AccountZoneAdministrationCredentialResource {
 		ZONEAPEX("zoneApex"),
 		FINGERPRINT("fingerprint"),
 		CERTIFICATEPEM("certificatePem"),
-		STATUS("status"),
-		JOBID("jobId");
+		STATUS("status");
 
 		private final String n;
 
@@ -68,8 +67,6 @@ public class AccountZoneAdministrationCredentialResource {
 	private String certificatePem;
 	@CliAttribute(order = 4)
 	private String status;
-	@CliAttribute(order = 5)
-	private Long jobId;
 
 	public static AccountZoneAdministrationCredential mapTo(AccountZoneAdministrationCredentialResource zac) {
 		if (zac == null) {
@@ -83,7 +80,6 @@ public class AccountZoneAdministrationCredentialResource {
 		a.setFingerprint(zac.getFingerprint());
 		a.setCertificateChainPem(zac.getCertificatePem());
 		a.setCredentialStatus(EnumUtils.mapTo(AccountZoneAdministrationCredentialStatus.class, zac.getStatus()));
-		a.setJobId(zac.getJobId());
 		return a;
 	}
 
@@ -99,7 +95,6 @@ public class AccountZoneAdministrationCredentialResource {
 		a.setFingerprint(zac.getFingerprint());
 		a.setCertificatePem(zac.getCertificateChainPem());
 		a.setStatus(EnumUtils.mapToString(zac.getCredentialStatus()));
-		a.setJobId(zac.getJobId());
 		return a;
 	}
 
@@ -141,14 +136,6 @@ public class AccountZoneAdministrationCredentialResource {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	public Long getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(Long jobId) {
-		this.jobId = jobId;
 	}
 
 	public String getFingerprint() {

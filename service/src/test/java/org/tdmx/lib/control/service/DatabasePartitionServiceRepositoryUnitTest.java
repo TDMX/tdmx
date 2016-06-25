@@ -41,7 +41,7 @@ import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 import org.tdmx.lib.control.domain.DatabaseType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class DatabasePartitionServiceRepositoryUnitTest {
 
 	@Autowired

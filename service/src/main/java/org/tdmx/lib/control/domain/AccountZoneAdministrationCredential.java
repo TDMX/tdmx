@@ -83,13 +83,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Transient
 	private PKIXCertificate[] certificateChain;
 
-	/**
-	 * If a Job is pending on the Account's ZoneCredential (like check/setup ) then this is the link to the jobId. The
-	 * Job is responsible to remove this record once it has completed.
-	 */
-	@Column
-	private Long jobId;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -245,14 +238,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChain = null;
 		this.certificateChainPem = certificateChainPem;
-	}
-
-	public Long getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(Long jobId) {
-		this.jobId = jobId;
 	}
 
 }

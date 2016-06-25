@@ -41,7 +41,7 @@ import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.CredentialFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class AccountZoneServiceRepositoryUnitTest {
 
 	@Autowired

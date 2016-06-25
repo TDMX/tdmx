@@ -27,7 +27,6 @@ import javax.persistence.LockModeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.ControlJobDao;
 import org.tdmx.lib.control.domain.ControlJob;
@@ -67,16 +66,9 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 		if (job == null) {
 			throw new IllegalArgumentException("missing job entry");
 		}
-		if (job.getJob() == null) {
-			throw new IllegalArgumentException("missing job");
-		}
-		if (!StringUtils.hasText(job.getJob().getJobId())) {
-			throw new IllegalArgumentException("missing jobId");
-		}
-
 		if (job.getId() != null) {
-			ControlJob storedAccount = getControlJobDao().loadById(job.getId());
-			if (storedAccount != null) {
+			ControlJob storedJob = getControlJobDao().loadById(job.getId());
+			if (storedJob != null) {
 				getControlJobDao().merge(job);
 			} else {
 				log.warn("Unable to find ControlJob with id " + job.getId());
@@ -84,6 +76,16 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 		} else {
 			getControlJobDao().persist(job);
 		}
+	}
+
+	@Override
+	@Transactional(value = "ControlDB")
+	public ControlJob continueJob(Long id) {
+		ControlJob storedJob = getControlJobDao().loadById(id);
+		if (storedJob != null) {
+			storedJob.setScheduledTime(new Date());
+		}
+		return storedJob;
 	}
 
 	@Override
@@ -104,30 +106,19 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 	}
 
 	@Override
-	@Transactional(value = "ControlDB", readOnly = true)
-	public ControlJob findByJobId(String jobId) {
-		if (!StringUtils.hasText(jobId)) {
-			throw new IllegalArgumentException("missing jobId");
-		}
-		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 1));
-		sc.setJobId(jobId);
-		List<ControlJob> jobs = getControlJobDao().fetch(sc, LockModeType.NONE);
-		return jobs.isEmpty() ? null : jobs.get(0);
-	}
-
-	@Override
 	@Transactional(value = "ControlDB")
 	public List<ControlJob> reserve(String segment, int maxJobs) {
 		if (segment == null) {
 			throw new IllegalArgumentException("Missing segment.");
 		}
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, maxJobs));
-		sc.setStatus(ControlJobStatus.NEW);
+		// we don't care what status, NEW or CON
 		sc.setSegment(segment);
 		sc.setScheduledTimeBefore(new Date());
 		List<ControlJob> result = getControlJobDao().fetch(sc, LockModeType.PESSIMISTIC_WRITE);
 		for (ControlJob e : result) {
 			e.setStatus(ControlJobStatus.RUN);
+			e.setScheduledTime(null);
 		}
 		// we rely on the transaction finishing on exit and persisting the data without us calling dao explicitly
 		// later the caller shall call createOrUpdate to persist further job changes after running the job.

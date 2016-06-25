@@ -37,9 +37,6 @@
 	<import resource="classpath:/org/tdmx/lib/zone/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/lib/chunk/service-context.xml"/>
 
-	<!-- JOB SPRING CONFIG -->
-	<import resource="classpath:/org/tdmx/lib/control/job-context.xml"/>
-
 	<!-- SERVICE CONFIG -->
 	<import resource="classpath:/org/tdmx/server/service-context.xml"/>
 	<import resource="classpath:/org/tdmx/server/cli/service-context.xml"/>

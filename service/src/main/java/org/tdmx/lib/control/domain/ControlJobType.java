@@ -16,13 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+package org.tdmx.lib.control.domain;
 
-import org.tdmx.lib.control.domain.ControlJob;
+public enum ControlJobType {
 
-public interface MockJobScheduler extends JobScheduler {
+	TRANSFER_ZONE,
 
-	public ControlJob getLastImmediateScheduledJob();
+	CLONE_ZONE,
 
-	public void clearLastImmediateScheduledJob();
+	ACCESS_ZONE,
+
+	INVALIDATE_CACHE,
+
+	WAIT,;
+
+	public static final int MAX_JOBTYPE_LEN = 16;
 }

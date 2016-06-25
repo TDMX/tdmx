@@ -35,7 +35,7 @@ import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.domain.DnsResolverGroupFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class DnsResolverGroupRepositoryUnitTest {
 
 	@Autowired

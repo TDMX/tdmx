@@ -30,9 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.common.domain.ProcessingState;
+import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
@@ -41,7 +41,6 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCrit
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
-import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 import org.tdmx.lib.control.domain.DatabaseType;
@@ -49,11 +48,10 @@ import org.tdmx.lib.control.domain.DnsResolverGroup;
 import org.tdmx.lib.control.domain.PartitionControlServer;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.TrustedSslCertificate;
-import org.tdmx.lib.control.job.JobFactory;
-import org.tdmx.lib.control.job.JobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
+import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
 import org.tdmx.lib.control.service.DnsResolverGroupService;
 import org.tdmx.lib.control.service.PartitionControlServerService;
@@ -76,8 +74,6 @@ import org.tdmx.server.rs.sas.resource.PartitionControlServerResource;
 import org.tdmx.server.rs.sas.resource.SSLCertificateResource;
 import org.tdmx.server.rs.sas.resource.SegmentCacheInvalidationStatusValue;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
-import org.tdmx.service.control.task.dao.ZACInstallTask;
-import org.tdmx.service.control.task.dao.ZoneInstallTask;
 
 public class SASImpl implements SAS {
 
@@ -131,8 +127,8 @@ public class SASImpl implements SAS {
 	private AccountZoneService accountZoneService;
 	private AccountZoneAdministrationCredentialService accountZoneCredentialService;
 	private ZoneDatabasePartitionAllocationService zonePartitionService;
-	private JobFactory jobFactory;
-	private JobScheduler jobScheduler;
+	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
+	private ControlJobService jobService;
 	private CacheInvalidationNotifier cacheInvalidater;
 
 	// -------------------------------------------------------------------------
@@ -717,16 +713,7 @@ public class SASImpl implements SAS {
 		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
 		accountZoneService.createOrUpdate(az);
 
-		// schedule the job to install the Zone in the ZoneDB partition.
-		ZoneInstallTask installTask = new ZoneInstallTask();
-		installTask.setAccountId(a.getId());
-		installTask.setAccountZoneId(az.getId());
-		Job installJob = getJobFactory().createJob(installTask);
-		ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
-
-		az.setJobId(j.getId());
-
-		accountZoneService.createOrUpdate(az);
+		// FIXME install the Zone in the ZoneDB partition.
 		return AccountZoneResource.mapFrom(az);
 	}
 
@@ -805,8 +792,6 @@ public class SASImpl implements SAS {
 		validateEquals(AccountZoneResource.FIELD.ID, az.getId(), updatedAz.getId());
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, az.getAccountId(), updatedAz.getAccountId());
 		validateEquals(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex(), updatedAz.getZoneApex());
-		validateEquals(AccountZoneResource.FIELD.JOBID, az.getJobId(), updatedAz.getJobId());
-		validateNotPresent(AccountZoneResource.FIELD.JOBID, updatedAz.getJobId());
 
 		// TODO change segment - job
 		// TODO change partitionId - store jobId
@@ -876,15 +861,7 @@ public class SASImpl implements SAS {
 		if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == azc.getCredentialStatus()) {
 
 			// schedule the job to check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
-			ZACInstallTask installTask = new ZACInstallTask();
-			installTask.setAccountId(a.getId());
-			installTask.setAccountZoneId(az.getId());
-			installTask.setFingerprint(azc.getFingerprint());
-			Job installJob = getJobFactory().createJob(installTask);
-			ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
-
-			azc.setJobId(j.getId());
-			accountZoneCredentialService.createOrUpdate(azc);
+			// FIXME only install if ZAC is ok.
 
 		}
 		return AccountZoneAdministrationCredentialResource.mapFrom(azc);
@@ -985,8 +962,6 @@ public class SASImpl implements SAS {
 				updatedAzc.getCertificateChainPem());
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, azc.getFingerprint(),
 				updatedAzc.getFingerprint());
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.JOBID, azc.getJobId(), updatedAzc.getJobId());
-		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.JOBID, updatedAzc.getJobId());
 
 		if (AccountZoneAdministrationCredentialStatus.DEINSTALLED == updatedAzc.getCredentialStatus()) {
 			if (AccountZoneAdministrationCredentialStatus.INSTALLED == azc.getCredentialStatus()) {
@@ -1002,15 +977,7 @@ public class SASImpl implements SAS {
 			validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
 					AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST, updatedAzc.getCredentialStatus());
 			// schedule the job to re-check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
-			ZACInstallTask installTask = new ZACInstallTask();
-			installTask.setAccountId(a.getId());
-			installTask.setAccountZoneId(az.getId());
-			installTask.setFingerprint(azc.getFingerprint());
-			Job installJob = getJobFactory().createJob(installTask);
-			ControlJob j = getJobScheduler().scheduleImmediate(az.getSegment(), installJob);
-
-			updatedAzc.setJobId(j.getId());
-			accountZoneCredentialService.createOrUpdate(updatedAzc);
+			// FIXME install directly
 
 		}
 		return AccountZoneAdministrationCredentialResource.mapFrom(updatedAzc);
@@ -1215,6 +1182,14 @@ public class SASImpl implements SAS {
 		this.zonePartitionService = zonePartitionService;
 	}
 
+	public ThreadLocalPartitionIdProvider getZonePartitionIdProvider() {
+		return zonePartitionIdProvider;
+	}
+
+	public void setZonePartitionIdProvider(ThreadLocalPartitionIdProvider zonePartitionIdProvider) {
+		this.zonePartitionIdProvider = zonePartitionIdProvider;
+	}
+
 	public AccountZoneService getAccountZoneService() {
 		return accountZoneService;
 	}
@@ -1232,28 +1207,20 @@ public class SASImpl implements SAS {
 		this.accountZoneCredentialService = accountZoneCredentialService;
 	}
 
-	public JobFactory getJobFactory() {
-		return jobFactory;
-	}
-
-	public void setJobFactory(JobFactory jobFactory) {
-		this.jobFactory = jobFactory;
-	}
-
-	public JobScheduler getJobScheduler() {
-		return jobScheduler;
-	}
-
-	public void setJobScheduler(JobScheduler jobScheduler) {
-		this.jobScheduler = jobScheduler;
-	}
-
 	public CacheInvalidationNotifier getCacheInvalidater() {
 		return cacheInvalidater;
 	}
 
 	public void setCacheInvalidater(CacheInvalidationNotifier cacheInvalidater) {
 		this.cacheInvalidater = cacheInvalidater;
+	}
+
+	public ControlJobService getJobService() {
+		return jobService;
+	}
+
+	public void setJobService(ControlJobService jobService) {
+		this.jobService = jobService;
 	}
 
 }

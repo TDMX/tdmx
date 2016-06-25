@@ -37,12 +37,11 @@ import org.tdmx.client.crypto.converters.ByteArray;
 import org.tdmx.client.crypto.entropy.EntropySource;
 import org.tdmx.client.crypto.scheme.IntegratedCryptoScheme;
 import org.tdmx.lib.chunk.domain.Chunk;
-import org.tdmx.lib.chunk.service.ChunkService;
 import org.tdmx.lib.zone.domain.AgentSignature;
 import org.tdmx.lib.zone.domain.ChannelMessage;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class ChunkServiceRepositoryUnitTest {
 
 	@Autowired

@@ -36,7 +36,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.SegmentFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class SegmentRepositoryUnitTest {
 
 	@Autowired

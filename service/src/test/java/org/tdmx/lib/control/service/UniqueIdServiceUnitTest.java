@@ -30,11 +30,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class UniqueIdServiceUnitTest {
 
 	@Autowired
-	@Qualifier("tdmx.lib.control.JobIdService")
+	@Qualifier("tdmx.lib.control.AccountIdService")
 	private UniqueIdService service;
 
 	@Test

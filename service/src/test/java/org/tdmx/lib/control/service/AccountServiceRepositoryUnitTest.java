@@ -39,9 +39,7 @@ import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-// @TransactionConfiguration(transactionManager="tdmx.lib.control.TransactionManager")
-// @Transactional("ControlDB")
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class AccountServiceRepositoryUnitTest {
 
 	@Autowired

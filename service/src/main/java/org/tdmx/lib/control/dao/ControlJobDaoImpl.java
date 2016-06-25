@@ -84,20 +84,20 @@ public class ControlJobDaoImpl implements ControlJobDao {
 			BooleanExpression e = controlJob.status.eq(criteria.getStatus());
 			where = where != null ? where.and(e) : e;
 		}
+		if (criteria.getJobType() != null) {
+			BooleanExpression e = controlJob.type.eq(criteria.getJobType());
+			where = where != null ? where.and(e) : e;
+		}
 		if (StringUtils.hasText(criteria.getSegment())) {
 			BooleanExpression e = controlJob.segment.eq(criteria.getSegment());
 			where = where != null ? where.and(e) : e;
 		}
+		if (criteria.getOwningEntityId() != null) {
+			BooleanExpression e = controlJob.owningEntityId.eq(criteria.getOwningEntityId());
+			where = where != null ? where.and(e) : e;
+		}
 		if (criteria.getScheduledTimeBefore() != null) { // <=
 			BooleanExpression e = controlJob.scheduledTime.loe(criteria.getScheduledTimeBefore());
-			where = where != null ? where.and(e) : e;
-		}
-		if (StringUtils.hasText(criteria.getJobType())) {
-			BooleanExpression e = controlJob.job.type.eq(criteria.getJobType());
-			where = where != null ? where.and(e) : e;
-		}
-		if (StringUtils.hasText(criteria.getJobId())) {
-			BooleanExpression e = controlJob.job.jobId.eq(criteria.getJobId());
 			where = where != null ? where.and(e) : e;
 		}
 

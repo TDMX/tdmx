@@ -47,7 +47,7 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCrit
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 	@Autowired

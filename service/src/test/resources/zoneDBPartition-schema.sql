@@ -63,7 +63,6 @@
     create table AccountZone (
         id bigint not null,
         accountId varchar(16) not null,
-        jobId bigint,
         segment varchar(64) not null,
         status varchar(16) not null,
         zoneApex varchar(255) not null,
@@ -78,7 +77,6 @@
         certificateChainPem varchar(12000) not null,
         credentialStatus varchar(32) not null,
         fingerprint varchar(64) not null,
-        jobId bigint,
         zoneApex varchar(255) not null,
         primary key (id),
         unique (fingerprint)
@@ -207,17 +205,17 @@
 
     create table ControlJob (
         id bigint not null,
-        data varbinary(16000) not null,
+        data varchar(16000),
         endTimestamp timestamp,
-        exception varbinary(16000),
-        jobId varchar(64) not null,
-        startTimestamp timestamp,
-        type varchar(128) not null,
-        scheduledTime timestamp not null,
+        exception varchar(16000),
+        owningEntityId bigint,
+        parentJobId bigint,
+        scheduledTime timestamp,
         segment varchar(64) not null,
+        startTimestamp timestamp,
         status varchar(4) not null,
-        primary key (id),
-        unique (jobId)
+        type varchar(16) not null,
+        primary key (id)
     );
 
     create table DatabasePartition (

@@ -38,7 +38,7 @@ import org.tdmx.lib.control.domain.DnsDomainZone;
 import org.tdmx.lib.control.domain.DnsDomainZoneFacade;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class DnsDomainZoneRepositoryUnitTest {
 
 	@Autowired

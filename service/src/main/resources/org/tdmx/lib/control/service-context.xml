@@ -154,6 +154,40 @@
 
 
 	<!-- NON TRANSACTIONAL HIGHER SERVICES -->
+
+
+	<!-- JOBS -->
+	<bean id="tdmx.lib.control.job.WaitJobExecutor"	class="org.tdmx.lib.control.job.impl.WaitJobExecutorImpl">
+	</bean>
+
+	<bean id="tdmx.lib.control.job.ZoneTransferJobExecutor"	class="org.tdmx.lib.control.job.impl.TransferZoneJobExecutorImpl">
+		<property name="accountZoneService" ref="tdmx.lib.control.AccountZoneRepository"/>
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="domainService" ref="tdmx.lib.zone.DomainRepository"/>
+		<property name="serviceService" ref="tdmx.lib.zone.ServiceRepository"/>
+		<property name="addressService" ref="tdmx.lib.zone.AddressRepository"/>
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="channelService" ref="tdmx.lib.zone.ChannelRepository"/>
+		<property name="destinationService" ref="tdmx.lib.zone.DestinationRepository"/>
+
+		<property name="batchSize" value="1000"/>
+	</bean>
+
+	<!-- JOB EXECUTION DELEGATOR -->
+	<bean id="tdmx.lib.control.job.JobExecutorDelegate"	class="org.tdmx.lib.control.job.DelegatingJobExecutorImpl">
+		<property name="waitJobExecutor" ref="tdmx.lib.control.job.WaitJobExecutor"/>
+		<property name="transferZoneJobExecutor" ref="tdmx.lib.control.job.ZoneTransferJobExecutor"/>
+	</bean>
+
+	<!-- JOB EXECUTOR -->
+	<bean id="tdmx.lib.control.job.JobExecutor"	class="org.tdmx.lib.control.job.JobExecutionProcessImpl" init-method="init">
+		<property name="jobService" ref="tdmx.lib.control.ControlJobRepository"/>
+		<property name="jobExecutor" ref="tdmx.lib.control.job.JobExecutorDelegate"/>
+        <property name="longPollIntervalSec" value="10"/>
+        <property name="maxConcurrentJobs" value="5"/>
+        <property name="fastTriggerDelayMillis" value="100"/>
+	</bean>
 	
 	
 	<bean id="tdmx.lib.control.ZonePartitionAllocationService" class="org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationServiceImpl">
@@ -165,13 +199,6 @@
 		<property name="maxValueKey" value="accountId"/>
 		<property name="batchSize" value="10"/>
 		<property name="initialLowValue" value="100000000"/>
-		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
-	</bean>
-
-	<bean id="tdmx.lib.control.JobIdService" class="org.tdmx.lib.control.service.UniqueIdServiceImpl" init-method="init">
-		<property name="maxValueKey" value="jobId"/>
-		<property name="batchSize" value="10"/>
-		<property name="initialLowValue" value="1000000"/>
 		<property name="maxValueService" ref="tdmx.lib.control.MaxValueRepository" />
 	</bean>
 

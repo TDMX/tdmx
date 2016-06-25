@@ -20,5 +20,6 @@ package org.tdmx.lib.control.job;
 
 public interface JobPropertyName {
 
-	public static final String ZAC_CERTIFICATE_STATUS = "zac.cert.status";
+	public static final String ACCOUNT_ZONE_ID = "account_zone_id";
+	public static final String NEW_ZONE_PARTITION_ID = "new_zone_partition_id";
 }

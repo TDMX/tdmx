@@ -34,14 +34,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tdmx.lib.control.domain.MaxValue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class MaxValueServiceRepositoryUnitTest {
 
 	@Autowired
 	private MaxValueService service;
-
-	// @Autowired
-	// private AuthorizedAgentDao dao;
 
 	private String key;
 	private Long initialValue;

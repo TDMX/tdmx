@@ -42,7 +42,6 @@ import org.tdmx.lib.zone.domain.MessageStatusSearchCriteria;
 import org.tdmx.lib.zone.domain.TemporaryChannel;
 import org.tdmx.lib.zone.domain.TemporaryChannelSearchCriteria;
 import org.tdmx.lib.zone.domain.Zone;
-import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 /**
  * Management Services for a Channels and it's ChannelAuthorization and ChannelFlowTargets.

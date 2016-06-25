@@ -40,11 +40,11 @@ public class ControlJobSearchCriteria {
 
 	private final PageSpecifier pageSpecifier;
 
-	private String jobId;
 	private ControlJobStatus status;
 	private String segment;
 	private Date scheduledTimeBefore;
-	private String jobType;
+	private ControlJobType jobType;
+	private Long owningEntityId;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -75,14 +75,6 @@ public class ControlJobSearchCriteria {
 		return pageSpecifier;
 	}
 
-	public String getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
-	}
-
 	public ControlJobStatus getStatus() {
 		return status;
 	}
@@ -107,12 +99,20 @@ public class ControlJobSearchCriteria {
 		this.scheduledTimeBefore = scheduledTimeBefore;
 	}
 
-	public String getJobType() {
+	public ControlJobType getJobType() {
 		return jobType;
 	}
 
-	public void setJobType(String jobType) {
+	public void setJobType(ControlJobType jobType) {
 		this.jobType = jobType;
+	}
+
+	public Long getOwningEntityId() {
+		return owningEntityId;
+	}
+
+	public void setOwningEntityId(Long owningEntityId) {
+		this.owningEntityId = owningEntityId;
 	}
 
 }

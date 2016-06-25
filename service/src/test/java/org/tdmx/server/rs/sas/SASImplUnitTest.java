@@ -50,7 +50,6 @@ import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.api.v01.common.Acknowledge;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.DatabaseType;
-import org.tdmx.lib.control.job.MockJobScheduler;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
@@ -70,7 +69,7 @@ import org.tdmx.server.rs.sas.resource.SegmentResource;
 import org.tdmx.server.ws.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class SASImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(SASImplUnitTest.class);
@@ -94,8 +93,6 @@ public class SASImplUnitTest {
 	@Autowired
 	@Qualifier("tdmx.lib.control.AccountIdService")
 	private UniqueIdService objectIdService;
-	@Autowired
-	private MockJobScheduler jobScheduler;
 
 	@Autowired
 	private SAS sas;
@@ -157,10 +154,10 @@ public class SASImplUnitTest {
 		accountZoneResource = sas.createAccountZone(accountResource.getId(), accountZoneResource);
 
 		assertNotNull(accountZoneResource.getId());
-		assertNotNull(accountZoneResource.getJobId());
-		assertNotNull(jobScheduler.getLastImmediateScheduledJob());
-		jobScheduler.clearLastImmediateScheduledJob();
-
+		/*
+		 * assertNotNull(accountZoneResource.getJobId()); assertNotNull(jobScheduler.getLastImmediateScheduledJob());
+		 * jobScheduler.clearLastImmediateScheduledJob();
+		 */
 		Calendar validFrom = Calendar.getInstance();
 		Calendar validTo = Calendar.getInstance();
 		validTo.add(Calendar.YEAR, 10);
@@ -190,14 +187,10 @@ public class SASImplUnitTest {
 		assertNotNull(zacResource.getId());
 		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION.toString(),
 				zacResource.getStatus());
-		assertNotNull(zacResource.getJobId());
-		jobScheduler.clearLastImmediateScheduledJob();
 	}
 
 	@After
 	public void doTeardown() {
-		jobScheduler.clearLastImmediateScheduledJob();
-
 	}
 
 	@Test

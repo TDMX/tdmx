@@ -79,13 +79,6 @@ public class AccountZone implements Serializable {
 	@Column(length = DatabasePartition.MAX_PARTITIONID_LEN, nullable = false)
 	private String zonePartitionId;
 
-	/**
-	 * If a Job is pending on the Account's Zone (like initialization, transfer ) then this is the link to the jobId.
-	 * The Job is responsible to remove this record once it has completed.
-	 */
-	@Column
-	private Long jobId;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -169,14 +162,6 @@ public class AccountZone implements Serializable {
 
 	public void setZonePartitionId(String zonePartitionId) {
 		this.zonePartitionId = zonePartitionId;
-	}
-
-	public Long getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(Long jobId) {
-		this.jobId = jobId;
 	}
 
 }

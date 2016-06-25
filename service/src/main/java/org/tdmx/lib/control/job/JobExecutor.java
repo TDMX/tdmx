@@ -18,24 +18,17 @@
  */
 package org.tdmx.lib.control.job;
 
-public interface JobExecutor<E> {
+import org.tdmx.lib.control.domain.ControlJob;
+
+public interface JobExecutor {
 
 	/**
-	 * Get the type of Job which is supported by this executor.
+	 * Execute the ControlJob.
 	 * 
-	 * @return
+	 * @param job
+	 *            detached job.
+	 * @return true if finished, else job needs continuation.
 	 */
-	public String getType();
-
-	/**
-	 * Execute the command.
-	 * 
-	 * Note: do not access ControlJob, this is the responsibility of the {@link JobExecutionProcessImpl}
-	 * 
-	 * @param id
-	 *            of the ControlJob being executed.
-	 * @param entry
-	 */
-	public void execute(Long id, E command);
+	public boolean execute(ControlJob job);
 
 }

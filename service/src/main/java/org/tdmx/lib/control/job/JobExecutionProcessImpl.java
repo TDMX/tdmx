@@ -20,38 +20,31 @@
 package org.tdmx.lib.control.job;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.bind.JAXBException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
 import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.service.ControlJobService;
-import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.server.runtime.Manageable;
 import org.tdmx.server.ws.session.WebServiceApiName;
 
 /**
- * 
- * NOTE: each JobExecution.run method is called without a DB-Transaction.
+ * Delegates the job execution to a specific type of JobExecutor.
  * 
  * @author Peter Klauser
  * 
  */
-public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory {
+public class JobExecutionProcessImpl implements Runnable, Manageable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -60,14 +53,9 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(JobExecutionProcessImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(DelegatingJobExecutorImpl.class);
 
-	private UniqueIdService jobIdService;
 	private ControlJobService jobService;
-
-	private List<JobConverter<?>> jobConverterList;
-	private List<JobExecutor<?>> jobExecutorList;
-	private JobExceptionConverter exceptionConverter;
 
 	/**
 	 * Delay in seconds.
@@ -87,8 +75,8 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	// internal //
 	private boolean started = false;
 	private Segment segment = null;
-	private final Map<String, JobExecutor<?>> jobExecutorMap = new HashMap<>();
-	private final Map<String, JobConverter<?>> jobConverterMap = new HashMap<>();
+	private JobExecutor jobExecutor;
+
 	private ScheduledExecutorService scheduledThreadPool = null;
 	private ExecutorService jobRunners = null;
 	private final List<Future<?>> jobStatus = new LinkedList<>();
@@ -105,17 +93,6 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 
 	public void init() {
 		// setup primarily with spring bean init method.
-		if (jobConverterList != null) {
-			for (JobConverter<?> c : jobConverterList) {
-				jobConverterMap.put(c.getType(), c);
-			}
-		}
-		if (jobExecutorList != null) {
-			for (JobExecutor<?> e : jobExecutorList) {
-				jobExecutorMap.put(e.getType(), e);
-			}
-		}
-
 		scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("JobExecutionService"));
 
 		jobRunners = Executors.newFixedThreadPool(getMaxConcurrentJobs(), new NamedThreadFactory("JobRunner"));
@@ -145,27 +122,6 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 		} catch (InterruptedException e) {
 			log.warn("Interrupted whilst waiting for termination of jobRunners.", e);
 		}
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public Job createJob(Object task) {
-		if (task == null) {
-			throw new IllegalArgumentException("missing task");
-		}
-		JobConverter converter = jobConverterMap.get(task.getClass().getName());
-		if (converter == null) {
-			throw new IllegalArgumentException("no JobConverter for " + task);
-		}
-		Job job = new Job();
-		job.setJobId(getJobIdService().getNextId());
-		job.setType(converter.getType());
-		try {
-			converter.setData(job, task);
-		} catch (JAXBException e) {
-			throw new IllegalArgumentException(e);
-		}
-		return job;
 	}
 
 	@Override
@@ -232,41 +188,31 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 			this.job = job;
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		public void run() {
-			Job j = job.getJob();
-			j.setStartTimestamp(new Date());
+			job.setStartTimestamp(new Date());
 			try {
-				JobConverter jc = jobConverterMap.get(j.getType());
-				if (jc == null) {
-					throw new IllegalArgumentException("no JobConverter for " + job);
-				}
-				JobExecutor je = jobExecutorMap.get(j.getType());
-				if (je == null) {
-					throw new IllegalArgumentException("no JobExecutor for " + job);
-				}
-				Object task = jc.getData(j);
-				je.execute(job.getId(), task);
+				boolean continued = jobExecutor.execute(job);
 
-				// the data in task will change during execute
-				jc.setData(j, task);
-				j.setEndTimestamp(new Date());
-
-				job.setStatus(ControlJobStatus.OK);
-				job.setJob(j);
+				job.setStatus(continued ? ControlJobStatus.OK : ControlJobStatus.CON);
+				job.setEndTimestamp(new Date());
 			} catch (Exception e) {
 				Throwable problem = e.getCause() != null ? e.getCause() : e;
 				log.warn("Job " + job + " failed with reason=" + problem.getMessage(), e);
 
-				exceptionConverter.setException(j, problem);
+				job.setException(problem);
 
-				j.setEndTimestamp(new Date());
+				job.setEndTimestamp(new Date());
 				job.setStatus(ControlJobStatus.ERR);
-				job.setJob(j);
-
 			}
-			jobService.createOrUpdate(job);
+			if (ControlJobStatus.OK == job.getStatus()) {
+				jobService.delete(job);
+			} else {
+				jobService.createOrUpdate(job);
+			}
+			if (job.getParentJobId() != null) {
+				jobService.continueJob(job.getParentJobId());
+			}
 
 			// we triggerfast scheduling of the next poll
 			fastTrigger();
@@ -278,14 +224,6 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public UniqueIdService getJobIdService() {
-		return jobIdService;
-	}
-
-	public void setJobIdService(UniqueIdService jobIdService) {
-		this.jobIdService = jobIdService;
-	}
-
 	public ControlJobService getJobService() {
 		return jobService;
 	}
@@ -294,28 +232,12 @@ public class JobExecutionProcessImpl implements Runnable, Manageable, JobFactory
 		this.jobService = jobService;
 	}
 
-	public JobExceptionConverter getExceptionConverter() {
-		return exceptionConverter;
+	public JobExecutor getJobExecutor() {
+		return jobExecutor;
 	}
 
-	public void setExceptionConverter(JobExceptionConverter exceptionConverter) {
-		this.exceptionConverter = exceptionConverter;
-	}
-
-	public List<JobConverter<?>> getJobConverterList() {
-		return jobConverterList;
-	}
-
-	public void setJobConverterList(List<JobConverter<?>> jobConverterList) {
-		this.jobConverterList = jobConverterList;
-	}
-
-	public List<JobExecutor<?>> getJobExecutorList() {
-		return jobExecutorList;
-	}
-
-	public void setJobExecutorList(List<JobExecutor<?>> jobExecutorList) {
-		this.jobExecutorList = jobExecutorList;
+	public void setJobExecutor(JobExecutor jobExecutor) {
+		this.jobExecutor = jobExecutor;
 	}
 
 	public int getLongPollIntervalSec() {

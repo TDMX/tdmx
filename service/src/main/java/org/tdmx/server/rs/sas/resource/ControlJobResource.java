@@ -28,11 +28,9 @@ import javax.xml.bind.annotation.XmlType;
 import org.tdmx.core.cli.display.annotation.CliAttribute;
 import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
-import org.tdmx.core.system.lang.JaxbMarshaller;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobStatus;
+import org.tdmx.lib.control.domain.ControlJobType;
 
 @CliRepresentation(name = "ControlJob")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -44,7 +42,6 @@ public class ControlJobResource {
 		ID("id"),
 		SCHEDULEDTIME("scheduledTime"),
 		STATUS("status"),
-		JOBID("jobId"),
 		TYPE("type"),
 		STARTTIMESTAMP("startTimestamp"),
 		ENDTIMESTAMP("endTimestamp"),
@@ -70,34 +67,29 @@ public class ControlJobResource {
 	@CliAttribute(order = 3)
 	private String status;
 	@CliAttribute(order = 1)
-	private String jobId;
-	@CliAttribute(order = 4)
 	private String type;
-	@CliAttribute(order = 5)
+	@CliAttribute(order = 4)
 	private Date startTimestamp;
-	@CliAttribute(order = 6)
+	@CliAttribute(order = 5)
 	private Date endTimestamp;
-	@CliAttribute(order = 7, verbose = true)
+	@CliAttribute(order = 6, verbose = true)
 	private String data;
-	@CliAttribute(order = 8)
+	@CliAttribute(order = 7)
 	private String exception;
 
 	public static ControlJob mapTo(ControlJobResource controlJob) {
 		if (controlJob == null) {
 			return null;
 		}
-		Job job = new Job();
-		job.setJobId(controlJob.getJobId());
-		job.setType(controlJob.getType());
-		job.setData(StringUtils.asBytes(controlJob.getData(), JaxbMarshaller.DEFAULT_ENCODING));
-		job.setException(StringUtils.asBytes(controlJob.getException(), JaxbMarshaller.DEFAULT_ENCODING));
-		job.setStartTimestamp(controlJob.getStartTimestamp());
-		job.setEndTimestamp(controlJob.getEndTimestamp());
 
 		ControlJob j = new ControlJob();
 		j.setId(controlJob.getId());
 		j.setStatus(EnumUtils.mapTo(ControlJobStatus.class, controlJob.getStatus()));
-		j.setJob(job);
+		j.setType(EnumUtils.mapTo(ControlJobType.class, controlJob.getType()));
+		j.setData(controlJob.getData());
+		j.setException(controlJob.getException());
+		j.setStartTimestamp(controlJob.getStartTimestamp());
+		j.setEndTimestamp(controlJob.getEndTimestamp());
 
 		return j;
 	}
@@ -109,15 +101,11 @@ public class ControlJobResource {
 		ControlJobResource j = new ControlJobResource();
 		j.setId(controlJob.getId());
 		j.setStatus(EnumUtils.mapToString(controlJob.getStatus()));
-
-		Job job = controlJob.getJob();
-
-		j.setJobId(job.getJobId());
-		j.setType(job.getType());
-		j.setData(StringUtils.asString(job.getData(), JaxbMarshaller.DEFAULT_ENCODING));
-		j.setException(StringUtils.asString(job.getException(), JaxbMarshaller.DEFAULT_ENCODING));
-		j.setStartTimestamp(job.getStartTimestamp());
-		j.setEndTimestamp(job.getEndTimestamp());
+		j.setType(EnumUtils.mapToString(controlJob.getType()));
+		j.setData(controlJob.getData());
+		j.setException(controlJob.getException());
+		j.setStartTimestamp(controlJob.getStartTimestamp());
+		j.setEndTimestamp(controlJob.getEndTimestamp());
 		return j;
 	}
 
@@ -143,14 +131,6 @@ public class ControlJobResource {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	public String getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
 	}
 
 	public String getType() {

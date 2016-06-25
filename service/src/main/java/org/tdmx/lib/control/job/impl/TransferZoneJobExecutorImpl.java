@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.lib.control.job;
+
+package org.tdmx.lib.control.job.impl;
 
 import java.util.List;
 
@@ -26,6 +27,10 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.ControlJob;
+import org.tdmx.lib.control.domain.ControlJobType;
+import org.tdmx.lib.control.job.JobExecutor;
+import org.tdmx.lib.control.job.JobPropertyName;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.zone.domain.Address;
 import org.tdmx.lib.zone.domain.AddressSearchCriteria;
@@ -53,9 +58,20 @@ import org.tdmx.lib.zone.service.DestinationService;
 import org.tdmx.lib.zone.service.DomainService;
 import org.tdmx.lib.zone.service.ServiceService;
 import org.tdmx.lib.zone.service.ZoneService;
-import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
-public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask> {
+/**
+ * Specific JobExecutor for {@link ControlJobType#TRANSFER_ZONE}
+ * 
+ * Requires the following {@link JobPropertyName}s:
+ * 
+ * {@link JobPropertyName#ACCOUNT_ZONE_ID} : Long - the account zone to transfer.
+ * 
+ * {@link JobPropertyName#NEW_ZONE_PARTITION_ID} : String - the partition id to transfer to.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class TransferZoneJobExecutorImpl implements JobExecutor {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -64,7 +80,8 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(ZoneTransferJobExecutorImpl.class);
+
+	private static final Logger log = LoggerFactory.getLogger(TransferZoneJobExecutorImpl.class);
 
 	private AccountZoneService accountZoneService;
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
@@ -77,37 +94,29 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 	private DestinationService destinationService;
 
 	private int batchSize = 1000;
-
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
-
-	public ZoneTransferJobExecutorImpl() {
-	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public String getType() {
-		return ZoneTransferTask.class.getName();
-	}
+	public boolean execute(ControlJob job) {
+		log.info("Running job " + job);
 
-	@Override
-	public void execute(Long id, ZoneTransferTask task) {
-		AccountZone az = getAccountZoneService().findById(task.getAccountZoneId());
+		Long accountZoneId = job.getLongProperty(JobPropertyName.ACCOUNT_ZONE_ID);
+
+		AccountZone az = getAccountZoneService().findById(accountZoneId);
 		if (az == null) {
 			throw new IllegalArgumentException("AccountZone not found.");
-		}
-		if (!id.equals(az.getJobId())) {
-			throw new IllegalStateException("AccountZone#jobId mismatch.");
 		}
 		String oldPartitionId = az.getZonePartitionId();
 		if (!StringUtils.hasText(oldPartitionId)) {
 			throw new IllegalStateException("AccountZone#zonePartitionId missing.");
 		}
-		String newPartitionId = task.getZoneDbPartitionId();
+		String newPartitionId = job.getStringProperty(JobPropertyName.NEW_ZONE_PARTITION_ID);
 		if (!StringUtils.hasText(newPartitionId)) {
 			throw new IllegalArgumentException("zonePartitionId not provided.");
 		}
@@ -131,12 +140,12 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 
 		// update the AccountZone to state the new partition is active.
 		az.setZonePartitionId(newPartitionId);
-		az.setJobId(null);
 		// TODO #86: updates the AccountZone status to allow access again
 		getAccountZoneService().createOrUpdate(az);
 
 		// delete the old data
 		deleteZoneDataInSource(oldZone, oldPartitionId);
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -735,4 +744,15 @@ public class ZoneTransferJobExecutorImpl implements JobExecutor<ZoneTransferTask
 		this.batchSize = batchSize;
 	}
 
+	// -------------------------------------------------------------------------
+	// PROTECTED METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PRIVATE METHODS
+	// -------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
+	// PUBLIC ACCESSORS (GETTERS / SETTERS)
+	// -------------------------------------------------------------------------
 }

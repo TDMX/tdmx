@@ -25,64 +25,42 @@ import static org.junit.Assert.assertNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.tdmx.lib.common.domain.Job;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.ControlJob;
-import org.tdmx.lib.control.domain.ControlJobFacade;
 import org.tdmx.lib.control.domain.ControlJobSearchCriteria;
 import org.tdmx.lib.control.domain.ControlJobStatus;
-import org.tdmx.lib.control.job.JobConverter;
-import org.tdmx.service.control.task.dao.ZoneTransferTask;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
 public class ControlJobServiceRepositoryUnitTest {
 
 	@Autowired
-	private JobConverter<ZoneTransferTask> cmdConverter;
-
-	@Autowired
 	private ControlJobService service;
-	@Autowired
-	@Qualifier("tdmx.lib.control.JobIdService")
-	private UniqueIdService idService;
 
+	// internal
 	private ControlJob je;
+	private Long owningId;
 
 	@Before
 	public void doSetup() throws Exception {
-		ZoneTransferTask task = new ZoneTransferTask();
-		task.setAccountId(1L);
-		task.setAccountId(2L);
-		task.setZoneDbPartitionId("pid");
-
-		Job j = new Job();
-		j.setJobId(UUID.randomUUID().toString());
-		j.setType(cmdConverter.getType());
-		cmdConverter.setData(j, task);
-
-		je = ControlJobFacade.createImmediateJob(ControlJobStatus.NEW, j, "default");
+		owningId = System.currentTimeMillis();
+		je = ControlJob.createWaitJob("default").scheduleNow().withOwningEntityId(owningId);
 
 		service.createOrUpdate(je);
 	}
 
 	@After
 	public void doTeardown() {
-		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
-		sc.setJobId(je.getJob().getJobId());
-		List<ControlJob> jobs = service.search(sc);
-		for (ControlJob j : jobs) {
-			service.delete(j);
+		if (je != null) {
+			service.delete(je);
 		}
 	}
 
@@ -106,7 +84,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_TypeStatus() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
-		sc.setJobType(cmdConverter.getType());
+		sc.setJobType(je.getType());
 		sc.setStatus(ControlJobStatus.ERR);
 		List<ControlJob> l = service.search(sc);
 		assertEquals(0, l.size());
@@ -117,9 +95,22 @@ public class ControlJobServiceRepositoryUnitTest {
 	}
 
 	@Test
+	public void testSearch_TypeOwningId() throws Exception {
+		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
+		sc.setJobType(je.getType());
+		sc.setOwningEntityId(owningId);
+		List<ControlJob> l = service.search(sc);
+		assertEquals(1, l.size());
+
+		sc.setStatus(ControlJobStatus.NEW);
+		l = service.search(sc);
+		assertEquals(1, l.size());
+	}
+
+	@Test
 	public void testSearch_TypeStatusSegment() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
-		sc.setJobType(cmdConverter.getType());
+		sc.setJobType(je.getType());
 		sc.setStatus(ControlJobStatus.ERR);
 		sc.setSegment(je.getSegment());
 		List<ControlJob> l = service.search(sc);
@@ -133,7 +124,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_TypeTimeStatus() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
-		sc.setJobType(cmdConverter.getType());
+		sc.setJobType(je.getType());
 		sc.setScheduledTimeBefore(new Date());
 		sc.setStatus(ControlJobStatus.ERR);
 		List<ControlJob> l = service.search(sc);
@@ -147,7 +138,7 @@ public class ControlJobServiceRepositoryUnitTest {
 	@Test
 	public void testSearch_TypeTimeStatusSegment() throws Exception {
 		ControlJobSearchCriteria sc = new ControlJobSearchCriteria(new PageSpecifier(0, 10));
-		sc.setJobType(cmdConverter.getType());
+		sc.setJobType(je.getType());
 		sc.setScheduledTimeBefore(new Date());
 		sc.setStatus(ControlJobStatus.ERR);
 		sc.setSegment(je.getSegment());
@@ -173,7 +164,6 @@ public class ControlJobServiceRepositoryUnitTest {
 		Thread.sleep(1000);
 
 		ControlJob j = runnable.get(0);
-		assertEquals(je.getJob().getJobId(), j.getJob().getJobId());
 		assertEquals(ControlJobStatus.RUN, j.getStatus());
 		assertEquals(je.getSegment(), j.getSegment());
 		j.setStatus(ControlJobStatus.OK);

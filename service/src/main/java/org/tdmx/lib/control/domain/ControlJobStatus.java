@@ -20,11 +20,14 @@ package org.tdmx.lib.control.domain;
 
 public enum ControlJobStatus {
 
-	// newly inserted not yet running
+	// newly inserted not yet running, or continued
 	NEW,
 
 	// running, segment is set
 	RUN,
+
+	// running finished, needs continuation to complete task
+	CON,
 
 	// run but failed
 	ERR,
