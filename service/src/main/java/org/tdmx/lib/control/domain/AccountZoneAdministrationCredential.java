@@ -19,7 +19,7 @@
 package org.tdmx.lib.control.domain;
 
 import java.io.Serializable;
-import java.util.UUID;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,9 +32,15 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.CryptoCertificateException;
 import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
+import org.tdmx.core.system.lang.CalendarUtils;
+import org.tdmx.lib.zone.domain.AgentSignature;
 
 /**
  * An AgentCredential is the public certificate of a ZAC, DAC or UC.
@@ -53,6 +59,8 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	// -------------------------------------------------------------------------
 	public static final int MAX_CERTIFICATECHAIN_LEN = 12000;
 	public static final int MAX_SHA256FINGERPRINT_LEN = 64;
+	public static final int MAX_STRING_LEN = 255;
+	public static final int MAX_PUBLIC_KEY_ALG_LEN = 16;
 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
@@ -73,12 +81,40 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	@Column(length = MAX_SHA256FINGERPRINT_LEN, nullable = false, unique = true)
 	private String fingerprint;
 
-	@Enumerated(EnumType.STRING)
-	@Column(length = AccountZoneAdministrationCredentialStatus.MAX_CREDENTIALSTATUS_LEN, nullable = false)
-	private AccountZoneAdministrationCredentialStatus credentialStatus;
-
 	@Column(length = MAX_CERTIFICATECHAIN_LEN, nullable = false)
 	private String certificateChainPem;
+
+	/*
+	 * Denormalized(Read-only) from PEM
+	 */
+	@Column(nullable = false)
+	private int tdmxVersionNumber;
+	@Column(nullable = false)
+	private int serialNumber;
+	@Column(length = MAX_STRING_LEN, nullable = false)
+	private String cn;
+	@Column(length = MAX_STRING_LEN)
+	private String telephoneNumber;
+	@Column(length = MAX_STRING_LEN)
+	private String emailAddress;
+	@Column(length = MAX_STRING_LEN)
+	private String orgUnit;
+	@Column(length = MAX_STRING_LEN)
+	private String org;
+	@Column(length = MAX_STRING_LEN)
+	private String location;
+	@Column(length = MAX_STRING_LEN)
+	private String country;
+	@Column(nullable = false)
+	private Date notBefore;
+	@Column(nullable = false)
+	private Date notAfter;
+	@Enumerated(EnumType.STRING)
+	@Column(length = MAX_PUBLIC_KEY_ALG_LEN, nullable = false)
+	private PublicKeyAlgorithm keyAlgorithm;
+	@Enumerated(EnumType.STRING)
+	@Column(length = AgentSignature.MAX_SIG_ALG_LEN, nullable = false)
+	private SignatureAlgorithm signatureAlgorithm;
 
 	@Transient
 	private PKIXCertificate[] certificateChain;
@@ -90,30 +126,17 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public AccountZoneAdministrationCredential() {
 	}
 
+	/**
+	 * Create a ZAC for a specific account using the PEM representation.
+	 * 
+	 * @param accountId
+	 * @param pem
+	 * @throws IllegalArgumentException
+	 *             if the PEM is not valid or not a ZAC.
+	 */
 	public AccountZoneAdministrationCredential(String accountId, String pem) {
-		setCertificateChainPem(pem);
 		setAccountId(accountId);
-
-		PKIXCertificate[] certChain = CertificateIOUtils.safePemToX509certs(pem);
-		if (certChain != null) {
-			setCertificateChain(certChain);
-
-			PKIXCertificate publicKey = getPublicKey();
-			setFingerprint(publicKey.getFingerprint());
-			// an invalid cert might be missing the ZI
-			if (publicKey.getTdmxZoneInfo() != null) {
-				setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
-				setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION);
-			} else {
-				setZoneApex(null);
-				setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_TDMX);
-			}
-		} else {
-			setFingerprint(UUID.randomUUID().toString());
-			setZoneApex(null);
-			setCredentialStatus(AccountZoneAdministrationCredentialStatus.INVALID_PEM);
-		}
-
+		initializePEM(pem);
 	}
 
 	// -------------------------------------------------------------------------
@@ -169,8 +192,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 		builder.append(zoneApex);
 		builder.append(", fingerprint=");
 		builder.append(fingerprint);
-		builder.append(", credentialStatus=");
-		builder.append(credentialStatus);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -185,6 +206,41 @@ public class AccountZoneAdministrationCredential implements Serializable {
 
 	private void setCertificateChain(PKIXCertificate[] certificateChain) {
 		this.certificateChain = certificateChain;
+	}
+
+	private void initializePEM(String pem) {
+		setCertificateChainPem(pem);
+
+		PKIXCertificate[] certChain = CertificateIOUtils.safePemToX509certs(pem);
+		if (certChain != null) {
+			setCertificateChain(certChain);
+
+			PKIXCertificate publicKey = getPublicKey();
+			setFingerprint(publicKey.getFingerprint());
+			if (publicKey.isTdmxZoneAdminCertificate()) {
+				ZoneAdministrationCredentialSpecifier spec = CredentialUtils
+						.describeZoneAdministratorCertificate(publicKey);
+
+				setZoneApex(publicKey.getTdmxZoneInfo().getZoneRoot());
+				setTdmxVersionNumber(spec.getZoneInfo().getVersion());
+				setSerialNumber(spec.getSerialNumber());
+				setCn(spec.getCn());
+				setTelephoneNumber(spec.getTelephoneNumber());
+				setEmailAddress(spec.getEmailAddress());
+				setOrgUnit(spec.getOrgUnit());
+				setOrg(spec.getOrg());
+				setLocation(spec.getLocation());
+				setCountry(spec.getCountry());
+				setNotBefore(CalendarUtils.cast(spec.getNotBefore()));
+				setNotAfter(CalendarUtils.cast(spec.getNotAfter()));
+				setKeyAlgorithm(spec.getKeyAlgorithm());
+				setSignatureAlgorithm(spec.getSignatureAlgorithm());
+			} else {
+				throw new IllegalArgumentException("pem");
+			}
+		} else {
+			throw new IllegalArgumentException("pem");
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -223,14 +279,6 @@ public class AccountZoneAdministrationCredential implements Serializable {
 		this.zoneApex = zoneApex;
 	}
 
-	public AccountZoneAdministrationCredentialStatus getCredentialStatus() {
-		return credentialStatus;
-	}
-
-	public void setCredentialStatus(AccountZoneAdministrationCredentialStatus credentialStatus) {
-		this.credentialStatus = credentialStatus;
-	}
-
 	public String getCertificateChainPem() {
 		return certificateChainPem;
 	}
@@ -238,6 +286,110 @@ public class AccountZoneAdministrationCredential implements Serializable {
 	public void setCertificateChainPem(String certificateChainPem) {
 		this.certificateChain = null;
 		this.certificateChainPem = certificateChainPem;
+	}
+
+	public int getTdmxVersionNumber() {
+		return tdmxVersionNumber;
+	}
+
+	public int getSerialNumber() {
+		return serialNumber;
+	}
+
+	public String getCn() {
+		return cn;
+	}
+
+	public String getTelephoneNumber() {
+		return telephoneNumber;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public String getOrgUnit() {
+		return orgUnit;
+	}
+
+	public String getOrg() {
+		return org;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public Date getNotBefore() {
+		return notBefore;
+	}
+
+	public Date getNotAfter() {
+		return notAfter;
+	}
+
+	public PublicKeyAlgorithm getKeyAlgorithm() {
+		return keyAlgorithm;
+	}
+
+	public SignatureAlgorithm getSignatureAlgorithm() {
+		return signatureAlgorithm;
+	}
+
+	private void setTdmxVersionNumber(int tdmxVersionNumber) {
+		this.tdmxVersionNumber = tdmxVersionNumber;
+	}
+
+	private void setSerialNumber(int serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+
+	private void setCn(String cn) {
+		this.cn = cn;
+	}
+
+	private void setTelephoneNumber(String telephoneNumber) {
+		this.telephoneNumber = telephoneNumber;
+	}
+
+	private void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+
+	private void setOrgUnit(String orgUnit) {
+		this.orgUnit = orgUnit;
+	}
+
+	private void setOrg(String org) {
+		this.org = org;
+	}
+
+	private void setLocation(String location) {
+		this.location = location;
+	}
+
+	private void setCountry(String country) {
+		this.country = country;
+	}
+
+	private void setNotBefore(Date notBefore) {
+		this.notBefore = notBefore;
+	}
+
+	private void setNotAfter(Date notAfter) {
+		this.notAfter = notAfter;
+	}
+
+	private void setKeyAlgorithm(PublicKeyAlgorithm keyAlgorithm) {
+		this.keyAlgorithm = keyAlgorithm;
+	}
+
+	private void setSignatureAlgorithm(SignatureAlgorithm signatureAlgorithm) {
+		this.signatureAlgorithm = signatureAlgorithm;
 	}
 
 }

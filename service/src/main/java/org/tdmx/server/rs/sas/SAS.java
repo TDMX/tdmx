@@ -31,6 +31,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialCheckResult;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
@@ -255,10 +256,11 @@ public interface SAS {
 	/*
 	 * RESTFUL service for AccountZoneAdministrationCredential
 	 */
+
 	@POST
 	@Path("/accounts/{aid}/zones/{zid}/zacs")
 	AccountZoneAdministrationCredentialResource createAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
-			@PathParam("zid") Long zId, AccountZoneAdministrationCredentialResource zac);
+			@PathParam("zid") Long zId, String certificatePEM);
 
 	@GET
 	@Path("/accounts/{aid}/zones/{zid}/zacs")
@@ -271,21 +273,20 @@ public interface SAS {
 	AccountZoneAdministrationCredentialResource getAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
 			@PathParam("zid") Long zId, @PathParam("zcid") Long zcId);
 
-	@PUT
-	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
-	AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(@PathParam("aid") Long aId,
-			@PathParam("zid") Long zId, @PathParam("zcid") Long zcId, AccountZoneAdministrationCredentialResource zac);
-
 	@DELETE
 	@Path("/accounts/{aid}/zones/{zid}/zacs/{zcid}")
 	Response deleteAccountZoneAdministrationCredential(@PathParam("aid") Long aId, @PathParam("zid") Long zId,
 			@PathParam("zcid") Long zcId);
 
 	@GET
-	@Path("/accountzoneadministrationcredentials/")
+	@Path("/zacs/check")
+	AccountZoneAdministrationCredentialCheckResult checkAccountZoneAdministrationCredential(String certificatePEM);
+
+	@GET
+	@Path("/zacs/search")
 	List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(
 			@QueryParam("pageNumber") Integer pageNo, @QueryParam("pageSize") Integer pageSize,
 			@QueryParam("zone") String zoneApex, @QueryParam("accountId") String accountId,
-			@QueryParam("fingerprint") String fingerprint, @QueryParam("status") String status);
+			@QueryParam("fingerprint") String fingerprint);
 
 }

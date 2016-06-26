@@ -48,7 +48,6 @@ import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.api.v01.common.Acknowledge;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.DatabaseType;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
@@ -154,16 +153,15 @@ public class SASImplUnitTest {
 		accountZoneResource = sas.createAccountZone(accountResource.getId(), accountZoneResource);
 
 		assertNotNull(accountZoneResource.getId());
-		/*
-		 * assertNotNull(accountZoneResource.getJobId()); assertNotNull(jobScheduler.getLastImmediateScheduledJob());
-		 * jobScheduler.clearLastImmediateScheduledJob();
-		 */
+		assertNotNull(accountZoneResource.getZonePartitionId());
+
 		Calendar validFrom = Calendar.getInstance();
 		Calendar validTo = Calendar.getInstance();
 		validTo.add(Calendar.YEAR, 10);
 
 		ZoneAdministrationCredentialSpecifier adminSpec = new ZoneAdministrationCredentialSpecifier(1,
 				accountZoneResource.getZoneApex());
+		adminSpec.setCn("peter klauser");
 		adminSpec.setEmailAddress("name@email.com");
 		adminSpec.setCountry("CH");
 		adminSpec.setLocation("Zug");
@@ -171,26 +169,38 @@ public class SASImplUnitTest {
 		adminSpec.setOrgUnit("OrgUnit");
 		adminSpec.setSerialNumber(1);
 		adminSpec.setTelephoneNumber("041...");
-		adminSpec.setSignatureAlgorithm(SignatureAlgorithm.SHA_384_RSA);
-		adminSpec.setKeyAlgorithm(PublicKeyAlgorithm.RSA4096);
+		adminSpec.setSignatureAlgorithm(SignatureAlgorithm.SHA_256_RSA);
+		adminSpec.setKeyAlgorithm(PublicKeyAlgorithm.RSA2048);
 		adminSpec.setNotBefore(validFrom);
 		adminSpec.setNotAfter(validTo);
 		PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(adminSpec);
 
-		zacResource = new AccountZoneAdministrationCredentialResource();
-		zacResource.setAccountId(accountResource.getAccountId());
-		zacResource.setZoneApex(accountZoneResource.getZoneApex());
-		zacResource.setCertificatePem(CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
-
 		zacResource = sas.createAccountZoneAdministrationCredential(accountResource.getId(),
-				accountZoneResource.getId(), zacResource);
+				accountZoneResource.getId(), CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
 		assertNotNull(zacResource.getId());
-		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION.toString(),
-				zacResource.getStatus());
 	}
 
 	@After
 	public void doTeardown() {
+		if (accountResource != null && accountZoneResource != null && zacResource != null) {
+			sas.deleteAccountZoneAdministrationCredential(accountResource.getId(), accountZoneResource.getId(),
+					zacResource.getId());
+		}
+		if (accountResource != null && accountZoneResource != null) {
+			sas.deleteAccountZone(accountResource.getId(), accountZoneResource.getId());
+		}
+		if (accountResource != null) {
+			sas.deleteAccount(accountResource.getId());
+		}
+		if (partitionResource != null) {
+			sas.deleteDatabasePartition(partitionResource.getId());
+		}
+		if (segmentResource != null) {
+			sas.deleteSegment(segmentResource.getId());
+		}
+		if (dnsResolverGroupResource != null) {
+			sas.deleteDnsResolverGroup(dnsResolverGroupResource.getId());
+		}
 	}
 
 	@Test
@@ -321,6 +331,7 @@ public class SASImplUnitTest {
 		validTo.add(Calendar.YEAR, 10);
 
 		ZoneAdministrationCredentialSpecifier adminSpec = new ZoneAdministrationCredentialSpecifier(1, "gugus.com");
+		adminSpec.setCn("PJK");
 		adminSpec.setEmailAddress("name@email.com");
 		adminSpec.setCountry("CH");
 		adminSpec.setLocation("Zug");
@@ -334,13 +345,9 @@ public class SASImplUnitTest {
 		adminSpec.setNotAfter(validTo);
 		PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(adminSpec);
 
-		AccountZoneAdministrationCredentialResource zacRes = new AccountZoneAdministrationCredentialResource();
-		zacRes.setAccountId(accountResource.getAccountId());
-		zacRes.setZoneApex(accountZoneResource.getZoneApex()); // fake! - real is gugus.com in cert.
-		zacRes.setCertificatePem(CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
-
 		try {
-			sas.createAccountZoneAdministrationCredential(accountResource.getId(), accountZoneResource.getId(), zacRes);
+			sas.createAccountZoneAdministrationCredential(accountResource.getId(), accountZoneResource.getId(),
+					CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
 			fail();
 		} catch (BadRequestException ve) {
 

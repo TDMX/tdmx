@@ -24,6 +24,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.CredentialUtils;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao;
@@ -36,8 +41,8 @@ import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCrit
  * @author Peter Klauser
  * 
  */
-public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
-		AccountZoneAdministrationCredentialService {
+public class AccountZoneAdministrationCredentialServiceRepositoryImpl
+		implements AccountZoneAdministrationCredentialService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -60,11 +65,51 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 	// -------------------------------------------------------------------------
 
 	@Override
+	public PublicKeyCheckResultHolder check(String certificatePEM) {
+
+		PublicKeyCheckResultHolder result = new PublicKeyCheckResultHolder();
+
+		PKIXCertificate[] certChain = CertificateIOUtils.safePemToX509certs(certificatePEM);
+		if (certChain == null || certChain.length == 0) {
+			result.status = PublicKeyCheckStatus.CORRUPT_PEM;
+			return result;
+		}
+		PKIXCertificate publicKey = certChain[0];
+		if (publicKey.getTdmxZoneInfo() == null) {
+			result.status = PublicKeyCheckStatus.NOT_TDMX;
+			return result;
+		}
+		if (!publicKey.isTdmxZoneAdminCertificate()) {
+			result.status = PublicKeyCheckStatus.NOT_ZAC;
+			return result;
+		}
+		ZoneAdministrationCredentialSpecifier spec = CredentialUtils.describeZoneAdministratorCertificate(publicKey);
+		result.spec = spec;
+
+		if (spec.getNotBefore().getTimeInMillis() > System.currentTimeMillis()) {
+			result.status = PublicKeyCheckStatus.NOT_YET_VALID;
+		}
+		if (spec.getNotAfter().getTimeInMillis() < System.currentTimeMillis()) {
+			result.status = PublicKeyCheckStatus.EXPIRED;
+		}
+		if (result.status == null) {
+			try {
+				CredentialUtils.isValidZoneAdministratorCertificate(publicKey);
+			} catch (CryptoCertificateException e) {
+				result.status = PublicKeyCheckStatus.INVALID_SIGNATURE;
+			}
+		}
+		// TODO NO_TRUST_ANCHOR_DNS
+
+		return result;
+	}
+
+	@Override
 	@Transactional(value = "ControlDB")
 	public void createOrUpdate(AccountZoneAdministrationCredential accountCredential) {
 		if (accountCredential.getId() != null) {
-			AccountZoneAdministrationCredential storedCredential = getAccountCredentialDao().loadById(
-					accountCredential.getId());
+			AccountZoneAdministrationCredential storedCredential = getAccountCredentialDao()
+					.loadById(accountCredential.getId());
 			if (storedCredential != null) {
 				getAccountCredentialDao().merge(accountCredential);
 			} else {
@@ -78,8 +123,8 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 	@Override
 	@Transactional(value = "ControlDB")
 	public void delete(AccountZoneAdministrationCredential accountCredential) {
-		AccountZoneAdministrationCredential storedAccountCredential = getAccountCredentialDao().loadById(
-				accountCredential.getId());
+		AccountZoneAdministrationCredential storedAccountCredential = getAccountCredentialDao()
+				.loadById(accountCredential.getId());
 		if (storedAccountCredential != null) {
 			getAccountCredentialDao().delete(storedAccountCredential);
 		} else {
@@ -96,7 +141,8 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl implements
 
 	@Override
 	@Transactional(value = "ControlDB", readOnly = true)
-	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria) {
+	public List<AccountZoneAdministrationCredential> search(
+			AccountZoneAdministrationCredentialSearchCriteria criteria) {
 		return getAccountCredentialDao().search(criteria);
 	}
 

@@ -29,6 +29,7 @@ import org.tdmx.core.system.lang.FileUtils;
 import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialCheckResult;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 
@@ -110,13 +111,15 @@ public class CreateAccountZoneAdministrationCredential extends AbstractCliComman
 		}
 		AccountZoneResource azr = accountZones.get(0);
 
-		AccountZoneAdministrationCredentialResource azcr = new AccountZoneAdministrationCredentialResource();
-		azcr.setAccountId(accountId);
-		azcr.setZoneApex(zone);
-		azcr.setCertificatePem(certificatePem);
-
+		// check the ZAC before creation
+		AccountZoneAdministrationCredentialCheckResult checkResult = getSas()
+				.checkAccountZoneAdministrationCredential(certificatePem);
+		if (StringUtils.hasText(checkResult.getStatus())) {
+			out.println("ZAC check failed.", checkResult);
+			return;
+		}
 		AccountZoneAdministrationCredentialResource newZAC = getSas()
-				.createAccountZoneAdministrationCredential(account.getId(), azr.getId(), azcr);
+				.createAccountZoneAdministrationCredential(account.getId(), azr.getId(), certificatePem);
 		out.println(newZAC);
 	}
 

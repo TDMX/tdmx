@@ -29,7 +29,6 @@ import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,6 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
@@ -71,7 +69,6 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 		assertEquals(accountId, zoneAC.getAccountId());
 		assertEquals(zac.getPublicCert().getFingerprint(), zoneAC.getFingerprint());
 		assertEquals(zac.getPublicCert().getTdmxZoneInfo().getZoneRoot(), zoneAC.getZoneApex());
-		assertEquals(AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION, zoneAC.getCredentialStatus());
 		service.createOrUpdate(zoneAC);
 		// id is created and visible after store.
 		assertNotNull(zoneAC.getId());
@@ -157,12 +154,6 @@ public class AccountZoneAdministrationCredentialServiceRepositoryUnitTest {
 
 		AccountZoneAdministrationCredential az = service.findById(rndId);
 		assertNull(az);
-	}
-
-	@Test
-	@Ignore
-	public void testModify() throws Exception {
-		// TODO
 	}
 
 }

@@ -76,7 +76,8 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 	}
 
 	@Override
-	public List<AccountZoneAdministrationCredential> search(AccountZoneAdministrationCredentialSearchCriteria criteria) {
+	public List<AccountZoneAdministrationCredential> search(
+			AccountZoneAdministrationCredentialSearchCriteria criteria) {
 		JPAQuery query = new JPAQuery(em).from(accountZoneAdministrationCredential);
 
 		BooleanExpression where = null;
@@ -92,14 +93,10 @@ public class AccountZoneAdministrationCredentialDaoImpl implements AccountZoneAd
 			BooleanExpression e = accountZoneAdministrationCredential.fingerprint.eq(criteria.getFingerprint());
 			where = where != null ? where.and(e) : e;
 		}
-		if (criteria.getStatus() != null) {
-			BooleanExpression e = accountZoneAdministrationCredential.credentialStatus.eq(criteria.getStatus());
-			where = where != null ? where.and(e) : e;
-		}
 
 		query.where(where);
-		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(), (long) criteria
-				.getPageSpecifier().getFirstResult()));
+		query.restrict(new QueryModifiers((long) criteria.getPageSpecifier().getMaxResults(),
+				(long) criteria.getPageSpecifier().getFirstResult()));
 		return query.list(accountZoneAdministrationCredential);
 	}
 

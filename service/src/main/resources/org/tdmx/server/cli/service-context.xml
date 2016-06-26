@@ -63,8 +63,6 @@
 				<value>org.tdmx.server.cli.zone.SearchAccountZone</value>
 				
 				<value>org.tdmx.server.cli.zone.CreateAccountZoneAdministrationCredential</value>
-				<value>org.tdmx.server.cli.zone.ActivateAccountZoneAdministrationCredential</value>
-				<value>org.tdmx.server.cli.zone.SuspendAccountZoneAdministrationCredential</value>
 				<value>org.tdmx.server.cli.zone.DeleteAccountZoneAdministrationCredential</value>
 				<value>org.tdmx.server.cli.zone.SearchAccountZoneAdministrationCredential</value>
 			</array>
@@ -121,8 +119,6 @@
 				<entry key="zone:search" value="tdmx.server.cli.cmd.SearchAccountZone"/>
 				
 				<entry key="zoneadmin:create" value="tdmx.server.cli.cmd.CreateAccountZoneAdministrationCredential"/>
-				<entry key="zoneadmin:activate" value="tdmx.server.cli.cmd.ActivateAccountZoneAdministrationCredential"/>
-				<entry key="zoneadmin:suspend" value="tdmx.server.cli.cmd.SuspendAccountZoneAdministrationCredential"/>
 				<entry key="zoneadmin:delete" value="tdmx.server.cli.cmd.DeleteAccountZoneAdministrationCredential"/>
 				<entry key="zoneadmin:search" value="tdmx.server.cli.cmd.SearchAccountZoneAdministrationCredential"/>
 			</map>
@@ -240,10 +236,6 @@
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreateAccountZoneAdministrationCredential" class="org.tdmx.server.cli.zone.CreateAccountZoneAdministrationCredential" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
-	</bean>
-	<bean id="tdmx.server.cli.cmd.ActivateAccountZoneAdministrationCredential" class="org.tdmx.server.cli.zone.ActivateAccountZoneAdministrationCredential" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
-	</bean>
-	<bean id="tdmx.server.cli.cmd.SuspendAccountZoneAdministrationCredential" class="org.tdmx.server.cli.zone.SuspendAccountZoneAdministrationCredential" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	<bean id="tdmx.server.cli.cmd.DeleteAccountZoneAdministrationCredential" class="org.tdmx.server.cli.zone.DeleteAccountZoneAdministrationCredential" parent="tdmx.server.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>

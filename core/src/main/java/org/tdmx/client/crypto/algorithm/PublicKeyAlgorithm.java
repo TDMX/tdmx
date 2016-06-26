@@ -42,7 +42,7 @@ public enum PublicKeyAlgorithm {
 	RSA2048(2048, "RSA", null),
 	RSA4096(4096, "RSA", null),
 	ECDSA256(384, "EC", "secp256r1"),
-	ECDSA384(384, "EC", "secp384r1"), ;
+	ECDSA384(384, "EC", "secp384r1"),;
 
 	private int keyLength;
 	private String algorithm;
@@ -121,7 +121,7 @@ public enum PublicKeyAlgorithm {
 		return publicKey.getEncoded();
 	}
 
-	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PublicKey k) throws CryptoException {
+	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PublicKey k) {
 		if (k instanceof RSAPublicKey) {
 			int bitLen = ((RSAPublicKey) k).getModulus().bitLength();
 			switch (bitLen) {
@@ -131,10 +131,11 @@ public enum PublicKeyAlgorithm {
 				return PublicKeyAlgorithm.RSA4096;
 			}
 		}
-		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
+		// FIXME other keys
+		return null;
 	}
 
-	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PrivateKey k) throws CryptoException {
+	public static PublicKeyAlgorithm getAlgorithmMatchingKey(PrivateKey k) {
 		if (k instanceof RSAPrivateKey) {
 			int bitLen = ((RSAPrivateKey) k).getModulus().bitLength();
 			switch (bitLen) {
@@ -144,7 +145,8 @@ public enum PublicKeyAlgorithm {
 				return PublicKeyAlgorithm.RSA4096;
 			}
 		}
-		throw new CryptoException(CryptoResultCode.ERROR_PK_ALGORITHM_MISSING);
+		// FIXME other keys
+		return null;
 	}
 
 	public int getKeyLength() {
@@ -162,4 +164,5 @@ public enum PublicKeyAlgorithm {
 	public String getParameter() {
 		return parameter;
 	}
+
 }

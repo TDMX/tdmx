@@ -29,6 +29,8 @@ import java.util.Calendar;
 import org.junit.Before;
 import org.junit.Test;
 import org.tdmx.client.crypto.JCAProviderInitializer;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
+import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.core.system.lang.FileUtils;
 
 public class CredentialUtilsTest {
@@ -81,8 +83,29 @@ public class CredentialUtilsTest {
 		assertTrue(c.isTdmxZoneAdminCertificate());
 		assertFalse(c.isTdmxDomainAdminCertificate());
 		assertFalse(c.isTdmxUserCertificate());
+
+		assertEquals("1.2.840.113549.1.1.11", c.getSignatureAlgorithm().toString());
 		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getSubject());
 		assertEquals("CN=name,TEL=0417100000,EMAIL=pjk@gmail.com,OU=IT,O=mycompany,L=Zug,C=CH", c.getIssuer());
+
+		// test reverse mapping to spec
+		ZoneAdministrationCredentialSpecifier spec = CredentialUtils.describeZoneAdministratorCertificate(c);
+		assertNotNull(spec);
+
+		assertEquals(SignatureAlgorithm.SHA_256_RSA, spec.getSignatureAlgorithm());
+		assertEquals(PublicKeyAlgorithm.RSA2048, spec.getKeyAlgorithm());
+		assertEquals(req.getSignatureAlgorithm(), spec.getSignatureAlgorithm());
+		assertEquals(req.getCn(), spec.getCn());
+		assertEquals(req.getCountry(), spec.getCountry());
+		assertEquals(req.getEmailAddress(), spec.getEmailAddress());
+		assertEquals(req.getTelephoneNumber(), spec.getTelephoneNumber());
+		assertEquals(req.getLocation(), spec.getLocation());
+		assertEquals(req.getKeyAlgorithm(), spec.getKeyAlgorithm());
+		assertEquals(req.getNotAfter(), spec.getNotAfter());
+		assertEquals(req.getNotBefore(), spec.getNotBefore());
+		assertEquals(req.getSerialNumber(), spec.getSerialNumber());
+		assertEquals(req.getOrg(), spec.getOrg());
+		assertEquals(req.getOrgUnit(), spec.getOrgUnit());
 	}
 
 	@Test

@@ -41,7 +41,6 @@ public class AccountZoneAdministrationCredentialSearchCriteria {
 	private String accountId;
 	private String zoneApex;
 	private String fingerprint;
-	private AccountZoneAdministrationCredentialStatus status;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -70,14 +69,6 @@ public class AccountZoneAdministrationCredentialSearchCriteria {
 	// -------------------------------------------------------------------------
 	public PageSpecifier getPageSpecifier() {
 		return pageSpecifier;
-	}
-
-	public AccountZoneAdministrationCredentialStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(AccountZoneAdministrationCredentialStatus status) {
-		this.status = status;
 	}
 
 	public String getZoneApex() {

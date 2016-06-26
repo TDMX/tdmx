@@ -43,6 +43,7 @@ public class ThreadLocalPartitionIdProviderImpl implements ThreadLocalPartitionI
 	// -------------------------------------------------------------------------
 	@Override
 	public void setPartitionId(String partitionId) {
+		log.warn("Setting partitionId " + partitionId);
 		localPartitionIds.set(partitionId);
 	}
 
@@ -53,6 +54,7 @@ public class ThreadLocalPartitionIdProviderImpl implements ThreadLocalPartitionI
 
 	@Override
 	public void clearPartitionId() {
+		log.warn("Clearing partitionId");
 		localPartitionIds.set(null);
 	}
 

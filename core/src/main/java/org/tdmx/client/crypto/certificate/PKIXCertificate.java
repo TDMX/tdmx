@@ -60,6 +60,7 @@ public class PKIXCertificate {
 	private String fingerprint;
 
 	private static Map<String, String> oidMap = new HashMap<>();
+
 	static {
 		oidMap.put(BCStyle.E.getId(), "EMAIL");
 		oidMap.put(BCStyle.TELEPHONE_NUMBER.getId(), "TEL");
@@ -550,9 +551,9 @@ public class PKIXCertificate {
 		return null;
 	}
 
-	public String getSignatureAlgorithm() {
+	public ASN1ObjectIdentifier getSignatureAlgorithm() {
 		if (holder.getSignatureAlgorithm() != null) {
-			return IETFUtils.valueToString(holder.getSignatureAlgorithm());
+			return holder.getSignatureAlgorithm().getAlgorithm();
 		}
 		return null;
 	}

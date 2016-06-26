@@ -49,14 +49,15 @@ public enum SignatureAlgorithm {
 	SHA_1_ECDSA("SHA1withECDSA", DigestAlgorithm.SHA_1, "EC", X9ObjectIdentifiers.ecdsa_with_SHA1),
 	SHA_256_ECDSA("SHA256withECDSA", DigestAlgorithm.SHA_256, "EC", X9ObjectIdentifiers.ecdsa_with_SHA256),
 	SHA_384_ECDSA("SHA384withECDSA", DigestAlgorithm.SHA_384, "EC", X9ObjectIdentifiers.ecdsa_with_SHA384),
-	SHA_512_ECDSA("SHA512withECDSA", DigestAlgorithm.SHA_512, "EC", X9ObjectIdentifiers.ecdsa_with_SHA512), ;
+	SHA_512_ECDSA("SHA512withECDSA", DigestAlgorithm.SHA_512, "EC", X9ObjectIdentifiers.ecdsa_with_SHA512),;
 
 	private String algorithm;
 	private DigestAlgorithm hashAlgorithm;
 	private String keyType;
 	private ASN1ObjectIdentifier asn1oid;
 
-	private SignatureAlgorithm(String algorithm, DigestAlgorithm hashAlgorithm, String keyType, ASN1ObjectIdentifier oid) {
+	private SignatureAlgorithm(String algorithm, DigestAlgorithm hashAlgorithm, String keyType,
+			ASN1ObjectIdentifier oid) {
 		this.algorithm = algorithm;
 		this.hashAlgorithm = hashAlgorithm;
 		this.keyType = keyType;
@@ -66,6 +67,15 @@ public enum SignatureAlgorithm {
 	public static SignatureAlgorithm getByAlgorithmName(String name) {
 		for (SignatureAlgorithm a : SignatureAlgorithm.values()) {
 			if (a.getAlgorithm().equals(name)) {
+				return a;
+			}
+		}
+		return null;
+	}
+
+	public static SignatureAlgorithm getByAsn1Oid(ASN1ObjectIdentifier oid) {
+		for (SignatureAlgorithm a : SignatureAlgorithm.values()) {
+			if (a.getAsn1oid().equals(oid)) {
 				return a;
 			}
 		}

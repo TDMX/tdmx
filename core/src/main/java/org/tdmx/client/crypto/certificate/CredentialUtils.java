@@ -40,6 +40,7 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
+import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
 import org.tdmx.client.crypto.algorithm.SignatureAlgorithm;
 import org.tdmx.client.crypto.scheme.CryptoException;
 import org.tdmx.core.system.lang.StringUtils;
@@ -110,6 +111,8 @@ public class CredentialUtils {
 		}
 		if (StringUtils.hasText(req.getCn())) {
 			subjectBuilder.addRDN(BCStyle.CN, req.getCn());
+		} else {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_CN);
 		}
 		X500Name subject = subjectBuilder.build();
 		X500Name issuer = subject;
@@ -169,6 +172,29 @@ public class CredentialUtils {
 		} catch (IOException e) {
 			throw new CryptoCertificateException(CertificateResultCode.ERROR_CA_CERT_GENERATION, e);
 		}
+	}
+
+	public static ZoneAdministrationCredentialSpecifier describeZoneAdministratorCertificate(
+			PKIXCertificate certificate) {
+		if (certificate == null || !certificate.isTdmxZoneAdminCertificate()) {
+			return null;
+		}
+		ZoneAdministrationCredentialSpecifier spec = new ZoneAdministrationCredentialSpecifier(
+				certificate.getTdmxZoneInfo().getVersion(), certificate.getTdmxZoneInfo().getZoneRoot());
+
+		spec.setSerialNumber(certificate.getSerialNumber());
+		spec.setCn(certificate.getCommonName());
+		spec.setTelephoneNumber(certificate.getTelephoneNumber());
+		spec.setEmailAddress(certificate.getEmailAddress());
+		spec.setOrgUnit(certificate.getOrgUnit());
+		spec.setOrg(certificate.getOrganization());
+		spec.setLocation(certificate.getLocation());
+		spec.setCountry(certificate.getCountry());
+		spec.setNotBefore(certificate.getNotBefore());
+		spec.setNotAfter(certificate.getNotAfter());
+		spec.setKeyAlgorithm(PublicKeyAlgorithm.getAlgorithmMatchingKey(certificate.getCertificate().getPublicKey()));
+		spec.setSignatureAlgorithm(SignatureAlgorithm.getByAsn1Oid(certificate.getSignatureAlgorithm()));
+		return spec;
 	}
 
 	/**

@@ -20,16 +20,43 @@ package org.tdmx.lib.control.service;
 
 import java.util.List;
 
+import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 
 /**
- * Management Services for a AgentCredential.
+ * Management Services for a AccountZoneAdministrationCredential.
  * 
  * @author Peter
  * 
  */
 public interface AccountZoneAdministrationCredentialService {
+
+	public enum PublicKeyCheckStatus {
+		CORRUPT_PEM,
+		NOT_TDMX,
+		NOT_ZAC,
+		NOT_YET_VALID, // describes ZAC
+		EXPIRED, // describes ZAC
+		INVALID_SIGNATURE, // describes ZAC
+		NO_TRUST_ANCHOR_DNS; // describes ZAC
+	}
+
+	/**
+	 * Holder for a description of the ZAC and it's validation problems.
+	 */
+	public class PublicKeyCheckResultHolder {
+		public PublicKeyCheckStatus status;
+		public ZoneAdministrationCredentialSpecifier spec;
+	}
+
+	/**
+	 * Check the ZAC.
+	 * 
+	 * @param certificatePEM
+	 * @return
+	 */
+	public PublicKeyCheckResultHolder check(String certificatePEM);
 
 	public void createOrUpdate(AccountZoneAdministrationCredential accountCredential);
 

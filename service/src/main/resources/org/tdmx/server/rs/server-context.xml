@@ -28,6 +28,12 @@
 		<property name="accountIdService" ref="tdmx.lib.control.AccountIdService" />
 		<property name="zonePartitionService" ref="tdmx.lib.control.ZonePartitionAllocationService" />
 		<property name="jobService" ref="tdmx.lib.control.ControlJobRepository"/>
+
+		<property name="zonePartitionIdProvider" ref="tdmx.lib.zone.ThreadLocalPartitionIdProvider"/>
+		<property name="zoneService" ref="tdmx.lib.zone.ZoneRepository"/>
+		<property name="agentCredentialService" ref="tdmx.lib.zone.AgentCredentialRepository"/>
+		<property name="agentCredentialFactory" ref="tdmx.lib.zone.AgentCredentialFactory"/>
+		<property name="agentCredentialValidator" ref="tdmx.lib.zone.AgentCredentialValidator"/>
 	</bean>
 
 </beans>

@@ -75,7 +75,7 @@ public class DeleteAccountZoneAdministrationCredential extends AbstractCliComman
 		AccountZoneResource azr = accountZones.get(0);
 
 		List<AccountZoneAdministrationCredentialResource> accountZACs = getSas()
-				.searchAccountZoneAdministrationCredential(0, 1, zone, accountId, fingerprint, null);
+				.searchAccountZoneAdministrationCredential(0, 1, zone, accountId, fingerprint);
 		if (accountZACs.isEmpty()) {
 			out.println("ZAC " + fingerprint + " not found.");
 			return;

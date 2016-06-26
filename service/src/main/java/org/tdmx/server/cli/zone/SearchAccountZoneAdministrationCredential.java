@@ -23,10 +23,6 @@ import java.util.List;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Parameter;
 import org.tdmx.core.cli.display.CliPrinter;
-import org.tdmx.core.system.lang.EnumUtils;
-import org.tdmx.core.system.lang.StringUtils;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
-import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.server.cli.cmd.AbstractCliCommand;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 
@@ -47,8 +43,6 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 	private String zone;
 	@Parameter(name = "fingerprint", description = "the fingerprint of the ZAC.")
 	private String fingerprint;
-	@Parameter(name = "status", description = "the installation status - PENDING_INSTALLATION, PENDING_DEINSTALLATION, INVALID_PEM, INVALID_TDMX, INVALID_ZAC, NON_ZAC, NO_DNS_TRUST, INSTALLED, DEINSTALLED.")
-	private String status;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -60,19 +54,12 @@ public class SearchAccountZoneAdministrationCredential extends AbstractCliComman
 
 	@Override
 	public void run(CliPrinter out) {
-		if (StringUtils.hasText(status)
-				&& EnumUtils.mapTo(AccountZoneAdministrationCredentialStatus.class, status) == null) {
-			out.println("Status invalid " + status + ". Use one of "
-					+ StringUtils.arrayToCommaDelimitedString(AccountZoneStatus.values()));
-			return;
-		}
-
 		int results = 0;
 		int page = 0;
 		List<AccountZoneAdministrationCredentialResource> accountZACs = null;
 		do {
 			accountZACs = getSas().searchAccountZoneAdministrationCredential(page++, PAGE_SIZE, zone, accountId,
-					fingerprint, status);
+					fingerprint);
 
 			for (AccountZoneAdministrationCredentialResource azac : accountZACs) {
 				out.println(azac);

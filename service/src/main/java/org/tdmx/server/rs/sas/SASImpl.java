@@ -38,7 +38,6 @@ import org.tdmx.lib.control.domain.AccountSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
-import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialStatus;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.DatabasePartition;
@@ -50,6 +49,7 @@ import org.tdmx.lib.control.domain.Segment;
 import org.tdmx.lib.control.domain.TrustedSslCertificate;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
+import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService.PublicKeyCheckResultHolder;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
@@ -59,12 +59,20 @@ import org.tdmx.lib.control.service.SegmentService;
 import org.tdmx.lib.control.service.TrustedSslCertificateService;
 import org.tdmx.lib.control.service.UniqueIdService;
 import org.tdmx.lib.control.service.ZoneDatabasePartitionAllocationService;
+import org.tdmx.lib.zone.domain.AgentCredential;
+import org.tdmx.lib.zone.domain.AgentCredentialDescriptor;
+import org.tdmx.lib.zone.domain.Zone;
+import org.tdmx.lib.zone.service.AgentCredentialFactory;
+import org.tdmx.lib.zone.service.AgentCredentialService;
+import org.tdmx.lib.zone.service.AgentCredentialValidator;
+import org.tdmx.lib.zone.service.ZoneService;
 import org.tdmx.server.cache.CacheInvalidationInstruction;
 import org.tdmx.server.cache.CacheInvalidationNotifier;
 import org.tdmx.server.pcs.protobuf.Cache.CacheName;
 import org.tdmx.server.rs.exception.FieldValidationError;
 import org.tdmx.server.rs.exception.FieldValidationError.FieldValidationErrorType;
 import org.tdmx.server.rs.sas.resource.AccountResource;
+import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialCheckResult;
 import org.tdmx.server.rs.sas.resource.AccountZoneAdministrationCredentialResource;
 import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.CacheInvalidationInstructionValue;
@@ -130,6 +138,11 @@ public class SASImpl implements SAS {
 	private ThreadLocalPartitionIdProvider zonePartitionIdProvider;
 	private ControlJobService jobService;
 	private CacheInvalidationNotifier cacheInvalidater;
+
+	private ZoneService zoneService;
+	private AgentCredentialService agentCredentialService;
+	private AgentCredentialFactory agentCredentialFactory;
+	private AgentCredentialValidator agentCredentialValidator;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -710,10 +723,26 @@ public class SASImpl implements SAS {
 		az.setZonePartitionId(partitionId);
 		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
-		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
+		log.warn("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
 		accountZoneService.createOrUpdate(az);
 
-		// FIXME install the Zone in the ZoneDB partition.
+		// install the Zone in the ZoneDB partition.
+		zonePartitionIdProvider.setPartitionId(partitionId);
+		try {
+			Zone z = zoneService.findByZoneApex(az.getZoneApex());
+			if (z != null) {
+				throw new IllegalStateException("Zone with apex already exists. " + z);
+			} else {
+				z = new Zone(az.getId(), az.getZoneApex());
+				zoneService.createOrUpdate(z);
+			}
+		} catch (RuntimeException re) {
+			log.info("Rolling back creation of " + az);
+			accountZoneService.delete(az);
+			throw re;
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 		return AccountZoneResource.mapFrom(az);
 	}
 
@@ -825,8 +854,16 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
+	public AccountZoneAdministrationCredentialCheckResult checkAccountZoneAdministrationCredential(
+			String certificatePEM) {
+		PublicKeyCheckResultHolder check = accountZoneCredentialService.check(certificatePEM);
+
+		return AccountZoneAdministrationCredentialCheckResult.mapFrom(check, null, certificatePEM);
+	}
+
+	@Override
 	public AccountZoneAdministrationCredentialResource createAccountZoneAdministrationCredential(Long aId, Long zId,
-			AccountZoneAdministrationCredentialResource zac) {
+			String certificatePEM) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 
@@ -836,35 +873,46 @@ public class SASImpl implements SAS {
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
-				zac.getAccountId());
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, az.getZoneApex(), zac.getZoneApex());
-
+		// re-check the cert and make sure it's for the correct zone
+		PublicKeyCheckResultHolder check = accountZoneCredentialService.check(certificatePEM);
+		if (check.status != null) {
+			throw createVE(FieldValidationErrorType.INVALID,
+					AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM.toString());
+		}
 		// field validation
-		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.ID, zac.getId());
-		validatePresent(AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM, zac.getZoneApex());
-		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, zac.getFingerprint());
-		validateNotPresent(AccountZoneAdministrationCredentialResource.FIELD.STATUS, zac.getStatus());
+		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, az.getZoneApex(),
+				check.spec.getZoneInfo().getZoneRoot());
 
-		// we cannot trust what is sent is correct, so we double check the fingerprint
-		AccountZoneAdministrationCredential controlCredential = new AccountZoneAdministrationCredential(
-				a.getAccountId(), zac.getCertificatePem());
-		AccountZoneAdministrationCredential azc = AccountZoneAdministrationCredentialResource.mapTo(zac);
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, controlCredential.getZoneApex(),
-				azc.getZoneApex());
-		azc.setFingerprint(controlCredential.getFingerprint());
-		azc.setCredentialStatus(controlCredential.getCredentialStatus());
+		AccountZoneAdministrationCredential zac = new AccountZoneAdministrationCredential(a.getAccountId(),
+				certificatePEM);
 
 		log.info("Creating AccountZoneAdministrationCredential " + zac);
-		accountZoneCredentialService.createOrUpdate(azc);
+		accountZoneCredentialService.createOrUpdate(zac);
 
-		if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == azc.getCredentialStatus()) {
-
-			// schedule the job to check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
-			// FIXME only install if ZAC is ok.
-
+		// install the ZoneAdministrationCredential in the ZoneDB partition.
+		zonePartitionIdProvider.setPartitionId(az.getZonePartitionId());
+		try {
+			Zone z = zoneService.findByZoneApex(az.getZoneApex());
+			if (z == null) {
+				throw new IllegalStateException("Zone not found for " + az);
+			}
+			AgentCredentialDescriptor zacDescriptor = agentCredentialFactory
+					.createAgentCredential(zac.getCertificateChain());
+			if (!agentCredentialValidator.isValid(zacDescriptor)) {
+				// would normally be checked with check
+				throw new IllegalStateException("ZAC is invalid " + zacDescriptor);
+			}
+			AgentCredential zacAC = new AgentCredential(z, zacDescriptor);
+			agentCredentialService.createOrUpdate(zacAC);
+		} catch (RuntimeException re) {
+			log.info("Rolling back creation of " + zac);
+			accountZoneCredentialService.delete(zac);
+			throw re;
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
 		}
-		return AccountZoneAdministrationCredentialResource.mapFrom(azc);
+
+		return AccountZoneAdministrationCredentialResource.mapFrom(zac);
 	}
 
 	@Override
@@ -895,7 +943,7 @@ public class SASImpl implements SAS {
 
 	@Override
 	public List<AccountZoneAdministrationCredentialResource> searchAccountZoneAdministrationCredential(Integer pageNo,
-			Integer pageSize, String zoneApex, String accountId, String fingerprint, String status) {
+			Integer pageSize, String zoneApex, String accountId, String fingerprint) {
 		// we list all ZACs, or restrict to those of an account if the accountId is set, or zone if the zone parameter
 		// is provided
 		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
@@ -903,9 +951,6 @@ public class SASImpl implements SAS {
 		sc.setAccountId(accountId);
 		sc.setZoneApex(zoneApex);
 		sc.setFingerprint(fingerprint);
-		if (StringUtils.hasText(status)) {
-			sc.setStatus(AccountZoneAdministrationCredentialStatus.valueOf(status));
-		}
 		List<AccountZoneAdministrationCredential> accountzones = accountZoneCredentialService.search(sc);
 
 		List<AccountZoneAdministrationCredentialResource> result = new ArrayList<>();
@@ -936,54 +981,6 @@ public class SASImpl implements SAS {
 	}
 
 	@Override
-	public AccountZoneAdministrationCredentialResource updateAccountZoneAdministrationCredential(Long aId, Long zId,
-			Long zcId, AccountZoneAdministrationCredentialResource zac) {
-		validatePresent(PARAM.AID, aId);
-		validatePresent(PARAM.ZID, zId);
-		validatePresent(PARAM.ZCID, zcId);
-		validateEnum(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
-				AccountZoneAdministrationCredentialStatus.class, zac.getStatus());
-
-		Account a = accountService.findById(aId);
-		validateExists(PARAM.AID, a);
-		AccountZone az = accountZoneService.findById(zId);
-		validateExists(PARAM.ZID, az);
-		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
-		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
-		validateExists(PARAM.ZCID, azc);
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
-				azc.getAccountId());
-
-		// we don't support changing the certificate, but we support deinstallation or re-installation (maybe DNS fixed)
-		AccountZoneAdministrationCredential updatedAzc = AccountZoneAdministrationCredentialResource.mapTo(zac);
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ZONEAPEX, azc.getZoneApex(),
-				updatedAzc.getZoneApex());
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM, azc.getCertificateChainPem(),
-				updatedAzc.getCertificateChainPem());
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.FINGERPRINT, azc.getFingerprint(),
-				updatedAzc.getFingerprint());
-
-		if (AccountZoneAdministrationCredentialStatus.DEINSTALLED == updatedAzc.getCredentialStatus()) {
-			if (AccountZoneAdministrationCredentialStatus.INSTALLED == azc.getCredentialStatus()) {
-				// TODO #89 ZACRemoveTask and schedule job.
-				updatedAzc.setCredentialStatus(AccountZoneAdministrationCredentialStatus.PENDING_DEINSTALLATION);
-
-			} else {
-				// if not already installed, then we can immediately remove.
-				updatedAzc.setCredentialStatus(AccountZoneAdministrationCredentialStatus.DEINSTALLED);
-			}
-			accountZoneCredentialService.createOrUpdate(updatedAzc);
-		} else if (AccountZoneAdministrationCredentialStatus.PENDING_INSTALLATION == updatedAzc.getCredentialStatus()) {
-			validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
-					AccountZoneAdministrationCredentialStatus.NO_DNS_TRUST, updatedAzc.getCredentialStatus());
-			// schedule the job to re-check DNS and install the ZoneAdministrationCredential in the ZoneDB partition.
-			// FIXME install directly
-
-		}
-		return AccountZoneAdministrationCredentialResource.mapFrom(updatedAzc);
-	}
-
-	@Override
 	public Response deleteAccountZoneAdministrationCredential(Long aId, Long zId, Long zcId) {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
@@ -998,10 +995,24 @@ public class SASImpl implements SAS {
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
 				azc.getAccountId());
-		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.STATUS,
-				AccountZoneAdministrationCredentialStatus.DEINSTALLED, azc.getCredentialStatus());
+
+		// remove the ZoneAdministrationCredential in the ZoneDB partition.
+		zonePartitionIdProvider.setPartitionId(az.getZonePartitionId());
+		try {
+			AgentCredential zacAC = agentCredentialService.findByFingerprint(azc.getFingerprint());
+			if (zacAC == null) {
+				throw new IllegalStateException("ZAC not found for " + azc);
+			}
+			if (!az.getZoneApex().equals(zacAC.getZone().getZoneApex())) {
+				throw new IllegalStateException("Zone mismatch " + azc + " with " + zacAC);
+			}
+			agentCredentialService.delete(zacAC);
+		} finally {
+			zonePartitionIdProvider.clearPartitionId();
+		}
 
 		accountZoneCredentialService.delete(azc);
+
 		return Response.ok().build();
 	}
 
@@ -1221,6 +1232,38 @@ public class SASImpl implements SAS {
 
 	public void setJobService(ControlJobService jobService) {
 		this.jobService = jobService;
+	}
+
+	public ZoneService getZoneService() {
+		return zoneService;
+	}
+
+	public void setZoneService(ZoneService zoneService) {
+		this.zoneService = zoneService;
+	}
+
+	public AgentCredentialService getAgentCredentialService() {
+		return agentCredentialService;
+	}
+
+	public void setAgentCredentialService(AgentCredentialService agentCredentialService) {
+		this.agentCredentialService = agentCredentialService;
+	}
+
+	public AgentCredentialFactory getAgentCredentialFactory() {
+		return agentCredentialFactory;
+	}
+
+	public void setAgentCredentialFactory(AgentCredentialFactory agentCredentialFactory) {
+		this.agentCredentialFactory = agentCredentialFactory;
+	}
+
+	public AgentCredentialValidator getAgentCredentialValidator() {
+		return agentCredentialValidator;
+	}
+
+	public void setAgentCredentialValidator(AgentCredentialValidator agentCredentialValidator) {
+		this.agentCredentialValidator = agentCredentialValidator;
 	}
 
 }
