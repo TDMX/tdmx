@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 /**
  * An AccountZone describes a Zone at a ServiceProvider and points to the Zone's DatabasePartition.
@@ -52,8 +51,7 @@ public class AccountZone implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "AccountZoneIdGen")
-	@TableGenerator(name = "AccountZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	// TODO DB: index zoneApex for agent authentication service

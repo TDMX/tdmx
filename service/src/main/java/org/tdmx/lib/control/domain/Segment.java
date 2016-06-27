@@ -27,7 +27,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 import org.tdmx.core.system.lang.NetUtils;
 
@@ -54,8 +53,7 @@ public class Segment implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "SegmentIdGen")
-	@TableGenerator(name = "SegmentIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "segmentObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(length = MAX_SEGMENT_LEN, nullable = false)

@@ -38,7 +38,6 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -78,8 +77,7 @@ public class ChannelMessage implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelMessageIdGen")
-	@TableGenerator(name = "ChannelMessageIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelmessageObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

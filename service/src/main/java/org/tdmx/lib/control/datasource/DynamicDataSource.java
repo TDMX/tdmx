@@ -88,6 +88,8 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		bds.setMinEvictableIdleTimeMillis(60000);
 		bds.setLogWriter(logWriter);
 		connectionDataSourceMap.put(dci, bds);
+
+		log.info("Created DataSource " + bds + " for " + dci);
 	}
 
 	@Override
@@ -101,7 +103,7 @@ public class DynamicDataSource implements javax.sql.DataSource {
 			partitionId = VALIDATION_PARTITION_ID;
 		}
 		// must be fast. Caching at the DatabasePartitionServiceRepositoryImpl supports this.
-		DatabaseConnectionInfo ci = getConfigurationProvider().getPartitionInfo(partitionId);
+		DatabaseConnectionInfo ci = configurationProvider.getPartitionInfo(partitionId);
 		if (ci == null) {
 			throw new SQLException("No DatabaseConnectionInfo provided for partitionId " + partitionId);
 		}
@@ -113,6 +115,10 @@ public class DynamicDataSource implements javax.sql.DataSource {
 			// there's been a change of DB connection for a partition
 			partitionConnectionInfoMap.put(partitionId, ci);
 			log.warn("DatabasePartition change for partitionId " + partitionId);
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Reuse of connection info " + existingCi + " for " + partitionId);
+			}
 		}
 		BasicDataSource bds = connectionDataSourceMap.get(ci);
 		if (bds == null) {
@@ -122,7 +128,11 @@ public class DynamicDataSource implements javax.sql.DataSource {
 		if (bds == null) {
 			throw new SQLException("Unable to create BasicDataSource for " + ci);
 		}
-		return bds.getConnection();
+		Connection con = bds.getConnection();
+		if (log.isDebugEnabled()) {
+			log.debug("Retrieved connection " + con);
+		}
+		return con;
 	}
 
 	@Override

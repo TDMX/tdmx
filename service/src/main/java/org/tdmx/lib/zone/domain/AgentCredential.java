@@ -30,7 +30,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 
 import org.tdmx.client.crypto.certificate.CertificateIOUtils;
@@ -61,8 +60,7 @@ public class AgentCredential implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "CredentialIdGen")
-	@TableGenerator(name = "CredentialIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

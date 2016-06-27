@@ -31,7 +31,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 import org.tdmx.core.api.v01.mrs.ws.MRS;
 import org.tdmx.core.api.v01.scs.ws.SCS;
@@ -63,8 +62,7 @@ public class TemporaryChannel implements Serializable {
 	private static final long serialVersionUID = -128854626282L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "TempChannelIdGen")
-	@TableGenerator(name = "TempChannelIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "tempChannelObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

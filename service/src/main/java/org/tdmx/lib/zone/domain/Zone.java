@@ -26,7 +26,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 /**
  * An Zone is a domain name incl. all subdomains thereof, managed by a ServiceProvider
@@ -51,8 +50,7 @@ public class Zone implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ZoneIdGen")
-	@TableGenerator(name = "ZoneIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	/**

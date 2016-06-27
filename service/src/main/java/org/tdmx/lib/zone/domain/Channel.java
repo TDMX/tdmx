@@ -33,7 +33,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 import org.tdmx.core.api.v01.zas.ws.ZAS;
 import org.tdmx.lib.common.domain.ProcessingState;
@@ -67,8 +66,7 @@ public class Channel implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ChannelIdGen")
-	@TableGenerator(name = "ChannelIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "channelObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

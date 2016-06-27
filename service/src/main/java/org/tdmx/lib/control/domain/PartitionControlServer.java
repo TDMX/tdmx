@@ -26,7 +26,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 /**
  * A descriptor for a PCS server.
@@ -51,8 +50,7 @@ public class PartitionControlServer implements Serializable {
 	private static final long serialVersionUID = -988419614813872556L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "PartitionControlServerIdGen")
-	@TableGenerator(name = "PartitionControlServerIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "pcsObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)

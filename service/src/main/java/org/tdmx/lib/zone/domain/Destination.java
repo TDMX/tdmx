@@ -31,7 +31,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 
 import org.tdmx.core.api.v01.mds.ws.MDS;
 import org.tdmx.core.api.v01.zas.ws.ZAS;
@@ -61,8 +60,7 @@ public class Destination implements Serializable {
 	private static final long serialVersionUID = -1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "DestinationIdGen")
-	@TableGenerator(name = "DestinationIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "zoneObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

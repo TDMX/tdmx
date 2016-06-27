@@ -27,7 +27,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -53,8 +52,7 @@ public class Lock implements Serializable {
 	private static final long serialVersionUID = -128859602084626282L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE, generator = "LockIdGen")
-	@TableGenerator(name = "LockIdGen", table = "PrimaryKeyGen", pkColumnName = "NAME", pkColumnValue = "controlObjectId", valueColumnName = "value", allocationSize = 10)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(length = Lock.MAX_NAME_LEN, unique = true)
