@@ -19,6 +19,7 @@
 
 package org.tdmx.lib.control.job.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -103,7 +104,7 @@ public class TransferZoneJobExecutorImpl implements JobExecutor {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public boolean execute(ControlJob job) {
+	public Date execute(ControlJob job) {
 		log.info("Running job " + job);
 
 		Long accountZoneId = job.getLongProperty(JobPropertyName.ACCOUNT_ZONE_ID);
@@ -145,7 +146,7 @@ public class TransferZoneJobExecutorImpl implements JobExecutor {
 
 		// delete the old data
 		deleteZoneDataInSource(oldZone, oldPartitionId);
-		return true;
+		return null;
 	}
 
 	// -------------------------------------------------------------------------

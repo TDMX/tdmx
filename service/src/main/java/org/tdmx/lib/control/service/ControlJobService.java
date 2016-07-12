@@ -37,8 +37,6 @@ public interface ControlJobService {
 
 	public List<ControlJob> search(ControlJobSearchCriteria criteria);
 
-	public ControlJob continueJob(Long id);
-
 	/**
 	 * Pessimistic lock and update status from NEW to RUN for up to maxJobs which have scheduledTime in the past.
 	 * 

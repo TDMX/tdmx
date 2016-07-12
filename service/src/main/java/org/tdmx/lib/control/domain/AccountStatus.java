@@ -19,33 +19,23 @@
 package org.tdmx.lib.control.domain;
 
 /**
- * The AccountZoneStatus represents the state of a Zone as defined by the Account.
- * 
- * The Account is free to toggle the AccountZone's status at any time. The AccountZoneStatus propagates to to all Agents
- * of the Zone.
+ * The AccountStatus represents the state of a Account.
  * 
  * @author Peter
  * 
  */
-public enum AccountZoneStatus {
+public enum AccountStatus {
 
 	/**
-	 * The AccountZone is active so that Agents associated with the Zone may interact with the ServiceProvider.
+	 * The Account is active.
 	 */
 	ACTIVE,
 
 	/**
-	 * The AccountZone is blocked so that Agents associated with the Zone may not interact with the ServiceProvider.
-	 * 
-	 * Determined by the AccountUser.
-	 */
-	BLOCKED,
-
-	/**
-	 * The AccountZone is in the process of being deleted and will disappear shortly at the discretion of the
+	 * The Account is in the process of being deleted and will disappear shortly at the discretion of the
 	 * ServiceProvider.
 	 */
 	DELETED;
 
-	public static final int MAX_ACCOUNTZONESTATUS_LEN = 16;
+	public static final int MAX_ACCOUNTSTATUS_LEN = 16;
 }

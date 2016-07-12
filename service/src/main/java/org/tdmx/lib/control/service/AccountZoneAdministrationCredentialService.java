@@ -39,7 +39,11 @@ public interface AccountZoneAdministrationCredentialService {
 		NOT_YET_VALID, // describes ZAC
 		EXPIRED, // describes ZAC
 		INVALID_SIGNATURE, // describes ZAC
-		NO_TRUST_ANCHOR_DNS; // describes ZAC
+		DNS_TXT_RECORD_MISSING, // describes ZAC
+		DNS_ZONEAPEX_WRONG, // describes ZAC
+		DNS_ZAC_FINGERPRINT_MISSING, // describes ZAC
+		DNS_ZAC_FINGERPRINT_WRONG, // describes ZAC
+		OK; // describes ZAC
 	}
 
 	/**
@@ -51,7 +55,9 @@ public interface AccountZoneAdministrationCredentialService {
 	}
 
 	/**
-	 * Check the ZAC.
+	 * Check the ZAC. In order to
+	 * {@link AccountZoneAdministrationCredentialService#createOrUpdate(AccountZoneAdministrationCredential)} the check
+	 * should not return any status (ie. be successful).
 	 * 
 	 * @param certificatePEM
 	 * @return

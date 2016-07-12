@@ -22,9 +22,7 @@ public enum ControlJobType {
 
 	TRANSFER_ZONE,
 
-	CLONE_ZONE,
-
-	ACCESS_ZONE,
+	DELETE_ACCOUNT,
 
 	INVALIDATE_CACHE,
 

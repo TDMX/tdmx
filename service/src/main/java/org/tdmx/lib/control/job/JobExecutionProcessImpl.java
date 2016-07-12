@@ -192,10 +192,15 @@ public class JobExecutionProcessImpl implements Runnable, Manageable {
 		public void run() {
 			job.setStartTimestamp(new Date());
 			try {
-				boolean continued = jobExecutor.execute(job);
+				Date futureSchedule = jobExecutor.execute(job);
 
-				job.setStatus(continued ? ControlJobStatus.OK : ControlJobStatus.CON);
 				job.setEndTimestamp(new Date());
+				if (futureSchedule == null) {
+					jobService.delete(job);
+				} else {
+					job.scheduledAt(futureSchedule);
+					jobService.createOrUpdate(job);
+				}
 			} catch (Exception e) {
 				Throwable problem = e.getCause() != null ? e.getCause() : e;
 				log.warn("Job " + job + " failed with reason=" + problem.getMessage(), e);
@@ -204,14 +209,6 @@ public class JobExecutionProcessImpl implements Runnable, Manageable {
 
 				job.setEndTimestamp(new Date());
 				job.setStatus(ControlJobStatus.ERR);
-			}
-			if (ControlJobStatus.OK == job.getStatus()) {
-				jobService.delete(job);
-			} else {
-				jobService.createOrUpdate(job);
-			}
-			if (job.getParentJobId() != null) {
-				jobService.continueJob(job.getParentJobId());
 			}
 
 			// we triggerfast scheduling of the next poll

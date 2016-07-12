@@ -224,6 +224,11 @@ public interface SAS {
 	/*
 	 * RESTFUL service for AccountZone
 	 */
+	@GET
+	@Path("/accounts/{aid}/zones/check")
+	String checkAccountZone(@PathParam("aid") Long aId, @QueryParam("segment") String segment,
+			@QueryParam("zone") String zoneApex);
+
 	@POST
 	@Path("/accounts/{aid}/zones")
 	AccountZoneResource createAccountZone(@PathParam("aid") Long aId, AccountZoneResource accountZone);

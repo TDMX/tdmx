@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
+import org.tdmx.lib.control.domain.Segment;
 
 /**
  * AccountZoneService provides access to the control information about a Zone in the ControlDB.
@@ -30,6 +31,25 @@ import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
  * 
  */
 public interface AccountZoneService {
+
+	public enum ZoneCheckStatus {
+		DNS_TXT_RECORD_MISSING,
+		DNS_ZONEAPEX_WRONG,
+		DNS_SCS_URL_MISSING,
+		DNS_SCS_URL_WRONG, // doesn't match the segment
+		ZONE_EXISTS,
+		OK;
+	}
+
+	/**
+	 * Checks performed before a zone can be "claimed".
+	 * 
+	 * @param zoneApex
+	 * @param the
+	 *            target segment
+	 * @return null if success, else the reason for not allowing creation of the Zone.
+	 */
+	public ZoneCheckStatus check(String zoneApex, Segment segment);
 
 	public void createOrUpdate(AccountZone accountZone);
 

@@ -18,9 +18,6 @@
  */
 package org.tdmx.lib.control.domain;
 
-import org.tdmx.lib.control.domain.AccountZone;
-import org.tdmx.lib.control.domain.AccountZoneStatus;
-
 public class AccountZoneFacade {
 
 	public static AccountZone createAccountZone(String accountId, String zoneApex, String segment,
@@ -30,6 +27,7 @@ public class AccountZoneFacade {
 		az.setAccountId(accountId);
 		az.setZoneApex(zoneApex);
 		az.setStatus(AccountZoneStatus.ACTIVE);
+		az.setMode(AccountZoneOperationalMode.NORMAL);
 		az.setSegment(segment);
 		az.setZonePartitionId(zonePartitionId);
 		return az;

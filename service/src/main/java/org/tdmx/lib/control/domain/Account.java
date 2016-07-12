@@ -22,6 +22,8 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -65,6 +67,10 @@ public class Account implements Serializable {
 
 	@Column(length = MAX_EMAIL_LEN)
 	private String email;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = AccountStatus.MAX_ACCOUNTSTATUS_LEN, nullable = false)
+	private AccountStatus status;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -137,6 +143,14 @@ public class Account implements Serializable {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public AccountStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AccountStatus status) {
+		this.status = status;
 	}
 
 }

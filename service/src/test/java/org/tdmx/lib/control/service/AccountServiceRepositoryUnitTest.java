@@ -37,6 +37,7 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
+import org.tdmx.lib.control.domain.AccountStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
@@ -59,6 +60,7 @@ public class AccountServiceRepositoryUnitTest {
 		a.setFirstName("peter");
 		a.setLastName("Klauser");
 		a.setEmail("pjklauser@gmail.com");
+		a.setStatus(AccountStatus.ACTIVE);
 
 		service.createOrUpdate(a);
 		// id is created on commit of service

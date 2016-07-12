@@ -18,6 +18,8 @@
  */
 package org.tdmx.lib.control.job;
 
+import java.util.Date;
+
 import org.tdmx.lib.control.domain.ControlJob;
 
 public interface JobExecutor {
@@ -27,8 +29,8 @@ public interface JobExecutor {
 	 * 
 	 * @param job
 	 *            detached job.
-	 * @return true if finished, else job needs continuation.
+	 * @return date if job needs continuation, else null when the job is finished
 	 */
-	public boolean execute(ControlJob job);
+	public Date execute(ControlJob job);
 
 }

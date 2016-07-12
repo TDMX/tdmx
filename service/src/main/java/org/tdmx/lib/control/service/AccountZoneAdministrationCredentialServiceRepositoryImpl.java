@@ -34,6 +34,8 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import org.tdmx.server.runtime.DomainZoneResolutionService;
 
 /**
  * Transactional CRUD Services for AccountZoneAdministrationCredential Entity.
@@ -55,6 +57,7 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl
 			.getLogger(AccountZoneAdministrationCredentialServiceRepositoryImpl.class);
 
 	private AccountZoneAdministrationCredentialDao accountCredentialDao;
+	private DomainZoneResolutionService domainZoneResolutionService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -65,10 +68,10 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl
 	// -------------------------------------------------------------------------
 
 	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
 	public PublicKeyCheckResultHolder check(String certificatePEM) {
 
 		PublicKeyCheckResultHolder result = new PublicKeyCheckResultHolder();
-
 		PKIXCertificate[] certChain = CertificateIOUtils.safePemToX509certs(certificatePEM);
 		if (certChain == null || certChain.length == 0) {
 			result.status = PublicKeyCheckStatus.CORRUPT_PEM;
@@ -83,6 +86,8 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl
 			result.status = PublicKeyCheckStatus.NOT_ZAC;
 			return result;
 		}
+		// after this point in the validation we always have the description of the ZAC, but there stil could be
+		// problems with the time validity and the DNS trust in the cert.
 		ZoneAdministrationCredentialSpecifier spec = CredentialUtils.describeZoneAdministratorCertificate(publicKey);
 		result.spec = spec;
 
@@ -99,8 +104,23 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl
 				result.status = PublicKeyCheckStatus.INVALID_SIGNATURE;
 			}
 		}
-		// TODO NO_TRUST_ANCHOR_DNS
+		// Check the DNS info matches
+		DomainZoneApexInfo dnsInfo = domainZoneResolutionService.resolveDomain(spec.getZoneInfo().getZoneRoot());
+		if (dnsInfo == null) {
+			result.status = PublicKeyCheckStatus.DNS_TXT_RECORD_MISSING;
 
+		} else {
+			if (!spec.getZoneInfo().getZoneRoot().equals(dnsInfo.getZoneApex())) {
+				result.status = PublicKeyCheckStatus.DNS_ZONEAPEX_WRONG;
+			}
+			if (!StringUtils.hasText(dnsInfo.getZacFingerprint())) {
+				result.status = PublicKeyCheckStatus.DNS_ZAC_FINGERPRINT_MISSING;
+			} else if (!publicKey.getFingerprint().equals(dnsInfo.getZacFingerprint())) {
+				result.status = PublicKeyCheckStatus.DNS_ZAC_FINGERPRINT_WRONG;
+			}
+			result.status = PublicKeyCheckStatus.OK;
+
+		}
 		return result;
 	}
 
@@ -178,6 +198,14 @@ public class AccountZoneAdministrationCredentialServiceRepositoryImpl
 
 	public void setAccountCredentialDao(AccountZoneAdministrationCredentialDao accountCredentialDao) {
 		this.accountCredentialDao = accountCredentialDao;
+	}
+
+	public DomainZoneResolutionService getDomainZoneResolutionService() {
+		return domainZoneResolutionService;
+	}
+
+	public void setDomainZoneResolutionService(DomainZoneResolutionService domainZoneResolutionService) {
+		this.domainZoneResolutionService = domainZoneResolutionService;
 	}
 
 }

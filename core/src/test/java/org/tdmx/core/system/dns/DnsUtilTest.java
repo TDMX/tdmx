@@ -109,6 +109,13 @@ public class DnsUtilTest {
 	}
 
 	@Test
+	public void testTXT_UnknownDomain() throws Exception {
+		DnsResultHolder h = DnsUtils.getTdmxZoneRecord("flskjf01932039482039pwfsdjfljdflk.com",
+				DnsUtils.getSystemDnsResolverAddresses());
+		assertNull(h);
+	}
+
+	@Test
 	public void testMatchTxtRecord_OK() {
 		assertTrue(DnsUtils.matchesTdmxZoneRecord(
 				"tdmx version=1 zac=a4f13fef5ed15abce9689b28f23ec590085a1b82f9b5b9e4b00b77a9f36fd310 scs=https://www.thisisabloodylongdomainnamewithextension/api/v1.0/scs/"));

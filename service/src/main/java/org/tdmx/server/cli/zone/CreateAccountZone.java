@@ -48,7 +48,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 	@Parameter(name = "segment", required = true, description = "the zone's segment.")
 	private String segment;
 
-	@Parameter(name = "status", defaultValue = "ACTIVE", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
+	@Parameter(name = "status", defaultValue = "ACTIVE", description = "the access status - ACTIVE, BLOCKED.")
 	private String status;
 
 	// -------------------------------------------------------------------------
@@ -78,7 +78,7 @@ public class CreateAccountZone extends AbstractCliCommand {
 		azr.setAccountId(account.getAccountId());
 		azr.setZoneApex(zone);
 		azr.setSegment(segment);
-		azr.setAccessStatus(status);
+		azr.setStatus(status);
 
 		AccountZoneResource newAzr = getSas().createAccountZone(account.getId(), azr);
 		out.println(newAzr);

@@ -152,13 +152,12 @@ public class DnsZoneResolutionServiceImpl implements DnsZoneResolutionService {
 	private DnsResultHolder getTdmxZoneRecord(String domainName, DnsResolverGroup resolver) {
 		try {
 			DnsResultHolder result = DnsUtils.getTdmxZoneRecord(domainName, resolver.getIpAddresses());
-			if (result.getRecords() == null || result.getRecords().isEmpty()) {
-				log.warn("No TXT records found for " + domainName);
+			if (result == null) {
+				log.info("No TXT records found for " + domainName);
 				return null;
 			}
 			if (result.getRecords().size() > 1) {
-				log.warn("Multiple TXT records found for " + domainName);
-				return null;
+				log.info("Multiple TXT records found for " + domainName);
 			}
 			return result;
 		} catch (TextParseException | UnknownHostException e) {

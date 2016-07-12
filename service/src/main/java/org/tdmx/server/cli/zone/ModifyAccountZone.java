@@ -49,7 +49,7 @@ public class ModifyAccountZone extends AbstractCliCommand {
 	private String segment;
 	@Parameter(name = "zonePartition", description = "the zone database partition.")
 	private String zonePartitionId;
-	@Parameter(name = "status", description = "the access status - ACTIVE, MAINTENANCE, BLOCKED.")
+	@Parameter(name = "status", description = "the zone status - ACTIVE, BLOCKED.")
 	private String status;
 
 	// -------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public class ModifyAccountZone extends AbstractCliCommand {
 
 		azr.setSegment(segment);
 		azr.setZonePartitionId(zonePartitionId);
-		azr.setAccessStatus(status);
+		azr.setStatus(status);
 
 		AccountZoneResource newAzr = getSas().updateAccountZone(account.getId(), azr.getId(), azr);
 		out.println(newAzr);

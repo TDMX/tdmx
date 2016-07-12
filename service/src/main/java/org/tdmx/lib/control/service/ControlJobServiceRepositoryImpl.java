@@ -80,16 +80,6 @@ public class ControlJobServiceRepositoryImpl implements ControlJobService {
 
 	@Override
 	@Transactional(value = "ControlDB")
-	public ControlJob continueJob(Long id) {
-		ControlJob storedJob = getControlJobDao().loadById(id);
-		if (storedJob != null) {
-			storedJob.setScheduledTime(new Date());
-		}
-		return storedJob;
-	}
-
-	@Override
-	@Transactional(value = "ControlDB")
 	public void delete(ControlJob job) {
 		ControlJob storedJob = getControlJobDao().loadById(job.getId());
 		if (storedJob != null) {

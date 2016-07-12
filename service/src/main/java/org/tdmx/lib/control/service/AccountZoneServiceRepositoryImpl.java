@@ -29,6 +29,9 @@ import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.dao.AccountZoneDao;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
+import org.tdmx.lib.control.domain.DomainZoneApexInfo;
+import org.tdmx.lib.control.domain.Segment;
+import org.tdmx.server.runtime.DomainZoneResolutionService;
 
 /**
  * Management of the AccountZone via transactional services.
@@ -48,6 +51,7 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	private static final Logger log = LoggerFactory.getLogger(AccountZoneServiceRepositoryImpl.class);
 
 	private AccountZoneDao accountZoneDao;
+	private DomainZoneResolutionService domainZoneResolutionService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -56,6 +60,33 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	@Transactional(value = "ControlDB", readOnly = true)
+	public ZoneCheckStatus check(String zoneApex, Segment segment) {
+		if (!StringUtils.hasText(zoneApex)) {
+			throw new IllegalArgumentException("Missing zoneApex");
+		}
+		DomainZoneApexInfo dnsInfo = domainZoneResolutionService.resolveDomain(zoneApex);
+		if (dnsInfo == null) {
+			return ZoneCheckStatus.DNS_TXT_RECORD_MISSING;
+		}
+		if (!zoneApex.equals(dnsInfo.getZoneApex())) {
+			return ZoneCheckStatus.DNS_ZONEAPEX_WRONG;
+		}
+
+		if (dnsInfo.getScsUrl() == null) {
+			return ZoneCheckStatus.DNS_SCS_URL_MISSING;
+		} else if (segment != null && !segment.getScsUrl().equalsIgnoreCase(dnsInfo.getScsUrl().toString())) {
+			return ZoneCheckStatus.DNS_SCS_URL_WRONG;
+		}
+
+		AccountZone az = findByZoneApex(zoneApex);
+		if (az != null) {
+			return ZoneCheckStatus.ZONE_EXISTS;
+		}
+		return null;
+	}
 
 	@Override
 	@Transactional(value = "ControlDB")
@@ -128,6 +159,14 @@ public class AccountZoneServiceRepositoryImpl implements AccountZoneService {
 
 	public void setAccountZoneDao(AccountZoneDao accountZoneDao) {
 		this.accountZoneDao = accountZoneDao;
+	}
+
+	public DomainZoneResolutionService getDomainZoneResolutionService() {
+		return domainZoneResolutionService;
+	}
+
+	public void setDomainZoneResolutionService(DomainZoneResolutionService domainZoneResolutionService) {
+		this.domainZoneResolutionService = domainZoneResolutionService;
 	}
 
 }

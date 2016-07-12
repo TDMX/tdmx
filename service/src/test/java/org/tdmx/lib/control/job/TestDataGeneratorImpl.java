@@ -29,9 +29,11 @@ import org.tdmx.core.system.lang.StringUtils;
 import org.tdmx.lib.common.domain.PageSpecifier;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountStatus;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
+import org.tdmx.lib.control.domain.AccountZoneOperationalMode;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.TestDataGeneratorInput;
@@ -541,6 +543,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		a.setFirstName("firstName");
 		a.setLastName("lastName");
 		a.setEmail("email@address.com");
+		a.setStatus(AccountStatus.ACTIVE);
 
 		accountService.createOrUpdate(a);
 
@@ -577,6 +580,7 @@ public class TestDataGeneratorImpl implements TestDataGenerator {
 		AccountZone az = new AccountZone();
 		az.setAccountId(a.getAccountId());
 		az.setStatus(AccountZoneStatus.ACTIVE);
+		az.setMode(AccountZoneOperationalMode.NORMAL);
 		az.setZoneApex(zoneApex);
 		az.setSegment(partition.getSegment());
 		az.setZonePartitionId(partition.getPartitionId());

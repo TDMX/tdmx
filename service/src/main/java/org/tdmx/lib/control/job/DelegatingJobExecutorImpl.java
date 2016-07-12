@@ -19,6 +19,8 @@
 
 package org.tdmx.lib.control.job;
 
+import java.util.Date;
+
 import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.ControlJobType;
 
@@ -39,7 +41,7 @@ public class DelegatingJobExecutorImpl implements JobExecutor {
 	// -------------------------------------------------------------------------
 	private JobExecutor waitJobExecutor;
 	private JobExecutor transferZoneJobExecutor;
-	// TODO others
+	// TODO #89 others job executors
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -50,16 +52,16 @@ public class DelegatingJobExecutorImpl implements JobExecutor {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public boolean execute(ControlJob job) {
+	public Date execute(ControlJob job) {
 		switch (job.getType()) {
-		case ACCESS_ZONE:
-			break;
-		case CLONE_ZONE:
+		case DELETE_ACCOUNT:
+			// TODO #89 impl?
 			break;
 		case INVALIDATE_CACHE:
+			// TODO #89 impl?
 			break;
 		case TRANSFER_ZONE:
-			return transferZoneJobExecutor.equals(job);
+			return transferZoneJobExecutor.execute(job);
 		case WAIT:
 			return waitJobExecutor.execute(job);
 		default:

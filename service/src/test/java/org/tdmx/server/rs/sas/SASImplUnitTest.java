@@ -25,6 +25,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -35,6 +37,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,10 @@ import org.tdmx.client.crypto.certificate.CredentialUtils;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 import org.tdmx.client.crypto.certificate.ZoneAdministrationCredentialSpecifier;
 import org.tdmx.core.api.v01.common.Acknowledge;
+import org.tdmx.lib.control.domain.AccountStatus;
+import org.tdmx.lib.control.domain.AccountZoneOperationalMode;
 import org.tdmx.lib.control.domain.DatabaseType;
+import org.tdmx.lib.control.domain.DnsDomainZone;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneService;
@@ -65,10 +71,11 @@ import org.tdmx.server.rs.sas.resource.AccountZoneResource;
 import org.tdmx.server.rs.sas.resource.DatabasePartitionResource;
 import org.tdmx.server.rs.sas.resource.DnsResolverGroupResource;
 import org.tdmx.server.rs.sas.resource.SegmentResource;
+import org.tdmx.server.runtime.DnsZoneResolutionService;
 import org.tdmx.server.ws.ErrorCode;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/org/tdmx/test-context.xml")
+@ContextConfiguration(locations = "classpath:/org/tdmx/server/rs/sas/SASImplUnitTest-context.xml")
 public class SASImplUnitTest {
 
 	private static final Logger log = LoggerFactory.getLogger(SASImplUnitTest.class);
@@ -92,6 +99,8 @@ public class SASImplUnitTest {
 	@Autowired
 	@Qualifier("tdmx.lib.control.AccountIdService")
 	private UniqueIdService objectIdService;
+	@Autowired
+	private DnsZoneResolutionService mockDnsZoneResolutionService;
 
 	@Autowired
 	private SAS sas;
@@ -139,6 +148,7 @@ public class SASImplUnitTest {
 		accountResource.setEmail(accountEmail);
 		accountResource.setFirstname("firstName");
 		accountResource.setLastname("ln");
+		accountResource.setStatus(AccountStatus.ACTIVE.toString());
 		accountResource = sas.createAccount(accountResource);
 
 		assertNotNull(accountResource.getId());
@@ -148,8 +158,8 @@ public class SASImplUnitTest {
 		accountZoneResource.setAccountId(accountResource.getAccountId());
 		accountZoneResource.setSegment(MockDatabasePartitionInstaller.S1);
 		accountZoneResource.setZoneApex(accountResource.getAccountId() + ".zone.apex"); // make it unique.
-		accountZoneResource.setAccessStatus("ACTIVE");
-
+		accountZoneResource.setStatus("ACTIVE");
+		accountZoneResource.setMode(AccountZoneOperationalMode.NORMAL.toString());
 		accountZoneResource = sas.createAccountZone(accountResource.getId(), accountZoneResource);
 
 		assertNotNull(accountZoneResource.getId());
@@ -175,6 +185,15 @@ public class SASImplUnitTest {
 		adminSpec.setNotAfter(validTo);
 		PKIXCredential zac = CredentialUtils.createZoneAdministratorCredential(adminSpec);
 
+		// the TDMX dns information for the zone
+		DnsDomainZone ddz = new DnsDomainZone();
+		ddz.setDomainName(accountZoneResource.getZoneApex());
+		ddz.setZoneApex(accountZoneResource.getZoneApex());
+		ddz.setZacFingerprint(zac.getPublicCert().getFingerprint());
+		ddz.setNameServerAddresses(Arrays.asList(new String[] { "8.8.8.8" }));
+		ddz.setScsUrl(new URL("https://scs.com/scsapi"));
+
+		Mockito.when(mockDnsZoneResolutionService.resolveDomain(Mockito.anyString())).thenReturn(ddz);
 		zacResource = sas.createAccountZoneAdministrationCredential(accountResource.getId(),
 				accountZoneResource.getId(), CertificateIOUtils.safeX509certsToPem(zac.getCertificateChain()));
 		assertNotNull(zacResource.getId());

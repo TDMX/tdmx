@@ -63,8 +63,10 @@ public class ControlJob implements Serializable {
 
 	/**
 	 * The segment is a secondary partitioning criteria like "premium" or "free" tier.
+	 * 
+	 * Control-DB jobs like "AccountDelete" do not have a segment.
 	 */
-	@Column(length = Segment.MAX_SEGMENT_LEN, nullable = false)
+	@Column(length = Segment.MAX_SEGMENT_LEN)
 	private String segment;
 
 	// TODO DB: index on segment, scheduledTime
@@ -97,9 +99,6 @@ public class ControlJob implements Serializable {
 	@Column(length = MAX_DATA_LEN)
 	private String exception;
 
-	@Column
-	private Long parentJobId; // job to be continued when this one finishes.
-
 	// TODO index type + owningEntityId
 	@Column
 	private Long owningEntityId; // entityId which owns the job
@@ -112,7 +111,15 @@ public class ControlJob implements Serializable {
 		ControlJob j = new ControlJob();
 		j.setType(ControlJobType.WAIT);
 		j.setSegment(segment);
-		j.setStatus(ControlJobStatus.NEW);
+		j.setStatus(ControlJobStatus.RDY);
+		return j;
+	}
+
+	public static ControlJob createDeleteAccountJob(Long accountId) {
+		ControlJob j = new ControlJob();
+		j.setType(ControlJobType.DELETE_ACCOUNT);
+		j.setStatus(ControlJobStatus.RDY);
+		j.setLongProperty(JobPropertyName.ACCOUNT_ID, accountId);
 		return j;
 	}
 
@@ -120,7 +127,7 @@ public class ControlJob implements Serializable {
 		ControlJob j = new ControlJob();
 		j.setType(ControlJobType.TRANSFER_ZONE);
 		j.setSegment(segment);
-		j.setStatus(ControlJobStatus.NEW);
+		j.setStatus(ControlJobStatus.RDY);
 		j.setLongProperty(JobPropertyName.ACCOUNT_ZONE_ID, accountZoneId);
 		j.setStringProperty(JobPropertyName.NEW_ZONE_PARTITION_ID, newZonePartitionId);
 		return j;
@@ -137,7 +144,6 @@ public class ControlJob implements Serializable {
 		builder.append(", status=").append(status);
 		builder.append(", segment=").append(segment);
 		builder.append(", scheduledTime=").append(scheduledTime);
-		builder.append(", parentJobId=").append(parentJobId);
 		builder.append(", owningEntityId=").append(owningEntityId);
 		builder.append("]");
 		return builder.toString();
@@ -154,14 +160,6 @@ public class ControlJob implements Serializable {
 			sb.append(e.toString()).append(StringUtils.getLF());
 		}
 		setException(sb.toString());
-	}
-
-	public ControlJob withParentJob(ControlJob parent) {
-		if (parent == null || parent.getId() == null) {
-			throw new IllegalArgumentException("parent must have an id");
-		}
-		setParentJobId(parent.getId());
-		return this;
 	}
 
 	public ControlJob withOwningEntityId(Long entityId) {
@@ -255,14 +253,6 @@ public class ControlJob implements Serializable {
 
 	public void setSegment(String segment) {
 		this.segment = segment;
-	}
-
-	public Long getParentJobId() {
-		return parentJobId;
-	}
-
-	public void setParentJobId(Long parentJobId) {
-		this.parentJobId = parentJobId;
 	}
 
 	public Long getOwningEntityId() {

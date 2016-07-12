@@ -27,6 +27,7 @@ import org.tdmx.core.cli.display.annotation.CliAttribute;
 import org.tdmx.core.cli.display.annotation.CliRepresentation;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.AccountZone;
+import org.tdmx.lib.control.domain.AccountZoneOperationalMode;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
 
 @CliRepresentation(name = "AccountZone")
@@ -41,7 +42,8 @@ public class AccountZoneResource {
 		ZONEAPEX("zoneApex"),
 		SEGMENT("segment"),
 		ZONEPARTITIONID("zonePartitionId"),
-		ACCESSSTATUS("accessStatus");
+		STATUS("status"),
+		MODE("mode");
 
 		private final String n;
 
@@ -66,7 +68,9 @@ public class AccountZoneResource {
 	@CliAttribute(order = 4)
 	private String zonePartitionId;
 	@CliAttribute(order = 5)
-	private String accessStatus;
+	private String status;
+	@CliAttribute(order = 6)
+	private String mode;
 
 	public static AccountZone mapTo(AccountZoneResource az) {
 		if (az == null) {
@@ -80,7 +84,8 @@ public class AccountZoneResource {
 		a.setSegment(az.getSegment());
 		a.setZonePartitionId(az.getZonePartitionId());
 
-		a.setStatus(EnumUtils.mapTo(AccountZoneStatus.class, az.getAccessStatus()));
+		a.setStatus(EnumUtils.mapTo(AccountZoneStatus.class, az.getStatus()));
+		a.setMode(EnumUtils.mapTo(AccountZoneOperationalMode.class, az.getMode()));
 		return a;
 	}
 
@@ -96,7 +101,8 @@ public class AccountZoneResource {
 		a.setSegment(az.getSegment());
 		a.setZonePartitionId(az.getZonePartitionId());
 
-		a.setAccessStatus(EnumUtils.mapToString(az.getStatus()));
+		a.setStatus(EnumUtils.mapToString(az.getStatus()));
+		a.setMode(EnumUtils.mapToString(az.getMode()));
 		return a;
 	}
 
@@ -140,12 +146,20 @@ public class AccountZoneResource {
 		this.zonePartitionId = zonePartitionId;
 	}
 
-	public String getAccessStatus() {
-		return accessStatus;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setAccessStatus(String accessStatus) {
-		this.accessStatus = accessStatus;
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 
 }

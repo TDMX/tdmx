@@ -19,6 +19,8 @@
 
 package org.tdmx.lib.control.job.impl;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdmx.lib.control.domain.ControlJob;
@@ -52,9 +54,9 @@ public class WaitJobExecutorImpl implements JobExecutor {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public boolean execute(ControlJob job) {
+	public Date execute(ControlJob job) {
 		log.info("Running job " + job);
-		return true;
+		return null;
 	}
 
 	// -------------------------------------------------------------------------

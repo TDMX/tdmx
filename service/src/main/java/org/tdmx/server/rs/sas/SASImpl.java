@@ -35,11 +35,13 @@ import org.tdmx.lib.common.domain.ProcessingState;
 import org.tdmx.lib.control.datasource.ThreadLocalPartitionIdProvider;
 import org.tdmx.lib.control.domain.Account;
 import org.tdmx.lib.control.domain.AccountSearchCriteria;
+import org.tdmx.lib.control.domain.AccountStatus;
 import org.tdmx.lib.control.domain.AccountZone;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredential;
 import org.tdmx.lib.control.domain.AccountZoneAdministrationCredentialSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneSearchCriteria;
 import org.tdmx.lib.control.domain.AccountZoneStatus;
+import org.tdmx.lib.control.domain.ControlJob;
 import org.tdmx.lib.control.domain.DatabasePartition;
 import org.tdmx.lib.control.domain.DatabasePartitionSearchCriteria;
 import org.tdmx.lib.control.domain.DatabaseType;
@@ -50,6 +52,7 @@ import org.tdmx.lib.control.domain.TrustedSslCertificate;
 import org.tdmx.lib.control.service.AccountService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService;
 import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService.PublicKeyCheckResultHolder;
+import org.tdmx.lib.control.service.AccountZoneAdministrationCredentialService.PublicKeyCheckStatus;
 import org.tdmx.lib.control.service.AccountZoneService;
 import org.tdmx.lib.control.service.ControlJobService;
 import org.tdmx.lib.control.service.DatabasePartitionService;
@@ -674,9 +677,17 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.ACCOUNT, account);
 		validateEquals(PARAM.AID, aId, account.getId());
 
+		Account existingAccount = accountService.findById(aId);
+		validateExists(PARAM.AID, existingAccount);
+		// status must be active and cannot be changed
+		validateInSet(AccountResource.FIELD.STATUS, new AccountStatus[] { AccountStatus.ACTIVE },
+				existingAccount.getStatus());
+
 		Account a = AccountResource.mapTo(account);
 		validatePresent(AccountResource.FIELD.ID, a.getId());
 		validatePresent(AccountResource.FIELD.ACCOUNTID, a.getAccountId());
+		validateEquals(AccountResource.FIELD.STATUS, a.getStatus(), existingAccount.getStatus());
+
 		accountService.createOrUpdate(a);
 		return AccountResource.mapFrom(a);
 	}
@@ -685,31 +696,52 @@ public class SASImpl implements SAS {
 	public Response deleteAccount(Long aId) {
 		validatePresent(PARAM.AID, aId);
 		Account a = accountService.findById(aId);
+		validateExists(PARAM.AID, a);
 
-		// check that no accountzones exist for the account
-		AccountZoneSearchCriteria sc = new AccountZoneSearchCriteria(getPageSpecifier(0, 1));
-		sc.setAccountId(a.getAccountId());
-		List<AccountZone> accountzones = accountZoneService.search(sc);
-		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
+		// status must be active
+		validateInSet(AccountResource.FIELD.STATUS, new AccountStatus[] { AccountStatus.ACTIVE }, a.getStatus());
 
-		accountService.delete(a);
+		// set the state to DELETE and start a DeleteAccountJob
+		a.setStatus(AccountStatus.DELETED);
+		accountService.createOrUpdate(a);
+
+		// start delete account job
+		ControlJob job = ControlJob.createDeleteAccountJob(a.getId());
+		job.withOwningEntityId(a.getId());
+		job.scheduleNow();
+		jobService.createOrUpdate(job);
+
 		return Response.ok().build();
+	}
+
+	@Override
+	public String checkAccountZone(Long aId, String segment, String zoneApex) {
+		validatePresent(PARAM.AID, aId);
+		validatePresent(PARAM.SEGMENT, segment);
+		Segment s = segmentService.findBySegment(segment);
+		validateExists(SegmentResource.FIELD.SEGMENT, s);
+
+		return EnumUtils.mapToString(accountZoneService.check(zoneApex, s));
 	}
 
 	@Override
 	public AccountZoneResource createAccountZone(Long aId, AccountZoneResource accountZone) {
 		validatePresent(PARAM.AID, aId);
-		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
+		validateEnum(AccountZoneResource.FIELD.STATUS, AccountZoneStatus.class, accountZone.getStatus());
 
 		AccountZone az = AccountZoneResource.mapTo(accountZone);
+		validateInSet(AccountZoneResource.FIELD.STATUS,
+				new AccountZoneStatus[] { AccountZoneStatus.ACTIVE, AccountZoneStatus.BLOCKED }, az.getStatus());
 
 		// check that the account exists and accountId same
 		Account a = accountService.findById(aId);
 		validatePresent(PARAM.ACCOUNT, a);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
+		// TODO do the check for creation again
+
 		validatePresent(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex());
-		validatePresent(AccountZoneResource.FIELD.ACCESSSTATUS, az.getStatus());
+		validatePresent(AccountZoneResource.FIELD.STATUS, az.getStatus());
 		validateNotPresent(AccountZoneResource.FIELD.ID, az.getId());
 
 		validatePresent(AccountZoneResource.FIELD.SEGMENT, az.getSegment());
@@ -723,7 +755,7 @@ public class SASImpl implements SAS {
 		az.setZonePartitionId(partitionId);
 		validatePresent(AccountZoneResource.FIELD.ZONEPARTITIONID, az.getZonePartitionId());
 
-		log.warn("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
+		log.info("Creating AccountZone " + az.getZoneApex() + " in ZoneDB partition " + az.getZonePartitionId());
 		accountZoneService.createOrUpdate(az);
 
 		// install the Zone in the ZoneDB partition.
@@ -806,7 +838,7 @@ public class SASImpl implements SAS {
 		validatePresent(PARAM.AID, aId);
 		validatePresent(PARAM.ZID, zId);
 		validateEquals(PARAM.ZID, zId, accountZone.getId());
-		validateEnum(AccountZoneResource.FIELD.ACCESSSTATUS, AccountZoneStatus.class, accountZone.getAccessStatus());
+		validateEnum(AccountZoneResource.FIELD.STATUS, AccountZoneStatus.class, accountZone.getStatus());
 
 		Account a = accountService.findById(aId);
 		validateExists(PARAM.AID, a);
@@ -814,6 +846,9 @@ public class SASImpl implements SAS {
 		validateExists(PARAM.ZID, az);
 		// the accountzone must belong to the account
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		validateInSet(AccountZoneResource.FIELD.STATUS,
+				new AccountZoneStatus[] { AccountZoneStatus.ACTIVE, AccountZoneStatus.BLOCKED }, az.getStatus()); // FIXME
+																													// check
 
 		AccountZone updatedAz = AccountZoneResource.mapTo(accountZone);
 
@@ -822,8 +857,9 @@ public class SASImpl implements SAS {
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, az.getAccountId(), updatedAz.getAccountId());
 		validateEquals(AccountZoneResource.FIELD.ZONEAPEX, az.getZoneApex(), updatedAz.getZoneApex());
 
-		// TODO change segment - job
-		// TODO change partitionId - store jobId
+		// TODO #86: change segment, incl. partitionId - job
+
+		// TODO job to block access throughout cluster status change from active to block or vice versa.
 
 		return null;
 	}
@@ -836,19 +872,16 @@ public class SASImpl implements SAS {
 		validateExists(PARAM.AID, a);
 		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
+		validateInSet(AccountZoneResource.FIELD.STATUS,
+				new AccountZoneStatus[] { AccountZoneStatus.ACTIVE, AccountZoneStatus.BLOCKED }, az.getStatus()); // FIXME
 
 		// the accountZone must actually relate to the account!
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
 
-		// check that no ZACs exist currently.
-		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
-				getPageSpecifier(0, 1));
-		sc.setAccountId(az.getAccountId());
-		sc.setZoneApex(az.getZoneApex());
-		List<AccountZoneAdministrationCredential> accountzones = accountZoneCredentialService.search(sc);
-		validateEmpty(PARAM.ACCOUNTZONE, accountzones);
+		az.setStatus(AccountZoneStatus.DELETED);
+		accountZoneService.createOrUpdate(az);
 
-		accountZoneService.delete(az);
+		// TODO #89: create a job to delete the accountZone and all it's dependent data
 
 		return Response.ok().build();
 	}
@@ -872,10 +905,12 @@ public class SASImpl implements SAS {
 		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		validateInSet(AccountZoneResource.FIELD.STATUS, new AccountZoneStatus[] { AccountZoneStatus.ACTIVE },
+				az.getStatus());// FIXME check
 
 		// re-check the cert and make sure it's for the correct zone
 		PublicKeyCheckResultHolder check = accountZoneCredentialService.check(certificatePEM);
-		if (check.status != null) {
+		if (check.status != PublicKeyCheckStatus.OK) {
 			throw createVE(FieldValidationErrorType.INVALID,
 					AccountZoneAdministrationCredentialResource.FIELD.CERTIFICATEPEM.toString());
 		}
@@ -926,6 +961,8 @@ public class SASImpl implements SAS {
 		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		validateInSet(AccountZoneResource.FIELD.STATUS, new AccountZoneStatus[] { AccountZoneStatus.ACTIVE },
+				az.getStatus()); // FIXME check
 
 		// we list all ZACs of the account zone.
 		AccountZoneAdministrationCredentialSearchCriteria sc = new AccountZoneAdministrationCredentialSearchCriteria(
@@ -972,6 +1009,9 @@ public class SASImpl implements SAS {
 		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		validateInSet(AccountZoneResource.FIELD.STATUS, new AccountZoneStatus[] { AccountZoneStatus.ACTIVE },
+				az.getStatus()); // FIXME check
+
 		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),
@@ -991,6 +1031,9 @@ public class SASImpl implements SAS {
 		AccountZone az = accountZoneService.findById(zId);
 		validateExists(PARAM.ZID, az);
 		validateEquals(AccountZoneResource.FIELD.ACCOUNTID, a.getAccountId(), az.getAccountId());
+		validateInSet(AccountZoneResource.FIELD.STATUS, new AccountZoneStatus[] { AccountZoneStatus.ACTIVE },
+				az.getStatus()); // FIXME check
+
 		AccountZoneAdministrationCredential azc = accountZoneCredentialService.findById(zcId);
 		validateExists(PARAM.ZCID, azc);
 		validateEquals(AccountZoneAdministrationCredentialResource.FIELD.ACCOUNTID, a.getAccountId(),

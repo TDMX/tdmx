@@ -87,6 +87,7 @@
 
 	<bean id="tdmx.lib.control.AccountZoneRepository" class="org.tdmx.lib.control.service.AccountZoneServiceRepositoryImpl">
 		<property name="accountZoneDao"	ref="tdmx.lib.control.dao.AccountZoneDao" />
+		<property name="domainZoneResolutionService" ref="tdmx.server.DomainZoneResolutionService"/>
 	</bean>
 	
 
@@ -95,6 +96,7 @@
 
 	<bean id="tdmx.lib.control.AccountZoneAdministrationCredentialRepository" class="org.tdmx.lib.control.service.AccountZoneAdministrationCredentialServiceRepositoryImpl">
 		<property name="accountCredentialDao" ref="tdmx.lib.control.dao.AccountZoneAdministrationCredentialDao" />
+		<property name="domainZoneResolutionService" ref="tdmx.server.DomainZoneResolutionService"/>
 	</bean>
 
 

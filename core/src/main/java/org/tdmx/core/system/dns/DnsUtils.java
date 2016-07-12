@@ -314,6 +314,8 @@ public class DnsUtils {
 	 * 
 	 * @param domainName
 	 * @param resolverAddresses
+	 * @return null if no TDMX ZoneRecord is found in the domain chain upwards from the domainName, or the zoneApex and
+	 *         the TXT records.
 	 * @throws TextParseException
 	 * @throws UnknownHostException
 	 * @throws Exception

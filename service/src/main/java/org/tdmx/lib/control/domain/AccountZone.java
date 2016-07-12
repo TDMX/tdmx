@@ -77,6 +77,10 @@ public class AccountZone implements Serializable {
 	@Column(length = DatabasePartition.MAX_PARTITIONID_LEN, nullable = false)
 	private String zonePartitionId;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = AccountZoneOperationalMode.MAX_OPERATIONALSTATUS_LEN, nullable = false)
+	private AccountZoneOperationalMode mode;
+
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
@@ -98,6 +102,8 @@ public class AccountZone implements Serializable {
 		builder.append(segment);
 		builder.append(", zonePartitionId=");
 		builder.append(zonePartitionId);
+		builder.append(", mode=");
+		builder.append(mode);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -160,6 +166,14 @@ public class AccountZone implements Serializable {
 
 	public void setZonePartitionId(String zonePartitionId) {
 		this.zonePartitionId = zonePartitionId;
+	}
+
+	public AccountZoneOperationalMode getMode() {
+		return mode;
+	}
+
+	public void setMode(AccountZoneOperationalMode mode) {
+		this.mode = mode;
 	}
 
 }

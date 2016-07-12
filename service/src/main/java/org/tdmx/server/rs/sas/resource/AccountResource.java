@@ -25,7 +25,9 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.tdmx.core.cli.display.annotation.CliAttribute;
 import org.tdmx.core.cli.display.annotation.CliRepresentation;
+import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.Account;
+import org.tdmx.lib.control.domain.AccountStatus;
 
 @CliRepresentation(name = "Account")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -38,7 +40,8 @@ public class AccountResource {
 		ACCOUNTID("accountId"),
 		FIRSTNAME("firstname"),
 		LASTNAME("lastname"),
-		EMAIL("email");
+		EMAIL("email"),
+		STATUS("status");
 
 		private final String n;
 
@@ -62,6 +65,8 @@ public class AccountResource {
 	private String lastname;
 	@CliAttribute(order = 4)
 	private String email;
+	@CliAttribute(order = 5)
+	private String status;
 
 	public static Account mapTo(AccountResource account) {
 		if (account == null) {
@@ -74,6 +79,7 @@ public class AccountResource {
 		a.setEmail(account.getEmail());
 		a.setFirstName(account.getFirstname());
 		a.setLastName(account.getLastname());
+		a.setStatus(EnumUtils.mapTo(AccountStatus.class, account.getStatus()));
 		return a;
 	}
 
@@ -88,6 +94,7 @@ public class AccountResource {
 		a.setEmail(account.getEmail());
 		a.setFirstname(account.getFirstName());
 		a.setLastname(account.getLastName());
+		a.setStatus(EnumUtils.mapToString(account.getStatus()));
 		return a;
 	}
 
@@ -129,6 +136,14 @@ public class AccountResource {
 
 	public void setEmail(String value) {
 		this.email = value;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
