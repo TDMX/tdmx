@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.client.cli;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ import org.tdmx.core.cli.CliParser;
 import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.system.lang.StringUtils;
 
-public class ServerAdminCLI {
+public class ClientAdminCLI {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,17 +42,18 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	private static ApplicationContext context;
 
-	private ServerAdminCLI() {
+	private ClientAdminCLI() {
 	}
 
 	public static void main(String[] args) throws IOException {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("serverAdminContext");
+		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator
+				.getInstance("classpath:clientAdminBeanRefContext.xml");
+		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("clientAdminContext");
 		context = (ApplicationContext) beanFactoryReference.getFactory();
 
-		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
+		CliParser clirunner = (CliParser) context.getBean("tdmx.client.cli.ClientAdminCLI");
 
-		InputStream helpContent = ServerAdminCLI.class.getResourceAsStream("/serverAdminHelp.txt");
+		InputStream helpContent = ClientAdminCLI.class.getResourceAsStream("/clientAdminHelp.txt");
 		String helpText = StringUtils.inputStreamAsString(helpContent, Charset.forName("UTF-8"));
 		clirunner.setHelp(helpText);
 

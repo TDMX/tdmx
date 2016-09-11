@@ -16,22 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.client.cli.cmd;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import org.tdmx.client.cli.service.ZoneAdministrationCredentialService;
+import org.tdmx.core.cli.runtime.CommandExecutable;
 
-import org.springframework.beans.factory.access.BeanFactoryLocator;
-import org.springframework.beans.factory.access.BeanFactoryReference;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.tdmx.core.cli.CliParser;
-import org.tdmx.core.cli.InputStreamTokenizer;
-import org.tdmx.core.system.lang.StringUtils;
-
-public class ServerAdminCLI {
+public abstract class AbstractCliCommand implements CommandExecutable {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,28 +30,10 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static ApplicationContext context;
+	protected static final int PAGE_SIZE = 10;
+	protected static final int SUCCESS = 200;
 
-	private ServerAdminCLI() {
-	}
-
-	public static void main(String[] args) throws IOException {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("serverAdminContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
-
-		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
-
-		InputStream helpContent = ServerAdminCLI.class.getResourceAsStream("/serverAdminHelp.txt");
-		String helpText = StringUtils.inputStreamAsString(helpContent, Charset.forName("UTF-8"));
-		clirunner.setHelp(helpText);
-
-		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
-				: new InputStreamTokenizer(new InputStreamReader(System.in));
-
-		clirunner.process(tokenizer, System.out, System.err);
-
-	}
+	private ZoneAdministrationCredentialService zacService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -82,5 +54,13 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ZoneAdministrationCredentialService getZacService() {
+		return zacService;
+	}
+
+	public void setZacService(ZoneAdministrationCredentialService zacService) {
+		this.zacService = zacService;
+	}
 
 }

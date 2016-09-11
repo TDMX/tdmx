@@ -69,7 +69,7 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="tdmx.server.cli.ServerCommandExecutableFactory" class="org.tdmx.server.cli.BeanLookupCommandExecutableFactoryImpl" init-method="init">
+	<bean id="tdmx.server.cli.ServerCommandExecutableFactory" class="org.tdmx.server.runtime.BeanLookupCommandExecutableFactoryImpl" init-method="init">
 		<property name="commandDescriptorFactory" ref="tdmx.server.cli.ServerCommandDescriptionFactory"/>
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">

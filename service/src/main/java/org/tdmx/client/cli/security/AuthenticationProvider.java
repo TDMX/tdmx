@@ -16,22 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.server.cli;
+package org.tdmx.client.cli.security;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.access.BeanFactoryLocator;
-import org.springframework.beans.factory.access.BeanFactoryReference;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.tdmx.core.cli.CliParser;
-import org.tdmx.core.cli.InputStreamTokenizer;
-import org.tdmx.core.system.lang.StringUtils;
-
-public class ServerAdminCLI {
+/**
+ * login as
+ * 
+ * 1) ZoneAdministrator - pwd
+ * 
+ * 2) DomainAdministrator - domain + pwd
+ * 
+ * 3) User - user@domain + pwd
+ * 
+ * @author Peter
+ *
+ */
+public class AuthenticationProvider {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -40,36 +42,22 @@ public class ServerAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static ApplicationContext context;
-
-	private ServerAdminCLI() {
-	}
-
-	public static void main(String[] args) throws IOException {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator.getInstance();
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("serverAdminContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
-
-		CliParser clirunner = (CliParser) context.getBean("tdmx.server.cli.ServerAdminCLI");
-
-		InputStream helpContent = ServerAdminCLI.class.getResourceAsStream("/serverAdminHelp.txt");
-		String helpText = StringUtils.inputStreamAsString(helpContent, Charset.forName("UTF-8"));
-		clirunner.setHelp(helpText);
-
-		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
-				: new InputStreamTokenizer(new InputStreamReader(System.in));
-
-		clirunner.process(tokenizer, System.out, System.err);
-
-	}
+	private static final Logger log = LoggerFactory.getLogger(AuthenticationProvider.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
+	public AuthenticationProvider() {
+	}
+
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	public AuthenticatedUserContext authenticateZoneAdministrator(String zoneApex, char[] password) {
+		return null; // TODO AuthenticatedUserService
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS

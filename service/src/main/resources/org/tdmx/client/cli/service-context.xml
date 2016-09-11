@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+
+	<bean id="tdmx.client.cli.ZoneAdministrationCredentialService" class="org.tdmx.client.cli.service.ZoneAdministrationCredentialServiceImpl">
+	</bean>
+
+	<bean id="tdmx.client.cli.AuthenticationProvider" class="org.tdmx.client.cli.security.AuthenticationProvider">
+	</bean>
+	
+	<bean id="tdmx.client.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
+		<constructor-arg>
+			<array>
+				<value>org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials</value>
+			</array>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="tdmx.client.cli.ServerCommandExecutableFactory" class="org.tdmx.server.runtime.BeanLookupCommandExecutableFactoryImpl" init-method="init">
+		<property name="commandDescriptorFactory" ref="tdmx.client.cli.ServerCommandDescriptionFactory"/>
+		<property name="commandNameRefMap">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="zoneadmin:create" value="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials"/>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="tdmx.client.cli.PrinterFactory" class="org.tdmx.core.cli.CliPrinterFactoryImpl">
+	</bean>
+
+	<bean id="tdmx.client.cli.DefaultProvider" class="org.tdmx.core.cli.DefaultParameterProviderImpl">
+	</bean>
+
+	<bean id="tdmx.client.cli.ClientCliRunner" class="org.tdmx.core.cli.CliRunnerImpl">
+		<property name="commandExecutableFactory" ref="tdmx.client.cli.ServerCommandExecutableFactory"/>
+		<property name="cliPrinterFactory" ref="tdmx.client.cli.PrinterFactory"/>
+		<property name="defaultProvider" ref="tdmx.client.cli.DefaultProvider"/>
+	</bean>
+	
+
+	<bean id="tdmx.client.cli.ClientAdminCLI" class="org.tdmx.core.cli.CliParser">
+		<property name="commandDescriptorFactory" ref="tdmx.client.cli.ServerCommandDescriptionFactory"/>
+		<property name="cliPrinterFactory" ref="tdmx.client.cli.PrinterFactory"/>
+		<property name="defaultProvider" ref="tdmx.client.cli.DefaultProvider"/>
+		<property name="cliRunner" ref="tdmx.client.cli.ClientCliRunner"/>
+	</bean>
+	
+
+
+	<bean id="tdmx.client.cli.cmd.AbstractCommand" class="org.tdmx.client.cli.cmd.AbstractCliCommand" abstract="true">
+		<property name="zacService" ref="tdmx.client.cli.ZoneAdministrationCredentialService"/>
+	</bean>
+
+	<bean id="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials" class="org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	
+</beans>

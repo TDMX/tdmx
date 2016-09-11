@@ -282,7 +282,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
+			<artifactId>spring-context</artifactId>
 			<version>${spring.version}</version>
 			<scope>compile</scope>
 		</dependency>

@@ -5,22 +5,6 @@
        http://www.springframework.org/schema/beans 
        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 
-	<bean id="applicationContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
-     <constructor-arg>
-       <list>
-         <value>common-context.xml</value>
-       </list>
-     </constructor-arg>
-   </bean>
-
-	<bean id="serverAdminContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
-     <constructor-arg>
-       <list>
-         <value>common-context.xml</value>
-       </list>
-     </constructor-arg>
-   </bean>
-
 	<bean id="clientAdminContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
      <constructor-arg>
        <list>
