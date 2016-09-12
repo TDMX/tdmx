@@ -16,13 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.cmd;
+package org.tdmx.client.cli.cmd.zone;
 
-import org.tdmx.client.cli.service.ClientUIKeystoreService;
-import org.tdmx.client.cli.service.ZoneAdministrationCredentialService;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import java.util.List;
 
-public abstract class AbstractCliCommand implements CommandExecutable {
+import org.tdmx.client.cli.cmd.AbstractCliCommand;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.display.CliPrinter;
+
+@Cli(name = "zoneadmin:list", description = "Lists the zone administrator credentials.")
+public class ListZoneAdministratorCredentials extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,11 +34,6 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	protected static final int PAGE_SIZE = 10;
-	protected static final int SUCCESS = 200;
-
-	private ZoneAdministrationCredentialService zacService;
-	private ClientUIKeystoreService uiKeystoreService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -44,6 +42,16 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void run(CliPrinter out) {
+		List<String> zoneNames = getZacService().listZAC();
+
+		out.println("Found " + zoneNames.size() + " zone administrators.");
+		for (String zone : zoneNames) {
+			out.println(zone);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -56,21 +64,5 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ClientUIKeystoreService getUiKeystoreService() {
-		return uiKeystoreService;
-	}
-
-	public void setUiKeystoreService(ClientUIKeystoreService uiKeystoreService) {
-		this.uiKeystoreService = uiKeystoreService;
-	}
-
-	public ZoneAdministrationCredentialService getZacService() {
-		return zacService;
-	}
-
-	public void setZacService(ZoneAdministrationCredentialService zacService) {
-		this.zacService = zacService;
-	}
 
 }

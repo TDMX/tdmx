@@ -21,6 +21,7 @@ package org.tdmx.client.cli.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -60,6 +61,16 @@ public class ZoneAdministrationCredentialServiceImpl implements ZoneAdministrati
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public List<String> listZAC() {
+		List<String> result = new ArrayList<>();
+		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", "^.*.zac$");
+		for (File f : zacFiles) {
+			result.add(f.getName().substring(0, f.getName().lastIndexOf(".zac")));
+		}
+		return result;
+	}
 
 	@Override
 	public PKIXCredential getZAC(String zoneApex, String zacPassword) {
@@ -122,6 +133,22 @@ public class ZoneAdministrationCredentialServiceImpl implements ZoneAdministrati
 	public boolean existsZAC(String zone) {
 		List<File> zacFiles = FileUtils.getFilesMatchingPattern(".", createZACKeystoreFilename(zone));
 		return !zacFiles.isEmpty();
+	}
+
+	@Override
+	public boolean deleteZAC(String zoneApex) {
+		File zacFile = new File(createZACPublicCertificateFilename(zoneApex));
+		if (zacFile.exists()) {
+			boolean isDeleted = zacFile.delete();
+			if (isDeleted) {
+				File zacPublicKeyFile = new File(createZACPublicCertificateFilename(zoneApex));
+				if (zacPublicKeyFile.exists()) {
+					zacPublicKeyFile.renameTo(new File(createZACPublicCertificateFilename(zoneApex) + ".deleted"));
+				}
+			}
+			return isDeleted;
+		}
+		return false;
 	}
 
 	// -------------------------------------------------------------------------

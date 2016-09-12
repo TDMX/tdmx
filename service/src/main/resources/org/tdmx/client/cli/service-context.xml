@@ -16,6 +16,8 @@
 
 	<bean id="tdmx.client.cli.ZoneAdministrationCredentialService" class="org.tdmx.client.cli.service.ZoneAdministrationCredentialServiceImpl">
 	</bean>
+	<bean id="tdmx.client.cli.ClientUIKeystoreService" class="org.tdmx.client.cli.service.ClientUIKeystoreServiceImpl">
+	</bean>
 
 	<bean id="tdmx.client.cli.AuthenticationProvider" class="org.tdmx.client.cli.security.AuthenticationProvider">
 	</bean>
@@ -24,6 +26,8 @@
 		<constructor-arg>
 			<array>
 				<value>org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials</value>
+				<value>org.tdmx.client.cli.cmd.zone.DescribeZoneAdministratorCredentials</value>
+				<value>org.tdmx.client.cli.cmd.zone.ListZoneAdministratorCredentials</value>
 			</array>
 		</constructor-arg>
 	</bean>
@@ -33,6 +37,8 @@
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
 				<entry key="zoneadmin:create" value="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials"/>
+				<entry key="zoneadmin:describe" value="tdmx.server.cli.cmd.DescribeZoneAdministratorCredentials"/>
+				<entry key="zoneadmin:list" value="tdmx.server.cli.cmd.ListZoneAdministratorCredentials"/>
 			</map>
 		</property>
 	</bean>
@@ -61,9 +67,14 @@
 
 	<bean id="tdmx.client.cli.cmd.AbstractCommand" class="org.tdmx.client.cli.cmd.AbstractCliCommand" abstract="true">
 		<property name="zacService" ref="tdmx.client.cli.ZoneAdministrationCredentialService"/>
+		<property name="uiKeystoreService" ref="tdmx.client.cli.ClientUIKeystoreService"/>
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials" class="org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.DescribeZoneAdministratorCredentials" class="org.tdmx.client.cli.cmd.zone.DescribeZoneAdministratorCredentials" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.ListZoneAdministratorCredentials" class="org.tdmx.client.cli.cmd.zone.ListZoneAdministratorCredentials" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 	
 </beans>

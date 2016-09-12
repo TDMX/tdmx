@@ -18,34 +18,22 @@
  */
 package org.tdmx.client.cli.service;
 
-import java.util.List;
-
-import org.tdmx.client.crypto.certificate.PKIXCertificate;
 import org.tdmx.client.crypto.certificate.PKIXCredential;
 
 /**
- * ZAC client services.
+ * HTTPS keystore service.
  * 
  * @author Peter
  * 
  */
-public interface ZoneAdministrationCredentialService {
+public interface ClientUIKeystoreService {
 
-	public PKIXCredential getZAC(String zoneApex, String zacPassword);
+	public boolean existsServerKey(String keystoreFilename);
 
-	public PKIXCertificate getZACPublicCertificate(String zoneApex);
+	public PKIXCredential getServerKey(String keystoreFilename, String keystoreType, String keystorePassword,
+			String keystoreAlias);
 
-	public void storeZAC(PKIXCredential zac, String zoneApex, String zacPassword);
+	public boolean saveServerKey(PKIXCredential serverKey, String keystoreFilename, String keystoreType,
+			String keystorePassword, String keystoreAlias);
 
-	public List<String> listZAC();
-
-	public boolean existsZAC(String zone);
-
-	/**
-	 * Deletes the ZAC credential, keeping the public key file by renaming it to ".deleted".
-	 * 
-	 * @param zoneApex
-	 * @return
-	 */
-	public boolean deleteZAC(String zoneApex);
 }

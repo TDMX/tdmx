@@ -80,9 +80,11 @@ public class CreateZoneAdministratorCredentials extends AbstractCliCommand {
 
 	@Override
 	public void run(CliPrinter out) {
-		// TODO not logged-in.
-
 		boolean exists = getZacService().existsZAC(zone);
+		if (exists) {
+			out.println("ZAC exists already for " + zone);
+			return;
+		}
 
 		Calendar today = CalendarUtils.getDate(new Date());
 		Calendar future = CalendarUtils.getDate(new Date());

@@ -16,13 +16,26 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.cmd;
 
-import org.tdmx.client.cli.service.ClientUIKeystoreService;
-import org.tdmx.client.cli.service.ZoneAdministrationCredentialService;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+package org.tdmx.client.cli.service;
 
-public abstract class AbstractCliCommand implements CommandExecutable {
+import java.io.File;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.client.crypto.certificate.CryptoCertificateException;
+import org.tdmx.client.crypto.certificate.KeyStoreUtils;
+import org.tdmx.client.crypto.certificate.PKIXCredential;
+import org.tdmx.core.system.lang.FileUtils;
+
+/**
+ * ClientUIKeystore service.
+ * 
+ * @author Peter Klauser
+ * 
+ */
+public class ClientUIKeystoreServiceImpl implements ClientUIKeystoreService {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,11 +44,7 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	protected static final int PAGE_SIZE = 10;
-	protected static final int SUCCESS = 200;
-
-	private ZoneAdministrationCredentialService zacService;
-	private ClientUIKeystoreService uiKeystoreService;
+	private static final Logger log = LoggerFactory.getLogger(ClientUIKeystoreServiceImpl.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -44,6 +53,50 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public PKIXCredential getServerKey(String keystoreFilename, String keystoreType, String keystorePassword,
+			String keystoreAlias) {
+		byte[] keystoreContents;
+		try {
+			keystoreContents = FileUtils.getFileContents(keystoreFilename);
+		} catch (IOException e) {
+			log.warn("Unable to read HTTPS keystore file " + keystoreFilename + ". " + e.getMessage(), e);
+			return null;
+		}
+		PKIXCredential serverKey = null;
+		try {
+			serverKey = KeyStoreUtils.getPrivateCredential(keystoreContents, keystoreType, keystorePassword,
+					keystoreAlias);
+		} catch (CryptoCertificateException e) {
+			log.warn("Unable to access HTTPS keystore. " + e.getMessage(), e);
+		}
+
+		return serverKey;
+	}
+
+	@Override
+	public boolean saveServerKey(PKIXCredential serverKey, String keystoreFilename, String keystoreType,
+			String keystorePassword, String keystoreAlias) {
+		try {
+			byte[] contents = KeyStoreUtils.saveKeyStore(serverKey, keystoreType, keystorePassword, keystoreAlias);
+
+			FileUtils.storeFileContents(keystoreFilename, contents, ".tmp");
+			return true;
+		} catch (CryptoCertificateException e) {
+			log.warn("Unable to create HTTPS keystore contents.", e);
+		} catch (IOException e) {
+			log.warn("Unable to save HTTPS keystore.", e);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean existsServerKey(String keystoreFilename) {
+		File keystoreFile = new File(keystoreFilename);
+
+		return keystoreFile.exists();
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -56,21 +109,5 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ClientUIKeystoreService getUiKeystoreService() {
-		return uiKeystoreService;
-	}
-
-	public void setUiKeystoreService(ClientUIKeystoreService uiKeystoreService) {
-		this.uiKeystoreService = uiKeystoreService;
-	}
-
-	public ZoneAdministrationCredentialService getZacService() {
-		return zacService;
-	}
-
-	public void setZacService(ZoneAdministrationCredentialService zacService) {
-		this.zacService = zacService;
-	}
 
 }

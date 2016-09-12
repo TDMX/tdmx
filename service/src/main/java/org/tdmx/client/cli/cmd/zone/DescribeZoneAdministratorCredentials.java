@@ -16,13 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.cmd;
+package org.tdmx.client.cli.cmd.zone;
 
-import org.tdmx.client.cli.service.ClientUIKeystoreService;
-import org.tdmx.client.cli.service.ZoneAdministrationCredentialService;
-import org.tdmx.core.cli.runtime.CommandExecutable;
+import org.tdmx.client.cli.cmd.AbstractCliCommand;
+import org.tdmx.client.crypto.certificate.CertificateIOUtils;
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.annotation.Parameter;
+import org.tdmx.core.cli.display.CliPrinter;
 
-public abstract class AbstractCliCommand implements CommandExecutable {
+@Cli(name = "zoneadmin:describe", description = "Describes the zone administrator certificate.", note = "Helps to copy-paste the certificate PEM into the service provider zone configuration tool.")
+public class DescribeZoneAdministratorCredentials extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -31,11 +35,9 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	protected static final int PAGE_SIZE = 10;
-	protected static final int SUCCESS = 200;
 
-	private ZoneAdministrationCredentialService zacService;
-	private ClientUIKeystoreService uiKeystoreService;
+	@Parameter(name = "zone", required = true, description = "the zone apex.")
+	private String zone;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -44,6 +46,14 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
+
+	@Override
+	public void run(CliPrinter out) {
+		PKIXCertificate zacCert = getZacService().getZACPublicCertificate(zone);
+
+		out.println("certificate=" + CertificateIOUtils.safeX509certsToPem(zacCert.getX509Encoded()));
+		out.println("fingerprint=" + zacCert.getFingerprint());
+	}
 
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
@@ -56,21 +66,5 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
-
-	public ClientUIKeystoreService getUiKeystoreService() {
-		return uiKeystoreService;
-	}
-
-	public void setUiKeystoreService(ClientUIKeystoreService uiKeystoreService) {
-		this.uiKeystoreService = uiKeystoreService;
-	}
-
-	public ZoneAdministrationCredentialService getZacService() {
-		return zacService;
-	}
-
-	public void setZacService(ZoneAdministrationCredentialService zacService) {
-		this.zacService = zacService;
-	}
 
 }
