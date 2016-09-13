@@ -16,24 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli;
+package org.tdmx.client.cli.cmd.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.Properties;
+import org.eclipse.jetty.util.Jetty;
 
-import org.springframework.beans.factory.access.BeanFactoryLocator;
-import org.springframework.beans.factory.access.BeanFactoryReference;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
-import org.tdmx.core.cli.CliParser;
-import org.tdmx.core.cli.DefaultParameterProvider;
-import org.tdmx.core.cli.InputStreamTokenizer;
-import org.tdmx.core.system.lang.StringUtils;
-
-public class ClientAdminCLI {
+public class AdminUIHolder {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -42,41 +29,14 @@ public class ClientAdminCLI {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static ApplicationContext context;
 
-	private ClientAdminCLI() {
-	}
-
-	public static void main(String[] args) throws IOException {
-		BeanFactoryLocator beanFactoryLocator = ContextSingletonBeanFactoryLocator
-				.getInstance("classpath:clientAdminBeanRefContext.xml");
-		BeanFactoryReference beanFactoryReference = beanFactoryLocator.useBeanFactory("clientAdminContext");
-		context = (ApplicationContext) beanFactoryReference.getFactory();
-
-		// load defaults from property file
-		InputStream defaultValues = ClientAdminCLI.class.getResourceAsStream("/clientDefaults.properties");
-		Properties defaultProperties = new Properties();
-		defaultProperties.load(defaultValues);
-		DefaultParameterProvider defaultProvider = (DefaultParameterProvider) context
-				.getBean("tdmx.client.cli.DefaultProvider");
-		defaultProvider.load(defaultProperties);
-
-		CliParser clirunner = (CliParser) context.getBean("tdmx.client.cli.ClientAdminCLI");
-
-		InputStream helpContent = ClientAdminCLI.class.getResourceAsStream("/clientAdminHelp.txt");
-		String helpText = StringUtils.inputStreamAsString(helpContent, Charset.forName("UTF-8"));
-		clirunner.setHelp(helpText);
-
-		InputStreamTokenizer tokenizer = args.length > 0 ? new InputStreamTokenizer(args)
-				: new InputStreamTokenizer(new InputStreamReader(System.in));
-
-		clirunner.process(tokenizer, System.out, System.err);
-
-	}
+	private static Jetty server;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
+	private AdminUIHolder() {
+	}
 
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
@@ -93,5 +53,13 @@ public class ClientAdminCLI {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public static Jetty getServer() {
+		return server;
+	}
+
+	public static void setServer(Jetty server) {
+		AdminUIHolder.server = server;
+	}
 
 }

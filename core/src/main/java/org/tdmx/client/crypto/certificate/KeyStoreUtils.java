@@ -222,6 +222,24 @@ public class KeyStoreUtils {
 
 	}
 
+	public static byte[] saveTrustStore(KeyStore truststore, String storePassword) throws CryptoCertificateException {
+
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			truststore.store(baos, storePassword.toCharArray());
+			return baos.toByteArray();
+		} catch (KeyStoreException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_KEYSTORE_EXCEPTION, e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_MISSING_ALGORITHM, e);
+		} catch (CertificateException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_EXCEPTION, e);
+		} catch (IOException e) {
+			throw new CryptoCertificateException(CertificateResultCode.ERROR_IO, e);
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 	// PROTECTED METHODS
 	// -------------------------------------------------------------------------

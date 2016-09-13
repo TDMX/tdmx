@@ -16,26 +16,31 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.core.cli;
+package org.tdmx.client.cli.service;
 
-import java.util.Properties;
-import java.util.Set;
+import java.util.List;
+
+import org.tdmx.client.crypto.certificate.PKIXCertificate;
 
 /**
- * A provider of default values.
+ * HTTPS truststore service.
  * 
  * @author Peter
- *
+ * 
  */
-public interface DefaultParameterProvider {
+public interface ClientUITruststoreService {
 
-	public void load(Properties props);
+	public boolean existsTruststore(String truststoreFilename);
 
-	public Set<String> getDefaultParameterNames();
+	public List<PKIXCertificate> getTrustedCertificates(String truststoreFilename, String truststoreType,
+			String truststorePassword);
 
-	public void setDefault(String parameterName, String parameterValue);
+	public boolean contansTrustedCertificate(PKIXCertificate rootCertificate, String truststoreFilename,
+			String truststoreType, String truststorePassword);
 
-	public String getDefault(String parameterName);
+	public boolean addTrustedCertificate(PKIXCertificate rootCertificate, String truststoreFilename,
+			String truststoreType, String truststorePassword);
 
-	public void clearDefault(String parameterName);
+	public boolean removeTrustedCertificate(PKIXCertificate rootCertificate, String truststoreFilename,
+			String truststoreType, String truststorePassword);
 }

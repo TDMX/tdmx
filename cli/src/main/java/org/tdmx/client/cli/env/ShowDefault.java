@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.env;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.StaticDefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.display.CliPrinter;
 import org.tdmx.core.cli.runtime.CommandExecutable;
@@ -46,29 +45,18 @@ public class ShowDefault implements CommandExecutable {
 	@Override
 	public void run(CliPrinter out) {
 		out.println("verbose - option " + (ClientCliLoggingUtils.isVerbose() ? "set" : "not set"));
-
-		if (StaticDefaultParameterProvider.getDefaultValue("zacPassword") != null) {
-			out.println("zacPassword set");
-		} else {
-			out.println("zacPassword not set");
-		}
-
-		if (StaticDefaultParameterProvider.getDefaultValue("dacPassword") != null) {
-			out.println("dacPassword set");
-		} else {
-			out.println("dacPassword not set");
-		}
-
-		if (StaticDefaultParameterProvider.getDefaultValue("userPassword") != null) {
-			out.println("userPassword set");
-		} else {
-			out.println("userPassword not set");
-		}
-		if (StaticDefaultParameterProvider.getDefaultValue("domain") != null) {
-			out.println("domain set to " + StaticDefaultParameterProvider.getDefaultValue("domain"));
-		} else {
-			out.println("domain not set");
-		}
+		/*
+		 * if (StaticDefaultParameterProvider.getDefaultValue("zacPassword") != null) { out.println("zacPassword set");
+		 * } else { out.println("zacPassword not set"); }
+		 * 
+		 * if (StaticDefaultParameterProvider.getDefaultValue("dacPassword") != null) { out.println("dacPassword set");
+		 * } else { out.println("dacPassword not set"); }
+		 * 
+		 * if (StaticDefaultParameterProvider.getDefaultValue("userPassword") != null) { out.println("userPassword set"
+		 * ); } else { out.println("userPassword not set"); } if
+		 * (StaticDefaultParameterProvider.getDefaultValue("domain") != null) { out.println("domain set to " +
+		 * StaticDefaultParameterProvider.getDefaultValue("domain")); } else { out.println("domain not set"); }
+		 */
 	}
 
 	// -------------------------------------------------------------------------

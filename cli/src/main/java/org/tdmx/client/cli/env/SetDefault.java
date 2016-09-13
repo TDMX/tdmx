@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.env;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.StaticDefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.annotation.Parameter;
@@ -69,19 +68,19 @@ public class SetDefault implements CommandExecutable {
 		}
 		if (StringUtils.hasText(zacPassword)) {
 			out.println("Setting zacPassword.");
-			StaticDefaultParameterProvider.setDefaultValue("zacPassword", zacPassword);
+			// FIXME StaticDefaultParameterProvider.setDefaultValue("zacPassword", zacPassword);
 		}
 		if (StringUtils.hasText(dacPassword)) {
 			out.println("Setting dacPassword.");
-			StaticDefaultParameterProvider.setDefaultValue("dacPassword", dacPassword);
+			// FIXME StaticDefaultParameterProvider.setDefaultValue("dacPassword", dacPassword);
 		}
 		if (StringUtils.hasText(userPassword)) {
 			out.println("Setting userPassword.");
-			StaticDefaultParameterProvider.setDefaultValue("userPassword", userPassword);
+			// FIXME StaticDefaultParameterProvider.setDefaultValue("userPassword", userPassword);
 		}
 		if (StringUtils.hasText(domain)) {
 			out.println("Setting domain.");
-			StaticDefaultParameterProvider.setDefaultValue("domain", domain);
+			// FIXME StaticDefaultParameterProvider.setDefaultValue("domain", domain);
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

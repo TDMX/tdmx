@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli;
+package org.tdmx.client.cli.cmd.ui;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.eclipse.jetty.util.Jetty;
+import org.tdmx.client.cli.cmd.AbstractCliCommand;
+import org.tdmx.core.cli.annotation.Cli;
+import org.tdmx.core.cli.display.CliPrinter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdmx.core.cli.DefaultParameterProvider;
-
-public class StaticDefaultParameterProvider implements DefaultParameterProvider {
+@Cli(name = "ui:stop", description = "stops the client administration UI")
+public class StopClientAdminUI extends AbstractCliCommand {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -34,52 +33,25 @@ public class StaticDefaultParameterProvider implements DefaultParameterProvider 
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
-	private static final Logger log = LoggerFactory.getLogger(StaticDefaultParameterProvider.class);
-
-	// internal
-	private Map<String, String> defaults = new HashMap<>();
-
-	private static StaticDefaultParameterProvider singleton = new StaticDefaultParameterProvider();
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
 	// -------------------------------------------------------------------------
 
-	private StaticDefaultParameterProvider() {
-	}
-
-	public static StaticDefaultParameterProvider getInstance() {
-		return singleton;
-	}
 	// -------------------------------------------------------------------------
 	// PUBLIC METHODS
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void setDefault(String parameterName, String parameterValue) {
-		defaults.put(parameterName, parameterValue);
-	}
+	public void run(CliPrinter out) {
+		Jetty server = AdminUIHolder.getServer();
+		if (server == null) {
+			out.println("Admin UI already stopped.");
+			return;
+		}
 
-	@Override
-	public String getDefault(String parameterName) {
-		return defaults.get(parameterName);
-	}
-
-	@Override
-	public void clearDefault(String parameterName) {
-		defaults.remove(parameterName);
-	}
-
-	public static void setDefaultValue(String parameterName, String parameterValue) {
-		singleton.setDefault(parameterName, parameterValue);
-	}
-
-	public static String getDefaultValue(String parameterName) {
-		return singleton.getDefault(parameterName);
-	}
-
-	public static void clearDefaultValue(String parameterName) {
-		singleton.clearDefault(parameterName);
+		// TODO stop jetty
+		AdminUIHolder.setServer(null);
 	}
 
 	// -------------------------------------------------------------------------

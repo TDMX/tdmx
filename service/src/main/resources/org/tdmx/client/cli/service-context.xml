@@ -18,6 +18,8 @@
 	</bean>
 	<bean id="tdmx.client.cli.ClientUIKeystoreService" class="org.tdmx.client.cli.service.ClientUIKeystoreServiceImpl">
 	</bean>
+	<bean id="tdmx.client.cli.ClientUITruststoreService" class="org.tdmx.client.cli.service.ClientUITruststoreServiceImpl">
+	</bean>
 
 	<bean id="tdmx.client.cli.AuthenticationProvider" class="org.tdmx.client.cli.security.AuthenticationProvider">
 	</bean>
@@ -25,6 +27,9 @@
 	<bean id="tdmx.client.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
 		<constructor-arg>
 			<array>
+				<value>org.tdmx.client.cli.cmd.ui.StartClientAdminUI</value>
+				<value>org.tdmx.client.cli.cmd.ui.StopClientAdminUI</value>
+
 				<value>org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials</value>
 				<value>org.tdmx.client.cli.cmd.zone.DescribeZoneAdministratorCredentials</value>
 				<value>org.tdmx.client.cli.cmd.zone.ListZoneAdministratorCredentials</value>
@@ -36,6 +41,9 @@
 		<property name="commandDescriptorFactory" ref="tdmx.client.cli.ServerCommandDescriptionFactory"/>
 		<property name="commandNameRefMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key="ui:start" value="tdmx.server.cli.cmd.StartClientAdminUI"/>
+				<entry key="ui:stop" value="tdmx.server.cli.cmd.StopClientAdminUI"/>
+				
 				<entry key="zoneadmin:create" value="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials"/>
 				<entry key="zoneadmin:describe" value="tdmx.server.cli.cmd.DescribeZoneAdministratorCredentials"/>
 				<entry key="zoneadmin:list" value="tdmx.server.cli.cmd.ListZoneAdministratorCredentials"/>
@@ -68,6 +76,12 @@
 	<bean id="tdmx.client.cli.cmd.AbstractCommand" class="org.tdmx.client.cli.cmd.AbstractCliCommand" abstract="true">
 		<property name="zacService" ref="tdmx.client.cli.ZoneAdministrationCredentialService"/>
 		<property name="uiKeystoreService" ref="tdmx.client.cli.ClientUIKeystoreService"/>
+		<property name="uiTruststoreService" ref="tdmx.client.cli.ClientUITruststoreService"/>
+	</bean>
+
+	<bean id="tdmx.server.cli.cmd.StartClientAdminUI" class="org.tdmx.client.cli.cmd.ui.StartClientAdminUI" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
+	</bean>
+	<bean id="tdmx.server.cli.cmd.StopClientAdminUI" class="org.tdmx.client.cli.cmd.ui.StopClientAdminUI" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">
 	</bean>
 
 	<bean id="tdmx.server.cli.cmd.CreateZoneAdministratorCredentials" class="org.tdmx.client.cli.cmd.zone.CreateZoneAdministratorCredentials" parent="tdmx.client.cli.cmd.AbstractCommand" scope="prototype">

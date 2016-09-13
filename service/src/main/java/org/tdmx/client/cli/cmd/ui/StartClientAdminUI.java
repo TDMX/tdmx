@@ -47,16 +47,16 @@ public class StartClientAdminUI extends AbstractCliCommand {
 
 	@Parameter(name = "serverAddress", description = "the specific server hostname to bind to for multi-homed hosts.")
 	private String serverAddress;
-	@Parameter(name = "httpsPort", required = true, defaultValue = "443", description = "the HTTPS port.")
+	@Parameter(name = "httpsPort", required = true, description = "the HTTPS port.")
 	private Integer httpsPort;
 
-	@Parameter(name = "keystoreFile", required = true, defaultValue = "client-ui.keystore", description = "the HTTPS keystore file.")
+	@Parameter(name = "keystoreFile", required = true, description = "the HTTPS keystore file.")
 	private String keyStoreFile;
-	@Parameter(name = "keystorePassword", required = true, defaultValue = "Un4GettableRändomUngu33ssable", description = "the HTTPS keystore password.")
+	@Parameter(name = "keystorePassword", required = true, description = "the HTTPS keystore password.")
 	private String keyStorePassword;
-	@Parameter(name = "keystoreType", required = true, defaultValue = "jks", description = "the HTTPS keystore type.")
+	@Parameter(name = "keystoreType", required = true, description = "the HTTPS keystore type.")
 	private String keyStoreType;
-	@Parameter(name = "keystoreAlias", required = true, defaultValue = "server", description = "the HTTPS keystore key alias.")
+	@Parameter(name = "keystoreAlias", required = true, description = "the HTTPS keystore key alias.")
 	private String keyStoreAlias;
 
 	// -------------------------------------------------------------------------
@@ -69,12 +69,17 @@ public class StartClientAdminUI extends AbstractCliCommand {
 
 	@Override
 	public void run(CliPrinter out) {
+		if (AdminUIHolder.getServer() != null) {
+			out.println("Admin UI already started. Stop with ui:stop.");
+			return;
+		}
 
 		// we create a HTTPS keystore to provide secure access to https://localhost:443
 
 		if (!getUiKeystoreService().existsServerKey(keyStoreFile)) {
 			if (!createKeystore(out)) {
-				out.println("Unable to create HTTPS keystore.");
+				out.println("Unable to create HTTPS keystore " + keyStoreFile);
+				return;
 			}
 		} else {
 			PKIXCredential serverKey = getUiKeystoreService().getServerKey(keyStoreFile, keyStoreType, keyStorePassword,
@@ -84,11 +89,13 @@ public class StartClientAdminUI extends AbstractCliCommand {
 				return;
 			}
 			// check expiration.
-			if (Calendar.getInstance().before(serverKey.getPublicCert().getNotAfter())) {
+			if (serverKey.getPublicCert().getNotAfter().before(Calendar.getInstance())) {
 				out.println("HTTPS server key has expired. Delete the keystore and restart.");
 				return;
 			}
 		}
+
+		// TODO startup a Jetty
 	}
 
 	// -------------------------------------------------------------------------

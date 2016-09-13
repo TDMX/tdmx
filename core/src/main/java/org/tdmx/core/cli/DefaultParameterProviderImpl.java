@@ -20,6 +20,8 @@ package org.tdmx.core.cli;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,19 @@ public class DefaultParameterProviderImpl implements DefaultParameterProvider {
 	@Override
 	public void clearDefault(String parameterName) {
 		defaults.remove(parameterName);
+	}
+
+	@Override
+	public void load(Properties props) {
+		for (String key : props.stringPropertyNames()) {
+			defaults.put(key, props.getProperty(key));
+		}
+	}
+
+	@Override
+	public Set<String> getDefaultParameterNames() {
+
+		return defaults.keySet();
 	}
 
 	// -------------------------------------------------------------------------

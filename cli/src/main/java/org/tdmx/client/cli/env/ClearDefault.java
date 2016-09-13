@@ -19,7 +19,6 @@
 package org.tdmx.client.cli.env;
 
 import org.tdmx.client.cli.ClientCliLoggingUtils;
-import org.tdmx.client.cli.StaticDefaultParameterProvider;
 import org.tdmx.core.cli.annotation.Cli;
 import org.tdmx.core.cli.annotation.Option;
 import org.tdmx.core.cli.display.CliPrinter;
@@ -67,19 +66,19 @@ public class ClearDefault implements CommandExecutable {
 		}
 		if (zacPassword != null) {
 			out.println("Clearing default for zacPassword.");
-			StaticDefaultParameterProvider.clearDefaultValue("zacPassword");
+			// FIXME StaticDefaultParameterProvider.clearDefaultValue("zacPassword");
 		}
 		if (dacPassword != null) {
 			out.println("Clearing default for dacPassword.");
-			StaticDefaultParameterProvider.clearDefaultValue("dacPassword");
+			// FIXME StaticDefaultParameterProvider.clearDefaultValue("dacPassword");
 		}
 		if (userPassword != null) {
 			out.println("Clearing default for userPassword.");
-			StaticDefaultParameterProvider.clearDefaultValue("userPassword");
+			// FIXME StaticDefaultParameterProvider.clearDefaultValue("userPassword");
 		}
 		if (domain != null) {
 			out.println("Clearing default for domain.");
-			StaticDefaultParameterProvider.clearDefaultValue("domain");
+			// FIXME StaticDefaultParameterProvider.clearDefaultValue("domain");
 		}
 		out.println(ClientCliLoggingUtils.commandExecuted());
 	}

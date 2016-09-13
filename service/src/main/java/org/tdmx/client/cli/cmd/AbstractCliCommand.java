@@ -19,6 +19,7 @@
 package org.tdmx.client.cli.cmd;
 
 import org.tdmx.client.cli.service.ClientUIKeystoreService;
+import org.tdmx.client.cli.service.ClientUITruststoreService;
 import org.tdmx.client.cli.service.ZoneAdministrationCredentialService;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 
@@ -36,6 +37,7 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 
 	private ZoneAdministrationCredentialService zacService;
 	private ClientUIKeystoreService uiKeystoreService;
+	private ClientUITruststoreService uiTruststoreService;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -56,6 +58,14 @@ public abstract class AbstractCliCommand implements CommandExecutable {
 	// -------------------------------------------------------------------------
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
+
+	public ClientUITruststoreService getUiTruststoreService() {
+		return uiTruststoreService;
+	}
+
+	public void setUiTruststoreService(ClientUITruststoreService uiTruststoreService) {
+		this.uiTruststoreService = uiTruststoreService;
+	}
 
 	public ClientUIKeystoreService getUiKeystoreService() {
 		return uiKeystoreService;

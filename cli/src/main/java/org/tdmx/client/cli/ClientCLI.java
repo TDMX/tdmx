@@ -79,7 +79,6 @@ import org.tdmx.core.cli.CliRunnerImpl;
 import org.tdmx.core.cli.CommandDescriptor;
 import org.tdmx.core.cli.CommandDescriptorFactory;
 import org.tdmx.core.cli.CommandDescriptorFactoryImpl;
-import org.tdmx.core.cli.DefaultParameterProvider;
 import org.tdmx.core.cli.InputStreamTokenizer;
 import org.tdmx.core.cli.runtime.CommandExecutable;
 import org.tdmx.core.cli.runtime.CommandExecutableFactory;
@@ -135,7 +134,6 @@ public class ClientCLI {
 	// -------------------------------------------------------------------------
 
 	public static void main(String[] args) throws IOException {
-		final DefaultParameterProvider defaultProvider = StaticDefaultParameterProvider.getInstance();
 
 		final CommandDescriptorFactory commandDescriptorFactory = new CommandDescriptorFactoryImpl(commandClasses);
 
@@ -158,7 +156,6 @@ public class ClientCLI {
 		CliRunnerImpl runner = new CliRunnerImpl();
 		runner.setCommandExecutableFactory(commandExecutableFactory);
 		runner.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
-		runner.setDefaultProvider(defaultProvider);
 
 		// parse the help text for this CLI
 		InputStream helpContent = ClientCLI.class.getResourceAsStream("/clientAdminHelp.txt");
@@ -167,7 +164,6 @@ public class ClientCLI {
 		CliParser cliparser = new CliParser();
 		cliparser.setCommandDescriptorFactory(commandDescriptorFactory);
 		cliparser.setCliPrinterFactory(ClientCliLoggingUtils.getPrinterFactory());
-		cliparser.setDefaultProvider(defaultProvider);
 		cliparser.setHelp(helpText);
 		cliparser.setCliRunner(runner);
 
