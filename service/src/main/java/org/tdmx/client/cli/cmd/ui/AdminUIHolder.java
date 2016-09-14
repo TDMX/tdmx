@@ -18,7 +18,7 @@
  */
 package org.tdmx.client.cli.cmd.ui;
 
-import org.eclipse.jetty.util.Jetty;
+import org.eclipse.jetty.server.Server;
 
 public class AdminUIHolder {
 
@@ -30,7 +30,7 @@ public class AdminUIHolder {
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
 
-	private static Jetty server;
+	private static Server server;
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -54,11 +54,11 @@ public class AdminUIHolder {
 	// PUBLIC ACCESSORS (GETTERS / SETTERS)
 	// -------------------------------------------------------------------------
 
-	public static Jetty getServer() {
+	public static Server getServer() {
 		return server;
 	}
 
-	public static void setServer(Jetty server) {
+	public static void setServer(Server server) {
 		AdminUIHolder.server = server;
 	}
 

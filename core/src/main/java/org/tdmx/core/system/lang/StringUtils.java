@@ -219,6 +219,19 @@ public class StringUtils {
 	}
 
 	/**
+	 * Converts a CSV string to an array of strings.
+	 * 
+	 * NOTE the comma character may only be used as the separator, there is no comma escaping used.
+	 * 
+	 * @param csv
+	 * @return
+	 */
+	public static String[] convertCsvToStringArray(String csv) {
+		List<String> list = convertCsvToStringList(csv);
+		return list.toArray(new String[0]);
+	}
+
+	/**
 	 * Return a property map representation of a CSV.
 	 * 
 	 * @param csv

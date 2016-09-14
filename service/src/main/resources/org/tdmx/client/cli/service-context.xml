@@ -24,6 +24,9 @@
 	<bean id="tdmx.client.cli.AuthenticationProvider" class="org.tdmx.client.cli.security.AuthenticationProvider">
 	</bean>
 	
+	<bean id="tdmx.client.cli.ClientAdminService" class="org.tdmx.client.cli.ui.CASImpl">
+	</bean>
+	
 	<bean id="tdmx.client.cli.ServerCommandDescriptionFactory" class="org.tdmx.core.cli.CommandDescriptorFactoryImpl">
 		<constructor-arg>
 			<array>

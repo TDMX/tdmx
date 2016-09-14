@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.cmd.ui;
+package org.tdmx.client.cli.ui;
 
-import org.eclipse.jetty.server.Server;
-import org.tdmx.client.cli.cmd.AbstractCliCommand;
-import org.tdmx.core.cli.annotation.Cli;
-import org.tdmx.core.cli.display.CliPrinter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-@Cli(name = "ui:stop", description = "stops the client administration UI")
-public class StopClientAdminUI extends AbstractCliCommand {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdmx.core.system.lang.EnumUtils;
+import org.tdmx.lib.control.domain.DatabaseType;
+
+public class CASImpl implements CAS {
 
 	// -------------------------------------------------------------------------
 	// PUBLIC CONSTANTS
@@ -33,6 +36,7 @@ public class StopClientAdminUI extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 	// PROTECTED AND PRIVATE VARIABLES AND CONSTANTS
 	// -------------------------------------------------------------------------
+	private static final Logger log = LoggerFactory.getLogger(CASImpl.class);
 
 	// -------------------------------------------------------------------------
 	// CONSTRUCTORS
@@ -43,19 +47,13 @@ public class StopClientAdminUI extends AbstractCliCommand {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public void run(CliPrinter out) {
-		Server server = AdminUIHolder.getServer();
-		if (server == null) {
-			out.println("Admin UI already stopped.");
-			return;
+	public List<String> getDbTypes() {
+		List<String> allDbTypeNames = new ArrayList<>();
+		for (DatabaseType n : DatabaseType.values()) {
+			allDbTypeNames.add(EnumUtils.mapToString(n));
 		}
-		try {
-			server.stop();
-			out.println("Admin UI stopped.");
-		} catch (Exception e) {
-			out.println("Problem encountered trying to stop the client admin UI.", e);
-		}
-		AdminUIHolder.setServer(null);
+		Collections.sort(allDbTypeNames);
+		return allDbTypeNames;
 	}
 
 	// -------------------------------------------------------------------------
