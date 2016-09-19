@@ -55,7 +55,7 @@
            <property name="supportUnwrapped" value="true"/>		 
 	</bean>
 	
-	<jaxrs:server id="services" address="/cas">
+	<jaxrs:server id="services" address="/">
 		<jaxrs:serviceBeans>
 			<ref bean="tdmx.client.cli.ClientAdminService" />
 		</jaxrs:serviceBeans>

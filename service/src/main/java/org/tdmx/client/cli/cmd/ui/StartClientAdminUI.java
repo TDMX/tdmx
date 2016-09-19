@@ -33,12 +33,15 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.tdmx.client.cli.cmd.AbstractCliCommand;
 import org.tdmx.client.crypto.algorithm.PublicKeyAlgorithm;
@@ -189,13 +192,21 @@ public class StartClientAdminUI extends AbstractCliCommand {
 		requestLog.setRetainDays(7);
 		requestLogHandler.setRequestLog(requestLog);
 
+		ContextHandler uiContext = new ContextHandler();
+		uiContext.setContextPath("/ui");
+
+		ResourceHandler rh = new ResourceHandler();
+		rh.setBaseResource(Resource.newClassPathResource("/org/tdmx/client/cli/ui"));
+		rh.setWelcomeFiles(new String[] { "index.html" });
+		uiContext.setHandler(rh);
+
 		ServletContextHandler rsContext = new ServletContextHandler(
 				ServletContextHandler.NO_SECURITY | ServletContextHandler.SESSIONS);
-		rsContext.setContextPath("ca");
+		rsContext.setContextPath("/ca");
 		// Setup Spring context
 		rsContext.addEventListener(new org.springframework.web.context.ContextLoaderListener());
 		rsContext.setInitParameter("parentContextKey", "clientAdminContext");
-		rsContext.setInitParameter("locatorFactorySelector", "classpath:clientAdminBeanRefContext.xml");
+		rsContext.setInitParameter("locatorFactorySelector", "classpath*:clientAdminBeanRefContext.xml");
 		rsContext.setInitParameter("contextConfigLocation", "classpath:/ca-context.xml");
 
 		// Add filters
@@ -208,7 +219,9 @@ public class StartClientAdminUI extends AbstractCliCommand {
 		rsSh.setInitOrder(1);
 		rsContext.addServlet(rsSh, "/*");
 
-		contexts.addHandler(rsContext);
+		// link the UI and the RestFull service into the server
+		contexts.setHandlers(new Handler[] { rsContext, uiContext });
+
 		try {
 			jetty.start();
 		} catch (Exception e) {

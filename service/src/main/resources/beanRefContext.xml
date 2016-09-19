@@ -21,12 +21,4 @@
      </constructor-arg>
    </bean>
 
-	<bean id="clientAdminContext" class="org.springframework.context.support.ClassPathXmlApplicationContext">
-     <constructor-arg>
-       <list>
-         <value>client-cli-context.xml</value>
-       </list>
-     </constructor-arg>
-   </bean>
-
 </beans>

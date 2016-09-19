@@ -344,6 +344,11 @@
 			<artifactId>cxf-rt-rs-extension-providers</artifactId>
 			<version>${cxf.version}</version>
 		</dependency>
+		<dependency>
+		  <groupId>org.apache.cxf</groupId>
+		  <artifactId>cxf-rt-rs-service-description</artifactId>
+		  <version>${cxf.version}</version>
+		</dependency>
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
             <artifactId>jettison</artifactId>

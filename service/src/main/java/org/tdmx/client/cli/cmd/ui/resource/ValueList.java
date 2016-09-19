@@ -16,23 +16,30 @@
  * You should have received a copy of the GNU Affero General Public License along with this program. If not, see
  * http://www.gnu.org/licenses/.
  */
-package org.tdmx.client.cli.ui;
+package org.tdmx.client.cli.cmd.ui.resource;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.tdmx.client.cli.cmd.ui.resource.ValueList;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-@Path("/")
-@Produces({ "application/json" })
-public interface CAS {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "values")
+@XmlType(name = "ValueList")
+public class ValueList {
 
-	/*
-	 * RESTFUL service for static value enumerations
-	 */
-	@GET
-	@Path("/enum/dbType")
-	ValueList getDbTypes();
+	@XmlElement(name = "values")
+	protected List<String> values;
+
+	public List<String> getValues() {
+		if (values == null) {
+			values = new ArrayList<String>();
+		}
+		return this.values;
+	}
 
 }

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdmx.client.cli.cmd.ui.resource.ValueList;
 import org.tdmx.core.system.lang.EnumUtils;
 import org.tdmx.lib.control.domain.DatabaseType;
 
@@ -47,13 +48,16 @@ public class CASImpl implements CAS {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public List<String> getDbTypes() {
+	public ValueList getDbTypes() {
 		List<String> allDbTypeNames = new ArrayList<>();
 		for (DatabaseType n : DatabaseType.values()) {
 			allDbTypeNames.add(EnumUtils.mapToString(n));
 		}
 		Collections.sort(allDbTypeNames);
-		return allDbTypeNames;
+
+		ValueList result = new ValueList();
+		result.getValues().addAll(allDbTypeNames);
+		return result;
 	}
 
 	// -------------------------------------------------------------------------
